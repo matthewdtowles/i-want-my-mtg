@@ -1,3 +1,6 @@
+import { SealedProduct } from "./SealedProduct";
+import { Translations } from "./Translations";
+
 export type SetList = {
   baseSetSize: number;
   block?: string;

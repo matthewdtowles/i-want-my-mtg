@@ -1,3 +1,5 @@
+import { CardSetDeck } from "./CardSetDeck";
+
 export type DeckSet = {
   code: string;
   commander?: CardSetDeck[];

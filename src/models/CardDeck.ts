@@ -1,3 +1,11 @@
+import { ForeignData } from "./ForeignData";
+import { Identifiers } from "./Identifiers";
+import { LeadershipSkills } from "./LeadershipSkills";
+import { Legalities } from "./Legalities";
+import { PurchaseUrls } from "./PurchaseUrls";
+import { RelatedCards } from "./RelatedCards";
+import { Rulings } from "./Rulings";
+
 export type CardDeck = {
   artist?: string;
   artistIds?: string[];

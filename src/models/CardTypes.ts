@@ -1,3 +1,5 @@
+import { CardType } from "./CardType";
+
 export type CardTypes = {
   artifact: CardType;
   conspiracy: CardType;

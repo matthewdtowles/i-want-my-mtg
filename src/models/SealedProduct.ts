@@ -1,3 +1,7 @@
+import { Identifiers } from "./Identifiers";
+import { PurchaseUrls } from "./PurchaseUrls";
+import { SealedProductContents } from "./SealedProductContents";
+
 export type SealedProduct = {
   cardCount?: number;
   category?: string;

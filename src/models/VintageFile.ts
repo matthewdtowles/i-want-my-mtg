@@ -1,0 +1,1 @@
+export type VintageFile = { meta: Meta; data: Record<string, CardSet>; };

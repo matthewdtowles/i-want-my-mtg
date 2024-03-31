@@ -1,0 +1,1 @@
+export type LegacyFile = { meta: Meta; data: Record<string, CardSet>; };

@@ -1,0 +1,1 @@
+export type ModernFile = { meta: Meta; data: Record<string, CardSet>; };

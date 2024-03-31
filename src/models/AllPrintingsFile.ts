@@ -1,0 +1,1 @@
+export type AllPrintingsFile = { meta: Meta; data: Record<string, Set>; };

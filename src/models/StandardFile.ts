@@ -1,0 +1,1 @@
+export type StandardFile = { meta: Meta; data: Record<string, CardSet>; };

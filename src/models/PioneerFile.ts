@@ -1,0 +1,1 @@
+export type PioneerFile = { meta: Meta; data: Record<string, CardSet>; };

@@ -1,0 +1,1 @@
+export type LegacyAtomicFile = { meta: Meta; data: Record<string, CardAtomic>; };

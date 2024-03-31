@@ -1,0 +1,1 @@
+export type PioneerAtomicFile = { meta: Meta; data: Record<string, CardAtomic>; };

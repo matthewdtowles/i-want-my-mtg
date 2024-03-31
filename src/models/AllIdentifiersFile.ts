@@ -1,0 +1,1 @@
+export type AllIdentifiersFile = { meta: Meta; data: Record<string, CardSet>; };

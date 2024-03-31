@@ -1,0 +1,1 @@
+export type ModernAtomicFile = { meta: Meta; data: Record<string, CardAtomic>; };

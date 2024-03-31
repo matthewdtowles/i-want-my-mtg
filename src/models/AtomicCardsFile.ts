@@ -1,0 +1,1 @@
+export type AtomicCardsFile = { meta: Meta; data: Record<string, CardAtomic>; };

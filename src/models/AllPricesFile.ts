@@ -1,0 +1,1 @@
+export type AllPricesFile = { meta: Meta; data: Record<string, PriceFormats>; };

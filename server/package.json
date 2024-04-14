@@ -1,0 +1,31 @@
+{
+  "name": "i-want-my-mtg",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "MTG Collection Tracker",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.28",
+    "@types/node-fetch": "^2.6.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
+  },
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthewdtowles/i-want-my-mtg.git"
+  },
+  "author": "Matthew Towles",
+  "bugs": {
+    "url": "https://github.com/matthewdtowles/i-want-my-mtg/issues"
+  },
+  "homepage": "https://github.com/matthewdtowles/i-want-my-mtg#readme",
+  "main": "index.js",
+  "keywords": [],
+  "license": "ISC"
+}

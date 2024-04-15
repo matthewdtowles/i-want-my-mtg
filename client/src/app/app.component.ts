@@ -9,5 +9,10 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'client';
+  title = 'I Want My MTG!';
+  count = 0;
+
+  increment() {
+    this.count++;
+  }
 }

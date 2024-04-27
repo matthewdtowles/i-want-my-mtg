@@ -4,6 +4,10 @@
     "module": "commonjs",
     "outDir": "./dist",
     "strict": true,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
 }

@@ -1,5 +1,5 @@
 import { ConfigService } from "./configService";
-import { Set } from "./models/Set";
+import { Set } from "../models/Set";
 import axios, { AxiosResponse } from 'axios';
 
 export class SetService {

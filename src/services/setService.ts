@@ -8,7 +8,7 @@ export class SetService {
     }
 
     async requestSet(setCode: string): Promise<Set> {
-        const response: AxiosResponse = await axios.get(this.config.url + setCode + this.config.FILE_EXT);
+        const response: AxiosResponse = await axios.get(this.config.url + setCode.toUpperCase() + this.config.FILE_EXT);
         // TODO: handle response.status
         return response.data.data;
     }

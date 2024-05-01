@@ -7,12 +7,17 @@ import { SetService } from "../services/setService";
 const router = express.Router();
 
 router.get('/', async (req, res) => {
+    res.render('index');
+});
+
+router.get('/sets/:setCode', async (req, res) => {
     // Initialize ConfigService and SetService
     const configService = new ConfigService(/* pass required parameters */);
     const setService = new SetService(configService);
 
     // Request a set
-    const setName = 'KLD';
+    const setName = req.params.setCode;
+    console.log(`setName chosen: ${setName}`);
     try {
         console.log(`Chosen set code: ${setName}`);
         const setData: Set = await setService.requestSet(setName);

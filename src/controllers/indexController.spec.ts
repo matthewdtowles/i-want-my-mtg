@@ -1,7 +1,7 @@
 import express from 'express';
 import request from 'supertest';
-import { ConfigService } from '../services/configService';
-import { SetService } from '../services/setService';
+import { ConfigService } from '../services/ConfigService';
+import { SetService } from '../services/SetService';
 import router from './indexController';
 
 // Mock ConfigService and SetService

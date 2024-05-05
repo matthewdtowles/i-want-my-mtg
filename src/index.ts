@@ -1,7 +1,7 @@
-import { ConfigService } from "./services/configService";
+import { ConfigService } from "./services/ConfigService";
 import { CardSet } from "./models/CardSet";
 import { Set } from "./models/Set";
-import { SetService } from "./services/setService";
+import { SetService } from "./services/SetService";
 import server from './server';
 
 async function main() {

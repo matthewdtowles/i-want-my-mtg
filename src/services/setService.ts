@@ -1,4 +1,4 @@
-import { ConfigService } from "./configService";
+import { ConfigService } from "./ConfigService";
 import { Set } from "../models/Set";
 import axios, { AxiosResponse } from 'axios';
 

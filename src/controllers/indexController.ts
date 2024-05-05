@@ -1,8 +1,8 @@
 import express from "express";
 import { CardSet } from "../models/CardSet";
 import { Set } from "../models/Set";
-import { ConfigService } from "../services/configService";
-import { SetService } from "../services/setService";
+import { ConfigService } from "../services/ConfigService";
+import { SetService } from "../services/SetService";
 
 const router = express.Router();
 

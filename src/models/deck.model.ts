@@ -1,0 +1,12 @@
+import { CardDeck } from "./CardDeck";
+
+@Injectable()
+export class Deck {
+  code: string;
+  commander?: CardDeck[];
+  mainBoard: CardDeck[];
+  name: string;
+  releaseDate: string | null;
+  sideBoard: CardDeck[];
+  type: string;
+};

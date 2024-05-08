@@ -10,6 +10,6 @@ def rename_files(dir):
                 new_filename = '.'.join(parts)
             os.rename(os.path.join(dir, filename), os.path.join(dir, new_filename))
 
-dir_path = 'models'
+dir_path = 'src/models'
 
 rename_files(dir_path)

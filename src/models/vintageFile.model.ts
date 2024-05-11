@@ -1,5 +1,6 @@
-import { CardSet } from "./cardSet.model";
-import { Meta } from "./meta.model";
+import { Injectable } from '@nestjs/common';
+import { CardSet } from './cardSet.model';
+import { Meta } from './meta.model';
 
 @Injectable()
 export class VintageFile { meta: Meta; data: Record<string, CardSet>; };

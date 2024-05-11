@@ -1,5 +1,6 @@
-import { SealedProduct } from "./SealedProduct";
-import { Translations } from "./Translations";
+import { Injectable } from '@nestjs/common';
+import { SealedProduct } from './sealedProduct.model';
+import { Translations } from './translations.model';
 
 @Injectable()
 export class SetList {

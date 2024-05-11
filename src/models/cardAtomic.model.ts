@@ -1,10 +1,11 @@
-import { ForeignData } from './ForeignData';
-import { Identifiers } from './Identifiers';
-import { LeadershipSkills } from './LeadershipSkills';
-import { Legalities } from './Legalities';
-import { PurchaseUrls } from './PurchaseUrls';
-import { RelatedCards } from './RelatedCards';
-import { Rulings } from './Rulings';
+import { Injectable } from '@nestjs/common';
+import { ForeignData } from './foreignData.model';
+import { Identifiers } from './identifiers.model';
+import { LeadershipSkills } from './leadershipSkills.model';
+import { Legalities } from './legalities.model';
+import { PurchaseUrls } from './purchaseUrls.model';
+import { RelatedCards } from './relatedCards.model';
+import { Rulings } from './rulings.model';
 
 @Injectable()
 export class CardAtomic {

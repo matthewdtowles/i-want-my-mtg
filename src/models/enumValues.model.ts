@@ -1,4 +1,5 @@
-import { Meta } from "./meta.model";
+import { Injectable } from '@nestjs/common';
+import { Meta } from './meta.model';
 
 @Injectable()
 export class EnumValues { meta: Meta; data: Record<string, Record<string, string[]>>};

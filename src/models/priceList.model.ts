@@ -1,4 +1,5 @@
-import { PricePoints } from "./PricePoints";
+import { Injectable } from '@nestjs/common';
+import { PricePoints } from './pricePoints.model';
 
 @Injectable()
 export class PriceList {

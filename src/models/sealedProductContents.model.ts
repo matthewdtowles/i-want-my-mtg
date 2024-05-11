@@ -1,8 +1,9 @@
-import { SealedProductCard } from "./SealedProductCard";
-import { SealedProductDeck } from "./SealedProductDeck";
-import { SealedProductOther } from "./SealedProductOther";
-import { SealedProductPack } from "./SealedProductPack";
-import { SealedProductSealed } from "./SealedProductSealed";
+import { Injectable } from '@nestjs/common';
+import { SealedProductCard } from './sealedProductCard.model';
+import { SealedProductDeck } from './sealedProductDeck.model';
+import { SealedProductOther } from './sealedProductOther.model';
+import { SealedProductPack } from './sealedProductPack.model';
+import { SealedProductSealed } from './sealedProductSealed.model';
 
 @Injectable()
 export class SealedProductContents {
@@ -11,5 +12,5 @@ export class SealedProductContents {
   other?: SealedProductOther[];
   pack?: SealedProductPack[];
   sealed?: SealedProductSealed[];
-  variable?: Record<"configs", SealedProductContents[]>[];
+  variable?: Record<'configs', SealedProductContents[]>[];
 };

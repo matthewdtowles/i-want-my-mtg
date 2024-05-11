@@ -1,6 +1,7 @@
-import { Identifiers } from "./Identifiers";
-import { PurchaseUrls } from "./PurchaseUrls";
-import { SealedProductContents } from "./SealedProductContents";
+import { Injectable } from '@nestjs/common';
+import { Identifiers } from './identifiers.model';
+import { PurchaseUrls } from './purchaseUrls.model';
+import { SealedProductContents } from './sealedProductContents.model';
 
 @Injectable()
 export class SealedProduct {

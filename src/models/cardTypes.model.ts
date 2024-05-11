@@ -1,4 +1,5 @@
-import { CardType } from "./CardType";
+import { Injectable } from '@nestjs/common';
+import { CardType } from './cardType.model';
 
 @Injectable()
 export class CardTypes {

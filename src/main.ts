@@ -12,7 +12,7 @@ async function bootstrap() {
   const hbs = create({
     layoutsDir: join(__dirname, '..', 'views', 'layouts'),
     partialsDir: join(__dirname, '..', 'views', 'partials'),
-    defaultLayout: 'layout',
+    defaultLayout: 'main',
     extname: '.hbs',
   });
   app.engine('hbs', hbs.engine);

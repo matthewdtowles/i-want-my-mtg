@@ -1,5 +1,9 @@
-<h1>PAGE: index.hbs</h1>
 <div>
-    <p>Message injected below:</p>
-    {{ message }}
+    <ul>
+        {{#each setList}}
+            <li class="set-name">
+                <a href="sets/{{this.code}}">{{this.name}}</a>
+            </li>
+        {{/each}}
+    </ul>
 </div>

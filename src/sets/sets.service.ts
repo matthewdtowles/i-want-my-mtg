@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
+import { CardSet } from 'src/models/cardSet.model';
 import { Set } from 'src/models/set.model';
 import { SetList } from 'src/models/setList.model';
 
@@ -9,22 +10,18 @@ export class SetsService {
     // then switch to using ConfigService to handle
     private readonly CARD_API_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_API_FILE_EXT: string = '.json';
-    private readonly SET_LIST_PATH: string = '/SetList.json';
+    private readonly SET_LIST_PATH: string = 'SetList.json';
 
-    // TODO: replace <any> when we know the type
-    async requestSetList(): Promise<string[]> {
-        const resp: AxiosResponse = await axios.get(this.CARD_API_FILE_EXT + this.SET_LIST_PATH);
-        const setList: SetList[] = resp.data.data;
-        const setNames: string[] = [];
-        for (const set of setList) {
-            setNames.push(set.name);
-        }
-        return setNames;
+    async requestSetList(): Promise<SetList[]> {
+        const resp: AxiosResponse = await axios.get(this.CARD_API_URL + this.SET_LIST_PATH);
+        // TODO: handle/process response?
+        return resp.data.data;
     }
 
-    async requestSet(setCode: string): Promise<Set> {
+    async requestSet(setCode: string): Promise<CardSet[]> {
+        console.log(`setsService requestSet called: ${this.CARD_API_URL + setCode.toUpperCase() + this.CARD_API_FILE_EXT}`);
         const response: AxiosResponse = await axios.get(this.CARD_API_URL + setCode.toUpperCase() + this.CARD_API_FILE_EXT);
-        // TODO: handle response.status
-        return response.data.data;
+        // TODO: handle/process response?
+        return response.data.data.cards;
     }
 }

@@ -7,7 +7,8 @@ export class AppController {
 
   @Get()
   @Render('index')
-  getIndex(): object {
-    return { message: this.appService.getIndex() };
+  async getIndex(): Promise<object> {
+    const setListVal = await this.appService.getIndex();
+    return { setList: setListVal };
   }
 }

@@ -1,44 +1,23 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Render } from '@nestjs/common';
+import { SetsService } from './sets.service';
+import { Set } from 'src/models/set.model';
+import { CardSet } from 'src/models/cardSet.model';
 
 @Controller('sets')
 export class SetsController {
+    constructor(private readonly setsService: SetsService) {}
+
     @Get()
     async setListing(): Promise<string> {
+        // TODO: see the app.controller
         return 'This is the sets page';
     }
 
     @Get(':setCode')
-    async getSetBySetCode(@Param('setCode') setCode: string): Promise<string> {
+    @Render('cardSet')
+    async getSetBySetCode(@Param('setCode') setCode: string): Promise<{ cards: CardSet[] }> {
         setCode = setCode.toUpperCase();
-        // return call to the service
-        return `Chosen setCode: ${setCode}`;
+        const cards = await this.setsService.requestSet(setCode);
+        return { cards: cards };
     }
 }
-/*
-router.get('/sets/:setCode', async (req, res) => {
-    // Initialize ConfigService and SetService
-    const configService = new ConfigService(pass required parameters);
-    const setService = new SetService(configService);
-
-    // Request a set
-    const setName = req.params.setCode;
-    console.log(`setName chosen: ${setName}`);
-    try {
-        console.log(`Chosen set code: ${setName}`);
-        const setData: Set = await setService.requestSet(setName);
-        const cards: CardSet[] = setData.cards;
-        console.log(`cards.length: ${cards.length}`);
-        // for (const card of cards) {
-        //     if (parseInt(card.number) > setData.baseSetSize) {
-        //         break;
-        //     }
-        //     console.log(`${card.number}. ${card.name} -- ${card.manaCost}`);
-        // }
-        // console.log(setData.baseSetSize);
-        res.render('index', {cards: cards});
-    } catch (error) {
-        console.error("Error fetching set:", error);
-        res.render('error');
-    }
-});
- */

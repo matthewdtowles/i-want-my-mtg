@@ -22,17 +22,17 @@ describe('UsersController', () => {
             create: jest
               .fn()
               .mockImplementation((user: CreateUserDto) =>
-                Promise.resolve({ id: '1', ...user }),
+                Promise.resolve({ id: 1, ...user }),
             ),
             findById: jest.fn().mockImplementation((id: string) => 
               Promise.resolve({
-                username: 'test-username1',
                 id,
+                username: 'test-username1',
               }),
             ),
             findByUsername: jest.fn().mockImplementation((username: string) =>
               Promise.resolve({
-                id: '1',
+                id: 1,
                 username
               }),
             ),
@@ -45,44 +45,44 @@ describe('UsersController', () => {
     service = module.get<UsersService>(UsersService);
   });
 
-  it('should be defined', () => {
+  it('users controller should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create()', () => {
+  describe('users controller create()', () => {
     it('should create a user', () => {
       controller.create(createUserDto);
       expect(controller.create(createUserDto)).resolves.toEqual({
-        id: '1',
+        id: 1,
         ...createUserDto,
       });
       expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
   });
 
-  describe('findById()', () => {
+  describe('users controller findById()', () => {
     it('should find user by given id', () => {
       expect(controller.findById(1)).resolves.toEqual({
-        username: 'test-username1',
         id: 1,
+        username: 'test-username1',
       });
       expect(service.findById).toHaveBeenCalled();
     });
   });
 
-  describe('findByUsername()', () => {
+  describe('users controller findByUsername()', () => {
     it('should find user by given username', () => {
       expect(controller.findByUsername('test-username1')).resolves.toEqual({
-        username: 'test-username1',
         id: 1,
+        username: 'test-username1',
       });
       expect(service.findByUsername).toHaveBeenCalled();
     });
   });
 
-  describe('remove()', () => {
+  describe('users controller remove()', () => {
     it('should remove given user', () => {
-      controller.remove('1');
+      controller.remove(1);
       expect(service.remove).toHaveBeenCalled();
     });
   });

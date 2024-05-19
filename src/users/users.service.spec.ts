@@ -3,9 +3,9 @@ import { UsersService } from './users.service';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { mock } from 'node:test';
 
 const mockUser = {
+  id: 1,
   username: 'test-username1',
 };
 
@@ -34,11 +34,11 @@ describe('UsersService', () => {
     repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
-  it('should be defined', () => {
+  it('users service should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe('create()', () => {
+  describe('users service create()', () => {
     it('should successfully insert a user', () => {
       const user = {
         username: 'test-username1',
@@ -51,7 +51,8 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findById()', () => {
+  // TODO: Fix
+  describe('users service findById()', () => {
     it('should get a single user with passed id', () => {
       const repoSpy = jest.spyOn(repository, 'findOneBy');
       expect(service.findById(1)).resolves.toEqual(mockUser);
@@ -59,7 +60,8 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findByUsername()', () => {
+  // TODO: fix
+  describe('users service findByUsername()', () => {
     it('should get a single user with passed username', () => {
       const repoSpy = jest.spyOn(repository, 'findOneBy');
       expect(service.findByUsername('test-username1')).resolves.toEqual(mockUser);
@@ -67,11 +69,11 @@ describe('UsersService', () => {
     });
   });
 
-  describe('remove()', () => {
+  describe('users service remove()', () => {
     it('should call remove with the passed id', async () => {
       const removeSpy = jest.spyOn(repository, 'delete');
-      const retVal = await service.remove('1');
-      expect(removeSpy).toHaveBeenCalledWith('1');
+      const retVal = await service.remove(1);
+      expect(removeSpy).toHaveBeenCalledWith(1);
       expect(retVal).toBeUndefined();
     });
   });

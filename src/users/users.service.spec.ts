@@ -22,6 +22,7 @@ describe('UsersService', () => {
           useValue: {
             findById: jest.fn().mockResolvedValue(mockUser),
             findByUsername: jest.fn().mockResolvedValue(mockUser),
+            findOneBy: jest.fn().mockResolvedValue(mockUser),
             save: jest.fn().mockResolvedValue(mockUser),
             remove: jest.fn(),
             delete: jest.fn(),
@@ -40,14 +41,11 @@ describe('UsersService', () => {
 
   describe('users service create()', () => {
     it('should successfully insert a user', () => {
-      const user = {
-        username: 'test-username1',
-      };
       expect(
         service.create({
           username: 'test-username1',
         }),
-      ).resolves.toEqual(user);
+      ).resolves.toEqual(mockUser);
     });
   });
 

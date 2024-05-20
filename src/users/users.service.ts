@@ -14,12 +14,12 @@ export class UsersService {
         return this.usersRepository.save(user);
     }
 
-    findById(id: number): Promise<User> {
-        return this.usersRepository.findOneBy({ id: id });
+    findById(idIn: number): Promise<User> {
+        return this.usersRepository.findOneBy({ id: idIn });
     }
 
-    findByUsername(username: string): Promise<User> {
-        return this.usersRepository.findOneBy({ username: username });
+    findByUsername(usernameIn: string): Promise<User> {
+        return this.usersRepository.findOneBy({ username: usernameIn });
     }
 
     async remove(id: number): Promise<void> {

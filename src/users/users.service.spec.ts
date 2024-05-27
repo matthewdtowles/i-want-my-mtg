@@ -6,7 +6,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 const mockUser = {
   id: 1,
+  email: 'test-email1@iwantmymtg.com',
   username: 'test-username1',
+  password: 'test-password1'
 };
 
 describe('UsersService', () => {
@@ -43,7 +45,9 @@ describe('UsersService', () => {
     it('should successfully insert a user', () => {
       expect(
         service.create({
+          email: 'test-email1@iwantmymtg.com',
           username: 'test-username1',
+          password: 'test-password1',
         }),
       ).resolves.toEqual(mockUser);
     });

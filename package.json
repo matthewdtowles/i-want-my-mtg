@@ -1,8 +1,8 @@
 {
   "name": "i-want-my-mtg",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "MTG Collection Tracker",
+  "author": "Matthew Towles",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

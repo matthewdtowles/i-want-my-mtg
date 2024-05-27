@@ -4,7 +4,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 
 const createUserDto: CreateUserDto = {
+  email: 'test-email1@iwantmymtg.com',
   username: 'test-username1',
+  password: 'test-password1'
 };
 
 describe('UsersController', () => {
@@ -27,13 +29,17 @@ describe('UsersController', () => {
             findById: jest.fn().mockImplementation((id: string) => 
               Promise.resolve({
                 id,
+                email: 'test-email1@iwantmymtg.com',
                 username: 'test-username1',
+                password: 'test-password1'
               }),
             ),
             findByUsername: jest.fn().mockImplementation((username: string) =>
               Promise.resolve({
                 id: 1,
-                username
+                email: 'test-email1@iwantmymtg.com',
+                username,
+                password: 'test-password1'
               }),
             ),
             remove: jest.fn(),
@@ -64,7 +70,7 @@ describe('UsersController', () => {
     it('should find user by given id', () => {
       expect(controller.findById(1)).resolves.toEqual({
         id: 1,
-        username: 'test-username1',
+        ...createUserDto,
       });
       expect(service.findById).toHaveBeenCalled();
     });
@@ -74,7 +80,7 @@ describe('UsersController', () => {
     it('should find user by given username', () => {
       expect(controller.findByUsername('test-username1')).resolves.toEqual({
         id: 1,
-        username: 'test-username1',
+        ...createUserDto,
       });
       expect(service.findByUsername).toHaveBeenCalled();
     });

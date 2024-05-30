@@ -14,7 +14,11 @@
 ```bash
 $ npm install
 ```
-
+## New Module Creation
+```bash
+$ nest g resource <resourceName>
+```
+- Creates dto/, entities/, controller, module, and service 
 ## Running the app
 
 ```bash

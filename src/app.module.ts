@@ -8,6 +8,7 @@ import { SetsModule } from './sets/sets.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersModule } from './users/users.module';
+import { CardModule } from './card/card.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
       },
     }),
     UsersModule,
+    CardModule,
   ],
   controllers: [AppController, SetsController],
   providers: [AppService, SetsService],

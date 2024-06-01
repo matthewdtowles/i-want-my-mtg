@@ -5,7 +5,7 @@ import { Set } from 'src/models/set.model';
 import { SetList } from 'src/models/setList.model';
 
 @Injectable()
-export class SetsService {
+export class SetService {
     private readonly CARD_API_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_API_FILE_EXT: string = '.json';
     private readonly SET_LIST_PATH: string = 'SetList.json';

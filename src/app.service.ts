@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SetsService } from './sets/sets.service';
+import { SetService } from './set/set.service';
 import { SetList } from './models/setList.model';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly setsService: SetsService
+  constructor(private readonly setsService: SetService
   ) {}
 
   async getIndex(): Promise<SetList[]> {

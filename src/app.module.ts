@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SetsController } from './sets/sets.controller';
-import { SetsService } from './sets/sets.service';
+import { SetController } from './set/set.controller';
+import { SetService } from './set/set.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SetsModule } from './sets/sets.module';
+import { SetModule } from './set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersModule } from './users/users.module';
@@ -13,7 +13,7 @@ import { CardModule } from './card/card.module';
 @Module({
   imports: [
     ConfigModule.forRoot(), 
-    SetsModule,
+    SetModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -35,7 +35,7 @@ import { CardModule } from './card/card.module';
     UsersModule,
     CardModule,
   ],
-  controllers: [AppController, SetsController],
-  providers: [AppService, SetsService],
+  controllers: [AppController, SetController],
+  providers: [AppService, SetService],
 })
 export class AppModule {}

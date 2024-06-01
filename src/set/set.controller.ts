@@ -1,11 +1,11 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
-import { SetsService } from './sets.service';
+import { SetService } from './set.service';
 import { Set } from 'src/models/set.model';
 import { CardSet } from 'src/models/cardSet.model';
 
 @Controller('sets')
-export class SetsController {
-    constructor(private readonly setsService: SetsService) {}
+export class SetController {
+    constructor(private readonly setsService: SetService) {}
 
     @Get()
     async setListing(): Promise<string> {

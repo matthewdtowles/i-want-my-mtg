@@ -131,3 +131,84 @@ export const TypeOrmConfig = TypeOrmModule.forRoot(ormconfig);
 
   
 _See TypeOrm docs for details on query builder, example queries, and more_ 
+
+
+# Features
+
+## MVP Pages
+- Home/index
+  - Likely one of the other pages below
+- List of Sets
+- Page with Set products/cards
+- User hub page
+- Settings as a sub of User page 
+- "My Collection" page as a sub of User page
+- Reset password page as sub of User page?
+
+## Set List Page
+
+### Description/Todo
+- List sets in grouping and in chronological order with links to set page
+- Use as homepage ?
+  - Can be first version of home page
+- CSS/Style and formatting
+- Refactor: What module does this belong to?
+- Identify db entities/models used and request models used
+- Save results list of all sets into db
+- Service should check DB for list of sets and render that 
+  - Call out to mtgjson if not there
+- Design decision: How to logically group sets in display
+- Obtain set symbol images and display
+  - Design decision: obtain via api if not present in assets?
+    - Obtain via api and then save to assets
+      - Asset manager or something like this?
+
+## Set Page - Cards
+
+### Description/Todo
+- What is the set model for the DB
+- CSS/Style and formatting
+- Refactor?: Module/entities/dto all good?
+- DB entities
+- Save results list of all cards into db
+- Service check DB for cards before hitting mtgjson rest api
+- List of cards in the set
+- Has input field/box showing number of cards owned by user for that set
+  - Accepts integer as input
+    - Design decision: Update async or user submit in bulk?
+- Get card templates and display
+- Popup for each individual card (different template)
+
+## Single Card Page
+
+### Description/Todo
+- Page for a single card with info about that card
+- All other sets that card is in with links to those pages
+
+#### Single Card Page Attributes
+- Card.
+  - name
+  - set
+  - @MANYTOMANY? other printings/sets
+  - mana cost
+  - (oracle) text
+  - legality
+  - price
+
+## User Page
+
+### Description/Todo
+- Displays user's information
+- Design decision: Settings as a sub-page?
+- User page as hub for all user-centric info other than a set page
+
+## Other Todo/Notes:
+- Use CardSet from MTGJSON 
+  - Do NOT use CardAtomic
+- Get all sets/cards from AllPrintings.json?
+- Compare mtgjson sql files with design
+- How to get images:
+  - `set.identity[]`: has all URLs 
+    - i.e.: `set.cards[i].identity.scryfallId` to get img 
+  - `keyRuneCode` for set symbols
+- _See [mtgjson.com/data-models](https://mtgjson.com/data-models) for more info_

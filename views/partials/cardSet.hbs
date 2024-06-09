@@ -1,0 +1,31 @@
+<table id="card-set">
+    <thead>
+        <th># Owned</th>
+        <th>Card No.</th>
+        <th>Name</th>
+        <th>Mana Cost</th>
+        <th>Rarity</th>
+        <th>Price</th>
+    </thead>
+    {{#each cards}}
+        <tr class="card-set-card">
+            <td class="card-set-card-owned">
+                <!-- TODO: replace "0" with actual number in user's collection -->
+                <input type="number" value="0" />
+            </td>
+            <td class="card-set-card-number">{{this.number}}</td>
+            <td class="card-set-card-name">
+                <!-- TODO: need to map id to create the thumbnail URL >> https://cards.scryfall.io/{{img.type}}/{{img.face}}/{{img.dir1}}/{{img.dir2}}/{{scryfallId}}.jpg-->
+                {{!-- TODO: add link --}}
+                <a class="card-set-card-link" href="">{{this.name}}</a>
+            </td>
+            <td class="card-set-card-mana-cost">
+                {{!-- <i class="ms ms-1 ms-cost ms-shadow"></i> --}}
+                {{this.manaCost}}
+            </td>
+            <td class="card-set-card-rarity">{{this.rarity}}</td>
+            <!-- TODO: replace 0 with actual card price data -->
+            <td class="card-set-card-price">0</td>
+        </tr>
+    {{/each}}
+</table>

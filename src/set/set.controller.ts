@@ -14,10 +14,10 @@ export class SetController {
     }
 
     @Get(':setCode')
-    @Render('cardSet')
-    async getSetBySetCode(@Param('setCode') setCode: string): Promise<{ cards: CardSet[] }> {
+    @Render('set')
+    async getSetBySetCode(@Param('setCode') setCode: string): Promise<Set> {
         setCode = setCode.toUpperCase();
-        const cards = await this.setsService.requestSet(setCode);
-        return { cards: cards };
+        const set = await this.setsService.findByCode(setCode);
+        return set;
     }
 }

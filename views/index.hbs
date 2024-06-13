@@ -1,10 +1,3 @@
 <div>
-    <ul>
-        {{#each setList}}
-            <li class="set-name">
-                <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
-                <a href="sets/{{this.code}}">{{this.name}}</a>
-            </li>
-        {{/each}}
-    </ul>
+    {{>setList}}
 </div>

@@ -1,15 +1,22 @@
 {{!-- singe page card:
 view info about a card from a set
-has:
-    card.
-        name
-        set
-        otherPrintings
-        manaCost
-        type
-        oracleText
-        actualText
-        legality
-        price
-        images (front/back + others?)
-        * add to collection input --}}
+
+card.
+    name
+    set
+    otherPrintings
+    manaCost
+    type
+    oracleText
+    actualText
+    legality
+    price
+    images (front/back + others?)
+    * add to collection input --}}
+<div id="card-identity">
+    <h2>{{ this.name }}</h2>
+    <h4>{{ this.set.name }}</h4>
+</div>
+<div>
+    
+</div>

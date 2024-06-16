@@ -1,0 +1,32 @@
+{{!-- all instances of a single card --}}
+<div id="card-identity">
+    <h2>
+        <span id="card-mana-cost">{{ this.manaCost }}</span>
+        <span id="card-name">{{ this.name }}</span>
+        <span> - All Printings</span>
+    </h2>
+    <table id="card-printings-metadata">
+        <tbody>
+            {{#each this.metadata}}
+            <tr>
+                <td class="metadata-key">this.key</td>
+                <td class="metadata-value">this.value</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <p class="card-oracle-text">this.oracleText</p>
+</div>
+<div>
+<div id="all-printings-card-listing">
+    {{#each this.cards}}
+    {{!-- TODO: create HTML elements: --}}
+        {{this.keyruneCode}}
+        {{this.set.name}}
+        {{this.image}}
+        {{this.price}}
+        {{this.url}}
+        {{!-- TODO: how to show foil price? --}}
+    {{/each}}
+</div>    
+</div>

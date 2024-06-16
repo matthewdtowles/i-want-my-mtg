@@ -7,11 +7,11 @@
         <th>Rarity</th>
         <th>Price</th>
     </thead>
+    <tbody>
     {{#each cards}}
         <tr class="card-set-card">
             <td class="card-set-card-owned">
-                <!-- TODO: replace "0" with actual number in user's collection -->
-                <input type="number" value="0" />
+                {{>cardsOwned}}
             </td>
             <td class="card-set-card-number">{{this.number}}</td>
             <td class="card-set-card-name">
@@ -29,4 +29,5 @@
             <td class="card-set-card-price">0</td>
         </tr>
     {{/each}}
+    </tbody>
 </table>

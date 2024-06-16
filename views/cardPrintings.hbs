@@ -17,16 +17,19 @@
     </table>
     <p class="card-oracle-text">this.oracleText</p>
 </div>
-<div>
-<div id="all-printings-card-listing">
+<table id="all-printings-card-listing">
+    <tbody>
     {{#each this.cards}}
-    {{!-- TODO: create HTML elements: --}}
+        <tr>
+            <td class="card-printing-owned">
+                {{>cardsOwned}}
+            </td>
         {{this.keyruneCode}}
         {{this.set.name}}
         {{this.image}}
         {{this.price}}
         {{this.url}}
-        {{!-- TODO: how to show foil price? --}}
+        </tr>
     {{/each}}
-</div>    
-</div>
+    </tbody>
+</table>    

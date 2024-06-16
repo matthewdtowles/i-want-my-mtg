@@ -24,11 +24,18 @@
             <td class="card-printing-owned">
                 {{>cardsOwned}}
             </td>
-        {{this.keyruneCode}}
-        {{this.set.name}}
-        {{this.image}}
-        {{this.price}}
-        {{this.url}}
+            <td class="card-printing-set">
+                <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                <span>{{this.set.name}}</span>
+            </td>
+            <td class="card-printing-icon">
+                <a href="{{this.url}}">
+                    <img src="{{this.image}}" alt="{{this.name}} ({{this.set.code}})" />
+                </a>
+            </td>
+            <td class="card-printing-price">
+                <p>{{this.price}}</p>
+            </td>
         </tr>
     {{/each}}
     </tbody>

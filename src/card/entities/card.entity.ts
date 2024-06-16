@@ -80,7 +80,7 @@ export class Card {
     @Column()
     otherFaceIds?: string[];
     // TODO: Redundant? Does it matter if it is?
-    @Column()
+    // @Column()
     // TODO: Move ->purchaseUrls: PurchaseUrls;
     @Column()
     rarity: string;

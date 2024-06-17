@@ -1,0 +1,53 @@
+<div id="user-collection">
+    <h3 id="user-collection-heading">{{this.user.name}}'s Collection</h3>
+    <section id="user-collection-metadata">
+        <div id="user-collection-value" class="user-collection-metadata-item">
+            <p class="user-collection-metadata-heading">Value</p>
+            <p class="user-collection-metadata-data">{{this.value}}</p>
+        </div>
+        {{!-- <div id="user-collection-cost" class="user-collection-metadata-item">
+            <p class="user-collection-metadata-heading">Cost</p>
+            <p class="user-collection-metadata-data">{{this.cost}}</p>
+        </div> --}}
+        <div id="user-collection-quantity" class="user-collection-metadata-item">
+            <p class="user-collection-metadata-heading">Quantity</p>
+            <p class="user-collection-metadata-data">{{this.quantity}}</p>
+        </div>
+        {{!-- <div id="user-collection-gain" class="user-collection-metadata-item">
+            <p class="user-collection-metadata-heading">Gain(%)</p>
+            <p class="user-collection-metadata-data">{{this.gain}}</p>
+        </div> --}}
+    </section>
+
+    <table id="user-collection-cards">
+        <thead>
+            <tr>
+                <th>Owned</th>
+                <th>Name</th>
+                <th>Set</th>
+                <th>Price</th>
+                {{!-- <th>Change</th> --}}
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#each this.cards}}
+            <tr>
+                <td>{{>cardsOwned}}</td>
+                <td><a href="{{this.url}}">{{this.name}}</a></td>
+                <td>
+                    <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                    <a href="{{this.set.url}}">{{this.set.name}}</a>
+                </td>
+                <td>{{this.price}}</td>
+                {{!-- TODO: change in price here --}}
+                <td>
+                    {{#each this.notes}}
+                    <span>{{this.value}}</span>
+                    {{/each}}
+                </td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
+</div>

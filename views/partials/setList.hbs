@@ -1,8 +1,14 @@
 <ul>
+    {{!-- TODO:
+    - in desc order 
+    - separate normal sets and special sets
+      - or toggle checkbox to show special sets?
+    - ? Group by legality/format ???
+    --}}
     {{#each setList}}
         <li class="set-name">
             <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
-            <a href="sets/{{this.code}}">{{this.name}}</a>
+            <a href="{{this.url}}">{{this.name}}</a>
         </li>
     {{/each}}
 </ul>

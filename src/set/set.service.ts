@@ -18,7 +18,7 @@ export class SetService {
         return resp.data.data;
     }
 
-    async findByCode(setCode: string): Promise<Set> {
+    async findByCode(setCode: string): Promise<object> {
         console.log(`setsService requestSet called: ${this.CARD_DATA_API_URL + setCode.toUpperCase() + this.CARD_API_FILE_EXT}`);
         const response: AxiosResponse = await axios.get(this.CARD_DATA_API_URL + setCode.toUpperCase() + this.CARD_API_FILE_EXT);
         // TODO: handle/process response?

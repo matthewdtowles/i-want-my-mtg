@@ -16,13 +16,13 @@ export class Card {
      * A list of all the colors in manaCost and colorIndicator properties. 
      * Some cards may not have values, such as cards with "Devoid" in its text.
      */
-    @Column()
-    colors: string[];
+    // @Column()
+    // colors: string[];
     /**
      * Available finishes: "etched", "foil", "nonfoil", "signed"
      */
-    @Column()
-    finishes: string[];
+    // @Column()
+    // finishes: string[];
 
     /**
      * How to relate card to Identifiers
@@ -33,14 +33,14 @@ export class Card {
     /**
      * Card is alt variation to a printing in this set
      */
-    @Column()
-    isAlternative?: boolean;
+    // @Column()
+    // isAlternative?: boolean;
     // TODO: needed??? Can derive from other data?
-    @Column()
-    isPromo?: boolean;
+    // @Column()
+    // isPromo?: boolean;
      // TODO: needed??? Can derive from other data?
-    @Column()
-    isReserved?: boolean;
+    // @Column()
+    // isReserved?: boolean;
     /**
      * // TODO: needed??
      * Example: "adventure", "aftermath", "art_series", "augment", 

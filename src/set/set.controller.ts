@@ -14,7 +14,7 @@ export class SetController {
 
     @Get(':setCode')
     @Render('set')
-    async findBySetCode(@Param('setCode') setCode: string): Promise<Set> {
+    async findBySetCode(@Param('setCode') setCode: string): Promise<object> {
         setCode = setCode.toUpperCase();
         const set = await this.setsService.findByCode(setCode);
         return set;

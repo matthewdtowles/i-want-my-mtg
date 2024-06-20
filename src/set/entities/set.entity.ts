@@ -1,5 +1,4 @@
 import { Card } from "src/card/entities/card.entity";
-import { DeckSet } from "src/models/deckSet.model";
 import { Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 export class Set {

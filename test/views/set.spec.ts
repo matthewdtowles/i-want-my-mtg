@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SetController } from '../../src/set/set.controller';
-import { SetService } from 'src/set/set.service';
+import { SetService } from '../../src/set/set.service';
 
 describe('Set view test covers set, setInfo, setCards, cardsOwned, manaCost', () => {
   let setController: SetController;
@@ -56,11 +56,10 @@ describe('Set view test covers set, setInfo, setCards, cardsOwned, manaCost', ()
   });
 
   it('should render template with context', () => {
-    const template = '<p>Hello, {{name}}!</p>';
-    const context = { name: 'John' };
     const result = setController.findBySetCode('ABC');
 
-    expect(result).toBe('<p>Hello, John!</p>');
+    console.log(result);
+    expect(result).toContain('<i class="ss ss-kld ss-2x"></i>')
   });
 
   it('should render template with complex context', () => {

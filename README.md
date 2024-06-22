@@ -212,3 +212,11 @@ _See TypeOrm docs for details on query builder, example queries, and more_
     - i.e.: `set.cards[i].identity.scryfallId` to get img 
   - `keyRuneCode` for set symbols
 - _See [mtgjson.com/data-models](https://mtgjson.com/data-models) for more info_
+
+
+# Front End
+
+## Styles
+
+### Mana Cost
+- Ref: https://mana.andrewgioia.com/

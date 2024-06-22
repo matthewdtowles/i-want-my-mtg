@@ -48,7 +48,7 @@ describe('SetController', () => {
             releaseDate: '2016-09-30',
             cards: [
                 {
-                    manaCost: ['1', 'W', 'W'],
+                    manaCost: ['1', 'w', 'u', 'b', 'r', 'g'],
                     name: 'the name of the card',
                     number: 1,
                     price: 0.07,
@@ -57,7 +57,7 @@ describe('SetController', () => {
                     url: 'some.url/set/kld/1',
                 },
                 {
-                    manaCost: ['10', 'U', 'B', 'R', 'G', 'W/G'],
+                    manaCost: ['10', 'wu', 'wb', 'ub', 'ur', 'br', 'bg', 'rw', 'rg', 'gw', 'gu'],
                     name: 'the second card',
                     number: 2,
                     price: 3.14,
@@ -110,17 +110,24 @@ describe('SetController', () => {
 
         // card 1
         expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-1"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-W"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-W"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-w"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-u"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-b"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-r"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-g"></i>');
 
         // card 2
         expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-10"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-U"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-B"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-R"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-G"></i>');
-        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-W/G"></i>');
-
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-wu"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-wb"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-ub"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-ur"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-br"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-bg"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-rw"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-rg"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-gw"></i>');
+        expect(response.text).toContain('<i class="ms ms-cost ms-shadow ms-gu"></i>');
     });
 
     it('should render cardsOwned partial with context', async () => {

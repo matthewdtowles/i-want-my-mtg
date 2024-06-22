@@ -1,15 +1,16 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from './set.service';
-import { Set } from 'src/models/set.model';
+import { SetList } from 'src/models/setList.model';
 
 @Controller('sets')
 export class SetController {
     constructor(private readonly setsService: SetService) {}
 
     @Get()
-    async setListing(): Promise<string> {
-        // TODO: see the app.controller
-        return 'This is the sets page';
+    @Render('setListPage')
+    async setListing(): Promise<{ setList: object[] }> {
+        const setListVal = await this.setsService.findAll();
+        return { setList: setListVal };
     }
 
     @Get(':setCode')

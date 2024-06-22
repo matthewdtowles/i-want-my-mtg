@@ -8,7 +8,7 @@ export class SetController {
 
     @Get()
     @Render('setListPage')
-    async setListing(): Promise<{ setList: object[] }> {
+    async setListing(): Promise<{ setList: SetList[] }> {
         const setListVal = await this.setsService.findAll();
         return { setList: setListVal };
     }

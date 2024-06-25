@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from './set.service';
 import { SetList } from 'src/models/setList.model';
+import { SetResponse } from './set.response.model';
 
 @Controller('sets')
 export class SetController {
@@ -15,9 +16,10 @@ export class SetController {
 
     @Get(':setCode')
     @Render('set')
-    async findBySetCode(@Param('setCode') setCode: string): Promise<object> {
+    async findBySetCode(@Param('setCode') setCode: string): Promise<SetResponse> {
         setCode = setCode.toUpperCase();
         const set = await this.setsService.findByCode(setCode);
+        console.log(`set: ${set}`);
         return set;
     }
 }

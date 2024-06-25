@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { BoosterConfig } from './boosterConfig.model';
 import { CardSet } from './cardSet.model';
 import { CardToken } from './cardToken.model';
@@ -6,7 +5,6 @@ import { DeckSet } from './deckSet.model';
 import { SealedProduct } from './sealedProduct.model';
 import { Translations } from './translations.model';
 
-@Injectable()
 export class Set {
   baseSetSize: number;
   block?: string;

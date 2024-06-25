@@ -3,6 +3,8 @@ import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
+// TODO: route for /sets/${setCode}/${card.number}
+// TODO: & rte for /cards/${card.name}
 @Controller('card')
 export class CardController {
   constructor(private readonly cardService: CardService) {}

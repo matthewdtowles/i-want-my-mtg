@@ -8,6 +8,9 @@ import { CardResponse } from 'src/card/card.response.model';
 
 @Injectable()
 export class SetService {
+
+
+
     private readonly CARD_DATA_API_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_API_FILE_EXT: string = '.json';
     private readonly SET_LIST_PATH: string = 'SetList.json';

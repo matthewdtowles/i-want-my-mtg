@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { SetService } from './set/set.service';
-import { SetList } from './data-ingestion/models/setList.model';
+import { SetService } from '../set/set.service';
+import { SetList } from '../data-ingestion/models/setList.model';
 
 @Injectable()
 export class AppService {

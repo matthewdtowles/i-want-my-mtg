@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SetController } from './set/set.controller';
-import { SetService } from './set/set.service';
+import { SetController } from '../set/set.controller';
+import { SetService } from '../set/set.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SetModule } from './set/set.module';
+import { SetModule } from '../set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UsersModule } from './users/users.module';
-import { CardModule } from './card/card.module';
-import { DataIngestionModule } from './data-ingestion/data-ingestion.module';
-import { DataIngestionMapper } from './data-ingestion-mapper/data-ingestion-mapper';
+import { UsersModule } from '../users/users.module';
+import { CardModule } from '../card/card.module';
+import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
 
 @Module({
   imports: [
@@ -39,6 +38,6 @@ import { DataIngestionMapper } from './data-ingestion-mapper/data-ingestion-mapp
     DataIngestionModule,
   ],
   controllers: [AppController, SetController],
-  providers: [AppService, SetService, DataIngestionMapper],
+  providers: [AppService, SetService],
 })
 export class AppModule {}

@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersModule } from './users/users.module';
 import { CardModule } from './card/card.module';
+import { DataIngestionModule } from './data-ingestion/data-ingestion.module';
+import { DataIngestionMapper } from './data-ingestion-mapper/data-ingestion-mapper';
 
 @Module({
   imports: [
@@ -34,8 +36,9 @@ import { CardModule } from './card/card.module';
     }),
     UsersModule,
     CardModule,
+    DataIngestionModule,
   ],
   controllers: [AppController, SetController],
-  providers: [AppService, SetService],
+  providers: [AppService, SetService, DataIngestionMapper],
 })
 export class AppModule {}

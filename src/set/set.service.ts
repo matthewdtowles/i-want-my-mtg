@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
-import { CardSet } from 'src/models/cardSet.model';
-import { Set } from 'src/models/set.model';
-import { SetList } from 'src/models/setList.model';
+import { CardSet } from 'src/data-ingestion/models/cardSet.model';
+import { Set } from 'src/data-ingestion/models/set.model';
+import { SetList } from 'src/data-ingestion/models/setList.model';
 import { SetResponse } from './set.response.model';
 import { CardResponse } from 'src/card/card.response.model';
 

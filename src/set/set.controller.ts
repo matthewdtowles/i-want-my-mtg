@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from './set.service';
-import { SetList } from 'src/models/setList.model';
+import { SetList } from 'src/data-ingestion/models/setList.model';
 import { SetResponse } from './set.response.model';
 
 @Controller('sets')

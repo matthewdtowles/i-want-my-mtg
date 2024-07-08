@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SetModule } from '../set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UsersModule } from '../users/users.module';
+import { UserModule } from '../users/user.module';
 import { CardModule } from '../card/card.module';
 import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
 
@@ -33,7 +33,7 @@ import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
         return dataSource;
       },
     }),
-    UsersModule,
+    UserModule,
     CardModule,
     DataIngestionModule,
   ],

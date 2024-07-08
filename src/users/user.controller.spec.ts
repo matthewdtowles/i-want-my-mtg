@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
+import { UserController } from './user.controller';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 
 const createUserDto: CreateUserDto = {
   email: 'test-email1@iwantmymtg.com',
@@ -10,16 +10,16 @@ const createUserDto: CreateUserDto = {
 };
 
 describe('UsersController', () => {
-  let controller: UsersController;
-  let service: UsersService;
+  let controller: UserController;
+  let service: UserService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
+      controllers: [UserController],
       providers: [
-        UsersService,
+        UserService,
         {
-          provide: UsersService,
+          provide: UserService,
           useValue: {
             create: jest
               .fn()
@@ -47,8 +47,8 @@ describe('UsersController', () => {
         },
       ],
     }).compile();
-    controller = module.get<UsersController>(UsersController);
-    service = module.get<UsersService>(UsersService);
+    controller = module.get<UserController>(UserController);
+    service = module.get<UserService>(UserService);
   });
 
   it('users controller should be defined', () => {

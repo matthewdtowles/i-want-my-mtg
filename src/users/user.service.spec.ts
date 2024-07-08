@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -11,14 +11,14 @@ const mockUser = {
   password: 'test-password1'
 };
 
-describe('UsersService', () => {
-  let service: UsersService;
+describe('UserService', () => {
+  let service: UserService;
   let repository: Repository<User>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UsersService,
+        UserService,
         {
           provide: getRepositoryToken(User),
           useValue: {
@@ -33,7 +33,7 @@ describe('UsersService', () => {
       ],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
+    service = module.get<UserService>(UserService);
     repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
@@ -53,7 +53,6 @@ describe('UsersService', () => {
     });
   });
 
-  // TODO: Fix
   describe('users service findById()', () => {
     it('should get a single user with passed id', () => {
       const repoSpy = jest.spyOn(repository, 'findOneBy');
@@ -62,7 +61,6 @@ describe('UsersService', () => {
     });
   });
 
-  // TODO: fix
   describe('users service findByUsername()', () => {
     it('should get a single user with passed username', () => {
       const repoSpy = jest.spyOn(repository, 'findOneBy');

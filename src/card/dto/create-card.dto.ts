@@ -1,9 +1,5 @@
 export class CreateCardDto {
 
-    readonly SCRYFALL_IMAGE_URL: string = "https://cards.scryfall.io/";
-    readonly SCRYFALL_IMAGE_FORMATS: string[] = [ "small", "normal", "large", "png", "art_crop" ];
-    readonly SCRYFALL_IMAGE_SIDES: string[] = [ "front", "back" ];
-
     /* example scryfall image requests:
         "https://cards.scryfall.io/small/front/d/5/d573ef03-4730-45aa-93dd-e45ac1dbaf4a.jpg",
         "https://cards.scryfall.io/normal/front/d/5/d573ef03-4730-45aa-93dd-e45ac1dbaf4a.jpg",

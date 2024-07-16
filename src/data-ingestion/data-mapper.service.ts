@@ -1,69 +1,77 @@
 import { Injectable } from '@nestjs/common';
-import { CardResponse } from 'src/card/card.response.model';
-import { SetResponse } from 'src/set/set.response.model';
 import { CardSet } from './models/cardSet.model';
 import { Set } from './models/set.model';
+import { CreateCardDto } from '../card/dto/create-card.dto';
+import { CreateSetDto } from '../set/dto/create-set.dto';
 
 @Injectable()
 export class DataMapperService {
-    mapSetResponse(set: Set): SetResponse {
-        const setResponse: SetResponse = new SetResponse();
-        setResponse.block = set.block;
-        setResponse.cards = this.mapCardResponses(set.cards);
-        setResponse.code = set.code.toUpperCase();
-        setResponse.keyruneCode = set.keyruneCode.toLowerCase();
-        setResponse.name = set.name;
-        setResponse.releaseDate = set.releaseDate; // TODO: convert to release date to show?
-        setResponse.url = this.buildSetUrl(set.code);
-        return setResponse;
+
+    mapCreateSetDto(set: Set): CreateSetDto {
+        const setDtos: CreateSetDto = new CreateSetDto();
+        setDtos.block = set.block;
+        setDtos.cards = this.mapCreateCardDtos(set.cards);
+        setDtos.code = set.code.toUpperCase();
+        setDtos.keyruneCode = set.keyruneCode.toLowerCase();
+        setDtos.name = set.name;
+        setDtos.releaseDate = set.releaseDate; // TODO: convert to release date to show?
+        setDtos.url = this.buildSetUrl(set.code);
+        return setDtos;
     }
 
-    mapCardResponses(cards: CardSet[]): CardResponse[] {
-        const cardResponses: CardResponse[] = [];
+    mapCreateCardDtos(cards: CardSet[]): CreateCardDto[] {
+        const cardDtos: CreateCardDto[] = [];
         cards.forEach(c => {
-            const cr: CardResponse = new CardResponse();
-            cr.manaCost = this.buildManaCost(c.manaCost);
-            cr.name = c.name;
-            cr.notes = this.getNotes(c);
-            cr.number = c.number;
-            cr.price = this.getPrice(c);
-            cr.rarity = c.rarity;
-            cr.setCode = c.setCode;
-            cr.totalOwned = this.getTotalOwned(c);
-            cr.url = this.buildCardUrl(c);
-            cardResponses.push(cr);
+            cardDtos.push(this.mapCreateCardDto(c));
         });
-        return cardResponses;
+        return cardDtos;
+    }
+
+    mapCreateCardDto(card: CardSet): CreateCardDto {
+        const dto: CreateCardDto = new CreateCardDto();
+        dto.imgSrc = this.buildCardImgSrc(card);
+        dto.manaCost = card.manaCost;
+        dto.name = card.name;
+        dto.notes = this.getNotes(card);
+        dto.number = card.number;
+        dto.price = this.getPrice(card);
+        dto.rarity = card.rarity;
+        dto.setCode = card.setCode;
+        dto.totalOwned = this.getTotalOwned(card);
+        dto.url = this.buildCardUrl(card);
+        return dto;
     }
 
     private buildCardUrl(card: CardSet): string {
-        return "";
+        return this.buildSetUrl(card.setCode) + '/' + card.number;
     }
 
-    private getTotalOwned(card: CardSet) {
-        return 0;
+    private buildCardImgSrc(card: CardSet): string {
+        return this.buildScryfallImgPath(card);
     }
 
-    private getNotes(card: CardSet): string[] {
-        return [];
-    }
-
-    private getPrice(card: CardSet): number {
-        return 0.00;
-    }
-
-    private buildManaCost(manaCost: string): string[] {
-        return manaCost != null ? manaCost
-                .toLowerCase()
-                .replaceAll('/', '')
-                .replace('{', '')
-                .replaceAll('}', '')
-                .split('{') 
-                : null; // TODO: is null safe to return?
+    private buildScryfallImgPath(card: CardSet): string {
+        const scryfallId: string = card.identifiers.scryfallId;
+        return scryfallId.charAt(0) + '/' + scryfallId.charAt(1) + '/' + scryfallId;
     }
 
     private buildSetUrl(code: string): string {
         return 'sets/' + code.toLowerCase();
+    }
+
+    private getTotalOwned(card: CardSet) {
+        // TODO: impl
+        return 0;
+    }
+
+    private getNotes(card: CardSet): string[] {
+        // TODO: impl
+        return [];
+    }
+
+    private getPrice(card: CardSet): number {
+        // TODO: impl
+        return 0.00;
     }
 
 }

@@ -1,4 +1,5 @@
 export class CardResponse {
+    imgSrc: string;
     manaCost: string[];
     name: string;
     notes: string[];

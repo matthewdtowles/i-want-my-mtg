@@ -5,10 +5,9 @@ import { Set } from 'src/data-ingestion/models/set.model';
 import { SetList } from 'src/data-ingestion/models/setList.model';
 import { SetResponse } from './set.response.model';
 import { CardResponse } from 'src/card/card.response.model';
-import { ISetService } from 'src/api/set-service.interface';
 
 @Injectable()
-export class SetService implements ISetService {
+export class SetService {
 
     private readonly CARD_DATA_API_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_API_FILE_EXT: string = '.json';

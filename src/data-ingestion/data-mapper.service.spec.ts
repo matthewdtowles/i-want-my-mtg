@@ -4,7 +4,7 @@ import { Set } from './models/set.model';
 import { CardSet } from './models/cardSet.model';
 import { CreateSetDto } from '../set/dto/create-set.dto';
 import { CreateCardDto } from '../card/dto/create-card.dto';
-import { TestUtils } from './test-utils';
+import { DataIngestionTestUtils } from './data-ingestion-test-utils';
 import { SetList } from './models/setList.model';
 
 
@@ -13,14 +13,14 @@ describe('DataMapperService', () => {
     let cards: CardSet[] = [];
     let set: Set;
     let setList: SetList[];
-    let testUtils: TestUtils;
+    let testUtils: DataIngestionTestUtils;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [DataMapperService],
         }).compile();
         service = module.get<DataMapperService>(DataMapperService);
-        testUtils = new TestUtils;
+        testUtils = new DataIngestionTestUtils;
         cards = testUtils.getMockCardSetArray();
         set = testUtils.getMockSet();
         setList = testUtils.getMockSetListArray();

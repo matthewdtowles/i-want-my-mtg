@@ -26,13 +26,7 @@ export class CardService {
     }
 
     // #range
-    // TODO: move to FRONT END MODULE for CARD
-    private readonly CARD_IMAGE_PROVIDER_URL: string = 'https://cards.scryfall.io/';
-    private readonly CARD_IMAGE_PROVIDER_FORMATS: string[] = ["small", "normal", "large", "art_crop"];
-    private readonly CARD_IMAGE_PROVIDER_SIDES: string[] = ["front", "back"];
 
-    // https://cards.scryfall.io/{{img.format}}/{{img.side}}/{{scryfallId[0]}}/{{scryfallId[1]}}/{{scryfallId}}.jpg
-    /*https://cards.scryfall.io/normal/front/6/d/6da045f8-6278-4c84-9d39-025adf0789c1.jpg */
     private buildManaCost(manaCost: string): string[] {
         return manaCost != null ? manaCost
             .toLowerCase()

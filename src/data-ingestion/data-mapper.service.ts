@@ -8,6 +8,11 @@ import { SetList } from './models/setList.model';
 @Injectable()
 export class DataMapperService {
 
+    private readonly SCRYFALL_CARD_IMAGE_URL: string = 'https://cards.scryfall.io/';
+    private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = ["small", "normal", "large", "art_crop"];
+    private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ["front", "back"];
+    private readonly GATHERER_CARD_IMAGE_URL: string = 'https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=';
+
     /**
      * Maps given Set to a CreateSetDto
      * Metadata of Set; no cards
@@ -15,12 +20,11 @@ export class DataMapperService {
      * @param set
      * @returns 
      */
-    mapCreateSetDto(set: Set|SetList): CreateSetDto {
+    mapCreateSetDto(set: Set | SetList): CreateSetDto {
         const setDto: CreateSetDto = new CreateSetDto();
         setDto.baseSize = set.baseSetSize;
         setDto.block = set.block;
         setDto.code = set.code.toUpperCase();
-        // setDto.imgSrc = set.cardsphereSetId()
         setDto.keyruneCode = set.keyruneCode.toLowerCase();
         setDto.name = set.name;
         setDto.parentCode = set.parentCode;
@@ -76,8 +80,15 @@ export class DataMapperService {
     }
 
     private buildScryfallImgPath(card: CardSet): string {
+        // TODO: handle NPE
         const scryfallId: string = card.identifiers.scryfallId;
-        return scryfallId.charAt(0) + '/' + scryfallId.charAt(1) + '/' + scryfallId;
+        return this.SCRYFALL_CARD_IMAGE_URL + 'normal/front/' + scryfallId.charAt(0) + '/' 
+            + scryfallId.charAt(1) + '/' + scryfallId + '.jpg';
+    }
+
+    private buildMultiverseImgPath(card: CardSet): string {
+        // TODO: handle NPE
+        return this.GATHERER_CARD_IMAGE_URL + card.identifiers.multiverseId;
     }
 
     private buildSetUrl(code: string): string {

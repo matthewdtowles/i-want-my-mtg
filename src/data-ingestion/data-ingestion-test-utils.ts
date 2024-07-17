@@ -4,19 +4,19 @@ import { Identifiers } from './models/identifiers.model';
 import { CreateCardDto } from '../card/dto/create-card.dto';
 import { CreateSetDto } from '../set/dto/create-set.dto';
 import { SetList } from './models/setList.model';
-import exp from 'constants';
 
-export class TestUtils {
+export class DataIngestionTestUtils {
 
-    readonly MOCK_BASE_SET_SIZE: number = 3;
-    readonly MOCK_SET_CODE: string = 'SET';
-    readonly MOCK_SET_NAME: string = 'Setname';
-    readonly MOCK_RELEASE_DATE: string = '1970-01-01';
-    readonly MOCK_SET_TYPE: string = 'expansion';
-    readonly MOCK_DTO_URL: string = 'sets/set';
-    readonly MOCK_ROOT_SCRYFALL_ID: string = 'abc123def456';
-    readonly MOCK_CARD_PRICE: number = 0;
-    readonly MOCK_TOTAL_OWNED: number = 0;
+    private readonly MOCK_BASE_SET_SIZE: number = 3;
+    private readonly MOCK_SET_CODE: string = 'SET';
+    private readonly MOCK_SET_NAME: string = 'Setname';
+    private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
+    private readonly MOCK_SET_TYPE: string = 'expansion';
+    private readonly MOCK_DTO_URL: string = 'sets/set';
+    private readonly MOCK_ROOT_SCRYFALL_ID: string = 'abc123def456';
+    private readonly MOCK_CARD_PRICE: number = 0;
+    private readonly MOCK_TOTAL_OWNED: number = 0;
+    private readonly IMG_SRC_BASE: string = 'https://cards.scryfall.io/normal/front/';
 
     getMockSet(): Set {
         let set: Set = new Set();
@@ -77,7 +77,7 @@ export class TestUtils {
         const cardDtos: CreateCardDto[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             let cardDto = new CreateCardDto();
-            cardDto.imgSrc = i + '/' + 'a/' + i + this.MOCK_ROOT_SCRYFALL_ID;
+            cardDto.imgSrc = this.IMG_SRC_BASE + i + '/' + 'a/' + i + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
             cardDto.manaCost = '{' + i + '}{W}';
             cardDto.name = 'Test Card Name' + i;
             cardDto.notes = [];
@@ -90,7 +90,7 @@ export class TestUtils {
             cardDtos.push(cardDto);
         }
         let cardDto = new CreateCardDto();
-        cardDto.imgSrc = '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID;
+        cardDto.imgSrc = this.IMG_SRC_BASE + '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
         cardDto.manaCost = '{U/G}{B/W}{R/U}';
         cardDto.name = 'Test Bonus Card Name';
         cardDto.notes = [];

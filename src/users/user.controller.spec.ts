@@ -25,8 +25,8 @@ describe('UsersController', () => {
               .fn()
               .mockImplementation((user: CreateUserDto) =>
                 Promise.resolve({ id: 1, ...user }),
-            ),
-            findById: jest.fn().mockImplementation((id: string) => 
+              ),
+            findById: jest.fn().mockImplementation((id: string) =>
               Promise.resolve({
                 id,
                 email: 'test-email1@iwantmymtg.com',

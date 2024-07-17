@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { Set } from './models/set.model';
 import { SetList } from './models/setList.model';
-import { CardSet } from './models/cardSet.model';
 
 @Injectable()
 export class DataProviderService {

@@ -15,4 +15,8 @@ describe('DataIngestionService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  describe('Obtain set & card data from provider and return a CreateSetDto', () => {
+
+  });
 });

@@ -7,18 +7,34 @@ import { CreateSetDto } from '../set/dto/create-set.dto';
 @Injectable()
 export class DataMapperService {
 
+    /**
+     * Maps given Set to a CreateSetDto
+     * Metadata of Set; no cards
+     * 
+     * @param set
+     * @returns 
+     */
     mapCreateSetDto(set: Set): CreateSetDto {
-        const setDtos: CreateSetDto = new CreateSetDto();
-        setDtos.block = set.block;
-        setDtos.cards = this.mapCreateCardDtos(set.cards);
-        setDtos.code = set.code.toUpperCase();
-        setDtos.keyruneCode = set.keyruneCode.toLowerCase();
-        setDtos.name = set.name;
-        setDtos.releaseDate = set.releaseDate; // TODO: convert to release date to show?
-        setDtos.url = this.buildSetUrl(set.code);
-        return setDtos;
+        const setDto: CreateSetDto = new CreateSetDto();
+        setDto.baseSize = set.baseSetSize;
+        setDto.block = set.block;
+        setDto.code = set.code.toUpperCase();
+        // setDto.imgSrc = set.cardsphereSetId()
+        setDto.keyruneCode = set.keyruneCode.toLowerCase();
+        setDto.name = set.name;
+        setDto.parentCode = set.parentCode;
+        setDto.releaseDate = set.releaseDate;
+        setDto.type = set.type;
+        setDto.url = this.buildSetUrl(set.code);
+        return setDto;
     }
 
+    /**
+     * Maps given list of CardSet to CreateCardDto
+     * 
+     * @param cards
+     * @returns 
+     */
     mapCreateCardDtos(cards: CardSet[]): CreateCardDto[] {
         const cardDtos: CreateCardDto[] = [];
         cards.forEach(c => {
@@ -27,7 +43,7 @@ export class DataMapperService {
         return cardDtos;
     }
 
-    mapCreateCardDto(card: CardSet): CreateCardDto {
+    private mapCreateCardDto(card: CardSet): CreateCardDto {
         const dto: CreateCardDto = new CreateCardDto();
         dto.imgSrc = this.buildCardImgSrc(card);
         dto.manaCost = card.manaCost;

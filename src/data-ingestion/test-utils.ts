@@ -3,6 +3,8 @@ import { Set } from './models/set.model';
 import { Identifiers } from './models/identifiers.model';
 import { CreateCardDto } from '../card/dto/create-card.dto';
 import { CreateSetDto } from '../set/dto/create-set.dto';
+import { SetList } from './models/setList.model';
+import exp from 'constants';
 
 export class TestUtils {
 
@@ -55,6 +57,22 @@ export class TestUtils {
         return cards;
     }
 
+    getMockSetListArray(): SetList[] {
+        let setList: SetList[] = [];
+        let set: SetList = new SetList();
+        set.baseSetSize = this.MOCK_BASE_SET_SIZE;
+        set.block = this.MOCK_SET_NAME;
+        set.code = this.MOCK_SET_CODE;
+        set.isFoilOnly = false;
+        set.isNonFoilOnly = false;
+        set.keyruneCode = this.MOCK_SET_CODE;
+        set.name = this.MOCK_SET_NAME;
+        set.releaseDate = this.MOCK_RELEASE_DATE;
+        set.type = this.MOCK_SET_TYPE;
+        setList.push(set);
+        return setList;
+    }
+
     getExpectedCardDtos(): CreateCardDto[] {
         const cardDtos: CreateCardDto[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
@@ -97,5 +115,11 @@ export class TestUtils {
         expectedSetDto.type = this.MOCK_SET_TYPE;
         expectedSetDto.url = this.MOCK_DTO_URL;
         return expectedSetDto;
+    }
+
+    getExpectedSetDtos(): CreateSetDto[] {
+        const expectedSetDtos: CreateSetDto[] = [];
+        expectedSetDtos.push(this.getExpectedSetDto());
+        return expectedSetDtos;
     }
 }

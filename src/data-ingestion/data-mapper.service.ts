@@ -3,6 +3,7 @@ import { CardSet } from './models/cardSet.model';
 import { Set } from './models/set.model';
 import { CreateCardDto } from '../card/dto/create-card.dto';
 import { CreateSetDto } from '../set/dto/create-set.dto';
+import { SetList } from './models/setList.model';
 
 @Injectable()
 export class DataMapperService {
@@ -14,7 +15,7 @@ export class DataMapperService {
      * @param set
      * @returns 
      */
-    mapCreateSetDto(set: Set): CreateSetDto {
+    mapCreateSetDto(set: Set|SetList): CreateSetDto {
         const setDto: CreateSetDto = new CreateSetDto();
         setDto.baseSize = set.baseSetSize;
         setDto.block = set.block;
@@ -41,6 +42,14 @@ export class DataMapperService {
             cardDtos.push(this.mapCreateCardDto(c));
         });
         return cardDtos;
+    }
+
+    mapCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
+        const setDtos: CreateSetDto[] = [];
+        setLists.forEach(s => {
+            setDtos.push(this.mapCreateSetDto(s));
+        })
+        return setDtos;
     }
 
     private mapCreateCardDto(card: CardSet): CreateCardDto {

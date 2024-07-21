@@ -27,12 +27,12 @@ describe('SetController', () => {
         app = moduleFixture.createNestApplication<NestExpressApplication>();
         const expressApp = app as NestExpressApplication;
 
-        expressApp.useStaticAssets(join(__dirname, '../../', 'public'));
-        expressApp.setBaseViewsDir(join(__dirname, '../../', 'views'));
+        expressApp.useStaticAssets(join(__dirname, '../../../', 'public'));
+        expressApp.setBaseViewsDir(join(__dirname, '../../../', 'views'));
 
         const hbs = create({
-            layoutsDir: join(__dirname, '../../', 'views', 'layouts'),
-            partialsDir: join(__dirname, '../../', 'views', 'partials'),
+            layoutsDir: join(__dirname, '../../../', 'views', 'layouts'),
+            partialsDir: join(__dirname, '../../../', 'views', 'partials'),
             defaultLayout: 'main',
             extname: '.hbs',
         });

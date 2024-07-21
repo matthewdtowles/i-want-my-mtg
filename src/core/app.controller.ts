@@ -1,6 +1,6 @@
-import { Controller, Get, Render, Res } from '@nestjs/common';
+import { Controller, Get, Render } from '@nestjs/common';
 import { AppService } from './app.service';
-import { SetList } from '../data-ingestion/models/setList.model';
+import { GetSetDto } from './set/dto/get-set.dto';
 
 @Controller()
 export class AppController {
@@ -8,7 +8,7 @@ export class AppController {
 
   @Get()
   @Render('index')
-  async getIndex(): Promise<{ setList: SetList[] }> { 
+  async getIndex(): Promise<{ setList: GetSetDto[] }> { 
     const setListVal = await this.appService.getIndex();
     return { setList: setListVal };
   }

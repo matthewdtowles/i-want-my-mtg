@@ -26,7 +26,6 @@ export class CardService {
     }
 
     // #range
-
     private buildManaCost(manaCost: string): string[] {
         return manaCost != null ? manaCost
             .toLowerCase()

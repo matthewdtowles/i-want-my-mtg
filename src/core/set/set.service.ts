@@ -1,16 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosResponse } from 'axios';
 import { SetResponse } from './set.response.model';
-import { CardResponse } from 'src/core/card/card.response.model';
+import { CardResponse } from '../card/card.response.model';
 import { GetSetDto } from './dto/get-set.dto';
-import { GetCardDto } from 'src/core/card/dto/get-card.dto';
+import { GetCardDto } from '../card/dto/get-card.dto';
 
 @Injectable()
 export class SetService {
-
-    private readonly CARD_DATA_API_URL: string = 'https://mtgjson.com/api/v5/';
-    private readonly CARD_API_FILE_EXT: string = '.json';
-    private readonly SET_LIST_PATH: string = 'SetList.json';
 
     async findAll(): Promise<GetSetDto[]> {
         return null;
@@ -53,12 +48,12 @@ export class SetService {
 
     private buildManaCost(manaCost: string): string[] {
         return manaCost != null ? manaCost
-                .toLowerCase()
-                .replaceAll('/', '')
-                .replace('{', '')
-                .replaceAll('}', '')
-                .split('{') 
-                : null; // TODO: is null safe to return?
+            .toLowerCase()
+            .replaceAll('/', '')
+            .replace('{', '')
+            .replaceAll('}', '')
+            .split('{')
+            : null; // TODO: is null safe to return?
     }
 
     private buildSetUrl(code: string): string {

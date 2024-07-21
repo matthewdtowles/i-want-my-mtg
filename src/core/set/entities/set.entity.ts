@@ -1,10 +1,10 @@
 import { Card } from "src/core/card/entities/card.entity";
-import { Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, OneToMany, PrimaryColumn } from "typeorm";
 
 export class Set {
 
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    setCode: string;
 
     @Column()
     baseSize: number;
@@ -23,9 +23,6 @@ export class Set {
  
     @Column()
     releaseDate: string;
-
-    @Column()
-    setCode: string;
 
     @Column()
     type: string;

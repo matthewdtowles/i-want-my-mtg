@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { SetController } from './set.controller';
 import { SetService } from './set.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from '../core/app.module';
+import { AppModule } from '../app.module';
 import { join } from 'path';
 import { create } from 'express-handlebars';
 

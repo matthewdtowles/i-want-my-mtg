@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataMapperService } from './data-mapper.service';
 import { Set } from './models/set.model';
 import { CardSet } from './models/cardSet.model';
-import { CreateSetDto } from 'src/set/dto/create-set.dto';
+import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
 import { CreateCardDto } from 'src/core/card/dto/create-card.dto';
 import { DataIngestionTestUtils } from './data-ingestion-test-utils';
 import { SetList } from './models/setList.model';

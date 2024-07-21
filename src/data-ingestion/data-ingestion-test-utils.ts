@@ -7,8 +7,8 @@ import { SetList } from './models/setList.model';
 
 export class DataIngestionTestUtils {
 
+    readonly MOCK_SET_CODE: string = 'SET';
     private readonly MOCK_BASE_SET_SIZE: number = 3;
-    private readonly MOCK_SET_CODE: string = 'SET';
     private readonly MOCK_SET_NAME: string = 'Setname';
     private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
     private readonly MOCK_SET_TYPE: string = 'expansion';
@@ -22,6 +22,7 @@ export class DataIngestionTestUtils {
         let set: Set = new Set();
         set.baseSetSize = this.MOCK_BASE_SET_SIZE;
         set.block = this.MOCK_SET_NAME;
+        set.cards = this.getMockCardSetArray();
         set.code = this.MOCK_SET_CODE;
         set.isFoilOnly = false;
         set.isNonFoilOnly = false;

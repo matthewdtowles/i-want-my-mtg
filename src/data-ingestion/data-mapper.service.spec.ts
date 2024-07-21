@@ -20,7 +20,7 @@ describe('DataMapperService', () => {
             providers: [DataMapperService],
         }).compile();
         service = module.get<DataMapperService>(DataMapperService);
-        testUtils = new DataIngestionTestUtils;
+        testUtils = new DataIngestionTestUtils();
         cards = testUtils.getMockCardSetArray();
         set = testUtils.getMockSet();
         setList = testUtils.getMockSetListArray();

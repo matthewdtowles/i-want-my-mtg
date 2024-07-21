@@ -5,14 +5,14 @@ import { SetList } from './models/setList.model';
 import { Set } from './models/set.model';
 import { DataMapperService } from './data-mapper.service';
 import { CreateCardDto } from '../core/card/dto/create-card.dto';
+import { SetDataIngestionPort } from '../core/set/ports/set-data-ingestion-port';
+import { CardDataIngestionPort } from '../core/card/ports/card-data-ingestion-port';
 
 
 @Injectable()
-export class DataIngestionService {
+export class DataIngestionService implements SetDataIngestionPort, CardDataIngestionPort {
 
-    constructor(private readonly dataProvider: DataProviderService,
-        private readonly dataMapper: DataMapperService
-    ) {}
+    constructor(private readonly dataProvider: DataProviderService, private readonly dataMapper: DataMapperService) {}
 
     async fetchAllSets(): Promise<CreateSetDto[]> {
         const setList: SetList[] = await this.dataProvider.requestSetList();

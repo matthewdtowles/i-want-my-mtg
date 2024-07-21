@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from './set.service';
-import { SetList } from 'src/data-ingestion/models/setList.model';
 import { SetResponse } from './set.response.model';
+import { GetSetDto } from './dto/get-set.dto';
 
 @Controller('sets')
 export class SetController {
@@ -9,7 +9,7 @@ export class SetController {
 
     @Get()
     @Render('setListPage')
-    async setListing(): Promise<{ setList: SetList[] }> {
+    async setListing(): Promise<{ setList: GetSetDto[] }> {
         const setListVal = await this.setsService.findAll();
         return { setList: setListVal };
     }

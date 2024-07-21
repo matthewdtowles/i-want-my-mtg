@@ -1,8 +1,8 @@
 import { CardSet } from './models/cardSet.model';
 import { Set } from './models/set.model';
 import { Identifiers } from './models/identifiers.model';
-import { CreateCardDto } from '../card/dto/create-card.dto';
-import { CreateSetDto } from '../set/dto/create-set.dto';
+import { CreateCardDto } from 'src/core/card/dto/create-card.dto';
+import { CreateSetDto } from 'src/set/dto/create-set.dto';
 import { SetList } from './models/setList.model';
 
 export class DataIngestionTestUtils {

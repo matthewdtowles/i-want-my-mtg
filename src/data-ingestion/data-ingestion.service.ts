@@ -4,7 +4,7 @@ import { DataProviderService } from './data-provider.service';
 import { SetList } from './models/setList.model';
 import { Set } from './models/set.model';
 import { DataMapperService } from './data-mapper.service';
-import { CreateCardDto } from 'src/card/dto/create-card.dto';
+import { CreateCardDto } from 'src/core/card/dto/create-card.dto';
 
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { CardResponse } from "src/card/card.response.model";
+import { CardResponse } from "src/core/card/card.response.model";
 
 export class SetResponse {
     block: string;

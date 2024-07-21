@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SetController } from '../set/set.controller';
-import { SetService } from '../set/set.service';
+import { SetController } from './set/set.controller';
+import { SetService } from './set/set.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SetModule } from '../set/set.module';
+import { SetModule } from './set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserModule } from '../users/user.module';
-import { CardModule } from '../card/card.module';
+import { UserModule } from './users/user.module';
+import { CardModule } from './card/card.module';
 import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
 
 @Module({

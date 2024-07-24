@@ -109,14 +109,14 @@ src/ormconfig.ts
 
 ## ormconfig.ts example
 ```TypeScript
-import {TypeOrmModule} from "@nestjs/typeorm";
-import { User } from "./entities/User";
+import {TypeOrmModule} from '@nestjs/typeorm';
+import { User } from './entities/User';
 
 export default {
-  type: "mysql",
-  database: ":memory:",
+  type: 'mysql',
+  database: ':memory:',
   entities: [User],
-  migrations: [__dirname + "/migrations/*.ts"],
+  migrations: [__dirname + '/migrations/*.ts'],
   migrationsRun: true, // set to false for manual migration execution
   synchronize: false, // set to false for migrations to work
 };
@@ -142,7 +142,7 @@ _See TypeOrm docs for details on query builder, example queries, and more_
 - Page with Set products/cards
 - User hub page
 - Settings as a sub of User page 
-- "My Collection" page as a sub of User page
+- 'My Collection' page as a sub of User page
 - Reset password page as sub of User page?
 
 ## Set List Page

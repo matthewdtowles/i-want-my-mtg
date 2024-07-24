@@ -1,5 +1,5 @@
-import { Set } from "src/set/entities/set.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Set } from '../../set/entities/set.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Card {

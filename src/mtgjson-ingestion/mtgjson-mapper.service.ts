@@ -9,8 +9,8 @@ import { SetList } from './models/setList.model';
 export class MtgJsonMapperService {
 
     private readonly SCRYFALL_CARD_IMAGE_URL: string = 'https://cards.scryfall.io/';
-    private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = ["small", "normal", "large", "art_crop"];
-    private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ["front", "back"];
+    private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = ['small', 'normal', 'large', 'art_crop'];
+    private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ['front', 'back'];
     private readonly GATHERER_CARD_IMAGE_URL: string = 'https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=';
 
     /**

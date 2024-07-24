@@ -1,4 +1,4 @@
-import { CreateCardDto } from "../dto/create-card.dto";
+import { CreateCardDto } from '../dto/create-card.dto';
 
 export interface CardDataIngestionPort {
     

@@ -1,5 +1,5 @@
-import { Card } from "src/core/card/entities/card.entity";
-import { Column, OneToMany, PrimaryColumn } from "typeorm";
+import { Card } from 'src/core/card/entities/card.entity';
+import { Column, OneToMany, PrimaryColumn } from 'typeorm';
 
 export class Set {
 

@@ -9,7 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UserModule } from './users/user.module';
 import { CardModule } from './card/card.module';
-import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
+import { MtgJsonIngestionModule } from '../mtgjson-ingestion/mtgjson-ingestion.module';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import { DataIngestionModule } from '../data-ingestion/data-ingestion.module';
     }),
     UserModule,
     CardModule,
-    DataIngestionModule,
+    MtgJsonIngestionModule,
   ],
   controllers: [AppController, SetController],
   providers: [AppService, SetService],

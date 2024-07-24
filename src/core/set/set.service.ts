@@ -22,7 +22,7 @@ export class SetService {
         setResponse.code = set.code.toUpperCase();
         setResponse.keyruneCode = set.keyruneCode.toLowerCase();
         setResponse.name = set.name;
-        setResponse.releaseDate = set.releaseDate; // TODO: convert to release date to show?
+        setResponse.releaseDate = set.releaseDate;
         setResponse.url = this.buildSetUrl(set.code);
         return setResponse;
     }

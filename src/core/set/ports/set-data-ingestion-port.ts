@@ -1,4 +1,3 @@
-import { CreateCardDto } from "src/core/card/dto/create-card.dto";
 import { CreateSetDto } from "../dto/create-set.dto";
 
 export interface SetDataIngestionPort {

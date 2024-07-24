@@ -5,7 +5,7 @@ import { CreateCardDto } from '../core/card/dto/create-card.dto';
 import { CreateSetDto } from '../core/set/dto/create-set.dto';
 import { SetList } from './models/setList.model';
 
-export class DataIngestionTestUtils {
+export class MtgJsonIngestionTestUtils {
 
     readonly MOCK_SET_CODE: string = 'SET';
     private readonly MOCK_BASE_SET_SIZE: number = 3;

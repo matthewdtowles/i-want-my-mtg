@@ -1,13 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosResponse } from 'axios';
-import { Set } from './models/set.model';
+import { CreateSetDto } from '../core/set/dto/create-set.dto';
 import { SetList } from './models/setList.model';
+import { Set } from './models/set.model';
+import { MtgJsonMapperService } from './mtgjson-mapper.service';
+import { CreateCardDto } from '../core/card/dto/create-card.dto';
+import { SetDataIngestionPort } from '../core/set/ports/set-data-ingestion-port';
+import { CardDataIngestionPort } from '../core/card/ports/card-data-ingestion-port';
+import axios, { AxiosResponse } from 'axios';
+
 
 @Injectable()
-export class DataProviderService {
+export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIngestionPort {
     private readonly CARD_PROVIDER_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_PROVIDER_FILE_EXT: string = '.json';
     private readonly SET_LIST_PATH: string = 'SetList.json';
+    
+    constructor(private readonly dataMapper: MtgJsonMapperService) {}
+
+    async fetchAllSets(): Promise<CreateSetDto[]> {
+        const setList: SetList[] = await this.requestSetList();
+        return this.dataMapper.mapCreateSetDtos(setList);
+    }
+
+    async fetchSetCards(code: string): Promise<CreateCardDto[]> {
+        const set: Set = await this.requestSet(code);
+        return this.dataMapper.mapCreateCardDtos(set.cards);
+    }
 
     /**
      * Return List of metadata for every Set from Set provider

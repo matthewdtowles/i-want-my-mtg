@@ -1,26 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DataMapperService } from './data-mapper.service';
+import { MtgJsonMapperService } from './mtgjson-mapper.service';
 import { Set } from './models/set.model';
 import { CardSet } from './models/cardSet.model';
 import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
 import { CreateCardDto } from 'src/core/card/dto/create-card.dto';
-import { DataIngestionTestUtils } from './data-ingestion-test-utils';
+import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
 import { SetList } from './models/setList.model';
 
 
-describe('DataMapperService', () => {
-    let service: DataMapperService;
+describe('MtgJsonMapperService', () => {
+    let service: MtgJsonMapperService;
     let cards: CardSet[] = [];
     let set: Set;
     let setList: SetList[];
-    let testUtils: DataIngestionTestUtils;
+    let testUtils: MtgJsonIngestionTestUtils;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [DataMapperService],
+            providers: [MtgJsonMapperService],
         }).compile();
-        service = module.get<DataMapperService>(DataMapperService);
-        testUtils = new DataIngestionTestUtils();
+        service = module.get<MtgJsonMapperService>(MtgJsonMapperService);
+        testUtils = new MtgJsonIngestionTestUtils();
         cards = testUtils.getMockCardSetArray();
         set = testUtils.getMockSet();
         setList = testUtils.getMockSetListArray();

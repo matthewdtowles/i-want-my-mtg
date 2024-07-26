@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SetController } from './set/set.controller';
-import { SetService } from './set/set.service';
+import { SetController } from './core/set/set.controller';
+import { SetService } from './core/set/set.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SetModule } from './set/set.module';
+import { SetModule } from './core/set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserModule } from './users/user.module';
-import { CardModule } from './card/card.module';
-import { MtgJsonIngestionModule } from '../mtgjson-ingestion/mtgjson-ingestion.module';
+import { UserModule } from './core/users/user.module';
+import { CardModule } from './core/card/card.module';
+import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.module';
 
 @Module({
   imports: [

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { SetService } from '../core/set/set.service';
-import { GetSetDto } from './set/dto/get-set.dto';
+import { SetService } from './core/set/set.service';
+import { GetSetDto } from './core/set/dto/get-set.dto';
 
 @Injectable()
 export class AppService {

@@ -1,6 +1,6 @@
 import { Controller, Get, Render } from '@nestjs/common';
 import { AppService } from './app.service';
-import { GetSetDto } from './set/dto/get-set.dto';
+import { GetSetDto } from './core/set/dto/get-set.dto';
 
 @Controller()
 export class AppController {

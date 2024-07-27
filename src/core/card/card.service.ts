@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Card } from './entities/card.entity';
-import { CardDataIngestionPort } from './ports/card-data-ingestion-port';
-import { CardRepositoryPort } from './ports/card-repository-port';
+import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
+import { CardRepositoryPort } from './ports/card.repository.port';
 
 @Injectable()
 export class CardService {

@@ -18,7 +18,7 @@ export class CardController {
 
   @Post()
   create(@Body() createCardDto: CreateCardDto) {
-    const card: Card = this.cardMapper.createEntity(createCardDto);
+    const card: Card = this.cardMapper.dtoToEntity(createCardDto);
     return this.cardService.create(card);
   }
 
@@ -29,12 +29,12 @@ export class CardController {
 
   @Get(':id')
   findOne(@Param('id') id: string): GetCardDto {
-    return this.cardMapper.toEntity(this.cardService.findOne(id));
+    return this.cardMapper.entityToDto(this.cardService.findOne(id));
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-    const card: Card = this.cardMapper.updateEntity(updateCardDto);
+    const card: Card = this.cardMapper.updateDtoToEntity(updateCardDto);
     return this.cardService.update(card);
   }
 

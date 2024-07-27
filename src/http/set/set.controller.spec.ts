@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { SetController } from './set.controller';
-import { SetService } from './set.service';
+import { SetService } from '../../core/set/set.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../../app.module';
 import { join } from 'path';

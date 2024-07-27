@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SetController } from './core/set/set.controller';
+import { SetController } from './http/set/set.controller';
 import { SetService } from './core/set/set.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SetModule } from './core/set/set.module';

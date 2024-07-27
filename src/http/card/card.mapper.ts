@@ -4,7 +4,7 @@ import { GetCardDto } from "./get-card.dto";
 import { UpdateCardDto } from "./update-card.dto";
 
 export class CardMapper {
-    createEntity(createCardDto: CreateCardDto): Card {
+    dtoToEntity(createCardDto: CreateCardDto): Card {
         const card = new Card();
         card.imgSrc = createCardDto.imgSrc;
         card.isReserved = createCardDto.isReserved;
@@ -20,7 +20,7 @@ export class CardMapper {
         return card;
     }
 
-    toEntity(card: Card): GetCardDto {
+    entityToDto(card: Card): GetCardDto {
         const cardDto = new GetCardDto();
         cardDto.imgSrc = card.imgSrc;
         cardDto.isReserved = card.isReserved;
@@ -37,7 +37,7 @@ export class CardMapper {
         return cardDto;
     }
 
-    updateEntity(updateCardDto: UpdateCardDto): Card {
+    updateDtoToEntity(updateCardDto: UpdateCardDto): Card {
         const card = new Card();
         card.imgSrc = updateCardDto.imgSrc;
         card.isReserved = updateCardDto.isReserved;

@@ -1,5 +1,5 @@
 import { Expose, Type } from 'class-transformer';
-import { GetCardDto } from 'src/core/card/dto/get-card.dto';
+import { GetCardDto } from '../card/get-card.dto';
 
 export class GetSetDto {
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSetDto } from '../core/set/dto/create-set.dto';
+import { CreateSetDto } from '../http/set/create-set.dto';
 import { SetList } from './models/setList.model';
 import { Set } from './models/set.model';
 import { MtgJsonMapperService } from './mtgjson-mapper.service';
-import { CreateCardDto } from '../core/card/dto/create-card.dto';
+import { CreateCardDto } from '../http/card/create-card.dto';
 import { SetDataIngestionPort } from '../core/set/ports/set-data-ingestion-port';
 import { CardDataIngestionPort } from '../core/card/ports/card-data-ingestion-port';
 import axios, { AxiosResponse } from 'axios';

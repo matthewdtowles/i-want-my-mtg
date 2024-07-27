@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SetResponse } from './set.response.model';
-import { CardResponse } from '../card/card.response.model';
+import { CardResponse } from '../../http/card/card.response.model';
 import { GetSetDto } from './dto/get-set.dto';
 import { GetCardDto } from '../card/dto/get-card.dto';
 

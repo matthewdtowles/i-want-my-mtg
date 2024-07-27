@@ -1,39 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCardDto } from './dto/create-card.dto';
-import { UpdateCardDto } from './dto/update-card.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { Card } from './entities/card.entity';
+import { CardDataIngestionPort } from './ports/card-data-ingestion-port';
+import { CardRepositoryPort } from './ports/card-repository-port';
 
 @Injectable()
 export class CardService {
 
-    create(createCardDto: CreateCardDto) {
-        return 'This action adds a new card';
+    constructor(
+        @Inject('CardDataIngestionPort') private readonly ingestionService: CardDataIngestionPort,
+        @Inject('CardRepositoryPort') private readonly repositoryService: CardRepositoryPort,
+    ) {}
+
+    create(card: Card): Card {
+        return new Card();
     }
 
-    findAll() {
-        return `This action returns all card`;
+    findAll(): Card[]{
+        return [];
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} card`;
+    findOne(id: string): Card {
+        return new Card();
     }
 
-    update(id: number, updateCardDto: UpdateCardDto) {
-        return `This action updates a #${id} card`;
+    update(updateCardDto: Card): Card {
+        return null;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} card`;
+    remove(id: string): void {
     }
 
-    // #range
-    private buildManaCost(manaCost: string): string[] {
-        return manaCost != null ? manaCost
-            .toLowerCase()
-            .replaceAll('/', '')
-            .replace('{', '')
-            .replaceAll('}', '')
-            .split('{')
-            : null;
-    }
-    // #endrange
+ 
 }

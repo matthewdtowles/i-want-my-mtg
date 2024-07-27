@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { UserModule } from './core/users/user.module';
 import { CardModule } from './core/card/card.module';
 import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.module';
+import { HttpModule } from './http/http.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.mo
     UserModule,
     CardModule,
     MtgJsonIngestionModule,
+    HttpModule,
   ],
   controllers: [AppController, SetController],
   providers: [AppService, SetService],

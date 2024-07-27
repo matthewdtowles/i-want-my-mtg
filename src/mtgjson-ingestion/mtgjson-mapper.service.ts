@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CardSet } from './models/cardSet.model';
 import { Set } from './models/set.model';
-import { CreateCardDto } from '../core/card/dto/create-card.dto';
-import { CreateSetDto } from '../core/set/dto/create-set.dto';
+import { CreateCardDto } from '../http/card/create-card.dto';
+import { CreateSetDto } from '../http/set/create-set.dto';
 import { SetList } from './models/setList.model';
 
 @Injectable()

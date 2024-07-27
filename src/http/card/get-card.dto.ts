@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
-import { GetSetDto } from '../../set/dto/get-set.dto';
+import { Transform } from 'class-transformer';
+import { GetSetDto } from '../set/get-set.dto';
 
 export class GetCardDto {
     
@@ -15,6 +16,12 @@ export class GetCardDto {
     /**
      * e.g.: '{1}{W}{W}' for one and two white
      */
+    @Transform(({ value }) => value.toLowerCase()
+            .toLowerCase()
+            .replaceAll('/', '')
+            .replace('{', '')
+            .replaceAll('}', '')
+            .split('{'))
     @Expose()
     manaCost?: string;
 

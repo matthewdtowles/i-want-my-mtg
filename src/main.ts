@@ -10,8 +10,8 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
 
   const hbs = create({
-    layoutsDir: join(__dirname, '..', 'views', 'layouts'),
-    partialsDir: join(__dirname, '..', 'views', 'partials'),
+    layoutsDir: join(__dirname, '..', 'http/views', 'layouts'),
+    partialsDir: join(__dirname, '..', 'http/views', 'partials'),
     defaultLayout: 'main',
     extname: '.hbs',
   });

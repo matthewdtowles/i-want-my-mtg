@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Card } from './entities/card.entity';
+import { Card } from './card.entity';
 import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
 import { CardRepositoryPort } from './ports/card.repository.port';
+import { CardServicePort } from './ports/card.service.port';
 
 @Injectable()
-export class CardService {
+export class CardService implements CardServicePort {
 
     constructor(
         @Inject('CardDataIngestionPort') private readonly ingestionService: CardDataIngestionPort,
@@ -12,23 +13,22 @@ export class CardService {
     ) {}
 
     create(card: Card): Card {
-        return new Card();
+        return null;
     }
 
-    findAll(): Card[]{
-        return [];
+    findById(id: string): Card {
+        return null;
     }
 
-    findOne(id: string): Card {
-        return new Card();
+    findBySetCodeAndNumber(setCode: string, number: number): Card {
+        return null;
+    }
+
+    findAllWithName(name: string): Card[] {
+        return null;
     }
 
     update(updateCardDto: Card): Card {
         return null;
     }
-
-    remove(id: string): void {
-    }
-
- 
 }

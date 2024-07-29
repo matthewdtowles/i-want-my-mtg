@@ -1,4 +1,4 @@
-import { Set } from "../entities/set.entity";
+import { Set } from "../set.entity";
 
 export interface SetServicePort {
     findAll(): Promise<Set[]>;

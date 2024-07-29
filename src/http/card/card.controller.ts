@@ -1,13 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CardService } from '../../core/card/card.service';
-import { CreateCardDto } from './create-card.dto';
-import { UpdateCardDto } from './update-card.dto';
-import { Card } from 'src/core/card/entities/card.entity';
+import { CreateCardDto } from './dtos/create-card.dto';
+import { UpdateCardDto } from './dtos/update-card.dto';
+import { Card } from 'src/core/card/card.entity';
 import { CardMapper } from './card.mapper';
-import { GetCardDto } from './get-card.dto';
+import { GetCardDto } from './dtos/get-card.dto';
 
-// TODO: route for /sets/${setCode}/${card.number}
-// TODO: & rte for /cards/${card.name}
 @Controller('card')
 export class CardController {
   constructor(
@@ -15,21 +13,15 @@ export class CardController {
     private readonly cardMapper: CardMapper,
   ) {}
 
-
   @Post()
   create(@Body() createCardDto: CreateCardDto) {
     const card: Card = this.cardMapper.dtoToEntity(createCardDto);
     return this.cardService.create(card);
   }
 
-  @Get()
-  findAll() {
-    return this.cardService.findAll();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string): GetCardDto {
-    return this.cardMapper.entityToDto(this.cardService.findOne(id));
+    return this.cardMapper.entityToDto(this.cardService.findById(id));
   }
 
   @Patch(':id')
@@ -37,11 +29,5 @@ export class CardController {
     const card: Card = this.cardMapper.updateDtoToEntity(updateCardDto);
     return this.cardService.update(card);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardService.remove(id);
-  }
-
 
 }

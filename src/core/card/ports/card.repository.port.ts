@@ -1,4 +1,4 @@
-import { Card } from "../entities/card.entity";
+import { Card } from "../card.entity";
 
 export interface CardRepositoryPort {
     findCardById(id: string): Promise<Card | null>;

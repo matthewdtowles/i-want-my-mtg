@@ -1,4 +1,4 @@
-import { Set } from '../../set/entities/set.entity';
+import { Set } from '../set/set.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

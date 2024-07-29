@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from '../../core/set/set.service';
-import { Set } from 'src/core/set/entities/set.entity';
+import { Set } from 'src/core/set/set.entity';
 import { SetResponse } from './set.response.model';
 import { GetSetDto } from './get-set.dto';
 import { SetMapper } from './set.mapper';

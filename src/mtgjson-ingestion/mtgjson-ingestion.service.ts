@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSetDto } from '../http/set/dtos/create-set.dto';
-import { SetList } from './models/setList.model';
-import { Set } from './models/set.model';
+import { SetList } from './dtos/setList.model';
+import { SetDto } from './dtos/set.dto';
 import { MtgJsonMapperService } from './mtgjson-mapper.service';
-import { CreateCardDto } from '../http/card/create-card.dto';
 import { SetDataIngestionPort } from '../core/set/ports/set-data.ingestion.port';
 import { CardDataIngestionPort } from '../core/card/ports/card-data.ingestion.port';
 import axios, { AxiosResponse } from 'axios';
+import { Set } from 'src/core/set/set.entity';
+import { Card } from 'src/core/card/card.entity';
 
 
 @Injectable()
@@ -17,14 +17,30 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
     
     constructor(private readonly dataMapper: MtgJsonMapperService) {}
 
-    async fetchAllSets(): Promise<CreateSetDto[]> {
+    async fetchAllSets(): Promise<Set[]> {
         const setList: SetList[] = await this.requestSetList();
         return this.dataMapper.mapCreateSetDtos(setList);
     }
 
-    async fetchSetCards(code: string): Promise<CreateCardDto[]> {
-        const set: Set = await this.requestSet(code);
-        return this.dataMapper.mapCreateCardDtos(set.cards);
+    async fetchSetByCode(code: string): Promise<Set> {
+        throw new Error('Method not implemented.');
+    }
+
+    async fetchAllSetsMeta(): Promise<Set[]> {
+        throw new Error('Method not implemented.');
+    }
+
+    async fetchSetMetaByCode(code: string): Promise<Set> {
+        throw new Error('Method not implemented.');
+    }
+
+    async fetchSetCards(code: string): Promise<Card[]> {
+        const setDto: SetDto = await this.requestSet(code);
+        return this.dataMapper.mapCreateCardDtos(setDto.cards);
+    }
+
+    async fetchCard(uuid: string): Promise<Card> {
+        throw new Error('Method not implemented.');
     }
 
     /**
@@ -46,7 +62,7 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
      * @param setCode
      * @returns 
      */
-    async requestSet(setCode: string): Promise<Set> {
+    async requestSet(setCode: string): Promise<SetDto> {
         const url: string = this.CARD_PROVIDER_URL + setCode.toUpperCase() + this.CARD_PROVIDER_FILE_EXT;
         console.log(`Data provider calling ${url}`);
         const response: AxiosResponse = await axios.get(url);

@@ -1,12 +1,23 @@
-import { CreateCardDto } from '../../../http/card/dtos/create-card.dto';
+import { Card } from '../card.entity';
 
+/**
+ * Port to ingest card data from external provider
+ * Used by Core
+ * Implemented by Adapters
+ */
 export interface CardDataIngestionPort {
-    
+
     /**
-     * Obtains all MTG Cards for given Set.code and their data as an array of CreateCardDtos
+     * Fetch all cards in set with code
      * 
-     * @param string code - three letter set code
-     * @returns array of CreateSetDto objects
+     * @param string three letter set code
      */
-    fetchSetCards(code: string): Promise<CreateCardDto[]>;
+    fetchSetCards(code: string): Promise<Card[]>;
+
+    /**
+     * Fetch card with uuid
+     * 
+     * @param uuid
+     */
+    fetchCard(uuid: string): Promise<Card>;
 }

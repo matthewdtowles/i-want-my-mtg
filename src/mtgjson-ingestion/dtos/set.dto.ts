@@ -5,7 +5,7 @@ import { DeckSet } from './deckSet.model';
 import { SealedProduct } from './sealedProduct.model';
 import { Translations } from './translations.model';
 
-export class Set {
+export class SetDto {
   baseSetSize: number;
   block?: string;
   booster?: Record<string, BoosterConfig>;

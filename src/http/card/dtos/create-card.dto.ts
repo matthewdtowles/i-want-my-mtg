@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
-import { CardRarity } from './card-rarity.enum';
+import { CardRarity } from '../card-rarity.enum';
 
 export class CreateCardDto {
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CardSet } from './models/cardSet.model';
-import { Set } from './models/set.model';
-import { CreateCardDto } from '../http/card/create-card.dto';
-import { CreateSetDto } from '../http/set/dtos/create-set.dto';
-import { SetList } from './models/setList.model';
+import { CardSet } from './dtos/cardSet.model';
+import { SetDto } from './dtos/set.dto';
+import { SetList } from './dtos/setList.model';
+import { Set } from 'src/core/set/set.entity';
+import { Card } from 'src/core/card/card.entity';
 
 @Injectable()
 export class MtgJsonMapperService {
@@ -17,21 +17,21 @@ export class MtgJsonMapperService {
      * Maps given Set to a CreateSetDto
      * Metadata of Set; no cards
      * 
-     * @param set
+     * @param setDto
      * @returns 
      */
-    mapCreateSetDto(set: Set | SetList): CreateSetDto {
-        const setDto: CreateSetDto = new CreateSetDto();
-        setDto.baseSize = set.baseSetSize;
-        setDto.block = set.block;
-        setDto.code = set.code.toUpperCase();
-        setDto.keyruneCode = set.keyruneCode.toLowerCase();
-        setDto.name = set.name;
-        setDto.parentCode = set.parentCode;
-        setDto.releaseDate = set.releaseDate;
-        setDto.type = set.type;
-        setDto.url = this.buildSetUrl(set.code);
-        return setDto;
+    mapCreateSetDto(setDto: SetDto | SetList): Set {
+        const set: Set = new Set();
+        set.baseSize = setDto.baseSetSize;
+        set.block = setDto.block;
+        set.setCode = setDto.code.toUpperCase();
+        set.keyruneCode = setDto.keyruneCode.toLowerCase();
+        set.name = setDto.name;
+        // set.parentCode = setDto.parentCode;
+        set.releaseDate = setDto.releaseDate;
+        set.type = setDto.type;
+        // set.url = this.buildSetUrl(setDto.code);
+        return set;
     }
 
     /**
@@ -40,35 +40,35 @@ export class MtgJsonMapperService {
      * @param cards
      * @returns 
      */
-    mapCreateCardDtos(cards: CardSet[]): CreateCardDto[] {
-        const cardDtos: CreateCardDto[] = [];
+    mapCreateCardDtos(cards: CardSet[]): Card[] {
+        const cardDtos: Card[] = [];
         cards.forEach(c => {
             cardDtos.push(this.mapCreateCardDto(c));
         });
         return cardDtos;
     }
 
-    mapCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
-        const setDtos: CreateSetDto[] = [];
+    mapCreateSetDtos(setLists: SetList[]): Set[] {
+        const setDtos: Set[] = [];
         setLists.forEach(s => {
             setDtos.push(this.mapCreateSetDto(s));
         })
         return setDtos;
     }
 
-    private mapCreateCardDto(card: CardSet): CreateCardDto {
-        const dto: CreateCardDto = new CreateCardDto();
-        dto.imgSrc = this.buildCardImgSrc(card);
-        dto.manaCost = card.manaCost;
-        dto.name = card.name;
-        dto.notes = this.getNotes(card);
-        dto.number = card.number;
-        dto.price = this.getPrice(card);
-        dto.rarity = card.rarity;
-        dto.setCode = card.setCode;
-        dto.totalOwned = this.getTotalOwned(card);
-        dto.url = this.buildCardUrl(card);
-        return dto;
+    private mapCreateCardDto(cardDto: CardSet): Card {
+        const card: Card = new Card();
+        card.imgSrc = this.buildCardImgSrc(cardDto);
+        card.manaCost = cardDto.manaCost;
+        card.name = cardDto.name;
+        // card.notes = this.getNotes(cardDto);
+        card.number = cardDto.number;
+        // card.price = this.getPrice(cardDto);
+        card.rarity = cardDto.rarity;
+        // card.setCode = cardDto.setCode;
+        // card.totalOwned = this.getTotalOwned(cardDto);
+        card.url = this.buildCardUrl(cardDto);
+        return card;
     }
 
     private buildCardUrl(card: CardSet): string {

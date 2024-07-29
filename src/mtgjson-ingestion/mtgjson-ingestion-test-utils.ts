@@ -1,9 +1,9 @@
-import { CardSet } from './models/cardSet.model';
-import { Set } from './models/set.model';
-import { Identifiers } from './models/identifiers.model';
+import { CardSet } from './dtos/cardSet.model';
+import { SetDto } from './dtos/set.dto';
+import { Identifiers } from './dtos/identifiers.model';
 import { CreateCardDto } from '../http/card/create-card.dto';
 import { CreateSetDto } from '../http/set/dtos/create-set.dto';
-import { SetList } from './models/setList.model';
+import { SetList } from './dtos/setList.model';
 
 export class MtgJsonIngestionTestUtils {
 
@@ -18,8 +18,8 @@ export class MtgJsonIngestionTestUtils {
     private readonly MOCK_TOTAL_OWNED: number = 0;
     private readonly IMG_SRC_BASE: string = 'https://cards.scryfall.io/normal/front/';
 
-    getMockSet(): Set {
-        let set: Set = new Set();
+    getMockSet(): SetDto {
+        let set: SetDto = new SetDto();
         set.baseSetSize = this.MOCK_BASE_SET_SIZE;
         set.block = this.MOCK_SET_NAME;
         set.cards = this.getMockCardSetArray();

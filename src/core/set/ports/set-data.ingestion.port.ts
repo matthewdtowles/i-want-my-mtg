@@ -1,11 +1,37 @@
-import { CreateSetDto } from '../../../http/set/dtos/create-set.dto';
+import { Set } from '../set.entity';
 
+/**
+ * Port to ingest set data from external provider
+ * Used by Core
+ * Implemented by Adapters
+ */
 export interface SetDataIngestionPort {
-    
+
     /**
-     * Obtains all MTG Sets and their data as an array of CreateSetDtos
-     * 
-     * @returns array of CreateSetDto objects
+     * Fetch all sets
+     * Includes all cards
      */
-    fetchAllSets(): Promise<CreateSetDto[]>;
+    fetchAllSets(): Promise<Set[]>;
+
+    /**
+     * Fetch set with code
+     * Includes cards
+     * 
+     * @param code three letter set code
+     */
+    fetchSetByCode(code: string): Promise<Set>;
+
+    /**
+     * Fetch metadata for all sets
+     * Excludes cards
+     */
+    fetchAllSetsMeta(): Promise<Set[]>;
+
+    /**
+     * Fetch metadata for set with code
+     * Excludes cards
+     * 
+     * @param code three letter set code
+     */
+    fetchSetMetaByCode(code: string): Promise<Set>;
 }

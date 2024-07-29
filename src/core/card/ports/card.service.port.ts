@@ -8,12 +8,12 @@ import { Card } from '../card.entity';
 export interface CardServicePort {
 
     /**
-     * Save Card if not saved
-     * Return true if created, false otherwise
+     * Save card if not created
+     * Return created card
      * 
      * @param card 
      */
-    create(card: Card): Promise<boolean>;
+    create(card: Card): Promise<Card>;
 
     /**
      * Return all cards in set
@@ -30,14 +30,14 @@ export interface CardServicePort {
     findAllWithName(name: string): Promise<Card[]>;
     
     /**
-     * Return Card with id
+     * Return card with id
      * 
      * @param id 
      */
     findById(id: string): Promise<Card>;
 
     /**
-     * Return Card with number in set
+     * Return card with number in set
      * 
      * @param setCode 
      * @param number 
@@ -45,10 +45,10 @@ export interface CardServicePort {
     findBySetCodeAndNumber(setCode: string, number: number): Promise<Card>;
 
     /**
-     * Update Card that existed
-     * Return true if changed, false otherwise
+     * Update card that exists
+     * Return updated card
      *
      * @param card 
      */
-    update(card: Card): Promise<boolean>;
+    update(card: Card): Promise<Card>;
 }

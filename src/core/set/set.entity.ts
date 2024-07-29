@@ -1,4 +1,4 @@
-import { Card } from 'src/core/card/entities/card.entity';
+import { Card } from '../card/card.entity';
 import { Column, OneToMany, PrimaryColumn } from 'typeorm';
 
 export class Set {

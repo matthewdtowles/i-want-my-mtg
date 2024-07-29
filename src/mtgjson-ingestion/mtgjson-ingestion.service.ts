@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSetDto } from '../http/set/create-set.dto';
+import { CreateSetDto } from '../http/set/dtos/create-set.dto';
 import { SetList } from './models/setList.model';
 import { Set } from './models/set.model';
 import { MtgJsonMapperService } from './mtgjson-mapper.service';

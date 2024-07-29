@@ -8,26 +8,39 @@ import { User } from '../user.entity';
 export interface UserServicePort {
 
     /**
-     * Save User if not saved
-     * Return true if created, false otherwise
+     * Save User if not created
+     * Return created User
      * 
      * @param user 
      */
-    create(user: User): Promise<boolean>;
+    create(user: User): Promise<User>;
 
     /**
-     * Returns User with given username
+     * Return User with username
      * 
      * @param username 
      */
     findByUsername(username: string): Promise<User>;
 
     /**
-     * Returns User with given id
+     * Return User with id
      * 
      * @param id
      */
-    findById(id: string): Promise<User>;
+    findById(id: number): Promise<User>;
 
-    findBy
+    /**
+     * Update User that exists
+     * Return updated User
+     * 
+     * @param user 
+     */
+    update(user: User): Promise<User>;
+
+    /**
+     * Delete User with id from all records
+     * 
+     * @param id
+     */
+    remove(user: User): Promise<boolean>;
 }

@@ -7,38 +7,39 @@ import { Set } from '../set.entity';
 export interface SetServicePort {
 
     /**
-     * Saves an instance of the given Set entity if it does not exist
-     * Returns true if saved, false otherwise
+     * Save set if not created
+     * Return created Set
      * 
      * @param set
      */
-    create(set: Set): Promise<boolean>;
+    create(set: Set): Promise<Set>;
 
     /**
-     * Returns entire Set entity with given set code, including Cards in the Set
+     * Return set including cards with code
      * 
      * @param setCode 
      */
     findByCode(setCode: string): Promise<Set>;
 
     /**
-     * Returns Set array of Set metadata of every set ever printed
-     * Set metadata includes everything in Set entity other than Cards in the set
+     * Return metadata of every set
+     * Does not include cards
      */
     findAll(): Promise<Set[]>;
 
     /**
-     * Returns Set array of Set metadata of every set legal in given format
+     * Return metadata of every set in format
+     * Does not include cards
      * 
      * @param format
      */
     findAllInFormat(format: string): Promise<Set[]>;
 
     /**
-     * Updates an instance of given Set that already exists
-     * Returns true if changed, false otherwise
+     * Update set that exists
+     * Return updated set
      * 
      * @param set
      */
-    update(set: Set): Promise<boolean>;
+    update(set: Set): Promise<Set>;
 }

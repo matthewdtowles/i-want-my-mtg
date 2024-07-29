@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { Transform } from 'class-transformer';
-import { GetSetDto } from '../../set/get-set.dto';
+import { GetSetDto } from '../../set/dtos/get-set.dto';
 
 export class GetCardDto {
     

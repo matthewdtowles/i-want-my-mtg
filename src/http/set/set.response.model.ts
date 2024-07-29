@@ -1,5 +1,6 @@
-import { CardResponse } from 'src/core/card/card.response.model';
+import { CardResponse } from '../card/card.response.model';
 
+// TODO: merge with GetSetDto
 export class SetResponse {
     block: string;
     cards: CardResponse[];

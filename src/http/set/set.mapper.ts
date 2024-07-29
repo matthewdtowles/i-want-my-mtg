@@ -1,6 +1,6 @@
 import { Set } from 'src/core/set/set.entity';
-import { CreateSetDto } from './create-set.dto';
-import { GetSetDto } from './get-set.dto';
+import { CreateSetDto } from './dtos/create-set.dto';
+import { GetSetDto } from './dtos/get-set.dto';
 import { GetCardDto } from '../card/dtos/get-card.dto';
 import { Card } from 'src/core/card/card.entity';
 

@@ -1,5 +1,5 @@
 import { IsDateString, IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
-import { SetType } from './set-type.enum';
+import { SetType } from '../set-type.enum';
 
 export class CreateSetDto {
 

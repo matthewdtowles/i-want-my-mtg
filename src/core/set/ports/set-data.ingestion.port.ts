@@ -1,4 +1,4 @@
-import { CreateSetDto } from '../../../http/set/create-set.dto';
+import { CreateSetDto } from '../../../http/set/dtos/create-set.dto';
 
 export interface SetDataIngestionPort {
     

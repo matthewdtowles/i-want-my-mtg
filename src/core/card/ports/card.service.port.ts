@@ -1,43 +1,54 @@
-import { Card } from "../card.entity";
+import { Card } from '../card.entity';
 
 /**
- * Individual Card operations service
- * Implemented by Core and used by Adapters
+ * Individual Card service
+ * Implemented by Core
+ * Used by Adapters
  */
 export interface CardServicePort {
 
     /**
-     * Creates an instance of the given Card and saves it if instance does not exist
+     * Save Card if not saved
+     * Return true if created, false otherwise
      * 
      * @param card 
      */
-    create(card: Card): Card;
+    create(card: Card): Promise<boolean>;
 
     /**
-     * Finds a unique Card based on given universally unique ID given
+     * Return all cards in set
+     * 
+     * @param setCode 
+     */
+    findAllInSet(setCode: string): Promise<Card[]>;
+
+    /**
+     * Return all cards with name 
+     * 
+     * @param name Card.name
+     */
+    findAllWithName(name: string): Promise<Card[]>;
+    
+    /**
+     * Return Card with id
      * 
      * @param id 
      */
-    findById(id: string): Card;
+    findById(id: string): Promise<Card>;
 
     /**
-     * Finds the Card at the specified number for the given set code
+     * Return Card with number in set
      * 
      * @param setCode 
      * @param number 
      */
-    findBySetCodeAndNumber(setCode: string, number: number): Card;
+    findBySetCodeAndNumber(setCode: string, number: number): Promise<Card>;
 
     /**
-     * Finds and returns all printings of cards with given name 
-     * 
-     * @param name Card.name
-     */
-    findAllWithName(name: string): Card[];
-
-    /**
-     * Updates an instance of given Card that already exists 
+     * Update Card that existed
+     * Return true if changed, false otherwise
+     *
      * @param card 
      */
-    update(card: Card): Card;
+    update(card: Card): Promise<boolean>;
 }

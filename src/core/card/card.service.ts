@@ -12,23 +12,23 @@ export class CardService implements CardServicePort {
         @Inject('CardRepositoryPort') private readonly repositoryService: CardRepositoryPort,
     ) {}
 
-    create(card: Card): Card {
+    async create(card: Card): Promise<boolean> {
         return null;
     }
 
-    findById(id: string): Card {
+    async findById(id: string): Promise<Card> {
         return null;
     }
 
-    findBySetCodeAndNumber(setCode: string, number: number): Card {
+    async findBySetCodeAndNumber(setCode: string, number: number): Promise<Card> {
         return null;
     }
 
-    findAllWithName(name: string): Card[] {
+    async findAllWithName(name: string): Promise<Card[]> {
         return null;
     }
 
-    update(updateCardDto: Card): Card {
+    async update(updateCardDto: Card): Promise<boolean> {
         return null;
     }
 }

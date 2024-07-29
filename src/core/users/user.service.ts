@@ -8,7 +8,7 @@ import { CreateUserDto } from '../../http/user/create-user.dto';
 export class UserService {
     constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>,) {}
 
-    create(createUserDto: CreateUserDto): Promise<User> {
+    async create(createUserDto: CreateUserDto): Promise<User> {
         const user = new User();
         user.email = createUserDto.email;
         user.username = createUserDto.username;
@@ -16,11 +16,11 @@ export class UserService {
         return this.usersRepository.save(user);
     }
 
-    findById(idIn: number): Promise<User> {
+    async findById(idIn: number): Promise<User> {
         return this.usersRepository.findOneBy({ id: idIn });
     }
 
-    findByUsername(usernameIn: string): Promise<User> {
+    async findByUsername(usernameIn: string): Promise<User> {
         return this.usersRepository.findOneBy({ username: usernameIn });
     }
 

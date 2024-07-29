@@ -1,8 +1,8 @@
-import { Set } from "src/core/set/set.entity";
-import { CreateSetDto } from "./create-set.dto";
-import { GetSetDto } from "./get-set.dto";
-import { GetCardDto } from "../card/dtos/get-card.dto";
-import { Card } from "src/core/card/card.entity";
+import { Set } from 'src/core/set/set.entity';
+import { CreateSetDto } from './create-set.dto';
+import { GetSetDto } from './get-set.dto';
+import { GetCardDto } from '../card/dtos/get-card.dto';
+import { Card } from 'src/core/card/card.entity';
 
 export class SetMapper {
 

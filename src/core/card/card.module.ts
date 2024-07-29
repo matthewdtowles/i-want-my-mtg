@@ -10,4 +10,4 @@ import { CardService } from './card.service';
     ],
     exports: ['CardServicePort']
 })
-export class CardModule { }
+export class CardModule {}

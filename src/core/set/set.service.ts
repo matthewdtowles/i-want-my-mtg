@@ -12,12 +12,23 @@ export class SetService implements SetServicePort {
         @Inject('SetRepositoryPort') private readonly repositoryService: SetRepositoryPort,
     ) {}
 
-    async findAll(): Promise<Set[]> {
+    async create(set: Set): Promise<boolean> {
         return null;
     }
 
     async findByCode(setCode: string): Promise<Set> {
-       return null;
+        return null;
+     }
+ 
+    async findAll(): Promise<Set[]> {
+        return null;
     }
 
+    async findAllInFormat(format: string): Promise<Set[]> {
+        return null;
+    }
+
+    async update(set: Set): Promise<boolean> {
+        return null;
+    }
 }

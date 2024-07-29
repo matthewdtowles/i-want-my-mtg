@@ -1,7 +1,7 @@
-import { Card } from "src/core/card/card.entity";
-import { CreateCardDto } from "./dtos/create-card.dto";
-import { GetCardDto } from "./dtos/get-card.dto";
-import { UpdateCardDto } from "./dtos/update-card.dto";
+import { Card } from 'src/core/card/card.entity';
+import { CreateCardDto } from './dtos/create-card.dto';
+import { GetCardDto } from './dtos/get-card.dto';
+import { UpdateCardDto } from './dtos/update-card.dto';
 
 export class CardMapper {
     dtoToEntity(createCardDto: CreateCardDto): Card {

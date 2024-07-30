@@ -1,4 +1,4 @@
-import { CardResponse } from '../card/card.response.model';
+import { CardResponse } from '../card/card.response.dto';
 
 // TODO: merge with GetSetDto
 export class SetResponse {

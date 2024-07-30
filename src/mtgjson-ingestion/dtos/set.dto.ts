@@ -1,9 +1,9 @@
-import { BoosterConfig } from './boosterConfig.model';
-import { CardSet } from './cardSet.model';
-import { CardToken } from './cardToken.model';
-import { DeckSet } from './deckSet.model';
-import { SealedProduct } from './sealedProduct.model';
-import { Translations } from './translations.model';
+import { BoosterConfig } from './boosterConfig.dto';
+import { CardSet } from './cardSet.dto';
+import { CardToken } from './cardToken.dto';
+import { DeckSet } from './deckSet.dto';
+import { SealedProduct } from './sealedProduct.dto';
+import { Translations } from './translations.dto';
 
 export class SetDto {
   baseSetSize: number;

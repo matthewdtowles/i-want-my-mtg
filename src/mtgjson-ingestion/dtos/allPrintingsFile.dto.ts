@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Meta } from './meta.model';
+import { Meta } from './meta.dto';
 import { SetDto } from './set.dto';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CardDeck } from './cardDeck.model';
+import { CardDeck } from './cardDeck.dto';
 
 @Injectable()
 export class Deck {

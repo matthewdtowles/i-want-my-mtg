@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BoosterPack } from './boosterPack.model';
-import { BoosterSheet } from './boosterSheet.model';
+import { BoosterPack } from './boosterPack.dto';
+import { BoosterSheet } from './boosterSheet.dto';
 
 @Injectable()
 export class BoosterConfig {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PriceList } from './priceList.model';
+import { PriceList } from './priceList.dto';
 
 @Injectable()
 export class PriceFormats {

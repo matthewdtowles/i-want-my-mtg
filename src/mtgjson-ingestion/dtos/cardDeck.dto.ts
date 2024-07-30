@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ForeignData } from './foreignData.model';
-import { Identifiers } from './identifiers.model';
-import { LeadershipSkills } from './leadershipSkills.model';
-import { Legalities } from './legalities.model';
-import { PurchaseUrls } from './purchaseUrls.model';
-import { RelatedCards } from './relatedCards.model';
-import { Rulings } from './rulings.model';
+import { ForeignData } from './foreignData.dto';
+import { Identifiers } from './identifiers.dto';
+import { LeadershipSkills } from './leadershipSkills.dto';
+import { Legalities } from './legalities.dto';
+import { PurchaseUrls } from './purchaseUrls.dto';
+import { RelatedCards } from './relatedCards.dto';
+import { Rulings } from './rulings.dto';
 
 @Injectable()
 export class CardDeck {

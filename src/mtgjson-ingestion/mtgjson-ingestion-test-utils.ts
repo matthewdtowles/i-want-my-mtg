@@ -1,9 +1,9 @@
-import { CardSet } from './dtos/cardSet.model';
+import { CardSet } from './dtos/cardSet.dto';
 import { SetDto } from './dtos/set.dto';
-import { Identifiers } from './dtos/identifiers.model';
+import { Identifiers } from './dtos/identifiers.dto';
 import { CreateCardDto } from '../http/card/create-card.dto';
 import { CreateSetDto } from '../http/set/dtos/create-set.dto';
-import { SetList } from './dtos/setList.model';
+import { SetList } from './dtos/setList.dto';
 
 export class MtgJsonIngestionTestUtils {
 

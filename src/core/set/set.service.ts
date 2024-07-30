@@ -2,17 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Set } from './set.entity';
 import { SetServicePort } from './ports/set.service.port';
 import { SetDataIngestionPort } from './ports/set-data.ingestion.port';
-import { SetRepositoryPort } from './ports/set.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SetRepository } from './ports/set.repository';
 
 @Injectable()
 export class SetService implements SetServicePort {
 
     constructor(
         @Inject('SetDataIngestionPort') private readonly ingestionService: SetDataIngestionPort,
-        @Inject('SetRepositoryPort') private readonly repositoryService: SetRepositoryPort,
+        @InjectRepository(SetRepository) private readonly repository: SetRepository,
     ) {}
 
-    async create(set: Set): Promise<boolean> {
+    async create(set: Set): Promise<Set> {
         return null;
     }
 
@@ -28,7 +29,7 @@ export class SetService implements SetServicePort {
         return null;
     }
 
-    async update(set: Set): Promise<boolean> {
+    async update(set: Set): Promise<Set> {
         return null;
     }
 }

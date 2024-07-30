@@ -5,9 +5,7 @@ import { Repository } from 'typeorm';
 /**
  * Persistence layer for Card entity
  */
-export class CardRepository {
-
-    constructor(@InjectRepository(Card) private readonly repository: Repository<Card>) { }
+export class CardRepository extends Repository<Card> {
 
     /**
      * Create card entity, update if entity exists
@@ -16,7 +14,7 @@ export class CardRepository {
      * @returns created|updated card
      */
     async saveCard(card: Card): Promise<Card> {
-        return await this.repository.save(card);
+        return await this.save(card);
     }
 
     /**
@@ -24,7 +22,7 @@ export class CardRepository {
      * @returns true if card entity exists, false otherwise
      */
     async cardExists(card: Card): Promise<boolean> {
-        return await this.repository.exists({ where: { uuid: card.uuid } });
+        return await this.exists({ where: { uuid: card.uuid } });
     }
 
     /**
@@ -32,7 +30,7 @@ export class CardRepository {
      * @returns card entity with id, null if not found
      */
     async findById(id: number): Promise<Card | null> {
-        return await this.repository.findOneBy({ id: id });
+        return await this.findOneBy({ id: id });
     }
 
     /**
@@ -40,7 +38,7 @@ export class CardRepository {
      * @returns card entity with uuid, null if not found
      */
     async findByUuid(uuid: string): Promise<Card | null> {
-        return await this.repository.findOneBy({ uuid: uuid });
+        return await this.findOneBy({ uuid: uuid });
     }
 
     /**
@@ -50,7 +48,7 @@ export class CardRepository {
      */
     async findBySetCodeAndNumber(code: string, number: number): Promise<Card | null> {
         // TODO: figure this out
-        // return await this.repository.findBy({ set: code })
+        // return await this.findBy({ set: code })
         return null;
     }
 
@@ -59,7 +57,7 @@ export class CardRepository {
      * @returns card entities with name
      */
     async findAllWithName(name: string): Promise<Card[] | null> {
-        return await this.repository.findBy({ name: name });
+        return await this.findBy({ name: name });
     }
 
     /**
@@ -68,7 +66,7 @@ export class CardRepository {
      */
     async findAllInSet(code: string): Promise<Card[] | null> {
         // TODO: figure this out
-        // return await this.repository.findBy({ set: code });
+        // return await this.findBy({ set: code });
         return null;
     }
 
@@ -78,7 +76,7 @@ export class CardRepository {
      * @param id
      */
     async removeById(id: number): Promise<void> {
-        await this.repository.delete(id);
+        await this.delete(id);
     }
 
     /**
@@ -87,6 +85,6 @@ export class CardRepository {
      * @param card
      */
     async removeCard(card: Card): Promise<void> {
-        await this.repository.delete(card.id);
+        await this.delete(card.id);
     }
 }

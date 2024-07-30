@@ -1,13 +1,10 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import { Set } from '../set.entity';
 import { Repository } from 'typeorm';
 
 /**
  * Persistence layer for Set entity
  */
-export class SetRepository {
-
-    constructor(@InjectRepository(Set) private readonly repository: Repository<Set>) { }
+export class SetRepository extends Repository<Set> {
 
     /**
      * Create set entity, update if entity exists
@@ -15,7 +12,7 @@ export class SetRepository {
      * @param set
      */
     async saveSet(set: Set): Promise<Set> {
-        return await this.repository.save(set);
+        return await this.save(set);
     }
 
     /**
@@ -23,7 +20,7 @@ export class SetRepository {
      * @returns true if set entity exists, false otherwise
      */
     async setExists(set: Set): Promise<boolean> {
-        return await this.repository.exists({ where: { setCode: set.setCode }});
+        return await this.exists({ where: { setCode: set.setCode }});
     }
 
     /**
@@ -31,7 +28,7 @@ export class SetRepository {
      * @returns set entity with code, null if not found
      */
     async findByCode(code: string): Promise<Set | null> {
-        return await this.repository.findOneBy({ setCode: code });
+        return await this.findOneBy({ setCode: code });
     }
 
     /**
@@ -39,7 +36,7 @@ export class SetRepository {
      * @returns set entity with name, null if not found
      */
     async findByName(name: string): Promise<Set | null> {
-        return await this.repository.findOneBy({ name: name });
+        return await this.findOneBy({ name: name });
     }
 
     /**
@@ -65,7 +62,7 @@ export class SetRepository {
      * @param id
      */
     async removeById(id: number): Promise <void> {
-        await this.repository.delete(id);
+        await this.delete(id);
     }
 
     /**
@@ -74,7 +71,7 @@ export class SetRepository {
      * @param set
      */
     async removeSet(set: Set): Promise<void> {
-        await this.repository.delete(set.setCode);
+        await this.delete(set.setCode);
     }
 
 }

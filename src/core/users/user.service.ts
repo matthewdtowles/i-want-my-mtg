@@ -7,26 +7,26 @@ import { UserRepository } from './ports/user.repository';
 @Injectable()
 export class UserService implements UserServicePort {
 
-    constructor(@InjectRepository(User) private readonly userRepository: UserRepository) {}
+    constructor(@InjectRepository(UserRepository) private readonly repository: UserRepository) {}
 
     async create(user: User): Promise<User> {
-        return this.userRepository.saveUser(user);
+        return this.repository.saveUser(user);
     }
 
     async findById(id: number): Promise<User> {
-        return this.userRepository.findById(id);
+        return this.repository.findById(id);
     }
 
     async findByUsername(username: string): Promise<User> {
-        return this.userRepository.findByUsername(username);
+        return this.repository.findByUsername(username);
     }
 
     async update(user: User): Promise<User> {
-        return this.userRepository.saveUser(user);
+        return this.repository.saveUser(user);
     }
 
     async remove(user: User): Promise<boolean> {
-        await this.userRepository.removeUser(user);
-        return !this.userRepository.userExists(user);
+        await this.repository.removeUser(user);
+        return !this.repository.userExists(user);
     }
 }

@@ -1,13 +1,10 @@
 import { Repository } from "typeorm";
 import { User } from "../user.entity";
-import { InjectRepository } from "@nestjs/typeorm";
 
 /**
  * Persistence layer for User entity
  */
-export class UserRepository {
-
-    constructor(@InjectRepository(User) private readonly repository: Repository<User>) {}
+export class UserRepository extends Repository<User> {
 
     /**
      * Create user entity, update if entity exists
@@ -16,7 +13,7 @@ export class UserRepository {
      * @returns created|updated user
      */
     async saveUser(user: User): Promise<User> {
-        return await this.repository.save(user);
+        return await this.save(user);
     }
 
     /**
@@ -24,7 +21,7 @@ export class UserRepository {
      * @returns true if user entity exists, false otherwise
      */
     async userExists(user: User): Promise<boolean> {
-        return await this.repository.exists({ where: { username: user.username }});
+        return await this.exists({ where: { username: user.username }});
     }
 
     /**
@@ -32,7 +29,7 @@ export class UserRepository {
      * @returns user entity with id, null if not found
      */
     async findById(id: number): Promise<User | null> {
-        return await this.repository.findOneBy({ id: id });
+        return await this.findOneBy({ id: id });
     }
 
     /**
@@ -40,7 +37,7 @@ export class UserRepository {
      * @returns user entity with username, null if not found
      */
     async findByUsername(username: string): Promise<User | null> {
-        return await this.repository.findOneBy({ username: username });
+        return await this.findOneBy({ username: username });
     }
 
     /**
@@ -49,7 +46,7 @@ export class UserRepository {
      * @param id
      */
     async removeById(id: number): Promise <void> {
-        await this.repository.delete(id);
+        await this.delete(id);
     }
 
     /**
@@ -58,6 +55,6 @@ export class UserRepository {
      * @param user
      */
     async removeUser(user: User): Promise<void> {
-        await this.repository.delete(user.id);
+        await this.delete(user.id);
     }
 }

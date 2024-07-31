@@ -14,6 +14,10 @@ const mockUser = {
 describe('UserService', () => {
     let service: UserService;
     let repository: Repository<User>;
+    const user: User = new User();
+    user.email = 'test-email1@iwantmymtg.com';
+    user.username = 'test-username1';
+    user.password = 'test-password1';
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -43,12 +47,9 @@ describe('UserService', () => {
 
     describe('users service create()', () => {
         it('should successfully insert a user', () => {
+
             expect(
-                service.create({
-                    email: 'test-email1@iwantmymtg.com',
-                    username: 'test-username1',
-                    password: 'test-password1',
-                }),
+                service.create(user),
             ).resolves.toEqual(mockUser);
         });
     });
@@ -72,7 +73,7 @@ describe('UserService', () => {
     describe('users service remove()', () => {
         it('should call remove with the passed id', async () => {
             const removeSpy = jest.spyOn(repository, 'delete');
-            const retVal = await service.remove(1);
+            const retVal = await service.remove(user);
             expect(removeSpy).toHaveBeenCalledWith(1);
             expect(retVal).toBeUndefined();
         });

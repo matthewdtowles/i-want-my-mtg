@@ -48,37 +48,28 @@ describe('UserService', () => {
         expect(service).toBeDefined();
     });
 
-    describe('users service create()', () => {
-        it('should successfully insert a user', () => {
-
-            expect(
-                service.create(user),
-            ).resolves.toEqual(mockUser);
-        });
+    it('create should successfully insert a user', () => {
+        expect(service.create(user)).resolves.toEqual(mockUser);
     });
 
-    describe('users service findById()', () => {
-        it('should get a single user with passed id', () => {
-            const repoSpy = jest.spyOn(repository, 'findOneBy');
-            expect(service.findById(1)).resolves.toEqual(mockUser);
-            expect(repoSpy).toHaveBeenCalledWith({ id: 1 });
-        });
+    it('findById should get a single user with passed id', () => {
+        const repoSpy = jest.spyOn(repository, 'findById');
+        expect(service.findById(1)).resolves.toEqual(mockUser);
+        expect(repoSpy).toHaveBeenCalledWith(1);
     });
 
-    describe('users service findByUsername()', () => {
-        it('should get a single user with passed username', () => {
-            const repoSpy = jest.spyOn(repository, 'findOneBy');
-            expect(service.findByUsername('test-username1')).resolves.toEqual(mockUser);
-            expect(repoSpy).toHaveBeenCalledWith({ username: 'test-username1' });
-        });
+    it('findByUsername should get a single user with passed username', () => {
+        const repoSpy = jest.spyOn(repository, 'findByUsername');
+        expect(service.findByUsername('test-username1')).resolves.toEqual(mockUser);
+        expect(repoSpy).toHaveBeenCalledWith('test-username1');
     });
 
-    describe('users service remove()', () => {
-        it('should call remove with the passed id', async () => {
-            const removeSpy = jest.spyOn(repository, 'delete');
-            const retVal = await service.remove(user);
-            expect(removeSpy).toHaveBeenCalledWith(1);
-            expect(retVal).toBeUndefined();
-        });
+    it('remove should delete given user, check if user exists and return false', async () => {
+        const removeSpy = jest.spyOn(repository, 'removeUser');
+        const existsSpy = jest.spyOn(repository, 'userExists');
+        const retVal = await service.remove(user);
+        expect(removeSpy).toHaveBeenCalledWith(user);
+        expect(existsSpy).toHaveBeenCalledWith(user);
+        expect(retVal).toBe(false);
     });
 });

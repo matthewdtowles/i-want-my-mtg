@@ -1,19 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserRepository } from './ports/user.repository';
 
-const mockUser = {
-    id: 1,
-    email: 'test-email1@iwantmymtg.com',
-    username: 'test-username1',
-    password: 'test-password1'
+const mockUser: User = new User();
+mockUser.id = 1;
+mockUser.email = 'test-email1@iwantmymtg.com';
+mockUser.username = 'test-username1';
+mockUser.password = 'test-password1';
+    
+const mockUserRepository = {
+    saveUser: jest.fn().mockResolvedValue(mockUser),
+    userExists: jest.fn().mockResolvedValue(false),
+    findById: jest.fn().mockResolvedValue(mockUser),
+    findByUsername: jest.fn().mockResolvedValue(mockUser),
+    removeById: jest.fn(),
+    removeUser: jest.fn(),
+    delete: jest.fn(),
+    findOneBy: jest.fn().mockResolvedValue(mockUser),
 };
 
 describe('UserService', () => {
     let service: UserService;
-    let repository: Repository<User>;
+    let repository: typeof mockUserRepository;
+
     const user: User = new User();
     user.email = 'test-email1@iwantmymtg.com';
     user.username = 'test-username1';
@@ -24,21 +34,14 @@ describe('UserService', () => {
             providers: [
                 UserService,
                 {
-                    provide: getRepositoryToken(User),
-                    useValue: {
-                        findById: jest.fn().mockResolvedValue(mockUser),
-                        findByUsername: jest.fn().mockResolvedValue(mockUser),
-                        findOneBy: jest.fn().mockResolvedValue(mockUser),
-                        save: jest.fn().mockResolvedValue(mockUser),
-                        remove: jest.fn(),
-                        delete: jest.fn(),
-                    },
+                    provide: UserRepository,
+                    useValue: mockUserRepository,
                 },
             ],
         }).compile();
 
         service = module.get<UserService>(UserService);
-        repository = module.get<Repository<User>>(getRepositoryToken(User));
+        repository = module.get(UserRepository);
     });
 
     it('users service should be defined', () => {

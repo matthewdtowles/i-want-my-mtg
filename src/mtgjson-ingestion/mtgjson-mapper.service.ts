@@ -3,7 +3,7 @@ import { CardSet } from './dtos/cardSet.dto';
 import { SetDto } from './dtos/set.dto';
 import { SetList } from './dtos/setList.dto';
 import { Set } from 'src/core/set/set.entity';
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 
 @Injectable()
 export class MtgJsonMapperService {

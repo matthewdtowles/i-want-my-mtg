@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Card } from './card.entity';
+import { Card } from './card';
 import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
-import { CardRepository } from './ports/card.repository';
+import { CardRepositoryPort } from './ports/card.repository.port.ts';
 import { CardServicePort } from './ports/card.service.port';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -10,7 +10,7 @@ export class CardService implements CardServicePort {
 
     constructor(
         @Inject('CardDataIngestionPort') private readonly ingestionService: CardDataIngestionPort,
-        @InjectRepository(CardRepository) private readonly repository: CardRepository,
+        @InjectRepository(CardRepositoryPort) private readonly repository: CardRepositoryPort,
     ) {}
 
     async create(card: Card): Promise<Card> {

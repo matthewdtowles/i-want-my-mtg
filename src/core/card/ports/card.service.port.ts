@@ -1,4 +1,4 @@
-import { Card } from '../card.entity';
+import { Card } from '../card';
 
 /**
  * Individual Card service

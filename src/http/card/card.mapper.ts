@@ -1,4 +1,4 @@
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { CardDto } from './dtos/card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';

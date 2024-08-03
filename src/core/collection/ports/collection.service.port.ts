@@ -1,4 +1,4 @@
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 import { Collection } from '../collection.entity';
 
 /**

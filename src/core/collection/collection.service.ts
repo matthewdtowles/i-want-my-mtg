@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CollectionServicePort } from './ports/collection.service.port';
-import { Card } from '../card/card.entity';
+import { Card } from '../card/card';
 import { Collection } from './collection.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CollectionRepository } from './ports/collection.repository';

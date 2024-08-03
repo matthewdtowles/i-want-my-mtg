@@ -6,7 +6,7 @@ import { SetDataIngestionPort } from '../core/set/ports/set-data.ingestion.port'
 import { CardDataIngestionPort } from '../core/card/ports/card-data.ingestion.port';
 import axios, { AxiosResponse } from 'axios';
 import { Set } from 'src/core/set/set.entity';
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 
 
 @Injectable()

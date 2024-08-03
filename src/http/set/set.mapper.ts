@@ -2,7 +2,7 @@ import { Set } from 'src/core/set/set.entity';
 import { CreateSetDto } from './dtos/create-set.dto';
 import { SetDto } from './dtos/set.dto';
 import { CardDto } from '../card/dtos/card.dto';
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 
 export class SetMapper {
 

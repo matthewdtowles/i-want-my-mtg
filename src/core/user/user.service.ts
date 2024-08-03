@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
 import { User } from './user';
@@ -7,26 +7,33 @@ import { User } from './user';
 @Injectable()
 export class UserService implements UserServicePort {
 
-    constructor(@InjectRepository(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
+    constructor(private readonly repository: UserRepositoryPort) {}
 
-    authenticate(email: string, password: string): Promise<User> {
-        const hashedPassword = await this.repository.getPasswordHash(email);
+    async authenticate(email: string, password: string): Promise<User | null> {
+        const hashedPassword: string = await this.repository.getPasswordHash(email);
+        let authedUser: User;
+        if (hashedPassword && await bcrypt.compare(password, hashedPassword)) {
+            authedUser = await this.repository.findByEmail(email);
+        }
+        return authedUser;
     }
 
-    async create(user: User): Promise<User> {
-        return this.repository.saveUser(user);
+    async createUser(name: string, email: string, password: string): Promise<User> {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User(null, name, email);
+        return this.repository.save(user, hashedPassword);
     }
 
     async findById(id: number): Promise<User> {
         return this.repository.findById(id);
     }
 
-    async findByUsername(username: string): Promise<User> {
-        return this.repository.findByUsername(username);
+    async findByEmail(username: string): Promise<User> {
+        return this.repository.findByEmail(username);
     }
 
-    async update(user: User): Promise<User> {
-        return this.repository.saveUser(user);
+    async update(user: User, password: string): Promise<User> {
+        return this.repository.save(user, password);
     }
 
     async remove(user: User): Promise<boolean> {

@@ -9,42 +9,42 @@ export interface UserServicePort {
 
 
     /**
-     * Return authenticated user by email and password
-     * 
      * @param email 
-     * @param password 
+     * @param password
+     * @returns authenticated User with email and password, otherwise null
      */
-    authenticate(email: string, password: string): Promise<User>;
+    authenticate(email: string, password: string): Promise<User | null>;
 
     /**
-     * Save User if not created
-     * Return created User
+     * Create and save user
      * 
-     * @param user 
-     */
-    create(user: User): Promise<User>;
+     * @param name
+     * @param email
+     * @param password
+     * @returns created User
+    */
+    createUser(name: string, email: string, password: string): Promise<User>;
 
     /**
-     * Return User with id
-     * 
+     * @param username
+     * @returns User with email
+     */
+    findByEmail(email: string): Promise<User>;
+
+    /**
      * @param id
+     * @returns User with id
      */
     findById(id: number): Promise<User>;
 
     /**
-     * Return User with username
-     * 
-     * @param username 
-     */
-    findByUsername(username: string): Promise<User>;
-
-    /**
      * Update User that exists
-     * Return updated User
      * 
      * @param user 
+     * @param password
+     * @returns updated User, if authenticated
      */
-    update(user: User): Promise<User>;
+    update(user: User, password: string): Promise<User>;
 
     /**
      * Delete User with id from all records

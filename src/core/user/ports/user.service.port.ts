@@ -1,4 +1,4 @@
-import { User } from '../user.entity';
+import { User } from "../user";
 
 /**
  * User service
@@ -6,6 +6,15 @@ import { User } from '../user.entity';
  * Used by Adapters
  */
 export interface UserServicePort {
+
+
+    /**
+     * Return authenticated user by email and password
+     * 
+     * @param email 
+     * @param password 
+     */
+    authenticate(email: string, password: string): Promise<User>;
 
     /**
      * Save User if not created
@@ -16,18 +25,18 @@ export interface UserServicePort {
     create(user: User): Promise<User>;
 
     /**
-     * Return User with username
-     * 
-     * @param username 
-     */
-    findByUsername(username: string): Promise<User>;
-
-    /**
      * Return User with id
      * 
      * @param id
      */
     findById(id: number): Promise<User>;
+
+    /**
+     * Return User with username
+     * 
+     * @param username 
+     */
+    findByUsername(username: string): Promise<User>;
 
     /**
      * Update User that exists

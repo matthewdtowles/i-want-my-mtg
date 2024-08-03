@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { User } from './user.entity';
+import { User } from '../../database/user/user.entity';
 import { UserRepositoryPort } from './ports/user.repository.port';
 
 const mockUser: User = new User();

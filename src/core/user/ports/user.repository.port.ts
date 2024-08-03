@@ -1,5 +1,4 @@
-import { Repository } from "typeorm";
-import { User } from "../user.entity";
+import { User } from "../user";
 
 /**
  * Persistence layer for User entity
@@ -12,55 +11,45 @@ export interface UserRepositoryPort {
      * @param user
      * @returns created|updated user
      */
-    async saveUser(user: User): Promise<User>;
-    // {
-        // return await this.save(user);
-    // }
+    save(user: User): Promise<User>;
+
+    /**
+     * @param email
+     * @returns true if user with email exists, false otherwise
+     */
+    emailExists(email: string): Promise<boolean>;
 
     /**
      * @param user 
      * @returns true if user entity exists, false otherwise
      */
-    async userExists(user: User): Promise<boolean>; 
-    // {
-    //     return await this.exists({ where: { username: user.username }});
-    // }
+    userExists(user: User): Promise<boolean>; 
+
 
     /**
      * @param id
      * @returns user entity with id, null if not found
      */
-    async findById(id: number): Promise<User | null>;
-    // {
-    //     return await this.findOneBy({ id: id });
-    // }
-
+    findById(id: number): Promise<User | null>;
+    
     /**
      * @param username
      * @returns user entity with username, null if not found
      */
-    async findByUsername(username: string): Promise<User | null>;
-    // {
-    //     return await this.findOneBy({ username: username });
-    // }
+    findByUsername(username: string): Promise<User | null>;
+ 
 
     /**
      * Remove user entity with id
      * 
      * @param id
      */
-    async removeById(id: number): Promise <void>; 
-    // {
-    //     await this.delete(id);
-    // }
-
+    removeById(id: number): Promise <void>; 
+    
     /**
      * Remove user entity
      * 
      * @param user
      */
-    async removeUser(user: User): Promise<void>;
-    // {
-    //     await this.delete(user.id);
-    // }
+    removeUser(user: User): Promise<void>;
 }

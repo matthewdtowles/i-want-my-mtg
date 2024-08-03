@@ -1,16 +1,10 @@
-import { Expose, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { Transform } from 'class-transformer';
-import { GetSetDto } from '../../set/dtos/get-set.dto';
+import { SetDto } from '../../set/dtos/set.dto';
 
-export class GetCardDto {
-    
-    @Expose()
+export class CardDto {
     id: number;
-
-    @Expose()
     imgSrc: string;
-
-    @Expose()
     isReserved?: boolean;
 
     /**
@@ -22,37 +16,19 @@ export class GetCardDto {
             .replace('{', '')
             .replaceAll('}', '')
             .split('{'))
-    @Expose()
-    manaCost?: string;
+    manaCost?: string[];
 
-    @Expose()
     name: string;
-
-    @Expose()
     notes: string[];
-
-    @Expose()
     number: string;
-
-    @Expose()
     originalText?: string;
-
-    @Expose()
     price: number;
-
-    @Expose()
     rarity: string;
 
-    @Expose()
-    @Type(() => GetSetDto)
-    set: GetSetDto;
-
-    @Expose()
+    // TODO: setCode string or GetSetDto???
+    @Type(() => SetDto)
+    set: SetDto;
     totalOwned: number;
-
-    @Expose()
     url: string;
-
-    @Expose()
     uuid: string;
 }

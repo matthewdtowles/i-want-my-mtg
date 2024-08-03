@@ -1,6 +1,6 @@
 import { InsertResult, Repository } from "typeorm";
 import { Collection } from "../collection.entity";
-import { User } from "src/core/users/user.entity";
+import { User } from "src/core/user/user.entity";
 import { Card } from "src/core/card/card.entity";
 
 /**

@@ -1,8 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 import { SetService } from '../../core/set/set.service';
-import { Set } from 'src/core/set/set.entity';
-import { SetResponse } from './set.response.dto';
-import { GetSetDto } from './dtos/get-set.dto';
+import { SetDto } from './dtos/set.dto';
 import { SetMapper } from './set.mapper';
 
 @Controller('sets')
@@ -14,7 +12,7 @@ export class SetController {
 
     @Get()
     @Render('setListPage')
-    async setListing(): Promise<{ setList: GetSetDto[] }> {
+    async setListing(): Promise<{ setList: SetDto[] }> {
         const setListVal = await this.setsService.findAll();
         const sets = this.setMapper.entitiesToDtos(await this.setsService.findAll());
         return { setList: sets };
@@ -22,7 +20,7 @@ export class SetController {
 
     @Get(':setCode')
     @Render('set')
-    async findBySetCode(@Param('setCode') setCode: string): Promise<GetSetDto> {
+    async findBySetCode(@Param('setCode') setCode: string): Promise<SetDto> {
         setCode = setCode.toUpperCase();
         const set = await this.setsService.findByCode(setCode);
         return this.setMapper.entityToDto(set);

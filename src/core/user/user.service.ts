@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { UserServicePort } from './ports/user.service.port';
-import { UserRepository } from './ports/user.repository';
+import { UserRepositoryPort } from './ports/user.repository.port';
 
 @Injectable()
 export class UserService implements UserServicePort {
 
-    constructor(@InjectRepository(UserRepository) private readonly repository: UserRepository) {}
+    constructor(@InjectRepository(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
 
     async create(user: User): Promise<User> {
         return this.repository.saveUser(user);

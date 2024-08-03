@@ -1,6 +1,6 @@
 import { Card } from 'src/core/card/card.entity';
 import { CreateCardDto } from './dtos/create-card.dto';
-import { GetCardDto } from './dtos/get-card.dto';
+import { CardDto } from './dtos/card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';
 
 export class CardMapper {
@@ -20,8 +20,8 @@ export class CardMapper {
         return card;
     }
 
-    entityToDto(card: Card): GetCardDto {
-        const cardDto = new GetCardDto();
+    entityToDto(card: Card): CardDto {
+        const cardDto = new CardDto();
         cardDto.imgSrc = card.imgSrc;
         cardDto.isReserved = card.isReserved;
         // TODO: MUST test to ensure manacost is converted correctly!!

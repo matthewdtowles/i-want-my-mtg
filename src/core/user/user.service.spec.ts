@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { User } from './user.entity';
-import { UserRepository } from './ports/user.repository';
+import { UserRepositoryPort } from './ports/user.repository.port';
 
 const mockUser: User = new User();
 mockUser.id = 1;
@@ -34,14 +34,14 @@ describe('UserService', () => {
             providers: [
                 UserService,
                 {
-                    provide: UserRepository,
+                    provide: UserRepositoryPort,
                     useValue: mockUserRepository,
                 },
             ],
         }).compile();
 
         service = module.get<UserService>(UserService);
-        repository = module.get(UserRepository);
+        repository = module.get(UserRepositoryPort);
     });
 
     it('users service should be defined', () => {

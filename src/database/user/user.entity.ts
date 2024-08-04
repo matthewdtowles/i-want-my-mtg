@@ -1,3 +1,4 @@
+import { Collection } from 'src/core/collection/collection';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -14,4 +15,7 @@ export class UserEntity {
 
     @Column()
     password: string;
+
+    @Column()
+    collection: Collection;
 }

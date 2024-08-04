@@ -1,20 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Card } from './card';
 import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
-import { CardRepositoryPort } from './ports/card.repository.port.ts';
 import { CardServicePort } from './ports/card.service.port';
-import { InjectRepository } from '@nestjs/typeorm';
+import { CardRepositoryPort } from './ports/card.repository.port';
 
 @Injectable()
 export class CardService implements CardServicePort {
 
     constructor(
         @Inject('CardDataIngestionPort') private readonly ingestionService: CardDataIngestionPort,
-        @InjectRepository(CardRepositoryPort) private readonly repository: CardRepositoryPort,
+        private readonly repository: CardRepositoryPort,
     ) {}
 
     async create(card: Card): Promise<Card> {
-        return null;
+        throw new Error('Method not implemented.');
     }
 
     async findAllInSet(setCode: string): Promise<Card[]> {
@@ -22,18 +21,18 @@ export class CardService implements CardServicePort {
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
-        return null;
+        throw new Error('Method not implemented.');
     }
 
     async findById(id: string): Promise<Card> {
-        return null;
+        throw new Error('Method not implemented.');
     }
 
     async findBySetCodeAndNumber(setCode: string, number: number): Promise<Card> {
-        return null;
+        throw new Error('Method not implemented.');
     }
 
-    async update(updateCardDto: Card): Promise<Card> {
-        return null;
+    async update(card: Card): Promise<Card> {
+        throw new Error('Method not implemented.');
     }
 }

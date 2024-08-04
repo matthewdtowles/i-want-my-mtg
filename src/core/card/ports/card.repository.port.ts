@@ -10,16 +10,13 @@ export interface CardRepositoryPort {
      * @returns true if card entity exists, false otherwise
      */
     cardExists(card: Card): Promise<boolean>;
-    // {
-    //     return await this.exists({ where: { uuid: card.uuid } });
-    // }
-
 
     /**
      * @param code three letter set code
      * @returns card entities in set with code
      */
     findAllInSet(code: string): Promise<Card[] | null>;
+
     /**
      * @param name 
      * @returns card entities with name

@@ -1,13 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { User } from '../../database/user/user.entity';
+import { User } from './user';
 import { UserRepositoryPort } from './ports/user.repository.port';
 
-const mockUser: User = new User();
-mockUser.id = 1;
-mockUser.email = 'test-email1@iwantmymtg.com';
-mockUser.username = 'test-username1';
-mockUser.password = 'test-password1';
+const mockUser: User = new User(1, 'test-username1', 'test-email1@iwantmymtg.com');
     
 const mockUserRepository = {
     saveUser: jest.fn().mockResolvedValue(mockUser),
@@ -24,10 +20,7 @@ describe('UserService', () => {
     let service: UserService;
     let repository: typeof mockUserRepository;
 
-    const user: User = new User();
-    user.email = 'test-email1@iwantmymtg.com';
-    user.username = 'test-username1';
-    user.password = 'test-password1';
+    const user: User = new User(null, 'test-username1', 'test-email1@iwantmymtg.com');
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -49,7 +42,7 @@ describe('UserService', () => {
     });
 
     it('create should successfully insert a user', () => {
-        expect(service.create(user)).resolves.toEqual(mockUser);
+        expect(service.createUser(user)).resolves.toEqual(mockUser);
     });
 
     it('findById should get a single user with passed id', () => {

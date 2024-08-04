@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Index, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { CardEntity } from '../card/card.entity';
 
@@ -8,9 +8,12 @@ export class CollectionEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @OneToOne(() => UserEntity, userEntity => userEntity.collection, { nullable: false })
+    @Index()
     owner: UserEntity;
 
-    @OneToMany(() => CardEntity, (card) => card.set)
+    @ManyToMany(() => CardEntity, { cascade: true })
+    @JoinTable()
     cards: CardEntity[];
+  
 }

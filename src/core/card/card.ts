@@ -1,9 +1,6 @@
-import { Set } from '../set/set.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Set } from '../set/set';
 
-@Entity()
 export class Card {
-
     id: number;
     imgSrc: string;
     isReserved?: boolean;

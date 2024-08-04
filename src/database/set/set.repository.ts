@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { SetEntity } from "./set.entity";
-import { Set } from "src/core/set/set.entity";
+import { Set } from "src/core/set/set";
 import { SetRepositoryPort } from "src/core/set/ports/set.repository.port";
 
 @Injectable()
@@ -12,43 +12,33 @@ export class SetRepository implements SetRepositoryPort {
         @InjectRepository(SetEntity)
         private readonly setRepository: Repository<SetEntity>,
     ) {}
-    saveSet(set: Set): Promise<Set> {
-        throw new Error("Method not implemented.");
+
+    async saveSet(set: Set): Promise<Set> {
+        const setEntity: SetEntity = this.mapToEntity(set);
+        const savedSetEntity: SetEntity = await this.setRepository.save(setEntity);
+        return this.mapFromEntity(savedSetEntity);
     }
-    findByCode(code: string): Promise<Set | null> {
-        throw new Error("Method not implemented.");
+
+    async findByCode(code: string): Promise<Set | null> {
+        const setEntity: SetEntity = await this.setRepository.findOneBy({ setCode: code});
+        return this.mapFromEntity(setEntity);    
     }
-    findByName(name: string): Promise<Set | null> {
-        throw new Error("Method not implemented.");
+
+    async findByName(setName: string): Promise<Set | null> {
+        const setEntity: SetEntity = await this.setRepository.findOneBy({ name: setName});
+        return this.mapFromEntity(setEntity);
     }
-    findAllSets(): Promise<Set[] | null> {
-        throw new Error("Method not implemented.");
-    }
-    findAllSetsMeta(): Promise<Set[] | null> {
+
+    async findAllSets(): Promise<Set[] | null> {
         throw new Error("Method not implemented.");
     }
 
-    async emailExists(_email: string): Promise<boolean> {
-        return await this.setRepository.exists({where:{email: _email}});
-    }
-    
-    async findById(id: number): Promise<Set | null> {
-        const setEntity = await this.setRepository.findOneBy({ id });
-        return setEntity ? new Set(setEntity.id, setEntity.name, setEntity.email) : null;
-    }
-
-    async findByEmail(setname: string): Promise<Set | null> {
-        const setEntity: SetEntity =  await this.setRepository.findOneBy({ name: setname });
-        return setEntity ? new Set(setEntity.id, setEntity.name, setEntity.email) : null;
-    }
-
-    async getPasswordHash(email: string): Promise<string> {
-        const setEntity = await this.setRepository.findOneBy({ email });
-        return setEntity ? setEntity.password : null;
+    async findAllSetsMeta(): Promise<Set[] | null> {
+        throw new Error("Method not implemented.");
     }
 
     async setExists(set: Set): Promise<boolean> {
-        return await this.setRepository.exists({ where: { name: set.name } });
+        return await this.setRepository.exists({ where: { setCode: set.setCode } });
     }
 
     async removeById(id: number): Promise<void> {
@@ -56,16 +46,32 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async removeSet(set: Set): Promise<void> {
-        await this.setRepository.delete(set.id);
+        await this.setRepository.delete(set.setCode);
     }
 
-    async save(set: Set, hashedPassword: string): Promise<Set> {
+    private mapFromEntity(setEntity: SetEntity): Set {
+        const set = new Set();
+        set.baseSize = setEntity.baseSize;
+        set.block = setEntity.block;
+        set.cards = setEntity.cards;
+        set.keyruneCode = setEntity.keyruneCode;
+        set.name = setEntity.name;
+        set.releaseDate = setEntity.releaseDate;
+        set.setCode = setEntity.setCode;
+        set.type = setEntity.type;
+        return set;
+    }
+
+    private mapToEntity(set: Set): SetEntity {
         const setEntity = new SetEntity();
-        setEntity.id = set.id;
+        setEntity.baseSize = set.baseSize;
+        setEntity.block = set.block;
+        setEntity.cards = set.cards;
+        setEntity.keyruneCode = set.keyruneCode;
         setEntity.name = set.name;
-        setEntity.email = set.email;
-        setEntity.password = hashedPassword;
-        const savedSetEntity = await this.setRepository.save(setEntity);
-        return new Set(savedSetEntity.id, savedSetEntity.name, savedSetEntity.email);
+        setEntity.releaseDate = set.releaseDate;
+        setEntity.setCode = set.setCode;
+        setEntity.type = set.type;
+        return setEntity;
     }
 }

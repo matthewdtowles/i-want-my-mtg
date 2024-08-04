@@ -1,4 +1,4 @@
-import { Set } from '../set.entity';
+import { Set } from '../set';
 
 /**
  * Port to ingest set data from external provider

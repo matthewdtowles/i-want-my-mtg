@@ -7,7 +7,6 @@ import { User } from "../user";
  */
 export interface UserServicePort {
 
-
     /**
      * @param email 
      * @param password

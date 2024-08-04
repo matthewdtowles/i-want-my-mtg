@@ -2,6 +2,8 @@ import { User } from "src/core/user/user";
 import { Collection } from "../collection";
 import { Card } from "src/core/card/card";
 
+export const CollectionRepositoryPort = 'CollectionRepositoryPort';
+
 /**
  * Persistence layer for Collection entity
  */

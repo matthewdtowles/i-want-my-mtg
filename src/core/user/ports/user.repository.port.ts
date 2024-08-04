@@ -1,6 +1,7 @@
 import { User } from "../user";
 
 export const UserRepositoryPort = 'UserRepositoryPort';
+
 /**
  * Persistence layer for User entity
  */

@@ -1,5 +1,7 @@
 import { Set } from '../set';
 
+export const SetRepositoryPort = 'SetRepositoryPort';
+
 /**
  * Persistence layer for Set entity
  */

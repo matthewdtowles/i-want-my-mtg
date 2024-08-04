@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';
-import { Card } from 'src/core/card/card.entity';
+import { Card } from 'src/core/card/card';
 import { CardMapper } from './card.mapper';
-import { GetCardDto } from './dtos/get-card.dto';
+import { CardDto } from './dtos/card.dto';
 import { CardServicePort } from 'src/core/card/ports/card.service.port';
 
 @Controller('card')
@@ -20,7 +20,7 @@ export class CardController {
     }
 
     @Get(':id')
-    async findOne(@Param('id') id: string): Promise<GetCardDto> {
+    async findOne(@Param('id') id: string): Promise<CardDto> {
         const card: Card = await this.cardService.findById(id);
         return this.cardMapper.entityToDto( card);
     }

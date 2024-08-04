@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SetModule } from './core/set/set.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserModule } from './core/users/user.module';
+import { UserModule } from './core/user/user.module';
 import { CardModule } from './core/card/card.module';
 import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.module';
 import { HttpModule } from './http/http.module';

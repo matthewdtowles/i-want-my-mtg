@@ -1,8 +1,8 @@
 import { Set } from 'src/core/set/set.entity';
 import { CreateSetDto } from './dtos/create-set.dto';
-import { GetSetDto } from './dtos/get-set.dto';
-import { GetCardDto } from '../card/dtos/get-card.dto';
-import { Card } from 'src/core/card/card.entity';
+import { SetDto } from './dtos/set.dto';
+import { CardDto } from '../card/dtos/card.dto';
+import { Card } from 'src/core/card/card';
 
 export class SetMapper {
 
@@ -12,8 +12,8 @@ export class SetMapper {
         return set;
     }
 
-    entityToDto(set: Set): GetSetDto {
-        const dto: GetSetDto = new GetSetDto();
+    entityToDto(set: Set): SetDto {
+        const dto: SetDto = new SetDto();
         dto.block = set.block;
         dto.cards = this.mapCardResponses(set.cards);
         dto.code = set.setCode.toUpperCase();
@@ -30,10 +30,10 @@ export class SetMapper {
      * @param sets 
      * @returns 
      */
-    entitiesToDtos(sets: Set[]): GetSetDto[] {
+    entitiesToDtos(sets: Set[]): SetDto[] {
         const setDtos = [];
         sets.forEach(s => {
-            const dto: GetSetDto = new GetSetDto();
+            const dto: SetDto = new SetDto();
             dto.block = s.block;
             dto.code = s.setCode.toUpperCase();
             dto.keyruneCode = s.keyruneCode.toLowerCase();
@@ -45,10 +45,10 @@ export class SetMapper {
     }
 
 
-    private mapCardResponses(cards: Card[]): GetCardDto[] {
-        const cardResponses: GetCardDto[] = [];
+    private mapCardResponses(cards: Card[]): CardDto[] {
+        const cardResponses: CardDto[] = [];
         cards.forEach(c => {
-            const dto: GetCardDto = new GetCardDto();
+            const dto: CardDto = new CardDto();
             // TODO: manacost as []?
             // dto.manaCost = this.buildManaCost(c.manaCost);
             dto.name = c.name;

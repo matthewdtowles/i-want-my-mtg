@@ -1,8 +1,8 @@
-import { Set } from '../set/set.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { SetEntity } from '../set/set.entity';
 
 @Entity()
-export class Card {
+export class CardEntity {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -28,8 +28,8 @@ export class Card {
     @Column()
     rarity: string;
     
-    @ManyToOne(() => Set, (set) => set.cards)
-    set: Set;
+    @ManyToOne(() => SetEntity, (set) => set.cards)
+    set: SetEntity;
 
     @Column()
     url: string;

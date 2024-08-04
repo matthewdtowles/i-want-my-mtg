@@ -1,7 +1,7 @@
-import { Card } from '../card/card.entity';
+import { CardEntity } from '../card/card.entity';
 import { Column, OneToMany, PrimaryColumn } from 'typeorm';
 
-export class Set {
+export class SetEntity {
 
     @PrimaryColumn()
     setCode: string;
@@ -12,8 +12,8 @@ export class Set {
     @Column()
     block?: string;
 
-    @OneToMany(() => Card, (card) => card.set)
-    cards: Card[];
+    @OneToMany(() => CardEntity, (card) => card.set)
+    cards: CardEntity[];
 
     @Column()
     keyruneCode: string;

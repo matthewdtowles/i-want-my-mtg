@@ -1,4 +1,4 @@
-import { Card } from '../card.entity';
+import { Card } from '../card';
 
 /**
  * Port to ingest card data from external provider

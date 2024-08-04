@@ -1,20 +1,16 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../../database/user/user.entity';
-import { Card } from '../card/card.entity';
+import { UserEntity } from '../user/user.entity';
+import { CardEntity } from '../card/card.entity';
 
 @Entity()
 export class CollectionEntity {
-
-
-    // TODO: To be designed
-
 
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    owner: User;
+    owner: UserEntity;
 
-    @OneToMany(() => Card, (card) => card.set)
-    cards: Card[];
+    @OneToMany(() => CardEntity, (card) => card.set)
+    cards: CardEntity[];
 }

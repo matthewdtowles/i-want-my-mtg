@@ -1,5 +1,5 @@
 import { Card } from 'src/core/card/card';
-import { Collection } from '../collection.entity';
+import { Collection } from '../collection';
 
 /**
  * Individual Collection service

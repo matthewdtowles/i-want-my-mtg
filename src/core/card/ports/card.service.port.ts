@@ -1,5 +1,7 @@
 import { Card } from '../card';
 
+export const CardServicePort = 'CardServicePort';
+
 /**
  * Individual Card service
  * Implemented by Core

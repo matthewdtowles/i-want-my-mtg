@@ -1,5 +1,7 @@
 import { Card } from '../card';
 
+export const CardDataIngestionPort = 'CardDataIngestionPort';
+
 /**
  * Port to ingest card data from external provider
  * Used by Core

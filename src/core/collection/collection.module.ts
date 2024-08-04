@@ -3,8 +3,9 @@ import { CollectionService } from './collection.service';
 
 @Module({
     providers: [
+        CollectionService,
         {
-            provide: 'CollectionServicePort',
+            provide: 'CollectionRepositoryPort',
             useClass: CollectionService,
         },
     ],

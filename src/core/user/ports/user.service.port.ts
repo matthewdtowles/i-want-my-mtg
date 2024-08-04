@@ -1,5 +1,7 @@
 import { User } from "../user";
 
+export const UserServicePort = 'UserServicePort';
+
 /**
  * User service
  * Implemented by Core

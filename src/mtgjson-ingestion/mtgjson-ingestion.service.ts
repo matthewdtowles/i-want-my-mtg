@@ -5,7 +5,7 @@ import { MtgJsonMapperService } from './mtgjson-mapper.service';
 import { SetDataIngestionPort } from '../core/set/ports/set-data.ingestion.port';
 import { CardDataIngestionPort } from '../core/card/ports/card-data.ingestion.port';
 import axios, { AxiosResponse } from 'axios';
-import { Set } from 'src/core/set/set.entity';
+import { Set } from 'src/core/set/set';
 import { Card } from 'src/core/card/card';
 
 

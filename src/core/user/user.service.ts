@@ -6,6 +6,9 @@ import { User } from './user';
 
 @Injectable()
 export class UserService implements UserServicePort {
+    findByUsername(username: string): Promise<User> {
+        throw new Error('Method not implemented.');
+    }
 
     constructor(private readonly repository: UserRepositoryPort) {}
 

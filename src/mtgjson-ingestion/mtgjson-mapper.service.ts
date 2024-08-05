@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CardSet } from './dtos/cardSet.dto';
 import { SetDto } from './dtos/set.dto';
 import { SetList } from './dtos/setList.dto';
-import { Set } from 'src/core/set/set.entity';
+import { Set } from 'src/core/set/set';
 import { Card } from 'src/core/card/card';
 
 @Injectable()

@@ -8,8 +8,8 @@ import { CardRepositoryPort } from './ports/card.repository.port';
 export class CardService implements CardServicePort {
 
     constructor(
-        @Inject('CardDataIngestionPort') private readonly ingestionService: CardDataIngestionPort,
-        private readonly repository: CardRepositoryPort,
+        @Inject(CardDataIngestionPort) private readonly ingestionService: CardDataIngestionPort,
+        @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
     ) {}
 
     async create(card: Card): Promise<Card> {

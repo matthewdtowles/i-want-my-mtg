@@ -5,20 +5,20 @@ import { UserRepositoryPort } from './ports/user.repository.port';
 
 const mockUser: User = new User(1, 'test-username1', 'test-email1@iwantmymtg.com');
     
-const mockUserRepository = {
-    saveUser: jest.fn().mockResolvedValue(mockUser),
-    userExists: jest.fn().mockResolvedValue(false),
+const mockUserRepository: UserRepositoryPort = {
+    emailExists: jest.fn().mockResolvedValue(false),
+    findByEmail: jest.fn().mockResolvedValue(mockUser),
     findById: jest.fn().mockResolvedValue(mockUser),
-    findByUsername: jest.fn().mockResolvedValue(mockUser),
+    getPasswordHash: jest.fn().mockResolvedValue("qwertyuiop"),
     removeById: jest.fn(),
     removeUser: jest.fn(),
-    delete: jest.fn(),
-    findOneBy: jest.fn().mockResolvedValue(mockUser),
+    save: jest.fn().mockResolvedValue(mockUser),
+    userExists: jest.fn().mockResolvedValue(false),
 };
 
 describe('UserService', () => {
     let service: UserService;
-    let repository: typeof mockUserRepository;
+    let repository: UserRepositoryPort;
 
     const user: User = new User(null, 'test-username1', 'test-email1@iwantmymtg.com');
 
@@ -34,26 +34,26 @@ describe('UserService', () => {
         }).compile();
 
         service = module.get<UserService>(UserService);
-        repository = module.get(UserRepositoryPort);
+        repository = module.get<UserRepositoryPort>(UserRepositoryPort);
     });
 
-    it('users service should be defined', () => {
+    it('user service should be defined', () => {
         expect(service).toBeDefined();
     });
 
     it('create should successfully insert a user', () => {
-        expect(service.createUser(user)).resolves.toEqual(mockUser);
+        expect(service.createUser(user.name, user.email, "password")).resolves.toEqual(mockUser);
     });
 
-    it('findById should get a single user with passed id', () => {
+    it('findById should get a single user with given id', () => {
         const repoSpy = jest.spyOn(repository, 'findById');
         expect(service.findById(1)).resolves.toEqual(mockUser);
         expect(repoSpy).toHaveBeenCalledWith(1);
     });
 
-    it('findByUsername should get a single user with passed username', () => {
-        const repoSpy = jest.spyOn(repository, 'findByUsername');
-        expect(service.findByUsername('test-username1')).resolves.toEqual(mockUser);
+    it('findByEmail should get a single user with given email', () => {
+        const repoSpy = jest.spyOn(repository, 'findByEmail');
+        expect(service.findByEmail('test-username1')).resolves.toEqual(mockUser);
         expect(repoSpy).toHaveBeenCalledWith('test-username1');
     });
 

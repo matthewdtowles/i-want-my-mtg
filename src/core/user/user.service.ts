@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
@@ -6,11 +6,8 @@ import { User } from './user';
 
 @Injectable()
 export class UserService implements UserServicePort {
-    findByUsername(username: string): Promise<User> {
-        throw new Error('Method not implemented.');
-    }
 
-    constructor(private readonly repository: UserRepositoryPort) {}
+    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
 
     async authenticate(email: string, password: string): Promise<User | null> {
         const hashedPassword: string = await this.repository.getPasswordHash(email);

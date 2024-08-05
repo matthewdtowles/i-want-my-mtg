@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { UserService } from 'src/core/user/user.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'src/core/user/user';
+import { UserServicePort } from 'src/core/user/ports/user.service.port';
 
 @Controller('users')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserServicePort) {}
 
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -18,9 +18,9 @@ export class UserController {
         return this.userService.findById(id);
     }
 
-    @Get(':username')
-    findByUsername(@Param('username') username: string): Promise<User> {
-        return this.userService.findByUsername(username);
+    @Get(':email')
+    findByEmail(@Param('email') email: string): Promise<User> {
+        return this.userService.findByEmail(email);
     }
 
     @Delete(':id')

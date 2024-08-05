@@ -14,14 +14,16 @@ import { UserRepository } from './user/user.repository';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 
 @Module({
-    imports: [TypeOrmModule.forFeature(
-        [
-            CardEntity,
-            CollectionEntity,
-            SetEntity,
-            UserEntity,
-        ],
-    )],
+    imports: [
+        TypeOrmModule.forFeature(
+            [
+                CardEntity,
+                CollectionEntity,
+                SetEntity,
+                UserEntity,
+            ],
+        )
+    ],
     providers: [
         {
             provide: CardRepositoryPort,

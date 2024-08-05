@@ -1,5 +1,7 @@
 import { Set } from '../set';
 
+export const SetDataIngestionPort = 'SetDataIngestionPort';
+
 /**
  * Port to ingest set data from external provider
  * Used by Core

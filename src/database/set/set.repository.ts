@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { SetEntity } from "./set.entity";
-import { Set } from "src/core/set/set";
-import { SetRepositoryPort } from "src/core/set/ports/set.repository.port";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SetEntity } from './set.entity';
+import { Set } from 'src/core/set/set';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
@@ -30,11 +30,11 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async findAllSets(): Promise<Set[] | null> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     async findAllSetsMeta(): Promise<Set[] | null> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     async setExists(set: Set): Promise<boolean> {

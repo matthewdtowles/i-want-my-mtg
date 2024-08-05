@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { InsertResult, Repository } from "typeorm";
-import { CollectionEntity } from "./collection.entity";
-import { CollectionRepositoryPort } from "src/core/collection/ports/collection.repository.port";
-import { Collection } from "src/core/collection/collection";
-import { Card } from "src/core/card/card";
-import { User } from "src/core/user/user";
-import { UserEntity } from "../user/user.entity";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { InsertResult, Repository } from 'typeorm';
+import { CollectionEntity } from './collection.entity';
+import { CollectionRepositoryPort } from 'src/core/collection/ports/collection.repository.port';
+import { Collection } from 'src/core/collection/collection';
+import { Card } from 'src/core/card/card';
+import { User } from 'src/core/user/user';
+import { UserEntity } from '../user/user.entity';
 
 @Injectable()
 export class CollectionRepository implements CollectionRepositoryPort {
@@ -37,11 +37,11 @@ export class CollectionRepository implements CollectionRepositoryPort {
     }
 
     async removeCard(card: Card, collection: Collection): Promise<void> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     async removeCards(cards: Card[], collection: Collection): Promise<void> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     async findById(id: number): Promise<Collection | null> {

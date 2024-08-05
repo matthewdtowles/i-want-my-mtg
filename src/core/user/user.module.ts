@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserServicePort } from './ports/user.service.port';
-import { UserRepository } from 'src/database/user/user.repository';
+import { UserRepositoryPort } from './ports/user.repository.port';
 
 @Module({
     providers: [
@@ -9,11 +9,10 @@ import { UserRepository } from 'src/database/user/user.repository';
             provide: UserServicePort,
             useClass: UserService,
         },
-        {
-            provide: 'UserRepositoryPort',
-            useClass: UserRepository,
-        },
     ],
-    exports: [UserServicePort]
+    exports: [
+        UserRepositoryPort,
+        UserServicePort
+    ]
 })
 export class UserModule { }

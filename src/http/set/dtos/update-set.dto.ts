@@ -1,5 +1,5 @@
-import { IsInt, IsPositive, IsOptional, IsString, IsDateString, IsEnum } from "class-validator";
-import { SetType } from "../set-type.enum";
+import { IsInt, IsPositive, IsOptional, IsString, IsDateString, IsEnum } from 'class-validator';
+import { SetType } from '../set-type.enum';
 
 export class UpdateSetDto {
     @IsInt()

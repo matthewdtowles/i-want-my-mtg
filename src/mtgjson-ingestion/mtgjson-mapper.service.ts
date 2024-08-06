@@ -24,11 +24,12 @@ export class MtgJsonMapperService {
         const set: Set = new Set();
         set.baseSize = setDto.baseSetSize;
         set.block = setDto.block;
-        set.setCode = setDto.code.toUpperCase();
+        set.cards = [];
         set.keyruneCode = setDto.keyruneCode.toLowerCase();
         set.name = setDto.name;
         // set.parentCode = setDto.parentCode;
         set.releaseDate = setDto.releaseDate;
+        set.setCode = setDto.code;
         set.type = setDto.type;
         // set.url = this.buildSetUrl(setDto.code);
         return set;

@@ -2,11 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { SetController } from './set.controller';
-import { SetService } from '../../core/set/set.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../../app.module';
 import { join } from 'path';
 import { create } from 'express-handlebars';
+import { SetServicePort } from 'src/core/set/ports/set.service.port';
 
 describe('SetController', () => {
     let app: INestApplication;
@@ -18,7 +18,7 @@ describe('SetController', () => {
             controllers: [SetController],
             providers: [
                 {
-                    provide: SetService,
+                    provide: SetServicePort,
                     useValue: setService,
                 },
             ],

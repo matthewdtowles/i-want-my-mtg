@@ -54,13 +54,13 @@ export class CardMapper {
     }
 
     private mapManaToView(manaCost: string): string[] {
-        return manaCost.toLowerCase()
+        return null !== manaCost ? manaCost.toLowerCase()
         .toLowerCase()
         .trim()
         .replaceAll('/', '')
         .replace('{', '')
         .replaceAll('}', '')
-        .split('{');
+        .split('{') : null;
     }
 
     private mapManaToRepo(manaCost: string[]): string {

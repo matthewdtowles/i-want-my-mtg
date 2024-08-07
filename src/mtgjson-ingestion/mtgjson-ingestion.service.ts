@@ -19,7 +19,7 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
 
     async fetchAllSets(): Promise<Set[]> {
         const setList: SetList[] = await this.requestSetList();
-        return this.dataMapper.mapCreateSetDtos(setList);
+        return this.dataMapper.mapSetMetaListToSets(setList);
     }
 
     async fetchSetByCode(code: string): Promise<Set> {
@@ -36,7 +36,7 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
 
     async fetchSetCards(code: string): Promise<Card[]> {
         const setDto: SetDto = await this.requestSet(code);
-        return this.dataMapper.mapCreateCardDtos(setDto.cards);
+        return this.dataMapper.mapSetCardsToCards(setDto.cards);
     }
 
     async fetchCard(uuid: string): Promise<Card> {

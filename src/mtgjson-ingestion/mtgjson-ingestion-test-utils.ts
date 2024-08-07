@@ -1,9 +1,9 @@
 import { CardSet } from './dtos/cardSet.dto';
 import { SetDto } from './dtos/set.dto';
 import { Identifiers } from './dtos/identifiers.dto';
-import { CreateSetDto } from 'src/http/set/dtos/create-set.dto';
 import { SetList } from './dtos/setList.dto';
-import { CreateCardDto } from 'src/http/card/dtos/create-card.dto';
+import { Set } from 'src/core/set/set';
+import { Card } from 'src/core/card/card';
 
 export class MtgJsonIngestionTestUtils {
 
@@ -12,7 +12,7 @@ export class MtgJsonIngestionTestUtils {
     private readonly MOCK_SET_NAME: string = 'Setname';
     private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
     private readonly MOCK_SET_TYPE: string = 'expansion';
-    private readonly MOCK_DTO_URL: string = 'sets/set';
+    private readonly MOCK_SET_URL: string = 'sets/set';
     private readonly MOCK_ROOT_SCRYFALL_ID: string = 'abc123def456';
     private readonly MOCK_CARD_PRICE: number = 0;
     private readonly MOCK_TOTAL_OWNED: number = 0;
@@ -74,53 +74,53 @@ export class MtgJsonIngestionTestUtils {
         return setList;
     }
 
-    getExpectedCardDtos(): CreateCardDto[] {
-        const cardDtos: CreateCardDto[] = [];
+    getExpectedCards(): Card[] {
+        const cards: Card[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
-            let cardDto = new CreateCardDto();
-            cardDto.imgSrc = this.IMG_SRC_BASE + i + '/' + 'a/' + i + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
-            cardDto.manaCost = '{' + i + '}{W}';
-            cardDto.name = 'Test Card Name' + i;
-            cardDto.notes = [];
-            cardDto.number = i.toString();
-            cardDto.price = this.MOCK_CARD_PRICE;
-            cardDto.rarity = i % 2 === 1 ? 'common' : 'uncommon';
-            cardDto.setCode = this.MOCK_SET_CODE;
-            cardDto.totalOwned = this.MOCK_TOTAL_OWNED;
-            cardDto.url = this.MOCK_DTO_URL + '/' + i;
-            cardDtos.push(cardDto);
+            let card = new Card();
+            card.imgSrc = this.IMG_SRC_BASE + i + '/' + 'a/' + i + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
+            card.isReserved = false;
+            card.manaCost = '{' + i + '}{W}';
+            card.name = 'Test Card Name' + i;
+            card.number = i.toString();
+            card.originalText = 'Test card text.';
+            card.uuid = 'abcd-1234-efgh-5678-ijkl-901' + i;
+            card.rarity = i % 2 === 1 ? 'common' : 'uncommon';
+            // card.set = this.MOCK_SET;
+            card.url = this.MOCK_SET_URL + '/' + i;
+            cards.push(card);
         }
-        let cardDto = new CreateCardDto();
-        cardDto.imgSrc = this.IMG_SRC_BASE + '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
-        cardDto.manaCost = '{U/G}{B/W}{R/U}';
-        cardDto.name = 'Test Bonus Card Name';
-        cardDto.notes = [];
-        cardDto.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
-        cardDto.price = this.MOCK_CARD_PRICE;
-        cardDto.rarity = 'mythic';
-        cardDto.setCode = this.MOCK_SET_CODE;
-        cardDto.totalOwned = this.MOCK_TOTAL_OWNED;
-        cardDto.url = this.MOCK_DTO_URL + '/' + cardDto.number;
-        cardDtos.push(cardDto);
-        return cardDtos;
+        let bonusCard = new Card();
+        bonusCard.imgSrc = this.IMG_SRC_BASE + '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
+        bonusCard.isReserved = false;
+        bonusCard.manaCost = '{U/G}{B/W}{R/U}';
+        bonusCard.name = 'Test Bonus Card Name';
+        bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
+        bonusCard.originalText = 'Bonus card text.';
+        bonusCard.rarity = 'mythic';
+        // cardDto.setCode = this.MOCK_SET_CODE;
+        bonusCard.url = this.MOCK_SET_URL + '/' + bonusCard.number;
+        bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
+        cards.push(bonusCard);
+        return cards;
     }
 
-    getExpectedSetDto(): CreateSetDto {
-        const expectedSetDto: CreateSetDto = new CreateSetDto();
-        expectedSetDto.baseSize = this.MOCK_BASE_SET_SIZE;
-        expectedSetDto.block = this.MOCK_SET_NAME;
-        expectedSetDto.code = this.MOCK_SET_CODE;
-        expectedSetDto.keyruneCode = this.MOCK_SET_CODE.toLowerCase();
-        expectedSetDto.name = this.MOCK_SET_NAME;
-        expectedSetDto.releaseDate = this.MOCK_RELEASE_DATE;
-        expectedSetDto.type = this.MOCK_SET_TYPE;
-        expectedSetDto.url = this.MOCK_DTO_URL;
-        return expectedSetDto;
+    getExpectedSet(): Set {
+        const expectedSet: Set = new Set();
+        expectedSet.baseSize = this.MOCK_BASE_SET_SIZE;
+        expectedSet.block = this.MOCK_SET_NAME;
+        expectedSet.setCode = this.MOCK_SET_CODE;
+        expectedSet.keyruneCode = this.MOCK_SET_CODE.toLowerCase();
+        expectedSet.name = this.MOCK_SET_NAME;
+        expectedSet.releaseDate = this.MOCK_RELEASE_DATE;
+        expectedSet.type = this.MOCK_SET_TYPE;
+        return expectedSet;
     }
 
-    getExpectedSetDtos(): CreateSetDto[] {
-        const expectedSetDtos: CreateSetDto[] = [];
-        expectedSetDtos.push(this.getExpectedSetDto());
-        return expectedSetDtos;
+    // single item array for testing purposes
+    getExpectedSets(): Set[] {
+        const expectedSets: Set[] = [];
+        expectedSets.push(this.getExpectedSet());
+        return expectedSets;
     }
 }

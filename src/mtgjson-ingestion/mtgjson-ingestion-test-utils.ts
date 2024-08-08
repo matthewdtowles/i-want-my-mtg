@@ -38,23 +38,29 @@ export class MtgJsonIngestionTestUtils {
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             let card = new CardSet();
             card.identifiers = new Identifiers();
+            card.isReserved = false;
             card.manaCost = '{' + i + '}{W}';
             card.name = 'Test Card Name' + i;
             card.number = i.toString();
             card.rarity = i % 2 === 1 ? 'common' : 'uncommon';
             card.identifiers.scryfallId = i + this.MOCK_ROOT_SCRYFALL_ID;
+            card.originalText = 'Test card text.';
             card.setCode = this.MOCK_SET_CODE;
+            card.uuid = 'abcd-1234-efgh-5678-ijkl-901' + i;
             cards.push(card);
         }
-        let card = new CardSet();
-        card.identifiers = new Identifiers();
-        card.manaCost = '{U/G}{B/W}{R/U}';
-        card.name = 'Test Bonus Card Name';
-        card.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
-        card.rarity = 'mythic'
-        card.identifiers.scryfallId = card.number + this.MOCK_ROOT_SCRYFALL_ID;
-        card.setCode = this.MOCK_SET_CODE;
-        cards.push(card);
+        let bonusCard = new CardSet();
+        bonusCard.identifiers = new Identifiers();
+        bonusCard.isReserved = false;
+        bonusCard.manaCost = '{U/G}{B/W}{R/U}';
+        bonusCard.name = 'Test Bonus Card Name';
+        bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
+        bonusCard.originalText = 'Bonus card text.';
+        bonusCard.rarity = 'mythic'
+        bonusCard.identifiers.scryfallId = bonusCard.number + this.MOCK_ROOT_SCRYFALL_ID;
+        bonusCard.setCode = this.MOCK_SET_CODE;
+        bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
+        cards.push(bonusCard);
         return cards;
     }
 
@@ -98,7 +104,7 @@ export class MtgJsonIngestionTestUtils {
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
         bonusCard.originalText = 'Bonus card text.';
         bonusCard.rarity = 'mythic';
-        // cardDto.setCode = this.MOCK_SET_CODE;
+        // bonusCard.setCode = this.MOCK_SET_CODE;
         bonusCard.url = this.MOCK_SET_URL + '/' + bonusCard.number;
         bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
         cards.push(bonusCard);
@@ -109,10 +115,11 @@ export class MtgJsonIngestionTestUtils {
         const expectedSet: Set = new Set();
         expectedSet.baseSize = this.MOCK_BASE_SET_SIZE;
         expectedSet.block = this.MOCK_SET_NAME;
-        expectedSet.setCode = this.MOCK_SET_CODE;
+        expectedSet.cards = [];
         expectedSet.keyruneCode = this.MOCK_SET_CODE.toLowerCase();
         expectedSet.name = this.MOCK_SET_NAME;
         expectedSet.releaseDate = this.MOCK_RELEASE_DATE;
+        expectedSet.setCode = this.MOCK_SET_CODE;
         expectedSet.type = this.MOCK_SET_TYPE;
         return expectedSet;
     }

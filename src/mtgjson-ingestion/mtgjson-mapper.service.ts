@@ -48,13 +48,9 @@ export class MtgJsonMapperService {
         card.isReserved = setCard.isReserved;
         card.manaCost = setCard.manaCost;
         card.name = setCard.name;
-        // card.notes = this.getNotes(cardDto);
         card.number = setCard.number;
         card.originalText = setCard.originalText;
-        // card.price = this.getPrice(cardDto);
         card.rarity = setCard.rarity;
-        // card.setCode = cardDto.setCode;
-        // card.totalOwned = this.getTotalOwned(cardDto);
         card.url = this.buildCardUrl(setCard);
         card.uuid = setCard.uuid;
         return card;

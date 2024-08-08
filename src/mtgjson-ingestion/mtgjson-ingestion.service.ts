@@ -14,8 +14,8 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
     private readonly CARD_PROVIDER_URL: string = 'https://mtgjson.com/api/v5/';
     private readonly CARD_PROVIDER_FILE_EXT: string = '.json';
     private readonly SET_LIST_PATH: string = 'SetList.json';
-    
-    constructor(private readonly dataMapper: MtgJsonMapperService) {}
+
+    constructor(private readonly dataMapper: MtgJsonMapperService) { }
 
     async fetchAllSets(): Promise<Set[]> {
         const setList: SetList[] = await this.requestSetList();
@@ -55,13 +55,13 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
         return response.data.data;
     }
 
-   /**
-     * Returns Set object for given code
-     * Includes all CardSet objects in the Set
-     *  
-     * @param setCode
-     * @returns 
-     */
+    /**
+      * Returns Set object for given code
+      * Includes all CardSet objects in the Set
+      *  
+      * @param setCode
+      * @returns 
+      */
     async requestSet(setCode: string): Promise<SetDto> {
         const url: string = this.CARD_PROVIDER_URL + setCode.toUpperCase() + this.CARD_PROVIDER_FILE_EXT;
         console.log(`Data provider calling ${url}`);

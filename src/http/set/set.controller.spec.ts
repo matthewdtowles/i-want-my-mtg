@@ -71,9 +71,9 @@ describe('SetController', () => {
         await app.init();
     });
 
-    afterAll(async () => {
-        await app.close();
-    });
+    // afterAll(async () => {
+    //     await app.close();
+    // });
 
     it('should render set template with mana.css cdn link', async () => {
         const response = await request(app.getHttpServer()).get('/sets/kld').expect(200);

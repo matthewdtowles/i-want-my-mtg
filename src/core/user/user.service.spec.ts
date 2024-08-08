@@ -58,11 +58,9 @@ describe('UserService', () => {
     });
 
     it('remove should delete given user, check if user exists and return false', async () => {
-        const removeSpy = jest.spyOn(repository, 'removeUser');
-        const existsSpy = jest.spyOn(repository, 'userExists');
-        const retVal = await service.remove(user);
-        expect(removeSpy).toHaveBeenCalledWith(user);
-        expect(existsSpy).toHaveBeenCalledWith(user);
-        expect(retVal).toBe(false);
+        const removeSpy = jest.spyOn(repository, 'removeById');
+        const retVal = await service.remove(user.id);
+        expect(removeSpy).toHaveBeenCalledWith(user.id);
+        expect(retVal).toBe(undefined);
     });
 });

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { UserService } from '../../core/user/user.service';
+import { UserServicePort } from 'src/core/user/ports/user.service.port';
 
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',
@@ -9,46 +9,36 @@ const createUserDto: CreateUserDto = {
     password: 'test-password1'
 };
 
+const mockUser = {
+    id: 1,
+    username: 'test-username1',
+    email: 'test-email1@iwantmymtg.com'
+};
+
 describe('UsersController', () => {
     let controller: UserController;
-    let service: UserService;
+    let service: UserServicePort;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [UserController],
             providers: [
-                UserService,
                 {
-                    provide: UserService,
+                    provide: UserServicePort,
                     useValue: {
-                        create: jest
-                            .fn()
-                            .mockImplementation((user: CreateUserDto) =>
-                                Promise.resolve({ id: 1, ...user }),
-                            ),
-                        findById: jest.fn().mockImplementation((id: string) =>
-                            Promise.resolve({
-                                id,
-                                email: 'test-email1@iwantmymtg.com',
-                                username: 'test-username1',
-                                password: 'test-password1'
-                            }),
-                        ),
-                        findByUsername: jest.fn().mockImplementation((username: string) =>
-                            Promise.resolve({
-                                id: 1,
-                                email: 'test-email1@iwantmymtg.com',
-                                username,
-                                password: 'test-password1'
-                            }),
-                        ),
-                        remove: jest.fn(),
+                        authenticate: jest.fn().mockResolvedValue(mockUser),
+                        createUser: jest.fn().mockResolvedValue(mockUser),
+                        findByEmail: jest.fn().mockResolvedValue(mockUser),
+                        findById: jest.fn().mockResolvedValue(mockUser),
+                        update: jest.fn().mockResolvedValue(mockUser),
+                        remove: jest.fn().mockResolvedValue(undefined),
                     },
                 },
             ],
         }).compile();
+
         controller = module.get<UserController>(UserController);
-        service = module.get<UserService>(UserService);
+        service = module.get<UserServicePort>(UserServicePort);
     });
 
     it('users controller should be defined', () => {
@@ -57,26 +47,20 @@ describe('UsersController', () => {
 
     it('should create a user', () => {
         controller.create(createUserDto);
-        expect(controller.create(createUserDto)).resolves.toEqual({
-            id: 1,
-            ...createUserDto,
-        });
-        expect(service.createUser).toHaveBeenCalledWith(createUserDto);
+        expect(controller.create(createUserDto)).resolves.toEqual(mockUser);
+        expect(service.createUser).toHaveBeenCalledWith(
+            createUserDto.username,
+            createUserDto.email,
+            createUserDto.password);
     });
 
     it('should find user by given id', () => {
-        expect(controller.findById(1)).resolves.toEqual({
-            id: 1,
-            ...createUserDto,
-        });
+        expect(controller.findById(1)).resolves.toEqual(mockUser);
         expect(service.findById).toHaveBeenCalled();
     });
 
     it('should find user by given email', () => {
-        expect(controller.findByEmail('test-email1@iwantmymtg.com')).resolves.toEqual({
-            id: 1,
-            ...createUserDto,
-        });
+        expect(controller.findByEmail('test-email1@iwantmymtg.com')).resolves.toEqual(mockUser);
         expect(service.findByEmail).toHaveBeenCalled();
     });
 

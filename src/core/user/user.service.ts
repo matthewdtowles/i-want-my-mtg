@@ -36,8 +36,7 @@ export class UserService implements UserServicePort {
         return this.repository.save(user, password);
     }
 
-    async remove(user: User): Promise<boolean> {
-        await this.repository.removeUser(user);
-        return !this.repository.userExists(user);
+    async remove(id: number): Promise<void> {
+        await this.repository.removeById(id);
     }
 }

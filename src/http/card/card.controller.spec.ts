@@ -1,14 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from './card.controller';
-import { CardService } from 'src/core/card/card.service';
+import { CardServicePort } from 'src/core/card/ports/card.service.port';
 
 describe('CardController', () => {
   let controller: CardController;
-
+  let mockCardService = { 
+    
+  };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CardController],
-      providers: [CardService],
+      providers: [
+        {
+          provide: CardServicePort,
+          useValue: mockCardService,
+        }
+      ],
     }).compile();
 
     controller = module.get<CardController>(CardController);

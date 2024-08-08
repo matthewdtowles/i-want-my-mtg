@@ -45,7 +45,7 @@ const mockSet: Set = {
 
 describe('SetController', () => {
     let app: INestApplication;
-    const setService: SetServicePort = {
+    const mockSetService: SetServicePort = {
         create: jest.fn(),
         findByCode: jest.fn().mockResolvedValue(mockSet),
         findAll: jest.fn(),
@@ -61,7 +61,7 @@ describe('SetController', () => {
             providers: [
                 {
                     provide: SetServicePort,
-                    useValue: setService,
+                    useValue: mockSetService,
                 },
                 SetMapper,
             ],
@@ -83,8 +83,8 @@ describe('SetController', () => {
         expressApp.setViewEngine('hbs');
 
         // Mock the service method to return the expected set data
-        setService.findByCode(mockSet.setCode);
-        await app.init();
+        mockSetService.findByCode(mockSet.setCode);
+        // await app.init();
     });
 
     it('should render set template with mana.css cdn link', async () => {

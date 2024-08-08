@@ -1,0 +1,18 @@
+import { Test, TestingModule } from "@nestjs/testing";
+import { SetMapper } from "./set.mapper";
+
+describe('SetMapper', () => {
+    let mapper: SetMapper;
+    beforeAll(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                SetMapper,
+            ],
+        }).compile();
+        mapper = module.get<SetMapper>(SetMapper);
+    });
+
+    it('should be defined', () => {
+        expect(mapper).toBeDefined();
+    });
+});

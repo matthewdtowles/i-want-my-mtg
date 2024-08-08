@@ -53,8 +53,6 @@ describe('SetController', () => {
         update: jest.fn(),
     };
 
-
-
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [SetController],
@@ -84,7 +82,11 @@ describe('SetController', () => {
 
         // Mock the service method to return the expected set data
         mockSetService.findByCode(mockSet.setCode);
-        // await app.init();
+        await app.init();
+    });
+
+    afterAll(async () => {
+        await app.close();
     });
 
     it('should render set template with mana.css cdn link', async () => {

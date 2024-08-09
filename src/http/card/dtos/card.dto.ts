@@ -1,5 +1,4 @@
 import { Type } from 'class-transformer';
-import { Transform } from 'class-transformer';
 import { SetDto } from '../../set/dtos/set.dto';
 
 export class CardDto {

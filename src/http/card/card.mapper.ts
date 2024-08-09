@@ -2,8 +2,11 @@ import { Card } from 'src/core/card/card';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { CardDto } from './dtos/card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class CardMapper {
+
     dtoToEntity(createCardDto: CreateCardDto): Card {
         const card = new Card();
         card.imgSrc = createCardDto.imgSrc;
@@ -25,7 +28,7 @@ export class CardMapper {
         cardDto.imgSrc = card.imgSrc;
         cardDto.isReserved = card.isReserved;
         // TODO: MUST test to ensure manacost is converted correctly!!
-        cardDto.manaCost = card.manaCost;
+        cardDto.manaCost = this.mapManaToView(card.manaCost);
         cardDto.name = card.name;
         cardDto.number = card.number;
         cardDto.originalText = card.originalText;
@@ -51,5 +54,19 @@ export class CardMapper {
         card.url = updateCardDto.url;
         card.uuid = updateCardDto.uuid;
         return card;
+    }
+
+    private mapManaToView(manaCost: string): string[] {
+        return null !== manaCost ? manaCost.toLowerCase()
+        .toLowerCase()
+        .trim()
+        .replaceAll('/', '')
+        .replace('{', '')
+        .replaceAll('}', '')
+        .split('{') : null;
+    }
+
+    private mapManaToRepo(manaCost: string[]): string {
+        return null;
     }
 }

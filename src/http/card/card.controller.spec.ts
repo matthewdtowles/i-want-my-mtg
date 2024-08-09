@@ -1,20 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from './card.controller';
-import { CardService } from 'src/core/card/card.service';
+import { CardServicePort } from 'src/core/card/ports/card.service.port';
+import { CardMapper } from './card.mapper';
 
 describe('CardController', () => {
-  let controller: CardController;
+    let controller: CardController;
+    let mockCardService: CardServicePort = {
+        create: jest.fn(),
+        findAllInSet: jest.fn(),
+        findAllWithName: jest.fn(),
+        findById: jest.fn(),
+        findBySetCodeAndNumber: jest.fn(),
+        update: jest.fn(),
+    };
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            controllers: [CardController],
+            providers: [
+                {
+                    provide: CardServicePort,
+                    useValue: mockCardService,
+                },
+                CardMapper
+            ],
+        }).compile();
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [CardController],
-      providers: [CardService],
-    }).compile();
+        controller = module.get<CardController>(CardController);
+    });
 
-    controller = module.get<CardController>(CardController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 });

@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { CardEntity } from "./card.entity";
-import { CardRepositoryPort } from "src/core/card/ports/card.repository.port";
-import { Card } from "src/core/card/card";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CardEntity } from './card.entity';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { Card } from 'src/core/card/card';
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {

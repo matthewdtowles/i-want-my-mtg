@@ -1,6 +1,8 @@
 import { Card } from 'src/core/card/card';
 import { Collection } from '../collection';
 
+export const CollectionServicePort = 'CollectionServicePort';
+
 /**
  * Individual Collection service
  * Implemented by Core

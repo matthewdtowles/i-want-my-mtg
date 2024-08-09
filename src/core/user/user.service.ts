@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
@@ -7,7 +7,7 @@ import { User } from './user';
 @Injectable()
 export class UserService implements UserServicePort {
 
-    constructor(private readonly repository: UserRepositoryPort) {}
+    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
 
     async authenticate(email: string, password: string): Promise<User | null> {
         const hashedPassword: string = await this.repository.getPasswordHash(email);
@@ -36,8 +36,7 @@ export class UserService implements UserServicePort {
         return this.repository.save(user, password);
     }
 
-    async remove(user: User): Promise<boolean> {
-        await this.repository.removeUser(user);
-        return !this.repository.userExists(user);
+    async remove(id: number): Promise<void> {
+        await this.repository.removeById(id);
     }
 }

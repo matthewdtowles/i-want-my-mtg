@@ -1,5 +1,7 @@
 import { Card } from '../card';
 
+export const CardRepositoryPort = 'CardRepositoryPort';
+
 /**
  * Persistence layer for Card entity
  */

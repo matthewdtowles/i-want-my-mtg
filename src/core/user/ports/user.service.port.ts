@@ -1,4 +1,6 @@
-import { User } from "../user";
+import { User } from '../user';
+
+export const UserServicePort = 'UserServicePort';
 
 /**
  * User service
@@ -50,5 +52,5 @@ export interface UserServicePort {
      * 
      * @param id
      */
-    remove(user: User): Promise<boolean>;
+    remove(id: number): Promise<void>;
 }

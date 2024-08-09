@@ -1,24 +1,53 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SetService as SetService } from './set.service';
+import { SetRepositoryPort } from './ports/set.repository.port';
+import { SetDataIngestionPort } from './ports/set-data.ingestion.port';
+
+const mockSetRepository: SetRepositoryPort = {
+    saveSet: jest.fn(),
+    setExists: jest.fn(),
+    findByCode: jest.fn(),
+    findByName: jest.fn(),
+    findAllSets: jest.fn(),
+    findAllSetsMeta: jest.fn(),
+    removeById: jest.fn(),
+    removeSet: jest.fn(),
+};
+
+const mockSetIngestion: SetDataIngestionPort = {
+    fetchAllSets: jest.fn(),
+    fetchSetByCode: jest.fn(),
+    fetchAllSetsMeta: jest.fn(),
+    fetchSetMetaByCode: jest.fn(),
+};
 
 describe('SetService', () => {
     let service: SetService;
+    let repository: SetRepositoryPort;
+    let ingestionSvc: SetDataIngestionPort;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                SetService
+                SetService,
+                {
+                    provide: SetRepositoryPort,
+                    useValue: mockSetRepository,
+                },
+                {
+                    provide: SetDataIngestionPort,
+                    useValue: mockSetIngestion,
+                },
             ],
         }).compile();
         service = module.get<SetService>(SetService);
+        repository = module.get<SetRepositoryPort>(SetRepositoryPort);
+        ingestionSvc = module.get<SetDataIngestionPort>(SetDataIngestionPort);
     });
 
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
-
-    // TODO: move this to SetModule:??
-    //  imports: [DataIngestionModule], // Register data ingestion module
 
     it('should persist all sets in given array of sets', () => {
     });

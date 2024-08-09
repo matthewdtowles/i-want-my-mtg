@@ -1,15 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { UserService } from 'src/core/user/user.service';
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from 'src/core/user/user.entity';
+import { User } from 'src/core/user/user';
+import { UserServicePort } from 'src/core/user/ports/user.service.port';
 
 @Controller('users')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(@Inject(UserServicePort) private readonly userService: UserServicePort) {}
 
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<User> {
-        return this.userService.create(createUserDto);
+        return this.userService.createUser(createUserDto.username, createUserDto.email, createUserDto.password);
     }
 
     @Get(':id')
@@ -17,9 +17,9 @@ export class UserController {
         return this.userService.findById(id);
     }
 
-    @Get(':username')
-    findByUsername(@Param('username') username: string): Promise<User> {
-        return this.userService.findByUsername(username);
+    @Get(':email')
+    findByEmail(@Param('email') email: string): Promise<User> {
+        return this.userService.findByEmail(email);
     }
 
     @Delete(':id')

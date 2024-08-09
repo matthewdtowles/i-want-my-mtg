@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject } from '@nestjs/common';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';
 import { Card } from 'src/core/card/card';
@@ -9,7 +9,7 @@ import { CardServicePort } from 'src/core/card/ports/card.service.port';
 @Controller('card')
 export class CardController {
     constructor(
-        private readonly cardService: CardServicePort,
+        @Inject(CardServicePort) private readonly cardService: CardServicePort,
         private readonly cardMapper: CardMapper,
     ) { }
 

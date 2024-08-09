@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CollectionServicePort } from './ports/collection.service.port';
 import { Card } from '../card/card';
 import { Collection } from './collection';
@@ -7,7 +7,7 @@ import { CollectionRepositoryPort } from './ports/collection.repository.port';
 @Injectable()
 export class CollectionService implements CollectionServicePort {
 
-    constructor(private readonly repository: CollectionRepositoryPort) {}
+    constructor(@Inject(CollectionRepositoryPort) private readonly repository: CollectionRepositoryPort) { }
 
     create(collection: Collection): Promise<Collection> {
         throw new Error('Method not implemented.');

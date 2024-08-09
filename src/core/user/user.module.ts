@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserServicePort } from './ports/user.service.port';
+import { UserRepositoryPort } from './ports/user.repository.port';
 
 @Module({
-  providers: [UserService],
-  exports: [
-    UserService,
-    TypeOrmModule
-  ]
+    providers: [
+        {
+            provide: UserServicePort,
+            useClass: UserService,
+        },
+    ],
+    exports: [
+        UserRepositoryPort,
+        UserServicePort
+    ]
 })
-export class UserModule {}
+export class UserModule { }

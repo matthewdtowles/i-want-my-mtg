@@ -2,7 +2,7 @@
     <button class="remove-card-btn">
         <span class="minus">-</span>
     </button>
-    <span class="total-owned">{{this.totalOwned}}</span>
+    <span class="total-owned">{{#if this.totalOwned}}{{this.totalOwned}}{{else}}0{{/if}}</span>
     <button class="add-card-btn">
         <span class="plus">+</span>
     </button>

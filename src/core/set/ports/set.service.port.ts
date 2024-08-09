@@ -1,5 +1,7 @@
 import { Set } from '../set';
 
+export const SetServicePort = 'SetServicePort';
+
 /**
  * Set operations service
  * Implemented by Core and used by Adapters

@@ -47,4 +47,16 @@ describe('CardService', () => {
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
+
+    it('creates and returns persisted instance of given card', () => {});
+
+    it('finds all cards in given set by setCode', () => {});
+
+    it('finds every instance of a card with given name', () => {});
+
+    it('finds a unique instance of a card by uuid', () => {});
+
+    it('finds a unique instance of a card by setCode and card number in that set', () => {});
+
+    it('updates and returns persisted instance of given card', () => {});
 });

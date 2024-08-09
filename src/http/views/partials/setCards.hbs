@@ -21,7 +21,7 @@
                 {{>manaCost}}
             </td>
             <td class="card-set-card-rarity">{{this.rarity}}</td>
-            <td class="card-set-card-price">${{this.price}}</td>
+            <td class="card-set-card-price">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
         </tr>
     {{/each}}
     </tbody>

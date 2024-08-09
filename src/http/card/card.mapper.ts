@@ -2,8 +2,11 @@ import { Card } from 'src/core/card/card';
 import { CreateCardDto } from './dtos/create-card.dto';
 import { CardDto } from './dtos/card.dto';
 import { UpdateCardDto } from './dtos/update-card.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class CardMapper {
+
     dtoToEntity(createCardDto: CreateCardDto): Card {
         const card = new Card();
         card.imgSrc = createCardDto.imgSrc;

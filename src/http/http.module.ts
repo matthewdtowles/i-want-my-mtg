@@ -4,6 +4,8 @@ import { SetController } from './set/set.controller';
 import { CardController } from './card/card.controller';
 import { UserController } from './user/user.controller';
 import { CollectionController } from './collection/collection.controller';
+import { CardMapper } from './card/card.mapper';
+import { SetMapper } from './set/set.mapper';
 
 @Module({
     controllers: [
@@ -13,10 +15,13 @@ import { CollectionController } from './collection/collection.controller';
         UserController,
     ],
     imports: [
-        CoreModule
+        CoreModule,
+    ],
+    providers: [
+        CardMapper,
     ],
     exports: [
-        CoreModule
+        CoreModule,
     ],
 })
 export class HttpModule {}

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { SetMapper } from "./set.mapper";
+import { CardMapper } from "../card/card.mapper";
 
 describe('SetMapper', () => {
     let mapper: SetMapper;
@@ -7,6 +8,7 @@ describe('SetMapper', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 SetMapper,
+                CardMapper,
             ],
         }).compile();
         mapper = module.get<SetMapper>(SetMapper);

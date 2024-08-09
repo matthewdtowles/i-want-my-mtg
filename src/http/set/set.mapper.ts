@@ -3,8 +3,13 @@ import { SetDto } from './dtos/set.dto';
 import { CardDto } from '../card/dtos/card.dto';
 import { Card } from 'src/core/card/card';
 import { Set } from 'src/core/set/set';
+import { CardMapper } from '../card/card.mapper';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class SetMapper {
+
+    constructor(private readonly cardMapper: CardMapper) {}
 
     dtoToEntity(createSetDto: CreateSetDto): Set {
         const set = new Set();
@@ -44,34 +49,12 @@ export class SetMapper {
         return setDtos;
     }
 
-
     private mapCardResponses(cards: Card[]): CardDto[] {
         const cardResponses: CardDto[] = [];
         cards.forEach(c => {
-            const dto: CardDto = new CardDto();
-            // TODO: manacost as []?
-            // dto.manaCost = this.buildManaCost(c.manaCost);
-            dto.name = c.name;
-            // cr.notes = this.getNotes(c);
-            dto.number = c.number;
-            // cr.price = this.getPrice(c);
-            dto.rarity = c.rarity;
-            // cr.setCode = c.setCode;
-            // cr.totalOwned = this.getTotalOwned(c);
-            // cr.url = this.buildCardUrl(c);
-            cardResponses.push(dto);
+            cardResponses.push(this.cardMapper.entityToDto(c));
         });
         return cardResponses;
-    }
-
-    private buildManaCost(manaCost: string): string[] {
-        return manaCost != null ? manaCost
-            .toLowerCase()
-            .replaceAll('/', '')
-            .replace('{', '')
-            .replaceAll('}', '')
-            .split('{')
-            : null;
     }
 
     private buildSetUrl(code: string): string {

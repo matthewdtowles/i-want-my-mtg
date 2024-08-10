@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CardController } from './card.controller';
-import { CardServicePort } from 'src/core/card/ports/card.service.port';
-import { CardMapper } from './card.mapper';
+import { CardController } from '../../../src/http/card/card.controller';
+import { CardServicePort } from '../../../src/core/card/ports/card.service.port';
+import { CardMapper } from '../../../src/http/card/card.mapper';
 
 describe('CardController', () => {
     let controller: CardController;

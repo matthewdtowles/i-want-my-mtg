@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SetService as SetService } from './set.service';
-import { SetRepositoryPort } from './ports/set.repository.port';
-import { SetDataIngestionPort } from './ports/set-data.ingestion.port';
+import { SetService as SetService } from '../../../src/core/set/set.service';
+import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
+import { SetDataIngestionPort } from '../../../src/core/set/ports/set-data.ingestion.port';
 
 const mockSetRepository: SetRepositoryPort = {
     saveSet: jest.fn(),

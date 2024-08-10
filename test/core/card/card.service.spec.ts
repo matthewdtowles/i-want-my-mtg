@@ -1,17 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CardService } from './card.service';
-import { CardRepositoryPort } from './ports/card.repository.port';
-import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
+import { CardService } from '../../../src/core/card/card.service';
+import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
+import { CardDataIngestionPort } from '../../../src/core/card/ports/card-data.ingestion.port';
+import { Card } from '../../../src/core/card/card';
+
+let createdCard: Card = new Card();
+const mockSetCards: Card[] = [];
+const mockCardsWithName: Card[] = [];
+const mockCard: Card = new Card();
 
 const mockCardRepository: CardRepositoryPort = {
     cardExists: jest.fn().mockResolvedValue(false),
-    findAllInSet: jest.fn(),
-    findAllWithName: jest.fn(),
-    findById: jest.fn(),
-    findBySetCodeAndNumber: jest.fn(),
-    findByUuid: jest.fn(),
+    findAllInSet: jest.fn().mockResolvedValue(mockSetCards),
+    findAllWithName: jest.fn().mockResolvedValue(mockCardsWithName),
+    findById: jest.fn().mockResolvedValue(mockCard),
+    findBySetCodeAndNumber: jest.fn().mockResolvedValue(mockCard),
+    findByUuid: jest.fn().mockResolvedValue(mockCard),
     removeById: jest.fn(),
-    saveCard: jest.fn(),
+    saveCard: jest.fn().mockResolvedValue(createdCard),
 };
 
 const mockCardIngestion: CardDataIngestionPort = {

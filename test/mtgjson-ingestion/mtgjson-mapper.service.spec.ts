@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MtgJsonMapperService } from './mtgjson-mapper.service';
-import { SetDto } from './dtos/set.dto';
-import { CardSet } from './dtos/cardSet.dto';
+import { MtgJsonMapperService } from '../../src/mtgjson-ingestion/mtgjson-mapper.service';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
-import { SetList } from './dtos/setList.dto';
-import { Set } from 'src/core/set/set';
-import { Card } from 'src/core/card/card';
-
+import { CardSet } from '../../src/mtgjson-ingestion/dtos/cardSet.dto'
+import { SetDto } from '../../src/mtgjson-ingestion/dtos/set.dto';
+import { SetList } from '../../src/mtgjson-ingestion/dtos/setList.dto';
+import { Set } from '../../src/core/set/set';
+import { Card } from '../../src/core/card/card';
 
 describe('MtgJsonMapperService', () => {
     let service: MtgJsonMapperService;

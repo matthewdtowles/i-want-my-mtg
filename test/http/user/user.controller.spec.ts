@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UserServicePort } from 'src/core/user/ports/user.service.port';
+import { UserController } from '../../../src/http/user/user.controller';
+import { CreateUserDto } from '../../../src/http/user/dtos/create-user.dto';
+import { UserServicePort } from '../../../src/core/user/ports/user.service.port';
 
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',

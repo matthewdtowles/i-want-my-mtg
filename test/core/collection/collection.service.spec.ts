@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CollectionService } from './collection.service';
-import { CollectionRepositoryPort } from './ports/collection.repository.port';
+import { CollectionService } from '../../../src/core/collection/collection.service';
+import { CollectionRepositoryPort } from '../../../src/core/collection/ports/collection.repository.port';
 
 const mockCollectionRepository: CollectionRepositoryPort = {
     saveCollection: jest.fn(),

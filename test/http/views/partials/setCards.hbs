@@ -1,0 +1,28 @@
+<table id="set-cards">
+    <thead>
+        <th># Owned</th>
+        <th>Card No.</th>
+        <th>Name</th>
+        <th>Mana Cost</th>
+        <th>Rarity</th>
+        <th>Price</th>
+    </thead>
+    <tbody>
+    {{#each cards}}
+        <tr class="card-set-card">
+            <td class="card-set-card-owned">
+                {{>cardsOwned}}
+            </td>
+            <td class="card-set-card-number">{{this.number}}</td>
+            <td class="card-set-card-name">
+                <a class="card-set-card-link" href="{{this.url}}">{{this.name}}</a>
+            </td>
+            <td class="card-set-card-mana-cost">
+                {{>manaCost}}
+            </td>
+            <td class="card-set-card-rarity">{{this.rarity}}</td>
+            <td class="card-set-card-price">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

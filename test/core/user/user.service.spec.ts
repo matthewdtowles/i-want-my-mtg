@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
-import { User } from './user';
-import { UserRepositoryPort } from './ports/user.repository.port';
+import { UserService } from '../../../src/core/user/user.service';
+import { User } from '../../../src/core/user/user';
+import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository.port';
 
 const mockUser: User = new User(1, 'test-username1', 'test-email1@iwantmymtg.com');
     
@@ -20,7 +20,7 @@ describe('UserService', () => {
     let service: UserService;
     let repository: UserRepositoryPort;
 
-    const user: User = new User(null, 'test-username1', 'test-email1@iwantmymtg.com');
+    const user: User = new User(0, 'test-username1', 'test-email1@iwantmymtg.com');
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

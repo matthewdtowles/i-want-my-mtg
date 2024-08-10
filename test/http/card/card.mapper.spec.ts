@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardMapper } from "./card.mapper";
+import { CardMapper } from "../../../src/http/card/card.mapper";
 
 describe('CardMapper', () => {
     let mapper: CardMapper;

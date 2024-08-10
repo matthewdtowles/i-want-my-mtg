@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MtgJsonIngestionService } from './mtgjson-ingestion.service';
+import { MtgJsonIngestionService } from '../../src/mtgjson-ingestion/mtgjson-ingestion.service';
+import { MtgJsonMapperService } from '../../src/mtgjson-ingestion/mtgjson-mapper.service';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
-import { MtgJsonMapperService } from './mtgjson-mapper.service';
 
 describe('MtgJsonIngestionService', () => {
     let service: MtgJsonIngestionService;

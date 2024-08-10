@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { SetController } from './set.controller';
+import { SetController } from '../../../src/http/set/set.controller';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { create } from 'express-handlebars';
-import { SetServicePort } from 'src/core/set/ports/set.service.port';
-import { Set } from 'src/core/set/set';
-import { SetMapper } from './set.mapper';
-import { CardMapper } from '../card/card.mapper';
+import { SetServicePort } from '../../../src/core/set/ports/set.service.port';
+import { SetMapper } from '../../../src/http/set/set.mapper';
+import { CardMapper } from '../../../src/http/card/card.mapper';
+import { Set } from '../../../src/core/set/set';
 
 const mockSet: Set = {
     keyruneCode: 'kld',
@@ -25,7 +25,7 @@ const mockSet: Set = {
             name: 'the name of the card',
             number: '1',
             rarity: 'common',
-            set: null,
+            set: new Set(),
             url: 'some.url/set/kld/1',
             uuid: '',
         },
@@ -36,7 +36,7 @@ const mockSet: Set = {
             name: 'the second card',
             number: '2',
             rarity: 'rare',
-            set: null,
+            set: new Set(),
             url: 'some.url/set/kld/2',
             uuid: '',
         }

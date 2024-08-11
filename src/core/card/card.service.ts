@@ -12,30 +12,38 @@ export class CardService implements CardServicePort {
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
     ) {}
 
+
     async create(card: Card): Promise<Card> {
+        let foundCard: Card;
         if (await this.repository.cardExists(card)) {
-            return card;
+            foundCard = await this.findByUuid(card.uuid);
+        } else {
+            foundCard = await this.repository.saveCard(card);
         }
-        return await this.repository.saveCard(card);
+        return foundCard;
     }
 
     async findAllInSet(setCode: string): Promise<Card[]> {
-        throw new Error('Method not implemented.');
+        return await this.repository.findAllInSet(setCode);
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
-        throw new Error('Method not implemented.');
+        return await this.repository.findAllWithName(name);
     }
 
-    async findById(id: string): Promise<Card> {
-        throw new Error('Method not implemented.');
+    async findById(id: number): Promise<Card> {
+        return await this.repository.findById(id);
     }
 
     async findBySetCodeAndNumber(setCode: string, number: number): Promise<Card> {
-        throw new Error('Method not implemented.');
+        return await this.repository.findBySetCodeAndNumber(setCode, number);
+    }
+
+    async findByUuid(uuid: string): Promise<Card> {
+        return await this.repository.findByUuid(uuid);
     }
 
     async update(card: Card): Promise<Card> {
-        throw new Error('Method not implemented.');
+        return await this.repository.saveCard(card);
     }
 }

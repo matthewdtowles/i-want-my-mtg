@@ -3,7 +3,8 @@ import { Card } from '../src/core/card/card';
 
 export class TestUtils {
 
-    private readonly MOCK_BASE_SET_SIZE: number = 3;
+    readonly MOCK_BASE_SET_SIZE: number = 3;
+    readonly MOCK_CARD_NAME: string = 'Test Card Name';
     private readonly MOCK_SET_NAME: string = 'Setname';
     private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
     private readonly MOCK_SET_TYPE: string = 'expansion';
@@ -48,7 +49,19 @@ export class TestUtils {
         const cards: Card[] = [];
         for (let i = 0; i < total; i++) {
             const s: string = String(i);
-            cards.push(this.getMockCard(i, s + s + s));
+            const setCode: string = s + s + s;
+            const card: Card = new Card();
+            card.imgSrc = this.IMG_SRC_BASE + s+ '/' + 'a/' + s + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
+            card.isReserved = false;
+            card.manaCost = '{' + s + '}{W}';
+            card.name = this.MOCK_CARD_NAME;
+            card.number = String(i);
+            card.originalText = 'Test card text.';
+            card.uuid = 'abcd-1234-efgh-5678-ijkl-' + setCode + s;
+            card.rarity = i % 2 === 1 ? 'common' : 'uncommon';
+            card.set = this.getMockSet(setCode);
+            card.url = this.MOCK_SET_URL + '/' + s;
+            cards.push(card);
         }
         return cards;
     }
@@ -64,13 +77,13 @@ export class TestUtils {
         card.imgSrc = this.IMG_SRC_BASE + setNumber + '/' + 'a/' + setNumber + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
         card.isReserved = false;
         card.manaCost = '{' + setNumber + '}{W}';
-        card.name = 'Test Card Name' + setNumber;
+        card.name = this.MOCK_CARD_NAME + setNumber;
         card.number = String(setNumber);
         card.originalText = 'Test card text.';
         card.uuid = 'abcd-1234-efgh-5678-ijkl-' + setCode + setNumber;
         card.rarity = setNumber % 2 === 1 ? 'common' : 'uncommon';
         card.set = this.getMockSet(setCode);
         card.url = this.MOCK_SET_URL + '/' + setNumber;
-        return card;    }
-
+        return card;    
+    }
 }

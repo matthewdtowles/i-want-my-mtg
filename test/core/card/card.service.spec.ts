@@ -14,6 +14,7 @@ describe('CardService', () => {
     const mockSetCards: Card[] = testUtils.getMockSetCards(mockSetCode);
     const mockCardsWithName: Card[] = testUtils.getMockCardsWithName(3);
     const mockSavedCard: Card = testUtils.getMockCard(mockSetNumber, mockSetCode);
+    const inputCard: Card = testUtils.getMockInputCard(mockSetNumber, mockSetCode);
 
     let service: CardService;
     let repository: CardRepositoryPort;
@@ -64,33 +65,63 @@ describe('CardService', () => {
     });
 
     it('saves card and returns saved card if cardExists returns false', async () => {
-        const card: Card = testUtils.getMockInputCard(mockSetNumber, mockSetCode);
         const repoSaveCard = jest.spyOn(repository, 'saveCard');
         jest.spyOn(repository, 'cardExists').mockReturnValueOnce(Promise.resolve(false));
         const repoCardExists = jest.spyOn(repository, 'cardExists');
-        const createdCard: Card = await service.create(card);
-        expect(repoCardExists).toHaveBeenCalledWith(card);
-        expect(repoSaveCard).toHaveBeenCalledWith(card);
+        const createdCard: Card = await service.create(inputCard);
+        expect(repoCardExists).toHaveBeenCalledWith(inputCard);
+        expect(repoSaveCard).toHaveBeenCalledWith(inputCard);
         expect(createdCard).toEqual(mockSavedCard);
     });
 
     it('returns given card and does not save if cardExists returns true', async () => {
-        const card: Card = testUtils.getMockInputCard(mockSetNumber, mockSetCode);
         const repoSaveCard = jest.spyOn(repository, 'saveCard');
         const repoCardExists = jest.spyOn(repository, 'cardExists');
-        const createdCard: Card = await service.create(card);
-        expect(repoCardExists).toHaveBeenCalledWith(card);
+        const createdCard: Card = await service.create(inputCard);
+        expect(repoCardExists).toHaveBeenCalledWith(inputCard);
         expect(repoSaveCard).not.toHaveBeenCalled();
-        expect(createdCard).toEqual(card);
+        expect(createdCard).toEqual(mockSavedCard);
     });
 
-    it('finds all cards in given set by setCode', async () => { });
+    it('finds all cards in given set by setCode', async () => {
+        const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
+        const foundCards: Card[] = await service.findAllInSet(mockSetCode);
+        expect(repoFindAllInSet).toHaveBeenCalledWith(mockSetCode)
+        expect(foundCards).toEqual(mockSetCards);
+    });
 
-    it('finds every instance of a card with given name', async () => { });
+    it('finds every instance of a card with given name', async () => {
+        const repoFindAllWithName = jest.spyOn(repository, 'findAllWithName');
+        const foundCards: Card[] = await service.findAllWithName(testUtils.MOCK_CARD_NAME);
+        expect(repoFindAllWithName).toHaveBeenCalledWith(testUtils.MOCK_CARD_NAME);
+        expect(foundCards).toEqual(mockCardsWithName);
+    });
 
-    it('finds a unique instance of a card by uuid', async () => { });
+    it('finds a unique instance of a card by id', async () => {
+        const repoFindById = jest.spyOn(repository, 'findById');
+        const foundCard: Card = await service.findById(mockSetNumber);
+        expect(repoFindById).toHaveBeenCalledWith(mockSetNumber);
+        expect(foundCard).toEqual(mockSavedCard);
+    });
 
-    it('finds a unique instance of a card by setCode and card number in that set', async () => { });
+    it('returns unique instance of a card by setCode and card number in that set', async () => {
+        const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
+        const foundCard: Card = await service.findBySetCodeAndNumber(mockSetCode, mockSetNumber);
+        expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, mockSetNumber);
+        expect(foundCard).toEqual(mockSavedCard);
+    });
 
-    it('updates and returns persisted instance of given card', async () => { });
+    it('returns unique instance of a card by uuid', async () => {
+        const repoFindByUuid = jest.spyOn(repository, 'findByUuid');
+        const foundCard: Card = await service.findByUuid(inputCard.uuid);
+        expect(repoFindByUuid).toHaveBeenCalledWith(inputCard.uuid);
+        expect(foundCard).toEqual(mockSavedCard);
+    });
+
+    it('updates and returns updated version of given card', async () => {
+        const repoSaveCard = jest.spyOn(repository, 'saveCard');
+        const updatedCard: Card = await service.update(mockSavedCard);
+        expect(repoSaveCard).toHaveBeenCalledWith(mockSavedCard);
+        expect(updatedCard).toEqual(mockSavedCard);
+    });
 });

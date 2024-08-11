@@ -17,14 +17,14 @@ export class TestUtils {
             cards.push(this.getMockCard(i, setCode));
         }
         let bonusCard = new Card();
+        bonusCard.id = 101;
         bonusCard.imgSrc = this.IMG_SRC_BASE + '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
         bonusCard.isReserved = false;
         bonusCard.manaCost = '{U/G}{B/W}{R/U}';
         bonusCard.name = 'Test Bonus Card Name';
-        bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
+        bonusCard.number = String(this.MOCK_BASE_SET_SIZE + 1);
         bonusCard.originalText = 'Bonus card text.';
         bonusCard.rarity = 'mythic';
-
         bonusCard.set = this.getMockSet(setCode);
         bonusCard.url = this.MOCK_SET_URL + '/' + bonusCard.number;
         bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
@@ -47,25 +47,30 @@ export class TestUtils {
     getMockCardsWithName(total: number): Card[] {
         const cards: Card[] = [];
         for (let i = 0; i < total; i++) {
-            const s: string = i.toString();
+            const s: string = String(i);
             cards.push(this.getMockCard(i, s + s + s));
         }
         return cards;
     }
 
     getMockCard(setNumber: number, setCode: string): Card {
-        let card = new Card();
+        const card = this.getMockInputCard(setNumber, setCode);
+        card.id = setNumber;
+        return card;
+    }
+
+    getMockInputCard(setNumber: number, setCode: string): Card {
+        const card = new Card();
         card.imgSrc = this.IMG_SRC_BASE + setNumber + '/' + 'a/' + setNumber + this.MOCK_ROOT_SCRYFALL_ID + '.jpg';
         card.isReserved = false;
         card.manaCost = '{' + setNumber + '}{W}';
         card.name = 'Test Card Name' + setNumber;
-        card.number = setNumber.toString();
+        card.number = String(setNumber);
         card.originalText = 'Test card text.';
         card.uuid = 'abcd-1234-efgh-5678-ijkl-' + setCode + setNumber;
         card.rarity = setNumber % 2 === 1 ? 'common' : 'uncommon';
         card.set = this.getMockSet(setCode);
         card.url = this.MOCK_SET_URL + '/' + setNumber;
-        return card;
-    }
+        return card;    }
 
 }

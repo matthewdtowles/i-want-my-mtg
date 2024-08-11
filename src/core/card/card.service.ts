@@ -13,7 +13,10 @@ export class CardService implements CardServicePort {
     ) {}
 
     async create(card: Card): Promise<Card> {
-        throw new Error('Method not implemented.');
+        if (await this.repository.cardExists(card)) {
+            return card;
+        }
+        return await this.repository.saveCard(card);
     }
 
     async findAllInSet(setCode: string): Promise<Card[]> {

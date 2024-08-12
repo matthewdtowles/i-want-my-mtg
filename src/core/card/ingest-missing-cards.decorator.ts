@@ -1,6 +1,7 @@
 import { Card } from "./card";
 
 // runtime decorator to ingest all cards in set if card or cards do not exist
+// note: `this` refers to the class instance using this decorator
 export function IngestMissingCards() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const originalMethod = descriptor.value;

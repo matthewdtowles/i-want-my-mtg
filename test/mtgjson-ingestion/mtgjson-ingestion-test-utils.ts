@@ -14,8 +14,6 @@ export class MtgJsonIngestionTestUtils {
     private readonly MOCK_SET_TYPE: string = 'expansion';
     private readonly MOCK_SET_URL: string = 'sets/set';
     private readonly MOCK_ROOT_SCRYFALL_ID: string = 'abc123def456';
-    private readonly MOCK_CARD_PRICE: number = 0;
-    private readonly MOCK_TOTAL_OWNED: number = 0;
     private readonly IMG_SRC_BASE: string = 'https://cards.scryfall.io/normal/front/';
 
     getMockSet(): SetDto {
@@ -92,7 +90,6 @@ export class MtgJsonIngestionTestUtils {
             card.originalText = 'Test card text.';
             card.uuid = 'abcd-1234-efgh-5678-ijkl-901' + i;
             card.rarity = i % 2 === 1 ? 'common' : 'uncommon';
-            // card.set = this.MOCK_SET;
             card.url = this.MOCK_SET_URL + '/' + i;
             cards.push(card);
         }
@@ -104,7 +101,6 @@ export class MtgJsonIngestionTestUtils {
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
         bonusCard.originalText = 'Bonus card text.';
         bonusCard.rarity = 'mythic';
-        // bonusCard.setCode = this.MOCK_SET_CODE;
         bonusCard.url = this.MOCK_SET_URL + '/' + bonusCard.number;
         bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
         cards.push(bonusCard);

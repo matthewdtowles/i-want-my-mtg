@@ -39,10 +39,6 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
         return this.dataMapper.mapSetCardsToCards(setDto.cards);
     }
 
-    async fetchCard(uuid: string): Promise<Card> {
-        throw new Error('Method not implemented.');
-    }
-
     /**
      * Return List of metadata for every Set from Set provider
      * 

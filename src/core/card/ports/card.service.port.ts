@@ -11,46 +11,48 @@ export interface CardServicePort {
 
     /**
      * Save card if not created
-     * Return created card
      * 
      * @param card 
+     * @returns saved card
      */
     create(card: Card): Promise<Card>;
 
     /**
-     * Return all cards in set
-     * 
      * @param setCode 
+     * @returns all cards in set
      */
     findAllInSet(setCode: string): Promise<Card[]>;
 
     /**
-     * Return all cards with name 
-     * 
      * @param name Card.name
+     * @returns all cards with name
      */
     findAllWithName(name: string): Promise<Card[]>;
     
     /**
-     * Return card with id
-     * 
-     * @param id 
+     * @param id
+     * @returns card with id | null if not found
      */
-    findById(id: string): Promise<Card>;
+    findById(id: number): Promise<Card | null>;
 
     /**
-     * Return card with number in set
-     * 
      * @param setCode 
-     * @param number 
+     * @param number
+     * @returns card with number in set
      */
     findBySetCodeAndNumber(setCode: string, number: number): Promise<Card>;
 
     /**
+     * @param uuid
+     * @returns card with unique uuid | null if not found
+     */
+    findByUuid(uuid: string): Promise<Card | null>;
+
+    /**
      * Update card that exists
-     * Return updated card
      *
      * @param card 
+     * @returns updated card
      */
     update(card: Card): Promise<Card>;
 }

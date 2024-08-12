@@ -12,6 +12,7 @@ describe('CardController', () => {
         findById: jest.fn(),
         findBySetCodeAndNumber: jest.fn(),
         update: jest.fn(),
+        findByUuid: jest.fn(),
     };
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

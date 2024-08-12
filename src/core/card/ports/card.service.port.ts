@@ -27,11 +27,11 @@ export interface CardServicePort {
      * @param name Card.name
      * @returns all cards with name
      */
-    findAllWithName(name: string): Promise<Card[] | null>;
+    findAllWithName(name: string): Promise<Card[]>;
     
     /**
      * @param id
-     * @returns card with id
+     * @returns card with id | null if not found
      */
     findById(id: number): Promise<Card | null>;
 
@@ -44,7 +44,7 @@ export interface CardServicePort {
 
     /**
      * @param uuid
-     * @returns card with unique uuid
+     * @returns card with unique uuid | null if not found
      */
     findByUuid(uuid: string): Promise<Card | null>;
 

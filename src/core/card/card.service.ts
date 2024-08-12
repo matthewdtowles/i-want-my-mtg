@@ -3,6 +3,7 @@ import { Card } from './card';
 import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
 import { CardServicePort } from './ports/card.service.port';
 import { CardRepositoryPort } from './ports/card.repository.port';
+import { IngestMissingCards } from './ingest-missing-cards.decorator';
 
 @Injectable()
 export class CardService implements CardServicePort {
@@ -23,7 +24,7 @@ export class CardService implements CardServicePort {
         return foundCard;
     }
 
-    @IngestMissing()
+    @IngestMissingCards()
     async findAllInSet(setCode: string): Promise<Card[]> {
         return await this.repository.findAllInSet(setCode);
     }
@@ -32,16 +33,16 @@ export class CardService implements CardServicePort {
         return await this.repository.findAllWithName(name);
     }
 
-    async findById(id: number): Promise<Card> {
+    async findById(id: number): Promise<Card | null> {
         return await this.repository.findById(id);
     }
 
-    @IngestMissing()
+    @IngestMissingCards()
     async findBySetCodeAndNumber(setCode: string, number: number): Promise<Card> {
         return await this.repository.findBySetCodeAndNumber(setCode, number);
     }
 
-    async findByUuid(uuid: string): Promise<Card> {
+    async findByUuid(uuid: string): Promise<Card | null> {
         return await this.repository.findByUuid(uuid);
     }
 
@@ -49,21 +50,4 @@ export class CardService implements CardServicePort {
         return await this.repository.saveCard(card);
     }
 
-}
-
-function IngestMissing() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        const originalMethod = descriptor.value;
-        descriptor.value = async function (...args: any[]) {
-            let result = await originalMethod.apply(this, args);
-            if (null === result) {
-                const setCards: Card[] = await this.ingestionService.fetchSetCards(args[0]);
-                setCards.forEach((card) => {
-                    this.repository.saveCard(card);
-                });
-            }
-            return await originalMethod.apply(this, args);
-        };
-        return descriptor;
-    };
 }

@@ -21,7 +21,7 @@ export class CardController {
 
     @Get(':id')
     async findOne(@Param('id') id: string): Promise<CardDto> {
-        const card: Card = await this.cardService.findById(id);
+        const card: Card = await this.cardService.findById(Number(id));
         return this.cardMapper.entityToDto( card);
     }
 

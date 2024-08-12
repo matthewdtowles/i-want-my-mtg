@@ -112,7 +112,7 @@ describe('CardService', () => {
 
     it('finds a unique instance of a card by id', async () => {
         const repoFindById = jest.spyOn(repository, 'findById');
-        const foundCard: Card = await service.findById(mockSetNumber);
+        const foundCard: Card | null = await service.findById(mockSetNumber);
         expect(repoFindById).toHaveBeenCalledWith(mockSetNumber);
         expect(foundCard).toEqual(mockSavedCard);
     });
@@ -140,7 +140,7 @@ describe('CardService', () => {
 
     it('returns unique instance of a card by uuid', async () => {
         const repoFindByUuid = jest.spyOn(repository, 'findByUuid');
-        const foundCard: Card = await service.findByUuid(inputCard.uuid);
+        const foundCard: Card | null = await service.findByUuid(inputCard.uuid);
         expect(repoFindByUuid).toHaveBeenCalledWith(inputCard.uuid);
         expect(foundCard).toEqual(mockSavedCard);
     });

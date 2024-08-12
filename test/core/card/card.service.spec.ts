@@ -32,8 +32,7 @@ describe('CardService', () => {
     };
 
     const mockCardIngestion: CardDataIngestionPort = {
-        fetchCard: jest.fn(),
-        fetchSetCards: jest.fn(),
+        fetchSetCards: jest.fn().mockResolvedValue(mockSetCards),
     };
 
     beforeEach(async () => {
@@ -64,7 +63,7 @@ describe('CardService', () => {
         expect(service).toBeDefined();
     });
 
-    it('saves card and returns saved card if cardExists returns false', async () => {
+    it('saves card and returns saved card if card does not exist', async () => {
         const repoSaveCard = jest.spyOn(repository, 'saveCard');
         jest.spyOn(repository, 'cardExists').mockReturnValueOnce(Promise.resolve(false));
         const repoCardExists = jest.spyOn(repository, 'cardExists');
@@ -74,7 +73,7 @@ describe('CardService', () => {
         expect(createdCard).toEqual(mockSavedCard);
     });
 
-    it('returns given card and does not save if cardExists returns true', async () => {
+    it('returns saved instance of given card and does not save if card exists', async () => {
         const repoSaveCard = jest.spyOn(repository, 'saveCard');
         const repoCardExists = jest.spyOn(repository, 'cardExists');
         const createdCard: Card = await service.create(inputCard);
@@ -85,8 +84,22 @@ describe('CardService', () => {
 
     it('finds all cards in given set by setCode', async () => {
         const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
+        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
         const foundCards: Card[] = await service.findAllInSet(mockSetCode);
         expect(repoFindAllInSet).toHaveBeenCalledWith(mockSetCode)
+        expect(ingestFetchSetCards).not.toHaveBeenCalled();
+        expect(foundCards).toEqual(mockSetCards);
+    });
+
+    it('finds all cards in given set by setCode after ingesting set cards', async () => {
+        const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
+        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
+        const repoSaveCard = jest.spyOn(repository, 'saveCard');
+        jest.spyOn(repository, 'findAllInSet').mockReturnValueOnce(Promise.resolve(null));
+        const foundCards: Card[] = await service.findAllInSet(mockSetCode);
+        expect(repoFindAllInSet).toHaveBeenCalledWith(mockSetCode);
+        expect(ingestFetchSetCards).toHaveBeenCalledWith(mockSetCode);
+        expect(repoSaveCard).toHaveBeenCalledTimes(testUtils.MOCK_BASE_SET_SIZE + 1);
         expect(foundCards).toEqual(mockSetCards);
     });
 
@@ -106,8 +119,22 @@ describe('CardService', () => {
 
     it('returns unique instance of a card by setCode and card number in that set', async () => {
         const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
+        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
         const foundCard: Card = await service.findBySetCodeAndNumber(mockSetCode, mockSetNumber);
         expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, mockSetNumber);
+        expect(ingestFetchSetCards).not.toHaveBeenCalled();
+        expect(foundCard).toEqual(mockSavedCard);
+    });
+
+    it('returns unique instance of a card by setCode and card number in that set after ingesting set card', async () => {
+        const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
+        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
+        const repoSaveCard = jest.spyOn(repository, 'saveCard');
+        jest.spyOn(repository, 'findBySetCodeAndNumber').mockReturnValueOnce(Promise.resolve(null));
+        const foundCard: Card = await service.findBySetCodeAndNumber(mockSetCode, mockSetNumber);
+        expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, mockSetNumber);
+        expect(ingestFetchSetCards).toHaveBeenCalledWith(mockSetCode);
+        expect(repoSaveCard).toHaveBeenCalledTimes(testUtils.MOCK_BASE_SET_SIZE + 1);
         expect(foundCard).toEqual(mockSavedCard);
     });
 

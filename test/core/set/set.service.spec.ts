@@ -2,26 +2,30 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SetService as SetService } from '../../../src/core/set/set.service';
 import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { SetDataIngestionPort } from '../../../src/core/set/ports/set-data.ingestion.port';
+import { Set } from '../../../src/core/set/set';
+import { TestUtils } from '../../test-utils';
 
-const mockSetRepository: SetRepositoryPort = {
-    saveSet: jest.fn(),
-    setExists: jest.fn(),
-    findByCode: jest.fn(),
-    findByName: jest.fn(),
-    findAllSets: jest.fn(),
-    findAllSetsMeta: jest.fn(),
-    removeById: jest.fn(),
-    removeSet: jest.fn(),
-};
-
-const mockSetIngestion: SetDataIngestionPort = {
-    fetchAllSets: jest.fn(),
-    fetchSetByCode: jest.fn(),
-    fetchAllSetsMeta: jest.fn(),
-    fetchSetMetaByCode: jest.fn(),
-};
 
 describe('SetService', () => {
+    const testUtils: TestUtils = new TestUtils();
+    const mockSavedSets: Set[] = testUtils.getMockSets();
+    const mockSavedSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
+    const inputSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
+    inputSet.cards = testUtils.getMockSetCards(inputSet.setCode);
+
+    const mockSetRepository: SetRepositoryPort = {
+        save: jest.fn().mockResolvedValue(mockSavedSet),
+        findByCode: jest.fn().mockResolvedValue(mockSavedSet),
+        findByName: jest.fn().mockResolvedValue(mockSavedSet),
+        findAllSetsMeta: jest.fn().mockResolvedValue(mockSavedSets),
+        delete: jest.fn(),
+    };
+
+    const mockSetIngestion: SetDataIngestionPort = {
+        fetchSetByCode: jest.fn().mockResolvedValue(inputSet),
+        fetchAllSetsMeta: jest.fn().mockResolvedValue(mockSavedSets),
+    };
+
     let service: SetService;
     let repository: SetRepositoryPort;
     let ingestionSvc: SetDataIngestionPort;
@@ -45,22 +49,47 @@ describe('SetService', () => {
         ingestionSvc = module.get<SetDataIngestionPort>(SetDataIngestionPort);
     });
 
-    it('should be defined', () => {
+    it('should be defined', async () => {
         expect(service).toBeDefined();
     });
 
-    it('should persist all sets in given array of sets', () => {
+    it('saves set and returns saved set if set does not exist', async () => {
+        // const repoSaveSet = jest.spyOn(repository, 'save');
     });
-    it('data ingestion identify missing sets', () => {
-    });    
-    it('should return array of sets not yet saved', () => {
+
+    it('returns saved instance of given set and does not save if set exists', async () => {
+
     });
-    it('data ingestion identify missing cards in a set', () => {
+
+    it('finds all sets without cards (i.e.: metadata)', async () => {
+
     });
-    it('should return array of cards for given set not yet saved', () => {
+
+    // TODO: needed? How should we trigger ingestion of set data?
+    it('finds all sets without cards (i.e.: metadata) after ingesting', async () => {
+
     });
-    it('data ingestion ingestSetList', () => {
+
+    it('find all sets metadata in given format', async () => {
+
     });
-    it('data ingestion ingestSetCards should persist all cards in given set', () => {
+
+    it('find all sets metadata in given format after ingesting', async () => {
+
+    });
+
+    it('finds set with cards by given set code', async () => {
+
+    });
+
+    it('finds set with cards by given set code after ingesting', async () => {
+
+    });
+
+    it('updates and returns updated version of given set', async () => {
+        // const repoSaveSet = jest.spyOn(repository, 'saveSet');
+        // const updatedSet: Set = await service.update(mockSavedSet);
+        // expect(repoSaveSet).toHaveBeenCalledWith(mockSavedSet);
+        // expect(updatedSet).toEqual(mockSavedSet);
     });
 });

@@ -8,18 +8,15 @@ import { SetRepositoryPort } from './ports/set.repository.port';
 export class SetService implements SetServicePort {
 
     constructor(
+        @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort,
         @Inject(SetDataIngestionPort) private readonly ingestionService: SetDataIngestionPort,
-        @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort
     ) {}
+
 
     async create(set: Set): Promise<Set> {
         throw new Error('Method not implemented.');
     }
 
-    async findByCode(setCode: string): Promise<Set> {
-        throw new Error('Method not implemented.');
-     }
- 
     async findAll(): Promise<Set[]> {
         throw new Error('Method not implemented.');
     }
@@ -28,6 +25,10 @@ export class SetService implements SetServicePort {
         throw new Error('Method not implemented.');
     }
 
+    async findByCode(setCode: string): Promise<Set> {
+        throw new Error('Method not implemented.');
+     }
+ 
     async update(set: Set): Promise<Set> {
         throw new Error('Method not implemented.');
     }

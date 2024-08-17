@@ -22,8 +22,8 @@ export class UserController {
         return this.userService.findByEmail(email);
     }
 
-    @Delete(':id')
-    remove(@Param('id') id: number): Promise<void> {
-        return this.userService.remove(id);
+    @Delete(':user')
+    remove(@Body('user') user: User): Promise<void> {
+        return this.userService.remove(user);
     }
 }

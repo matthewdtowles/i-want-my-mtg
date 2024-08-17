@@ -6,12 +6,11 @@ import { CardMapper } from '../../../src/http/card/card.mapper';
 describe('CardController', () => {
     let controller: CardController;
     let mockCardService: CardServicePort = {
-        create: jest.fn(),
+        save: jest.fn(),
         findAllInSet: jest.fn(),
         findAllWithName: jest.fn(),
         findById: jest.fn(),
         findBySetCodeAndNumber: jest.fn(),
-        update: jest.fn(),
         findByUuid: jest.fn(),
     };
     beforeEach(async () => {

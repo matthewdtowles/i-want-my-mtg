@@ -14,44 +14,60 @@ export class CardRepository implements CardRepositoryPort {
     ) {}
 
 
-    async cardExists(card: Card): Promise<boolean> {
-        return await this.cardRepository.exists({ where: { uuid: card.uuid } });
+    async save(cards: Card[]): Promise<Card[]> {
+        return await this.cardRepository.save(cards) ?? [];
     }
 
-    async findAllWithName(name: string): Promise<Card[] | null> {
-        return await this.cardRepository.findBy({ name: name });
+    async findAllInSet(code: string): Promise<Card[]> {
+        return await this.cardRepository.find({
+            where: {
+                set: {
+                    setCode: code,
+                },
+            },
+        }) ?? [];
     }
 
-    async findAllInSet(code: string): Promise<Card[] | null> {
-        // TODO: figure this out
-        // return await this.findBy({ set: code });
-        throw new Error('Method not implemented.');
+    async findAllWithName(_name: string): Promise<Card[]> {
+        return await this.cardRepository.find({ 
+            where: {
+                name: _name 
+            },
+            relations: ['set'],
+        }) ?? [];
     }
 
-    async findById(id: number): Promise<Card | null> {
-        const cardEntity = await this.cardRepository.findOneBy({ id });
-        return cardEntity ? new Card() : null;
+    async findById(_id: number): Promise<Card | null> {
+        return await this.cardRepository.findOne({ 
+            where: {
+                id: _id
+            },
+            relations: ['set'],
+        });
     }
 
-    async findByUuid(uuid: string): Promise<Card | null> {
-        return await this.cardRepository.findOneBy({ uuid: uuid });
+    async findBySetCodeAndNumber(code: string, _number: number): Promise<Card | null> {
+        return await this.cardRepository.findOne({
+            where: {
+                set: {
+                    setCode: code,
+                },
+                number: String(_number),
+            },
+            relations: ['set'],
+        });
     }
 
-    async findBySetCodeAndNumber(code: string, number: number): Promise<Card | null> {
-        // TODO: figure this out
-        // return await this.findBy({ set: code })
-        throw new Error('Method not implemented.');
+    async findByUuid(_uuid: string): Promise<Card | null> {
+        return await this.cardRepository.findOne({
+            where: {
+                uuid: _uuid
+            },
+            relations: ['set'],
+        });
     }
 
-    async removeById(id: number): Promise<void> {
-        await this.cardRepository.delete(id);
-    }    
-
-    async saveCard(card: Card): Promise<Card> {
-        const cardEntity = new CardEntity();
-        cardEntity.id = card.id;
-        cardEntity.name = card.name;
-        return await this.cardRepository.save(cardEntity);    
+    async delete(card: Card): Promise<void> {
+        await this.cardRepository.delete(card);
     }
-
 }

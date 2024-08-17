@@ -3,16 +3,10 @@ import { CollectionService } from '../../../src/core/collection/collection.servi
 import { CollectionRepositoryPort } from '../../../src/core/collection/ports/collection.repository.port';
 
 const mockCollectionRepository: CollectionRepositoryPort = {
-    saveCollection: jest.fn(),
-    collectionExists: jest.fn(),
+    save: jest.fn(),
     findById: jest.fn(),
-    findByCollectionOwner: jest.fn(),
-    addCard: jest.fn(),
-    addCards: jest.fn(),
-    removeCard: jest.fn(),
-    removeCards: jest.fn(),
-    removeById: jest.fn(),
-    removeCollection: jest.fn(),
+    findByUser: jest.fn(),
+    delete: jest.fn(),
 };
 
 describe('CollectionService', () => {

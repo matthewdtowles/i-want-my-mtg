@@ -52,5 +52,5 @@ export interface UserServicePort {
      * 
      * @param id
      */
-    remove(id: number): Promise<void>;
+    remove(user: User): Promise<void>;
 }

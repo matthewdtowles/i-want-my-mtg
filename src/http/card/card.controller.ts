@@ -16,7 +16,7 @@ export class CardController {
     @Post()
     async create(@Body() createCardDto: CreateCardDto) {
         const card: Card = this.cardMapper.dtoToEntity(createCardDto);
-        return this.cardService.create(card);
+        return this.cardService.save([card]);
     }
 
     @Get(':id')
@@ -28,7 +28,7 @@ export class CardController {
     @Patch(':id')
     async update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
         const card: Card = this.cardMapper.updateDtoToEntity(updateCardDto);
-        return this.cardService.update(card);
+        return this.cardService.save([card]);
     }
 
 }

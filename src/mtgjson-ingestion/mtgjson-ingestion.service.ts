@@ -17,20 +17,12 @@ export class MtgJsonIngestionService implements SetDataIngestionPort, CardDataIn
 
     constructor(private readonly dataMapper: MtgJsonMapperService) { }
 
-    async fetchAllSets(): Promise<Set[]> {
+    async fetchAllSetsMeta(): Promise<Set[]> {
         const setList: SetList[] = await this.requestSetList();
         return this.dataMapper.mapSetMetaListToSets(setList);
     }
 
     async fetchSetByCode(code: string): Promise<Set> {
-        throw new Error('Method not implemented.');
-    }
-
-    async fetchAllSetsMeta(): Promise<Set[]> {
-        throw new Error('Method not implemented.');
-    }
-
-    async fetchSetMetaByCode(code: string): Promise<Set> {
         throw new Error('Method not implemented.');
     }
 

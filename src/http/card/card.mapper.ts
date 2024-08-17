@@ -18,6 +18,7 @@ export class CardMapper {
         card.rarity = createCardDto.rarity;
         // TODO:
         // card.set = createCardDto.setCode;
+        
         card.url = createCardDto.url;
         card.uuid = createCardDto.uuid;
         return card;
@@ -69,4 +70,42 @@ export class CardMapper {
     private mapManaToRepo(manaCost: string[]): string {
         return null;
     }
+
+    /*
+    
+       // TODO: move to CardMapper in core
+    private mapToEntity(card: Card): CardEntity {
+        const cardEntity: CardEntity = new CardEntity();
+        cardEntity.id = card.id;
+        cardEntity.imgSrc = card.imgSrc;
+        cardEntity.isReserved = card.isReserved;
+        cardEntity.manaCost = card.manaCost;
+        cardEntity.name = card.name;
+        cardEntity.number = card.number;
+        cardEntity.originalText = card.originalText;
+        cardEntity.rarity = card.rarity;
+        cardEntity.set = card.set;
+        cardEntity.url = card.url;
+        cardEntity.uuid = card.uuid;
+        return cardEntity;
+    }
+
+    // TODO: move to CardMapper in core
+    private mapFromEntity(cardEntity: CardEntity): Card {
+        const card: CardEntity = new CardEntity();
+        card.id = cardEntity.id;
+        card.imgSrc = cardEntity.imgSrc;
+        card.isReserved = cardEntity.isReserved;
+        card.manaCost = cardEntity.manaCost;
+        card.name = cardEntity.name;
+        card.number = cardEntity.number;
+        card.originalText = cardEntity.originalText;
+        card.rarity = cardEntity.rarity;
+        card.set = cardEntity.set;
+        card.url = cardEntity.url;
+        card.uuid = cardEntity.uuid;
+        return card;
+    }
+    
+    */
 }

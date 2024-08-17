@@ -10,12 +10,12 @@ export const CardServicePort = 'CardServicePort';
 export interface CardServicePort {
 
     /**
-     * Save card if not created
+     * Save card(s) as given
      * 
      * @param card 
      * @returns saved card
      */
-    create(card: Card): Promise<Card>;
+    save(card: Card[]): Promise<Card[]>;
 
     /**
      * @param setCode 
@@ -40,19 +40,11 @@ export interface CardServicePort {
      * @param number
      * @returns card with number in set
      */
-    findBySetCodeAndNumber(setCode: string, number: number): Promise<Card>;
+    findBySetCodeAndNumber(setCode: string, number: number): Promise<Card | null>;
 
     /**
      * @param uuid
      * @returns card with unique uuid | null if not found
      */
     findByUuid(uuid: string): Promise<Card | null>;
-
-    /**
-     * Update card that exists
-     *
-     * @param card 
-     * @returns updated card
-     */
-    update(card: Card): Promise<Card>;
 }

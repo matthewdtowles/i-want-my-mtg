@@ -8,20 +8,18 @@ import { IngestMissingCards } from './ingest-missing-cards.decorator';
 @Injectable()
 export class CardService implements CardServicePort {
 
+    /**
+     * @param repository 
+     * @param ingestionService used by Ingest decorator
+     */
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
         @Inject(CardDataIngestionPort) private readonly ingestionService: CardDataIngestionPort,
     ) {}
 
 
-    async create(card: Card): Promise<Card> {
-        let foundCard: Card;
-        if (await this.repository.cardExists(card)) {
-            foundCard = await this.findByUuid(card.uuid);
-        } else {
-            foundCard = await this.repository.saveCard(card);
-        }
-        return foundCard;
+    async save(cards: Card[]): Promise<Card[]> {
+        return  await this.repository.save(cards);
     }
 
     @IngestMissingCards()
@@ -44,10 +42,6 @@ export class CardService implements CardServicePort {
 
     async findByUuid(uuid: string): Promise<Card | null> {
         return await this.repository.findByUuid(uuid);
-    }
-
-    async update(card: Card): Promise<Card> {
-        return await this.repository.saveCard(card);
     }
 
 }

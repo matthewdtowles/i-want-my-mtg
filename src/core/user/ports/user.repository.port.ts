@@ -8,10 +8,14 @@ export const UserRepositoryPort = 'UserRepositoryPort';
 export interface UserRepositoryPort {
 
     /**
-     * @param email
-     * @returns true if user with email exists, false otherwise
+     * Create user entity, update if entity exists
+     * Authenticate with hashedPassword
+     * 
+     * @param user
+     * @param hashedPassword
+     * @returns created|updated user if authenticated
      */
-    emailExists(email: string): Promise<boolean>;
+    save(user: User, hashedPassword: string): Promise<User | null>;
 
     /**
      * @param email
@@ -32,32 +36,9 @@ export interface UserRepositoryPort {
     getPasswordHash(email: string): Promise<string>;
 
     /**
-     * Remove user entity with id
-     * 
-     * @param id
-     */
-    removeById(id: number): Promise<void>;
-
-    /**
      * Remove user entity
      * 
      * @param user
      */
-    removeUser(user: User): Promise<void>;
-
-    /**
-     * Create user entity, update if entity exists
-     * Authenticate with hashedPassword
-     * 
-     * @param user
-     * @param hashedPassword
-     * @returns created|updated user if authenticated
-     */
-    save(user: User, hashedPassword: string): Promise<User>;
-
-    /**
-     * @param user 
-     * @returns true if user entity exists, false otherwise
-     */
-    userExists(user: User): Promise<boolean>;
+    delete(user: User): Promise<void>;
 }

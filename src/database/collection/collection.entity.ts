@@ -15,5 +15,4 @@ export class CollectionEntity {
     @ManyToMany(() => CardEntity, { cascade: true })
     @JoinTable()
     cards: CardEntity[];
-  
 }

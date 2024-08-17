@@ -6,14 +6,11 @@ import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository
 const mockUser: User = new User(1, 'test-username1', 'test-email1@iwantmymtg.com');
     
 const mockUserRepository: UserRepositoryPort = {
-    emailExists: jest.fn().mockResolvedValue(false),
+    save: jest.fn().mockResolvedValue(mockUser),
     findByEmail: jest.fn().mockResolvedValue(mockUser),
     findById: jest.fn().mockResolvedValue(mockUser),
     getPasswordHash: jest.fn().mockResolvedValue("qwertyuiop"),
-    removeById: jest.fn(),
-    removeUser: jest.fn(),
-    save: jest.fn().mockResolvedValue(mockUser),
-    userExists: jest.fn().mockResolvedValue(false),
+    delete: jest.fn(),
 };
 
 describe('UserService', () => {
@@ -58,9 +55,9 @@ describe('UserService', () => {
     });
 
     it('remove should delete given user, check if user exists and return false', async () => {
-        const removeSpy = jest.spyOn(repository, 'removeById');
-        const retVal = await service.remove(user.id);
-        expect(removeSpy).toHaveBeenCalledWith(user.id);
+        const removeSpy = jest.spyOn(repository, 'delete');
+        const retVal = await service.remove(user);
+        expect(removeSpy).toHaveBeenCalledWith(user);
         expect(retVal).toBe(undefined);
     });
 });

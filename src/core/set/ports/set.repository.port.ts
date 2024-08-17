@@ -12,13 +12,7 @@ export interface SetRepositoryPort {
      * 
      * @param set
      */
-    saveSet(set: Set): Promise<Set>;
-
-    /**
-     * @param set 
-     * @returns true if set entity exists, false otherwise
-     */
-    setExists(set: Set): Promise<boolean>;
+    save(set: Set): Promise<Set | null>;
 
     /**
      * @param code 
@@ -33,28 +27,14 @@ export interface SetRepositoryPort {
     findByName(name: string): Promise<Set | null>;
 
     /**
-     * @returns all sets with cards
-     */
-    findAllSets(): Promise<Set[] | null>;
-
-    /**
      * @returns all sets metadata without cards
      */
-    findAllSetsMeta(): Promise<Set[] | null>; 
+    findAllSetsMeta(): Promise<Set[]>; 
 
-    //TODO: is this valid or will setCode be used as PK?
-    /**
-     * Remove set entity with id
-     * 
-     * @param id
-     */
-    removeById(id: number): Promise <void>;
-
-    /**
+     /**
      * Remove set entity
      * 
      * @param set
      */
-    removeSet(set: Set): Promise<void>;
-
+    delete(set: Set): Promise<void>;
 }

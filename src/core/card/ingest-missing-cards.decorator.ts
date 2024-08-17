@@ -6,12 +6,10 @@ export function IngestMissingCards() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const originalMethod = descriptor.value;
         descriptor.value = async function (...args: any[]) {
-            let result = await originalMethod.apply(this, args);
-            if (null === result) {
+            let result = await originalMethod.apply(this, args) ?? [];
+            if (0 === result.length) {
                 const setCards: Card[] = await this.ingestionService.fetchSetCards(args[0]);
-                setCards.forEach((card) => {
-                    this.repository.saveCard(card);
-                });
+                await this.repository.save(setCards);
             }
             return await originalMethod.apply(this, args);
         };

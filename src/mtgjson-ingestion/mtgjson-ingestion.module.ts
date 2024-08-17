@@ -6,6 +6,7 @@ import { SetDataIngestionPort } from 'src/core/set/ports/set-data.ingestion.port
 
 @Module({
     providers: [
+        MtgJsonMapperService,
         {
             provide: CardDataIngestionPort,
             useClass: MtgJsonIngestionService,
@@ -14,11 +15,15 @@ import { SetDataIngestionPort } from 'src/core/set/ports/set-data.ingestion.port
             provide: SetDataIngestionPort,
             useClass: MtgJsonIngestionService,
         },
-        MtgJsonMapperService,
     ],
     exports: [
         CardDataIngestionPort,
         SetDataIngestionPort,
+        MtgJsonMapperService,
     ]
 })
-export class MtgJsonIngestionModule { }
+export class MtgJsonIngestionModule { 
+    constructor() {
+        console.log('* * MtgJsonIngestionModule Initialized * *');
+    }
+}

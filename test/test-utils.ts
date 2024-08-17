@@ -5,6 +5,7 @@ export class TestUtils {
 
     readonly MOCK_BASE_SET_SIZE: number = 3;
     readonly MOCK_CARD_NAME: string = 'Test Card Name';
+    readonly MOCK_SET_CODE: string = 'SET';
     private readonly MOCK_SET_NAME: string = 'Setname';
     private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
     private readonly MOCK_SET_TYPE: string = 'expansion';
@@ -43,6 +44,14 @@ export class TestUtils {
         set.setCode = setCode;
         set.type = this.MOCK_SET_TYPE;
         return set;
+    }
+
+    getMockSets(): Set[] {
+        const sets: Set[] = [];
+        sets.push(this.getMockSet(this.MOCK_SET_NAME));
+        sets.push(this.getMockSet('TES'));
+        sets.push(this.getMockSet('ETS'));
+        return sets;
     }
 
     getMockCardsWithName(total: number): Card[] {

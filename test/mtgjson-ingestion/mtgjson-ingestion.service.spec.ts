@@ -25,7 +25,7 @@ describe('MtgJsonIngestionService', () => {
 
     it('getAllSets should return array of every set as CreateSetDto', async () => {
         jest.spyOn(service, 'requestSetList').mockResolvedValue(testUtils.getMockSetListArray());
-        expect(await service.fetchAllSets()).toEqual(testUtils.getExpectedSets());
+        expect(await service.fetchAllSetsMeta()).toEqual(testUtils.getExpectedSets());
     });
 
     it('getSetCards should return array of every card as CreateCardDto in given set', async () => {

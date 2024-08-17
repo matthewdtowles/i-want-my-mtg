@@ -8,22 +8,24 @@ export const CardRepositoryPort = 'CardRepositoryPort';
 export interface CardRepositoryPort {
 
     /**
-     * @param card 
-     * @returns true if card entity exists, false otherwise
+     * Create card entities, update if they exist
+     * 
+     * @param cards 
+     * @returns updated card(s) | null
      */
-    cardExists(card: Card): Promise<boolean>;
+    save(card: Card[]): Promise<Card[]>;
 
     /**
      * @param code three letter set code
      * @returns card entities in set with code
      */
-    findAllInSet(code: string): Promise<Card[] | null>;
+    findAllInSet(code: string): Promise<Card[]>;
 
     /**
      * @param name 
      * @returns card entities with name
      */
-    findAllWithName(name: string): Promise<Card[] | null>;
+    findAllWithName(name: string): Promise<Card[]>;
 
     /**
      * @param id 
@@ -47,15 +49,7 @@ export interface CardRepositoryPort {
     /**
      * Remove card entity with id
      * 
-     * @param id
-     */
-    removeById(id: number): Promise<void>;
-
-    /**
-     * Create card entity, update if entity exists
-     * 
      * @param card
-     * @returns created|updated card
      */
-    saveCard(card: Card): Promise<Card>;
+    delete(card: Card): Promise<void>;
 }

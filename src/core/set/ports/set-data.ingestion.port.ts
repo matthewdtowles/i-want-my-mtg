@@ -10,11 +10,11 @@ export const SetDataIngestionPort = 'SetDataIngestionPort';
 export interface SetDataIngestionPort {
 
     /**
-     * Fetch all sets
-     * Includes all cards
+     * Fetch metadata for all sets
+     * Excludes cards
      */
-    fetchAllSets(): Promise<Set[]>;
-
+    fetchAllSetsMeta(): Promise<Set[]>;
+        
     /**
      * Fetch set with code
      * Includes cards
@@ -22,18 +22,4 @@ export interface SetDataIngestionPort {
      * @param code three letter set code
      */
     fetchSetByCode(code: string): Promise<Set>;
-
-    /**
-     * Fetch metadata for all sets
-     * Excludes cards
-     */
-    fetchAllSetsMeta(): Promise<Set[]>;
-
-    /**
-     * Fetch metadata for set with code
-     * Excludes cards
-     * 
-     * @param code three letter set code
-     */
-    fetchSetMetaByCode(code: string): Promise<Set>;
 }

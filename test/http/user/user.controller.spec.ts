@@ -11,7 +11,7 @@ const createUserDto: CreateUserDto = {
 
 const mockUser = {
     id: 1,
-    username: 'test-username1',
+    name: 'test-username1',
     email: 'test-email1@iwantmymtg.com'
 };
 
@@ -65,7 +65,7 @@ describe('UsersController', () => {
     });
 
     it('should remove given user', () => {
-        controller.remove(1);
+        controller.remove(mockUser);
         expect(service.remove).toHaveBeenCalled();
     });
 });

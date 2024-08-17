@@ -60,4 +60,29 @@ export class SetMapper {
     private buildSetUrl(code: string): string {
         return 'sets/' + code.toLowerCase();
     }
+
+    // private mapFromEntity(setEntity: SetEntity): Set {
+    //     const set = new Set();
+    //     set.baseSize = setEntity.baseSize;
+    //     set.block = setEntity.block;
+    //     set.cards = setEntity.cards;
+    //     set.keyruneCode = setEntity.keyruneCode;
+    //     set.name = setEntity.name;
+    //     set.releaseDate = setEntity.releaseDate;
+    //     set.setCode = setEntity.setCode;
+    //     set.type = setEntity.type;
+    //     return set;
+    // }
+    // private mapToEntity(set: Set): SetEntity {
+    //     const setEntity = new SetEntity();
+    //     setEntity.baseSize = set.baseSize;
+    //     setEntity.block = set.block;
+    //     setEntity.cards = set.cards;
+    //     setEntity.keyruneCode = set.keyruneCode;
+    //     setEntity.name = set.name;
+    //     setEntity.releaseDate = set.releaseDate;
+    //     setEntity.setCode = set.setCode;
+    //     setEntity.type = set.type;
+    //     return setEntity;
+    // }
 }

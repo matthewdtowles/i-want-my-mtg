@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
-import { User } from './user';
+import { User } from 'src/core/user/user.entity';
 
 @Injectable()
 export class UserService implements UserServicePort {
@@ -18,9 +18,12 @@ export class UserService implements UserServicePort {
         return authedUser;
     }
 
-    async createUser(name: string, email: string, password: string): Promise<User> {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User(null, name, email);
+    async createUser(_name: string, _email: string, _password: string): Promise<User> {
+        const hashedPassword = await bcrypt.hash(_password, 10);
+        const user = new User();
+        user.name = _name;
+        user.email = _email;
+        user.password = hashedPassword; // TODO: fix this inconsistency
         return this.repository.save(user, hashedPassword);
     }
 

@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { SetService } from './set.service';
 import { SetServicePort } from './ports/set.service.port';
 import { SetRepositoryPort } from './ports/set.repository.port';
-import { SetDataIngestionPort } from './ports/set-data.ingestion.port';
-import { DatabaseModule } from 'src/database/database.module';
-import { MtgJsonIngestionModule } from 'src/mtgjson-ingestion/mtgjson-ingestion.module';
-import { SetRepository } from 'src/database/set/set.repository';
-import { MtgJsonIngestionService } from 'src/mtgjson-ingestion/mtgjson-ingestion.service';
-import { SetMapper } from 'src/http/set/set.mapper';
-import { CardMapper } from 'src/http/card/card.mapper';
+import { IngestionServicePort } from '../ingestion/ingestion.service.port';
+import { DatabaseModule } from 'src/adapters/database/database.module';
+import { MtgJsonIngestionModule } from 'src/adapters/mtgjson-ingestion/mtgjson-ingestion.module';
+import { SetRepository } from 'src//adapters/database/set.repository';
+import { MtgJsonIngestionService } from 'src/adapters/mtgjson-ingestion/mtgjson-ingestion.service';
+import { SetMapper } from 'src/core/set/set.mapper';
+import { CardMapper } from '../card/card.mapper';
 
 @Module({
     imports: [
@@ -23,7 +23,7 @@ import { CardMapper } from 'src/http/card/card.mapper';
             useClass: SetService,
         },
         {
-            provide: SetDataIngestionPort,
+            provide: IngestionServicePort,
             useClass: MtgJsonIngestionService,
         },
         {
@@ -32,7 +32,7 @@ import { CardMapper } from 'src/http/card/card.mapper';
         }
     ],
     exports: [
-        SetDataIngestionPort,
+        IngestionServicePort,
         SetRepositoryPort,
         SetServicePort,
         SetMapper,

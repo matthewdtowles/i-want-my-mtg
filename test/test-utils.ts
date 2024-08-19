@@ -1,5 +1,5 @@
-import { Set } from '../src/core/set/set';
-import { Card } from '../src/core/card/card';
+import { Set } from '../src/core/set/set.entity';
+import { Card } from '../src/core/card/card.entity';
 
 export class TestUtils {
 

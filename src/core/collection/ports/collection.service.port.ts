@@ -1,5 +1,5 @@
-import { Card } from 'src/core/card/card';
-import { Collection } from '../collection';
+import { Card } from 'src/core/card/card.entity';
+import { Collection } from '../collection.entity';
 
 export const CollectionServicePort = 'CollectionServicePort';
 

@@ -2,10 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.module';
-import { HttpModule } from './http/http.module';
 import { CoreModule } from './core/core.module';
-import { DatabaseModule } from './database/database.module';
+import { AdapterModule } from './adapters/adapter.module';
 
 @Module({
     imports: [
@@ -28,9 +26,7 @@ import { DatabaseModule } from './database/database.module';
             },
         }),
         CoreModule,
-        DatabaseModule,
-        HttpModule,
-        MtgJsonIngestionModule,
+        AdapterModule,
     ],
 })
 export class AppModule { }

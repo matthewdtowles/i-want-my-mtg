@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardService } from '../../../src/core/card/card.service';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
-import { CardDataIngestionPort } from '../../../src/core/card/ports/card-data.ingestion.port';
-import { Card } from '../../../src/core/card/card';
+import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
+import { Card } from '../../../src/core/card/card.entity';
 import { TestUtils } from '../../test-utils';
+import { Set } from '../../../src/core/set/set.entity';
 
 
 describe('CardService', () => {
@@ -17,7 +18,7 @@ describe('CardService', () => {
 
     let service: CardService;
     let repository: CardRepositoryPort;
-    let ingestionSvc: CardDataIngestionPort;
+    let ingestionSvc: IngestionServicePort;
 
     const mockCardRepository: CardRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockSetCards),
@@ -29,8 +30,10 @@ describe('CardService', () => {
         delete: jest.fn(),
     };
 
-    const mockCardIngestion: CardDataIngestionPort = {
+    const mockCardIngestion: IngestionServicePort = {
         fetchSetCards: jest.fn().mockResolvedValue(mockSetCards),
+        fetchAllSetsMeta: jest.fn(),
+        fetchSetByCode: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -42,7 +45,7 @@ describe('CardService', () => {
                     useValue: mockCardRepository,
                 },
                 {
-                    provide: CardDataIngestionPort,
+                    provide: IngestionServicePort,
                     useValue: mockCardIngestion,
                 },
             ],
@@ -50,7 +53,7 @@ describe('CardService', () => {
 
         service = module.get<CardService>(CardService);
         repository = module.get<CardRepositoryPort>(CardRepositoryPort);
-        ingestionSvc = module.get<CardDataIngestionPort>(CardDataIngestionPort);
+        ingestionSvc = module.get<IngestionServicePort>(IngestionServicePort);
     });
 
     afterEach(() => {

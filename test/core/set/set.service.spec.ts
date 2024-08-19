@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SetService as SetService } from '../../../src/core/set/set.service';
 import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
-import { SetDataIngestionPort } from '../../../src/core/set/ports/set-data.ingestion.port';
-import { Set } from '../../../src/core/set/set';
-import { TestUtils } from '../../test-utils';
-
+import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
+import { Set } from '../../../src/core/set/set.entity';
+import { TestUtils } from '../../test-utils'; 
 
 describe('SetService', () => {
     const testUtils: TestUtils = new TestUtils();
@@ -21,14 +20,15 @@ describe('SetService', () => {
         delete: jest.fn(),
     };
 
-    const mockSetIngestion: SetDataIngestionPort = {
+    const mockSetIngestion: IngestionServicePort = {
         fetchSetByCode: jest.fn().mockResolvedValue(inputSet),
         fetchAllSetsMeta: jest.fn().mockResolvedValue(mockSavedSets),
+        fetchSetCards: jest.fn().mockResolvedValue(testUtils.getMockSetCards(testUtils.MOCK_SET_CODE)),
     };
 
     let service: SetService;
     let repository: SetRepositoryPort;
-    let ingestionSvc: SetDataIngestionPort;
+    let ingestionSvc: IngestionServicePort;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -39,14 +39,14 @@ describe('SetService', () => {
                     useValue: mockSetRepository,
                 },
                 {
-                    provide: SetDataIngestionPort,
+                    provide: IngestionServicePort,
                     useValue: mockSetIngestion,
                 },
             ],
         }).compile();
         service = module.get<SetService>(SetService);
         repository = module.get<SetRepositoryPort>(SetRepositoryPort);
-        ingestionSvc = module.get<SetDataIngestionPort>(SetDataIngestionPort);
+        ingestionSvc = module.get<IngestionServicePort>(IngestionServicePort);
     });
 
     it('should be defined', async () => {

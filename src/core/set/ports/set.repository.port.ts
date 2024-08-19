@@ -1,4 +1,4 @@
-import { Set } from '../set';
+import { Set } from '../set.entity';
 
 export const SetRepositoryPort = 'SetRepositoryPort';
 

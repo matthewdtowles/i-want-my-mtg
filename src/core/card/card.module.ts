@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardServicePort } from './ports/card.service.port';
 import { CardRepositoryPort } from './ports/card.repository.port';
-import { CardDataIngestionPort } from './ports/card-data.ingestion.port';
-import { MtgJsonIngestionService } from 'src/mtgjson-ingestion/mtgjson-ingestion.service';
-import { CardRepository } from 'src/database/card/card.repository';
-import { MtgJsonIngestionModule } from 'src/mtgjson-ingestion/mtgjson-ingestion.module';
-import { DatabaseModule } from 'src/database/database.module';
+import { IngestionServicePort } from '../ingestion/ingestion.service.port'
+import { MtgJsonIngestionService } from 'src/adapters/mtgjson-ingestion/mtgjson-ingestion.service';
+import { CardRepository } from 'src/adapters/database/card.repository';
+import { MtgJsonIngestionModule } from 'src/adapters/mtgjson-ingestion/mtgjson-ingestion.module';
+import { DatabaseModule } from 'src/adapters/database/database.module';
 
 @Module({
     imports: [
@@ -19,7 +19,7 @@ import { DatabaseModule } from 'src/database/database.module';
             useClass: CardService,
         },
         {
-            provide: CardDataIngestionPort,
+            provide: IngestionServicePort,
             useClass: MtgJsonIngestionService,
         },
         {
@@ -28,7 +28,7 @@ import { DatabaseModule } from 'src/database/database.module';
         },
     ],
     exports: [
-        CardDataIngestionPort,
+        IngestionServicePort,
         CardRepositoryPort,
         CardServicePort,
     ]

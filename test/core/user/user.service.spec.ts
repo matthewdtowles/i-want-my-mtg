@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../../../src/core/user/user.service';
-import { User } from '../../../src/core/user/user';
+import { User } from '../../../src/core/user/user.entity';
 import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository.port';
 
-const mockUser: User = new User(1, 'test-username1', 'test-email1@iwantmymtg.com');
+const mockUser: User = new User();
+mockUser.id = 1;
+mockUser.name = 'test-username1';
+mockUser.email = 'test-email1@iwantmymtg.com';
     
 const mockUserRepository: UserRepositoryPort = {
     save: jest.fn().mockResolvedValue(mockUser),
@@ -17,8 +20,10 @@ describe('UserService', () => {
     let service: UserService;
     let repository: UserRepositoryPort;
 
-    const user: User = new User(0, 'test-username1', 'test-email1@iwantmymtg.com');
-
+    const user: User = new User();
+    user.id = 0;
+    user.name = 'test-username1';
+    user.email = 'test-email1@iwantmymtg.com';
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [

@@ -2,19 +2,18 @@ import { Type } from 'class-transformer';
 import { CardDto } from 'src/core/card/dto/card.dto';
 
 export class SetDto {
-    id: number;
-    baseSize: number;
-    block?: string;
+    readonly baseSize: number;
+    readonly block?: string;
 
     @Type(() => CardDto)
-    cards: CardDto[];
+    readonly cards: CardDto[];
 
-    code: string;
-    imgSrc?: string;
-    keyruneCode: string;
-    name: string;
-    parentCode?: string;
-    releaseDate: string;
-    type: string;
-    url: string;
+    readonly code: string;
+    readonly imgSrc?: string;
+    readonly keyruneCode: string;
+    readonly name: string;
+    readonly parentCode?: string;
+    readonly releaseDate: string;
+    readonly type: string;
+    readonly url: string;
 }

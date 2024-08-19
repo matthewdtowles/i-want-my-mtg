@@ -18,14 +18,17 @@ export class SetMapper {
     }
 
     entityToDto(set: Set): SetDto {
-        const dto: SetDto = new SetDto();
-        dto.block = set.block;
-        dto.cards = this.mapCardResponses(set.cards);
-        dto.code = set.setCode.toUpperCase();
-        dto.keyruneCode = set.keyruneCode.toLowerCase();
-        dto.name = set.name;
-        dto.releaseDate = set.releaseDate;
-        dto.url = this.buildSetUrl(set.setCode);
+        const dto: SetDto = {
+            baseSize: set.baseSize,
+            block: set.block,
+            cards: this.mapCardResponses(set.cards),
+            code: set.setCode.toUpperCase(),
+            keyruneCode: set.keyruneCode.toLowerCase(),
+            name: set.name,
+            releaseDate: set.releaseDate,
+            url: this.buildSetUrl(set.setCode),
+            type: set.type,
+        };
         return dto;
     }
 
@@ -38,13 +41,7 @@ export class SetMapper {
     entitiesToDtos(sets: Set[]): SetDto[] {
         const setDtos = [];
         sets.forEach(s => {
-            const dto: SetDto = new SetDto();
-            dto.block = s.block;
-            dto.code = s.setCode.toUpperCase();
-            dto.keyruneCode = s.keyruneCode.toLowerCase();
-            dto.name = s.name;
-            dto.releaseDate = s.releaseDate;
-            dto.url = this.buildSetUrl(s.setCode);
+            setDtos.push(this.entityToDto(s));
         });
         return setDtos;
     }
@@ -60,29 +57,4 @@ export class SetMapper {
     private buildSetUrl(code: string): string {
         return 'sets/' + code.toLowerCase();
     }
-
-    // private mapFromEntity(setEntity: SetEntity): Set {
-    //     const set = new Set();
-    //     set.baseSize = setEntity.baseSize;
-    //     set.block = setEntity.block;
-    //     set.cards = setEntity.cards;
-    //     set.keyruneCode = setEntity.keyruneCode;
-    //     set.name = setEntity.name;
-    //     set.releaseDate = setEntity.releaseDate;
-    //     set.setCode = setEntity.setCode;
-    //     set.type = setEntity.type;
-    //     return set;
-    // }
-    // private mapToEntity(set: Set): SetEntity {
-    //     const setEntity = new SetEntity();
-    //     setEntity.baseSize = set.baseSize;
-    //     setEntity.block = set.block;
-    //     setEntity.cards = set.cards;
-    //     setEntity.keyruneCode = set.keyruneCode;
-    //     setEntity.name = set.name;
-    //     setEntity.releaseDate = set.releaseDate;
-    //     setEntity.setCode = set.setCode;
-    //     setEntity.type = set.type;
-    //     return setEntity;
-    // }
 }

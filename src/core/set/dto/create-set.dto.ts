@@ -5,35 +5,35 @@ export class CreateSetDto {
 
     @IsInt()
     @IsPositive()
-    baseSize: number;
+    readonly baseSize: number;
     
     @IsOptional()
     @IsString()
-    block?: string;
+    readonly block?: string;
 
     @IsString()
-    code: string;
+    readonly code: string;
 
     @IsOptional()
     @IsString()
-    imgSrc?: string;
+    readonly imgSrc?: string;
 
     @IsString()
-    keyruneCode: string;
+    readonly keyruneCode: string;
     
     @IsString()
-    name: string;
+    readonly name: string;
 
     @IsOptional()
     @IsString()
-    parentCode?: string;
+    readonly parentCode?: string;
 
     @IsDateString()
-    releaseDate: string;
+    readonly releaseDate: string;
     
     @IsEnum(SetType)
-    type: string;
+    readonly type: string;
 
     @IsString()
-    url: string;
+    readonly url: string;
 }

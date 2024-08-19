@@ -3,9 +3,12 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { CardDto } from './dto/card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Injectable } from '@nestjs/common';
+import { SetMapper } from '../set/set.mapper';
 
 @Injectable()
 export class CardMapper {
+
+    constructor(private readonly setMapper: SetMapper) {}
 
     dtoToEntity(createCardDto: CreateCardDto): Card {
         const card = new Card();
@@ -24,19 +27,19 @@ export class CardMapper {
     }
 
     entityToDto(card: Card): CardDto {
-        const cardDto = new CardDto();
-        cardDto.imgSrc = card.imgSrc;
-        cardDto.isReserved = card.isReserved;
-        // TODO: MUST test to ensure manacost is converted correctly!!
-        cardDto.manaCost = this.mapManaToView(card.manaCost);
-        cardDto.name = card.name;
-        cardDto.number = card.number;
-        cardDto.originalText = card.originalText;
-        cardDto.rarity = card.rarity;
-        // TODO:
-        // card.set = getCardDto.setCode;
-        cardDto.url = card.url;
-        cardDto.uuid = card.uuid;
+        const cardDto: CardDto = {
+            id: card.id,
+            imgSrc: card.imgSrc,
+            isReserved: card.isReserved,
+            manaCost: this.mapManaToView(card.manaCost),
+            name: card.name,
+            number: card.number,
+            originalText: card.originalText,
+            rarity: card.rarity,
+            set: this.setMapper.entityToDto(card.set),
+            url: card.url,
+            uuid: card.uuid,
+        };
         return cardDto;
     }
 
@@ -58,12 +61,12 @@ export class CardMapper {
 
     private mapManaToView(manaCost: string): string[] {
         return null !== manaCost ? manaCost.toLowerCase()
-        .toLowerCase()
-        .trim()
-        .replaceAll('/', '')
-        .replace('{', '')
-        .replaceAll('}', '')
-        .split('{') : null;
+            .toLowerCase()
+            .trim()
+            .replaceAll('/', '')
+            .replace('{', '')
+            .replaceAll('}', '')
+            .split('{') : null;
     }
 
     private mapManaToRepo(manaCost: string[]): string {

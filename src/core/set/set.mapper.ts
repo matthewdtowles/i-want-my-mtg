@@ -3,21 +3,17 @@ import { SetDto } from './dto/set.dto';
 import { CardDto } from '../card/dto/card.dto';
 import { Card } from 'src/core/card/card.entity';
 import { Set } from 'src/core/set/set.entity';
-import { Injectable } from '@nestjs/common';
 import { CardMapper } from '../card/card.mapper';
 
-@Injectable()
 export class SetMapper {
 
-    constructor(private readonly cardMapper: CardMapper) {}
-
-    dtoToEntity(createSetDto: CreateSetDto): Set {
+    static dtoToEntity(createSetDto: CreateSetDto): Set {
         const set = new Set();
         set.name = createSetDto.name;
         return set;
     }
 
-    entityToDto(set: Set): SetDto {
+    static entityToDto(set: Set): SetDto {
         const dto: SetDto = {
             baseSize: set.baseSize,
             block: set.block,
@@ -38,7 +34,7 @@ export class SetMapper {
      * @param sets 
      * @returns 
      */
-    entitiesToDtos(sets: Set[]): SetDto[] {
+    static entitiesToDtos(sets: Set[]): SetDto[] {
         const setDtos = [];
         sets.forEach(s => {
             setDtos.push(this.entityToDto(s));
@@ -46,15 +42,15 @@ export class SetMapper {
         return setDtos;
     }
 
-    private mapCardResponses(cards: Card[]): CardDto[] {
+    private static mapCardResponses(cards: Card[]): CardDto[] {
         const cardResponses: CardDto[] = [];
         cards.forEach(c => {
-            cardResponses.push(this.cardMapper.entityToDto(c));
+            cardResponses.push(CardMapper.entityToDto(c));
         });
         return cardResponses;
     }
 
-    private buildSetUrl(code: string): string {
+    private static buildSetUrl(code: string): string {
         return 'sets/' + code.toLowerCase();
     }
 }

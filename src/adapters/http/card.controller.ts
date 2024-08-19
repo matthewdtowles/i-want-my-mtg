@@ -10,24 +10,23 @@ import { UpdateCardDto } from 'src/core/card/dto/update-card.dto';
 export class CardController {
     constructor(
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
-        private readonly cardMapper: CardMapper,
     ) { }
 
     @Post()
     async create(@Body() createCardDto: CreateCardDto) {
-        const card: Card = this.cardMapper.dtoToEntity(createCardDto);
+        const card: Card = CardMapper.dtoToEntity(createCardDto);
         return this.cardService.save([card]);
     }
 
     @Get(':id')
     async findOne(@Param('id') id: string): Promise<CardDto> {
         const card: Card = await this.cardService.findById(Number(id));
-        return this.cardMapper.entityToDto( card);
+        return CardMapper.entityToDto( card);
     }
 
     @Patch(':id')
     async update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-        const card: Card = this.cardMapper.updateDtoToEntity(updateCardDto);
+        const card: Card = CardMapper.updateDtoToEntity(updateCardDto);
         return this.cardService.save([card]);
     }
 

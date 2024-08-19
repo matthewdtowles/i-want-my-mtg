@@ -6,7 +6,8 @@ import { UserServicePort } from '../../src/core/user/ports/user.service.port';
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',
     name: 'test-username1',
-    password: 'test-password1'
+    password: 'test-password1',
+    collection: undefined,
 };
 
 const mockUser = {

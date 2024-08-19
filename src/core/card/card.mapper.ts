@@ -2,15 +2,11 @@ import { Card } from 'src/core/card/card.entity';
 import { CreateCardDto } from './dto/create-card.dto';
 import { CardDto } from './dto/card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { Injectable } from '@nestjs/common';
 import { SetMapper } from '../set/set.mapper';
 
-@Injectable()
 export class CardMapper {
 
-    constructor(private readonly setMapper: SetMapper) {}
-
-    dtoToEntity(createCardDto: CreateCardDto): Card {
+    static dtoToEntity(createCardDto: CreateCardDto): Card {
         const card = new Card();
         card.imgSrc = createCardDto.imgSrc;
         card.isReserved = createCardDto.isReserved;
@@ -26,7 +22,7 @@ export class CardMapper {
         return card;
     }
 
-    entityToDto(card: Card): CardDto {
+    static entityToDto(card: Card): CardDto {
         const cardDto: CardDto = {
             id: card.id,
             imgSrc: card.imgSrc,
@@ -36,14 +32,14 @@ export class CardMapper {
             number: card.number,
             originalText: card.originalText,
             rarity: card.rarity,
-            set: this.setMapper.entityToDto(card.set),
+            set: SetMapper.entityToDto(card.set),
             url: card.url,
             uuid: card.uuid,
         };
         return cardDto;
     }
 
-    updateDtoToEntity(updateCardDto: UpdateCardDto): Card {
+    static updateDtoToEntity(updateCardDto: UpdateCardDto): Card {
         const card = new Card();
         card.imgSrc = updateCardDto.imgSrc;
         card.isReserved = updateCardDto.isReserved;
@@ -59,7 +55,7 @@ export class CardMapper {
         return card;
     }
 
-    private mapManaToView(manaCost: string): string[] {
+    private static mapManaToView(manaCost: string): string[] {
         return null !== manaCost ? manaCost.toLowerCase()
             .toLowerCase()
             .trim()
@@ -69,7 +65,7 @@ export class CardMapper {
             .split('{') : null;
     }
 
-    private mapManaToRepo(manaCost: string[]): string {
+    private static mapManaToRepo(manaCost: string[]): string {
         return null;
     }
 }

@@ -17,7 +17,7 @@ export class SetMapper {
         const dto: SetDto = {
             baseSize: set.baseSize,
             block: set.block,
-            cards: this.mapCardResponses(set.cards),
+            cards: CardMapper.entitiesToDtos(set.cards),
             code: set.setCode.toUpperCase(),
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,
@@ -40,14 +40,6 @@ export class SetMapper {
             setDtos.push(this.entityToDto(s));
         });
         return setDtos;
-    }
-
-    private static mapCardResponses(cards: Card[]): CardDto[] {
-        const cardResponses: CardDto[] = [];
-        cards.forEach(c => {
-            cardResponses.push(CardMapper.entityToDto(c));
-        });
-        return cardResponses;
     }
 
     private static buildSetUrl(code: string): string {

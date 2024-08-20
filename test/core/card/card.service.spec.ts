@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Card } from '../../../src/core/card/card.entity';
 import { CardService } from '../../../src/core/card/card.service';
+import { CardDto } from '../../../src/core/card/dto/card.dto';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
-import { Card } from '../../../src/core/card/card.entity';
 import { TestUtils } from '../../test-utils';
-import { Set } from '../../../src/core/set/set.entity';
 
 
 describe('CardService', () => {
@@ -66,7 +66,7 @@ describe('CardService', () => {
 
     it('saves cards and returns saved cards', async () => {
         const repoSaveCard = jest.spyOn(repository, 'save');
-        const createdCards: Card[] = await service.save(mockSetCards);
+        const createdCards: CardDto[] = await service.save(mockSetCards);
         expect(repoSaveCard).toHaveBeenCalledWith(mockSetCards);
         expect(createdCards).toEqual(mockSetCards);
     });
@@ -74,7 +74,7 @@ describe('CardService', () => {
     it('finds all cards in given set by setCode', async () => {
         const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
         const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const foundCards: Card[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
+        const foundCards: CardDto[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
         expect(repoFindAllInSet).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE)
         expect(ingestFetchSetCards).not.toHaveBeenCalled();
         expect(foundCards).toEqual(mockSetCards);
@@ -85,7 +85,7 @@ describe('CardService', () => {
         const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
         const repoSaveCards = jest.spyOn(repository, 'save');
         jest.spyOn(repository, 'findAllInSet').mockReturnValueOnce(Promise.resolve([]));
-        const foundCards: Card[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
+        const foundCards: CardDto[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
         expect(repoFindAllInSet).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
         expect(ingestFetchSetCards).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
         expect(repoSaveCards).toHaveBeenCalledWith(mockSetCards);
@@ -94,14 +94,14 @@ describe('CardService', () => {
 
     it('finds every instance of a card with given name', async () => {
         const repoFindAllWithName = jest.spyOn(repository, 'findAllWithName');
-        const foundCards: Card[] = await service.findAllWithName(testUtils.MOCK_CARD_NAME);
+        const foundCards: CardDto[] = await service.findAllWithName(testUtils.MOCK_CARD_NAME);
         expect(repoFindAllWithName).toHaveBeenCalledWith(testUtils.MOCK_CARD_NAME);
         expect(foundCards).toEqual(mockCardsWithName);
     });
 
     it('finds a unique instance of a card by id', async () => {
         const repoFindById = jest.spyOn(repository, 'findById');
-        const foundCard: Card | null = await service.findById(mockSetNumber);
+        const foundCard: CardDto | null = await service.findById(mockSetNumber);
         expect(repoFindById).toHaveBeenCalledWith(mockSetNumber);
         expect(foundCard).toEqual(mockSavedCard);
     });
@@ -109,7 +109,7 @@ describe('CardService', () => {
     it('returns unique instance of a card by setCode and card number in that set', async () => {
         const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
         const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const foundCard: Card = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
+        const foundCard: CardDto = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
         expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE, mockSetNumber);
         expect(ingestFetchSetCards).not.toHaveBeenCalled();
         expect(foundCard).toEqual(mockSavedCard);
@@ -120,7 +120,7 @@ describe('CardService', () => {
         const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
         const repoSaveCards = jest.spyOn(repository, 'save');
         jest.spyOn(repository, 'findBySetCodeAndNumber').mockReturnValueOnce(Promise.resolve(null));
-        const foundCard: Card = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
+        const foundCard: CardDto = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
         expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE, mockSetNumber);
         expect(ingestFetchSetCards).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
         expect(repoSaveCards).toHaveBeenCalledWith(mockSetCards);
@@ -129,7 +129,7 @@ describe('CardService', () => {
 
     it('returns unique instance of a card by uuid', async () => {
         const repoFindByUuid = jest.spyOn(repository, 'findByUuid');
-        const foundCard: Card | null = await service.findByUuid(inputCard.uuid);
+        const foundCard: CardDto | null = await service.findByUuid(inputCard.uuid);
         expect(repoFindByUuid).toHaveBeenCalledWith(inputCard.uuid);
         expect(foundCard).toEqual(mockSavedCard);
     });

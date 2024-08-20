@@ -1,4 +1,7 @@
 import { Card } from '../card.entity';
+import { CardDto } from '../dto/card.dto';
+import { CreateCardDto } from '../dto/create-card.dto';
+import { UpdateCardDto } from '../dto/update-card.dto';
 
 export const CardServicePort = 'CardServicePort';
 
@@ -15,36 +18,36 @@ export interface CardServicePort {
      * @param card 
      * @returns saved card
      */
-    save(card: Card[]): Promise<Card[]>;
+    save(card: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]>;
 
     /**
      * @param setCode 
      * @returns all cards in set
      */
-    findAllInSet(setCode: string): Promise<Card[]>;
+    findAllInSet(setCode: string): Promise<CardDto[]>;
 
     /**
-     * @param name Card.name
+     * @param name
      * @returns all cards with name
      */
-    findAllWithName(name: string): Promise<Card[]>;
+    findAllWithName(name: string): Promise<CardDto[]>;
     
     /**
      * @param id
      * @returns card with id | null if not found
      */
-    findById(id: number): Promise<Card | null>;
+    findById(id: number): Promise<CardDto | null>;
 
     /**
      * @param setCode 
      * @param number
      * @returns card with number in set
      */
-    findBySetCodeAndNumber(setCode: string, number: number): Promise<Card | null>;
+    findBySetCodeAndNumber(setCode: string, number: number): Promise<CardDto | null>;
 
     /**
      * @param uuid
      * @returns card with unique uuid | null if not found
      */
-    findByUuid(uuid: string): Promise<Card | null>;
+    findByUuid(uuid: string): Promise<CardDto | null>;
 }

@@ -6,20 +6,37 @@ import { SetMapper } from '../set/set.mapper';
 
 export class CardMapper {
 
-    static dtoToEntity(createCardDto: CreateCardDto): Card {
-        const card = new Card();
-        card.imgSrc = createCardDto.imgSrc;
-        card.isReserved = createCardDto.isReserved;
-        card.manaCost = createCardDto.manaCost;
-        card.name = createCardDto.name;
-        card.number = createCardDto.number;
-        card.originalText = createCardDto.originalText;
-        card.rarity = createCardDto.rarity;
+    static dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
+        const cards: Card[] = [];
+        cardDtos.forEach(c => {
+            cards.push(this.dtoToEntity(c));
+        });
+        return cards;
+    }
+
+    static dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
+        const card: Card = new Card();
+        card.imgSrc = cardDto.imgSrc;
+        card.isReserved = cardDto.isReserved;
+        card.manaCost = cardDto.manaCost;
+        card.name = cardDto.name;
+        card.number = cardDto.number;
+        card.originalText = cardDto.originalText;
+        card.rarity = cardDto.rarity;
         // TODO:
         // card.set = createCardDto.setCode;
-        card.url = createCardDto.url;
-        card.uuid = createCardDto.uuid;
+        card.url = cardDto.url;
+        card.uuid = cardDto.uuid;
         return card;
+    }
+
+    static entitiesToDtos(cards: Card[]): CardDto[] {
+        const cardDtos: CardDto[] = [];
+        const totalCards: number = cards ? cards.length : 0;
+        for(let i = 0; i < totalCards; i++) {
+            cardDtos.push(this.entityToDto(cards[i]));
+        }
+        return cardDtos;
     }
 
     static entityToDto(card: Card): CardDto {
@@ -37,22 +54,6 @@ export class CardMapper {
             uuid: card.uuid,
         };
         return cardDto;
-    }
-
-    static updateDtoToEntity(updateCardDto: UpdateCardDto): Card {
-        const card = new Card();
-        card.imgSrc = updateCardDto.imgSrc;
-        card.isReserved = updateCardDto.isReserved;
-        card.manaCost = updateCardDto.manaCost;
-        card.name = updateCardDto.name;
-        card.number = updateCardDto.number;
-        card.originalText = updateCardDto.originalText;
-        card.rarity = updateCardDto.rarity;
-        // TODO:
-        // card.set = updateCardDto.setCode;
-        card.url = updateCardDto.url;
-        card.uuid = updateCardDto.uuid;
-        return card;
     }
 
     private static mapManaToView(manaCost: string): string[] {

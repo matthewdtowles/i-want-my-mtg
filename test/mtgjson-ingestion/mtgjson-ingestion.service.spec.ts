@@ -29,11 +29,11 @@ describe('MtgJsonIngestionService', () => {
 
     it('getAllSets should return array of every set as CreateSetDto', async () => {
         jest.spyOn(apiClient, 'fetchSetList').mockResolvedValue(testUtils.getMockSetListArray()); 
-        expect(await service.fetchAllSetsMeta()).toEqual(testUtils.getExpectedSets());
+        expect(await service.fetchAllSetsMeta()).toEqual(testUtils.getExpectedCreateSetDtos());
     });
 
     it('getSetCards should return array of every card as CreateCardDto in given set', async () => {
-        jest.spyOn(apiClient, 'fetchSet').mockResolvedValue(testUtils.getMockSet());
-        expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.getExpectedCards());
+        jest.spyOn(apiClient, 'fetchSet').mockResolvedValue(testUtils.getMockSetDto());
+        expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.getExpectedCreateCardDtos());
     });
 });

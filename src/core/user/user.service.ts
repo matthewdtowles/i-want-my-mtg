@@ -1,45 +1,51 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { UserServicePort } from './ports/user.service.port';
-import { UserRepositoryPort } from './ports/user.repository.port';
 import { User } from 'src/core/user/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+import { UserRepositoryPort } from './ports/user.repository.port';
+import { UserServicePort } from './ports/user.service.port';
+import { UserMapper } from './user.mapper';
 
 @Injectable()
 export class UserService implements UserServicePort {
 
-    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
+    constructor(
+        @Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort,
+        @Inject(UserMapper) private readonly mapper: UserMapper,
+    ) {}
 
-    async authenticate(email: string, password: string): Promise<User | null> {
-        const hashedPassword: string = await this.repository.getPasswordHash(email);
-        let authedUser: User;
-        if (hashedPassword && await bcrypt.compare(password, hashedPassword)) {
-            authedUser = await this.repository.findByEmail(email);
-        }
-        return authedUser;
+    // TODO: research on best ways to handle authn and authz
+    // async authenticate(email: string, password: string): Promise<User | null> {
+    //     const hashedPassword: string = await this.repository.getPasswordHash(email);
+    //     let authedUser: User;
+    //     if (hashedPassword && await bcrypt.compare(password, hashedPassword)) {
+    //         authedUser = await this.repository.findByEmail(email);
+    //     }
+    //     return authedUser;
+    // }
+
+    async createUser(userDto: CreateUserDto): Promise<UserDto> {
+        // const hashedPassword = await bcrypt.hash(userDto.password, 10);
+        const user: User = await this.repository.save(this.mapper.writeDtoToEntity(userDto));
+        return this.mapper.entityToDto(user);
     }
 
-    async createUser(_name: string, _email: string, _password: string): Promise<User> {
-        const hashedPassword = await bcrypt.hash(_password, 10);
-        const user = new User();
-        user.name = _name;
-        user.email = _email;
-        user.password = hashedPassword; // TODO: fix this inconsistency
-        return this.repository.save(user, hashedPassword);
+    async findById(id: number): Promise<UserDto> {
+        return this.mapper.entityToDto(await this.repository.findById(id));
     }
 
-    async findById(id: number): Promise<User> {
-        return this.repository.findById(id);
+    async findByEmail(username: string): Promise<UserDto> {
+        return this.mapper.entityToDto(await this.repository.findByEmail(username));
     }
 
-    async findByEmail(username: string): Promise<User> {
-        return this.repository.findByEmail(username);
+    async update(userDto: UpdateUserDto): Promise<UserDto> {
+        const user: User = this.mapper.writeDtoToEntity(userDto);
+        return this.mapper.entityToDto(await this.repository.save(user));
     }
 
-    async update(user: User, password: string): Promise<User> {
-        return this.repository.save(user, password);
-    }
-
-    async remove(user: User): Promise<void> {
+    async remove(userDto: UpdateUserDto): Promise<void> {
+        const user: User = this.mapper.writeDtoToEntity(userDto);
         await this.repository.delete(user);
     }
 }

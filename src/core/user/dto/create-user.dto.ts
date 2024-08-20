@@ -1,6 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsEmail, IsOptional, IsString, IsStrongPassword, MinLength } from 'class-validator';
-import { CollectionDto } from 'src/core/collection/dto/collection.dto';
+import { IsEmail, IsString, IsStrongPassword, MinLength } from 'class-validator';
 
 export class CreateUserDto {
     
@@ -13,8 +11,4 @@ export class CreateUserDto {
 
     @IsStrongPassword()
     readonly password: string;
-
-    @IsOptional()
-    @Type(() => CollectionDto)
-    readonly collection: CollectionDto;
 }

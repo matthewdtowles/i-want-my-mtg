@@ -13,12 +13,11 @@ export class UserRepository implements UserRepositoryPort {
         private readonly userRepository: Repository<User>,
     ) {}
 
-    async save(user: User, hashedPassword: string): Promise<User | null> {
+    async save(user: User): Promise<User | null> {
         const userEntity = new User();
         userEntity.id = user.id;
         userEntity.name = user.name;
         userEntity.email = user.email;
-        userEntity.password = hashedPassword;
         return await this.userRepository.save(userEntity);
     }
 

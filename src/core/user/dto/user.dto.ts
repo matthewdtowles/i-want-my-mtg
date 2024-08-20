@@ -4,10 +4,8 @@ import { CollectionDto } from "src/core/collection/dto/collection.dto";
 export class UserDto {
     readonly id: number;
     readonly email: string;
-    readonly username: string;
+    readonly name: string;
 
-    // TODO: hashed password as part of this ??
-    
     @Type(() => CollectionDto)
     readonly collection: CollectionDto;
 }

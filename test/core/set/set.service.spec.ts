@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SetService as SetService } from '../../../src/core/set/set.service';
-import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
+import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { Set } from '../../../src/core/set/set.entity';
-import { TestUtils } from '../../test-utils'; 
+import { SetService } from '../../../src/core/set/set.service';
+import { TestUtils } from '../../test-utils';
 
 describe('SetService', () => {
     const testUtils: TestUtils = new TestUtils();

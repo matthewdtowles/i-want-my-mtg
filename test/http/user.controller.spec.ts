@@ -2,19 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from '../../src/adapters/http/user.controller';
 import { CreateUserDto } from '../../src/core/user/dto/create-user.dto';
 import { UserServicePort } from '../../src/core/user/ports/user.service.port';
+import { UserDto } from '../../src/core/user/dto/user.dto';
 
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',
     name: 'test-username1',
     password: 'test-password1',
-    collection: undefined,
 };
 
-const mockUser = {
+const mockUser: UserDto = {
     id: 1,
     name: 'test-username1',
     email: 'test-email1@iwantmymtg.com',
-    password: 'test-password1',
     collection: null,
 };
 
@@ -51,10 +50,7 @@ describe('UsersController', () => {
     it('should create a user', () => {
         controller.create(createUserDto);
         expect(controller.create(createUserDto)).resolves.toEqual(mockUser);
-        expect(service.createUser).toHaveBeenCalledWith(
-            createUserDto.name,
-            createUserDto.email,
-            createUserDto.password);
+        expect(service.createUser).toHaveBeenCalledWith(createUserDto);
     });
 
     it('should find user by given id', () => {

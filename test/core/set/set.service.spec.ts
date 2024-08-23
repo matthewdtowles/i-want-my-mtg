@@ -7,7 +7,7 @@ import { TestUtils } from '../../test-utils';
 
 describe('SetService', () => {
     const testUtils: TestUtils = new TestUtils();
-    const mockSavedSets: Set[] = testUtils.getMockSets();
+    const mockSavedSets: Set[] = testUtils.getMockSet();
     const mockSavedSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
     const inputSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
     inputSet.cards = testUtils.getMockSetCards(inputSet.setCode);
@@ -23,7 +23,7 @@ describe('SetService', () => {
     const mockSetIngestion: IngestionServicePort = {
         fetchSetByCode: jest.fn().mockResolvedValue(inputSet),
         fetchAllSetsMeta: jest.fn().mockResolvedValue(mockSavedSets),
-        fetchSetCards: jest.fn().mockResolvedValue(testUtils.getMockSetCards(testUtils.MOCK_SET_CODE)),
+        fetchSetCards: jest.fn().mockResolvedValue(testUtils.getMockCards(testUtils.MOCK_SET_CODE)),
     };
 
     let service: SetService;

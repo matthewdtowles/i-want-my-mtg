@@ -2,7 +2,6 @@ import { Card } from 'src/core/card/card.entity';
 import { CreateCardDto } from './dto/create-card.dto';
 import { CardDto } from './dto/card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { SetMapper } from '../set/set.mapper';
 
 export class CardMapper {
 
@@ -40,6 +39,8 @@ export class CardMapper {
     }
 
     static entityToDto(card: Card): CardDto {
+        if (!card) console.log(`Card Entity To DTO: card is null or undefined`);
+        else console.log(`Card Entity To DTO: name ${card.name}, uuid ${card.uuid} set ${card.set}`);
         const cardDto: CardDto = {
             id: card.id,
             imgSrc: card.imgSrc,
@@ -49,7 +50,7 @@ export class CardMapper {
             number: card.number,
             originalText: card.originalText,
             rarity: card.rarity,
-            set: SetMapper.entityToDto(card.set),
+            setCode: card && card.set ? card.set.setCode: null,
             url: card.url,
             uuid: card.uuid,
         };
@@ -57,8 +58,7 @@ export class CardMapper {
     }
 
     private static mapManaToView(manaCost: string): string[] {
-        return null !== manaCost ? manaCost.toLowerCase()
-            .toLowerCase()
+        return typeof manaCost === 'string' ? manaCost.toLowerCase()
             .trim()
             .replaceAll('/', '')
             .replace('{', '')

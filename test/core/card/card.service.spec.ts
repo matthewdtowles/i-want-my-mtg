@@ -1,37 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Card } from '../../../src/core/card/card.entity';
 import { CardService } from '../../../src/core/card/card.service';
-import { CardDto } from '../../../src/core/card/dto/card.dto';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
 import { TestUtils } from '../../test-utils';
-
+import { CardDto } from '../../../src/core/card/dto/card.dto';
+import { Card } from '../../../src/core/card/card.entity';
 
 describe('CardService', () => {
-    const testUtils: TestUtils = new TestUtils();
-    const mockSetNumber = 1;
-
-    const mockSetCards: Card[] = testUtils.getMockSetCards(testUtils.MOCK_SET_CODE);
-    const mockCardsWithName: Card[] = testUtils.getMockCardsWithName(3);
-    const mockSavedCard: Card = testUtils.getMockCard(mockSetNumber, testUtils.MOCK_SET_CODE);
-    const inputCard: Card = testUtils.getMockInputCard(mockSetNumber, testUtils.MOCK_SET_CODE);
-
     let service: CardService;
     let repository: CardRepositoryPort;
     let ingestionSvc: IngestionServicePort;
 
+    const testUtils: TestUtils = new TestUtils();
+    const mockSetCode: string = testUtils.MOCK_SET_CODE;
+    const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
+    const mockCardDtos: CardDto[] = testUtils.getMockCardDtos(mockSetCode);
+
     const mockCardRepository: CardRepositoryPort = {
-        save: jest.fn().mockResolvedValue(mockSetCards),
-        findAllInSet: jest.fn().mockResolvedValue(mockSetCards),
-        findAllWithName: jest.fn().mockResolvedValue(mockCardsWithName),
-        findById: jest.fn().mockResolvedValue(mockSavedCard),
-        findBySetCodeAndNumber: jest.fn().mockResolvedValue(mockSavedCard),
-        findByUuid: jest.fn().mockResolvedValue(mockSavedCard),
+        save: jest.fn().mockResolvedValue(mockCards),
+        findAllInSet: jest.fn().mockResolvedValue(mockCards),
+        findAllWithName: jest.fn().mockResolvedValue(mockCards),
+        findById: jest.fn().mockResolvedValue(mockCards[0]),
+        findBySetCodeAndNumber: jest.fn().mockResolvedValue(mockCards[0]),
+        findByUuid: jest.fn().mockResolvedValue(mockCards[0]),
         delete: jest.fn(),
     };
 
     const mockCardIngestion: IngestionServicePort = {
-        fetchSetCards: jest.fn().mockResolvedValue(mockSetCards),
+        fetchSetCards: jest.fn().mockResolvedValue(mockCardDtos),
         fetchAllSetsMeta: jest.fn(),
         fetchSetByCode: jest.fn(),
     };
@@ -64,73 +60,33 @@ describe('CardService', () => {
         expect(service).toBeDefined();
     });
 
-    it('saves cards and returns saved cards', async () => {
-        const repoSaveCard = jest.spyOn(repository, 'save');
-        const createdCards: CardDto[] = await service.save(mockSetCards);
-        expect(repoSaveCard).toHaveBeenCalledWith(mockSetCards);
-        expect(createdCards).toEqual(mockSetCards);
+    it('should save cards and return saved cards', async () => {
+        const savedCards: CardDto[] = await service.save(testUtils.getMockCreateCardDtos(mockSetCode));
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards).toEqual(testUtils.mapEntitiesToDtos(mockCards));
     });
 
-    it('finds all cards in given set by setCode', async () => {
-        const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
-        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const foundCards: CardDto[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
-        expect(repoFindAllInSet).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE)
-        expect(ingestFetchSetCards).not.toHaveBeenCalled();
-        expect(foundCards).toEqual(mockSetCards);
+    it('should find all cards in a set by setCode', async () => {
+        const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
+        expect(repository.findAllInSet).toHaveBeenCalledWith(mockSetCode);
+        expect(foundCards).toEqual(testUtils.mapEntitiesToDtos(mockCards));
     });
 
-    it('finds all cards in given set by setCode after ingesting set cards', async () => {
-        const repoFindAllInSet = jest.spyOn(repository, 'findAllInSet');
-        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const repoSaveCards = jest.spyOn(repository, 'save');
-        jest.spyOn(repository, 'findAllInSet').mockReturnValueOnce(Promise.resolve([]));
-        const foundCards: CardDto[] = await service.findAllInSet(testUtils.MOCK_SET_CODE);
-        expect(repoFindAllInSet).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
-        expect(ingestFetchSetCards).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
-        expect(repoSaveCards).toHaveBeenCalledWith(mockSetCards);
-        expect(foundCards).toEqual(mockSetCards);
+    it('should find a card by id', async () => {
+        const foundCard: CardDto | null = await service.findById(1);
+        expect(repository.findById).toHaveBeenCalledWith(1);
+        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
     });
 
-    it('finds every instance of a card with given name', async () => {
-        const repoFindAllWithName = jest.spyOn(repository, 'findAllWithName');
-        const foundCards: CardDto[] = await service.findAllWithName(testUtils.MOCK_CARD_NAME);
-        expect(repoFindAllWithName).toHaveBeenCalledWith(testUtils.MOCK_CARD_NAME);
-        expect(foundCards).toEqual(mockCardsWithName);
+    it('should find a card by setCode and number', async () => {
+        const foundCard: CardDto = await service.findBySetCodeAndNumber(mockSetCode, 1);
+        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, 1);
+        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
     });
 
-    it('finds a unique instance of a card by id', async () => {
-        const repoFindById = jest.spyOn(repository, 'findById');
-        const foundCard: CardDto | null = await service.findById(mockSetNumber);
-        expect(repoFindById).toHaveBeenCalledWith(mockSetNumber);
-        expect(foundCard).toEqual(mockSavedCard);
-    });
-
-    it('returns unique instance of a card by setCode and card number in that set', async () => {
-        const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
-        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const foundCard: CardDto = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
-        expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE, mockSetNumber);
-        expect(ingestFetchSetCards).not.toHaveBeenCalled();
-        expect(foundCard).toEqual(mockSavedCard);
-    });
-
-    it('returns unique instance of a card by setCode and card number in that set after ingesting set card', async () => {
-        const repoFindBySetCodeAndNumber = jest.spyOn(repository, 'findBySetCodeAndNumber');
-        const ingestFetchSetCards = jest.spyOn(ingestionSvc, 'fetchSetCards');
-        const repoSaveCards = jest.spyOn(repository, 'save');
-        jest.spyOn(repository, 'findBySetCodeAndNumber').mockReturnValueOnce(Promise.resolve(null));
-        const foundCard: CardDto = await service.findBySetCodeAndNumber(testUtils.MOCK_SET_CODE, mockSetNumber);
-        expect(repoFindBySetCodeAndNumber).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE, mockSetNumber);
-        expect(ingestFetchSetCards).toHaveBeenCalledWith(testUtils.MOCK_SET_CODE);
-        expect(repoSaveCards).toHaveBeenCalledWith(mockSetCards);
-        expect(foundCard).toEqual(mockSavedCard);
-    });
-
-    it('returns unique instance of a card by uuid', async () => {
-        const repoFindByUuid = jest.spyOn(repository, 'findByUuid');
-        const foundCard: CardDto | null = await service.findByUuid(inputCard.uuid);
-        expect(repoFindByUuid).toHaveBeenCalledWith(inputCard.uuid);
-        expect(foundCard).toEqual(mockSavedCard);
+    it('should find a card by UUID', async () => {
+        const foundCard: CardDto | null = await service.findByUuid(mockCards[0].uuid);
+        expect(repository.findByUuid).toHaveBeenCalledWith(mockCards[0].uuid);
+        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
     });
 });

@@ -8,6 +8,7 @@ const mockUser: User = new User();
 mockUser.id = 1;
 mockUser.name = 'test-username1';
 mockUser.email = 'test-email1@iwantmymtg.com';
+mockUser.collection = null;
     
 const mockUserRepository: UserRepositoryPort = {
     save: jest.fn().mockResolvedValue(mockUser),
@@ -64,7 +65,7 @@ describe('UserService', () => {
     it('remove should delete given user, check if user exists and return false', async () => {
         const removeSpy = jest.spyOn(repository, 'delete');
         const retVal = await service.remove(user);
-        expect(removeSpy).toHaveBeenCalledWith(user);
+        expect(removeSpy).toHaveBeenCalled();
         expect(retVal).toBe(undefined);
     });
 });

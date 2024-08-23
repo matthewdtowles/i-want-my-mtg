@@ -63,30 +63,30 @@ describe('CardService', () => {
     it('should save cards and return saved cards', async () => {
         const savedCards: CardDto[] = await service.save(testUtils.getMockCreateCardDtos(mockSetCode));
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual(testUtils.mapEntitiesToDtos(mockCards));
+        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
     });
 
     it('should find all cards in a set by setCode', async () => {
         const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
         expect(repository.findAllInSet).toHaveBeenCalledWith(mockSetCode);
-        expect(foundCards).toEqual(testUtils.mapEntitiesToDtos(mockCards));
+        expect(foundCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
     });
 
     it('should find a card by id', async () => {
         const foundCard: CardDto | null = await service.findById(1);
         expect(repository.findById).toHaveBeenCalledWith(1);
-        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
     });
 
     it('should find a card by setCode and number', async () => {
         const foundCard: CardDto = await service.findBySetCodeAndNumber(mockSetCode, 1);
         expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, 1);
-        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
     });
 
     it('should find a card by UUID', async () => {
         const foundCard: CardDto | null = await service.findByUuid(mockCards[0].uuid);
         expect(repository.findByUuid).toHaveBeenCalledWith(mockCards[0].uuid);
-        expect(foundCard).toEqual(testUtils.mapEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
     });
 });

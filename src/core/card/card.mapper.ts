@@ -39,8 +39,6 @@ export class CardMapper {
     }
 
     static entityToDto(card: Card): CardDto {
-        if (!card) console.log(`Card Entity To DTO: card is null or undefined`);
-        else console.log(`Card Entity To DTO: name ${card.name}, uuid ${card.uuid} set ${card.set}`);
         const cardDto: CardDto = {
             id: card.id,
             imgSrc: card.imgSrc,

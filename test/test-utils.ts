@@ -2,13 +2,16 @@ import { Set } from '../src/core/set/set.entity';
 import { Card } from '../src/core/card/card.entity';
 import { CreateCardDto } from '../src/core/card/dto/create-card.dto';
 import { CardDto } from '../src/core/card/dto/card.dto';
+import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
 
 export class TestUtils {
     readonly MOCK_SET_CODE = 'SET';
+    readonly MOCK_SET_NAME = 'Test Set';
     readonly MOCK_CARD_NAME = 'Test Card Name';
     readonly MOCK_SET_URL = 'sets/set';
     readonly MOCK_ROOT_SCRYFALL_ID = 'abc123def456';
     readonly IMG_SRC_BASE = 'https://cards.scryfall.io/normal/front/';
+    readonly MOCK_SET_RELEASE_DATE = '2022-01-01';
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: 3 }, (_, i) => ({
@@ -35,11 +38,20 @@ export class TestUtils {
     }
 
     getMockCardDtos(setCode: string): CardDto[] {
-        return this.getMockCards(setCode).map(card => this.mapEntityToDto(card));
+        return this.getMockCards(setCode).map(card => this.mapCardEntityToDto(card));
+    }
+
+    getMockSets(): Set[] {
+        return this.getMockCreateSetDtos().map((dto, i) => ({
+            ...dto,
+            id: i + 1,
+            setCode: dto.code,
+            cards: undefined,
+        }));    
     }
 
     getMockSet(setCode: string): Set {
-        const set = new Set();
+        const set: Set = new Set();
         set.setCode = setCode;
         set.baseSize = 3;
         set.name = 'Test Set';
@@ -48,7 +60,27 @@ export class TestUtils {
         return set;
     }
 
-    mapEntityToDto(card: Card): CardDto {
+    getMockCreateSetDtos(): CreateSetDto[] {
+        const setCodes: string[] = [
+            this.MOCK_SET_CODE,
+            'ETS',
+            'TES',
+        ];
+        return Array.from({ length: 3}, (_, i) => ({
+            baseSize: 3,
+            block: this.MOCK_SET_NAME,
+            code: setCodes[i],
+            imgSrc: null,
+            keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
+            name: this.MOCK_SET_NAME + i,
+            parentCode: this.MOCK_SET_CODE,
+            releaseDate: this.MOCK_SET_RELEASE_DATE,
+            type: 'expansion',
+            url: 'sets/' + setCodes[i]
+        }));
+    }
+
+    mapCardEntityToDto(card: Card): CardDto {
         return {
             id: card.id,
             imgSrc: card.imgSrc,
@@ -64,8 +96,8 @@ export class TestUtils {
         };
     }
 
-    mapEntitiesToDtos(cards: Card[]): CardDto[] {
-        return cards.map(card => this.mapEntityToDto(card));
+    mapCardEntitiesToDtos(cards: Card[]): CardDto[] {
+        return cards.map(card => this.mapCardEntityToDto(card));
     }
 
     private convertManaCost(manaCost: string | undefined): string[] | undefined {

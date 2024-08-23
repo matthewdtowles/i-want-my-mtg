@@ -7,10 +7,10 @@ import { TestUtils } from '../../test-utils';
 
 describe('SetService', () => {
     const testUtils: TestUtils = new TestUtils();
-    const mockSavedSets: Set[] = testUtils.getMockSet();
+    const mockSavedSets: Set[] = testUtils.getMockSets();
     const mockSavedSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
     const inputSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
-    inputSet.cards = testUtils.getMockSetCards(inputSet.setCode);
+    inputSet.cards = testUtils.getMockCards(inputSet.setCode);
 
     const mockSetRepository: SetRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockSavedSet),

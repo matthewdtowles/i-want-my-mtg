@@ -23,7 +23,7 @@ const mockSet: SetDto = {
             name: 'the name of the card',
             number: '1',
             rarity: 'common',
-            set: null,
+            setCode: 'KLD',
             url: 'some.url/set/kld/1',
             uuid: '',
         },
@@ -34,7 +34,7 @@ const mockSet: SetDto = {
             name: 'the second card',
             number: '2',
             rarity: 'rare',
-            set: null,
+            setCode: 'KLD',
             url: 'some.url/set/kld/2',
             uuid: '',
         }

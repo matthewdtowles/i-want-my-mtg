@@ -36,7 +36,6 @@ describe('UserService', () => {
         save: jest.fn().mockResolvedValue(mockUser),
         findByEmail: jest.fn().mockResolvedValue(mockUser),
         findById: jest.fn().mockResolvedValue(mockUser),
-        getPasswordHash: jest.fn().mockResolvedValue("qwertyuiop"),
         delete: jest.fn(),
     };
 

@@ -13,9 +13,6 @@ export class User {
     @Column()
     name: string;
 
-    @Column()
-    password: string;
-
     @OneToOne(() => Collection, collection => collection.owner)
     @Index()
     collection: Collection;

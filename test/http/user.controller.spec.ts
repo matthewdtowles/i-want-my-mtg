@@ -7,7 +7,6 @@ import { UserDto } from '../../src/core/user/dto/user.dto';
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',
     name: 'test-username1',
-    password: 'test-password1',
 };
 
 const mockUser: UserDto = {

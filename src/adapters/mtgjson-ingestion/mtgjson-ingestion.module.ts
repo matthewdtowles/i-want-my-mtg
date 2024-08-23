@@ -12,16 +12,12 @@ import { MtgJsonApiClient } from './mtgjson-api.client';
             provide: IngestionServicePort,
             useClass: MtgJsonIngestionService,
         },
-        {
-            provide: IngestionServicePort,
-            useClass: MtgJsonIngestionService,
-        },
     ],
     exports: [
         IngestionServicePort,
-        IngestionServicePort,
-        MtgJsonApiClient,
-        MtgJsonMapperService,
+        // TODO: Evaluate - why do these need to be exported if never used outside of MtgJsonIngestionService?
+        // MtgJsonApiClient,
+        // MtgJsonMapperService,
     ]
 })
 export class MtgJsonIngestionModule { 

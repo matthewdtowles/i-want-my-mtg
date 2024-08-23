@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SetService as SetService } from '../../../src/core/set/set.service';
-import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
+import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { Set } from '../../../src/core/set/set.entity';
-import { TestUtils } from '../../test-utils'; 
+import { SetService } from '../../../src/core/set/set.service';
+import { TestUtils } from '../../test-utils';
 
 describe('SetService', () => {
     const testUtils: TestUtils = new TestUtils();
     const mockSavedSets: Set[] = testUtils.getMockSets();
     const mockSavedSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
     const inputSet: Set = testUtils.getMockSet(testUtils.MOCK_SET_CODE);
-    inputSet.cards = testUtils.getMockSetCards(inputSet.setCode);
+    inputSet.cards = testUtils.getMockCards(inputSet.setCode);
 
     const mockSetRepository: SetRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockSavedSet),
@@ -23,7 +23,7 @@ describe('SetService', () => {
     const mockSetIngestion: IngestionServicePort = {
         fetchSetByCode: jest.fn().mockResolvedValue(inputSet),
         fetchAllSetsMeta: jest.fn().mockResolvedValue(mockSavedSets),
-        fetchSetCards: jest.fn().mockResolvedValue(testUtils.getMockSetCards(testUtils.MOCK_SET_CODE)),
+        fetchSetCards: jest.fn().mockResolvedValue(testUtils.getMockCards(testUtils.MOCK_SET_CODE)),
     };
 
     let service: SetService;

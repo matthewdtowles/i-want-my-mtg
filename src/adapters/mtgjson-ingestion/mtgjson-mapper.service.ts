@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { CreateCardDto } from 'src/core/card/dto/create-card.dto';
+import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
 import { CardSet } from './dto/cardSet.dto';
-import { SetDto } from './dto/set.dto';
+import { SetDto as SetData } from './dto/set.dto';
 import { SetList } from './dto/setList.dto';
-import { Set } from 'src/core/set/set.entity';
-import { Card } from 'src/core/card/card.entity';
 
 @Injectable()
 export class MtgJsonMapperService {
@@ -13,46 +13,50 @@ export class MtgJsonMapperService {
     private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ['front', 'back'];
     private readonly GATHERER_CARD_IMAGE_URL: string = 'https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=';
 
-    mapSetMetaToSet(setMeta: SetDto | SetList): Set {
-        const set: Set = new Set();
-        set.baseSize = setMeta.baseSetSize;
-        set.block = setMeta.block;
-        set.cards = [];
-        set.keyruneCode = setMeta.keyruneCode.toLowerCase();
-        set.name = setMeta.name;
-        set.releaseDate = setMeta.releaseDate;
-        set.setCode = setMeta.code;
-        set.type = setMeta.type;
+    externalToCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
+        const set: CreateSetDto = {
+            code: setMeta.code,
+            baseSize: setMeta.baseSetSize,
+            block: setMeta.block,
+            keyruneCode: setMeta.keyruneCode.toLowerCase(),
+            name: setMeta.name,
+            parentCode: setMeta.parentCode,
+            releaseDate: setMeta.releaseDate,
+            type: setMeta.type,
+            url: this.buildSetUrl(setMeta.code),
+        }
         return set;
     }
 
-    mapSetCardsToCards(setCards: CardSet[]): Card[] {
-        const cards: Card[] = [];
+    externalToCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {
+        const cards: CreateCardDto[] = [];
         setCards.forEach(c => {
-            cards.push(this.mapSetCardToCard(c));
+            cards.push(this.externalToCreateCardDto(c));
         });
         return cards;
     }
 
-    mapSetMetaListToSets(setLists: SetList[]): Set[] {
-        const sets: Set[] = [];
+    externalToCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
+        const sets: CreateSetDto[] = [];
         setLists.forEach(s => {
-            sets.push(this.mapSetMetaToSet(s));
+            sets.push(this.externalToCreateSetDto(s));
         })
         return sets;
     }
 
-    private mapSetCardToCard(setCard: CardSet): Card {
-        const card: Card = new Card();
-        card.imgSrc = this.buildCardImgSrc(setCard);
-        card.isReserved = setCard.isReserved;
-        card.manaCost = setCard.manaCost;
-        card.name = setCard.name;
-        card.number = setCard.number;
-        card.originalText = setCard.originalText;
-        card.rarity = setCard.rarity;
-        card.url = this.buildCardUrl(setCard);
-        card.uuid = setCard.uuid;
+    private externalToCreateCardDto(setCard: CardSet): CreateCardDto {
+        const card: CreateCardDto = {
+            imgSrc: this.buildCardImgSrc(setCard),
+            isReserved: setCard.isReserved,
+            manaCost: setCard.manaCost,
+            name: setCard.name,
+            number: setCard.number,
+            originalText: setCard.originalText,
+            rarity: setCard.rarity,
+            setCode: setCard.setCode,
+            url: this.buildCardUrl(setCard),
+            uuid: setCard.uuid,
+        }
         return card;
     }
 

@@ -4,6 +4,7 @@ import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
 import { UserRepository } from 'src/adapters/database/user.repository';
 import { DatabaseModule } from 'src/adapters/database/database.module';
+import { UserMapper } from './user.mapper';
 
 @Module({
     imports: [DatabaseModule],
@@ -15,7 +16,8 @@ import { DatabaseModule } from 'src/adapters/database/database.module';
         {
             provide: UserRepositoryPort,
             useClass: UserRepository,
-        }
+        },
+        UserMapper
     ],
     exports: [
         UserRepositoryPort,

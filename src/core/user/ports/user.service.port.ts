@@ -1,4 +1,7 @@
 import { User } from "src/core/user/user.entity";
+import { UserDto } from "../dto/user.dto";
+import { CreateUserDto } from "../dto/create-user.dto";
+import { UpdateUserDto } from "../dto/update-user.dto";
 
 export const UserServicePort = 'UserServicePort';
 
@@ -10,13 +13,6 @@ export const UserServicePort = 'UserServicePort';
 export interface UserServicePort {
 
     /**
-     * @param email 
-     * @param password
-     * @returns authenticated User with email and password, otherwise null
-     */
-    authenticate(email: string, password: string): Promise<User | null>;
-
-    /**
      * Create and save user
      * 
      * @param name
@@ -24,19 +20,19 @@ export interface UserServicePort {
      * @param password
      * @returns created User
     */
-    createUser(name: string, email: string, password: string): Promise<User>;
+    createUser(user: CreateUserDto): Promise<UserDto>;
 
     /**
      * @param username
      * @returns User with email
      */
-    findByEmail(email: string): Promise<User>;
+    findByEmail(email: string): Promise<UserDto>;
 
     /**
      * @param id
      * @returns User with id
      */
-    findById(id: number): Promise<User>;
+    findById(id: number): Promise<UserDto>;
 
     /**
      * Update User that exists
@@ -45,12 +41,12 @@ export interface UserServicePort {
      * @param password
      * @returns updated User, if authenticated
      */
-    update(user: User, password: string): Promise<User>;
+    update(user: UpdateUserDto): Promise<UserDto>;
 
     /**
      * Delete User with id from all records
      * 
      * @param id
      */
-    remove(user: User): Promise<void>;
+    remove(user: UpdateUserDto): Promise<void>;
 }

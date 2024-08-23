@@ -15,7 +15,7 @@ export interface UserRepositoryPort {
      * @param hashedPassword
      * @returns created|updated user if authenticated
      */
-    save(user: User, hashedPassword: string): Promise<User | null>;
+    save(user: User): Promise<User | null>;
 
     /**
      * @param email

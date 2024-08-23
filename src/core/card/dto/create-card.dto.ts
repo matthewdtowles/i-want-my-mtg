@@ -1,52 +1,41 @@
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { CardRarity } from '../card-rarity.enum';
 
 export class CreateCardDto {
 
-    // TODO: DTO fields should be `readonly`
-    
-    
     @IsString()
-    imgSrc: string;
+    readonly imgSrc: string;
 
     @IsBoolean()
-    isReserved?: boolean;
+    readonly isReserved?: boolean;
 
     @IsOptional()
     @IsString()
-    manaCost?: string;
+    readonly manaCost?: string;
 
     @IsString()
-    name: string;
+    readonly name: string;
 
     @IsOptional()
     @IsArray()
-    notes?: string[];
+    readonly notes?: string[];
 
     @IsString()
-    number: string;
+    readonly number: string;
 
     @IsOptional()
     @IsString()
-    originalText?: string;
-
-    @IsOptional()
-    @IsNumber()
-    price?: number;
+    readonly originalText?: string;
 
     @IsEnum(CardRarity)
-    rarity: string;
+    readonly rarity: string;
 
     @IsString()
-    setCode: string;
-
-    @IsOptional()
-    @IsInt()
-    totalOwned: number;
+    readonly setCode: string;
 
     @IsString()
-    url: string;
+    readonly url: string;
 
     @IsString()
-    uuid: string;
+    readonly uuid: string;
 }

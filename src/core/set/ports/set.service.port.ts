@@ -1,4 +1,6 @@
-import { Set } from '../set.entity';
+import { CreateSetDto } from '../dto/create-set.dto';
+import { SetDto } from '../dto/set.dto';
+import { UpdateSetDto } from '../dto/update-set.dto';
 
 export const SetServicePort = 'SetServicePort';
 
@@ -14,20 +16,20 @@ export interface SetServicePort {
      * 
      * @param set
      */
-    create(set: Set): Promise<Set>;
+    create(set: CreateSetDto): Promise<SetDto>;
 
     /**
      * Return set including cards with code
      * 
      * @param setCode 
      */
-    findByCode(setCode: string): Promise<Set>;
+    findByCode(setCode: string): Promise<SetDto>;
 
     /**
      * Return metadata of every set
      * Does not include cards
      */
-    findAll(): Promise<Set[]>;
+    findAll(): Promise<SetDto[]>;
 
     /**
      * Return metadata of every set in format
@@ -35,7 +37,7 @@ export interface SetServicePort {
      * 
      * @param format
      */
-    findAllInFormat(format: string): Promise<Set[]>;
+    findAllInFormat(format: string): Promise<SetDto[]>;
 
     /**
      * Update set that exists
@@ -43,5 +45,5 @@ export interface SetServicePort {
      * 
      * @param set
      */
-    update(set: Set): Promise<Set>;
+    update(set: UpdateSetDto): Promise<SetDto>;
 }

@@ -6,43 +6,42 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { create } from 'express-handlebars';
 import { SetServicePort } from '../../src/core/set/ports/set.service.port';
-import { SetMapper } from '../../src/core/set/set.mapper';
-import { CardMapper } from '../../src/core/card/card.mapper';
-import { Set } from '../../src/core/set/set.entity';
+import { SetDto } from '../../src/core/set/dto/set.dto';
 
-const mockSet: Set = {
+const mockSet: SetDto = {
     keyruneCode: 'kld',
     name: 'Kaladesh',
     block: 'Kaladesh',
-    setCode: 'KLD',
+    code: 'KLD',
     releaseDate: '2016-09-30',
     cards: [
         {
             id: 1,
             imgSrc: '',
             isReserved: false,
-            manaCost: '{1}{w}{u}{b}{r}{g}',
+            manaCost: ['1', 'w', 'u', 'b', 'r', 'g'],
             name: 'the name of the card',
             number: '1',
             rarity: 'common',
-            set: new Set(),
+            setCode: 'KLD',
             url: 'some.url/set/kld/1',
             uuid: '',
         },
         {
             id: 2,
             imgSrc: '',
-            manaCost: '{10}{w/u}{w/b}{u/b}{u/r}{b/r}{b/g}{r/w}{r/g}{g/w}{g/u}',
+            manaCost: ['10', 'wu', 'wb', 'ub', 'ur', 'br', 'bg', 'rw', 'rg', 'gw', 'gu'],
             name: 'the second card',
             number: '2',
             rarity: 'rare',
-            set: new Set(),
+            setCode: 'KLD',
             url: 'some.url/set/kld/2',
             uuid: '',
         }
     ],
     baseSize: 0,
-    type: ''
+    type: '',
+    url: '',
 };
 
 describe('SetController', () => {
@@ -63,8 +62,6 @@ describe('SetController', () => {
                     provide: SetServicePort,
                     useValue: mockSetService,
                 },
-                SetMapper,
-                CardMapper,
             ],
         }).compile();
 
@@ -84,7 +81,7 @@ describe('SetController', () => {
         expressApp.setViewEngine('hbs');
 
         // Mock the service method to return the expected set data
-        mockSetService.findByCode(mockSet.setCode);
+        mockSetService.findByCode(mockSet.code);
         await app.init();
     });
 

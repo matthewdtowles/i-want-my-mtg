@@ -5,24 +5,21 @@ import { SetDto } from 'src/core/set/dto/set.dto';
 
 @Controller('sets')
 export class SetController {
+
     constructor(
         @Inject(SetServicePort) private readonly setService: SetServicePort,
-        private readonly setMapper: SetMapper,
     ) {}
 
     @Get()
     @Render('setListPage')
     async setListing(): Promise<{ setList: SetDto[] }> {
-        const setListVal = await this.setService.findAll();
-        const sets = this.setMapper.entitiesToDtos(await this.setService.findAll());
-        return { setList: sets };
+        return { setList: await this.setService.findAll() };
     }
 
     @Get(':setCode')
     @Render('set')
     async findBySetCode(@Param('setCode') setCode: string): Promise<SetDto> {
         setCode = setCode.toUpperCase();
-        const set = await this.setService.findByCode(setCode);
-        return this.setMapper.entityToDto(set);
+        return await this.setService.findByCode(setCode);
     }
 }

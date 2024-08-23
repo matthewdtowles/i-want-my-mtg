@@ -1,5 +1,5 @@
-import { Card } from '../card/card.entity';
-import { Set } from '../set/set.entity';
+import { CreateCardDto } from '../card/dto/create-card.dto';
+import { CreateSetDto } from '../set/dto/create-set.dto';
 
 export const IngestionServicePort = 'IngestionServicePort';
 
@@ -14,7 +14,7 @@ export interface IngestionServicePort {
      * Fetch metadata for all sets
      * Excludes cards
      */
-    fetchAllSetsMeta(): Promise<Set[]>;
+    fetchAllSetsMeta(): Promise<CreateSetDto[]>;
 
     /**
      * Fetch set with code
@@ -22,12 +22,12 @@ export interface IngestionServicePort {
      * 
      * @param code three letter set code
      */
-    fetchSetByCode(code: string): Promise<Set | null>;
+    fetchSetByCode(code: string): Promise<CreateSetDto | null>;
 
     /**
      * Fetch all cards in set with code
      * 
      * @param string three letter set code
      */
-    fetchSetCards(code: string): Promise<Card[]>;
+    fetchSetCards(code: string): Promise<CreateCardDto[]>;
 }

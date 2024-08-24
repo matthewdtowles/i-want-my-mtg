@@ -13,7 +13,7 @@ export class MtgJsonMapperService {
     private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ['front', 'back'];
     private readonly GATHERER_CARD_IMAGE_URL: string = 'https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=';
 
-    externalToCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
+    toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
         const set: CreateSetDto = {
             code: setMeta.code,
             baseSize: setMeta.baseSetSize,
@@ -28,23 +28,23 @@ export class MtgJsonMapperService {
         return set;
     }
 
-    externalToCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {
+    toCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {
         const cards: CreateCardDto[] = [];
         setCards.forEach(c => {
-            cards.push(this.externalToCreateCardDto(c));
+            cards.push(this.toCreateCardDto(c));
         });
         return cards;
     }
 
-    externalToCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
+    toCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
         const sets: CreateSetDto[] = [];
         setLists.forEach(s => {
-            sets.push(this.externalToCreateSetDto(s));
+            sets.push(this.toCreateSetDto(s));
         })
         return sets;
     }
 
-    private externalToCreateCardDto(setCard: CardSet): CreateCardDto {
+    private toCreateCardDto(setCard: CardSet): CreateCardDto {
         const card: CreateCardDto = {
             imgSrc: this.buildCardImgSrc(setCard),
             isReserved: setCard.isReserved,

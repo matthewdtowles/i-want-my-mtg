@@ -15,9 +15,6 @@ import { MtgJsonApiClient } from './mtgjson-api.client';
     ],
     exports: [
         IngestionServicePort,
-        // TODO: Evaluate - why do these need to be exported if never used outside of MtgJsonIngestionService?
-        // MtgJsonApiClient,
-        // MtgJsonMapperService,
     ]
 })
 export class MtgJsonIngestionModule { 

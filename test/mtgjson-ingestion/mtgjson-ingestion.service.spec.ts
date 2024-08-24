@@ -32,6 +32,11 @@ describe('MtgJsonIngestionService', () => {
         expect(await service.fetchAllSetsMeta()).toEqual(testUtils.getExpectedCreateSetDtos());
     });
 
+    it('should call external api to find a set by code and map to a CreateSetDto', async () => {
+        jest.spyOn(apiClient, 'fetchSet').mockResolvedValue(testUtils.getMockSetDto());
+        expect(await service.fetchSetByCode(testUtils.MOCK_SET_CODE)).toEqual(testUtils.getExpectedCreateSetDto());
+    });
+
     it('getSetCards should return array of every card as CreateCardDto in given set', async () => {
         jest.spyOn(apiClient, 'fetchSet').mockResolvedValue(testUtils.getMockSetDto());
         expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.getExpectedCreateCardDtos());

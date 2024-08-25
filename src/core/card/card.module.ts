@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { CardRepository } from 'src/adapters/database/card.repository';
 import { DatabaseModule } from 'src/adapters/database/database.module';
 import { MtgJsonIngestionModule } from 'src/adapters/mtgjson-ingestion/mtgjson-ingestion.module';
@@ -25,8 +25,10 @@ import { CardServicePort } from './ports/card.service.port';
         CardServicePort,
     ]
 })
-export class CardModule { 
+export class CardModule {
+    private readonly LOGGER: Logger = new Logger(CardModule.name);
+
     constructor() {
-        console.log('* * CardModule Initialized * *');
+        this.LOGGER.debug('* * CardModule Initialized * *');
     }
 }

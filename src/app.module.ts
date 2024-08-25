@@ -20,10 +20,13 @@ import { AdapterModule } from './adapters/adapter.module';
                 database: configService.get('DB_NAME'),
                 autoLoadEntities: true,
                 synchronize: true,
+                dropSchema: true,
+                logging: configService.get('NODE_ENV') !== 'production' ? 'all' : ['error'],
             }),
             dataSourceFactory: async (options) => {
                 return await new DataSource(options).initialize();
             },
+            
         }),
         CoreModule,
         AdapterModule,

@@ -13,7 +13,7 @@ import { IngestionServicePort } from "./ingestion.service.port";
 @Injectable()
 export class IngestionOrchestrator {
 
-    private readonly logger = new Logger(IngestionOrchestrator.name);
+    private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
 
     constructor(
         private readonly ingestionService: IngestionServicePort,
@@ -28,10 +28,10 @@ export class IngestionOrchestrator {
         describe: 'Ingest all set meta for every set from external API',
     })
     async ingestAllSetMeta(): Promise<SetDto[]> {
-        this.logger.log(`ingestAllSetMeta`);
+        this.LOGGER.debug(`ingestAllSetMeta`);
         const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta();
         const savedSets: SetDto[] = await this.setService.save(setMeta);
-        this.logger.log(`Saved Sets: ${savedSets.forEach(ss => { ss.name })}`);
+        this.LOGGER.log(`Saved Sets: ${savedSets.forEach(ss => { ss.name })}`);
         return savedSets;
     }
 
@@ -41,10 +41,10 @@ export class IngestionOrchestrator {
         describe: 'Ingest set and all cards in set from external API',
     })
     async ingestSetByCode(code: string): Promise<SetDto> {
-        this.logger.log(`ingestSetByCode: ${code}`);
+        this.LOGGER.debug(`ingestSetByCode: ${code}`);
         const set: CreateSetDto = await this.ingestionService.fetchSetByCode(code);
         const savedSet: SetDto[] = await this.setService.save([set]);
-        this.logger.log(`Saved set with code ${code}`);
+        this.LOGGER.log(`Saved set with code ${code}`);
         return savedSet && savedSet.length === 1 ? savedSet[0] : undefined;
     }
 
@@ -54,10 +54,10 @@ export class IngestionOrchestrator {
         describe: 'Ingest all cards in set from external API',
     })
     async ingestSetCards(code: string): Promise<CardDto[]> {
-        this.logger.log(`ingestSetCards for set code: ${code}`);
+        this.LOGGER.debug(`ingestSetCards for set code: ${code}`);
         const cards: CreateCardDto[] = await this.ingestionService.fetchSetCards(code);
         const savedCards: CardDto[] = await this.cardService.save(cards);
-        this.logger.log(`Saved ${savedCards.length} cards in set ${code}`);
+        this.LOGGER.log(`Saved ${savedCards.length} cards in set ${code}`);
         return savedCards;
     }
 }

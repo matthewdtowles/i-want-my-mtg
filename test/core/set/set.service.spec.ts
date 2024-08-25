@@ -86,10 +86,8 @@ describe('SetService', () => {
 
     });
 
-    it('updates and returns updated version of given set', async () => {
-        // const repoSaveSet = jest.spyOn(repository, 'saveSet');
-        // const updatedSet: Set = await service.update(mockSavedSet);
-        // expect(repoSaveSet).toHaveBeenCalledWith(mockSavedSet);
-        // expect(updatedSet).toEqual(mockSavedSet);
-    });
+    // const repoSaveSet = jest.spyOn(repository, 'saveSet');
+    // const updatedSet: Set = await service.update(mockSavedSet);
+    // expect(repoSaveSet).toHaveBeenCalledWith(mockSavedSet);
+    // expect(updatedSet).toEqual(mockSavedSet);
 });

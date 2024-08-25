@@ -1,6 +1,7 @@
-import { Column, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Card } from '../card/card.entity';
 
+@Entity()
 export class Set {
 
     @PrimaryColumn()
@@ -12,7 +13,7 @@ export class Set {
     @Column()
     block?: string;
 
-    @OneToMany(() => Card, (card) => card.set)
+    @OneToMany(() => Card, card => card.set)
     cards: Card[];
 
     @Column()

@@ -11,23 +11,26 @@ export const SetServicePort = 'SetServicePort';
 export interface SetServicePort {
 
     /**
-     * Save set if not created
-     * Return created Set
+     * Save given sets
      * 
      * @param set
+     * @returns saved set
      */
-    create(set: CreateSetDto): Promise<SetDto>;
+    save(set: CreateSetDto[]): Promise<SetDto[]>;
 
     /**
      * Return set including cards with code
      * 
-     * @param setCode 
+     * @param setCode
+     * @returns set with code
      */
     findByCode(setCode: string): Promise<SetDto>;
 
     /**
      * Return metadata of every set
      * Does not include cards
+     * 
+     * @returns all sets without cards
      */
     findAll(): Promise<SetDto[]>;
 
@@ -36,14 +39,7 @@ export interface SetServicePort {
      * Does not include cards
      * 
      * @param format
+     * @returns all sets without cards that are legal in format
      */
     findAllInFormat(format: string): Promise<SetDto[]>;
-
-    /**
-     * Update set that exists
-     * Return updated set
-     * 
-     * @param set
-     */
-    update(set: UpdateSetDto): Promise<SetDto>;
 }

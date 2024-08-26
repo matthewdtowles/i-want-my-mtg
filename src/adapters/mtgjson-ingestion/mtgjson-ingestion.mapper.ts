@@ -6,7 +6,7 @@ import { SetDto as SetData } from './dto/set.dto';
 import { SetList } from './dto/setList.dto';
 
 @Injectable()
-export class MtgJsonMapperService {
+export class MtgJsonIngestionMapper {
 
     private readonly SCRYFALL_CARD_IMAGE_URL: string = 'https://cards.scryfall.io/';
     private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = ['small', 'normal', 'large', 'art_crop'];

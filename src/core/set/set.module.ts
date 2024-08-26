@@ -23,12 +23,13 @@ import { SetService } from './set.service';
     ],
     exports: [
         SetServicePort,
+        SetRepositoryPort
     ]
 })
 export class SetModule {
     private readonly LOGGER: Logger = new Logger(SetModule.name);
 
     constructor() {
-        this.LOGGER.debug('* * SetModule Initialized * *');
+        this.LOGGER.debug(`Initialized`);
     }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserServicePort } from './ports/user.service.port';
 import { UserRepositoryPort } from './ports/user.repository.port';
@@ -24,4 +24,10 @@ import { UserMapper } from './user.mapper';
         UserServicePort
     ]
 })
-export class UserModule { }
+export class UserModule {
+    private readonly LOGGER: Logger = new Logger(UserModule.name);
+
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
+}

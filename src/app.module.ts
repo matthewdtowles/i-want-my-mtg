@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CoreModule } from './core/core.module';
 import { AdapterModule } from './adapters/adapter.module';
+import { CommandModule } from 'nestjs-command';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { AdapterModule } from './adapters/adapter.module';
         }),
         CoreModule,
         AdapterModule,
+        CommandModule,
     ],
 })
 export class AppModule { }

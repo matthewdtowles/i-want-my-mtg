@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Command } from 'nestjs-command';
 import { CardDto } from "../card/dto/card.dto";
@@ -16,10 +16,15 @@ export class IngestionOrchestrator {
     private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
 
     constructor(
-        private readonly ingestionService: IngestionServicePort,
-        private readonly cardService: CardServicePort,
-        private readonly setService: SetServicePort,
-    ) { }
+        @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
+        @Inject(CardServicePort) private readonly cardService: CardServicePort,
+        @Inject(SetServicePort) private readonly setService: SetServicePort,
+    ) {
+        this.LOGGER.debug('IngestionOrchestrator initialized with dependencies:');
+        this.LOGGER.debug(`IngestionService: ${this.ingestionService}`);
+        this.LOGGER.debug(`CardService: ${this.cardService}`);
+        this.LOGGER.debug(`SetService: ${this.setService}`);
+    }
 
 
     @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -29,7 +34,7 @@ export class IngestionOrchestrator {
     })
     async ingestAllSetMeta(): Promise<SetDto[]> {
         this.LOGGER.debug(`ingestAllSetMeta`);
-        const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta();
+        const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: SetDto[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets: ${savedSets.forEach(ss => { ss.name })}`);
         return savedSets;

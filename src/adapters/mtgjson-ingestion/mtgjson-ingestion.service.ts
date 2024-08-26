@@ -5,7 +5,7 @@ import { IngestionServicePort } from '../../core/ingestion/ingestion.service.por
 import { SetDto } from './dto/set.dto';
 import { SetList } from './dto/setList.dto';
 import { MtgJsonApiClient } from './mtgjson-api.client';
-import { MtgJsonMapperService } from './mtgjson-mapper.service';
+import { MtgJsonIngestionMapper } from './mtgjson-ingestion.mapper';
 
 
 @Injectable()
@@ -13,7 +13,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
 
     constructor(
         private readonly apiClient: MtgJsonApiClient,
-        private readonly dataMapper: MtgJsonMapperService,
+        private readonly dataMapper: MtgJsonIngestionMapper,
     ) { }
 
     async fetchAllSetsMeta(): Promise<CreateSetDto[]> {

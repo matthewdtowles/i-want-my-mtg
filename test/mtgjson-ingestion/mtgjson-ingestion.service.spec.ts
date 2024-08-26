@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MtgJsonIngestionService } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.service';
-import { MtgJsonMapperService } from '../../src/adapters/mtgjson-ingestion/mtgjson-mapper.service';
+import { MtgJsonIngestionMapper } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
 import { MtgJsonApiClient } from '../../src/adapters/mtgjson-ingestion/mtgjson-api.client';
 
@@ -14,7 +14,7 @@ describe('MtgJsonIngestionService', () => {
             providers: [
                 MtgJsonApiClient,
                 MtgJsonIngestionService,
-                MtgJsonMapperService,
+                MtgJsonIngestionMapper,
             ],
         }).compile();
 

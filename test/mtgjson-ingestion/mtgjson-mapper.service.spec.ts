@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CardSet } from '../../src/adapters/mtgjson-ingestion/dto/cardSet.dto';
 import { SetDto } from '../../src/adapters/mtgjson-ingestion/dto/set.dto';
 import { SetList } from '../../src/adapters/mtgjson-ingestion/dto/setList.dto';
-import { MtgJsonMapperService } from '../../src/adapters/mtgjson-ingestion/mtgjson-mapper.service';
+import { MtgJsonIngestionMapper } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper';
 import { CreateCardDto } from '../../src/core/card/dto/create-card.dto';
 import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
 
-describe('MtgJsonMapperService', () => {
-    let service: MtgJsonMapperService;
+describe('MtgJsonIngestionMapper', () => {
+    let service: MtgJsonIngestionMapper;
     let cards: CardSet[] = [];
     let set: SetDto;
     let setList: SetList[];
@@ -16,9 +16,9 @@ describe('MtgJsonMapperService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [MtgJsonMapperService],
+            providers: [MtgJsonIngestionMapper],
         }).compile();
-        service = module.get<MtgJsonMapperService>(MtgJsonMapperService);
+        service = module.get<MtgJsonIngestionMapper>(MtgJsonIngestionMapper);
         testUtils = new MtgJsonIngestionTestUtils();
         cards = testUtils.getMockCardSetArray();
         set = testUtils.getMockSetDto();
@@ -32,19 +32,19 @@ describe('MtgJsonMapperService', () => {
     describe('DataMapperService map provider models to DTOs', () => {
         it('maps the Set model from DataProvider to CreateSetDto', () => {
             const expectedSet: CreateSetDto = testUtils.getExpectedCreateSetDto();
-            const actualSet: CreateSetDto = service.externalToCreateSetDto(set);            
+            const actualSet: CreateSetDto = service.toCreateSetDto(set);            
             expect(actualSet).toEqual(expectedSet);
         });
 
         it('map Set.CardSet model from DataProvider to CreateCardDto[]', () => {
             const expectedCards: CreateCardDto[] = testUtils.getExpectedCreateCardDtos();
-            const actualCards: CreateCardDto[] = service.externalToCreateCardDtos(cards);            
+            const actualCards: CreateCardDto[] = service.toCreateCardDtos(cards);            
             expect(actualCards).toEqual(expectedCards);
         });
 
         it('map SetList model from DataProvider to CreateSetDto[]', () => {
             const expectedSet: CreateSetDto[] = testUtils.getExpectedCreateSetDtos();
-            const actualSet: CreateSetDto[] = service.externalToCreateSetDtos(setList);
+            const actualSet: CreateSetDto[] = service.toCreateSetDtos(setList);
             expect(actualSet).toEqual(expectedSet);
         })
     });

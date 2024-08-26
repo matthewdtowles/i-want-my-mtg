@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IngestionServicePort } from '../ingestion/ingestion.service.port';
 import { CreateSetDto } from './dto/create-set.dto';
 import { SetDto } from './dto/set.dto';
-import { UpdateSetDto } from './dto/update-set.dto';
 import { SetRepositoryPort } from './ports/set.repository.port';
 import { SetServicePort } from './ports/set.service.port';
 
@@ -15,19 +14,19 @@ export class SetService implements SetServicePort {
     ) { }
 
 
-    create(set: CreateSetDto): Promise<SetDto> {
+    save(set: CreateSetDto[]): Promise<SetDto[]> {
         throw new Error('Method not implemented.');
     }
+
     findByCode(setCode: string): Promise<SetDto> {
         throw new Error('Method not implemented.');
     }
+
     findAll(): Promise<SetDto[]> {
         throw new Error('Method not implemented.');
     }
+
     findAllInFormat(format: string): Promise<SetDto[]> {
-        throw new Error('Method not implemented.');
-    }
-    update(set: UpdateSetDto): Promise<SetDto> {
         throw new Error('Method not implemented.');
     }
 }

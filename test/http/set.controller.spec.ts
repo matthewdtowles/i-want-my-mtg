@@ -1,12 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { Test, TestingModule } from '@nestjs/testing';
+import { create } from 'express-handlebars';
+import { join } from 'path';
 import * as request from 'supertest';
 import { SetController } from '../../src/adapters/http/set.controller';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
-import { create } from 'express-handlebars';
-import { SetServicePort } from '../../src/core/set/ports/set.service.port';
 import { SetDto } from '../../src/core/set/dto/set.dto';
+import { SetServicePort } from '../../src/core/set/ports/set.service.port';
+import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',
@@ -47,11 +48,10 @@ const mockSet: SetDto = {
 describe('SetController', () => {
     let app: INestApplication;
     const mockSetService: SetServicePort = {
-        create: jest.fn(),
         findByCode: jest.fn().mockResolvedValue(mockSet),
         findAll: jest.fn(),
         findAllInFormat: jest.fn(),
-        update: jest.fn(),
+        save: jest.fn(),
     };
 
     beforeAll(async () => {

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Logger, Module } from "@nestjs/common";
 import { DatabaseModule } from "./database/database.module";
 import { HttpModule } from "./http/http.module";
 import { MtgJsonIngestionModule } from "./mtgjson-ingestion/mtgjson-ingestion.module";
@@ -15,4 +15,10 @@ import { MtgJsonIngestionModule } from "./mtgjson-ingestion/mtgjson-ingestion.mo
         MtgJsonIngestionModule,    
     ]
 })
-export class AdapterModule {}
+export class AdapterModule {
+    private readonly LOGGER: Logger = new Logger(AdapterModule.name);
+
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
+}

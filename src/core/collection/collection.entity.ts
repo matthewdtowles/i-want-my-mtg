@@ -1,6 +1,6 @@
-import { Entity, Index, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Card } from '../card/card.entity';
 import { User } from 'src/core/user/user.entity';
+import { Entity, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Card } from '../card/card.entity';
 
 @Entity()
 export class Collection {
@@ -9,7 +9,6 @@ export class Collection {
     id: number;
 
     @OneToOne(() => User, user => user.collection, { nullable: false })
-    @Index()
     owner: User;
 
     @ManyToMany(() => Card, { cascade: true })

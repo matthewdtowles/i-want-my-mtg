@@ -29,11 +29,6 @@ export class UserRepository implements UserRepositoryPort {
         return await this.userRepository.findOneBy({ id });
     }
 
-    async getPasswordHash(email: string): Promise<string> {
-        const userEntity = await this.userRepository.findOneBy({ email });
-        return userEntity ? userEntity.password : null;
-    }
-
     async delete(user: User): Promise<void> {
         await this.userRepository.delete(user.id);
     }

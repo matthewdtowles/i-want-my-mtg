@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MtgJsonIngestionService } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.service';
-import { MtgJsonMapperService } from '../../src/adapters/mtgjson-ingestion/mtgjson-mapper.service';
+import { MtgJsonIngestionMapper } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
 import { MtgJsonApiClient } from '../../src/adapters/mtgjson-ingestion/mtgjson-api.client';
 
@@ -14,7 +14,7 @@ describe('MtgJsonIngestionService', () => {
             providers: [
                 MtgJsonApiClient,
                 MtgJsonIngestionService,
-                MtgJsonMapperService,
+                MtgJsonIngestionMapper,
             ],
         }).compile();
 
@@ -30,6 +30,11 @@ describe('MtgJsonIngestionService', () => {
     it('getAllSets should return array of every set as CreateSetDto', async () => {
         jest.spyOn(apiClient, 'fetchSetList').mockResolvedValue(testUtils.getMockSetListArray()); 
         expect(await service.fetchAllSetsMeta()).toEqual(testUtils.getExpectedCreateSetDtos());
+    });
+
+    it('should call external api to find a set by code and map to a CreateSetDto', async () => {
+        jest.spyOn(apiClient, 'fetchSet').mockResolvedValue(testUtils.getMockSetDto());
+        expect(await service.fetchSetByCode(testUtils.MOCK_SET_CODE)).toEqual(testUtils.getExpectedCreateSetDto());
     });
 
     it('getSetCards should return array of every card as CreateCardDto in given set', async () => {

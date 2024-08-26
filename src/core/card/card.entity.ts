@@ -1,5 +1,5 @@
 import { Set } from 'src/core/set/set.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Card {
@@ -28,7 +28,7 @@ export class Card {
     @Column()
     rarity: string;
     
-    @ManyToOne(() => Set, (set) => set.cards)
+    @ManyToOne(() => Set, set => set.cards)
     set: Set;
 
     @Column()

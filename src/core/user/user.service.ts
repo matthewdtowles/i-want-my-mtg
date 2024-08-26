@@ -15,7 +15,7 @@ export class UserService implements UserServicePort {
         @Inject(UserMapper) private readonly mapper: UserMapper,
     ) {}
 
-    // TODO: research on best ways to handle authn and authz
+    // TODO: move (if needed) to authentication module when created
     // async authenticate(email: string, password: string): Promise<User | null> {
     //     const hashedPassword: string = await this.repository.getPasswordHash(email);
     //     let authedUser: User;
@@ -26,7 +26,6 @@ export class UserService implements UserServicePort {
     // }
 
     async createUser(userDto: CreateUserDto): Promise<UserDto> {
-        // const hashedPassword = await bcrypt.hash(userDto.password, 10);
         const user: User = await this.repository.save(this.mapper.writeDtoToEntity(userDto));
         return this.mapper.entityToDto(user);
     }

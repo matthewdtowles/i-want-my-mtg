@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { MtgJsonIngestionService } from './mtgjson-ingestion.service';
-import { MtgJsonMapperService } from './mtgjson-mapper.service';
+import { MtgJsonIngestionMapper } from './mtgjson-ingestion.mapper';
 import { IngestionServicePort } from 'src/core/ingestion/ingestion.service.port';
 import { MtgJsonApiClient } from './mtgjson-api.client';
 
 @Module({
     providers: [
         MtgJsonApiClient,
-        MtgJsonMapperService,
+        MtgJsonIngestionMapper,
         {
             provide: IngestionServicePort,
             useClass: MtgJsonIngestionService,
@@ -15,13 +15,14 @@ import { MtgJsonApiClient } from './mtgjson-api.client';
     ],
     exports: [
         IngestionServicePort,
-        // TODO: Evaluate - why do these need to be exported if never used outside of MtgJsonIngestionService?
-        // MtgJsonApiClient,
-        // MtgJsonMapperService,
+        MtgJsonApiClient,
+        MtgJsonIngestionMapper,
     ]
 })
 export class MtgJsonIngestionModule { 
+    private readonly LOGGER: Logger = new Logger(MtgJsonIngestionModule.name);
+
     constructor() {
-        console.log('* * MtgJsonIngestionModule Initialized * *');
+        this.LOGGER.debug(`Initialized`);
     }
 }

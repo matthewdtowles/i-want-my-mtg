@@ -30,12 +30,6 @@ export interface UserRepositoryPort {
     findById(id: number): Promise<User | null>;
 
     /**
-     * @param email
-     * @returns hashed password for user with email 
-     */
-    getPasswordHash(email: string): Promise<string>;
-
-    /**
      * Remove user entity
      * 
      * @param user

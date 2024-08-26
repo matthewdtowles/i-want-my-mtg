@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { CoreModule } from 'src/core/core.module';
 import { SetController } from './set.controller';
 import { CardController } from './card.controller';
@@ -23,4 +23,10 @@ import { CardMapper } from 'src/core/card/card.mapper';
         CoreModule,
     ],
 })
-export class HttpModule {}
+export class HttpModule {
+    private readonly LOGGER: Logger = new Logger(HttpModule.name);
+
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
+}

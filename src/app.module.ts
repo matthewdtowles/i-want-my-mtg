@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -27,11 +27,16 @@ import { CommandModule } from 'nestjs-command';
             dataSourceFactory: async (options) => {
                 return await new DataSource(options).initialize();
             },
-            
         }),
         CoreModule,
         AdapterModule,
         CommandModule,
     ],
 })
-export class AppModule { }
+export class AppModule {
+    private readonly LOGGER: Logger = new Logger(AppModule.name);
+
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
+}

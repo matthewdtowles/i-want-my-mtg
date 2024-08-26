@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
 import { Collection } from 'src/core/collection/collection.entity';
@@ -50,4 +50,10 @@ import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
         TypeOrmModule
     ],
 })
-export class DatabaseModule { }
+export class DatabaseModule {
+    private readonly LOGGER: Logger = new Logger(DatabaseModule.name);
+
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
+}

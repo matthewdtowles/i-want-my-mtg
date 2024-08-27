@@ -9,7 +9,6 @@ export class SetDto {
     readonly cards: CardDto[];
 
     readonly code: string;
-    readonly imgSrc?: string;
     readonly keyruneCode: string;
     readonly name: string;
     readonly parentCode?: string;

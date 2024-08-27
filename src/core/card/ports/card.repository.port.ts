@@ -11,7 +11,7 @@ export interface CardRepositoryPort {
      * Create card entities, update if they exist
      * 
      * @param cards 
-     * @returns updated card(s) | null
+     * @returns saved card(s)
      */
     save(card: Card[]): Promise<Card[]>;
 
@@ -47,7 +47,7 @@ export interface CardRepositoryPort {
     findByUuid(uuid: string): Promise<Card | null>;
 
     /**
-     * Remove card entity with id
+     * Remove card entit
      * 
      * @param card
      */

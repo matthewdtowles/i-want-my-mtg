@@ -3,6 +3,8 @@ import { Card } from '../src/core/card/card.entity';
 import { CreateCardDto } from '../src/core/card/dto/create-card.dto';
 import { CardDto } from '../src/core/card/dto/card.dto';
 import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
+import { SetDto } from 'src/core/set/dto/set.dto';
+import { blob } from 'stream/consumers';
 
 export class TestUtils {
     readonly MOCK_SET_CODE = 'SET';
@@ -80,6 +82,10 @@ export class TestUtils {
         }));
     }
 
+    getMockSetDtos(): SetDto[] {
+        return this.getMockSets().map(set => this.mapSetEntityToDto(set));
+    }
+
     mapCardEntityToDto(card: Card): CardDto {
         return {
             id: card.id,
@@ -98,6 +104,25 @@ export class TestUtils {
 
     mapCardEntitiesToDtos(cards: Card[]): CardDto[] {
         return cards.map(card => this.mapCardEntityToDto(card));
+    }
+
+    mapSetEntityToDto(set: Set): SetDto {
+        return {
+            baseSize: set.baseSize,
+            block: set.block,
+            cards: set.cards ? this.getMockCardDtos(set.setCode) : [],
+            code: set.setCode,
+            keyruneCode: set.keyruneCode.toLowerCase(),
+            name: set.name,
+            parentCode: set.parentCode,
+            releaseDate: set.releaseDate,
+            type: set.type,
+            url: 'sets/' + set.setCode.toLowerCase()
+        };
+    }
+
+    mapSetEntitiesToDtos(sets: Set[]): SetDto[] {
+        return sets.map(set => this.mapSetEntityToDto(set));
     }
 
     private convertManaCost(manaCost: string | undefined): string[] | undefined {

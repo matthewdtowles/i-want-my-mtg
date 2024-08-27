@@ -12,8 +12,8 @@ export class SetRepository implements SetRepositoryPort {
         private readonly setRepository: Repository<Set>,
     ) { }
 
-    async save(set: Set): Promise<Set> {
-        return await this.setRepository.save(set);
+    async save(sets: Set[]): Promise<Set[]> {
+        return await this.setRepository.save(sets);
     }
 
     async findByCode(code: string): Promise<Set | null> {

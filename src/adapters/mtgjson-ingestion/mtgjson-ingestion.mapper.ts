@@ -14,6 +14,7 @@ export class MtgJsonIngestionMapper {
     private readonly GATHERER_CARD_IMAGE_URL: string = 'https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=';
 
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
+        console.log(setMeta);
         const set: CreateSetDto = {
             code: setMeta.code,
             baseSize: setMeta.baseSetSize,

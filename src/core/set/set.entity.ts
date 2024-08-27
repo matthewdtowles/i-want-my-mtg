@@ -10,7 +10,7 @@ export class Set {
     @Column()
     baseSize: number;
 
-    @Column()
+    @Column({ nullable: true })
     block?: string;
 
     @OneToMany(() => Card, card => card.set)
@@ -21,7 +21,10 @@ export class Set {
 
     @Column()
     name: string;
- 
+
+    @Column({ nullable: true })
+    parentCode?: string;
+
     @Column()
     releaseDate: string;
 

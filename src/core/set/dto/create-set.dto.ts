@@ -14,10 +14,6 @@ export class CreateSetDto {
     @IsString()
     readonly code: string;
 
-    @IsOptional()
-    @IsString()
-    readonly imgSrc?: string;
-
     @IsString()
     readonly keyruneCode: string;
     

@@ -8,7 +8,14 @@ async function bootstrap() {
         logger: ['error', 'debug'],
     });
 
-    app.select(CommandModule).get(CommandService).exec();
+    try {
+        app.select(CommandModule).get(CommandService).exec();
+        await app.close();
+    } catch(error) {
+        console.error(error);
+        await app.close();
+        process.exit(1);
+    }
 }
 
 bootstrap();

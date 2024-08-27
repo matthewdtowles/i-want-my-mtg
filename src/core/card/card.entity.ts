@@ -10,10 +10,10 @@ export class Card {
     @Column()
     imgSrc: string;
 
-    @Column()
+    @Column({ default: false })
     isReserved?: boolean;
  
-    @Column()
+    @Column({ nullable: true })
     manaCost?: string;
 
     @Column()
@@ -22,7 +22,7 @@ export class Card {
     @Column()
     number: string;
 
-    @Column()
+    @Column({ nullable: true })
     originalText?: string;
 
     @Column()

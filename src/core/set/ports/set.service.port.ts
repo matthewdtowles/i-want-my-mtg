@@ -16,15 +16,7 @@ export interface SetServicePort {
      * @param set
      * @returns saved set
      */
-    save(set: CreateSetDto[]): Promise<SetDto[]>;
-
-    /**
-     * Return set including cards with code
-     * 
-     * @param setCode
-     * @returns set with code
-     */
-    findByCode(setCode: string): Promise<SetDto>;
+    save(set: CreateSetDto[] | UpdateSetDto[]): Promise<SetDto[]>;
 
     /**
      * Return metadata of every set
@@ -42,4 +34,12 @@ export interface SetServicePort {
      * @returns all sets without cards that are legal in format
      */
     findAllInFormat(format: string): Promise<SetDto[]>;
+
+    /**
+     * Return set including cards with code
+     * 
+     * @param setCode
+     * @returns set with code
+     */
+    findByCode(setCode: string): Promise<SetDto>;
 }

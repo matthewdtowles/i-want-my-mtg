@@ -21,7 +21,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "ingest:all-set-meta": "npx ts-node src/cli.ts ingest:all-set-meta",
     "ingest:cards-in-set": "npx ts-node src/cli.ts ingest:cards-in-set",
-    "ingest:set-by-code": "npx ts-node src/cli.ts ingest:set-by-code"
+    "ingest:set-by-code": "npx ts-node src/cli.ts ingest:set-by-code",
+    "ingest:test": "npx ts-node src/cli.ts ingest:test"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

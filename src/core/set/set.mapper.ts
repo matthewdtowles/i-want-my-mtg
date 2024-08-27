@@ -1,11 +1,18 @@
-import { CreateSetDto } from './dto/create-set.dto';
-import { SetDto } from './dto/set.dto';
-import { CardDto } from '../card/dto/card.dto';
-import { Card } from 'src/core/card/card.entity';
 import { Set } from 'src/core/set/set.entity';
 import { CardMapper } from '../card/card.mapper';
+import { CreateSetDto } from './dto/create-set.dto';
+import { SetDto } from './dto/set.dto';
+import { UpdateSetDto } from './dto/update-set.dto';
 
 export class SetMapper {
+
+    static dtosToEntities(setDtos: CreateSetDto[] | UpdateSetDto[]): Set[] {
+        const sets: Set[] = [];
+        setDtos.forEach(s => {
+            sets.push(this.dtoToEntity(s));
+        });
+        return sets;
+    }
 
     static dtoToEntity(createSetDto: CreateSetDto): Set {
         const set = new Set();
@@ -21,9 +28,10 @@ export class SetMapper {
             code: set.setCode.toUpperCase(),
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,
+            parentCode: set.parentCode,
             releaseDate: set.releaseDate,
-            url: this.buildSetUrl(set.setCode),
             type: set.type,
+            url: this.buildSetUrl(set.setCode),
         };
         return dto;
     }

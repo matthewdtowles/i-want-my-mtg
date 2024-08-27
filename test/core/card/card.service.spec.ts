@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Card } from '../../../src/core/card/card.entity';
 import { CardService } from '../../../src/core/card/card.service';
+import { CardDto } from '../../../src/core/card/dto/card.dto';
+import { CreateCardDto } from '../../../src/core/card/dto/create-card.dto';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
 import { TestUtils } from '../../test-utils';
-import { CardDto } from '../../../src/core/card/dto/card.dto';
-import { Card } from '../../../src/core/card/card.entity';
 
 describe('CardService', () => {
     let service: CardService;
@@ -14,7 +15,7 @@ describe('CardService', () => {
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode: string = testUtils.MOCK_SET_CODE;
     const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
-    const mockCardDtos: CardDto[] = testUtils.getMockCardDtos(mockSetCode);
+    const mockCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
 
     const mockCardRepository: CardRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockCards),
@@ -27,7 +28,7 @@ describe('CardService', () => {
     };
 
     const mockCardIngestion: IngestionServicePort = {
-        fetchSetCards: jest.fn().mockResolvedValue(mockCardDtos),
+        fetchSetCards: jest.fn().mockResolvedValue(mockCreateCardDtos),
         fetchAllSetsMeta: jest.fn(),
         fetchSetByCode: jest.fn(),
     };

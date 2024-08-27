@@ -9,7 +9,7 @@ async function bootstrap() {
     });
 
     try {
-        app.select(CommandModule).get(CommandService).exec();
+        await app.select(CommandModule).get(CommandService).exec();
         await app.close();
     } catch(error) {
         console.error(error);

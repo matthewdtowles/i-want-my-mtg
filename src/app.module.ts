@@ -14,18 +14,24 @@ import { CommandModule } from 'nestjs-command';
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
                 type: 'mysql',
-                host: configService.get('DB_HOST'),
-                port: configService.get('DB_PORT'),
-                username: configService.get('DB_USERNAME'),
-                password: configService.get('DB_PASSWORD'),
-                database: configService.get('DB_NAME'),
+                host: configService.get<string>('DB_HOST'),
+                port: configService.get<number>('DB_PORT'),
+                username: configService.get<string>('DB_USERNAME'),
+                password: configService.get<string>('DB_PASSWORD'),
+                database: configService.get<string>('DB_NAME'),
                 autoLoadEntities: true,
-                synchronize: true,
-                dropSchema: true,
+                synchronize: configService.get('NODE_ENV') !== 'production',
+                dropSchema: configService.get('NODE_ENV') !== 'production',
                 logging: configService.get('NODE_ENV') !== 'production' ? 'all' : ['error'],
-            }),
+            }
+        ),
             dataSourceFactory: async (options) => {
-                return await new DataSource(options).initialize();
+                try {
+                    return await new DataSource(options).initialize();
+                } catch(error) {
+                    console.error('Error initializing the database connection:', error);
+                    throw error;
+                }
             },
         }),
         CoreModule,

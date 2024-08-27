@@ -20,8 +20,7 @@ export class MtgJsonApiClient {
         this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let setList: SetList[] = [];
-        if (response && response.data && Array.isArray(response.data.data)
-            && response.data.data.every((item: any) => item instanceof SetList)) {
+        if (response && response.data && Array.isArray(response.data.data)) {
             setList = response.data.data;
         } else {
             this.LOGGER.error(`Invalid response for fetchSetList: ${response}`);
@@ -42,7 +41,7 @@ export class MtgJsonApiClient {
         this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let set: SetDto = new SetDto();
-        if (response && response.data && response.data.data instanceof Set) {
+        if (response && response.data) {
             set = response.data.data;
         } else {
             this.LOGGER.error(`Invalid response for fetchSet: ${response}`);

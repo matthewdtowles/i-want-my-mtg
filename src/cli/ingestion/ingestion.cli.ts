@@ -45,4 +45,16 @@ export class IngestionCli {
         this.LOGGER.debug(`ingestSetCards invoked with code: ${code}`);
         return await this.orchestrator.ingestSetCards(code);
     }
+
+    @Command({
+        command: 'ingest:test <input>',
+        describe: 'Ingest test with arguments',
+    })
+    ingestTest(@Positional({
+        name: 'input',
+        describe: 'the input arg',
+        type: 'string'
+    }) input: string): void {
+        this.LOGGER.log(`ingestTest invoked with input: ${input}`);
+    }
 }

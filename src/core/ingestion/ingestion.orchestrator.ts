@@ -40,6 +40,18 @@ export class IngestionOrchestrator {
         return savedSet && savedSet.length === 1 ? savedSet[0] : undefined;
     }
 
+    async ingestAllSetCards(): Promise<SetDto[]> {
+        this.LOGGER.debug(`ingestAllSetCards`);
+        const sets: SetDto[] = await this.setService.findAll();
+        for (let i = 0; i < sets.length; i++) {
+            let cards: CardDto[] = await this.ingestSetCards(sets[i].code);
+            for (let j = 0; j < cards.length; j++) {
+                sets[i].cards.push(cards[j]);
+            }
+        }
+        return sets;
+    }
+
     async ingestSetCards(code: string): Promise<CardDto[]> {
         this.LOGGER.debug(`ingestSetCards for set code: ${code}`);
         const cards: CreateCardDto[] = await this.ingestionService.fetchSetCards(code);

@@ -15,16 +15,13 @@ export class SetRepository implements SetRepositoryPort {
 
     async save(sets: Set[]): Promise<Set[]> {
         this.LOGGER.debug(`saving ${sets.length} total sets`);
-        this.LOGGER.debug(`first set is correct type: ${ sets[0] instanceof Set}`);
-        const testResult = await this.setRepository.query('SELECT 1');
-        this.LOGGER.debug(`result from test query: ${testResult}`);
         return await this.setRepository.save(sets);
     }
 
     async findByCode(code: string): Promise<Set | null> {
         return await this.setRepository.findOne({ 
             where: { 
-                setCode: code 
+                code: code 
             }, 
             relations: ['card'],
         }); 

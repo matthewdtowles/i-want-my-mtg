@@ -21,7 +21,7 @@ export class CardRepository implements CardRepositoryPort {
         return await this.cardRepository.find({
             where: {
                 set: {
-                    setCode: code,
+                    code: code,
                 },
             },
         }) ?? [];
@@ -49,7 +49,7 @@ export class CardRepository implements CardRepositoryPort {
         return await this.cardRepository.findOne({
             where: {
                 set: {
-                    setCode: code,
+                    code: code,
                 },
                 number: String(_number),
             },

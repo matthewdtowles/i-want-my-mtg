@@ -19,9 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "typeorm-ts-node-commonjs",
-    "ingest:all-set-meta": "npx ts-node src/cli.ts ingest:all-set-meta",
-    "ingest:cards-in-set": "npx ts-node src/cli.ts ingest:cards-in-set",
-    "ingest:set-by-code": "npx ts-node src/cli.ts ingest:set-by-code",
+    "ingest:all-sets": "npx ts-node src/cli.ts ingest:all-sets",
+    "ingest:cards": "npx ts-node src/cli.ts ingest:cards",
+    "ingest:set": "npx ts-node src/cli.ts ingest:set",
+    "ingest:all-cards": "npx ts-node src/cli.ts ingest:all-cards",
     "ingest:test": "npx ts-node src/cli.ts ingest:test"
   },
   "dependencies": {

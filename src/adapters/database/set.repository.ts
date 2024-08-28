@@ -23,7 +23,7 @@ export class SetRepository implements SetRepositoryPort {
             where: { 
                 code: code 
             }, 
-            relations: ['card'],
+            relations: ['cards'],
         }); 
     }
 

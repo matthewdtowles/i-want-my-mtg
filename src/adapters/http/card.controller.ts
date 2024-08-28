@@ -6,6 +6,7 @@ import { CardServicePort } from 'src/core/card/ports/card.service.port';
 
 @Controller('card')
 export class CardController {
+
     constructor(
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
     ) { }

@@ -44,7 +44,7 @@ export class IngestionOrchestrator {
         this.LOGGER.debug(`ingestAllSetCards`);
         const sets: SetDto[] = await this.setService.findAll();
         for (let i = 0; i < sets.length; i++) {
-            let cards: CardDto[] = await this.ingestSetCards(sets[i].code);
+            const cards: CardDto[] = await this.ingestSetCards(sets[i].code);
             for (let j = 0; j < cards.length; j++) {
                 sets[i].cards.push(cards[j]);
             }

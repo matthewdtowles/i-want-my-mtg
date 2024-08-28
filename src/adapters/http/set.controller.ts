@@ -2,6 +2,7 @@ import { Controller, Get, Inject, Param, Render } from '@nestjs/common';
 import { SetMapper } from '../../core/set/set.mapper';
 import { SetServicePort } from 'src/core/set/ports/set.service.port';
 import { SetDto } from 'src/core/set/dto/set.dto';
+import { CardDto } from 'src/core/card/dto/card.dto';
 
 @Controller('sets')
 export class SetController {
@@ -22,4 +23,14 @@ export class SetController {
         setCode = setCode.toUpperCase();
         return await this.setService.findByCode(setCode);
     }
+
+    // TODO: 
+    // @Get(':setCode/:setNumber')
+    // @Render('set')
+    // async findSetCard(
+    //     @Param('setCode') setCode: string,
+    //     @Param('setNumber') setNumber: number
+    // ): Promise<CardDto> {
+        
+    // }
 }

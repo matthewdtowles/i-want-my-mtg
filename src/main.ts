@@ -6,12 +6,12 @@ import { create } from 'express-handlebars';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
-    app.useStaticAssets(join(__dirname, '..', 'http/public'));
-    app.setBaseViewsDir(join(__dirname, '..', 'http/views'));
+    app.useStaticAssets(join(__dirname, '.', 'adapters/http/public'));
+    app.setBaseViewsDir(join(__dirname, '.', 'adapters/http/views'));
 
     const hbs = create({
-        layoutsDir: join(__dirname, '..', 'http/views', 'layouts'),
-        partialsDir: join(__dirname, '..', 'http/views', 'partials'),
+        layoutsDir: join(__dirname, '.', 'adapters/http/views', 'layouts'),
+        partialsDir: join(__dirname, '.', 'adapters/http/views', 'partials'),
         defaultLayout: 'main',
         extname: '.hbs',
     });

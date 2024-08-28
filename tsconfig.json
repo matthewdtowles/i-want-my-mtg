@@ -24,14 +24,15 @@
             "src/core/*": [
                 "src/core/*"
             ],
-            "src/http/*": [
-                "src/http/*"
+            "src/adapters/*": [
+                "src/adapters/*"
             ]
         }
     },
     "include": [
-        "src/**/*"
-, "test/test-utils.ts"    ],
+        "src/**/*", 
+        "test/test-utils.ts"    
+    ],
     "exclude": [
         "node_modules"
     ]

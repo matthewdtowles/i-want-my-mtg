@@ -54,7 +54,7 @@ export class TestUtils {
 
     getMockSet(setCode: string): Set {
         const set: Set = new Set();
-        set.setCode = setCode;
+        set.code = setCode;
         set.baseSize = 3;
         set.name = 'Test Set';
         set.releaseDate = '2022-01-01';
@@ -96,7 +96,7 @@ export class TestUtils {
             number: card.number,
             originalText: card.originalText,
             rarity: card.rarity,
-            setCode: card.set.setCode,
+            setCode: card.set.code,
             url: card.url,
             uuid: card.uuid,
         };
@@ -110,14 +110,14 @@ export class TestUtils {
         return {
             baseSize: set.baseSize,
             block: set.block,
-            cards: set.cards ? this.getMockCardDtos(set.setCode) : [],
-            code: set.setCode,
+            cards: set.cards ? this.getMockCardDtos(set.code) : [],
+            code: set.code,
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,
             parentCode: set.parentCode,
             releaseDate: set.releaseDate,
             type: set.type,
-            url: 'sets/' + set.setCode.toLowerCase()
+            url: 'sets/' + set.code.toLowerCase()
         };
     }
 

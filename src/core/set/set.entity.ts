@@ -5,7 +5,7 @@ import { Card } from '../card/card.entity';
 export class Set {
 
     @PrimaryColumn()
-    setCode: string;
+    code: string;
 
     @Column()
     baseSize: number;

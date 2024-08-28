@@ -12,7 +12,7 @@ export class Card {
 
     @Column({ default: false })
     isReserved?: boolean;
- 
+
     @Column({ nullable: true })
     manaCost?: string;
 
@@ -22,12 +22,15 @@ export class Card {
     @Column()
     number: string;
 
-    @Column({ nullable: true })
+    @Column({ 
+        nullable: true, 
+        type: 'text' 
+    })
     originalText?: string;
 
     @Column()
     rarity: string;
-    
+
     @ManyToOne(() => Set, set => set.cards)
     set: Set;
 

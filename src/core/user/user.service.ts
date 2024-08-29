@@ -15,15 +15,6 @@ export class UserService implements UserServicePort {
         @Inject(UserMapper) private readonly mapper: UserMapper,
     ) {}
 
-    // TODO: move (if needed) to authentication module when created
-    // async authenticate(email: string, password: string): Promise<User | null> {
-    //     const hashedPassword: string = await this.repository.getPasswordHash(email);
-    //     let authedUser: User;
-    //     if (hashedPassword && await bcrypt.compare(password, hashedPassword)) {
-    //         authedUser = await this.repository.findByEmail(email);
-    //     }
-    //     return authedUser;
-    // }
 
     async createUser(userDto: CreateUserDto): Promise<UserDto> {
         const user: User = await this.repository.save(this.mapper.writeDtoToEntity(userDto));

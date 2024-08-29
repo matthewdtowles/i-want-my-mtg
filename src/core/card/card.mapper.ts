@@ -22,8 +22,7 @@ export class CardMapper {
         card.number = cardDto.number;
         card.originalText = cardDto.originalText;
         card.rarity = cardDto.rarity;
-        // TODO:
-        // card.set = createCardDto.setCode;
+        card.setCode = cardDto.setCode;
         card.url = cardDto.url;
         card.uuid = cardDto.uuid;
         return card;

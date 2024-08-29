@@ -1,5 +1,5 @@
 import { Set } from 'src/core/set/set.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Card {
@@ -32,7 +32,15 @@ export class Card {
     rarity: string;
 
     @ManyToOne(() => Set, set => set.cards)
+    @JoinColumn({ 
+        name: 'setCode', 
+        referencedColumnName: 'code', 
+        foreignKeyConstraintName: 'FK_Card_Set'
+    })
     set: Set;
+
+    @Column()
+    setCode: string;
 
     @Column()
     url: string;

@@ -20,7 +20,7 @@ export interface UserServicePort {
      * @param password
      * @returns created User
     */
-    createUser(user: CreateUserDto): Promise<UserDto>;
+    create(user: CreateUserDto): Promise<UserDto>;
 
     /**
      * @param username

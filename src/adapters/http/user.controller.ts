@@ -10,7 +10,7 @@ export class UserController {
 
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
-        return this.userService.createUser(createUserDto);
+        return this.userService.create(createUserDto);
     }
 
     @Get(':id')

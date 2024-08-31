@@ -12,6 +12,7 @@ export class UserMapper {
             id: user.id,
             email: user.email,
             name: user.name,
+            // TODO:
             // collection: user.collection,
             collection: null,
         };

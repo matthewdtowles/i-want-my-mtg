@@ -16,22 +16,26 @@ export class UserService implements UserServicePort {
     ) {}
 
 
-    async createUser(userDto: CreateUserDto): Promise<UserDto> {
-        const user: User = await this.repository.save(this.mapper.writeDtoToEntity(userDto));
-        return this.mapper.entityToDto(user);
+    async create(userDto: CreateUserDto): Promise<UserDto> {
+        const user: User = this.mapper.writeDtoToEntity(userDto);
+        const savedUser: User = await this.repository.save(user) ?? new User();
+        return this.mapper.entityToDto(savedUser);
     }
 
     async findById(id: number): Promise<UserDto> {
-        return this.mapper.entityToDto(await this.repository.findById(id));
+        const user: User = await this.repository.findById(id) ?? new User();
+        return this.mapper.entityToDto(user);
     }
 
     async findByEmail(username: string): Promise<UserDto> {
-        return this.mapper.entityToDto(await this.repository.findByEmail(username));
+        const user: User = await this.repository.findByEmail(username) ?? new User();
+        return this.mapper.entityToDto(user);
     }
 
     async update(userDto: UpdateUserDto): Promise<UserDto> {
         const user: User = this.mapper.writeDtoToEntity(userDto);
-        return this.mapper.entityToDto(await this.repository.save(user));
+        const savedUser: User = await this.repository.save(user) ?? new User();
+        return this.mapper.entityToDto(savedUser);
     }
 
     async remove(userDto: UpdateUserDto): Promise<void> {

@@ -13,8 +13,8 @@ export class UserMapper {
             email: user.email,
             name: user.name,
             // TODO:
-            // collection: user.collection,
-            collection: null,
+            // inventory: user.inventory,
+            inventory: null,
         };
         return userDto;
     }

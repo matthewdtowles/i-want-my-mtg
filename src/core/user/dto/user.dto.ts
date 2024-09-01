@@ -1,11 +1,11 @@
 import { Type } from "class-transformer";
-import { CollectionDto } from "src/core/collection/dto/collection.dto";
+import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
 
 export class UserDto {
     readonly id: number;
     readonly email: string;
     readonly name: string;
 
-    @Type(() => CollectionDto)
-    readonly collection: CollectionDto;
+    @Type(() => InventoryDto)
+    readonly inventory: InventoryDto;
 }

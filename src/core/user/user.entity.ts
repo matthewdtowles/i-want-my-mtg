@@ -1,4 +1,4 @@
-import { Collection } from 'src/core/collection/collection.entity';
+import { Inventory } from 'src/core/inventory/inventory.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -13,6 +13,6 @@ export class User {
     @Column()
     name: string;
 
-    @OneToOne(() => Collection, collection => collection.owner)
-    collection: Collection;
+    @OneToOne(() => Inventory, inventory => inventory.owner)
+    inventory: Inventory;
 }

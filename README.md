@@ -142,7 +142,7 @@ _See TypeOrm docs for details on query builder, example queries, and more_
 - Page with Set products/cards
 - User hub page
 - Settings as a sub of User page 
-- 'My Collection' page as a sub of User page
+- 'My Inventory' page as a sub of User page
 - Reset password page as sub of User page?
 
 ## Set List Page

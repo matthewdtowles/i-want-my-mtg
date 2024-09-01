@@ -23,14 +23,14 @@ describe('UserService', () => {
     const userDto: UserDto = {
         ...createUser,
         id: 1,
-        collection: null,
+        inventory: null,
     };
 
     const mockUser: User = new User();
     mockUser.id = 1;
     mockUser.name = 'test-username1';
     mockUser.email = 'test-email1@iwantmymtg.com';
-    mockUser.collection = null;
+    mockUser.inventory = null;
 
     const mockUserRepository: UserRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockUser),
@@ -60,7 +60,7 @@ describe('UserService', () => {
     });
 
     it('create should successfully insert a user', () => {
-        expect(service.createUser(createUser)).resolves.toEqual(mockUser);
+        expect(service.create(createUser)).resolves.toEqual(mockUser);
     });
 
     it('findById should get a single user with given id', () => {

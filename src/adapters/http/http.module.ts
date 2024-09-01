@@ -1,15 +1,15 @@
 import { Logger, Module } from '@nestjs/common';
-import { CoreModule } from 'src/core/core.module';
-import { SetController } from './set.controller';
-import { CardController } from './card.controller';
-import { UserController } from './user.controller';
-import { CollectionController } from './collection.controller';
 import { CardMapper } from 'src/core/card/card.mapper';
+import { CoreModule } from 'src/core/core.module';
+import { CardController } from './card.controller';
+import { InventoryController } from './inventory.controller';
+import { SetController } from './set.controller';
+import { UserController } from './user.controller';
 
 @Module({
     controllers: [
         CardController,
-        CollectionController,
+        InventoryController,
         SetController,
         UserController,
     ],

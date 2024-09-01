@@ -13,7 +13,7 @@ const mockUser: UserDto = {
     id: 1,
     name: 'test-username1',
     email: 'test-email1@iwantmymtg.com',
-    collection: null,
+    inventory: null,
 };
 
 describe('UsersController', () => {
@@ -27,8 +27,7 @@ describe('UsersController', () => {
                 {
                     provide: UserServicePort,
                     useValue: {
-                        authenticate: jest.fn().mockResolvedValue(mockUser),
-                        createUser: jest.fn().mockResolvedValue(mockUser),
+                        create: jest.fn().mockResolvedValue(mockUser),
                         findByEmail: jest.fn().mockResolvedValue(mockUser),
                         findById: jest.fn().mockResolvedValue(mockUser),
                         update: jest.fn().mockResolvedValue(mockUser),
@@ -49,7 +48,7 @@ describe('UsersController', () => {
     it('should create a user', () => {
         controller.create(createUserDto);
         expect(controller.create(createUserDto)).resolves.toEqual(mockUser);
-        expect(service.createUser).toHaveBeenCalledWith(createUserDto);
+        expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
 
     it('should find user by given id', () => {

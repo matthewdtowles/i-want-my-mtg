@@ -1,5 +1,5 @@
-import { User } from "src/core/user/user.entity";
-import { Inventory } from "../inventory.entity";
+import { User } from 'src/core/user/user.entity';
+import { Inventory } from '../inventory.entity';
 
 
 export const InventoryRepositoryPort = 'InventoryRepositoryPort';

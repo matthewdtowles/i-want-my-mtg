@@ -1,7 +1,7 @@
-import { Type } from "class-transformer";
-import { IsInt } from "class-validator";
-import { CardDto } from "src/core/card/dto/card.dto";
-import { UserDto } from "src/core/user/dto/user.dto";
+import { Type } from 'class-transformer';
+import { IsInt } from 'class-validator';
+import { CardDto } from 'src/core/card/dto/card.dto';
+import { UserDto } from 'src/core/user/dto/user.dto';
 
 export class CreateInventoryDto {
     @Type(() => UserDto)

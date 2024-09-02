@@ -1,5 +1,5 @@
 import { User } from 'src/core/user/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Card } from '../card/card.entity';
 
 @Entity()
@@ -11,9 +11,10 @@ export class Inventory {
     @ManyToOne(() => User, user => user.inventory)
     user: User;
 
-    @ManyToOne(() => Card, card => card)
+    @OneToOne(() => Card)
+    @JoinColumn()
     card: Card;
 
-    @Column()
+    @Column({ default: 1 })
     quantity: number;
 }

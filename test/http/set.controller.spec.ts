@@ -7,7 +7,6 @@ import * as request from 'supertest';
 import { SetController } from '../../src/adapters/http/set.controller';
 import { SetDto } from '../../src/core/set/dto/set.dto';
 import { SetServicePort } from '../../src/core/set/ports/set.service.port';
-import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',

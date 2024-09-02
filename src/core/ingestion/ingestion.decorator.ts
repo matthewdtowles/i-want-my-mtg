@@ -1,5 +1,5 @@
-import { Card } from "../card/card.entity";
-import { Set } from "../set/set.entity";
+import { Card } from '../card/card.entity';
+import { Set } from '../set/set.entity';
 
 // runtime decorator to ingest missing card and set data
 // note: `this` refers to the class instance using this decorator

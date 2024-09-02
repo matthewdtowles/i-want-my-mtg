@@ -1,5 +1,5 @@
-import { Type } from "class-transformer";
-import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
+import { Type } from 'class-transformer';
+import { InventoryDto } from 'src/core/inventory/dto/inventory.dto';
 
 export class UserDto {
     readonly id: number;

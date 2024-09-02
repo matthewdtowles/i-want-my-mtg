@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { CreateUserDto } from '../../core/user/dto/create-user.dto';
-import { UserServicePort } from 'src/core/user/ports/user.service.port';
-import { UserDto } from 'src/core/user/dto/user.dto';
 import { UpdateUserDto } from 'src/core/user/dto/update-user.dto';
+import { UserDto } from 'src/core/user/dto/user.dto';
+import { UserServicePort } from 'src/core/user/ports/user.service.port';
+import { CreateUserDto } from '../../core/user/dto/create-user.dto';
 
 @Controller('users')
 export class UserController {

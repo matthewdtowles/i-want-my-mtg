@@ -29,7 +29,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async findByUser(user: User): Promise<Inventory | null> {
         return await this.inventoryRepository.findOne({
             where: {
-                owner: user
+                user: user
             },
             relations: ['cards']
         });
@@ -58,11 +58,11 @@ if (user && role) {
         }
         const inventoryEntity = new Inventory();
         inventoryEntity.id = inventory.id;
-        inventoryEntity.cards = inventory.cards;
-        inventoryEntity.owner = new User();
-        inventoryEntity.owner.id = inventory.owner.id;
-        inventoryEntity.owner.email = inventory.owner.email;
-        inventoryEntity.owner.name = inventory.owner.name;
+        inventoryEntity.card = inventory.card;
+        inventoryEntity.user = new User();
+        inventoryEntity.user.id = inventory.user.id;
+        inventoryEntity.user.email = inventory.user.email;
+        inventoryEntity.user.name = inventory.user.name;
         return inventoryEntity;
     }
     // TODO: move to InventoryMapper
@@ -71,9 +71,9 @@ if (user && role) {
             return null;
         }
         const inventory = new Inventory();
-        inventory.cards = inventoryEntity.cards;
+        inventory.card = inventoryEntity.card;
         inventory.id = inventoryEntity.id;
-        inventory.owner = inventoryEntity.owner;
+        inventory.user = inventoryEntity.user;
         return inventory
     }
 

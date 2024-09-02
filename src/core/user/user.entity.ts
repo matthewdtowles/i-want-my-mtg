@@ -1,5 +1,5 @@
 import { Inventory } from 'src/core/inventory/inventory.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -13,6 +13,6 @@ export class User {
     @Column()
     name: string;
 
-    @OneToOne(() => Inventory, inventory => inventory.owner)
-    inventory: Inventory;
+    @OneToMany(() => Inventory, inventory => inventory.user)
+    inventory: Inventory[];
 }

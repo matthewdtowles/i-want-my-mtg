@@ -14,10 +14,10 @@ export interface CardServicePort {
     /**
      * Save card(s) as given
      * 
-     * @param card 
+     * @param cards 
      * @returns saved card
      */
-    save(card: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]>;
+    save(cards: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]>;
 
     /**
      * @param setCode 

@@ -3,8 +3,9 @@ import { InventoryService } from '../../../src/core/inventory/inventory.service'
 import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
 
 const mockInventoryRepository: InventoryRepositoryPort = {
+    // TODO: save returns InventoryDto[]
     save: jest.fn(),
-    findById: jest.fn(),
+    // TODO: findByUser returns InventoryDto[]
     findByUser: jest.fn(),
     delete: jest.fn(),
 };
@@ -30,5 +31,17 @@ describe('InventoryService', () => {
 
     it('should be defined', () => {
         expect(service).toBeDefined();
+    });
+
+    it('should save cards and return the saved cards', () => {
+        // TODO:
+    });
+
+    it('should find inventory items for a user', () => {
+        // TODO:
+    });
+
+    it('should delete given inventory items by calling repository.delete()', () => {
+        // TODO:
     });
 });

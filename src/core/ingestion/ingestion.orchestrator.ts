@@ -18,10 +18,7 @@ export class IngestionOrchestrator {
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
         @Inject(SetServicePort) private readonly setService: SetServicePort,
     ) {
-        this.LOGGER.debug('IngestionOrchestrator initialized with dependencies:');
-        this.LOGGER.debug(`IngestionService: ${this.ingestionService}`);
-        this.LOGGER.debug(`CardService: ${this.cardService}`);
-        this.LOGGER.debug(`SetService: ${this.setService}`);
+        this.LOGGER.debug('Initialized');
     }
 
     async ingestAllSetMeta(): Promise<SetDto[]> {

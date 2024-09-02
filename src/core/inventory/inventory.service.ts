@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InventoryServicePort } from './ports/inventory.service.port';
-import { Card } from '../card/card.entity';
-import { Inventory } from './inventory.entity';
+import { UserDto } from '../user/dto/user.dto';
+import { CreateInventoryDto } from './dto/create-inventory.dto';
+import { InventoryDto } from './dto/inventory.dto';
+import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { InventoryRepositoryPort } from './ports/inventory.repository.port';
+import { InventoryServicePort } from './ports/inventory.service.port';
 
 @Injectable()
 export class InventoryService implements InventoryServicePort {
@@ -11,35 +13,18 @@ export class InventoryService implements InventoryServicePort {
         @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort
     ) { }
 
-    async create(inventory: Inventory): Promise<Inventory> {
+    // TODO: implement
+    async save(inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[]): Promise<InventoryDto[]> {
         throw new Error('Method not implemented.');
     }
 
-    async findById(id: string): Promise<Inventory> {
+    async findByUser(user: UserDto): Promise<InventoryDto[]> {
         throw new Error('Method not implemented.');
     }
 
-    async findByUser(user: string, number: number): Promise<Inventory> {
+    async remove(inventoryItems: UpdateInventoryDto[]): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
-    async addCard(inventory: Inventory, card: Card): Promise<Inventory> {
-        throw new Error('Method not implemented.');
-    }
 
-    async addCards(inventory: Inventory, cards: Card[]): Promise<Inventory> {
-        throw new Error('Method not implemented.');
-    }
-
-    async removeCard(inventory: Inventory, card: Card): Promise<Inventory> {
-        throw new Error('Method not implemented.');
-    }
-
-    async removeCards(inventory: Inventory, cards: Card[]): Promise<Inventory> {
-        throw new Error('Method not implemented.');
-    }
-
-    async update(inventory: Inventory): Promise<Inventory> {
-        throw new Error('Method not implemented.');
-    }
 }

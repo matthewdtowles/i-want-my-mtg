@@ -1,7 +1,6 @@
 import { User } from 'src/core/user/user.entity';
 import { Inventory } from '../inventory.entity';
 
-
 export const InventoryRepositoryPort = 'InventoryRepositoryPort';
 
 /**
@@ -10,29 +9,23 @@ export const InventoryRepositoryPort = 'InventoryRepositoryPort';
 export interface InventoryRepositoryPort {
 
     /**
-     * Create inventory, update if exists
+     * Create inventory entities, update if they exist
      * 
-     * @param inventory
-     * @returns created | updated inventory
+     * @param inventoryItems
+     * @returns saved inventory entities
      */
-    save(inventory: Inventory): Promise<Inventory>;
+    save(inventoryItems: Inventory[]): Promise<Inventory[]>;
 
     /**
-     * @param id
-     * @returns inventory entity with id, null if not found
-     */
-    findById(id: number): Promise<Inventory | null>;
-
-    /**
-     * @param inventory
+     * @param user
      * @returns user's inventory, null if not found
      */
-    findByUser(user: User): Promise<Inventory | null>;
+    findByUser(user: User): Promise<Inventory[]>;
 
     /**
-     * Remove inventory entity
+     * Delete inventory entity
      * 
-     * @param inventory
+     * @param inventoryItems
      */
-    delete(inventory: Inventory): Promise<void>;
+    delete(inventoryItems: Inventory): Promise<void>;
 }

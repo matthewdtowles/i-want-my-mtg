@@ -1,5 +1,7 @@
-import { Card } from 'src/core/card/card.entity';
-import { Inventory } from '../inventory.entity';
+import { UserDto } from 'src/core/user/dto/user.dto';
+import { CreateInventoryDto } from '../dto/create-inventory.dto';
+import { InventoryDto } from '../dto/inventory.dto';
+import { UpdateInventoryDto } from '../dto/update-inventory.dto';
 
 export const InventoryServicePort = 'InventoryServicePort';
 
@@ -10,70 +12,26 @@ export const InventoryServicePort = 'InventoryServicePort';
  */
 export interface InventoryServicePort {
 
-    /**
-     * Save inventory if not created
-     * Return created inventory
+/**
+     * Save inventory items
      * 
-     * @param inventory 
+     * @param inventoryItems
+     * @returns saved inventory items
      */
-    create(inventory: Inventory): Promise<Inventory>;
-    
-    /**
-     * Return inventory with id
-     * 
-     * @param id 
-     */
-    findById(id: string): Promise<Inventory>;
+    save(inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[]): Promise<InventoryDto[]>;
 
     /**
-     * Return inventory with number in set
+     * Return user's inventory items
      * 
-     * @param user 
-     * @param number 
+     * @param user
+     * @returns user's inventory items
      */
-    findByUser(user: string, number: number): Promise<Inventory>;
+    findByUser(user: UserDto): Promise<InventoryDto[]>;
 
     /**
-     * Save card to inventory
-     * Return updated inventory
+     * Delete inventory item(s)
      * 
-     * @param inventory
-     * @param card
+     * @param inventoryItems
      */
-    addCard(inventory: Inventory, card: Card): Promise<Inventory>;
-
-    /**
-     * Save Cards to inventory
-     * Return updated inventory
-     *
-     * @param inventory
-     * @param cards 
-     */
-    addCards(inventory: Inventory, cards: Card[]): Promise<Inventory>;
-
-    /**
-     * Delete card from inventory
-     * Return updated Inventory
-     * 
-     * @param inventory
-     * @param card 
-     */
-    removeCard(inventory: Inventory, card: Card): Promise<Inventory>;
-
-    /**
-     * Delete cards from inventory
-     * Return updated Inventory
-     * 
-     * @param inventory
-     * @param cards 
-     */    
-    removeCards(inventory: Inventory, cards: Card[]): Promise<Inventory>;
-
-    /**
-     * Update inventory that exists
-     * Return updated inventory
-     *
-     * @param inventory 
-     */
-    update(inventory: Inventory): Promise<Inventory>;
+    remove(inventoryItems: UpdateInventoryDto[]): Promise<void>;
 }

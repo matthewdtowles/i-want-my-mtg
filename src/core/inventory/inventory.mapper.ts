@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryDto } from './dto/inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { User } from '../user/user.entity';
 
 @Injectable()
 export class InventoryMapper {
@@ -21,17 +22,28 @@ export class InventoryMapper {
         return inventory;
     }
 
-    private mapManaToView(manaCost: string): string[] {
-        return manaCost ? manaCost
-            .toLowerCase()
-            .trim()
-            .replaceAll('/', '')
-            .replace('{', '')
-            .replaceAll('}', '')
-            .split('{') : null;
+    toEntity(inventory: Inventory): Inventory {
+        if (null === inventory || undefined === inventory) {
+            return null;
+        }
+        const inventoryEntity = new Inventory();
+        inventoryEntity.id = inventory.id;
+        inventoryEntity.card = inventory.card;
+        inventoryEntity.user = new User();
+        inventoryEntity.user.id = inventory.user.id;
+        inventoryEntity.user.email = inventory.user.email;
+        inventoryEntity.user.name = inventory.user.name;
+        return inventoryEntity;
     }
 
-    private mapManaToRepo(manaCost: string[]): string {
-        return null;
+    toDto(inventoryEntity: Inventory): Inventory {
+        if (null === inventoryEntity || undefined === inventoryEntity) {
+            return null;
+        }
+        const inventory = new Inventory();
+        inventory.card = inventoryEntity.card;
+        inventory.id = inventoryEntity.id;
+        inventory.user = inventoryEntity.user;
+        return inventory
     }
 }

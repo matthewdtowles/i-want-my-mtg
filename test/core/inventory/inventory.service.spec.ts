@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateInventoryDto } from '../../../src/core/inventory/dto/create-inventory.dto';
+import { InventoryDto } from '../../../src/core/inventory/dto/inventory.dto';
 import { Inventory } from '../../../src/core/inventory/inventory.entity';
+import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 import { InventoryService } from '../../../src/core/inventory/inventory.service';
 import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
 import { TestUtils } from '../../test-utils';
-import { InventoryDto } from '../../../src/core/inventory/dto/inventory.dto';
-import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 
 describe('InventoryService', () => {
     let service: InventoryService;
@@ -42,17 +42,21 @@ describe('InventoryService', () => {
     });
 
     it('should save inventory items and return the saved inventory items', async () => {
-        // TODO:
         const savedItems: InventoryDto[] = await service.save(mockInventoryDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedItems).toEqual(testUtils.getMockInventoryDtos());
     });
 
     it('should find inventory items for a user', async () => {
-        // TODO:
+        const foundItems: InventoryDto[] = await service.findByUser(testUtils.MOCK_USER_ID);
+        expect(repository.findByUser).toHaveBeenCalledTimes(1);
+        expect(foundItems).toEqual(testUtils.getMockInventoryDtos());
     });
 
-    it('should delete given inventory items by calling repository.delete()', async () => {
-        // TODO:
+    it('should remove given inventory item by calling repository.delete()', async () => {
+        const deleteSpy = jest.spyOn(repository, 'delete');
+        const dtosToRemove: InventoryDto[] = testUtils.getMockInventoryDtos();
+        expect(await service.remove(dtosToRemove)).toBe(undefined);
+        expect(deleteSpy).toHaveBeenCalledTimes(dtosToRemove.length);
     });
 });

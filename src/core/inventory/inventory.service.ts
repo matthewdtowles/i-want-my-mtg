@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UserDto } from '../user/dto/user.dto';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { InventoryDto } from './dto/inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { Inventory } from './inventory.entity';
+import { InventoryMapper } from './inventory.mapper';
 import { InventoryRepositoryPort } from './ports/inventory.repository.port';
 import { InventoryServicePort } from './ports/inventory.service.port';
-import { InventoryMapper } from './inventory.mapper';
-import { Inventory } from './inventory.entity';
 
 @Injectable()
 export class InventoryService implements InventoryServicePort {
@@ -16,17 +15,21 @@ export class InventoryService implements InventoryServicePort {
         @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
     ) { }
 
-    // TODO: implement
     async save(inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[]): Promise<InventoryDto[]> {
-        const savedItems: Inventory[] = await this.repository.save(this.mapper.toEntities(inventoryItems))
+        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
+        const savedItems: Inventory[] = await this.repository.save(entities);
         return this.mapper.toDtos(savedItems);
     }
 
-    async findByUser(user: UserDto): Promise<InventoryDto[]> {
-        throw new Error('Method not implemented.');
+    async findByUser(userId: number): Promise<InventoryDto[]> {
+        const foundItems: Inventory[] = await this.repository.findByUser(userId);
+        return this.mapper.toDtos(foundItems);
     }
 
-    async remove(inventoryItems: UpdateInventoryDto[]): Promise<void> {
-        throw new Error('Method not implemented.');
+    async remove(inventoryItems: InventoryDto[]): Promise<void> {
+        inventoryItems.forEach(async item => {
+            const entity: Inventory = this.mapper.toEntity(item);
+            await this.repository.delete(entity);
+        });
     }
 }

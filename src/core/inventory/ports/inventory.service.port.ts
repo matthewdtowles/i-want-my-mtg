@@ -23,10 +23,10 @@ export interface InventoryServicePort {
     /**
      * Return user's inventory items
      * 
-     * @param user
+     * @param userId
      * @returns user's inventory items
      */
-    findByUser(user: UserDto): Promise<InventoryDto[]>;
+    findByUser(userId: number): Promise<InventoryDto[]>;
 
     /**
      * Delete inventory item(s)

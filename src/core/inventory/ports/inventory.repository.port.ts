@@ -1,4 +1,3 @@
-import { User } from 'src/core/user/user.entity';
 import { Inventory } from '../inventory.entity';
 
 export const InventoryRepositoryPort = 'InventoryRepositoryPort';
@@ -17,15 +16,16 @@ export interface InventoryRepositoryPort {
     save(inventoryItems: Inventory[]): Promise<Inventory[]>;
 
     /**
-     * @param user
-     * @returns user's inventory, null if not found
+     * @param userId
+     * @returns user's inventory entities
      */
-    findByUser(user: User): Promise<Inventory[]>;
+    findByUser(userId: number): Promise<Inventory[]>;
 
     /**
      * Delete inventory entity
+     * Use when quantity is < 1
      * 
-     * @param inventoryItems
+     * @param inventory
      */
-    delete(inventoryItems: Inventory): Promise<void>;
+    delete(inventory: Inventory): Promise<void>;
 }

@@ -2,10 +2,12 @@ import { Card } from 'src/core/card/card.entity';
 import { CreateCardDto } from './dto/create-card.dto';
 import { CardDto } from './dto/card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class CardMapper {
 
-    static dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
+    dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
         const cards: Card[] = [];
         cardDtos.forEach(c => {
             cards.push(this.dtoToEntity(c));
@@ -13,7 +15,7 @@ export class CardMapper {
         return cards;
     }
 
-    static dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
+    dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
         const card: Card = new Card();
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
@@ -28,7 +30,7 @@ export class CardMapper {
         return card;
     }
 
-    static readDtoToEntity(cardDto: CardDto): Card {
+    readDtoToEntity(cardDto: CardDto): Card {
         const card: Card = new Card();
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
@@ -43,7 +45,7 @@ export class CardMapper {
         return card;
     }
 
-    static entitiesToDtos(cards: Card[]): CardDto[] {
+    entitiesToDtos(cards: Card[]): CardDto[] {
         const cardDtos: CardDto[] = [];
         const totalCards: number = cards ? cards.length : 0;
         for(let i = 0; i < totalCards; i++) {
@@ -52,7 +54,7 @@ export class CardMapper {
         return cardDtos;
     }
 
-    static entityToDto(card: Card): CardDto {
+    entityToDto(card: Card): CardDto {
         const cardDto: CardDto = {
             id: card.id,
             imgSrc: card.imgSrc,
@@ -69,7 +71,7 @@ export class CardMapper {
         return cardDto;
     }
 
-    private static mapManaToView(manaCost: string): string[] {
+    private mapManaToView(manaCost: string): string[] {
         return typeof manaCost === 'string' ? manaCost.toLowerCase()
             .trim()
             .replaceAll('/', '')
@@ -78,7 +80,7 @@ export class CardMapper {
             .split('{') : null;
     }
 
-    private static mapManaToRepo(manaCost: string[]): string {
+    private mapManaToRepo(manaCost: string[]): string {
         return manaCost ? manaCost.map(token => `{${token}}`).join('') : undefined;
     }
 }

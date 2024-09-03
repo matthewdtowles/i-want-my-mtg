@@ -5,6 +5,8 @@ import { MtgJsonIngestionModule } from 'src/adapters/mtgjson-ingestion/mtgjson-i
 import { SetRepositoryPort } from './ports/set.repository.port';
 import { SetServicePort } from './ports/set.service.port';
 import { SetService } from './set.service';
+import { SetMapper } from './set.mapper';
+import { CardMapper } from '../card/card.mapper';
 
 @Module({
     imports: [
@@ -20,10 +22,13 @@ import { SetService } from './set.service';
             provide: SetRepositoryPort,    
             useClass: SetRepository,
         },
+        SetMapper,
+        CardMapper,
     ],
     exports: [
         SetServicePort,
-        SetRepositoryPort
+        SetRepositoryPort,
+        SetMapper
     ]
 })
 export class SetModule {

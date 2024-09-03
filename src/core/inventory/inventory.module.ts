@@ -5,6 +5,7 @@ import { InventoryMapper } from './inventory.mapper';
 import { InventoryService } from './inventory.service';
 import { InventoryRepositoryPort } from './ports/inventory.repository.port';
 import { InventoryServicePort } from './ports/inventory.service.port';
+import { CardMapper } from '../card/card.mapper';
 
 @Module({
     imports: [
@@ -19,7 +20,8 @@ import { InventoryServicePort } from './ports/inventory.service.port';
             provide: InventoryRepositoryPort,
             useClass: InventoryRepository,
         },
-        InventoryMapper
+        InventoryMapper,
+        CardMapper,
     ],
     exports: [
         InventoryRepositoryPort,

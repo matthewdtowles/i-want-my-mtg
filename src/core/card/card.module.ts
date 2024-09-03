@@ -5,6 +5,7 @@ import { MtgJsonIngestionModule } from 'src/adapters/mtgjson-ingestion/mtgjson-i
 import { CardService } from './card.service';
 import { CardRepositoryPort } from './ports/card.repository.port';
 import { CardServicePort } from './ports/card.service.port';
+import { CardMapper } from './card.mapper';
 
 @Module({
     imports: [
@@ -20,10 +21,12 @@ import { CardServicePort } from './ports/card.service.port';
             provide: CardRepositoryPort,    
             useClass: CardRepository,
         },
+        CardMapper
     ],
     exports: [
         CardServicePort,
         CardRepositoryPort,
+        CardMapper,
     ]
 })
 export class CardModule {

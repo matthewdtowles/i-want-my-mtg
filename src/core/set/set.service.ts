@@ -18,28 +18,29 @@ export class SetService implements SetServicePort {
     constructor(
         @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort,
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
+        @Inject(SetMapper) private readonly mapper: SetMapper,
     ) { }
 
 
     async save(setDtos: CreateSetDto[] | UpdateSetDto[]): Promise<SetDto[]> {
-        const setEntities: Set[] = SetMapper.dtosToEntities(setDtos);
+        const setEntities: Set[] = this.mapper.dtosToEntities(setDtos);
         const savedSetEntities: Set[] = await this.repository.save(setEntities);
-        return SetMapper.entitiesToDtos(savedSetEntities);
+        return this.mapper.entitiesToDtos(savedSetEntities);
     }
 
     async findAll(): Promise<SetDto[]> {
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
-        return SetMapper.entitiesToDtos(setEntities);
+        return this.mapper.entitiesToDtos(setEntities);
     }
 
     async findAllInFormat(format: string): Promise<SetDto[]> {
         // TODO: update when we track legality
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
-        return SetMapper.entitiesToDtos(setEntities);
+        return this.mapper.entitiesToDtos(setEntities);
     }
 
     async findByCode(setCode: string): Promise<SetDto> {
         const setEntity: Set = await this.repository.findByCode(setCode);
-        return SetMapper.entityToDto(setEntity);
+        return this.mapper.entityToDto(setEntity);
     }
 }

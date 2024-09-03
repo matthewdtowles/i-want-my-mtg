@@ -6,6 +6,7 @@ import { CreateCardDto } from '../../../src/core/card/dto/create-card.dto';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
 import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
 import { TestUtils } from '../../test-utils';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('CardService', () => {
     let service: CardService;
@@ -45,6 +46,7 @@ describe('CardService', () => {
                     provide: IngestionServicePort,
                     useValue: mockCardIngestion,
                 },
+                CardMapper,
             ],
         }).compile();
 

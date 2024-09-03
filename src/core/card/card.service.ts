@@ -19,39 +19,40 @@ export class CardService implements CardServicePort {
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
+        @Inject(CardMapper) private readonly mapper: CardMapper,
     ) { }
 
 
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
-        const savedCards: Card[] = await this.repository.save(CardMapper.dtosToEntities(cardDtos));
-        return CardMapper.entitiesToDtos(savedCards);
+        const savedCards: Card[] = await this.repository.save(this.mapper.dtosToEntities(cardDtos));
+        return this.mapper.entitiesToDtos(savedCards);
     }
 
     @IngestMissingCards()
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         const foundCards: Card[] = await this.repository.findAllInSet(setCode);
-        return CardMapper.entitiesToDtos(foundCards);
+        return this.mapper.entitiesToDtos(foundCards);
     }
 
     async findAllWithName(name: string): Promise<CardDto[]> {
         const foundCards: Card[] = await this.repository.findAllWithName(name);
-        return CardMapper.entitiesToDtos(foundCards);
+        return this.mapper.entitiesToDtos(foundCards);
     }
 
     async findById(id: number): Promise<CardDto | null> {
         const foundCard: Card = await this.repository.findById(id);
-        return CardMapper.entityToDto(foundCard);
+        return this.mapper.entityToDto(foundCard);
     }
 
     @IngestMissingCards()
     async findBySetCodeAndNumber(setCode: string, number: number): Promise<CardDto> {
         const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
-        return CardMapper.entityToDto(foundCard);
+        return this.mapper.entityToDto(foundCard);
     }
 
     async findByUuid(uuid: string): Promise<CardDto | null> {
         const foundCard: Card = await this.repository.findByUuid(uuid);
-        return CardMapper.entityToDto(foundCard);
+        return this.mapper.entityToDto(foundCard);
     }
 
 }

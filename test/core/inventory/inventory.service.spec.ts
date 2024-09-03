@@ -6,6 +6,7 @@ import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 import { InventoryService } from '../../../src/core/inventory/inventory.service';
 import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
 import { TestUtils } from '../../test-utils';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('InventoryService', () => {
     let service: InventoryService;
@@ -30,6 +31,7 @@ describe('InventoryService', () => {
                     useValue: mockInventoryRepository,
                 },
                 InventoryMapper,
+                CardMapper,
             ],
         }).compile();
 

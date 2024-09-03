@@ -7,6 +7,7 @@ import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository
 import { User } from '../../../src/core/user/user.entity';
 import { UserMapper } from '../../../src/core/user/user.mapper';
 import { UserService } from '../../../src/core/user/user.service';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('UserService', () => {
     let service: UserService;
@@ -50,6 +51,7 @@ describe('UserService', () => {
                     useValue: mockUserRepository,
                 },
                 InventoryMapper,
+                CardMapper,
             ],
         }).compile();
 

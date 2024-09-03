@@ -7,6 +7,8 @@ import { SetService } from '../../../src/core/set/set.service';
 import { TestUtils } from '../../test-utils';
 import { CreateSetDto } from '../../../src/core/set/dto/create-set.dto';
 import { CreateCardDto } from '../../../src/core/card/dto/create-card.dto';
+import { SetMapper } from '../../../src/core/set/set.mapper';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('SetService', () => {
     let service: SetService;
@@ -45,6 +47,8 @@ describe('SetService', () => {
                     provide: IngestionServicePort,
                     useValue: mockSetIngestion,
                 },
+                SetMapper,
+                CardMapper,
             ],
         }).compile();
         service = module.get<SetService>(SetService);

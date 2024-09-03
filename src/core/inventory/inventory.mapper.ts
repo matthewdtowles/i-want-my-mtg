@@ -1,49 +1,56 @@
 import { Injectable } from '@nestjs/common';
 import { Inventory } from 'src/core/inventory/inventory.entity';
+import { CardMapper } from '../card/card.mapper';
+import { User } from '../user/user.entity';
+import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { InventoryDto } from './dto/inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
-import { User } from '../user/user.entity';
 
 @Injectable()
 export class InventoryMapper {
 
-    // TODO: impl
-
-
-    entityToDto(inventory: Inventory): InventoryDto {
-        const inventoryDto = new InventoryDto();
-
-        return inventoryDto;
+    toEntities(inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[]): Inventory[] {
+        const entities: Inventory[] = [];
+        if (inventoryItems) {
+            inventoryItems.forEach(item => {
+                entities.push(this.toEntity(item));
+            });
+        }
+        return entities;
     }
 
-    updateDtoToEntity(updateInventoryDto: UpdateInventoryDto): Inventory {
-        const inventory = new Inventory();
-
-        return inventory;
-    }
-
-    toEntity(inventory: Inventory): Inventory {
-        if (null === inventory || undefined === inventory) {
-            return null;
+    toEntity(dto: CreateInventoryDto | UpdateInventoryDto): Inventory | undefined {
+        if (!dto) {
+            return undefined;
         }
         const inventoryEntity = new Inventory();
-        inventoryEntity.id = inventory.id;
-        inventoryEntity.card = inventory.card;
+        inventoryEntity.quantity = dto.quantity;
+        inventoryEntity.card = CardMapper.readDtoToEntity(dto.card);
         inventoryEntity.user = new User();
-        inventoryEntity.user.id = inventory.user.id;
-        inventoryEntity.user.email = inventory.user.email;
-        inventoryEntity.user.name = inventory.user.name;
+        inventoryEntity.user.id = dto.userId;
         return inventoryEntity;
     }
 
-    toDto(inventoryEntity: Inventory): Inventory {
-        if (null === inventoryEntity || undefined === inventoryEntity) {
-            return null;
+    toDtos(inventoryItems: Inventory[]): InventoryDto[] {
+        const dtos: InventoryDto[] = [];
+        if (inventoryItems) {
+            inventoryItems.forEach(item => {
+                dtos.push(this.toDto(item));
+            });
         }
-        const inventory = new Inventory();
-        inventory.card = inventoryEntity.card;
-        inventory.id = inventoryEntity.id;
-        inventory.user = inventoryEntity.user;
+        return dtos;
+    }
+
+    toDto(inventoryEntity: Inventory): InventoryDto | undefined {
+        if (!inventoryEntity) {
+            return undefined;
+        }
+        const inventory: InventoryDto = {
+            id: inventoryEntity.id,
+            card: CardMapper.entityToDto(inventoryEntity.card),
+            quantity: inventoryEntity.quantity,
+            userId: inventoryEntity.userId
+        };
         return inventory
     }
 }

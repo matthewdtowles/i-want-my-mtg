@@ -28,6 +28,21 @@ export class CardMapper {
         return card;
     }
 
+    static readDtoToEntity(cardDto: CardDto): Card {
+        const card: Card = new Card();
+        card.imgSrc = cardDto.imgSrc;
+        card.isReserved = cardDto.isReserved;
+        card.manaCost = this.mapManaToRepo(cardDto.manaCost);
+        card.name = cardDto.name;
+        card.number = cardDto.number;
+        card.originalText = cardDto.originalText;
+        card.rarity = cardDto.rarity;
+        card.setCode = cardDto.setCode;
+        card.url = cardDto.url;
+        card.uuid = cardDto.uuid;
+        return card;
+    }
+
     static entitiesToDtos(cards: Card[]): CardDto[] {
         const cardDtos: CardDto[] = [];
         const totalCards: number = cards ? cards.length : 0;
@@ -64,6 +79,6 @@ export class CardMapper {
     }
 
     private static mapManaToRepo(manaCost: string[]): string {
-        return null;
+        return manaCost ? manaCost.map(token => `{${token}}`).join('') : undefined;
     }
 }

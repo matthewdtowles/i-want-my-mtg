@@ -109,12 +109,13 @@ export class TestUtils {
     }
 
     getMockInventoryList(): Inventory[] {
+        const mockCards = this.getMockCards(this.MOCK_SET_CODE);
         return this.getMockCreateInventoryDtos().map((dto, i) => ({
             id: i + 1,
-            userId: dto.userId, // TODO: map DTO to User entity
-            user: this.getMockUser(),
-            cardId: dto.card.id,
-            card: this.mapCardDtoToEntity(dto.card), // TODO: map DTO to Card Entity
+            userId: dto.userId, 
+            user: { id: this.MOCK_USER_ID, email: this.MOCK_USER_EMAIL, name: this.MOCK_USER_NAME, inventory: [] },
+            cardId: mockCards[i].id,
+            card: mockCards[i],
             quantity: dto.quantity
         }));
     }

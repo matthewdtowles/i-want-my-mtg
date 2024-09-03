@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateUserDto } from '../../../src/core/user/dto/create-user.dto';
+import { UpdateUserDto } from '../../../src/core/user/dto/update-user.dto';
+import { UserDto } from '../../../src/core/user/dto/user.dto';
 import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository.port';
 import { User } from '../../../src/core/user/user.entity';
 import { UserMapper } from '../../../src/core/user/user.mapper';
 import { UserService } from '../../../src/core/user/user.service';
-import { UpdateUserDto } from '../../../src/core/user/dto/update-user.dto';
-import { UserDto } from '../../../src/core/user/dto/user.dto';
+import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 
 describe('UserService', () => {
     let service: UserService;
@@ -23,14 +24,14 @@ describe('UserService', () => {
     const userDto: UserDto = {
         ...createUser,
         id: 1,
-        inventory: null,
+        inventory: [],
     };
 
     const mockUser: User = new User();
     mockUser.id = 1;
     mockUser.name = 'test-username1';
     mockUser.email = 'test-email1@iwantmymtg.com';
-    mockUser.inventory = null;
+    mockUser.inventory = [];
 
     const mockUserRepository: UserRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockUser),
@@ -48,6 +49,7 @@ describe('UserService', () => {
                     provide: UserRepositoryPort,
                     useValue: mockUserRepository,
                 },
+                InventoryMapper,
             ],
         }).compile();
 

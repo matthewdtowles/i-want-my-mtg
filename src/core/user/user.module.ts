@@ -1,13 +1,17 @@
 import { Logger, Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserServicePort } from './ports/user.service.port';
-import { UserRepositoryPort } from './ports/user.repository.port';
-import { UserRepository } from 'src/adapters/database/user.repository';
 import { DatabaseModule } from 'src/adapters/database/database.module';
+import { UserRepository } from 'src/adapters/database/user.repository';
+import { UserRepositoryPort } from './ports/user.repository.port';
+import { UserServicePort } from './ports/user.service.port';
 import { UserMapper } from './user.mapper';
+import { UserService } from './user.service';
+import { InventoryModule } from '../inventory/inventory.module';
 
 @Module({
-    imports: [DatabaseModule],
+    imports: [
+        DatabaseModule,
+        InventoryModule,
+    ],
     providers: [
         {
             provide: UserServicePort,
@@ -17,11 +21,11 @@ import { UserMapper } from './user.mapper';
             provide: UserRepositoryPort,
             useClass: UserRepository,
         },
-        UserMapper
+        UserMapper,
     ],
     exports: [
         UserRepositoryPort,
-        UserServicePort
+        UserServicePort,
     ]
 })
 export class UserModule {

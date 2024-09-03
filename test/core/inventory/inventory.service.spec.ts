@@ -4,6 +4,8 @@ import { Inventory } from '../../../src/core/inventory/inventory.entity';
 import { InventoryService } from '../../../src/core/inventory/inventory.service';
 import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
 import { TestUtils } from '../../test-utils';
+import { InventoryDto } from '../../../src/core/inventory/dto/inventory.dto';
+import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 
 describe('InventoryService', () => {
     let service: InventoryService;
@@ -27,6 +29,7 @@ describe('InventoryService', () => {
                     provide: InventoryRepositoryPort,
                     useValue: mockInventoryRepository,
                 },
+                InventoryMapper,
             ],
         }).compile();
 
@@ -38,15 +41,18 @@ describe('InventoryService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should save cards and return the saved cards', () => {
+    it('should save inventory items and return the saved inventory items', async () => {
+        // TODO:
+        const savedItems: InventoryDto[] = await service.save(mockInventoryDtos);
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedItems).toEqual(testUtils.getMockInventoryDtos());
+    });
+
+    it('should find inventory items for a user', async () => {
         // TODO:
     });
 
-    it('should find inventory items for a user', () => {
-        // TODO:
-    });
-
-    it('should delete given inventory items by calling repository.delete()', () => {
+    it('should delete given inventory items by calling repository.delete()', async () => {
         // TODO:
     });
 });

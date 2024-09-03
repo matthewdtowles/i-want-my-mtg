@@ -1,10 +1,15 @@
-import { Set } from '../src/core/set/set.entity';
-import { Card } from '../src/core/card/card.entity';
-import { CreateCardDto } from '../src/core/card/dto/create-card.dto';
-import { CardDto } from '../src/core/card/dto/card.dto';
+import { CreateInventoryDto } from 'src/core/inventory/dto/create-inventory.dto';
+import { InventoryDto } from 'src/core/inventory/dto/inventory.dto';
+import { Inventory } from 'src/core/inventory/inventory.entity';
 import { CreateSetDto } from 'src/core/set/dto/create-set.dto';
 import { SetDto } from 'src/core/set/dto/set.dto';
-import { blob } from 'stream/consumers';
+import { CreateUserDto } from 'src/core/user/dto/create-user.dto';
+import { UserDto } from 'src/core/user/dto/user.dto';
+import { User } from 'src/core/user/user.entity';
+import { Card } from '../src/core/card/card.entity';
+import { CardDto } from '../src/core/card/dto/card.dto';
+import { CreateCardDto } from '../src/core/card/dto/create-card.dto';
+import { Set } from '../src/core/set/set.entity';
 
 export class TestUtils {
     readonly MOCK_SET_CODE = 'SET';
@@ -14,9 +19,13 @@ export class TestUtils {
     readonly MOCK_ROOT_SCRYFALL_ID = 'abc123def456';
     readonly IMG_SRC_BASE = 'https://cards.scryfall.io/normal/front/';
     readonly MOCK_SET_RELEASE_DATE = '2022-01-01';
+    readonly MOCK_USER_ID = 1;
+    readonly MOCK_BASE_SIZE = 3;
+    readonly MOCK_USER_EMAIL = 'test-email@iwmmtg.com';
+    readonly MOCK_USER_NAME = 'test-user';
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
-        return Array.from({ length: 3 }, (_, i) => ({
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             imgSrc: `${this.IMG_SRC_BASE}${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
             manaCost: `{${i + 1}}{W}`,
@@ -49,13 +58,13 @@ export class TestUtils {
             id: i + 1,
             setCode: dto.code,
             cards: undefined,
-        }));    
+        }));
     }
 
     getMockSet(setCode: string): Set {
         const set: Set = new Set();
         set.code = setCode;
-        set.baseSize = 3;
+        set.baseSize = this.MOCK_BASE_SIZE;
         set.name = 'Test Set';
         set.releaseDate = '2022-01-01';
         set.type = 'expansion';
@@ -68,8 +77,8 @@ export class TestUtils {
             'ETS',
             'TES',
         ];
-        return Array.from({ length: 3}, (_, i) => ({
-            baseSize: 3,
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
+            baseSize: this.MOCK_BASE_SIZE,
             block: this.MOCK_SET_NAME,
             code: setCodes[i],
             imgSrc: null,
@@ -86,12 +95,74 @@ export class TestUtils {
         return this.getMockSets().map(set => this.mapSetEntityToDto(set));
     }
 
+    getMockCreateInventoryDtos(): CreateInventoryDto[] {
+        const inventoryDtos: CreateInventoryDto[] = [];
+        for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
+            const inventoryDto: CreateInventoryDto = {
+                userId: this.MOCK_USER_ID,
+                card: this.getMockCardDtos(this.MOCK_SET_CODE)[i],
+                quantity: this.MOCK_BASE_SIZE
+            };
+            inventoryDtos.push(inventoryDto);
+        }
+        return inventoryDtos;
+    }
+
+    getMockInventoryList(): Inventory[] {
+        return this.getMockCreateInventoryDtos().map((dto, i) => ({
+            id: i + 1,
+            userId: dto.userId, // TODO: map DTO to User entity
+            user: this.getMockUser(),
+            cardId: dto.card.id,
+            card: this.mapCardDtoToEntity(dto.card), // TODO: map DTO to Card Entity
+            quantity: dto.quantity
+        }));
+    }
+
+    getMockInventoryDtos(): InventoryDto[] {
+        const inventoryDtos: InventoryDto[] = [];
+        this.getMockInventoryList().forEach(item => {
+            inventoryDtos.push(this.mapInventoryEntityToDto(item));
+        })
+        return inventoryDtos;
+    }
+
+    getMockCreateUserDto(): CreateUserDto {
+        const user: CreateUserDto = {
+            email: this.MOCK_USER_EMAIL,
+            name: this.MOCK_USER_NAME
+        };
+        return user;
+    }
+
+    getMockUser(): User {
+        const userDto = this.getMockCreateUserDto();
+        const user: User = {
+            id: this.MOCK_USER_ID,
+            email: userDto.email,
+            name: userDto.name,
+            inventory: this.getMockInventoryList()
+        };
+        return user;
+    }
+
+    getMockUserDto(): UserDto {
+        const user: User = this.getMockUser();
+        const userDto: UserDto = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            inventory: this.mapInventoryEntityListToDtos(user.inventory)
+        };
+        return userDto;
+    }
+
     mapCardEntityToDto(card: Card): CardDto {
         return {
             id: card.id,
             imgSrc: card.imgSrc,
             isReserved: card.isReserved,
-            manaCost: this.convertManaCost(card.manaCost),
+            manaCost: this.manaCostToArray(card.manaCost),
             name: card.name,
             number: card.number,
             originalText: card.originalText,
@@ -125,7 +196,46 @@ export class TestUtils {
         return sets.map(set => this.mapSetEntityToDto(set));
     }
 
-    private convertManaCost(manaCost: string | undefined): string[] | undefined {
+    mapCardDtoToEntity(cardDto: CardDto): Card {
+        return {
+            id: cardDto.id,
+            imgSrc: cardDto.imgSrc,
+            isReserved: cardDto.isReserved,
+            manaCost: this.manaCostToString(cardDto.manaCost),
+            name: cardDto.name,
+            number: cardDto.number,
+            originalText: cardDto.originalText,
+            rarity: cardDto.rarity,
+            set: this.getMockSet(cardDto.setCode),
+            setCode: cardDto.setCode,
+            url: cardDto.url,
+            uuid: cardDto.uuid,
+        };
+    }
+
+    mapInventoryEntityToDto(inventory: Inventory): InventoryDto {
+        const dto: InventoryDto = {
+            id: inventory.id,
+            card: this.mapCardEntityToDto(inventory.card),
+            quantity: inventory.quantity,
+            userId: inventory.userId
+        };
+        return dto;
+    }
+
+    mapInventoryEntityListToDtos(inventoryList: Inventory[]): InventoryDto[] {
+        const dtos: InventoryDto[] = [];
+        inventoryList.forEach(item => {
+            dtos.push(this.mapInventoryEntityToDto(item));
+        });
+        return dtos;
+    }
+
+    private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, '').split('') : undefined;
+    }
+
+    private manaCostToString(manaCost: string[] | undefined): string | undefined {
+        return manaCost ? manaCost.map(token => `{${token}}`).join('') : undefined;
     }
 }

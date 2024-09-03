@@ -1,18 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CreateInventoryDto } from '../../../src/core/inventory/dto/create-inventory.dto';
+import { Inventory } from '../../../src/core/inventory/inventory.entity';
 import { InventoryService } from '../../../src/core/inventory/inventory.service';
 import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
-
-const mockInventoryRepository: InventoryRepositoryPort = {
-    // TODO: save returns InventoryDto[]
-    save: jest.fn(),
-    // TODO: findByUser returns InventoryDto[]
-    findByUser: jest.fn(),
-    delete: jest.fn(),
-};
+import { TestUtils } from '../../test-utils';
 
 describe('InventoryService', () => {
     let service: InventoryService;
     let repository: InventoryRepositoryPort;
+
+    const testUtils: TestUtils = new TestUtils();
+    const mockInventoryDtos: CreateInventoryDto[] = testUtils.getMockCreateInventoryDtos();
+    const mockInventoryList: Inventory[] = testUtils.getMockInventoryList();
+
+    const mockInventoryRepository: InventoryRepositoryPort = {
+        save: jest.fn().mockResolvedValue(mockInventoryList),
+        findByUser: jest.fn().mockResolvedValue(mockInventoryList),
+        delete: jest.fn(),
+    };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

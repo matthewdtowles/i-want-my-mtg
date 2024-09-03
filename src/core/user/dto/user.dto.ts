@@ -7,5 +7,5 @@ export class UserDto {
     readonly name: string;
 
     @Type(() => InventoryDto)
-    readonly inventory: InventoryDto;
+    readonly inventory: InventoryDto[];
 }

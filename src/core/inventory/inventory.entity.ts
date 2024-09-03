@@ -8,13 +8,28 @@ export class Inventory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, user => user.inventory)
-    user: User;
-
     @OneToOne(() => Card)
-    @JoinColumn()
+    @JoinColumn({
+        name: 'cardId',
+        referencedColumnName: 'id',
+        foreignKeyConstraintName: 'FK_Inventory_Card'
+    })
     card: Card;
+
+    @Column()
+    cardId: number;
 
     @Column({ default: 1 })
     quantity: number;
+
+    @ManyToOne(() => User, user => user.inventory)
+    @JoinColumn({
+        name: 'userId',
+        referencedColumnName: 'id',
+        foreignKeyConstraintName: 'FK_Inventory_User'
+    })
+    user: User;
+
+    @Column()
+    userId: number;
 }

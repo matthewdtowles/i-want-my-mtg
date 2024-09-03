@@ -1,7 +1,7 @@
-import { Logger, Module } from "@nestjs/common";
-import { DatabaseModule } from "./database/database.module";
-import { HttpModule } from "./http/http.module";
-import { MtgJsonIngestionModule } from "./mtgjson-ingestion/mtgjson-ingestion.module";
+import { Logger, Module } from '@nestjs/common';
+import { DatabaseModule } from './database/database.module';
+import { HttpModule } from './http/http.module';
+import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.module';
 
 @Module({
     imports: [

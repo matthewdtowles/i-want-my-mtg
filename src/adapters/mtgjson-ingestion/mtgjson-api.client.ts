@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
-import axios, { AxiosResponse } from "axios";
-import { SetDto } from "./dto/set.dto";
-import { SetList } from "./dto/setList.dto";
+import { Injectable, Logger } from '@nestjs/common';
+import axios, { AxiosResponse } from 'axios';
+import { SetDto } from './dto/set.dto';
+import { SetList } from './dto/setList.dto';
 
 @Injectable()
 export class MtgJsonApiClient {

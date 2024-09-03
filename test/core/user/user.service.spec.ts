@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 import { CreateUserDto } from '../../../src/core/user/dto/create-user.dto';
+import { UpdateUserDto } from '../../../src/core/user/dto/update-user.dto';
+import { UserDto } from '../../../src/core/user/dto/user.dto';
 import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository.port';
 import { User } from '../../../src/core/user/user.entity';
 import { UserMapper } from '../../../src/core/user/user.mapper';
 import { UserService } from '../../../src/core/user/user.service';
-import { UpdateUserDto } from '../../../src/core/user/dto/update-user.dto';
-import { UserDto } from '../../../src/core/user/dto/user.dto';
 
 describe('UserService', () => {
     let service: UserService;
@@ -23,14 +24,14 @@ describe('UserService', () => {
     const userDto: UserDto = {
         ...createUser,
         id: 1,
-        collection: null,
+        inventory: [],
     };
 
     const mockUser: User = new User();
     mockUser.id = 1;
     mockUser.name = 'test-username1';
     mockUser.email = 'test-email1@iwantmymtg.com';
-    mockUser.collection = null;
+    mockUser.inventory = [];
 
     const mockUserRepository: UserRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockUser),
@@ -48,6 +49,7 @@ describe('UserService', () => {
                     provide: UserRepositoryPort,
                     useValue: mockUserRepository,
                 },
+                InventoryMapper,
             ],
         }).compile();
 
@@ -60,7 +62,7 @@ describe('UserService', () => {
     });
 
     it('create should successfully insert a user', () => {
-        expect(service.createUser(createUser)).resolves.toEqual(mockUser);
+        expect(service.create(createUser)).resolves.toEqual(mockUser);
     });
 
     it('findById should get a single user with given id', () => {
@@ -76,9 +78,8 @@ describe('UserService', () => {
     });
 
     it('remove should delete given user, check if user exists and return false', async () => {
-        const removeSpy = jest.spyOn(repository, 'delete');
-        const retVal = await service.remove(mockUser);
-        expect(removeSpy).toHaveBeenCalled();
-        expect(retVal).toBe(undefined);
+        const deleteSpy = jest.spyOn(repository, 'delete');
+        expect(await service.remove(mockUser)).toBe(undefined);
+        expect(deleteSpy).toHaveBeenCalled();
     });
 });

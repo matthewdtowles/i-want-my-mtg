@@ -85,19 +85,4 @@ export class MtgJsonIngestionMapper {
         return 'sets/' + code.toLowerCase();
     }
 
-    private getTotalOwned(card: CardSet) {
-        // TODO: impl
-        return 0;
-    }
-
-    private getNotes(card: CardSet): string[] {
-        // TODO: impl
-        return [];
-    }
-
-    private getPrice(card: CardSet): number {
-        // TODO: impl
-        return 0.00;
-    }
-
 }

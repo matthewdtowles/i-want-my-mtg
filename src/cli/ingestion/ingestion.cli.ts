@@ -64,6 +64,6 @@ export class IngestionCli {
         describe: 'the input arg',
         type: 'string'
     }) input: string): void {
-        this.LOGGER.log(`ingestTest invoked with input: ${input}`);
+        this.LOGGER.debug(`ingestTest invoked with input: ${input}`);
     }
 }

@@ -25,6 +25,8 @@
     "ingest:all-cards": "npx ts-node src/cli.ts ingest:all-cards",
     "ingest:test": "npx ts-node src/cli.ts ingest:test",
     "get-card": "npx ts-node src/cli.ts get-card",
+    "cards-in-set": "npx ts-node src/cli.ts cards-in-set",
+    "cards-by-name": "npx ts-node src/cli.ts cards-by-name",
     "card-test": "npx ts-node src/cli.ts card-test"
   },
   "dependencies": {

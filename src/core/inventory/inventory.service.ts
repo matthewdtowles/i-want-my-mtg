@@ -27,9 +27,7 @@ export class InventoryService implements InventoryServicePort {
     }
 
     async remove(inventoryItems: InventoryDto[]): Promise<void> {
-        inventoryItems.forEach(async item => {
-            const entity: Inventory = this.mapper.toEntity(item);
-            await this.repository.delete(entity);
-        });
+        await Promise.all(inventoryItems.map(item =>
+            this.repository.delete(item.userId, item.cardId)));
     }
 }

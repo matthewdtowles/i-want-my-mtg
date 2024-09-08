@@ -29,14 +29,6 @@ export class IngestionOrchestrator {
         return savedSets;
     }
 
-    async ingestSetByCode(code: string): Promise<SetDto> {
-        this.LOGGER.debug(`ingestSetByCode: ${code}`);
-        const set: CreateSetDto = await this.ingestionService.fetchSetByCode(code);
-        const savedSet: SetDto[] = await this.setService.save([set]);
-        this.LOGGER.log(`Saved set with code ${code}`);
-        return savedSet && savedSet.length === 1 ? savedSet[0] : undefined;
-    }
-
     async ingestAllSetCards(): Promise<SetDto[]> {
         this.LOGGER.debug(`ingestAllSetCards`);
         const sets: SetDto[] = await this.setService.findAll();

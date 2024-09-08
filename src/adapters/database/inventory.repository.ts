@@ -18,13 +18,28 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async findByUser(_userId: number): Promise<Inventory[]> {
         return await this.inventoryRepository.find({
             where: {
-                userId: _userId
+                userId: _userId,
             },
-            relations: ['cards']
+            relations: ['card'],
         });
     }
 
-    async delete(inventory: Inventory): Promise<void> {
-        await this.inventoryRepository.delete(inventory);
+    async delete(userId: number, cardId: number): Promise<void> {
+        const connection = this.inventoryRepository.manager.connection;
+
+        if (!connection.isInitialized) {
+            await connection.initialize(); // Reconnect if the connection is closed
+        }
+
+        try {
+            await this.inventoryRepository.createQueryBuilder()
+                .delete()
+                .from(Inventory)
+                .where('userId = :userId', { userId })
+                .andWhere('cardId = :cardId', { cardId })
+                .execute();
+        } catch (error) {
+            throw new Error(`Failed to delete inventory: ${error.message}`);
+        }
     }
 }

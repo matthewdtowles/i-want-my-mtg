@@ -7,6 +7,10 @@ import * as request from 'supertest';
 import { SetController } from '../../src/adapters/http/set.controller';
 import { SetDto } from '../../src/core/set/dto/set.dto';
 import { SetServicePort } from '../../src/core/set/ports/set.service.port';
+import { CardServicePort } from '../../src/core/card/ports/card.service.port';
+import { CardDto } from '../../src/core/card/dto/card.dto';
+import { CreateCardDto } from '../../src/core/card/dto/create-card.dto';
+import { UpdateCardDto } from '../../src/core/card/dto/update-card.dto';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',
@@ -53,6 +57,15 @@ describe('SetController', () => {
         save: jest.fn(),
     };
 
+    const mockCardService: CardServicePort = {
+        save: jest.fn(),
+        findAllInSet: jest.fn(),
+        findAllWithName: jest.fn(),
+        findById: jest.fn(),
+        findBySetCodeAndNumber: jest.fn(),
+        findByUuid: jest.fn(),
+    };
+
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [SetController],
@@ -61,6 +74,10 @@ describe('SetController', () => {
                     provide: SetServicePort,
                     useValue: mockSetService,
                 },
+                {
+                    provide: CardServicePort,
+                    useValue: mockCardService,
+                }
             ],
         }).compile();
 

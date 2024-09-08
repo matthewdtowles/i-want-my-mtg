@@ -25,7 +25,8 @@ export interface InventoryRepositoryPort {
      * Delete inventory entity
      * Use when quantity is < 1
      * 
-     * @param inventory
+     * @param userId user ID
+     * @param cardId card ID
      */
-    delete(inventory: Inventory): Promise<void>;
+    delete(userId: number, cardId: number): Promise<void> 
 }

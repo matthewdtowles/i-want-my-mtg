@@ -23,7 +23,18 @@
     "ingest:cards": "npx ts-node src/cli.ts ingest:cards",
     "ingest:set": "npx ts-node src/cli.ts ingest:set",
     "ingest:all-cards": "npx ts-node src/cli.ts ingest:all-cards",
-    "ingest:test": "npx ts-node src/cli.ts ingest:test"
+    "ingest:test": "npx ts-node src/cli.ts ingest:test",
+    "card:get": "npx ts-node src/cli.ts card:get",
+    "cards:set-get": "npx ts-node src/cli.ts cards:set-get",
+    "cards:name-get": "npx ts-node src/cli.ts cards:name-get",
+    "card:test": "npx ts-node src/cli.ts card:test",
+    "sets:get": "npx ts-node src/cli.ts sets:get",
+    "set:get": "npx ts-node src/cli.ts set:get",
+    "user:create": "npx ts-node src/cli.ts user:create",
+    "user:get": "npx ts-node src/cli.ts user:get",
+    "inventory:save": "npx ts-node src/cli.ts inventory:save",
+    "inventory:remove": "npx ts-node src/cli.ts inventory:remove",
+    "inventory:get":  "npx ts-node src/cli.ts inventory:get"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

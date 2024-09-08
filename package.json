@@ -29,7 +29,12 @@
     "cards-by-name": "npx ts-node src/cli.ts cards-by-name",
     "card-test": "npx ts-node src/cli.ts card-test",
     "list-sets": "npx ts-node src/cli.ts list-sets",
-    "set-by-code": "npx ts-node src/cli.ts set-by-code"
+    "set-by-code": "npx ts-node src/cli.ts set-by-code",
+    "user:create": "npx ts-node src/cli.ts user:create",
+    "user:get": "npx ts-node src/cli.ts user:get",
+    "inventory:save": "npx ts-node src/cli.ts inventory:save",
+    "inventory:remove": "npx ts-node src/cli.ts inventory:remove",
+    "inventory:get":  "npx ts-node src/cli.ts inventory:get"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

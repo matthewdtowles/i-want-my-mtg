@@ -27,7 +27,8 @@ export class CardCli {
             name: 'setNumber',
             describe: 'the set number of the card',
             type: 'number'
-        }) setNumber: number): Promise<void> {
+        }) setNumber: number
+    ): Promise<void> {
         const card: CardDto = await this.service.findBySetCodeAndNumber(code, setNumber);
         this.LOGGER.log(this.formatOutput(card));
     }

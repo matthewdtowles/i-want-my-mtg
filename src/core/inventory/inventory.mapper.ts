@@ -24,12 +24,9 @@ export class InventoryMapper {
     }
 
     toEntity(dto: CreateInventoryDto | UpdateInventoryDto): Inventory | undefined {
-        if (!dto) {
-            return undefined;
-        }
         const inventoryEntity = new Inventory();
-        inventoryEntity.quantity = dto.quantity;
-        inventoryEntity.card = this.cardMapper.readDtoToEntity(dto.card);
+        inventoryEntity.quantity = dto.quantity ? dto.quantity : 1;
+        inventoryEntity.cardId = dto.cardId,
         inventoryEntity.user = new User();
         inventoryEntity.user.id = dto.userId;
         return inventoryEntity;
@@ -51,9 +48,9 @@ export class InventoryMapper {
         }
         const inventory: InventoryDto = {
             id: inventoryEntity.id,
-            card: this.cardMapper.entityToDto(inventoryEntity.card),
+            cardId: inventoryEntity.cardId,
             quantity: inventoryEntity.quantity,
-            userId: inventoryEntity.userId
+            userId: inventoryEntity.userId,
         };
         return inventory
     }

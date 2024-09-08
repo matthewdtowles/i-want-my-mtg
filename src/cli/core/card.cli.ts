@@ -14,7 +14,7 @@ export class CardCli {
 
 
     @Command({
-        command: 'get-card <code> <setNumber>',
+        command: 'card:get <code> <setNumber>',
         describe: 'Retrieve card with set number from set with given code'
     })
     async getCardByNameAndSet(
@@ -35,7 +35,7 @@ export class CardCli {
 
 
     @Command({
-        command: 'cards-in-set <code>',
+        command: 'cards:set-get <code>',
         describe: 'Retrieve all cards in set with given code'
     })
     async getSetCards(@Positional({
@@ -49,7 +49,7 @@ export class CardCli {
 
 
     @Command({
-        command: 'cards-by-name <name>',
+        command: 'cards:name-get <name>',
         describe: 'Retrieve all cards with given name'
     })
     async getCardsWithName(@Positional({
@@ -63,7 +63,7 @@ export class CardCli {
 
 
     @Command({
-        command: 'card-test',
+        command: 'card:test',
         describe: 'Test Card CLI',
     })
     async cardCliTest(): Promise<void> {

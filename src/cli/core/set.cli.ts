@@ -14,7 +14,7 @@ export class SetCli {
 
 
     @Command({
-        command: 'list-sets',
+        command: 'sets:get',
         describe: 'Retrieve list of all sets without cards'
     })
     async listSets(): Promise<void> {
@@ -24,7 +24,7 @@ export class SetCli {
 
 
     @Command({
-        command: 'set-by-code <code>',
+        command: 'set:get <code>',
         describe: 'Retrieve list of all sets without cards'
     })
     async getSetByCode(@Positional({

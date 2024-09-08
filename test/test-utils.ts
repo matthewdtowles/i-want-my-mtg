@@ -100,7 +100,7 @@ export class TestUtils {
         for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
             const inventoryDto: CreateInventoryDto = {
                 userId: this.MOCK_USER_ID,
-                cardId: this.getMockCardDtos(this.MOCK_SET_CODE)[i],
+                cardId: this.getMockCardDtos(this.MOCK_SET_CODE)[i].id,
                 quantity: this.MOCK_BASE_SIZE
             };
             inventoryDtos.push(inventoryDto);
@@ -217,7 +217,7 @@ export class TestUtils {
     mapInventoryEntityToDto(inventory: Inventory): InventoryDto {
         const dto: InventoryDto = {
             id: inventory.id,
-            cardId: this.mapCardEntityToDto(inventory.card),
+            cardId: inventory.cardId,
             quantity: inventory.quantity,
             userId: inventory.userId
         };

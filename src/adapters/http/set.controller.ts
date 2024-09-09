@@ -25,18 +25,6 @@ export class SetController {
     @Render('set')
     async findBySetCode(@Param('setCode') setCode: string): Promise<SetDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
-        setCode = setCode.toUpperCase();
         return await this.setService.findByCode(setCode);
-    }
-
-    @Get(':setCode/:setNumber')
-    @Render('set')
-    async findSetCard(
-        @Param('setCode') setCode: string,
-        @Param('setNumber') setNumber: number
-    ): Promise<CardDto> {
-        this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
-        setCode = setCode.toUpperCase();
-        return await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
     }
 }

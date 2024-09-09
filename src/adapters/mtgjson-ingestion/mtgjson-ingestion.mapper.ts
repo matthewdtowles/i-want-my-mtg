@@ -16,15 +16,15 @@ export class MtgJsonIngestionMapper {
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
         console.log(setMeta);
         const set: CreateSetDto = {
-            code: setMeta.code,
+            code: setMeta.code.toLowerCase(),
             baseSize: setMeta.baseSetSize,
             block: setMeta.block,
             keyruneCode: setMeta.keyruneCode.toLowerCase(),
             name: setMeta.name,
-            parentCode: setMeta.parentCode,
+            parentCode: setMeta.parentCode ? setMeta.parentCode.toLowerCase() : undefined,
             releaseDate: setMeta.releaseDate,
             type: setMeta.type,
-            url: this.buildSetUrl(setMeta.code),
+            url: this.buildSetUrl(setMeta.code.toLowerCase()),
         }
         return set;
     }
@@ -54,7 +54,7 @@ export class MtgJsonIngestionMapper {
             number: setCard.number,
             originalText: setCard.originalText,
             rarity: setCard.rarity,
-            setCode: setCard.setCode,
+            setCode: setCard.setCode.toLowerCase(),
             url: this.buildCardUrl(setCard),
             uuid: setCard.uuid,
         }

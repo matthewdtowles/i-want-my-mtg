@@ -1,11 +1,11 @@
 <div id="card-image">
-    <img src="{{this.image}}" alt="{{this.name}} - ({{this.set.code}})"/>
+    <img src="{{this.imgSrc}}" alt="{{this.name}} - ({{this.setCode}})"/>
 </div>
 
 <div id="card-identity">
     <div id="card-name">{{this.name}}</div>
     <div id="card-set">
-        <i class="ss ss-{{this.keyruneCode}} ss-2x"></i>
+        <i class="ss ss-{{this.setCode}} ss-2x"></i>
         <span id="set-name">{{this.set.name}}</span>
         <span id="set-code"> ({{this.set.code}})</span>
     </div>
@@ -16,11 +16,10 @@
         <span>{{this.name}}</span>
         <span>{{>manaCost}}</span>
     </h4>
-    <h5>Oracle Text</h5>
+    <h5>Original Text</h5>
     <p class="card-type">{{this.type}}</p>
-    <p class="card-oracle-test">{{this.oracleText}}</p>
+    <p class="card-original-text">{{this.originalText}}</p>
     <p class="card-rarity">{{this.rarity}}</p>
-    <p class="card-artist">{{this.artist}}</p>
     <p class="card-number">{{this.number}}</p>
     <table class="card-legalities">
         <tbody>
@@ -50,7 +49,7 @@
             <tbody>
             {{#each this.otherPrintings}}
                 <tr>
-                    <td class="set-icon"><i class="ss ss-{{this.keyruneCode}}"></i></td>
+                    <td class="set-icon"><i class="ss ss-{{this.setCode}}"></i></td>
                     <td class="other-printing-url"><a href="{{this.url}}">{{this.set.name}}</a></td>
                     <td class="other-differentiators">
                     {{#each this.differentiators}}

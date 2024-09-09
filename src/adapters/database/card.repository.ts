@@ -14,6 +14,7 @@ export class CardRepository implements CardRepositoryPort {
 
 
     async save(cards: Card[]): Promise<Card[]> {
+        cards.forEach(c => c.setCode = c.setCode.toLowerCase());
         return await this.cardRepository.save(cards) ?? [];
     }
 

@@ -37,7 +37,7 @@ export class MtgJsonApiClient {
       */
     async fetchSet(setCode: string): Promise<SetDto> {
         this.LOGGER.debug(`fetchSet with code ${setCode}`);
-        const url: string = this.CARD_PROVIDER_URL + setCode.toUpperCase() + this.CARD_PROVIDER_FILE_EXT;
+        const url: string = this.CARD_PROVIDER_URL + this.CARD_PROVIDER_FILE_EXT;
         this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let set: SetDto = new SetDto();

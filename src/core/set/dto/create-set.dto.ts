@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsLowercase, IsOptional, IsPositive, IsString } from 'class-validator';
 import { SetType } from './set-type.enum';
 
 export class CreateSetDto {
@@ -11,9 +11,11 @@ export class CreateSetDto {
     @IsString()
     readonly block?: string;
 
+    @IsLowercase()
     @IsString()
     readonly code: string;
 
+    @IsLowercase()
     @IsString()
     readonly keyruneCode: string;
     
@@ -21,6 +23,7 @@ export class CreateSetDto {
     readonly name: string;
 
     @IsOptional()
+    @IsLowercase()
     @IsString()
     readonly parentCode?: string;
 

@@ -14,18 +14,6 @@ export class InventoryCli {
     ) { }
 
 
-/*  @Option({
-      name: 'name',
-      describe: 'The name of the user',
-      type: 'string',
-      demandOption: true, // this makes it a required flag
-    }) name: string,  ...
-    
-    // USAGE:
-
-    npm run create:user --name "John Doe"
-    */
-
     @Command({
         command: 'inventory:save <user> <card> <quantity>',
         describe: 'save inventory item with given quantity for given user ID & card ID'
@@ -69,5 +57,4 @@ export class InventoryCli {
         await this.service.remove([inventoryItem]);
         this.LOGGER.log(`remove completed`);
     }
-    
 }

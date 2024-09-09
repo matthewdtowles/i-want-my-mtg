@@ -15,6 +15,7 @@ export class SetRepository implements SetRepositoryPort {
 
     async save(sets: Set[]): Promise<Set[]> {
         this.LOGGER.debug(`saving ${sets.length} total sets`);
+        sets.forEach(s => s.code = s.code.toLowerCase());
         return await this.setRepository.save(sets);
     }
 

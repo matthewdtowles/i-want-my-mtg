@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsLowercase, IsOptional, IsString } from 'class-validator';
 import { CardRarity } from '../card-rarity.enum';
 
 export class CreateCardDto {
@@ -30,6 +30,7 @@ export class CreateCardDto {
     @IsEnum(CardRarity)
     readonly rarity: string;
 
+    @IsLowercase()
     @IsString()
     readonly setCode: string;
 

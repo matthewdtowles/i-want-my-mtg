@@ -39,7 +39,7 @@ export class SetMapper {
             baseSize: set.baseSize,
             block: set.block,
             cards: this.cardMapper.entitiesToDtos(set.cards),
-            code: set.code.toUpperCase(),
+            code: set.code,
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,
             parentCode: set.parentCode,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
@@ -7,14 +7,21 @@ import { Card } from 'src/core/card/card.entity';
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
     
+    private readonly LOGGER: Logger = new Logger(CardRepository.name);
+
     constructor(
-        @InjectRepository(Card)
-        private readonly cardRepository: Repository<Card>,
-    ) {}
+        @InjectRepository(Card) private readonly cardRepository: Repository<Card>,
+    ) { }
 
 
     async save(cards: Card[]): Promise<Card[]> {
-        cards.forEach(c => c.setCode = c.setCode.toLowerCase());
+        this.LOGGER.debug(`Save ${cards.length} total cards`);
+        const saveCards: Card[] = [];
+        await Promise.all(cards.map(async (c) => {
+            const existingCard: Card = await this.findByUuid(c.uuid);
+            const updatedCard = this.cardRepository.merge(existingCard, c);
+            saveCards.push(updatedCard)
+        }))
         return await this.cardRepository.save(cards) ?? [];
     }
 

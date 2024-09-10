@@ -15,8 +15,13 @@ export class SetRepository implements SetRepositoryPort {
 
     async save(sets: Set[]): Promise<Set[]> {
         this.LOGGER.debug(`saving ${sets.length} total sets`);
-        sets.forEach(s => s.code = s.code.toLowerCase());
-        return await this.setRepository.save(sets);
+        const saveSets: Set[] = [];
+        await Promise.all(sets.map(async (s) => {
+            const existingSet: Set = await this.findByCode(s.code);
+            const updatedSet = this.setRepository.merge(existingSet, s);
+            saveSets.push(await this.setRepository.save(updatedSet));
+        }));
+        return await this.setRepository.save(saveSets);
     }
 
     async findByCode(code: string): Promise<Set | null> {

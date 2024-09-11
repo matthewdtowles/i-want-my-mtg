@@ -8,11 +8,18 @@ export const UserRepositoryPort = 'UserRepositoryPort';
 export interface UserRepositoryPort {
 
     /**
-     * Create user entity, update if entity exists
-     * Authenticate with hashedPassword
+     * Create user entity if it does not exist
      * 
      * @param user
-     * @param hashedPassword
+     * @returns created user, null otherwise
+     */
+    create(user: User): Promise<User | null>;
+
+    /**
+     * Create user entity, update if entity exists
+     * 
+     * @deprecated
+     * @param user
      * @returns created|updated user if authenticated
      */
     save(user: User): Promise<User | null>;
@@ -28,6 +35,14 @@ export interface UserRepositoryPort {
      * @returns user entity with id, null if not found
      */
     findById(id: number): Promise<User | null>;
+
+    /**
+     * Update user entity if it exists
+     * 
+     * @param user
+     * @returns updated user
+     */
+    update(user: User): Promise<User>;
 
     /**
      * Remove user entity

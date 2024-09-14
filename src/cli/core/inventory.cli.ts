@@ -34,6 +34,31 @@ export class InventoryCli {
     }
 
     @Command({
+        command: 'inventory:get <user>',
+        describe: 'retrieve user inventory'
+    })
+    async getUserInventory(@Positional({name: 'user'}) _user: number): Promise<void> {
+        const inventory: InventoryDto[] = await this.service.findByUser(_user);
+        this.LOGGER.log(`${JSON.stringify(inventory, null, 4)}`);
+    }
+
+    @Command({
+        command: 'inventory:remove <user> <card>',
+        describe: 'remove inventory item'
+    })
+    async remove(
+        @Positional({name: 'user'}) _user: number,
+        @Positional({name: 'card'}) _card: number
+    ): Promise<void> {
+        const inventoryItem: UpdateInventoryDto = {
+            userId: _user,
+            cardId: _card,
+        };
+        await this.service.remove([inventoryItem]);
+        this.LOGGER.log(`remove completed`);
+    }
+
+    @Command({
         command: 'test:inventory:save <user> <card> <quantity> <times>',
         describe: 'test save inventory item with given quantity for given user ID & card ID the amount of times specified'
     })
@@ -70,31 +95,5 @@ export class InventoryCli {
         const remainingInventory: InventoryDto[] = await this.service.findByUser(_user);
         this.LOGGER.log(`Remaining is: (should be empty after this)${remainingInventory}`);
         return true;
-    }
-
-
-    @Command({
-        command: 'inventory:get <user>',
-        describe: 'retrieve user inventory'
-    })
-    async getUserInventory(@Positional({name: 'user'}) _user: number): Promise<void> {
-        const inventory: InventoryDto[] = await this.service.findByUser(_user);
-        this.LOGGER.log(`${JSON.stringify(inventory, null, 4)}`);
-    }
-
-    @Command({
-        command: 'inventory:remove <user> <card>',
-        describe: 'remove inventory item'
-    })
-    async remove(
-        @Positional({name: 'user'}) _user: number,
-        @Positional({name: 'card'}) _card: number
-    ): Promise<void> {
-        const inventoryItem: UpdateInventoryDto = {
-            userId: _user,
-            cardId: _card,
-        };
-        await this.service.remove([inventoryItem]);
-        this.LOGGER.log(`remove completed`);
     }
 }

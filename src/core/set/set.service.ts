@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IngestionServicePort } from '../ingestion/ingestion.service.port';
 import { CreateSetDto } from './dto/create-set.dto';
 import { SetDto } from './dto/set.dto';
@@ -10,6 +10,8 @@ import { SetMapper } from './set.mapper';
 
 @Injectable()
 export class SetService implements SetServicePort {
+
+    private readonly LOGGER: Logger = new Logger(SetService.name);
 
     /**
      * @param repository 
@@ -29,7 +31,9 @@ export class SetService implements SetServicePort {
     }
 
     async findAll(): Promise<SetDto[]> {
+        this.LOGGER.debug(`Calling findAll()`);
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
+        this.LOGGER.debug(`setEntities found: ${setEntities ? setEntities.length : 'not an array'}`);
         return this.mapper.entitiesToDtos(setEntities);
     }
 

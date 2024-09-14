@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Set } from 'src/core/set/set.entity';
 import { CardMapper } from '../card/card.mapper';
 import { CreateSetDto } from './dto/create-set.dto';
@@ -7,6 +7,8 @@ import { UpdateSetDto } from './dto/update-set.dto';
 
 @Injectable()
 export class SetMapper {
+
+    private readonly LOGGER: Logger = new Logger(SetMapper.name);
 
     constructor(
         @Inject(CardMapper) private readonly cardMapper: CardMapper,

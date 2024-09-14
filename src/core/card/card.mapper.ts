@@ -64,7 +64,7 @@ export class CardMapper {
             number: card.number,
             originalText: card.originalText,
             rarity: card.rarity,
-            setCode: card && card.set ? card.set.code: null,
+            setCode: card && card.set ? card.set.code : null,
             url: card.url,
             uuid: card.uuid,
         };
@@ -81,6 +81,6 @@ export class CardMapper {
     }
 
     private mapManaToRepo(manaCost: string[]): string {
-        return manaCost ? manaCost.map(token => `{${token}}`).join('') : undefined;
+        return manaCost ? manaCost.map(token => `{${token}}`).join('') : null;
     }
 }

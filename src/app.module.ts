@@ -23,6 +23,11 @@ import { CommandModule } from 'nestjs-command';
                 synchronize: configService.get('NODE_ENV') !== 'production',
                 dropSchema: false,
                 logging: configService.get('NODE_ENV') !== 'production' ? 'all' : ['error'],
+                extra: {
+                    connectionLimit: 10,
+                    queueLimit: 0,
+                    waitForConnections: true,
+                },
             }
         ),
             dataSourceFactory: async (options) => {

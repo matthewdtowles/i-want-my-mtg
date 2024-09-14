@@ -50,17 +50,25 @@ export class InventoryCli {
                 quantity: _quantity + i
             };
             const savedInventory: InventoryDto[] = await this.service.save([updateDto]);
+            this.LOGGER.debug(`Inventory service save returned ${savedInventory}`);
         }
         const userInventory: InventoryDto[] = await this.service.findByUser(_user);
-        if (userInventory) {
+        if (!userInventory) {
             this.LOGGER.error(`Undefined. Inventory service unable to create entity.`);
         } else if (userInventory.length === 1) {
-            this.LOGGER.log(`Inventory Service can create and update entity correctly.`);
+            if (userInventory[0].quantity === (_quantity + _times - 1)) {
+                this.LOGGER.log(`Inventory Service can create and update entity correctly.`);
+            } else {
+                this.LOGGER.error(`Inventory Service can create. The quantity: ${userInventory[0].quantity}`)
+            }
         } else if (userInventory && userInventory.length > 1) {
             this.LOGGER.error(`Inventory Service inserts a new inventory object when it should update.`)
         } else {
             this.LOGGER.error(`Empty inventory. Inventory Service unable to create entity.`)
         }
+        await this.service.remove(userInventory); // cleanup
+        const remainingInventory: InventoryDto[] = await this.service.findByUser(_user);
+        this.LOGGER.log(`Remaining is: (should be empty after this)${remainingInventory}`);
         return true;
     }
 

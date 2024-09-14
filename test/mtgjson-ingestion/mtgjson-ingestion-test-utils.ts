@@ -7,7 +7,7 @@ import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
 
 export class MtgJsonIngestionTestUtils {
 
-    readonly MOCK_SET_CODE: string = 'SET';
+    readonly MOCK_SET_CODE: string = 'set';
     private readonly MOCK_BASE_SET_SIZE: number = 3;
     private readonly MOCK_SET_NAME: string = 'Setname';
     private readonly MOCK_RELEASE_DATE: string = '1970-01-01';

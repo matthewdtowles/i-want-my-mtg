@@ -34,7 +34,8 @@
     "user:get": "npx ts-node src/cli.ts user:get",
     "inventory:save": "npx ts-node src/cli.ts inventory:save",
     "inventory:remove": "npx ts-node src/cli.ts inventory:remove",
-    "inventory:get":  "npx ts-node src/cli.ts inventory:get"
+    "inventory:get":  "npx ts-node src/cli.ts inventory:get",
+    "test:inventory:save": "npx ts-node src/cli.ts test:inventory:save"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

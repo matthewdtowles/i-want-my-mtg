@@ -18,7 +18,7 @@ export class UserService implements UserServicePort {
 
     async create(userDto: CreateUserDto): Promise<UserDto> {
         const user: User = this.mapper.writeDtoToEntity(userDto);
-        const savedUser: User = await this.repository.save(user) ?? new User();
+        const savedUser: User = await this.repository.create(user) ?? new User();
         return this.mapper.entityToDto(savedUser);
     }
 
@@ -34,7 +34,7 @@ export class UserService implements UserServicePort {
 
     async update(userDto: UpdateUserDto): Promise<UserDto> {
         const user: User = this.mapper.writeDtoToEntity(userDto);
-        const savedUser: User = await this.repository.save(user) ?? new User();
+        const savedUser: User = await this.repository.update(user) ?? new User();
         return this.mapper.entityToDto(savedUser);
     }
 

@@ -216,7 +216,6 @@ export class TestUtils {
 
     mapInventoryEntityToDto(inventory: Inventory): InventoryDto {
         const dto: InventoryDto = {
-            id: inventory.id,
             cardId: inventory.cardId,
             quantity: inventory.quantity,
             userId: inventory.userId

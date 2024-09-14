@@ -34,6 +34,38 @@ export class InventoryCli {
     }
 
     @Command({
+        command: 'test:inventory:save <user> <card> <quantity> <times>',
+        describe: 'test save inventory item with given quantity for given user ID & card ID the amount of times specified'
+    })
+    async testSave(
+        @Positional({name: 'user' }) _user: number,
+        @Positional({name: 'card' }) _card: number,
+        @Positional({name: 'quantity'}) _quantity: number,
+        @Positional({name: 'times'}) _times: number
+    ): Promise<boolean> {
+        for (let i = 0; i < _times; i++) {
+            const updateDto: UpdateInventoryDto = {
+                userId: _user,
+                cardId: _card,
+                quantity: _quantity + i
+            };
+            const savedInventory: InventoryDto[] = await this.service.save([updateDto]);
+        }
+        const userInventory: InventoryDto[] = await this.service.findByUser(_user);
+        if (userInventory) {
+            this.LOGGER.error(`Undefined. Inventory service unable to create entity.`);
+        } else if (userInventory.length === 1) {
+            this.LOGGER.log(`Inventory Service can create and update entity correctly.`);
+        } else if (userInventory && userInventory.length > 1) {
+            this.LOGGER.error(`Inventory Service inserts a new inventory object when it should update.`)
+        } else {
+            this.LOGGER.error(`Empty inventory. Inventory Service unable to create entity.`)
+        }
+        return true;
+    }
+
+
+    @Command({
         command: 'inventory:get <user>',
         describe: 'retrieve user inventory'
     })

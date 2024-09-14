@@ -9,9 +9,8 @@ import { User } from '../../core/user/user.entity';
 export class UserRepository implements UserRepositoryPort {
     
     constructor(
-        @InjectRepository(User)
-        private readonly userRepository: Repository<User>,
-    ) {}
+        @InjectRepository(User) private readonly userRepository: Repository<User>,
+    ) { }
 
     async create(user: User): Promise<User | null> {
         const userResult: InsertResult = await this.userRepository.insert(user);
@@ -25,10 +24,6 @@ export class UserRepository implements UserRepositoryPort {
             inventory: userResult.generatedMaps[0].inventory,
         };
         return savedUser;
-    }
-
-    async save(user: User): Promise<User | null> {
-        return await this.userRepository.save(user);
     }
 
     async findByEmail(_email: string): Promise<User | null> {

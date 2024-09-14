@@ -35,10 +35,11 @@ describe('UserService', () => {
     mockUser.inventory = [];
 
     const mockUserRepository: UserRepositoryPort = {
-        save: jest.fn().mockResolvedValue(mockUser),
+        create: jest.fn().mockResolvedValue(mockUser),
         findByEmail: jest.fn().mockResolvedValue(mockUser),
         findById: jest.fn().mockResolvedValue(mockUser),
-        delete: jest.fn(),
+        update:  jest.fn().mockResolvedValue(mockUser), 
+        delete: jest.fn()
     };
 
     beforeEach(async () => {

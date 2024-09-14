@@ -47,7 +47,6 @@ export class InventoryMapper {
             return undefined;
         }
         const inventory: InventoryDto = {
-            id: inventoryEntity.id,
             cardId: inventoryEntity.cardId,
             quantity: inventoryEntity.quantity,
             userId: inventoryEntity.userId,

@@ -16,15 +16,6 @@ export interface UserRepositoryPort {
     create(user: User): Promise<User | null>;
 
     /**
-     * Create user entity, update if entity exists
-     * 
-     * @deprecated
-     * @param user
-     * @returns created|updated user if authenticated
-     */
-    save(user: User): Promise<User | null>;
-
-    /**
      * @param email
      * @returns user entity with email, null if not found
      */

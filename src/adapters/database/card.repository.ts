@@ -19,7 +19,7 @@ export class CardRepository implements CardRepositoryPort {
         const saveCards: Card[] = [];
         await Promise.all(cards.map(async (c) => {
             const existingCard: Card = await this.findByUuid(c.uuid);
-            const updatedCard = this.cardRepository.merge(existingCard, c);
+            const updatedCard = this.cardRepository.merge(c, existingCard);
             saveCards.push(updatedCard)
         }))
         return await this.cardRepository.save(cards) ?? [];

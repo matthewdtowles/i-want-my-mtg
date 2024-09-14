@@ -1,5 +1,5 @@
 import { User } from 'src/core/user/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Card } from '../card/card.entity';
 
 @Entity()

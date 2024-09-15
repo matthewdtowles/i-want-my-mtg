@@ -13,7 +13,7 @@ const mockUser: UserDto = {
     id: 1,
     name: 'test-username1',
     email: 'test-email1@iwantmymtg.com',
-    inventory: null,
+    inventory: [],
 };
 
 describe('UsersController', () => {

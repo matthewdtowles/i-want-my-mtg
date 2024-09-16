@@ -1,0 +1,12 @@
+<div id="user-settings">
+    <h3 id="page-title">User Settings</h3>
+    <form action="/user/update" method="POST">
+        <label for="user-name">User Name</label>
+        <input id="user-name" type="text" name="name" value="{{this.name}}" />
+        <label for="user-email">Email</label>
+        <input id="user-email" type="email" name="email" value="{{this.email}}" />
+        <input id="user-id" type="hidden" name="id" value="{{this.id}}" />
+        <button id="button-submit" type="submit">Submit</button>
+    </form>
+
+</div>

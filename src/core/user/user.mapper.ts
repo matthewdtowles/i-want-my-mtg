@@ -33,6 +33,9 @@ export class UserMapper {
 
     writeDtoToEntity(userDto: CreateUserDto | UpdateUserDto): User {
         const user: User = new User();
+        if (userDto instanceof UpdateUserDto) {
+            user.id = userDto.id;
+        }
         user.email = userDto.email;
         user.name = userDto.name;
         return user;

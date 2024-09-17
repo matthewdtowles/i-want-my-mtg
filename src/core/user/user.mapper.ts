@@ -31,11 +31,18 @@ export class UserMapper {
         return user;
     }
 
-    writeDtoToEntity(userDto: CreateUserDto | UpdateUserDto): User {
+    createDtoToEntity(userDto: CreateUserDto): User {
         const user: User = new User();
-        if (userDto instanceof UpdateUserDto) {
-            user.id = userDto.id;
-        }
+        console.log(`createDtoToEntity called for ${JSON.stringify(userDto)}`);
+        user.email = userDto.email;
+        user.name = userDto.name;
+        return user;
+    }
+
+    updateDtoToEntity(userDto: UpdateUserDto): User {
+        const user: User = new User();
+        console.log(`updateDtoToEntity called for ${JSON.stringify(userDto)}`);
+        user.id = userDto.id;
         user.email = userDto.email;
         user.name = userDto.name;
         return user;

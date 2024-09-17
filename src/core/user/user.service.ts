@@ -13,11 +13,11 @@ export class UserService implements UserServicePort {
     constructor(
         @Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort,
         @Inject(UserMapper) private readonly mapper: UserMapper,
-    ) {}
+    ) { }
 
 
     async create(userDto: CreateUserDto): Promise<UserDto> {
-        const user: User = this.mapper.writeDtoToEntity(userDto);
+        const user: User = this.mapper.createDtoToEntity(userDto);
         const savedUser: User = await this.repository.create(user) ?? new User();
         return this.mapper.entityToDto(savedUser);
     }
@@ -33,13 +33,13 @@ export class UserService implements UserServicePort {
     }
 
     async update(userDto: UpdateUserDto): Promise<UserDto> {
-        const user: User = this.mapper.writeDtoToEntity(userDto);
+        const user: User = this.mapper.updateDtoToEntity(userDto);
         const savedUser: User = await this.repository.update(user) ?? new User();
         return this.mapper.entityToDto(savedUser);
     }
 
     async remove(userDto: UpdateUserDto): Promise<void> {
-        const user: User = this.mapper.writeDtoToEntity(userDto);
+        const user: User = this.mapper.updateDtoToEntity(userDto);
         await this.repository.delete(user);
     }
 }

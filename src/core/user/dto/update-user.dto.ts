@@ -6,5 +6,5 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
 
     @IsInt()
     @IsPositive()
-    readonly id: number;
+    id: number;
 }

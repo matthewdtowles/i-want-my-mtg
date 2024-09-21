@@ -8,6 +8,15 @@
         <input id="user-id" type="hidden" name="id" value="{{this.id}}" />
         <button id="submit-button" type="submit">Submit</button>
     </form>
+    <h4>Delete User Account</h4>
+    <form id="user-delete-form">
+        <label for="user-name">User Name</label>
+        <input id="user-name" type="text" name="name" value="{{this.name}}" />
+        <label for="user-email">Email</label>
+        <input id="user-email" type="email" name="email" value="{{this.email}}" />
+        <input id="user-id" type="hidden" name="id" value="{{this.id}}" />
+        <button id="delete-button" type="submit">Delete User</button>
+    </form>
     <script>
         // TODO: make generic and move out for all templates to use
         document.getElementById('user-update-form').addEventListener('submit', async (event) => {
@@ -28,6 +37,19 @@
             } else {
                 console.error('Failed to update user');
             }
+        });
+
+        document.getElementById('user-delete-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            const response = await fetch('/user/delete/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
         });
     </script>
 </div>

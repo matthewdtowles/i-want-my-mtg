@@ -33,10 +33,9 @@ export class UserController {
         return await this.userService.update(updateUserDto);
     }
 
-    // TODO: use just the ID?
-    @Delete('delete/:id')
-    @Render('delete-user') // TODO: or have logic for this in user.hbs?
-    async remove(@Body('user') user: UpdateUserDto): Promise<string> {
+    @Delete('delete')
+    @Render('delete-user')
+    async remove(@Body() user: UpdateUserDto) {
         const limit: number = 3;
         let i = 0;
         do {
@@ -46,6 +45,22 @@ export class UserController {
         const msgPrefix: string = `User ${user.name}`;
         const successMsg: string = `${msgPrefix} has been successfully removed.`;
         const failMsg: string = `${msgPrefix} could not be removed.`;
-        return i < limit ? successMsg : failMsg;
+        return {
+            message: i < limit ? successMsg : failMsg 
+        };
     }
+
+    /*
+     async updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Res() res: Response
+  ): Promise<void> {
+    await this.userService.update(+id, updateUserDto);
+
+    // Render another page and pass the message as part of the response body
+    res.render('user-details', {
+      userId: id,
+      message: 'User updated successfully',
+    });*/
 }

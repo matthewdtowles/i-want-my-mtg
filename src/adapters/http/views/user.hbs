@@ -1,4 +1,4 @@
-<div id="user-settings">
+<div id="user-settings-container">
     <h3 id="page-title">User Settings</h3>
     <form id="user-update-form">
         <label for="user-name">User Name</label>
@@ -6,7 +6,7 @@
         <label for="user-email">Email</label>
         <input id="user-email" type="email" name="email" value="{{this.email}}" />
         <input id="user-id" type="hidden" name="id" value="{{this.id}}" />
-        <button id="button-submit" type="submit">Submit</button>
+        <button id="submit-button" type="submit">Submit</button>
     </form>
     <script>
         // TODO: make generic and move out for all templates to use

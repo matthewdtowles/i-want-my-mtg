@@ -91,7 +91,7 @@ export class MtgJsonIngestionTestUtils {
                 rarity: i % 2 === 1 ? 'common' : 'uncommon',
                 setCode: this.MOCK_SET_CODE,
                 uuid: 'abcd-1234-efgh-5678-ijkl-901' + i,
-                url: this.MOCK_SET_URL + '/' + i,
+                url: `/card/${this.MOCK_SET_CODE}/${i}`,
             };
             cards.push(card);
         }
@@ -105,7 +105,7 @@ export class MtgJsonIngestionTestUtils {
             rarity: 'mythic',
             setCode: this.MOCK_SET_CODE,
             uuid: 'zyxw-0987-vutsr-6543-qponm-21098',
-            url: this.MOCK_SET_URL + '/' + (this.MOCK_BASE_SET_SIZE + 1).toString(),
+            url: `/card/${this.MOCK_SET_CODE}/${(this.MOCK_BASE_SET_SIZE + 1).toString()}`,
         };
         cards.push(bonusCard);
         return cards;

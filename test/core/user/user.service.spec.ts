@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 import { CreateUserDto } from '../../../src/core/user/dto/create-user.dto';
 import { UpdateUserDto } from '../../../src/core/user/dto/update-user.dto';
@@ -7,7 +8,6 @@ import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository
 import { User } from '../../../src/core/user/user.entity';
 import { UserMapper } from '../../../src/core/user/user.mapper';
 import { UserService } from '../../../src/core/user/user.service';
-import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('UserService', () => {
     let service: UserService;
@@ -19,7 +19,8 @@ describe('UserService', () => {
     };
 
     const updateUser: UpdateUserDto = {
-        ...createUser
+        ...createUser,
+        id: 1
     };
 
     const userDto: UserDto = {
@@ -82,7 +83,7 @@ describe('UserService', () => {
 
     it('remove should delete given user, check if user exists and return false', async () => {
         const deleteSpy = jest.spyOn(repository, 'delete');
-        expect(await service.remove(mockUser)).toBe(undefined);
+        expect(await service.remove(mockUser.id)).toBe(undefined);
         expect(deleteSpy).toHaveBeenCalled();
     });
 });

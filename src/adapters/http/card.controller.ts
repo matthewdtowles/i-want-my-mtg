@@ -14,21 +14,25 @@ export class CardController {
     ) { }
 
 
+    // AUTHZ: ADMIN
     @Post()
     async create(@Body() createCardDtos: CreateCardDto[]) {
         return await this.cardService.save(createCardDtos);
     }
 
+    // NO AUTH
     @Get(':id')
     async findOne(@Param('id') id: string): Promise<CardDto> {
         return await this.cardService.findById(Number(id));
     }
 
+    // AUTHZ: ADMIN
     @Patch(':id')
     async update(@Param('id') id: string, @Body() updateCardDtos: UpdateCardDto[]) {
         return await this.cardService.save(updateCardDtos);
     }
 
+    // NO AUTH
     @Get(':setCode/:setNumber')
     @Render('card')
     async findSetCard(

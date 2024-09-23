@@ -32,13 +32,13 @@ describe('MtgJsonIngestionMapper', () => {
     describe('DataMapperService map provider models to DTOs', () => {
         it('maps the Set model from DataProvider to CreateSetDto', () => {
             const expectedSet: CreateSetDto = testUtils.getExpectedCreateSetDto();
-            const actualSet: CreateSetDto = service.toCreateSetDto(set);            
+            const actualSet: CreateSetDto = service.toCreateSetDto(set);
             expect(actualSet).toEqual(expectedSet);
         });
 
         it('map Set.CardSet model from DataProvider to CreateCardDto[]', () => {
             const expectedCards: CreateCardDto[] = testUtils.getExpectedCreateCardDtos();
-            const actualCards: CreateCardDto[] = service.toCreateCardDtos(cards);            
+            const actualCards: CreateCardDto[] = service.toCreateCardDtos(cards);
             expect(actualCards).toEqual(expectedCards);
         });
 

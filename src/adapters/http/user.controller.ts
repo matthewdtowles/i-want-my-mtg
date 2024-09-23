@@ -1,30 +1,57 @@
-import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { UpdateUserDto } from 'src/core/user/dto/update-user.dto';
 import { UserDto } from 'src/core/user/dto/user.dto';
 import { UserServicePort } from 'src/core/user/ports/user.service.port';
 import { CreateUserDto } from '../../core/user/dto/create-user.dto';
 
-@Controller('users')
+@Controller('user')
 export class UserController {
-    constructor(@Inject(UserServicePort) private readonly userService: UserServicePort) {}
+    constructor(@Inject(UserServicePort) private readonly userService: UserServicePort) { }
 
-    @Post()
-    create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
-        return this.userService.create(createUserDto);
+    @Get('create')
+    @Render('create-user')
+    createForm() {
+        return {};
+    }
+
+    @Post('create')
+    @Redirect()
+    async create(@Body() createUserDto: CreateUserDto) {
+        const createdUser: UserDto = await this.userService.create(createUserDto);
+        return { url: `/user/${createdUser.id}` };
     }
 
     @Get(':id')
-    findById(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-        return this.userService.findById(id);
+    @Render('user')
+    async findById(@Param('id', ParseIntPipe) id: number) {
+        return { user: await this.userService.findById(id) };
     }
 
-    @Get(':email')
-    findByEmail(@Param('email') email: string): Promise<UserDto> {
-        return this.userService.findByEmail(email);
+    @Patch(':id')
+    async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+        try {
+            const updatedUser: UserDto = await this.userService.update(updateUserDto);
+            return res.status(HttpStatus.OK).json({
+                message: `User ${updatedUser.name} updated successfully`,
+                user: updatedUser
+            });
+        } catch (error) {
+            return res.status(HttpStatus.BAD_REQUEST).json({ message: `Error updating user: ${error.message}` });
+        }
     }
 
-    @Delete(':user')
-    remove(@Body('user') user: UpdateUserDto): Promise<void> {
-        return this.userService.remove(user);
+    @Delete(':id')
+    async remove(@Param('id') id: number, @Res() res: Response) {
+        try {
+            await this.userService.remove(id);
+            const user: UserDto = await this.userService.findById(id);
+            if (user && user.name) {
+                throw new Error('Could not delete user');
+            }
+            return res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+        }
     }
 }

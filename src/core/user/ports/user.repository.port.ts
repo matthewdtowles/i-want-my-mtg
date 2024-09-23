@@ -36,9 +36,9 @@ export interface UserRepositoryPort {
     update(user: User): Promise<User>;
 
     /**
-     * Remove user entity
+     * Remove user entity with id
      * 
-     * @param user
+     * @param id
      */
-    delete(user: User): Promise<void>;
+    delete(id: number): Promise<void>;
 }

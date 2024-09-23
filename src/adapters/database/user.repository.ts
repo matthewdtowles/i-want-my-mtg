@@ -38,7 +38,7 @@ export class UserRepository implements UserRepositoryPort {
         return await this.userRepository.save(user);
     }
 
-    async delete(user: User): Promise<void> {
-        await this.userRepository.delete(user.id);
+    async delete(id: number): Promise<void> {
+        await this.userRepository.delete(id);
     }
 }

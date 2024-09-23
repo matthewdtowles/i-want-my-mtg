@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { UpdateUserDto } from 'src/core/user/dto/update-user.dto';
 import { UserDto } from 'src/core/user/dto/user.dto';
 import { UserServicePort } from 'src/core/user/ports/user.service.port';
@@ -23,44 +24,34 @@ export class UserController {
 
     @Get(':id')
     @Render('user')
-    async findById(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-        return await this.userService.findById(id);
+    async findById(@Param('id', ParseIntPipe) id: number) {
+        return { user: await this.userService.findById(id) };
     }
 
-    @Patch('update')
-    @Render('user')
-    async update(@Body() updateUserDto: UpdateUserDto): Promise<UserDto> {
-        return await this.userService.update(updateUserDto);
+    @Patch(':id')
+    async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+        try {
+            const updatedUser: UserDto = await this.userService.update(updateUserDto);
+            return res.status(HttpStatus.OK).json({
+                message: `User ${updatedUser.name} updated successfully`,
+                user: updatedUser
+            });
+        } catch (error) {
+            return res.status(HttpStatus.BAD_REQUEST).json({ message: `Error updating user: ${error.message}` });
+        }
     }
 
-    @Delete('delete')
-    @Render('delete-user')
-    async remove(@Body() user: UpdateUserDto) {
-        const limit: number = 3;
-        let i = 0;
-        do {
-            i++;
-            await this.userService.remove(user);
-        } while(await this.userService.findById(user.id) && i < limit);
-        const msgPrefix: string = `User ${user.name}`;
-        const successMsg: string = `${msgPrefix} has been successfully removed.`;
-        const failMsg: string = `${msgPrefix} could not be removed.`;
-        return {
-            message: i < limit ? successMsg : failMsg 
-        };
+    @Delete(':id')
+    async remove(@Param('id') id: number, @Res() res: Response) {
+        try {
+            await this.userService.remove(id);
+            const user: UserDto = await this.userService.findById(id);
+            if (user && user.name) {
+                throw new Error('Could not delete user');
+            }
+            return res.status(HttpStatus.OK).json({ message: 'User deleted successfully' });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+        }
     }
-
-    /*
-     async updateUser(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Res() res: Response
-  ): Promise<void> {
-    await this.userService.update(+id, updateUserDto);
-
-    // Render another page and pass the message as part of the response body
-    res.render('user-details', {
-      userId: id,
-      message: 'User updated successfully',
-    });*/
 }

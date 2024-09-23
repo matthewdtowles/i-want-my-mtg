@@ -83,7 +83,7 @@ describe('UserService', () => {
 
     it('remove should delete given user, check if user exists and return false', async () => {
         const deleteSpy = jest.spyOn(repository, 'delete');
-        expect(await service.remove(mockUser)).toBe(undefined);
+        expect(await service.remove(mockUser.id)).toBe(undefined);
         expect(deleteSpy).toHaveBeenCalled();
     });
 });

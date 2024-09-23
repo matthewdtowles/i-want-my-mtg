@@ -16,9 +16,18 @@ const mockUser: UserDto = {
     inventory: [],
 };
 
+const mockResponse = () => {
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+    };
+    return res as unknown as Response;
+};
+
 describe('UsersController', () => {
     let controller: UserController;
     let service: UserServicePort;
+    let res;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -39,6 +48,7 @@ describe('UsersController', () => {
 
         controller = module.get<UserController>(UserController);
         service = module.get<UserServicePort>(UserServicePort);
+        res = mockResponse();
     });
 
     it('users controller should be defined', () => {
@@ -47,22 +57,19 @@ describe('UsersController', () => {
 
     it('should create a user', () => {
         controller.create(createUserDto);
-        expect(controller.create(createUserDto)).resolves.toEqual(mockUser);
+        const expectedUrl: string = `/user/${mockUser.id}`
+        expect(controller.create(createUserDto)).resolves.toEqual({ 'url': expectedUrl });
         expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
 
     it('should find user by given id', () => {
-        expect(controller.findById(1)).resolves.toEqual(mockUser);
+        expect(controller.findById(1)).resolves.toEqual({ 'user': mockUser });
         expect(service.findById).toHaveBeenCalled();
     });
 
-    it('should find user by given email', () => {
-        expect(controller.findByEmail('test-email1@iwantmymtg.com')).resolves.toEqual(mockUser);
-        expect(service.findByEmail).toHaveBeenCalled();
-    });
 
     it('should remove given user', () => {
-        controller.remove(mockUser);
+        controller.remove(mockUser.id, res);
         expect(service.remove).toHaveBeenCalled();
     });
 });

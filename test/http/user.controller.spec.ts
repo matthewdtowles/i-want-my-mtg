@@ -58,7 +58,10 @@ describe('UsersController', () => {
     it('should create a user', () => {
         controller.create(createUserDto);
         const expectedUrl: string = `/user/${mockUser.id}`
-        expect(controller.create(createUserDto)).resolves.toEqual({ 'url': expectedUrl });
+        expect(controller.create(createUserDto)).resolves.toEqual({ 
+            message: `Account created for ${createUserDto.name}`,
+            url: expectedUrl 
+        });
         expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
 
@@ -66,7 +69,6 @@ describe('UsersController', () => {
         expect(controller.findById(1)).resolves.toEqual({ 'user': mockUser });
         expect(service.findById).toHaveBeenCalled();
     });
-
 
     it('should remove given user', () => {
         controller.remove(mockUser.id, res);

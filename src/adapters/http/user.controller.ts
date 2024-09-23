@@ -18,8 +18,18 @@ export class UserController {
     @Post('create')
     @Redirect()
     async create(@Body() createUserDto: CreateUserDto) {
-        const createdUser: UserDto = await this.userService.create(createUserDto);
-        return { url: `/user/${createdUser.id}` };
+        try {
+            const createdUser: UserDto = await this.userService.create(createUserDto);
+            return {
+                message: `Account created for ${createdUser.name}`,
+                url: `/user/${createdUser.id}` 
+            };
+        } catch (error) {
+            return {
+                message: `${error.message}`,
+                url: `/user/create` 
+            };
+        }
     }
 
     @Get(':id')

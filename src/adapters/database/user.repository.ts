@@ -22,6 +22,7 @@ export class UserRepository implements UserRepositoryPort {
             email: userResult.generatedMaps[0].email,
             name: userResult.generatedMaps[0].name,
             inventory: userResult.generatedMaps[0].inventory,
+            password: userResult.generatedMaps[0].password,
         };
         return savedUser;
     }

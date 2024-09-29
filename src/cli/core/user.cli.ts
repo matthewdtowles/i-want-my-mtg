@@ -1,8 +1,8 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Command, Positional } from "nestjs-command";
-import { CreateUserDto } from "src/core/user/dto/create-user.dto";
-import { UserDto } from "src/core/user/dto/user.dto";
-import { UserServicePort } from "src/core/user/ports/user.service.port";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Command, Positional } from 'nestjs-command';
+import { CreateUserDto } from 'src/core/user/dto/create-user.dto';
+import { UserDto } from 'src/core/user/dto/user.dto';
+import { UserServicePort } from 'src/core/user/ports/user.service.port';
 
 @Injectable()
 export class UserCli {
@@ -28,17 +28,24 @@ export class UserCli {
             name: 'email',
             describe: 'user email',
             type: 'string'
-        }) _email: string
+        }) _email: string,
+        @Positional({
+            name: 'password',
+            describe: 'user password',
+            type: 'string'
+        }) _password: string,
     ): Promise<boolean> {
         const createDto: CreateUserDto = {
             name: _name,
             email: _email,
+            password: _password
         };
         const user: UserDto = await this.service.create(createDto);
         this.LOGGER.log(`Created user: ${JSON.stringify(user)}`);
         return true;
     }
 
+    // TODO: admin only
     @Command({
         command: 'user:get <email>',
         describe: 'Retrieve user with given email'

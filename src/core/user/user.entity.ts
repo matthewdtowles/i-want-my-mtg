@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -12,6 +13,10 @@ export class User {
 
     @Column()
     name: string;
+
+    @Exclude()
+    @Column()
+    password: string;
 
     @OneToMany(() => Inventory, inventory => inventory.user)
     inventory: Inventory[];

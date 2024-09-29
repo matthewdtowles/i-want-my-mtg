@@ -28,8 +28,7 @@ import { CommandModule } from 'nestjs-command';
                     queueLimit: 0,
                     waitForConnections: true,
                 },
-            }
-        ),
+            }),
             dataSourceFactory: async (options) => {
                 try {
                     return await new DataSource(options).initialize();

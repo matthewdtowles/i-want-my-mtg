@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Command, Positional } from "nestjs-command";
-import { CardDto } from "src/core/card/dto/card.dto";
-import { CardServicePort } from "src/core/card/ports/card.service.port";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Command, Positional } from 'nestjs-command';
+import { CardDto } from 'src/core/card/dto/card.dto';
+import { CardServicePort } from 'src/core/card/ports/card.service.port';
 
 @Injectable()
 export class CardCli {

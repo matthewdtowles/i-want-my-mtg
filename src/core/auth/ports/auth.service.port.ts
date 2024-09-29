@@ -8,11 +8,11 @@ export interface AuthServicePort {
     /**
      * Validate and return User if provided credentials are valid
      * 
-     * @param username 
+     * @param email 
      * @param password 
      * @returns UserDto if credentials valid, otherwise null
      */
-    validateCredentials(username: string, password: string): Promise<UserDto | null>;
+    validateCredentials(email: string, password: string): Promise<UserDto | null>;
 
     /**
      * Mints token for given user to use in authorization header of subsequent requests

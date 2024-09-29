@@ -23,6 +23,7 @@ export class TestUtils {
     readonly MOCK_BASE_SIZE = 3;
     readonly MOCK_USER_EMAIL = 'test-email@iwmmtg.com';
     readonly MOCK_USER_NAME = 'test-user';
+    readonly MOCK_PASSWORD = 'password';
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
@@ -112,8 +113,14 @@ export class TestUtils {
         const mockCards = this.getMockCards(this.MOCK_SET_CODE);
         return this.getMockCreateInventoryDtos().map((dto, i) => ({
             id: i + 1,
-            userId: dto.userId, 
-            user: { id: this.MOCK_USER_ID, email: this.MOCK_USER_EMAIL, name: this.MOCK_USER_NAME, inventory: [] },
+            userId: dto.userId,
+            user: {
+                id: this.MOCK_USER_ID,
+                email: this.MOCK_USER_EMAIL,
+                name: this.MOCK_USER_NAME,
+                inventory: [],
+                password: this.MOCK_PASSWORD
+            },
             cardId: mockCards[i].id,
             card: mockCards[i],
             quantity: dto.quantity
@@ -142,7 +149,8 @@ export class TestUtils {
             id: this.MOCK_USER_ID,
             email: userDto.email,
             name: userDto.name,
-            inventory: this.getMockInventoryList()
+            inventory: this.getMockInventoryList(),
+            password: this.MOCK_PASSWORD
         };
         return user;
     }

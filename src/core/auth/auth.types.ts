@@ -1,5 +1,4 @@
 export interface AuthToken {
-
     /**
      * Authorization token used in requests
      */
@@ -7,8 +6,7 @@ export interface AuthToken {
 }
 
 export interface JwtPayload {
-
-    username: string; // Username of the user
+    email: string;
 
     /**
      * User's unique ID

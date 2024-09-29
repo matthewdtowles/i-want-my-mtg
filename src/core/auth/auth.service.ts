@@ -5,7 +5,7 @@ import { AuthToken } from './auth.types';
 
 @Injectable()
 export class AuthService implements AuthServicePort {
-    validateCredentials(username: string, password: string): Promise<UserDto | null> {
+    validateCredentials(email: string, password: string): Promise<UserDto | null> {
         throw new Error('Method not implemented.');
     }
     login(user: UserDto): Promise<AuthToken> {

@@ -18,7 +18,7 @@ import { CardMapper } from './card.mapper';
             useClass: CardService,
         },
         {
-            provide: CardRepositoryPort,    
+            provide: CardRepositoryPort,
             useClass: CardRepository,
         },
         CardMapper

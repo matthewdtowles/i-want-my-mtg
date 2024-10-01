@@ -19,7 +19,11 @@ async function bootstrap() {
     app.engine('hbs', hbs.engine);
     app.setViewEngine('hbs');
 
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({
+        whitelist: true, // Strip unknown properties
+        forbidNonWhitelisted: true, // Throw errors for unknown properties
+        transform: true, // Automatically transform payloads to DTO
+    }));
 
     await app.listen(3000);
 }

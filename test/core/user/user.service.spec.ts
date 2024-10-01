@@ -7,6 +7,7 @@ import { UserDto } from '../../../src/core/user/dto/user.dto';
 import { UserRepositoryPort } from '../../../src/core/user/ports/user.repository.port';
 import { User } from '../../../src/core/user/user.entity';
 import { UserService } from '../../../src/core/user/user.service';
+import { UserMapper } from '../../../src/core/user/user.mapper';
 
 describe('UserService', () => {
     let service: UserService;
@@ -41,7 +42,7 @@ describe('UserService', () => {
         create: jest.fn().mockResolvedValue(mockUser),
         findByEmail: jest.fn().mockResolvedValue(mockUser),
         findById: jest.fn().mockResolvedValue(mockUser),
-        update:  jest.fn().mockResolvedValue(mockUser), 
+        update: jest.fn().mockResolvedValue(mockUser),
         delete: jest.fn()
     };
 
@@ -49,6 +50,7 @@ describe('UserService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UserService,
+                UserMapper,
                 {
                     provide: UserRepositoryPort,
                     useValue: mockUserRepository,
@@ -67,7 +69,7 @@ describe('UserService', () => {
     });
 
     it('create should successfully insert a user', async () => {
-        expect(service.create(createUser)).resolves.toEqual(mockUser);
+        expect(service.create(createUser)).resolves.toEqual(userDto);
     });
 
     it('findById should get a single user with given id', async () => {

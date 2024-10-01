@@ -14,7 +14,7 @@ export interface SetServicePort {
      * Save given sets
      * 
      * @param set
-     * @returns saved set
+     * @returns saved setg
      */
     save(set: CreateSetDto[] | UpdateSetDto[]): Promise<SetDto[]>;
 

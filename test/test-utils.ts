@@ -138,7 +138,8 @@ export class TestUtils {
     getMockCreateUserDto(): CreateUserDto {
         const user: CreateUserDto = {
             email: this.MOCK_USER_EMAIL,
-            name: this.MOCK_USER_NAME
+            name: this.MOCK_USER_NAME,
+            password: this.MOCK_PASSWORD,
         };
         return user;
     }

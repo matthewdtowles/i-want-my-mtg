@@ -25,7 +25,6 @@ export class AuthService implements AuthServicePort {
         return null;
     }
 
-    // TODO: should this be async?
     async login(user: UserDto): Promise<AuthToken> {
         const payload: JwtPayload = {
             email: user.email,

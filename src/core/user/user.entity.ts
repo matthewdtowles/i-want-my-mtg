@@ -14,8 +14,8 @@ export class User {
     @Column()
     name: string;
 
-    @Exclude()
     @Column()
+    @Exclude()
     password: string;
 
     @OneToMany(() => Inventory, inventory => inventory.user)

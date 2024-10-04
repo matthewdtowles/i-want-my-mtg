@@ -3,10 +3,16 @@ import { JwtPayload } from '../auth.types';
 
 export const JwtStrategyPort = 'JwtStrategyPort';
 
+// TODO: keep?
+/**
+ * Authorization Service/Strategy
+ * Validates payload from JWT
+ * Used by auth guards in controllers
+ */
 export interface JwtStrategyPort {
 
     /**
-     * Find and return user for valid payload provided
+     * Decode payload, find and return user for valid payload provided
      * 
      * @param payload 
      * @returns validated User

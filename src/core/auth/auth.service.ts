@@ -17,7 +17,7 @@ export class AuthService implements AuthServicePort {
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) {}
 
-    async validateCredentials(email: string, password: string): Promise<UserDto | null> {
+    async validateUser(email: string, password: string): Promise<UserDto | null> {
         const user: User = await this.userRepository.findByEmail(email);
         if (user && await bcrypt.compare(password, user.password)) {
             return await this.userService.findByEmail(email);

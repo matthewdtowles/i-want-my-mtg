@@ -6,6 +6,7 @@ import { AuthServicePort } from './ports/auth.service.port';
 import { AuthService } from './auth.service';
 import { JwtStrategyPort } from './ports/jwt.strategy.port';
 import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
             secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '60m' },
         }),
+        ConfigModule,
     ],
     providers: [
         {
@@ -27,7 +29,8 @@ import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
         }
     ],
     exports: [
-        AuthService
+        AuthServicePort,
+        JwtStrategyPort,
     ],
 })
 export class AuthModule {

@@ -21,7 +21,7 @@ export interface UserServicePort {
     */
     create(user: CreateUserDto): Promise<UserDto | null>;
 
-    /**``
+    /**
      * @param username
      * @returns User with email
      */
@@ -32,6 +32,14 @@ export interface UserServicePort {
      * @returns User with id
      */
     findById(id: number): Promise<UserDto | null>;
+
+    /**
+     * Finds the saved password for user with email
+     * 
+     * @param email
+     * @returns saved password for user with email
+     */
+    findSavedPassword(email: string): Promise<string | null>;
 
     /**
      * Update User that exists

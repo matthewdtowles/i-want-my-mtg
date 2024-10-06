@@ -13,13 +13,12 @@ export class AuthService implements AuthServicePort {
 
     constructor(
         @Inject(UserServicePort) private readonly userService: UserServicePort,
-        @Inject(UserRepositoryPort) private readonly userRepository: UserRepositoryPort,
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) {}
 
     async validateUser(email: string, password: string): Promise<UserDto | null> {
-        const user: User = await this.userRepository.findByEmail(email);
-        if (user && await bcrypt.compare(password, user.password)) {
+        const encryptedPwd: string = await this.userService.findSavedPassword(email);
+        if (encryptedPwd && await bcrypt.compare(password, encryptedPwd)) {
             return await this.userService.findByEmail(email);
         }
         return null;

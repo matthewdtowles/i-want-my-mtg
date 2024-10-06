@@ -34,6 +34,11 @@ export class UserService implements UserServicePort {
         return user ? this.mapper.entityToDto(user) : null;
     }
 
+    async findSavedPassword(email: string): Promise<string | null> {
+        const user: User = await this.repository.findByEmail(email);
+        return user ? user.password : null;
+    }
+
     async update(userDto: UpdateUserDto): Promise<UserDto | null> {
         const user: User = this.mapper.updateDtoToEntity(userDto);
         user.password = userDto.password;

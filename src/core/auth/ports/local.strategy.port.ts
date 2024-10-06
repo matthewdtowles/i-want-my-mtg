@@ -1,6 +1,7 @@
 import { UserDto } from 'src/core/user/dto/user.dto';
 
-// TODO: keep?
+export const LocalStrategyPort = 'LocalStrategyPort';
+
 export interface LocalStrategyPort {
 
     /**

@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { UpdateUserDto } from 'src/core/user/dto/update-user.dto';
 import { UserDto } from 'src/core/user/dto/user.dto';
 import { UserServicePort } from 'src/core/user/ports/user.service.port';
 import { CreateUserDto } from '../../core/user/dto/create-user.dto';
+import { JwtAuthGuard } from './auth/jwt.auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -32,12 +33,14 @@ export class UserController {
         }
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':id')
     @Render('user')
     async findById(@Param('id', ParseIntPipe) id: number) {
         return { user: await this.userService.findById(id) };
     }
 
+    @UseGuards(JwtAuthGuard)
     @Patch(':id')
     async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
         try {
@@ -51,6 +54,7 @@ export class UserController {
         }
     }
 
+    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     async remove(@Param('id') id: number, @Res() res: Response) {
         try {

@@ -4,6 +4,12 @@
         <li><a href="/sets">Sets</a></li>
         <li><a href="#">My Inventory</a></li>
         <li><a href="#">My Account</a></li>
-        <li><a href="/user/create">Create Account</a></li>
+        {{!-- If not logged in --}}
+        <li>
+            <a href="/auth/login">Login</a>
+            <span> | </span>
+            <a href="/user/create">Create Account</a>
+        </li>
+        {{!-- If logged in: My Profile link --}}
     </ul>
 </nav>

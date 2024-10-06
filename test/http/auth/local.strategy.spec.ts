@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
-import { LocalStrategy } from '../../../src/adapters/http/auth/local.strategy';
+import { LocalStrategy } from '../../../src/core/auth/local.strategy';
 import { AuthServicePort } from '../../../src/core/auth/ports/auth.service.port';
 import { UserDto } from '../../../src/core/user/dto/user.dto';
 

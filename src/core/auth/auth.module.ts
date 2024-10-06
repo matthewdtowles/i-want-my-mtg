@@ -1,14 +1,12 @@
 import { Logger, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'src/core/auth/jwt.strategy';
+import { LocalStrategy } from 'src/core/auth/local.strategy';
 import { UserModule } from 'src/core/user/user.module';
-import { AuthServicePort } from './ports/auth.service.port';
 import { AuthService } from './auth.service';
-import { JwtStrategyPort } from './ports/jwt.strategy.port';
-import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { LocalStrategy } from 'src/adapters/http/auth/local.strategy';
-import { LocalStrategyPort } from './ports/local.strategy.port';
+import { AuthServicePort } from './ports/auth.service.port';
 
 @Module({
     imports: [
@@ -29,18 +27,12 @@ import { LocalStrategyPort } from './ports/local.strategy.port';
             provide: AuthServicePort,
             useClass: AuthService,
         },
-        {
-            provide: JwtStrategyPort,
-            useClass: JwtStrategy,
-        },
-        {
-            provide: LocalStrategyPort,
-            useClass: LocalStrategy
-        }
+        JwtStrategy,
+        LocalStrategy,
     ],
     exports: [
         AuthServicePort,
-        JwtStrategyPort,
+        JwtStrategy,
     ],
 })
 export class AuthModule {

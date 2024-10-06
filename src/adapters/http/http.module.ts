@@ -6,11 +6,13 @@ import { InventoryController } from './inventory.controller';
 import { SetController } from './set.controller';
 import { UserController } from './user.controller';
 import { AuthController } from './auth/auth.controller';
+import { HomeController } from './home.controller';
 
 @Module({
     controllers: [
         AuthController,
         CardController,
+        HomeController,
         InventoryController,
         SetController,
         UserController,

@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Logger, Post, Render, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Inject, Logger, Post, Render, Req, Res, UseGuards } from '@nestjs/common';
+import { Response  } from 'express';
 import { AuthToken } from 'src/core/auth/auth.types';
 import { AuthServicePort } from 'src/core/auth/ports/auth.service.port';
 import { AuthenticatedRequest } from './authenticated.request';
@@ -20,8 +21,14 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async login(@Request() req: AuthenticatedRequest): Promise<AuthToken> {
+    async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Attempt to authenticate`);
-        return await this.authService.login(req.user);
+        const authToken: AuthToken = await this.authService.login(req.user);
+        if (authToken) {
+            res.cookie('auth_token', authToken, {httpOnly: true})
+            res.redirect('/');
+        } else {
+            res.redirect('/login');
+        }
     }
 }

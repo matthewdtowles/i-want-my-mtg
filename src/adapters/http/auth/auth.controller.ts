@@ -24,20 +24,19 @@ export class AuthController {
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Attempt to authenticate`);
         const authToken: AuthToken = await this.authService.login(req.user);
-        if (authToken) {
-            let url: string;
-            let template: string;
-            if (req.user.id) {
-                url = `/user/${req.user.id}`;
-                template = 'user'
-            } else {
-                url = '/';
-            }
-            res.status(HttpStatus.OK).render(url, {
-                accessToken: authToken.access_token,
-            });
-        } else {
-            res.redirect('/login');
+        if (!authToken) {
+            this.LOGGER.error(`Authentication failed`)
+            res.status(HttpStatus.UNAUTHORIZED)
+                .redirect('/login');
         }
+        this.LOGGER.debug(`Authentication OK`)
+        res.status(HttpStatus.OK)
+            .cookie('Authorization', authToken.access_token, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 3600000
+            })
+            .redirect(`/user/${req.user.id}`);
     }
 }

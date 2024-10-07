@@ -32,7 +32,6 @@
             const response = await fetch('/user/update', {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
@@ -49,9 +48,6 @@
             const userId = document.getElementById('user-id').value;
             const response = await fetch(`/user/${userId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                }
             });
             if (response.ok) {
                 const result = await response.json();

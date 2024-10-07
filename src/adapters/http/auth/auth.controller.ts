@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Post, Render, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Logger, Post, Render, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthToken } from 'src/core/auth/auth.types';
 import { AuthServicePort } from 'src/core/auth/ports/auth.service.port';
@@ -25,8 +25,17 @@ export class AuthController {
         this.LOGGER.debug(`Attempt to authenticate`);
         const authToken: AuthToken = await this.authService.login(req.user);
         if (authToken) {
-            res.cookie('auth_token', authToken, { httpOnly: true })
-            res.redirect('/');
+            let url: string;
+            let template: string;
+            if (req.user.id) {
+                url = `/user/${req.user.id}`;
+                template = 'user'
+            } else {
+                url = '/';
+            }
+            res.status(HttpStatus.OK).render(url, {
+                accessToken: authToken.access_token,
+            });
         } else {
             res.redirect('/login');
         }

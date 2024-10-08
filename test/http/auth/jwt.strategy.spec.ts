@@ -1,9 +1,9 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtStrategy } from '../../../src/adapters/http/auth/jwt.strategy';
 import { UserDto } from '../../../src/core//user/dto/user.dto';
 import { JwtPayload } from '../../../src/core/auth/auth.types';
+import { JwtStrategy } from '../../../src/core/auth/jwt.strategy';
 import { UserServicePort } from '../../../src/core/user/ports/user.service.port';
 
 const mockUserDto: UserDto = {

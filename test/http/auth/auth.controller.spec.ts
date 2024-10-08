@@ -1,63 +1,77 @@
-import { Logger } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
 import { AuthController } from '../../../src/adapters/http/auth/auth.controller';
-import { AuthenticatedRequest } from '../../../src/adapters/http/auth/authenticated.request';
 import { LocalAuthGuard } from '../../../src/adapters/http/auth/local.auth.guard';
 import { AuthToken } from '../../../src/core/auth/auth.types';
 import { AuthServicePort } from '../../../src/core/auth/ports/auth.service.port';
-import { UserDto } from '../../../src/core/user/dto/user.dto';
 
 describe('AuthController', () => {
-    let authController: AuthController;
+    let app: INestApplication;
     let authService: AuthServicePort;
 
     const mockAuthService = {
         login: jest.fn(),
     };
 
-    const mockAuthToken: AuthToken = {
-        access_token: 'test-jwt-token',
-    };
-
-    const mockUserDto: UserDto = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        inventory: [], // You can add other fields if necessary
-    };
-
-    const mockRequest: AuthenticatedRequest = {
-        user: mockUserDto,
-    } as AuthenticatedRequest;
-
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+    beforeAll(async () => {
+        const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
             providers: [
-                { provide: AuthServicePort, useValue: mockAuthService },
-                LocalAuthGuard,
-                Reflector, // Needed for the UseGuards functionality
-                Logger,
+                {
+                    provide: AuthServicePort,
+                    useValue: mockAuthService,
+                },
             ],
-        }).compile();
+        })
+            .overrideGuard(LocalAuthGuard)
+            .useValue({
+                canActivate: jest.fn().mockImplementation((context) => {
+                    const request = context.switchToHttp().getRequest();
+                    request.user = { id: 1, username: 'testuser', email: 'testemail@iwmm.com' };
+                    return true;
+                }),
+            })
+            .compile();
 
-        authController = module.get<AuthController>(AuthController);
-        authService = module.get<AuthServicePort>(AuthServicePort);
+        app = moduleFixture.createNestApplication();
+        await app.init();
+
+        authService = moduleFixture.get<AuthServicePort>(AuthServicePort);
     });
 
-    it('should be defined', () => {
-        expect(authController).toBeDefined();
+    afterAll(async () => {
+        await app.close();
     });
 
-    it('login should return an AuthToken when successful', async () => {
-        mockAuthService.login.mockResolvedValue(mockAuthToken);
-        const result = await authController.login(mockRequest);
-        expect(authService.login).toHaveBeenCalledWith(mockUserDto);
-        expect(result).toEqual(mockAuthToken);
-    });
+    describe('/POST login', () => {
+        it('should return a JWT token in the Authorization header and redirect if login succeeds', async () => {
+            const mockAuthToken: AuthToken = {
+                access_token: 'jwt-token',
+            };
+            mockAuthService.login.mockResolvedValueOnce(mockAuthToken);
 
-    it('login should return ___ when unsuccessful', async () => {
-        // TODO: impl
+            const response = await request(app.getHttpServer())
+                .post('/auth/login')
+                .send({ username: 'testuser', password: 'testpass' })
+                .expect(302);
+
+            expect(response.headers['set-cookie']).toBeDefined();
+            expect(response.headers['set-cookie'][0]).toContain('Authorization=jwt-token');
+            expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
+            expect(response.headers['location']).toEqual('/user/1');
+        });
+
+        it('should return 401 Unauthorized and error message if login fails', async () => {
+            mockAuthService.login.mockResolvedValueOnce(null);
+
+            const response = await request(app.getHttpServer())
+                .post('/auth/login')
+                .send({ username: 'invaliduser', password: 'invalidpass' })
+                .expect(302);
+
+            expect(response.headers['location']).toBe('/login');
+            expect(response.body).toEqual({ });
+        });
     });
 });

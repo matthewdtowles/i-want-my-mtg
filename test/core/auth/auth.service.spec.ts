@@ -40,6 +40,7 @@ describe('AuthService', () => {
                     provide: UserServicePort,
                     useValue: {
                         findByEmail: jest.fn().mockResolvedValue(mockUserDto),
+                        findSavedPassword: jest.fn().mockResolvedValue(mockUserDto.email),
                     },
                 },
                 {
@@ -67,8 +68,7 @@ describe('AuthService', () => {
         it('should return UserDto if the email and password are valid', async () => {
             jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
             const result = await authService.validateUser(mockUser.email, 'password');
-            expect(userRepositoryPort.findByEmail).toHaveBeenCalledWith(mockUser.email);
-            expect(bcrypt.compare).toHaveBeenCalledWith('password', mockUser.password);
+            expect(bcrypt.compare).toHaveBeenCalledWith('password', mockUser.email);
             expect(userServicePort.findByEmail).toHaveBeenCalledWith(mockUser.email);
             expect(result).toEqual(mockUserDto);
         });

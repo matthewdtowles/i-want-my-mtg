@@ -4,6 +4,7 @@ import { AuthToken } from 'src/core/auth/auth.types';
 import { AuthServicePort } from 'src/core/auth/ports/auth.service.port';
 import { AuthenticatedRequest } from './authenticated.request';
 import { LocalAuthGuard } from './local.auth.guard';
+import { UserDto } from 'src/core/user/dto/user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,11 +24,19 @@ export class AuthController {
     @Post('login')
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Attempt to authenticate`);
-        const authToken: AuthToken = await this.authService.login(req.user);
-        if (!authToken) {
-            this.LOGGER.error(`Authentication failed`)
+        const user: UserDto = req.user;
+        if (!user || !user.id) {
+            this.LOGGER.error(`User not found`)
             res.status(HttpStatus.UNAUTHORIZED)
                 .redirect('/login');
+            return;
+        }
+        const authToken: AuthToken = await this.authService.login(req.user);
+        if (!authToken) {
+            this.LOGGER.error(`Login failed`)
+            res.status(HttpStatus.UNAUTHORIZED)
+                .redirect('/login');
+            return;
         }
         this.LOGGER.debug(`Authentication OK`)
         res.status(HttpStatus.OK)
@@ -38,5 +47,6 @@ export class AuthController {
                 maxAge: 3600000
             })
             .redirect(`/user/${req.user.id}`);
+        return;
     }
 }

@@ -17,28 +17,33 @@ export class UserService implements UserServicePort {
         @Inject(UserMapper) private readonly mapper: UserMapper,
     ) { }
 
-    async create(userDto: CreateUserDto): Promise<UserDto> {
+    async create(userDto: CreateUserDto): Promise<UserDto | null> {
         const user: User = this.mapper.createDtoToEntity(userDto);
         user.password = await this.encrypt(userDto.password);
         const savedUser: User = await this.repository.create(user) ?? new User();
-        return this.mapper.entityToDto(savedUser);
+        return savedUser ? this.mapper.entityToDto(savedUser) : null;
     }
 
-    async findById(id: number): Promise<UserDto> {
-        const user: User = await this.repository.findById(id) ?? new User();
-        return this.mapper.entityToDto(user);
+    async findById(id: number): Promise<UserDto | null> {
+        const user: User = await this.repository.findById(id);
+        return user ? this.mapper.entityToDto(user) : null;
     }
 
-    async findByEmail(email: string): Promise<UserDto> {
-        const user: User = await this.repository.findByEmail(email) ?? new User();
-        return this.mapper.entityToDto(user);
+    async findByEmail(email: string): Promise<UserDto | null> {
+        const user: User = await this.repository.findByEmail(email);
+        return user ? this.mapper.entityToDto(user) : null;
     }
 
-    async update(userDto: UpdateUserDto): Promise<UserDto> {
+    async findSavedPassword(email: string): Promise<string | null> {
+        const user: User = await this.repository.findByEmail(email);
+        return user ? user.password : null;
+    }
+
+    async update(userDto: UpdateUserDto): Promise<UserDto | null> {
         const user: User = this.mapper.updateDtoToEntity(userDto);
         user.password = userDto.password;
         const savedUser: User = await this.repository.update(user) ?? new User();
-        return this.mapper.entityToDto(savedUser);
+        return user ? this.mapper.entityToDto(savedUser) : null;
     }
 
     async remove(id: number): Promise<void> {

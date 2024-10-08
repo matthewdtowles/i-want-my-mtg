@@ -12,7 +12,7 @@ import { MtgJsonIngestionModule } from './mtgjson-ingestion/mtgjson-ingestion.mo
     exports: [
         DatabaseModule,
         HttpModule,
-        MtgJsonIngestionModule,    
+        MtgJsonIngestionModule,
     ]
 })
 export class AdapterModule {

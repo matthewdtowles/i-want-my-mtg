@@ -5,12 +5,9 @@ import { create } from 'express-handlebars';
 import { join } from 'path';
 import * as request from 'supertest';
 import { SetController } from '../../src/adapters/http/set.controller';
+import { CardServicePort } from '../../src/core/card/ports/card.service.port';
 import { SetDto } from '../../src/core/set/dto/set.dto';
 import { SetServicePort } from '../../src/core/set/ports/set.service.port';
-import { CardServicePort } from '../../src/core/card/ports/card.service.port';
-import { CardDto } from '../../src/core/card/dto/card.dto';
-import { CreateCardDto } from '../../src/core/card/dto/create-card.dto';
-import { UpdateCardDto } from '../../src/core/card/dto/update-card.dto';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',

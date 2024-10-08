@@ -1,19 +1,25 @@
 import { Logger, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'src/core/auth/jwt.strategy';
+import { LocalStrategy } from 'src/core/auth/local.strategy';
 import { UserModule } from 'src/core/user/user.module';
-import { AuthServicePort } from './ports/auth.service.port';
 import { AuthService } from './auth.service';
-import { JwtStrategyPort } from './ports/jwt.strategy.port';
-import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
+import { AuthServicePort } from './ports/auth.service.port';
 
 @Module({
     imports: [
+        ConfigModule,
         UserModule,
         PassportModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '60m' },
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: '60m' },
+            }),
+            inject: [ConfigService],
         }),
     ],
     providers: [
@@ -21,13 +27,12 @@ import { JwtStrategy } from 'src/adapters/http/auth/jwt.strategy';
             provide: AuthServicePort,
             useClass: AuthService,
         },
-        {
-            provide: JwtStrategyPort,
-            useClass: JwtStrategy,
-        }
+        JwtStrategy,
+        LocalStrategy,
     ],
     exports: [
-        AuthService
+        AuthServicePort,
+        JwtStrategy,
     ],
 })
 export class AuthModule {

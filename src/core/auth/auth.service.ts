@@ -2,9 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserDto } from '../user/dto/user.dto';
-import { UserRepositoryPort } from '../user/ports/user.repository.port';
 import { UserServicePort } from '../user/ports/user.service.port';
-import { User } from '../user/user.entity';
 import { AuthToken, JwtPayload } from './auth.types';
 import { AuthServicePort } from './ports/auth.service.port';
 
@@ -13,13 +11,12 @@ export class AuthService implements AuthServicePort {
 
     constructor(
         @Inject(UserServicePort) private readonly userService: UserServicePort,
-        @Inject(UserRepositoryPort) private readonly userRepository: UserRepositoryPort,
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) {}
 
-    async validateCredentials(email: string, password: string): Promise<UserDto | null> {
-        const user: User = await this.userRepository.findByEmail(email);
-        if (user && await bcrypt.compare(password, user.password)) {
+    async validateUser(email: string, password: string): Promise<UserDto | null> {
+        const encryptedPwd: string = await this.userService.findSavedPassword(email);
+        if (encryptedPwd && await bcrypt.compare(password, encryptedPwd)) {
             return await this.userService.findByEmail(email);
         }
         return null;

@@ -19,19 +19,27 @@ export interface UserServicePort {
      * @param password
      * @returns created User
     */
-    create(user: CreateUserDto): Promise<UserDto>;
+    create(user: CreateUserDto): Promise<UserDto | null>;
 
     /**
      * @param username
      * @returns User with email
      */
-    findByEmail(email: string): Promise<UserDto>;
+    findByEmail(email: string): Promise<UserDto | null>;
 
     /**
      * @param id
      * @returns User with id
      */
-    findById(id: number): Promise<UserDto>;
+    findById(id: number): Promise<UserDto | null>;
+
+    /**
+     * Finds the saved password for user with email
+     * 
+     * @param email
+     * @returns saved password for user with email
+     */
+    findSavedPassword(email: string): Promise<string | null>;
 
     /**
      * Update User that exists
@@ -40,7 +48,7 @@ export interface UserServicePort {
      * @param password
      * @returns updated User, if authenticated
      */
-    update(user: UpdateUserDto): Promise<UserDto>;
+    update(user: UpdateUserDto): Promise<UserDto | null>;
 
     /**
      * Delete User with id from all records

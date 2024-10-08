@@ -4,22 +4,25 @@ import { InventoryModule } from './inventory/inventory.module';
 import { SetModule } from './set/set.module';
 import { UserModule } from './user/user.module';
 import { IngestionModule } from './ingestion/ingestion.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
     imports: [
-        CardModule,
-        InventoryModule,
-        SetModule,  
-        UserModule,
-        IngestionModule,
-    ],
-    exports: [
+        AuthModule,
         CardModule,
         InventoryModule,
         SetModule,
         UserModule,
         IngestionModule,
-    ]
+    ],
+    exports: [
+        AuthModule,
+        CardModule,
+        InventoryModule,
+        SetModule,
+        UserModule,
+        IngestionModule,
+    ],
 })
 export class CoreModule {
     private readonly LOGGER: Logger = new Logger(CoreModule.name);

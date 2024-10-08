@@ -1,6 +1,4 @@
 import { Controller, Get, Inject, Logger, Param, Render } from '@nestjs/common';
-import { CardDto } from 'src/core/card/dto/card.dto';
-import { CardServicePort } from 'src/core/card/ports/card.service.port';
 import { SetDto } from 'src/core/set/dto/set.dto';
 import { SetServicePort } from 'src/core/set/ports/set.service.port';
 
@@ -11,7 +9,6 @@ export class SetController {
 
     constructor(
         @Inject(SetServicePort) private readonly setService: SetServicePort,
-        @Inject(CardServicePort) private readonly cardService: CardServicePort,
     ) { }
 
     @Get()

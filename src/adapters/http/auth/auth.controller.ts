@@ -26,27 +26,23 @@ export class AuthController {
         this.LOGGER.debug(`Attempt to authenticate`);
         const user: UserDto = req.user;
         if (!user || !user.id) {
-            this.LOGGER.error(`User not found`)
-            res.status(HttpStatus.UNAUTHORIZED)
-                .redirect('/login');
-            return;
+            this.LOGGER.error(`User not found`);
+            res.redirect(HttpStatus.UNAUTHORIZED, '/login?action=login&status=401');
         }
         const authToken: AuthToken = await this.authService.login(req.user);
         if (!authToken) {
-            this.LOGGER.error(`Login failed`)
-            res.status(HttpStatus.UNAUTHORIZED)
-                .redirect('/login');
-            return;
+            this.LOGGER.error(`Login failed`);
+            res.redirect(HttpStatus.UNAUTHORIZED, '/login?action=login&status=401');
         }
-        this.LOGGER.debug(`Authentication OK`)
-        res.status(HttpStatus.OK)
-            .cookie('Authorization', authToken.access_token, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 3600000
-            })
-            .redirect(`/user/${req.user.id}`);
-        return;
+        this.LOGGER.debug(`${user.name} logged in`);
+        res.cookie('Authorization', authToken.access_token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000
+        }).status(HttpStatus.OK).redirect(`/user/${user.id}?action=login&status=200`);
     }
+
+    // TODO: IMPL
+    async logout() {}
 }

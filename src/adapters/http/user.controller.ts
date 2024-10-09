@@ -1,5 +1,9 @@
-import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Redirect, Render, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import {
+    Body, Controller, Delete, Get, HttpStatus,
+    Inject, Param, ParseIntPipe, Patch, Post,
+    Redirect, Render, Req, Res, UseGuards
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import { UpdateUserDto } from 'src/core/user/dto/update-user.dto';
 import { UserDto } from 'src/core/user/dto/user.dto';
 import { UserServicePort } from 'src/core/user/ports/user.service.port';
@@ -23,12 +27,12 @@ export class UserController {
             const createdUser: UserDto = await this.userService.create(createUserDto);
             return {
                 message: `Account created for ${createdUser.name}`,
-                url: `/user/${createdUser.id}` 
+                url: `/user/${createdUser.id}`
             };
         } catch (error) {
             return {
                 message: `${error.message}`,
-                url: `/user/create` 
+                url: `/user/create`
             };
         }
     }
@@ -36,8 +40,13 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Get(':id')
     @Render('user')
-    async findById(@Param('id', ParseIntPipe) id: number) {
-        return { user: await this.userService.findById(id) };
+    async findById(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+        const foundUser: UserDto = await this.userService.findById(id);
+        const login: boolean = foundUser && req.query && req.query.status === '200' && req.query.action === 'login';
+        return {
+            message: login ? `${foundUser.name} - logged in` : null,
+            user: await this.userService.findById(id)
+        };
     }
 
     @UseGuards(JwtAuthGuard)

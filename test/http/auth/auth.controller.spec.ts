@@ -5,6 +5,7 @@ import { AuthController } from '../../../src/adapters/http/auth/auth.controller'
 import { LocalAuthGuard } from '../../../src/adapters/http/auth/local.auth.guard';
 import { AuthToken } from '../../../src/core/auth/auth.types';
 import { AuthServicePort } from '../../../src/core/auth/ports/auth.service.port';
+import { AUTH_TOKEN_NAME } from '../../../src/adapters/http/auth/auth.constants';
 
 describe('AuthController', () => {
     let app: INestApplication;
@@ -15,15 +16,16 @@ describe('AuthController', () => {
     };
 
     beforeAll(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            controllers: [AuthController],
-            providers: [
-                {
-                    provide: AuthServicePort,
-                    useValue: mockAuthService,
-                },
-            ],
-        })
+        const moduleFixture: TestingModule = await Test
+            .createTestingModule({
+                controllers: [AuthController],
+                providers: [
+                    {
+                        provide: AuthServicePort,
+                        useValue: mockAuthService,
+                    },
+                ],
+            })
             .overrideGuard(LocalAuthGuard)
             .useValue({
                 canActivate: jest.fn().mockImplementation((context) => {
@@ -33,10 +35,8 @@ describe('AuthController', () => {
                 }),
             })
             .compile();
-
         app = moduleFixture.createNestApplication();
         await app.init();
-
         authService = moduleFixture.get<AuthServicePort>(AuthServicePort);
     });
 
@@ -45,7 +45,7 @@ describe('AuthController', () => {
     });
 
     describe('/POST login', () => {
-        it('should return a JWT token in the Authorization header and redirect if login succeeds', async () => {
+        it('should return a JWT token in the AuthToken header and redirect if login succeeds', async () => {
             const mockAuthToken: AuthToken = {
                 access_token: 'jwt-token',
             };
@@ -57,9 +57,11 @@ describe('AuthController', () => {
                 .expect(302);
 
             expect(response.headers['set-cookie']).toBeDefined();
-            expect(response.headers['set-cookie'][0]).toContain('Authorization=jwt-token');
+            expect(response.headers['set-cookie'][0]).toContain(`${AUTH_TOKEN_NAME}=jwt-token`);
             expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
-            expect(response.headers['location']).toEqual('/user/1');
+            expect(response.headers['set-cookie'][0]).toContain('Max-Age=');
+            expect(response.headers['set-cookie'][0]).toContain('SameSite=Strict');
+            expect(response.headers['location']).toEqual('/user/1?action=login&status=200');
         });
 
         it('should return 401 Unauthorized and error message if login fails', async () => {
@@ -70,8 +72,31 @@ describe('AuthController', () => {
                 .send({ username: 'invaliduser', password: 'invalidpass' })
                 .expect(302);
 
-            expect(response.headers['location']).toBe('/login');
-            expect(response.body).toEqual({ });
+            expect(response.headers['location']).toBe('/login?action=login&status=401');
+            expect(response.body).toEqual({});
         });
+    });
+
+    it('should logout user by clearing auth token cookie', async () => {
+        const mockAuthToken: AuthToken = {
+            access_token: 'jwt-token',
+        };
+        mockAuthService.login.mockResolvedValueOnce(mockAuthToken);
+
+        let response = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ username: 'testuser', password: 'testpass' })
+            .expect(302);
+
+        expect(response.headers['set-cookie']).toBeDefined();
+        expect(response.headers['set-cookie'][0]).toContain(`${AUTH_TOKEN_NAME}=jwt-token`);
+
+        // logged in - now logout:
+        response = await request(app.getHttpServer())
+            .get('/auth/logout')
+            .expect(302);
+
+        expect(response.headers['set-cookie']).toBeDefined();
+        expect(response.headers['set-cookie'][0]).toContain(`${AUTH_TOKEN_NAME}=`);
     });
 });

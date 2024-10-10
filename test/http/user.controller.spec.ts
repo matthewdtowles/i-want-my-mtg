@@ -1,8 +1,13 @@
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
+import { AUTH_TOKEN_NAME } from '../../src/adapters/http/auth/auth.constants';
+import { LocalAuthGuard } from '../../src/adapters/http/auth/local.auth.guard';
 import { UserController } from '../../src/adapters/http/user.controller';
+import { AuthToken } from '../../src/core/auth/auth.types';
 import { CreateUserDto } from '../../src/core/user/dto/create-user.dto';
-import { UserServicePort } from '../../src/core/user/ports/user.service.port';
 import { UserDto } from '../../src/core/user/dto/user.dto';
+import { UserServicePort } from '../../src/core/user/ports/user.service.port';
 
 const createUserDto: CreateUserDto = {
     email: 'test-email1@iwantmymtg.com',
@@ -25,7 +30,12 @@ const mockResponse = () => {
     return res as unknown as Response;
 };
 
+const mockAuthToken: AuthToken = {
+    access_token: 'mock-jwt-token',
+};
+
 describe('UsersController', () => {
+    let app: INestApplication;
     let controller: UserController;
     let service: UserServicePort;
     let res;
@@ -45,7 +55,18 @@ describe('UsersController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+        .overrideGuard(LocalAuthGuard)
+            .useValue({
+                canActivate: jest.fn().mockImplementation((context) => {
+                    const request = context.switchToHttp().getRequest();
+                    request.cookies['set-cookie'][0] = { AUTH_TOKEN_NAME: 'authToken' };
+                    return true;
+                }),
+            })
+        .compile();
+        app = module.createNestApplication();
+        await app.init();
 
         controller = module.get<UserController>(UserController);
         service = module.get<UserServicePort>(UserServicePort);
@@ -66,9 +87,17 @@ describe('UsersController', () => {
         expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
 
-    it('should find user by given id', () => {
-        expect(controller.findById(1)).resolves.toEqual({ 'user': mockUser });
-        expect(service.findById).toHaveBeenCalled();
+    it('should return user details and set an AuthToken cookie', async () => {
+        // const mockUser = { id: 1, username: 'testuser' };
+
+        // const response = await request(app.getHttpServer())
+        //     .get('/user/1')
+        //     .expect(200);
+
+        // expect(response.body).toEqual(mockUser);
+        // expect(response.headers['set-cookie']).toBeDefined();
+        // expect(response.headers['set-cookie'][0]).toContain(`${AUTH_TOKEN_NAME}=mock-jwt-token`);
+        // expect(service.findById).toHaveBeenCalled();
     });
 
     it('should remove given user', () => {

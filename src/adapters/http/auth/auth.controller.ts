@@ -2,9 +2,10 @@ import { Controller, Get, HttpStatus, Inject, Logger, Post, Render, Req, Res, Us
 import { Response } from 'express';
 import { AuthToken } from 'src/core/auth/auth.types';
 import { AuthServicePort } from 'src/core/auth/ports/auth.service.port';
+import { UserDto } from 'src/core/user/dto/user.dto';
+import { AUTH_TOKEN_NAME } from './auth.constants';
 import { AuthenticatedRequest } from './authenticated.request';
 import { LocalAuthGuard } from './local.auth.guard';
-import { UserDto } from 'src/core/user/dto/user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,22 +28,26 @@ export class AuthController {
         const user: UserDto = req.user;
         if (!user || !user.id) {
             this.LOGGER.error(`User not found`);
-            res.redirect(HttpStatus.UNAUTHORIZED, '/login?action=login&status=401');
+            res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }
         const authToken: AuthToken = await this.authService.login(req.user);
         if (!authToken) {
             this.LOGGER.error(`Login failed`);
-            res.redirect(HttpStatus.UNAUTHORIZED, '/login?action=login&status=401');
+            res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }
         this.LOGGER.debug(`${user.name} logged in`);
-        res.cookie('Authorization', authToken.access_token, {
+        res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
             httpOnly: true,
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 3600000
-        }).status(HttpStatus.OK).redirect(`/user/${user.id}?action=login&status=200`);
+        }).redirect(`/user/${user.id}?action=login&status=${HttpStatus.OK}`);
     }
 
-    // TODO: IMPL
-    async logout() {}
+    @Get('logout')
+    async logout(@Res() res: Response): Promise<void> {
+        this.LOGGER.debug(`Logging out user`);
+        res.clearCookie(AUTH_TOKEN_NAME);
+        res.redirect(`/?action=logout&status=${HttpStatus.OK}`);
+    }
 }

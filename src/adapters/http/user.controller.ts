@@ -25,6 +25,9 @@ export class UserController {
     async create(@Body() createUserDto: CreateUserDto) {
         try {
             const createdUser: UserDto = await this.userService.create(createUserDto);
+            if (!createdUser) {
+                throw new Error(`Could not create user`);
+            }
             return {
                 message: `Account created for ${createdUser.name}`,
                 url: `/user/${createdUser.id}`

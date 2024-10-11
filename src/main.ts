@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { create } from 'express-handlebars';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './adapters/http/http.exception.filter';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -21,6 +22,8 @@ async function bootstrap() {
     app.setViewEngine('hbs');
 
     app.use(cookieParser());
+
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     app.useGlobalPipes(new ValidationPipe({
         whitelist: true, // Strip unknown properties

@@ -1,15 +1,15 @@
 export interface AuthToken {
-    /**
-     * Authorization token used in requests
-     */
-    access_token: string;
+  /**
+   * Authorization token used in requests
+   */
+  access_token: string;
 }
 
 export interface JwtPayload {
-    email: string;
+  email: string;
 
-    /**
-     * User's unique ID
-     */
-    sub: string;
+  /**
+   * User's unique ID
+   */
+  sub: string;
 }

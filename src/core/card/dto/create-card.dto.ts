@@ -1,42 +1,48 @@
-import { IsArray, IsBoolean, IsEnum, IsLowercase, IsOptional, IsString } from 'class-validator';
-import { CardRarity } from '../card-rarity.enum';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsLowercase,
+  IsOptional,
+  IsString,
+} from "class-validator";
+import { CardRarity } from "../card-rarity.enum";
 
 export class CreateCardDto {
+  @IsString()
+  readonly imgSrc: string;
 
-    @IsString()
-    readonly imgSrc: string;
+  @IsBoolean()
+  readonly isReserved?: boolean;
 
-    @IsBoolean()
-    readonly isReserved?: boolean;
+  @IsOptional()
+  @IsString()
+  readonly manaCost?: string;
 
-    @IsOptional()
-    @IsString()
-    readonly manaCost?: string;
+  @IsString()
+  readonly name: string;
 
-    @IsString()
-    readonly name: string;
+  @IsOptional()
+  @IsArray()
+  readonly notes?: string[];
 
-    @IsOptional()
-    @IsArray()
-    readonly notes?: string[];
+  @IsString()
+  readonly number: string;
 
-    @IsString()
-    readonly number: string;
+  @IsOptional()
+  @IsString()
+  readonly originalText?: string;
 
-    @IsOptional()
-    @IsString()
-    readonly originalText?: string;
+  @IsEnum(CardRarity)
+  readonly rarity: string;
 
-    @IsEnum(CardRarity)
-    readonly rarity: string;
+  @IsLowercase()
+  @IsString()
+  readonly setCode: string;
 
-    @IsLowercase()
-    @IsString()
-    readonly setCode: string;
+  @IsString()
+  readonly url: string;
 
-    @IsString()
-    readonly url: string;
-
-    @IsString()
-    readonly uuid: string;
+  @IsString()
+  readonly uuid: string;
 }

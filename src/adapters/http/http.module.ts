@@ -1,36 +1,30 @@
-import { Logger, Module } from '@nestjs/common';
-import { CardMapper } from 'src/core/card/card.mapper';
-import { CoreModule } from 'src/core/core.module';
-import { CardController } from './card.controller';
-import { InventoryController } from './inventory.controller';
-import { SetController } from './set.controller';
-import { UserController } from './user.controller';
-import { AuthController } from './auth/auth.controller';
-import { HomeController } from './home.controller';
+import { Logger, Module } from "@nestjs/common";
+import { CardMapper } from "src/core/card/card.mapper";
+import { CoreModule } from "src/core/core.module";
+import { CardController } from "./card.controller";
+import { InventoryController } from "./inventory.controller";
+import { SetController } from "./set.controller";
+import { UserController } from "./user.controller";
+import { AuthController } from "./auth/auth.controller";
+import { HomeController } from "./home.controller";
 
 @Module({
-    controllers: [
-        AuthController,
-        CardController,
-        HomeController,
-        InventoryController,
-        SetController,
-        UserController,
-    ],
-    imports: [
-        CoreModule,
-    ],
-    providers: [
-        CardMapper,
-    ],
-    exports: [
-        CoreModule,
-    ],
+  controllers: [
+    AuthController,
+    CardController,
+    HomeController,
+    InventoryController,
+    SetController,
+    UserController,
+  ],
+  imports: [CoreModule],
+  providers: [CardMapper],
+  exports: [CoreModule],
 })
 export class HttpModule {
-    private readonly LOGGER: Logger = new Logger(HttpModule.name);
+  private readonly LOGGER: Logger = new Logger(HttpModule.name);
 
-    constructor() {
-        this.LOGGER.debug(`Initialized`);
-    }
+  constructor() {
+    this.LOGGER.debug(`Initialized`);
+  }
 }

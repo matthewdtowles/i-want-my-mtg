@@ -21,6 +21,7 @@ import { UserDto } from "src/core/user/dto/user.dto";
 import { UserServicePort } from "src/core/user/ports/user.service.port";
 import { CreateUserDto } from "../../core/user/dto/create-user.dto";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
 
 @Controller("user")
 export class UserController {
@@ -88,8 +89,12 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
-  async remove(@Param("id") id: number, @Res() res: Response) {
+  async remove(@Param("id") id: number, @Res() res: Response, @Req() req: Request) {
     try {
+      // TODO: FIX THIS!!!
+      if (!req.user || id !== req.user.id) {
+        throw new Error("Unauthorized to delete user");
+      }
       await this.userService.remove(id);
       const user: UserDto = await this.userService.findById(id);
       if (user && user.name) {

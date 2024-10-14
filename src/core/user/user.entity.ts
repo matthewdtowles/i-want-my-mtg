@@ -21,6 +21,11 @@ export class User {
   @OneToMany(() => Inventory, (inventory) => inventory.user)
   inventory: Inventory[];
 
-  @Column({ type: "enum", enum: UserRole, array: true, })
+  @Column({
+    type: "enum",
+    enum: UserRole,
+    array: true,
+    default: [UserRole.User],
+  })
   roles: UserRole[];
 }

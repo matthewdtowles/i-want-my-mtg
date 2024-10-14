@@ -58,6 +58,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get(":id")
   @Render("user")
+  // TODO: refactor to remove "id" param and use req.user.id to avoid spurious checks/errors 
   async findById(@Param("id", ParseIntPipe) id: number, @Req() req: Request) {
     const foundUser: UserDto = await this.userService.findById(id);
     const login: boolean =
@@ -65,6 +66,7 @@ export class UserController {
       req.query &&
       req.query.status === "200" &&
       req.query.action === "login";
+    const authorized: boolean = login && req.user && req.user.id === id;
     return {
       message: login ? `${foundUser.name} - logged in` : null,
       user: await this.userService.findById(id),

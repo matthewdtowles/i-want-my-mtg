@@ -1,9 +1,11 @@
 import {
   IsEmail,
+  IsEnum,
   IsString,
   IsStrongPassword,
   MinLength,
 } from "class-validator";
+import { UserRole } from "src/adapters/http/auth/user.role";
 
 export class CreateUserDto {
   @IsEmail()
@@ -15,4 +17,7 @@ export class CreateUserDto {
 
   @IsStrongPassword()
   readonly password: string;
+
+  @IsEnum(UserRole, { each: true })
+  readonly roles: string[]; 
 }

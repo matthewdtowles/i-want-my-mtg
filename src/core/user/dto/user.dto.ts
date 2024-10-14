@@ -1,4 +1,5 @@
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
+import { IsEnum } from "class-validator";
 import { UserRole } from "src/adapters/http/auth/user.role";
 import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
 
@@ -9,5 +10,8 @@ export class UserDto {
 
   @Type(() => InventoryDto)
   readonly inventory: InventoryDto[];
-  readonly roles: UserRole[];
+
+  @Transform(({ value }) => value.map((role: UserRole) => role.toString()))
+  @IsEnum(UserRole, { each: true })
+  readonly roles: string[];
 }

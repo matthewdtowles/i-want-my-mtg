@@ -18,6 +18,6 @@ export class CreateUserDto {
   @IsStrongPassword()
   readonly password: string;
 
-  @IsEnum(UserRole, { each: true })
-  readonly roles: string[]; 
+  @IsEnum(UserRole)
+  readonly role: string;
 }

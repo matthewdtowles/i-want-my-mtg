@@ -5,8 +5,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Param,
-  ParseIntPipe,
   Patch,
   Post,
   Redirect,
@@ -15,13 +13,13 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { UpdateUserDto } from "src/core/user/dto/update-user.dto";
 import { UserDto } from "src/core/user/dto/user.dto";
 import { UserServicePort } from "src/core/user/ports/user.service.port";
 import { CreateUserDto } from "../../core/user/dto/create-user.dto";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
-import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
+import { AuthenticatedRequest } from "./auth/authenticated.request";
 
 @Controller("user")
 export class UserController {
@@ -56,17 +54,16 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(":id")
+  @Get()
   @Render("user")
-  // TODO: refactor to remove "id" param and use req.user.id to avoid spurious checks/errors 
-  async findById(@Param("id", ParseIntPipe) id: number, @Req() req: Request) {
+  async findById(req: AuthenticatedRequest) {
+    const id: number = req.user.id;
     const foundUser: UserDto = await this.userService.findById(id);
     const login: boolean =
       foundUser &&
       req.query &&
-      req.query.status === "200" &&
+      req.query.status === HttpStatus.OK.toString() &&
       req.query.action === "login";
-    const authorized: boolean = login && req.user && req.user.id === id;
     return {
       message: login ? `${foundUser.name} - logged in` : null,
       user: await this.userService.findById(id),
@@ -90,11 +87,14 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(":id")
-  async remove(@Param("id") id: number, @Res() res: Response, @Req() req: Request) {
+  @Delete()
+  async remove(
+    @Res() res: Response,
+    @Req() req: AuthenticatedRequest,
+  ) {
     try {
-      // TODO: FIX THIS!!!
-      if (!req.user || id !== req.user.id) {
+      const id: number = req.user.id;
+      if (!req.user) {
         throw new Error("Unauthorized to delete user");
       }
       await this.userService.remove(id);

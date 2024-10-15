@@ -22,10 +22,8 @@ export class User {
   inventory: Inventory[];
 
   @Column({
-    type: "enum",
     enum: UserRole,
-    array: true,
-    default: [UserRole.User],
+    default: UserRole.User,
   })
-  roles: UserRole[];
+  role: UserRole;
 }

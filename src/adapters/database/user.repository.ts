@@ -8,7 +8,7 @@ import { User } from "../../core/user/user.entity";
 export class UserRepository implements UserRepositoryPort {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async create(user: User): Promise<User | null> {
     const userResult: InsertResult = await this.userRepository.insert(user);
@@ -21,6 +21,7 @@ export class UserRepository implements UserRepositoryPort {
       name: userResult.generatedMaps[0].name,
       inventory: userResult.generatedMaps[0].inventory,
       password: userResult.generatedMaps[0].password,
+      role: userResult.generatedMaps[0].role,
     };
     return savedUser;
   }

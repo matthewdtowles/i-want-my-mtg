@@ -10,7 +10,7 @@ import { UserRole } from "src/adapters/http/auth/user.role";
 export class UserMapper {
   constructor(
     @Inject(InventoryMapper) private readonly inventoryMapper: InventoryMapper,
-  ) { }
+  ) {}
 
   entityToDto(user: User): UserDto {
     const userDto: UserDto = {
@@ -18,7 +18,7 @@ export class UserMapper {
       email: user.email,
       name: user.name,
       inventory: this.inventoryMapper.toDtos(user.inventory),
-      roles: user.roles,
+      role: user.role,
     };
     return userDto;
   }
@@ -29,9 +29,7 @@ export class UserMapper {
     user.email = userDto.email;
     user.name = userDto.name;
     user.inventory = this.inventoryMapper.toEntities(userDto.inventory);
-    userDto.roles.map(role => {
-      user.roles.push(UserRole[role as keyof typeof UserRole]);
-    });
+    user.role = UserRole[userDto.role as keyof typeof UserRole];
     return user;
   }
 
@@ -40,9 +38,7 @@ export class UserMapper {
     user.email = userDto.email;
     user.name = userDto.name;
     user.password = userDto.password;
-    userDto.roles.map(role => {
-      user.roles.push(UserRole[role as keyof typeof UserRole]);
-    });
+    user.role = UserRole[userDto.role as keyof typeof UserRole];
     return user;
   }
 
@@ -53,6 +49,7 @@ export class UserMapper {
     user.email = userDto.email;
     user.name = userDto.name;
     user.password = userDto.password;
+    user.role = UserRole[userDto.role as keyof typeof UserRole];
     return user;
   }
 }

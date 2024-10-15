@@ -21,7 +21,8 @@ import { CommandModule } from "nestjs-command";
         database: configService.get<string>("DB_NAME"),
         autoLoadEntities: true,
         synchronize: configService.get("NODE_ENV") !== "production",
-        dropSchema: false,
+        dropSchema: true,
+        //dropSchema: false,
         logging:
           configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
         extra: {

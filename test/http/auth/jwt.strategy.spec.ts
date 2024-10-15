@@ -15,8 +15,9 @@ const mockUserDto: UserDto = {
 };
 
 const mockJwtPayload: JwtPayload = {
-  sub: "1",
-  email: "test@test.com",
+    sub: "1",
+    email: "test@test.com",
+    role: "user",
 };
 
 describe("JwtStrategy", () => {

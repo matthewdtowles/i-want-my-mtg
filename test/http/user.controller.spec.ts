@@ -88,7 +88,7 @@ describe("UsersController", () => {
 
   it("should create a user", () => {
     controller.create(createUserDto);
-    const expectedUrl: string = `/user/${mockUser.id}`;
+    const expectedUrl: string = `/user`;
     expect(controller.create(createUserDto)).resolves.toEqual({
       message: `Account created for ${createUserDto.name}`,
       url: expectedUrl,

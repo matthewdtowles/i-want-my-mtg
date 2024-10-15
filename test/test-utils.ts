@@ -140,7 +140,6 @@ export class TestUtils {
       email: this.MOCK_USER_EMAIL,
       name: this.MOCK_USER_NAME,
       password: this.MOCK_PASSWORD,
-      role: UserRole.User,
     };
     return user;
   }

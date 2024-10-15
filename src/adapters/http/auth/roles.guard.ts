@@ -4,18 +4,18 @@ import { UserDto } from "src/core/user/dto/user.dto";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const roles: string[] = this.reflector.get<string[]>(
-      "roles",
+    const role: string = this.reflector.get<string>(
+      "role",
       context.getHandler(),
     );
-    if (!roles) {
+    if (!role) {
       return true;
     }
     const request = context.switchToHttp().getRequest();
     const user: UserDto = request.user;
-    return roles.some((role) => user.role?.includes(role));
+    return role === user.role;
   }
 }

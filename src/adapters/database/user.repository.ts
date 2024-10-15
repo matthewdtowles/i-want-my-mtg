@@ -12,7 +12,7 @@ export class UserRepository implements UserRepositoryPort {
 
   async create(user: User): Promise<User | null> {
     const userResult: InsertResult = await this.userRepository.insert(user);
-    if (userResult.raw.affectedRows === 0) {
+    if (!userResult || !userResult.raw || userResult.raw.affectedRows < 1) {
       return null;
     }
     const savedUser: User = {

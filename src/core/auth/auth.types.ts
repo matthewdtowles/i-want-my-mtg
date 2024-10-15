@@ -12,4 +12,6 @@ export interface JwtPayload {
    * User's unique ID
    */
   sub: string;
+
+  role: string;
 }

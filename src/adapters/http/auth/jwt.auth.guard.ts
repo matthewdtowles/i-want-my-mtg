@@ -14,7 +14,18 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     this.LOGGER.debug(`JwtAuthGuard canActivate called`);
     const request = context.switchToHttp().getRequest<Request>();
     const jwt = request.cookies[AUTH_TOKEN_NAME];
-    request.headers["authorization"] = `Bearer ${jwt}`;
-    return super.canActivate(context);
+    if (!jwt) {
+      this.LOGGER.error(`No JWT found in request`);
+      return false;
+    }
+    this.LOGGER.debug(`JWT found in request: ${jwt}`);
+    request.headers[AUTH_TOKEN_NAME] = `Bearer ${jwt}`;
+    const result = super.canActivate(context);
+    if (result) {
+      this.LOGGER.debug(`CanActivate result: true`);
+    } else {
+      this.LOGGER.error(`CanActivate result: false`);
+    }
+    return result;
   }
 }

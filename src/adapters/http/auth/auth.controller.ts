@@ -24,7 +24,7 @@ export class AuthController {
 
   constructor(
     @Inject(AuthServicePort) private readonly authService: AuthServicePort,
-  ) { }
+  ) {}
 
   @Get("login")
   @Render("login")
@@ -58,7 +58,7 @@ export class AuthController {
         secure: process.env.NODE_ENV === "production",
         maxAge: 3600000,
       })
-      .redirect(`/user/${user.id}?action=login&status=${HttpStatus.OK}`);
+      .redirect(`/user?action=login&status=${HttpStatus.OK}`);
   }
 
   @Get("logout")

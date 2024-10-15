@@ -7,6 +7,7 @@ import { UserRepositoryPort } from "../../../src/core/user/ports/user.repository
 import { User } from "../../../src/core/user/user.entity";
 import { UserMapper } from "../../../src/core/user/user.mapper";
 import { UserService } from "../../../src/core/user/user.service";
+import { UserRole } from "../../../src/adapters/http/auth/user.role";
 
 describe("UserService", () => {
   let service: UserService;
@@ -16,7 +17,6 @@ describe("UserService", () => {
     name: "test-username1",
     email: "test-email1@iwantmymtg.com",
     password: "abCD12#$",
-    role: "user",
   };
 
   const userDto: UserDto = {
@@ -24,7 +24,7 @@ describe("UserService", () => {
     name: createUser.name,
     email: createUser.email,
     inventory: [],
-    role: createUser.role,
+    role: UserRole.User,
   };
 
   const mockUser: User = new User();
@@ -33,7 +33,7 @@ describe("UserService", () => {
   mockUser.email = createUser.email;
   mockUser.password = "encrypt3dP455W0Rd";
   mockUser.inventory = [];
-  mockUser.role = createUser.role;
+  mockUser.role = UserRole.User;
 
   const mockUserRepository: UserRepositoryPort = {
     create: jest.fn().mockResolvedValue(mockUser),

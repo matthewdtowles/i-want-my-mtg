@@ -26,6 +26,7 @@ export class AuthService implements AuthServicePort {
     const payload: JwtPayload = {
       email: user.email,
       sub: user.id.toString(),
+      role: user.role,
     }
     const authToken: AuthToken = {
       access_token: await this.jwtService.signAsync(payload)

@@ -2,15 +2,15 @@
     <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/sets">Sets</a></li>
-        <li><a href="#">My Inventory</a></li>
-        <li><a href="#">My Account</a></li>
-        {{!-- If not logged in --}}
+        <li><a href="/inventory">My Inventory</a></li>
+        {{!-- TODO: If logged in: --}}
+        <li><a href="/user">My Account</a></li>
+        {{!-- TODO: Else/If not logged in --}}
         <li>
             <a href="/auth/login">Login</a>
             <span> | </span>
             <a href="/user/create">Create Account</a>
         </li>
-        {{!-- If logged in: My Profile link --}}
     </ul>
 </nav>
 <p class="{{ status }}">{{ message }}</p>

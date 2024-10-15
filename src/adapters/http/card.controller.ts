@@ -22,7 +22,7 @@ export class CardController {
 
   constructor(
     @Inject(CardServicePort) private readonly cardService: CardServicePort,
-  ) { }
+  ) {}
 
   @Post()
   @Roles(UserRole.Admin)
@@ -37,9 +37,7 @@ export class CardController {
 
   @Patch(":id")
   @Roles(UserRole.Admin)
-  async update(
-    @Body() updateCardDtos: UpdateCardDto[],
-  ) {
+  async update(@Body() updateCardDtos: UpdateCardDto[]) {
     return await this.cardService.save(updateCardDtos);
   }
 

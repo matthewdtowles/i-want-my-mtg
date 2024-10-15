@@ -25,7 +25,7 @@ import { AuthenticatedRequest } from "./auth/authenticated.request";
 export class UserController {
   constructor(
     @Inject(UserServicePort) private readonly userService: UserServicePort,
-  ) { }
+  ) {}
 
   @Get("create")
   @Render("create-user")
@@ -43,7 +43,7 @@ export class UserController {
       }
       return {
         message: `Account created for ${createdUser.name}`,
-        url: `/user/${createdUser.id}`,
+        url: `/user`,
       };
     } catch (error) {
       return {
@@ -56,7 +56,15 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @Render("user")
-  async findById(req: AuthenticatedRequest) {
+  async findById(@Req() req: AuthenticatedRequest) {
+    if (!req) {
+      throw new Error("Request undefined, unauthorized to view user");
+    }
+    if (!req.user) {
+      throw new Error("Request user undefined, unauthorized to view user");
+    }
+    // TODO: temporary log - remove after testing 
+    console.log(`User ${req.user.id} found`);
     const id: number = req.user.id;
     const foundUser: UserDto = await this.userService.findById(id);
     const login: boolean =
@@ -88,10 +96,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Delete()
-  async remove(
-    @Res() res: Response,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async remove(@Res() res: Response, @Req() req: AuthenticatedRequest) {
     try {
       const id: number = req.user.id;
       if (!req.user) {

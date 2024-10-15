@@ -13,7 +13,7 @@ export class UserCli {
   ) { }
 
   @Command({
-    command: "user:create <name> <email> <password> <role>",
+    command: "user:create <name> <email> <password>", 
     describe: "Create user with given name and email",
   })
   async createUser(
@@ -35,18 +35,11 @@ export class UserCli {
       type: "string",
     })
     _password: string,
-    @Positional({
-      name: "role",
-      describe: "user role",
-      type: "string",
-    })
-    _role: string,
   ): Promise<boolean> {
     const createDto: CreateUserDto = {
         name: _name,
         email: _email,
         password: _password,
-        role: _role,
     };
     const user: UserDto = await this.service.create(createDto);
     this.LOGGER.log(`Created user: ${JSON.stringify(user)}`);

@@ -38,7 +38,6 @@ export class UserMapper {
     user.email = userDto.email;
     user.name = userDto.name;
     user.password = userDto.password;
-    user.role = UserRole[userDto.role as keyof typeof UserRole];
     return user;
   }
 
@@ -49,7 +48,6 @@ export class UserMapper {
     user.email = userDto.email;
     user.name = userDto.name;
     user.password = userDto.password;
-    user.role = UserRole[userDto.role as keyof typeof UserRole];
     return user;
   }
 }

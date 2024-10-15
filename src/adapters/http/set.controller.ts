@@ -8,7 +8,7 @@ export class SetController {
 
   constructor(
     @Inject(SetServicePort) private readonly setService: SetServicePort,
-  ) { }
+  ) {}
 
   @Get()
   @Render("setListPage")

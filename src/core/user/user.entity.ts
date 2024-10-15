@@ -21,9 +21,6 @@ export class User {
   @OneToMany(() => Inventory, (inventory) => inventory.user)
   inventory: Inventory[];
 
-  @Column({
-    enum: UserRole,
-    default: UserRole.User,
-  })
-  role: UserRole;
+  @Column({ default: UserRole.User.toString() })
+  role: string;
 }

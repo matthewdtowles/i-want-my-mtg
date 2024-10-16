@@ -8,6 +8,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 import { Request } from "express";
 import { AUTH_TOKEN_NAME } from "./auth.constants";
+import { AuthenticatedRequest } from "./authenticated.request";
 
 /**
  * Trigger local auth strategy to validate email and password during login
@@ -25,6 +26,7 @@ export class LocalAuthGuard extends AuthGuard("local") {
       this.LOGGER.error(`No request found`);
       return false;
     }
+    this.LOGGER.debug(`Request found with cookies: ${JSON.stringify(request.cookies)}`);
     const jwt = request.cookies[AUTH_TOKEN_NAME];
     if (!jwt) {
       this.LOGGER.error(`No JWT found in request`);

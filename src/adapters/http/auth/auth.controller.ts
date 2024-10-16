@@ -39,7 +39,7 @@ export class AuthController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
-    this.LOGGER.debug(`Attempt to authenticate`);
+    this.LOGGER.debug(`Attempt to authenticate ${JSON.stringify(req.user)}`);
     const user: UserDto = req.user;
     if (!user || !user.id) {
       this.LOGGER.error(`User not found`);

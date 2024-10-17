@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { IngestMissingCards } from "../ingestion/ingestion.decorator";
-import { IngestionServicePort } from "../ingestion/ingestion.service.port";
+import { IngestionServicePort } from "../ingestion/ports/ingestion.service.port";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { CardDto } from "./dto/card.dto";

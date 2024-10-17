@@ -1,6 +1,6 @@
 import { Logger, Module } from "@nestjs/common";
 import { IngestionOrchestrator } from "./ingestion.orchestrator";
-import { IngestionServicePort } from "./ingestion.service.port";
+import { IngestionServicePort } from "./ports/ingestion.service.port";
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
 import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
 import { CardModule } from "../card/card.module";
@@ -9,11 +9,15 @@ import { SetServicePort } from "../set/ports/set.service.port";
 import { SetService } from "../set/set.service";
 import { CardServicePort } from "../card/ports/card.service.port";
 import { CardService } from "../card/card.service";
+import { IngestionOrchestratorPort } from "./ports/ingestion.orchestrator.port";
 
 @Module({
   imports: [MtgJsonIngestionModule, CardModule, SetModule],
   providers: [
-    IngestionOrchestrator,
+    {
+      provide: IngestionOrchestratorPort,
+      useClass: IngestionOrchestrator,
+    },
     {
       provide: IngestionServicePort,
       useClass: MtgJsonIngestionService,
@@ -27,7 +31,7 @@ import { CardService } from "../card/card.service";
       useClass: SetService,
     },
   ],
-  exports: [IngestionOrchestrator],
+  exports: [IngestionOrchestratorPort],
 })
 export class IngestionModule {
   private readonly LOGGER: Logger = new Logger(IngestionModule.name);

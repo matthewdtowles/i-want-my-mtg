@@ -5,10 +5,11 @@ import { CardServicePort } from "../card/ports/card.service.port";
 import { CreateSetDto } from "../set/dto/create-set.dto";
 import { SetDto } from "../set/dto/set.dto";
 import { SetServicePort } from "../set/ports/set.service.port";
-import { IngestionServicePort } from "./ingestion.service.port";
+import { IngestionServicePort } from "./ports/ingestion.service.port";
+import { IngestionOrchestratorPort } from "./ports/ingestion.orchestrator.port";
 
 @Injectable()
-export class IngestionOrchestrator {
+export class IngestionOrchestrator implements IngestionOrchestratorPort {
   private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
 
   constructor(

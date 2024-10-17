@@ -1,7 +1,7 @@
 import { Logger, Module } from "@nestjs/common";
 import { MtgJsonIngestionService } from "./mtgjson-ingestion.service";
 import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
-import { IngestionServicePort } from "src/core/ingestion/ingestion.service.port";
+import { IngestionServicePort } from "src/core/ingestion/ports/ingestion.service.port";
 import { MtgJsonApiClient } from "./mtgjson-api.client";
 
 @Module({

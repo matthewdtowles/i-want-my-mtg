@@ -1,5 +1,5 @@
-import { CreateCardDto } from "../card/dto/create-card.dto";
-import { CreateSetDto } from "../set/dto/create-set.dto";
+import { CreateCardDto } from "../../card/dto/create-card.dto";
+import { CreateSetDto } from "../../set/dto/create-set.dto";
 
 export const IngestionServicePort = "IngestionServicePort";
 

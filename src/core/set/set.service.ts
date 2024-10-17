@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { IngestionServicePort } from "../ingestion/ingestion.service.port";
+import { IngestionServicePort } from "../ingestion/ports/ingestion.service.port";
 import { CreateSetDto } from "./dto/create-set.dto";
 import { SetDto } from "./dto/set.dto";
 import { UpdateSetDto } from "./dto/update-set.dto";

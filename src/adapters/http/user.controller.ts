@@ -20,11 +20,15 @@ import { UserServicePort } from "src/core/user/ports/user.service.port";
 import { CreateUserDto } from "../../core/user/dto/create-user.dto";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
+import { AuthServicePort } from "src/core/auth/ports/auth.service.port";
+import { AuthToken } from "src/core/auth/auth.types";
+import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
 
 @Controller("user")
 export class UserController {
   constructor(
     @Inject(UserServicePort) private readonly userService: UserServicePort,
+    @Inject(AuthServicePort) private readonly authService: AuthServicePort,
   ) {}
 
   @Get("create")
@@ -34,22 +38,24 @@ export class UserController {
   }
 
   @Post("create")
-  @Redirect()
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
     try {
       const createdUser: UserDto = await this.userService.create(createUserDto);
       if (!createdUser) {
         throw new Error(`Could not create user`);
       }
-      return {
-        message: `Account created for ${createdUser.name}`,
-        url: `/user`,
-      };
+      const authToken: AuthToken = await this.authService.login(createdUser);
+      if (!authToken) {
+        throw new Error(`Could not create auth token`);
+      }
+      res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 3600000,
+      }).redirect(`/user?action=create&status=${HttpStatus.CREATED}`);
     } catch (error) {
-      return {
-        message: `${error.message}`,
-        url: `/user/create`,
-      };
+      res.redirect(`/user/create?action=create&status=${HttpStatus.BAD_REQUEST}`);
     }
   }
 

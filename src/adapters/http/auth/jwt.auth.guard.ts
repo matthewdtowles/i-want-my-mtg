@@ -20,12 +20,6 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     }
     this.LOGGER.debug(`JWT found in request: ${jwt}`);
     request.headers[AUTH_TOKEN_NAME] = `Bearer ${jwt}`;
-    const result = super.canActivate(context);
-    if (result) {
-      this.LOGGER.debug(`CanActivate result: true`);
-    } else {
-      this.LOGGER.error(`CanActivate result: false`);
-    }
-    return result;
+    return super.canActivate(context);
   }
 }

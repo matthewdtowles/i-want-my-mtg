@@ -5,10 +5,6 @@ import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-
 import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
 import { CardModule } from "../card/card.module";
 import { SetModule } from "../set/set.module";
-import { SetServicePort } from "../set/ports/set.service.port";
-import { SetService } from "../set/set.service";
-import { CardServicePort } from "../card/ports/card.service.port";
-import { CardService } from "../card/card.service";
 import { IngestionOrchestratorPort } from "./ports/ingestion.orchestrator.port";
 
 @Module({
@@ -21,14 +17,6 @@ import { IngestionOrchestratorPort } from "./ports/ingestion.orchestrator.port";
     {
       provide: IngestionServicePort,
       useClass: MtgJsonIngestionService,
-    },
-    {
-      provide: CardServicePort,
-      useClass: CardService,
-    },
-    {
-      provide: SetServicePort,
-      useClass: SetService,
     },
   ],
   exports: [IngestionOrchestratorPort],

@@ -1,0 +1,20 @@
+<table>
+    <thead>
+        <th>Card No.</th>
+        <th>Name</th>
+        <th>Mana Cost</th>
+        <th>Rarity</th>
+        <th>Price</th>
+    </thead>
+    <tbody>
+    {{#each cards}}
+        <tr>
+            <td>{{this.number}}</td>
+            <td><a href="{{this.url}}">{{this.name}}</a></td>
+            <td>{{>manaCost}}</td>
+            <td>{{this.rarity}}</td>
+            <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

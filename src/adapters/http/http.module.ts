@@ -1,5 +1,4 @@
 import { Logger, Module } from "@nestjs/common";
-import { CardMapper } from "src/core/card/card.mapper";
 import { CoreModule } from "src/core/core.module";
 import { CardController } from "./card.controller";
 import { InventoryController } from "./inventory.controller";
@@ -18,7 +17,6 @@ import { HomeController } from "./home.controller";
     UserController,
   ],
   imports: [CoreModule],
-  providers: [CardMapper],
   exports: [CoreModule],
 })
 export class HttpModule {

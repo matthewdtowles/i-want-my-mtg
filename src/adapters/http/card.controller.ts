@@ -31,8 +31,7 @@ export class CardController {
   @Role(UserRole.Admin)
   @Render("ingestCards")
   async ingestCards(@Param("setCode") setCode: string): Promise<CardDto[]> {
-    return [];
-    // return await this.ingestionOrchestrator.ingestSetCards(setCode);
+    return await this.ingestionOrchestrator.ingestSetCards(setCode);
   }
 
   @Get(":id")

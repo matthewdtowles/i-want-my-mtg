@@ -2,14 +2,16 @@ import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/commo
 import { Reflector } from "@nestjs/core";
 import { UserDto } from "src/core/user/dto/user.dto";
 import { UserRole } from "./user.role";
+import { AuthenticatedRequest } from "./authenticated.request";
+import * as util from 'util';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   private readonly LOGGER: Logger = new Logger(RolesGuard.name);
 
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector,) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     this.LOGGER.debug(`canActivate invoked`);
     const role: string = this.reflector.get<string>(
       "role",
@@ -19,15 +21,8 @@ export class RolesGuard implements CanActivate {
       this.LOGGER.debug(`no role specified, allowing access`);
       return true;
     }
-
-    this.LOGGER.debug(`role specified: ${role}`);
-    // TODO: request.user is undefined --- investigate why
-    const request = context.switchToHttp().getRequest();
-    
-    this.LOGGER.debug(`request.user: ${JSON.stringify(request.user)}`);
-    
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user: UserDto = request.user;
-    
     this.LOGGER.debug(`user: ${JSON.stringify(user)}`);
     return user.role === UserRole.Admin || role === user.role;
   }

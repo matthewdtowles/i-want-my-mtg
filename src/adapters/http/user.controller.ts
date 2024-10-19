@@ -7,7 +7,6 @@ import {
   Inject,
   Patch,
   Post,
-  Redirect,
   Render,
   Req,
   Res,
@@ -69,8 +68,6 @@ export class UserController {
     if (!req.user) {
       throw new Error("Request user undefined, unauthorized to view user");
     }
-    // TODO: temporary log - remove after testing 
-    console.log(`User ${req.user.id} found`);
     const id: number = req.user.id;
     const foundUser: UserDto = await this.userService.findById(id);
     const login: boolean =

@@ -33,7 +33,6 @@ export class AuthController {
     return {};
   }
 
-  // TODO: is it necessary to clear cookie/header in case another user is logged in on the same device?
   @UseGuards(LocalAuthGuard)
   @Post("login")
   async login(

@@ -35,10 +35,12 @@ export class CardController {
   }
 
   @Get(":id")
+  @Render("card")
   async findOne(@Param("id") id: string): Promise<CardDto> {
     return await this.cardService.findById(Number(id));
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(":id")
   @Role(UserRole.Admin)
   async update(@Body() updateCardDtos: UpdateCardDto[]) {

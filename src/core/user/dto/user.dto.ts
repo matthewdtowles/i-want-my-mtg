@@ -1,11 +1,16 @@
-import { Type } from 'class-transformer';
-import { InventoryDto } from 'src/core/inventory/dto/inventory.dto';
+import { Type } from "class-transformer";
+import { IsEnum } from "class-validator";
+import { UserRole } from "src/adapters/http/auth/user.role";
+import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
 
 export class UserDto {
-    readonly id: number;
-    readonly email: string;
-    readonly name: string;
+  readonly id: number;
+  readonly email: string;
+  readonly name: string;
 
-    @Type(() => InventoryDto)
-    readonly inventory: InventoryDto[];
+  @Type(() => InventoryDto)
+  readonly inventory: InventoryDto[];
+
+  @IsEnum(UserRole)
+  readonly role: string;
 }

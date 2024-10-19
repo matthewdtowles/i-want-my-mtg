@@ -1,23 +1,26 @@
-import { Exclude } from 'class-transformer';
-import { Inventory } from 'src/core/inventory/inventory.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from "class-transformer";
+import { UserRole } from "src/adapters/http/auth/user.role";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @Column({ unique: true })
+  email: string;
 
-    @Column({ unique: true })
-    email: string;
+  @Column()
+  name: string;
 
-    @Column()
-    name: string;
+  @Column()
+  @Exclude()
+  password: string;
 
-    @Column()
-    @Exclude()
-    password: string;
+  @OneToMany(() => Inventory, (inventory) => inventory.user)
+  inventory: Inventory[];
 
-    @OneToMany(() => Inventory, inventory => inventory.user)
-    inventory: Inventory[];
+  @Column({ default: UserRole.User.toString() })
+  role: string;
 }

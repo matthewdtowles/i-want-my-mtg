@@ -38,6 +38,6 @@ export class SetCli {
 
 
     private formatOutput(sets: SetDto[] | SetDto): string {
-        return `\n${JSON.stringify(sets, null, 4)}`;
+        return `\n${JSON.stringify(sets, null, 2)}`;
     }
 }

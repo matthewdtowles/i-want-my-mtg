@@ -13,7 +13,7 @@ export class InventoryService implements InventoryServicePort {
     @Inject(InventoryRepositoryPort)
     private readonly repository: InventoryRepositoryPort,
     @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
-  ) { }
+  ) {}
 
   async save(
     inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[],

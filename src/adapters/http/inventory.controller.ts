@@ -16,7 +16,6 @@ import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { UpdateInventoryDto } from "src/core/inventory/dto/update-inventory.dto";
 import { Response } from "express";
-import { UserDto } from "src/core/user/dto/user.dto";
 
 @Controller("inventory")
 export class InventoryController {

@@ -5,11 +5,15 @@ import { User } from "../user/user.entity";
 import { CreateInventoryDto } from "./dto/create-inventory.dto";
 import { InventoryDto } from "./dto/inventory.dto";
 import { UpdateInventoryDto } from "./dto/update-inventory.dto";
+import { UserMapper } from "../user/user.mapper";
 
 @Injectable()
 export class InventoryMapper {
-  // TODO: do we need to inject CardMapper here?
-  constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
+  // TODO: do we need to inject CardMapper here? or UserMapper?
+  constructor(
+    @Inject(CardMapper) private readonly cardMapper: CardMapper,
+    @Inject(UserMapper) private readonly userMapper: UserMapper,
+  ) {}
 
   toEntities(
     inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[],
@@ -48,9 +52,9 @@ export class InventoryMapper {
       return undefined;
     }
     const inventory: InventoryDto = {
-      cardId: inventoryEntity.cardId,
+      card: this.cardMapper.entityToDto(inventoryEntity.card),
       quantity: inventoryEntity.quantity,
-      userId: inventoryEntity.userId,
+      user: this.userMapper.entityToDto(inventoryEntity.user),
     };
     return inventory;
   }

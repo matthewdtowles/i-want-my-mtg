@@ -31,7 +31,7 @@ export class InventoryService implements InventoryServicePort {
   async remove(inventoryItems: InventoryDto[]): Promise<void> {
     await Promise.all(
       inventoryItems.map((item) =>
-        this.repository.delete(item.userId, item.cardId),
+        this.repository.delete(item.user.id, item.card.id),
       ),
     );
   }

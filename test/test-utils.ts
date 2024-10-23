@@ -229,7 +229,7 @@ export class TestUtils {
     const dto: InventoryDto = {
       card: inventory.card ? this.mapCardEntityToDto(inventory.card) : undefined,
       quantity: inventory.quantity,
-      user: inventory.user ? this.getMockUserDto() : undefined,
+      user: inventory.user.id || 0,
     };
     return dto;
   }

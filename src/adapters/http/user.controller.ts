@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Inject,
+  Logger,
   Patch,
   Post,
   Render,
@@ -25,6 +26,9 @@ import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
 
 @Controller("user")
 export class UserController {
+
+  private readonly LOGGER = new Logger(UserController.name);
+
   constructor(
     @Inject(UserServicePort) private readonly userService: UserServicePort,
     @Inject(AuthServicePort) private readonly authService: AuthServicePort,
@@ -63,10 +67,14 @@ export class UserController {
   @Render("user")
   async findById(@Req() req: AuthenticatedRequest) {
     if (!req) {
+      this.LOGGER.error("Request undefined, unauthorized to view user");
       throw new Error("Request undefined, unauthorized to view user");
     }
     if (!req.user) {
       throw new Error("Request user undefined, unauthorized to view user");
+    }
+    if (!req.user.id) {
+      throw new Error("Request user ID undefined, unauthorized to view user");
     }
     const id: number = req.user.id;
     const foundUser: UserDto = await this.userService.findById(id);
@@ -101,10 +109,10 @@ export class UserController {
   @Delete()
   async remove(@Res() res: Response, @Req() req: AuthenticatedRequest) {
     try {
-      const id: number = req.user.id;
-      if (!req.user) {
+      if (!req || !req.user || !req.user.id) {
         throw new Error("Unauthorized to delete user");
       }
+      const id: number = req.user.id;
       await this.userService.remove(id);
       const user: UserDto = await this.userService.findById(id);
       if (user && user.name) {

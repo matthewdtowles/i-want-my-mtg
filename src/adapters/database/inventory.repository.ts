@@ -20,7 +20,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
       where: {
         userId: _userId,
       },
-      relations: ["card"],
+      relations: ["card", "user"],
     });
   }
 

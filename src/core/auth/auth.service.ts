@@ -28,6 +28,16 @@ export class AuthService implements AuthServicePort {
   }
 
   async login(user: UserDto): Promise<AuthToken> {
+    if (!user) {
+      const msg = `Login failure: user not found`;
+      this.LOGGER.error(msg);
+      throw new Error(msg);
+    }
+    if (!user.id) {
+      const msg = `Login failure: user ID not found`;
+      this.LOGGER.error(msg);
+      throw new Error(msg);
+    }
     this.LOGGER.debug(`Create auth token for ${JSON.stringify(user)}`);
     const payload: JwtPayload = {
       email: user.email,

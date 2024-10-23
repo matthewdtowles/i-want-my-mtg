@@ -8,9 +8,6 @@ export class UserDto {
   readonly email: string;
   readonly name: string;
 
-  @Type(() => InventoryDto)
-  readonly inventory: InventoryDto[];
-
   @IsEnum(UserRole)
   readonly role: string;
 }

@@ -39,6 +39,7 @@
     "test:inventory:save": "npx ts-node src/cli.ts test:inventory:save"
   },
   "dependencies": {
+    "@lifeart/ember-language-server": "^2.18.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",

@@ -5,19 +5,7 @@
             <p class="user-inventory-metadata-heading">Value</p>
             <p class="user-inventory-metadata-data">{{this.value}}</p>
         </div>
-        {{!-- <div id="user-inventory-cost" class="user-inventory-metadata-item">
-            <p class="user-inventory-metadata-heading">Cost</p>
-            <p class="user-inventory-metadata-data">{{this.cost}}</p>
-        </div> --}}
-        <div id="user-inventory-quantity" class="user-inventory-metadata-item">
-            <p class="user-inventory-metadata-heading">Quantity</p>
-            <p class="user-inventory-metadata-data">{{this.quantity}}</p>
-        </div>
-        {{!-- <div id="user-inventory-gain" class="user-inventory-metadata-item">
-            <p class="user-inventory-metadata-heading">Gain(%)</p>
-            <p class="user-inventory-metadata-data">{{this.gain}}</p>
-        </div> --}}
-    </section>
+   </section>
 
     <table id="user-inventory-cards">
         <thead>
@@ -26,26 +14,21 @@
                 <th>Name</th>
                 <th>Set</th>
                 <th>Price</th>
-                {{!-- <th>Change</th> --}}
-                <th>Notes</th>
             </tr>
         </thead>
         <tbody>
-        {{#each this.cards}}
+        {{#each inventory}}
             <tr>
                 <td>{{>cardsOwned}}</td>
-                <td><a href="{{this.url}}">{{this.name}}</a></td>
                 <td>
-                    <i class="ss ss-{{this.set.keyruneCode}} ss-fw"></i>
-                    <a href="{{this.set.url}}">{{this.set.name}}</a>
+                    <a href="{{this.card.url}}">{{this.card.name}}</a>
+                    <img src="{{this.card.imgSrc}}" alt="{{this.card.name}}" />
                 </td>
-                <td>{{this.price}}</td>
-                {{!-- TODO: change in price here --}}
                 <td>
-                    {{#each this.notes}}
-                    <span>{{this.value}}</span>
-                    {{/each}}
+                    <i class="ss ss-{{this.card.setCode}} ss-fw"></i>
+                    <a href="/sets/{{this.card.setCode}}">{{this.card.setCode}}</a>
                 </td>
+                <td>{{#if this.card.price}}{{this.card.price}}{{else}}0{{/if}}</td>
             </tr>
         {{/each}}
         </tbody>

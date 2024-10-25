@@ -10,15 +10,22 @@ export const InventoryServicePort = "InventoryServicePort";
  * Used by Adapters
  */
 export interface InventoryServicePort {
+
   /**
-   * Save inventory items
+   * Create inventory items
    *
    * @param inventoryItems
-   * @returns saved inventory items
+   * @returns created inventory items
    */
-  save(
-    inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[],
-  ): Promise<InventoryDto[]>;
+  create(inventoryItems: CreateInventoryDto[]): Promise<InventoryDto[]>;
+
+  /**
+   * Update inventory items
+   *
+   * @param inventoryItems
+   * @returns updated inventory items
+   */
+  update(inventoryItems: UpdateInventoryDto[]): Promise<InventoryDto[]>;
 
   /**
    * Return user's inventory items

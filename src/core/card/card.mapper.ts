@@ -63,7 +63,7 @@ export class CardMapper {
       number: card.number,
       originalText: card.originalText,
       rarity: card.rarity,
-      setCode: card && card.set ? card.set.code : null,
+      setCode: card.setCode,
       url: card.url,
       uuid: card.uuid,
     };

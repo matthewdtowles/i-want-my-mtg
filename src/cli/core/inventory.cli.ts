@@ -28,7 +28,7 @@ export class InventoryCli {
       cardId: _card,
       quantity: _quantity,
     };
-    const savedInventory: InventoryDto[] = await this.service.save([updateDto]);
+    const savedInventory: InventoryDto[] = await this.service.update([updateDto]);
     this.LOGGER.log(`${JSON.stringify(savedInventory, null, 2)}`);
     return true;
   }
@@ -42,22 +42,6 @@ export class InventoryCli {
   ): Promise<void> {
     const inventory: InventoryDto[] = await this.service.findByUser(_user);
     this.LOGGER.log(`${JSON.stringify(inventory, null, 2)}`);
-  }
-
-  @Command({
-    command: "inventory:remove <user> <card>",
-    describe: "remove inventory item",
-  })
-  async remove(
-    @Positional({ name: "user" }) _user: number,
-    @Positional({ name: "card" }) _card: number,
-  ): Promise<void> {
-    const inventoryItem: UpdateInventoryDto = {
-      userId: _user,
-      cardId: _card,
-    };
-    await this.service.remove([inventoryItem]);
-    this.LOGGER.log(`remove completed`);
   }
 
   @Command({
@@ -77,7 +61,7 @@ export class InventoryCli {
         cardId: _card,
         quantity: _quantity + i,
       };
-      const savedInventory: InventoryDto[] = await this.service.save([
+      const savedInventory: InventoryDto[] = await this.service.update([
         updateDto,
       ]);
       this.LOGGER.debug(`Inventory service save returned ${savedInventory}`);
@@ -106,7 +90,15 @@ export class InventoryCli {
         `Empty inventory. Inventory Service unable to create entity.`,
       );
     }
-    await this.service.remove(userInventory); // cleanup
+    const inventoryToDelete: UpdateInventoryDto[] = [];
+    userInventory.forEach(item => {
+      inventoryToDelete.push({
+        userId: item.user.id,
+        cardId: item.card.id,
+        quantity: 0,
+      });
+    });
+    await this.service.update(inventoryToDelete); // cleanup
     const remainingInventory: InventoryDto[] =
       await this.service.findByUser(_user);
     this.LOGGER.log(

@@ -17,11 +17,15 @@ export class InventoryService implements InventoryServicePort {
     @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
   ) {}
 
-  async save(
-    inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[],
-  ): Promise<InventoryDto[]> {
-    // TODO: if updatedInventory[i].quantity < 1: await this.inventoryService.remove(updateInventoryDtos);
+  async create(inventoryItems: CreateInventoryDto[]): Promise<InventoryDto[]> {
     const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
+    const savedItems: Inventory[] = await this.repository.save(entities);
+    return this.mapper.toDtos(savedItems);
+  }
+
+  async update(inventoryItems: UpdateInventoryDto[]): Promise<InventoryDto[]> {
+    const entities: Inventory[] = this.mapper.toEntities(
+      await this.cleanUpForSave(inventoryItems));
     const savedItems: Inventory[] = await this.repository.save(entities);
     return this.mapper.toDtos(savedItems);
   }
@@ -32,11 +36,21 @@ export class InventoryService implements InventoryServicePort {
     return this.mapper.toDtos(foundItems);
   }
 
-  private async remove(inventoryItems: InventoryDto[]): Promise<void> {
+  private async cleanUpForSave(inventoryItems: UpdateInventoryDto[]): Promise<UpdateInventoryDto[]> {
+    const itemsToDelete: UpdateInventoryDto[] = [];
+    const itemsToSave: UpdateInventoryDto[] = [];
+    inventoryItems.forEach(item => {
+      if (item.quantity > 0) {
+        itemsToSave.push(item);
+      } else {
+        itemsToDelete.push(item);
+      }
+    });
     await Promise.all(
-      inventoryItems.map((item) =>
-        this.repository.delete(item.user.id, item.card.id),
+      itemsToDelete.map((item) =>
+        this.repository.delete(item.userId, item.cardId),
       ),
     );
+    return itemsToSave
   }
 }

@@ -3,11 +3,13 @@ import {
   Controller,
   Get,
   HttpStatus,
-  Inject, Patch,
+  Inject,
+  Logger,
+  Patch,
   Render,
   Req,
   Res,
-  UseGuards
+  UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
 import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
@@ -18,24 +20,34 @@ import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
 @Controller("inventory")
 export class InventoryController {
+  private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
   constructor(
     @Inject(InventoryServicePort)
     private readonly inventoryService: InventoryServicePort,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Get()
   @Render("inventory")
-  async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryDto[]> {
+  async findByUser(@Req() req: AuthenticatedRequest) {
     if (!req.user) {
       throw new Error("User not found in request");
     }
     if (!req.user.id) {
       throw new Error("ID not found in request user");
     }
-    const inventory: InventoryDto[] = await this.inventoryService.findByUser(req.user.id);
-    return inventory;
+    const _inventory: InventoryDto[] = await this.inventoryService.findByUser(
+      req.user.id,
+    );
+    this.LOGGER.debug(`findByUser ${req.user.id}`);
+    this.LOGGER.debug(`inventory size: ${_inventory.length}`);
+    this.LOGGER.debug(`inventory stringified: ${JSON.stringify(_inventory)}`);
+    return {
+      user: req.user,
+      inventory: _inventory,
+      value: 0, // TODO: Calculate the total value of the inventory
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -46,7 +58,7 @@ export class InventoryController {
   ) {
     try {
       const updatedInventory: InventoryDto[] =
-        await this.inventoryService.save(updateInventoryDtos);
+        await this.inventoryService.update(updateInventoryDtos);
       return res.status(HttpStatus.OK).json({
         message: `Updated inventory`,
         inventory: updatedInventory,

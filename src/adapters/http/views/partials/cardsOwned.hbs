@@ -1,10 +1,30 @@
-<span class="total-owned-controller">
-    <button class="remove-card-btn">
-        <span class="minus">-</span>
-    </button>
-    <span class="total-owned">{{#if this.totalOwned}}{{this.totalOwned}}{{else}}0{{/if}}</span>
-    <button class="add-card-btn">
-        <span class="plus">+</span>
-    </button>
+<span class="quantity-owned-controller">
+  <button class="remove-card-btn" id="remove-card-{{this.id}}">
+    <span class="minus">-</span>
+  </button>
+  <span class="quantity-owned">{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}</span>
+  <button class="add-card-btn" id="add-card-{{this.id}}">
+    <span class="plus">+</span>
+  </button>
 </span>
 {{!-- TODO: buttons for foil or list as entirely different card? --}}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const removeCardBtn = document.querySelector('.remove-card-btn');
+    const addCardBtn = document.querySelector('.add-card-btn');
+    const quantityOwned = document.querySelector('.quantity-owned');
+    removeCardBtn.addEventListener('click', function() {
+      let quantity = parseInt(quantityOwned.textContent);
+      if (quantity > 0) {
+        quantity--;
+        quantityOwned.textContent = quantity;
+      }
+    });
+
+    addCardBtn.addEventListener('click', function() {
+      let quantity = parseInt(quantityOwned.textContent);
+      quantity++;
+      quantityOwned.textContent = quantity;
+    });
+  });
+</script>

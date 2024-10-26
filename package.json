@@ -48,6 +48,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.8",
     "@nestjs/schedule": "^4.1.0",
+    "@nestjs/serve-static": "^4.0.2",
     "@nestjs/typeorm": "^10.0.2",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",

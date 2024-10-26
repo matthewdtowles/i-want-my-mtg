@@ -1,54 +1,10 @@
 <span class="quantity-owned-controller">
-  <button class="remove-card-btn" id="remove-card-{{this.id}}">
+  <button class="remove-card-btn">
     <span class="minus">-</span>
   </button>
   <span class="quantity-owned">{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}</span>
-  <button class="add-card-btn" id="add-card-{{this.id}}">
+  <button class="add-card-btn"> 
     <span class="plus">+</span>
   </button>
 </span>
 {{!-- TODO: buttons for foil or list as entirely different card? --}}
-<script type="text/javascript">
-  document.addEventListener("DOMContentLoaded", function() {
-    const removeCardBtn = document.querySelector("#remove-card-{{this.id}}");
-    const addCardBtn = document.querySelector("#add-card-{{this.id}}");
-    const quantityOwned = document.querySelector("#quantity-owned-{{this.id}}");
-    removeCardBtn.addEventListener("click", function() {
-      let quantity = parseInt(quantityOwned.textContent);
-      if (quantity > 0) {
-        quantity--;
-        quantityOwned.textContent = quantity;
-      }
-      // call InventoryController update endpoint via patch request
-      
-      {{this.id}} 
-    });
-
-    addCardBtn.addEventListener("click", function() {
-      let quantity = parseInt(quantityOwned.textContent);
-      quantity++;
-      quantityOwned.textContent = quantity;
-    });
-  });
-/* TODO INCORPORATE INVENTORY VERSION FOR PATCH OF THE FOLLOWING:
-const accessToken = response.access_token;
-const messageEl = document.getElementById('response-message');
-document.getElementById('user-update-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-    data.id = parseInt(data.id, 10);
-    console.log(`data.id = ${data.id}`);
-    const response = await fetch('/user/update', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
-    if (response.ok) {
-        messageEl.textContent = 'User updated successfully';
-    } else {
-        messageEl.textContent = 'Failed to update user';
-*/
-</script>

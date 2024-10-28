@@ -6,6 +6,7 @@ import {
   Inject,
   Logger,
   Patch,
+  Post,
   Render,
   Req,
   Res,
@@ -17,6 +18,7 @@ import { UpdateInventoryDto } from "src/core/inventory/dto/update-inventory.dto"
 import { InventoryServicePort } from "src/core/inventory/ports/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+import { CreateInventoryDto } from "src/core/inventory/dto/create-inventory.dto";
 
 @Controller("inventory")
 export class InventoryController {
@@ -49,9 +51,29 @@ export class InventoryController {
       value: 0, // TODO: Calculate the total value of the inventory
     };
   }
-
+/*
   @UseGuards(JwtAuthGuard)
-  @Patch(":id")
+  @Post()
+  async create(
+    @Body() createInventoryDtos: CreateInventoryDto[],
+    @Res() res: Response,
+  ) {
+    try {
+      const createdInventory: InventoryDto[] =
+        await this.inventoryService.create(createInventoryDtos);
+      return res.status(HttpStatus.CREATED).json({
+        message: `Added inventory items`,
+        inventory: createdInventory,
+      });
+    } catch (error) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: `Error adding items to inventory: ${error.message}` });
+    }
+  }
+*/
+  @UseGuards(JwtAuthGuard)
+  @Patch()
   async update(
     @Body() updateInventoryDtos: UpdateInventoryDto[],
     @Res() res: Response,

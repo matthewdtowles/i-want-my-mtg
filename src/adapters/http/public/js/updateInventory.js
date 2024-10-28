@@ -1,46 +1,107 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function() {
   console.log(`updateInventory.js loaded`);
-  const removeButtons = document.querySelectorAll(".remove-card-btn");
-  const addButtons = document.querySelectorAll(".add-card-btn");
-  removeButtons.forEach(button => {
-    // TODO: this should be a defined function we can call in multiple buttons, both - and +.
-    button.addEventListener("click", function(event) {
-      const quantitySpan = this.closest(".quantity-owned-controller").querySelector(".quantity-owned");
-      console.log(`quantitySpan = ${quantitySpan}`);
-      let quantity = parseInt(quantitySpan.textContent);
-      if (quantity > 0) {
-        quantitySpan.textContent = --quantity;
+  document.querySelectorAll(".quantity-form").forEach((form) => {
+    const quantityOwned = form.querySelector("input[name='quantity-owned']");
+    const cardId = quantityOwned.dataset.id;
+    console.log(`quantityOwned.dataset.id = cardId = ${cardId}`);
+    form
+      .querySelector(".increment-quantity")
+      .addEventListener("click", () => quantityOwned.nodeValue = addInventoryItem(quantityOwned.value, cardId));
+    form
+      .querySelector(".decrement-quantity")
+      .addEventListener("click", () => quantityOwned.nodeValue = removeInventoryItem(quantityOwned.nodeValue, cardId));
+
+    function addInventoryItem(_quantity, _cardId) {
+      console.log(`Add inventory => ${_quantity}`);
+      try {
+        const qtyInt = parseInt(_quantity);
+        const cardIdInt = parseInt(_cardId);
+        const method = qtyInt === 0 ? 'POST' : 'PATCH';
+        updateInventory(qtyInt + 1, cardIdInt, method);
+      } catch (error) {
+        console.error(`Error in addInventoryItem => ${error}`);
       }
-    });
-  });
-  addButtons.forEach(button => {
-    button.addEventListener("click", function(event) {
-      const quantitySpan = this.closest(".quantity-owned-controller").querySelector(".quantity-owned");
-      console.log(`quantitySpan = ${quantitySpan}`);
-      let quantity = parseInt(quantitySpan.textContent);
-      quantitySpan.textContent = ++quantity;
-    });
+    }
+
+    function removeInventoryItem(_quantity, _cardId) {
+      console.log(`Remove inventory item => ${_quantity}`);
+      try {
+        const qtyInt = parseInt(_quantity);
+        const cardIdInt = parseInt(_cardId);
+        if (qtyInt > 0) {
+          updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
+        }
+      } catch (error) {
+        console.error(`Error in removeInventoryItem => ${error}`);
+      }
+    }
+
+    function updateInventory(_quantity, _cardId, _method) {
+      console.log(`Update quantity => ${_quantity}`);
+      fetch('/inventory', {
+        method: _method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: [JSON.stringify({
+          cardId: _cardId,
+          quantity: _quantity,
+        })],
+      }).then((response) => response.json())
+        .then((data) => console.log(`data returned = ${JSON.stringify(data)}`));
+    }
   });
 });
+
+
+
+
+/* // TODO: REMOVE OLD CODE BELOW
+ const removeButtons = document.querySelectorAll(".remove-card-btn");
+ const addButtons = document.querySelectorAll(".add-card-btn");
+ removeButtons.forEach((button) => {
+   // TODO: this should be a defined function we can call in multiple buttons, both - and +.
+   button.addEventListener("click", function(event) {
+     const quantitySpan = this.closest(
+       ".quantity-owned-controller",
+     ).querySelector(".quantity-owned");
+     console.log(`quantitySpan = ${quantitySpan}`);
+     let quantity = parseInt(quantitySpan.textContent);
+     if (quantity > 0) {
+       quantitySpan.textContent = --quantity;
+     }
+   });
+ });
+ addButtons.forEach((button) => {
+   button.addEventListener("click", function(event) {
+     const quantitySpan = this.closest(
+       ".quantity-owned-controller",
+     ).querySelector(".quantity-owned");
+     console.log(`quantitySpan = ${quantitySpan}`);
+     let quantity = parseInt(quantitySpan.textContent);
+     quantitySpan.textContent = ++quantity;
+   });
+ });
+});
+*/
 /* TODO INCORPORATE INVENTORY VERSION FOR PATCH OF THE FOLLOWING:
 const accessToken = response.access_token;
 const messageEl = document.getElementById('response-message');
 document.getElementById('user-update-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-    data.id = parseInt(data.id, 10);
-    console.log(`data.id = ${data.id}`);
-    const response = await fetch('/user/update', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
-    if (response.ok) {
-        messageEl.textContent = 'User updated successfully';
-    } else {
-        messageEl.textContent = 'Failed to update user';
+   event.preventDefault();
+   const formData = new FormData(event.target);
+   const data = Object.fromEntries(formData.entries());
+   data.id = parseInt(data.id, 10);
+   console.log(`data.id = ${data.id}`);
+   const response = await fetch('/user/update', {
+       method: 'PATCH',
+       headers: {
+           'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(data),
+   });
+   if (response.ok) {
+       messageEl.textContent = 'User updated successfully';
+   } else {
+       messageEl.textContent = 'Failed to update user';
 */
-

@@ -16,8 +16,6 @@
     <button id="delete-user-btn" type="submit">Delete User</button>
 
     <script>
-        const accessToken = response.access_token;
-        console.log(`accessToken:${accessToken}`);// TODO: remove
         const messageEl = document.getElementById('response-message');
         // TODO: make generic and move out for all templates to use
         // UPDATE
@@ -27,18 +25,13 @@
             const data = Object.fromEntries(formData.entries());
             data.id = parseInt(data.id, 10);
             console.log(`data.id = ${data.id}`);
-            const response = await fetch('/user/update', {
+            const response = await fetch('/user', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
             });
-            if (response.ok) {
-                messageEl.textContent = 'User updated successfully';
-            } else {
-                messageEl.textContent = 'Failed to update user';
-            }
         });
 
         // DELETE

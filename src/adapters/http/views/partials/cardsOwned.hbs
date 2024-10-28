@@ -1,10 +1,8 @@
-<span class="quantity-owned-controller">
-  <button class="remove-card-btn">
-    <span class="minus">-</span>
-  </button>
-  <span class="quantity-owned">{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}</span>
-  <button class="add-card-btn"> 
-    <span class="plus">+</span>
-  </button>
-</span>
-{{!-- TODO: buttons for foil or list as entirely different card? --}}
+<form class="quantity-form" data-item-id="{{this.card.id}}">
+  <button type="button" class="increment-quantity">+</button>
+  <input type="number" 
+    name="quantity-owned" 
+    class="quantity-owned" 
+    value="{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}" />
+  <button type="button" class="decrement-quantity">-</button>
+</form>

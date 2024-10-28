@@ -90,9 +90,9 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(":id")
+  @Patch()
   async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
-    try {
+   try {
       const updatedUser: UserDto = await this.userService.update(updateUserDto);
       return res.status(HttpStatus.OK).json({
         message: `User ${updatedUser.name} updated successfully`,

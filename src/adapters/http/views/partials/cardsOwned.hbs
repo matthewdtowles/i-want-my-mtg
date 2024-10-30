@@ -3,6 +3,7 @@
   <input type="number" 
     name="quantity-owned" 
     class="quantity-owned" 
-    value="{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}" />
+    value="{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}"
+    data-id="{{this.card.id}}" />
   <button type="button" class="decrement-quantity">-</button>
 </form>

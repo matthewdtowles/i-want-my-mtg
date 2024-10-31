@@ -63,12 +63,13 @@ export class InventoryController {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("User not found in request");
             }
-            const updatedDtos = createInventoryDtos.map(dto => ({
+            const updatedDtos: CreateInventoryDto[] = createInventoryDtos.map(dto => ({
                 ...dto,
                 userId: req.user.id,
             }));
             this.LOGGER.debug(`create ${JSON.stringify(updatedDtos)}`);
             const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
+            this.LOGGER.debug(`createdItems ${JSON.stringify(createdItems)}`);
             return res.status(HttpStatus.CREATED).json({
                 message: `Added inventory items`,
                 inventory: createdItems,
@@ -94,12 +95,13 @@ export class InventoryController {
                 throw new Error("User not found in request");
             }
             this.LOGGER.debug(`mapping UpdateInventoryDto[] to include userId`);
-            const updatedDtos = updateInventoryDtos.map(dto => ({
+            const completeDtos = updateInventoryDtos.map(dto => ({
                 ...dto,
                 userId: req.user.id,
             }));
-            this.LOGGER.debug(`MAPPING COMPLETE --> update ${JSON.stringify(updatedDtos)}`);
-            const updatedInventory: InventoryDto[] = await this.inventoryService.update(updatedDtos);
+            this.LOGGER.debug(`MAPPING COMPLETE --> update ${JSON.stringify(completeDtos)}`);
+            const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
+            this.LOGGER.debug(`updatedInventory ${JSON.stringify(updatedInventory)}`);
             return res.status(HttpStatus.OK).json({
                 message: `Updated inventory`,
                 inventory: updatedInventory,

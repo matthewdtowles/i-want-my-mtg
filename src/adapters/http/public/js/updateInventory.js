@@ -6,24 +6,24 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`quantityOwned.dataset.id = cardId = ${cardId}`);
         form
             .querySelector(".increment-quantity")
-            .addEventListener("click", () => quantityOwned.nodeValue = addInventoryItem(quantityOwned.value, cardId));
+            .addEventListener("click", async () => quantityOwned.nodeValue = await addInventoryItem(quantityOwned.value, cardId));
         form
             .querySelector(".decrement-quantity")
-            .addEventListener("click", () => quantityOwned.nodeValue = removeInventoryItem(quantityOwned.nodeValue, cardId));
+            .addEventListener("click", async () => quantityOwned.nodeValue = await removeInventoryItem(quantityOwned.value, cardId));
 
-        function addInventoryItem(_quantity, _cardId) {
+        async function addInventoryItem(_quantity, _cardId) {
             console.log(`Add inventory => ${_quantity}`);
             try {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
-                updateInventory(qtyInt + 1, cardIdInt, method);
+                return updateInventory(qtyInt + 1, cardIdInt, method);
             } catch (error) {
                 console.error(`Error in addInventoryItem => ${error}`);
             }
         }
 
-        function removeInventoryItem(_quantity, _cardId) {
+        async function removeInventoryItem(_quantity, _cardId) {
             console.log(`Remove inventory item => ${_quantity}`);
             try {
                 const qtyInt = parseInt(_quantity);
@@ -36,19 +36,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        function updateInventory(_quantity, _cardId, _method) {
+        async function updateInventory(_quantity, _cardId, _method) {
             console.log(`Update quantity => ${_quantity}`);
-            fetch('/inventory', {
-                method: _method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify([{
-                    cardId: _cardId,
-                    quantity: _quantity,
-                }]),
-            }).then((response) => response.json())
-                .then((data) => console.log(`data returned = ${JSON.stringify(data)}`));
+            try {
+                const response = await fetch('/inventory', {
+                    method: _method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([{
+                        cardId: _cardId,
+                        quantity: _quantity,
+                    }]),
+                }).then(response => response.json())
+                    .then(data => console.log(`data returned = ${JSON.stringify(data)}`));
+                console.log(`response = ${JSON.stringify(response)}`);
+                return response.quantity;
+            } catch (error) {
+                console.error(`Error in updateInventory => ${error}`);
+            }
         }
     });
 });

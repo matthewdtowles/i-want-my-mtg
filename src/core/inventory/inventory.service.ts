@@ -15,7 +15,7 @@ export class InventoryService implements InventoryServicePort {
   constructor(
     @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
     @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
-  ) {}
+  ) { }
 
   async create(inventoryItems: CreateInventoryDto[]): Promise<InventoryDto[]> {
     const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
@@ -46,11 +46,13 @@ export class InventoryService implements InventoryServicePort {
         itemsToDelete.push(item);
       }
     });
-    await Promise.all(
-      itemsToDelete.map((item) =>
-        this.repository.delete(item.userId, item.cardId),
-      ),
-    );
+    if (itemsToDelete.length > 0) {
+      await Promise.all(
+        itemsToDelete.map((item) =>
+          this.repository.delete(item.userId, item.cardId),
+        ),
+      );
+    }
     return itemsToSave
   }
 }

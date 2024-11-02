@@ -6,34 +6,47 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`quantityOwned.dataset.id = cardId = ${cardId}`);
         form
             .querySelector(".increment-quantity")
-            .addEventListener("click", async () => quantityOwned.nodeValue = await addInventoryItem(quantityOwned.value, cardId));
+            .addEventListener("click", async () => {
+                console.log(`quantityOwned.value = ${quantityOwned.value}`);
+                quantityOwned.value = await addInventoryItem(quantityOwned.value, cardId);
+            });
         form
             .querySelector(".decrement-quantity")
-            .addEventListener("click", async () => quantityOwned.nodeValue = await removeInventoryItem(quantityOwned.value, cardId));
+            .addEventListener("click", async () => {
+                quantityOwned.value = await removeInventoryItem(quantityOwned.value, cardId);
+            });
 
         async function addInventoryItem(_quantity, _cardId) {
-            console.log(`Add inventory => ${_quantity}`);
+            let updatedQuantity = _quantity;
+            console.log(`Add inventory => ${_quantity} + 1`);
             try {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
-                return updateInventory(qtyInt + 1, cardIdInt, method);
+                const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, method);
+                console.log(`updatedInventory = ${JSON.stringify(updatedInventory)}`);
+                updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
             } catch (error) {
                 console.error(`Error in addInventoryItem => ${error}`);
             }
+            return updatedQuantity;
         }
 
         async function removeInventoryItem(_quantity, _cardId) {
+            let updatedQuantity = _quantity;
             console.log(`Remove inventory item => ${_quantity}`);
             try {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
                 if (qtyInt > 0) {
-                    updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
+                    const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
+                    console.log(`updatedInventory = ${JSON.stringify(updatedInventory)}`);
+                    updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
                 }
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);
             }
+            return updatedQuantity;
         }
 
         async function updateInventory(_quantity, _cardId, _method) {
@@ -48,10 +61,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         cardId: _cardId,
                         quantity: _quantity,
                     }]),
-                }).then(response => response.json())
-                    .then(data => console.log(`data returned = ${JSON.stringify(data)}`));
-                console.log(`response = ${JSON.stringify(response)}`);
-                return response.quantity;
+                });
+                const data = await response.json();
+                console.log(`Update inventory response data => ${JSON.stringify(data)}`);
+                return data && data.inventory && data.inventory[0] ? data.inventory[0] : null;
             } catch (error) {
                 console.error(`Error in updateInventory => ${error}`);
             }

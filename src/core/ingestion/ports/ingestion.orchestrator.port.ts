@@ -1,4 +1,4 @@
-import { CardDto } from "../../card/dto/card.dto";
+import { CardDto } from "../../card/api/card.dto";
 import { SetDto } from "../../set/dto/set.dto";
 
 export const IngestionOrchestratorPort = "IngestionOrchestratorPort";
@@ -10,24 +10,24 @@ export const IngestionOrchestratorPort = "IngestionOrchestratorPort";
  */
 export interface IngestionOrchestratorPort {
 
-  /**
-   * Ingest all set metadata
-   * Excludes cards
-   * @returns SetDto[]
-   */
-  ingestAllSetMeta(): Promise<SetDto[]>;
+    /**
+     * Ingest all set metadata
+     * Excludes cards
+     * @returns SetDto[]
+     */
+    ingestAllSetMeta(): Promise<SetDto[]>;
 
-  /**
-   * Ingest all set cards
-   * Includes cards
-   * @returns SetDto[]
-   */
-  ingestAllSetCards(): Promise<SetDto[]>;
+    /**
+     * Ingest all set cards
+     * Includes cards
+     * @returns SetDto[]
+     */
+    ingestAllSetCards(): Promise<SetDto[]>;
 
-  /**
-   * Ingest cards for set with code
-   * @param code three letter set code
-   * @returns CardDto[]
-   */
-  ingestSetCards(code: string): Promise<CardDto[]>;
+    /**
+     * Ingest cards for set with code
+     * @param code three letter set code
+     * @returns CardDto[]
+     */
+    ingestSetCards(code: string): Promise<CardDto[]>;
 }

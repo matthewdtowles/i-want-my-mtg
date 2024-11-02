@@ -1,7 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardDto } from "../card/dto/card.dto";
-import { CreateCardDto } from "../card/dto/create-card.dto";
-import { CardServicePort } from "../card/ports/card.service.port";
+import { CardDto, CreateCardDto } from "../card/api/card.dto";
+import { CardServicePort } from "../card/api/card.service.port";
 import { CreateSetDto } from "../set/dto/create-set.dto";
 import { SetDto } from "../set/dto/set.dto";
 import { SetServicePort } from "../set/ports/set.service.port";

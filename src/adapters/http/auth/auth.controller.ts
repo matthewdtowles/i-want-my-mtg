@@ -11,9 +11,9 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthToken } from "src/core/auth/auth.types";
-import { AuthServicePort } from "src/core/auth/ports/auth.service.port";
-import { UserDto } from "src/core/user/dto/user.dto";
+import { AuthToken } from "src/core/auth/api/auth.types";
+import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { UserDto } from "src/core/user/api/user.dto";
 import { AUTH_TOKEN_NAME } from "./auth.constants";
 import { AuthenticatedRequest } from "./authenticated.request";
 import { LocalAuthGuard } from "./local.auth.guard";

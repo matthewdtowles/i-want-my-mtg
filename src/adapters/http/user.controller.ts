@@ -14,12 +14,10 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthToken } from "src/core/auth/auth.types";
-import { AuthServicePort } from "src/core/auth/ports/auth.service.port";
-import { UpdateUserDto } from "src/core/user/dto/update-user.dto";
-import { UserDto } from "src/core/user/dto/user.dto";
-import { UserServicePort } from "src/core/user/ports/user.service.port";
-import { CreateUserDto } from "../../core/user/dto/create-user.dto";
+import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { AuthToken } from "src/core/auth/api/auth.types";
+import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
+import { UserServicePort } from "src/core/user/api/user.service.port";
 import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";

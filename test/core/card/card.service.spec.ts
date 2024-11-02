@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CardDto } from '../../../src/core/card/api/card.dto';
+import { CardRepositoryPort } from '../../../src/core/card/api/card.repository.port';
 import { Card } from '../../../src/core/card/card.entity';
 import { CardMapper } from '../../../src/core/card/card.mapper';
 import { CardService } from '../../../src/core/card/card.service';
-import { CardDto } from '../../../src/core/card/dto/card.dto';
-import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
 import { TestUtils } from '../../test-utils';
 
 describe('CardService', () => {

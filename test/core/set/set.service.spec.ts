@@ -1,25 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 import { SetDto } from '../../../src/core/set/dto/set.dto';
 import { SetRepositoryPort } from '../../../src/core/set/ports/set.repository.port';
 import { Set } from '../../../src/core/set/set.entity';
+import { SetMapper } from '../../../src/core/set/set.mapper';
 import { SetService } from '../../../src/core/set/set.service';
 import { TestUtils } from '../../test-utils';
-import { CreateSetDto } from '../../../src/core/set/dto/create-set.dto';
-import { CreateCardDto } from '../../../src/core/card/dto/create-card.dto';
-import { SetMapper } from '../../../src/core/set/set.mapper';
-import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('SetService', () => {
     let service: SetService;
     let repository: SetRepositoryPort;
-    let ingestionSvc: IngestionServicePort;
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode: string = testUtils.MOCK_SET_CODE;
     const mockSets: Set[] = testUtils.getMockSets();
-    const getMockCreateSetDtos: CreateSetDto[] = testUtils.getMockCreateSetDtos();
-    const getMockCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
 
     const mockSetRepository: SetRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockSets),
@@ -27,12 +21,6 @@ describe('SetService', () => {
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
         findByName: jest.fn().mockResolvedValue(mockSets[0]),
         delete: jest.fn(),
-    };
-
-    const mockSetIngestion: IngestionServicePort = {
-        fetchAllSetsMeta: jest.fn().mockResolvedValue(getMockCreateSetDtos),
-        fetchSetByCode: jest.fn().mockResolvedValue(getMockCreateSetDtos[0]),
-        fetchSetCards: jest.fn().mockResolvedValue(getMockCreateCardDtos),
     };
 
     beforeEach(async () => {
@@ -43,20 +31,15 @@ describe('SetService', () => {
                     provide: SetRepositoryPort,
                     useValue: mockSetRepository,
                 },
-                {
-                    provide: IngestionServicePort,
-                    useValue: mockSetIngestion,
-                },
                 SetMapper,
                 CardMapper,
             ],
         }).compile();
         service = module.get<SetService>(SetService);
         repository = module.get<SetRepositoryPort>(SetRepositoryPort);
-        ingestionSvc = module.get<IngestionServicePort>(IngestionServicePort);
     });
 
-    afterEach(() => { 
+    afterEach(() => {
         jest.clearAllMocks()
     });
 

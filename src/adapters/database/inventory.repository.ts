@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { InventoryRepositoryPort } from "src/core/inventory/ports/inventory.repository.port";
+import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -20,7 +20,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
       where: {
         userId: _userId,
       },
-      relations: ["card"],
+      relations: ["card", "user"],
     });
   }
 

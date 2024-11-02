@@ -1,57 +1,75 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
-import { CreateInventoryDto } from "./dto/create-inventory.dto";
-import { InventoryDto } from "./dto/inventory.dto";
-import { UpdateInventoryDto } from "./dto/update-inventory.dto";
+import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
 
 @Injectable()
 export class InventoryMapper {
-  // TODO: do we need to inject CardMapper here?
-  constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
-  toEntities(
-    inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[],
-  ): Inventory[] {
-    const entities: Inventory[] = [];
-    if (inventoryItems) {
-      inventoryItems.forEach((item) => {
-        entities.push(this.toEntity(item));
-      });
+    private readonly LOGGER: Logger = new Logger(InventoryMapper.name);
+
+    // TODO: do we need to inject CardMapper here?
+    constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
+
+    toEntities(inventoryItems: InventoryDto[] | InventoryDto[]): Inventory[] {
+        this.LOGGER.debug(`toEntities ${JSON.stringify(inventoryItems)}`);
+        return inventoryItems.map((item: InventoryDto | InventoryDto) => this.toEntity(item));
     }
-    return entities;
-  }
 
-  toEntity(
-    dto: CreateInventoryDto | UpdateInventoryDto,
-  ): Inventory | undefined {
-    const inventoryEntity = new Inventory();
-    inventoryEntity.quantity = dto.quantity ? dto.quantity : 1;
-    (inventoryEntity.cardId = dto.cardId), (inventoryEntity.user = new User());
-    inventoryEntity.user.id = dto.userId;
-    return inventoryEntity;
-  }
-
-  toDtos(inventoryItems: Inventory[]): InventoryDto[] {
-    const dtos: InventoryDto[] = [];
-    if (inventoryItems) {
-      inventoryItems.forEach((item) => {
-        dtos.push(this.toDto(item));
-      });
+    toEntity(dto: InventoryDto): Inventory | null {
+        this.LOGGER.debug(`toEntity called`);
+        if (!dto) {
+            this.LOGGER.error("toEntity called with null dto");
+            return null;
+        }
+        this.LOGGER.debug(`toEntity called with dto: ${JSON.stringify(dto)}`);
+        const inventoryEntity = new Inventory();
+        inventoryEntity.quantity = dto.quantity ?? 0;
+        inventoryEntity.cardId = dto.cardId;
+        inventoryEntity.user = new User();
+        inventoryEntity.user.id = dto.userId;
+        this.LOGGER.debug(`toEntity returning entity: ${JSON.stringify(inventoryEntity)}`);
+        return inventoryEntity;
     }
-    return dtos;
-  }
 
-  toDto(inventoryEntity: Inventory): InventoryDto | undefined {
-    if (!inventoryEntity) {
-      return undefined;
+    toDtos(inventoryItems: Inventory[]): InventoryDto[] {
+        this.LOGGER.debug(`toDtos ${JSON.stringify(inventoryItems)}`);
+        return inventoryItems.map((item: Inventory) => this.toDto(item));
     }
-    const inventory: InventoryDto = {
-      cardId: inventoryEntity.cardId,
-      quantity: inventoryEntity.quantity,
-      userId: inventoryEntity.userId,
-    };
-    return inventory;
-  }
+
+    toDto(inventoryEntity: Inventory): InventoryDto | null {
+        if (!inventoryEntity) {
+            this.LOGGER.error("toDto called with null entity");
+            return null;
+        }
+        this.LOGGER.debug(`toDto called with entity: ${JSON.stringify(inventoryEntity)}`);
+        const inventory: InventoryDto = {
+            cardId: inventoryEntity.cardId,
+            quantity: inventoryEntity.quantity,
+            userId: inventoryEntity.user.id
+        };
+        this.LOGGER.debug(`toDto returning dto: ${JSON.stringify(inventory)}`);
+        return inventory;
+    }
+
+    toInventoryCardDtos(inventoryEntities: Inventory[]): InventoryCardDto[] {
+        this.LOGGER.debug(`toInventoryCardDtos ${JSON.stringify(inventoryEntities)}`);
+        return inventoryEntities.map((item: Inventory) => this.toInventoryCardDto(item));
+    }
+
+    toInventoryCardDto(inventoryEntity: Inventory): InventoryCardDto | null {
+        if (!inventoryEntity) {
+            this.LOGGER.error("toDto called with null entity");
+            return null;
+        }
+        this.LOGGER.debug(`toDto called with entity: ${JSON.stringify(inventoryEntity)}`);
+        const inventory: InventoryCardDto = {
+            card: this.cardMapper.entityToDto(inventoryEntity.card),
+            quantity: inventoryEntity.quantity,
+            userId: inventoryEntity.user.id
+        };
+        this.LOGGER.debug(`toDto returning dto: ${JSON.stringify(inventory)}`);
+        return inventory;
+    }
 }

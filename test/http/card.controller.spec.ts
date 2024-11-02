@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from '../../src/adapters/http/card.controller';
-import { CardServicePort } from '../../src/core/card/ports/card.service.port';
 import { CardMapper } from '../../src/core/card/card.mapper';
+import { CardServicePort } from '../../src/core/card/ports/card.service.port';
+import { IngestionOrchestratorPort } from '../../src/core/ingestion/ports/ingestion.orchestrator.port';
 
 describe('CardController', () => {
     let controller: CardController;
@@ -13,18 +14,27 @@ describe('CardController', () => {
         findBySetCodeAndNumber: jest.fn(),
         findByUuid: jest.fn(),
     };
+    let mockIngestionOrchestrator: IngestionOrchestratorPort = {
+        ingestAllSetMeta: jest.fn(),
+        ingestAllSetCards: jest.fn(),
+        ingestSetCards: jest.fn()
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CardController],
             providers: [
+                CardMapper,
                 {
                     provide: CardServicePort,
                     useValue: mockCardService,
                 },
-                CardMapper
+                {
+                    provide: 'IngestionOrchestratorPort',
+                    useValue: mockIngestionOrchestrator,
+                },
             ],
         }).compile();
-
         controller = module.get<CardController>(CardController);
     });
 

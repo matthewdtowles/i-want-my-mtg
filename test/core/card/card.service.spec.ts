@@ -1,22 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from '../../../src/core/card/card.entity';
+import { CardMapper } from '../../../src/core/card/card.mapper';
 import { CardService } from '../../../src/core/card/card.service';
 import { CardDto } from '../../../src/core/card/dto/card.dto';
-import { CreateCardDto } from '../../../src/core/card/dto/create-card.dto';
 import { CardRepositoryPort } from '../../../src/core/card/ports/card.repository.port';
-import { IngestionServicePort } from '../../../src/core/ingestion/ingestion.service.port';
 import { TestUtils } from '../../test-utils';
-import { CardMapper } from '../../../src/core/card/card.mapper';
 
 describe('CardService', () => {
     let service: CardService;
     let repository: CardRepositoryPort;
-    let ingestionSvc: IngestionServicePort;
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode: string = testUtils.MOCK_SET_CODE;
     const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
-    const mockCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
 
     const mockCardRepository: CardRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockCards),
@@ -28,12 +24,6 @@ describe('CardService', () => {
         delete: jest.fn(),
     };
 
-    const mockCardIngestion: IngestionServicePort = {
-        fetchSetCards: jest.fn().mockResolvedValue(mockCreateCardDtos),
-        fetchAllSetsMeta: jest.fn(),
-        fetchSetByCode: jest.fn(),
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -42,17 +32,12 @@ describe('CardService', () => {
                     provide: CardRepositoryPort,
                     useValue: mockCardRepository,
                 },
-                {
-                    provide: IngestionServicePort,
-                    useValue: mockCardIngestion,
-                },
                 CardMapper,
             ],
         }).compile();
 
         service = module.get<CardService>(CardService);
         repository = module.get<CardRepositoryPort>(CardRepositoryPort);
-        ingestionSvc = module.get<IngestionServicePort>(IngestionServicePort);
     });
 
     afterEach(() => {

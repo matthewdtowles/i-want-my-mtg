@@ -5,10 +5,16 @@ import { DataSource } from "typeorm";
 import { CoreModule } from "./core/core.module";
 import { AdapterModule } from "./adapters/adapter.module";
 import { CommandModule } from "nestjs-command";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "src", "adapters", "http", "public"),
+      serveRoot: "/public",
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -1,17 +1,17 @@
 export interface AuthToken {
-  /**
-   * Authorization token used in requests
-   */
-  access_token: string;
+    /**
+     * Authorization token used in requests
+     */
+    access_token: string;
 }
 
 export interface JwtPayload {
-  email: string;
 
-  /**
-   * User's unique ID
-   */
-  sub: string;
-
-  role: string;
+    /**
+     * User's unique ID
+     */
+    sub: string;
+    email: string;
+    // TODO: remove role; lookup on RoleGuarded pages by user ID ?
+    role: string;
 }

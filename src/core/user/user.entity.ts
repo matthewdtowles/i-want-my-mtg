@@ -1,7 +1,6 @@
 import { Exclude } from "class-transformer";
 import { UserRole } from "src/adapters/http/auth/user.role";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -17,9 +16,6 @@ export class User {
   @Column()
   @Exclude()
   password: string;
-
-  @OneToMany(() => Inventory, (inventory) => inventory.user)
-  inventory: Inventory[];
 
   @Column({ default: UserRole.User.toString() })
   role: string;

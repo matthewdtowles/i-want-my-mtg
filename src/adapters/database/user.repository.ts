@@ -19,7 +19,6 @@ export class UserRepository implements UserRepositoryPort {
       id: userResult.identifiers[0].id,
       email: userResult.generatedMaps[0].email,
       name: userResult.generatedMaps[0].name,
-      inventory: userResult.generatedMaps[0].inventory,
       password: userResult.generatedMaps[0].password,
       role: userResult.generatedMaps[0].role,
     };

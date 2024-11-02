@@ -161,8 +161,8 @@ describe('SetController', () => {
     it('should render cardsOwned partial with context', async () => {
         const response = await request(app.getHttpServer()).get('/sets/kld').expect(200);
         // card 1
-        expect(response.text).toContain('<span class="total-owned">0</span>');
+        expect(response.text).toContain('class="increment-quantity"');
         // 2
-        expect(response.text).toContain('<span class="total-owned">0</span>');
+        expect(response.text).toContain('class="decrement-quantity"');
     });
 });

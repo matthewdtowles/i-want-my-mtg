@@ -6,5 +6,5 @@ import { Request } from "express";
  * Use when user info is needed in the request
  */
 export interface AuthenticatedRequest extends Request {
-  user: UserDto;
+    user: UserDto;
 }

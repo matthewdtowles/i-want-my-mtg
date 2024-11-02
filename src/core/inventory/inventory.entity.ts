@@ -9,6 +9,9 @@ export class Inventory {
 
   @PrimaryColumn()
   userId: number;
+  
+  @Column({ default: 1 })
+  quantity: number;
 
   @ManyToOne(() => Card)
   @JoinColumn({
@@ -18,10 +21,7 @@ export class Inventory {
   })
   card: Card;
 
-  @Column({ default: 1 })
-  quantity: number;
-
-  @ManyToOne(() => User, (user) => user.inventory)
+  @ManyToOne(() => User)
   @JoinColumn({
     name: "userId",
     referencedColumnName: "id",

@@ -1,5 +1,5 @@
 import { UserRole } from "src/adapters/http/auth/user.role";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/dto/inventory.dto";
+import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreateSetDto } from "src/core/set/dto/create-set.dto";
 import { SetDto } from "src/core/set/dto/set.dto";

@@ -13,8 +13,8 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/dto/inventory.dto";
-import { InventoryServicePort } from "src/core/inventory/ports/inventory.service.port";
+import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 

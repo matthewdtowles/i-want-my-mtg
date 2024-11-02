@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { InventoryCardDto, InventoryDto } from "./dto/inventory.dto";
+import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
 import { Inventory } from "./inventory.entity";
 import { InventoryMapper } from "./inventory.mapper";
-import { InventoryRepositoryPort } from "./ports/inventory.repository.port";
-import { InventoryServicePort } from "./ports/inventory.service.port";
+import { InventoryRepositoryPort } from "./api/inventory.repository.port";
+import { InventoryServicePort } from "./api/inventory.service.port";
 
 @Injectable()
 export class InventoryService implements InventoryServicePort {

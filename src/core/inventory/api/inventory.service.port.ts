@@ -1,4 +1,4 @@
-import { InventoryCardDto, InventoryDto } from "../dto/inventory.dto";
+import { InventoryCardDto, InventoryDto } from "../api/inventory.dto";
 
 export const InventoryServicePort = "InventoryServicePort";
 

@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
-import { InventoryCardDto, InventoryDto } from "./dto/inventory.dto";
+import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
 
 @Injectable()
 export class InventoryMapper {

@@ -3,7 +3,7 @@ import { DatabaseModule } from "src/adapters/database/database.module";
 import { InventoryRepository } from "src/adapters/database/inventory.repository";
 import { InventoryMapper } from "./inventory.mapper";
 import { InventoryService } from "./inventory.service";
-import { InventoryRepositoryPort } from "./ports/inventory.repository.port";
+import { InventoryRepositoryPort } from "./api/inventory.repository.port";
 import { InventoryServicePort } from "./ports/inventory.service.port";
 import { CardMapper } from "../card/card.mapper";
 import { UserMapper } from "../user/user.mapper";

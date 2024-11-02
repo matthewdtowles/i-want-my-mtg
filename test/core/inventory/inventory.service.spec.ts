@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardMapper } from '../../../src/core/card/card.mapper';
-import { InventoryCardDto, InventoryDto } from '../../../src/core/inventory/dto/inventory.dto';
+import { InventoryCardDto, InventoryDto } from '../../../src/core/inventory/api/inventory.dto';
 import { Inventory } from '../../../src/core/inventory/inventory.entity';
 import { InventoryMapper } from '../../../src/core/inventory/inventory.mapper';
 import { InventoryService } from '../../../src/core/inventory/inventory.service';
-import { InventoryRepositoryPort } from '../../../src/core/inventory/ports/inventory.repository.port';
+import { InventoryRepositoryPort } from '../../../src/core/inventory/api/inventory.repository.port';
 import { TestUtils } from '../../test-utils';
 
 describe('InventoryService', () => {

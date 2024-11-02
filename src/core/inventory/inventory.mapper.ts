@@ -2,28 +2,22 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
-import { UserMapper } from "../user/user.mapper";
-import { CreateInventoryDto } from "./dto/create-inventory.dto";
-import { InventoryDto } from "./dto/inventory.dto";
-import { UpdateInventoryDto } from "./dto/update-inventory.dto";
+import { InventoryCardDto, InventoryDto } from "./dto/inventory.dto";
 
 @Injectable()
 export class InventoryMapper {
 
     private readonly LOGGER: Logger = new Logger(InventoryMapper.name);
 
-    // TODO: do we need to inject CardMapper here? or UserMapper?
-    constructor(
-        @Inject(CardMapper) private readonly cardMapper: CardMapper,
-        @Inject(UserMapper) private readonly userMapper: UserMapper,
-    ) { }
+    // TODO: do we need to inject CardMapper here?
+    constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
-    toEntities(inventoryItems: CreateInventoryDto[] | UpdateInventoryDto[]): Inventory[] {
+    toEntities(inventoryItems: InventoryDto[] | InventoryDto[]): Inventory[] {
         this.LOGGER.debug(`toEntities ${JSON.stringify(inventoryItems)}`);
-        return inventoryItems.map((item: CreateInventoryDto | UpdateInventoryDto) => this.toEntity(item));
+        return inventoryItems.map((item: InventoryDto | InventoryDto) => this.toEntity(item));
     }
 
-    toEntity(dto: CreateInventoryDto | UpdateInventoryDto,): Inventory | null {
+    toEntity(dto: InventoryDto): Inventory | null {
         this.LOGGER.debug(`toEntity called`);
         if (!dto) {
             this.LOGGER.error("toEntity called with null dto");
@@ -45,27 +39,35 @@ export class InventoryMapper {
     }
 
     toDto(inventoryEntity: Inventory): InventoryDto | null {
-        this.LOGGER.debug(`toDto called`);
         if (!inventoryEntity) {
             this.LOGGER.error("toDto called with null entity");
             return null;
         }
         this.LOGGER.debug(`toDto called with entity: ${JSON.stringify(inventoryEntity)}`);
-
-
-        // TODO: sketch out use cases for inventory dtos and refactor this method as needed
-
-        // TODO: we only have the cardId and user with userId at this point
-        // --> calling cardMapper will fail since we're passing a null card
-        // --> calling userMapper will fail since we're passing a user with only an id
-        // --> we need to fetch the card and user from the database before we can call the mapper
-        // -->--> OR reevaluate: do we need the entire object ever? 
-        /// -->-->--> if not, we can just pass the id and fetch the object when needed
-
         const inventory: InventoryDto = {
+            cardId: inventoryEntity.cardId,
+            quantity: inventoryEntity.quantity,
+            userId: inventoryEntity.user.id
+        };
+        this.LOGGER.debug(`toDto returning dto: ${JSON.stringify(inventory)}`);
+        return inventory;
+    }
+
+    toInventoryCardDtos(inventoryEntities: Inventory[]): InventoryCardDto[] {
+        this.LOGGER.debug(`toInventoryCardDtos ${JSON.stringify(inventoryEntities)}`);
+        return inventoryEntities.map((item: Inventory) => this.toInventoryCardDto(item));
+    }
+
+    toInventoryCardDto(inventoryEntity: Inventory): InventoryCardDto | null {
+        if (!inventoryEntity) {
+            this.LOGGER.error("toDto called with null entity");
+            return null;
+        }
+        this.LOGGER.debug(`toDto called with entity: ${JSON.stringify(inventoryEntity)}`);
+        const inventory: InventoryCardDto = {
             card: this.cardMapper.entityToDto(inventoryEntity.card),
             quantity: inventoryEntity.quantity,
-            user: this.userMapper.entityToDto(inventoryEntity.user),
+            userId: inventoryEntity.user.id
         };
         this.LOGGER.debug(`toDto returning dto: ${JSON.stringify(inventory)}`);
         return inventory;

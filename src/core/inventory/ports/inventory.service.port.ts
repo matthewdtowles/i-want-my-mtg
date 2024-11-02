@@ -1,6 +1,4 @@
-import { CreateInventoryDto } from "../dto/create-inventory.dto";
-import { InventoryDto } from "../dto/inventory.dto";
-import { UpdateInventoryDto } from "../dto/update-inventory.dto";
+import { InventoryCardDto, InventoryDto } from "../dto/inventory.dto";
 
 export const InventoryServicePort = "InventoryServicePort";
 
@@ -17,7 +15,7 @@ export interface InventoryServicePort {
      * @param inventoryItems
      * @returns created inventory items
      */
-    create(inventoryItems: CreateInventoryDto[]): Promise<InventoryDto[]>;
+    create(inventoryItems: InventoryDto[]): Promise<InventoryDto[]>;
 
     /**
      * Update inventory items
@@ -25,7 +23,7 @@ export interface InventoryServicePort {
      * @param inventoryItems
      * @returns updated inventory items
      */
-    update(inventoryItems: UpdateInventoryDto[]): Promise<InventoryDto[]>;
+    update(inventoryItems: InventoryDto[]): Promise<InventoryDto[]>;
 
     /**
      * Return user's inventory items
@@ -34,4 +32,12 @@ export interface InventoryServicePort {
      * @returns user's inventory items
      */
     findByUser(userId: number): Promise<InventoryDto[]>;
+
+    /**
+     * Return user's inventory with cards
+     * 
+     * @param userId
+     * @returns user's inventory with cards
+     */
+    findCardsByUser(userId: number): Promise<InventoryCardDto[]>;
 }

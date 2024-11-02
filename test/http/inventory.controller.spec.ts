@@ -7,6 +7,17 @@ describe('InventoryController', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [InventoryController],
+            providers: [
+                {
+                    provide: 'InventoryServicePort',
+                    useValue: {
+                        create: jest.fn(),
+                        update: jest.fn(),
+                        delete: jest.fn(),
+                        findByUser: jest.fn(),
+                    },
+                },
+            ],
         }).compile();
 
         controller = module.get<InventoryController>(InventoryController);

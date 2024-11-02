@@ -17,6 +17,6 @@
         "@typescript-eslint"
     ],
     "rules": {
-        // TODO: add custom rules here
+        "indent": ["error", 4]
     }
 }

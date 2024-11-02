@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardDto } from "./dto/card.dto";
 import { CreateCardDto } from "./dto/create-card.dto";
@@ -6,6 +6,7 @@ import { UpdateCardDto } from "./dto/update-card.dto";
 
 @Injectable()
 export class CardMapper {
+    private readonly LOGGER = new Logger(CardMapper.name);
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
         return cardDtos.map((c: CreateCardDto | UpdateCardDto) => this.dtoToEntity(c));
@@ -43,6 +44,7 @@ export class CardMapper {
     }
 
     entitiesToDtos(cards: Card[]): CardDto[] {
+        this.LOGGER.debug(`entitiesToDtos ${JSON.stringify(cards)}`);
         return cards.map((card: Card) => this.entityToDto(card));
     }
 

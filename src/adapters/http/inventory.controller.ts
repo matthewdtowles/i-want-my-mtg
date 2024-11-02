@@ -13,9 +13,7 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { CreateInventoryDto } from "src/core/inventory/dto/create-inventory.dto";
-import { InventoryDto } from "src/core/inventory/dto/inventory.dto";
-import { UpdateInventoryDto } from "src/core/inventory/dto/update-inventory.dto";
+import { InventoryCardDto, InventoryDto } from "src/core/inventory/dto/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/ports/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
@@ -25,8 +23,7 @@ export class InventoryController {
     private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
     constructor(
-        @Inject(InventoryServicePort)
-        private readonly inventoryService: InventoryServicePort,
+        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort
     ) { }
 
     @UseGuards(JwtAuthGuard)
@@ -39,11 +36,7 @@ export class InventoryController {
         if (!req.user.id) {
             throw new Error("ID not found in request user");
         }
-        const _inventory: InventoryDto[] = await this.inventoryService.findByUser(
-            req.user.id,
-        );
-        this.LOGGER.debug(`findByUser ${req.user.id}`);
-        this.LOGGER.debug(`inventory size: ${_inventory.length}`);
+        const _inventory: InventoryCardDto[] = await this.inventoryService.findCardsByUser(req.user.id);
         this.LOGGER.debug(`inventory stringified: ${JSON.stringify(_inventory)}`);
         return {
             user: req.user,
@@ -55,7 +48,7 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Post()
     async create(
-        @Body() createInventoryDtos: CreateInventoryDto[],
+        @Body() createInventoryDtos: InventoryDto[],
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
@@ -63,7 +56,7 @@ export class InventoryController {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("User not found in request");
             }
-            const updatedDtos: CreateInventoryDto[] = createInventoryDtos.map(dto => ({
+            const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
                 ...dto,
                 userId: req.user.id,
             }));
@@ -84,7 +77,7 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
-        @Body() updateInventoryDtos: UpdateInventoryDto[],
+        @Body() updateInventoryDtos: InventoryDto[],
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {

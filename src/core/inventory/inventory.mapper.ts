@@ -9,7 +9,6 @@ export class InventoryMapper {
 
     private readonly LOGGER: Logger = new Logger(InventoryMapper.name);
 
-    // TODO: do we need to inject CardMapper here?
     constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
     toEntities(inventoryItems: InventoryDto[] | InventoryDto[]): Inventory[] {

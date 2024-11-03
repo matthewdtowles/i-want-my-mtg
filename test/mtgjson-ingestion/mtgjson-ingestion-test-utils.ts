@@ -2,8 +2,8 @@ import { CardSet } from '../../src/adapters/mtgjson-ingestion/dto/cardSet.dto';
 import { Identifiers } from '../../src/adapters/mtgjson-ingestion/dto/identifiers.dto';
 import { SetDto } from '../../src/adapters/mtgjson-ingestion/dto/set.dto';
 import { SetList } from '../../src/adapters/mtgjson-ingestion/dto/setList.dto';
-import { CreateCardDto } from '../../src/core/card/dto/create-card.dto';
-import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
+import { CreateCardDto } from '../../src/core/card/api/card.dto';
+import { CreateSetDto } from '../../src/core/set/api/set.dto';
 
 export class MtgJsonIngestionTestUtils {
 

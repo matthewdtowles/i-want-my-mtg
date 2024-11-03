@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { IsInt } from "class-validator";
-import { CardDto } from "src/core/card/dto/card.dto";
+import { CardDto } from "src/core/card/api/card.dto";
 
 /**
  * Inventory item for read/write operations

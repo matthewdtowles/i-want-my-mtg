@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Command, Positional } from 'nestjs-command';
-import { SetDto } from 'src/core/set/dto/set.dto';
-import { SetServicePort } from 'src/core/set/ports/set.service.port';
+import { SetDto } from 'src/core/set/api/set.dto';
+import { SetServicePort } from 'src/core/set/api/set.service.port';
 
 @Injectable()
 export class SetCli {

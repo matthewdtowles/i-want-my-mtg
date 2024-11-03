@@ -1,6 +1,4 @@
-import { CreateSetDto } from "../dto/create-set.dto";
-import { SetDto } from "../dto/set.dto";
-import { UpdateSetDto } from "../dto/update-set.dto";
+import { CreateSetDto, SetDto, UpdateSetDto } from "./set.dto";
 
 export const SetServicePort = "SetServicePort";
 

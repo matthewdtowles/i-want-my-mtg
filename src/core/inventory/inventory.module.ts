@@ -1,12 +1,12 @@
 import { Logger, Module } from "@nestjs/common";
 import { DatabaseModule } from "src/adapters/database/database.module";
 import { InventoryRepository } from "src/adapters/database/inventory.repository";
-import { InventoryMapper } from "./inventory.mapper";
-import { InventoryService } from "./inventory.service";
-import { InventoryRepositoryPort } from "./api/inventory.repository.port";
-import { InventoryServicePort } from "./api/inventory.service.port";
 import { CardMapper } from "../card/card.mapper";
 import { UserMapper } from "../user/user.mapper";
+import { InventoryRepositoryPort } from "./api/inventory.repository.port";
+import { InventoryServicePort } from "./api/inventory.service.port";
+import { InventoryMapper } from "./inventory.mapper";
+import { InventoryService } from "./inventory.service";
 
 @Module({
     imports: [DatabaseModule],

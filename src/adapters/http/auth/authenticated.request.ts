@@ -1,4 +1,4 @@
-import { UserDto } from "src/core/user/dto/user.dto";
+import { UserDto } from "src/core/user/api/user.dto";
 import { Request } from "express";
 
 /**

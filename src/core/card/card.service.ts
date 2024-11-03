@@ -1,11 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CardDto, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardRepositoryPort } from "./api/card.repository.port";
+import { CardServicePort } from "./api/card.service.port";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
-import { CardDto } from "./dto/card.dto";
-import { CreateCardDto } from "./dto/create-card.dto";
-import { UpdateCardDto } from "./dto/update-card.dto";
-import { CardRepositoryPort } from "./ports/card.repository.port";
-import { CardServicePort } from "./ports/card.service.port";
 
 @Injectable()
 export class CardService implements CardServicePort {

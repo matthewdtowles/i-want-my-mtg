@@ -3,30 +3,30 @@ import { Card } from "../card/card.entity";
 
 @Entity()
 export class Set {
-  @PrimaryColumn()
-  code: string;
+    @PrimaryColumn()
+    code: string;
 
-  @Column()
-  baseSize: number;
+    @Column()
+    baseSize: number;
 
-  @Column({ nullable: true })
-  block?: string;
+    @Column({ nullable: true })
+    block?: string;
 
-  @OneToMany(() => Card, (card) => card.set)
-  cards: Card[];
+    @OneToMany(() => Card, (card) => card.set)
+    cards: Card[];
 
-  @Column()
-  keyruneCode: string;
+    @Column()
+    keyruneCode: string;
 
-  @Column()
-  name: string;
+    @Column()
+    name: string;
 
-  @Column({ nullable: true })
-  parentCode?: string;
+    @Column({ nullable: true })
+    parentCode?: string;
 
-  @Column()
-  releaseDate: string;
+    @Column()
+    releaseDate: string;
 
-  @Column()
-  type: string;
+    @Column()
+    type: string;
 }

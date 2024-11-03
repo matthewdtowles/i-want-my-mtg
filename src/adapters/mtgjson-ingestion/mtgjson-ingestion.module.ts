@@ -1,24 +1,24 @@
 import { Logger, Module } from "@nestjs/common";
-import { MtgJsonIngestionService } from "./mtgjson-ingestion.service";
-import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
-import { IngestionServicePort } from "src/core/ingestion/ports/ingestion.service.port";
+import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
 import { MtgJsonApiClient } from "./mtgjson-api.client";
+import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
+import { MtgJsonIngestionService } from "./mtgjson-ingestion.service";
 
 @Module({
-  providers: [
-    MtgJsonApiClient,
-    MtgJsonIngestionMapper,
-    {
-      provide: IngestionServicePort,
-      useClass: MtgJsonIngestionService,
-    },
-  ],
-  exports: [IngestionServicePort, MtgJsonApiClient, MtgJsonIngestionMapper],
+    providers: [
+        MtgJsonApiClient,
+        MtgJsonIngestionMapper,
+        {
+            provide: IngestionServicePort,
+            useClass: MtgJsonIngestionService,
+        },
+    ],
+    exports: [IngestionServicePort, MtgJsonApiClient, MtgJsonIngestionMapper],
 })
 export class MtgJsonIngestionModule {
-  private readonly LOGGER: Logger = new Logger(MtgJsonIngestionModule.name);
+    private readonly LOGGER: Logger = new Logger(MtgJsonIngestionModule.name);
 
-  constructor() {
-    this.LOGGER.debug(`Initialized`);
-  }
+    constructor() {
+        this.LOGGER.debug(`Initialized`);
+    }
 }

@@ -1,14 +1,11 @@
 import { UserRole } from "src/adapters/http/auth/user.role";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { CreateSetDto } from "src/core/set/dto/create-set.dto";
-import { SetDto } from "src/core/set/dto/set.dto";
-import { CreateUserDto } from "src/core/user/dto/create-user.dto";
-import { UserDto } from "src/core/user/dto/user.dto";
+import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
+import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
 import { User } from "src/core/user/user.entity";
+import { CardDto, CreateCardDto } from "../src/core/card/api/card.dto";
 import { Card } from "../src/core/card/card.entity";
-import { CardDto } from "../src/core/card/dto/card.dto";
-import { CreateCardDto } from "../src/core/card/dto/create-card.dto";
 import { Set } from "../src/core/set/set.entity";
 
 export class TestUtils {
@@ -147,7 +144,7 @@ export class TestUtils {
     }
 
     entityListToInventoryCardDtos(inventoryList: Inventory[]): InventoryCardDto[] {
-        return inventoryList.map((item) => this.entityToInventoryCardDto(item));
+        return inventoryList.map(item => this.entityToInventoryCardDto(item));
     }
 
     getMockCreateUserDto(): CreateUserDto {
@@ -239,14 +236,10 @@ export class TestUtils {
     }
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
-        return manaCost
-            ? manaCost.toLowerCase().replace(/[{}]/g, "").split("")
-            : undefined;
+        return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
     }
 
     private manaCostToString(manaCost: string[] | undefined): string | undefined {
-        return manaCost
-            ? manaCost.map((token) => `{${token}}`).join("")
-            : undefined;
+        return manaCost ? manaCost.map((token) => `{${token}}`).join("") : undefined;
     }
 }

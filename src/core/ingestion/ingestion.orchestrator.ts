@@ -1,12 +1,10 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardDto } from "../card/dto/card.dto";
-import { CreateCardDto } from "../card/dto/create-card.dto";
-import { CardServicePort } from "../card/ports/card.service.port";
-import { CreateSetDto } from "../set/dto/create-set.dto";
-import { SetDto } from "../set/dto/set.dto";
-import { SetServicePort } from "../set/ports/set.service.port";
-import { IngestionOrchestratorPort } from "./ports/ingestion.orchestrator.port";
-import { IngestionServicePort } from "./ports/ingestion.service.port";
+import { CardDto, CreateCardDto } from "../card/api/card.dto";
+import { CardServicePort } from "../card/api/card.service.port";
+import { CreateSetDto, SetDto } from "../set/api/set.dto";
+import { SetServicePort } from "../set/api/set.service.port";
+import { IngestionOrchestratorPort } from "./api/ingestion.orchestrator.port";
+import { IngestionServicePort } from "./api/ingestion.service.port";
 
 @Injectable()
 export class IngestionOrchestrator implements IngestionOrchestratorPort {
@@ -22,16 +20,11 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
 
     async ingestAllSetMeta(): Promise<SetDto[]> {
         this.LOGGER.debug(`ingestAllSetMeta`);
-        const setMeta: CreateSetDto[] =
-            (await this.ingestionService.fetchAllSetsMeta()) ?? [];
+        const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: SetDto[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
         if (savedSets) {
-            this.LOGGER.log(
-                `Saved Sets: ${savedSets.forEach((ss) => {
-                    ss.name;
-                })}`
-            );
+            this.LOGGER.log(`Saved Sets: ${savedSets.forEach(ss => ss.name)}`);
         }
         return savedSets;
     }

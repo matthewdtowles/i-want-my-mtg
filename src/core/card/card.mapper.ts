@@ -1,8 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
-import { CardDto } from "./dto/card.dto";
-import { CreateCardDto } from "./dto/create-card.dto";
-import { UpdateCardDto } from "./dto/update-card.dto";
+import { CardDto, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 
 @Injectable()
 export class CardMapper {

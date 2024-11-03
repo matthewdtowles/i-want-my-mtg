@@ -33,7 +33,7 @@ export class UserController {
     ) { }
 
     @Get("create")
-    @Render("create-user")
+    @Render("createUser")
     createForm() {
         return {};
     }

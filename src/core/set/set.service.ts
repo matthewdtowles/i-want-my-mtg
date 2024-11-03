@@ -1,8 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CreateSetDto } from "./dto/create-set.dto";
-import { SetDto } from "./dto/set.dto";
-import { SetRepositoryPort } from "./ports/set.repository.port";
-import { SetServicePort } from "./ports/set.service.port";
+import { CreateSetDto, SetDto } from "./api/set.dto";
+import { SetRepositoryPort } from "./api/set.repository.port";
+import { SetServicePort } from "./api/set.service.port";
 import { Set } from "./set.entity";
 import { SetMapper } from "./set.mapper";
 

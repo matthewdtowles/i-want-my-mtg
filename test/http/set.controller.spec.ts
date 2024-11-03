@@ -6,8 +6,8 @@ import { join } from 'path';
 import * as request from 'supertest';
 import { SetController } from '../../src/adapters/http/set.controller';
 import { CardServicePort } from '../../src/core/card/api/card.service.port';
-import { SetDto } from '../../src/core/set/dto/set.dto';
-import { SetServicePort } from '../../src/core/set/ports/set.service.port';
+import { SetDto } from '../../src/core/set/api/set.dto';
+import { SetServicePort } from '../../src/core/set/api/set.service.port';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',

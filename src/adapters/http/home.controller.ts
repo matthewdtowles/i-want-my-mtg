@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Logger, Render, Req } from "@nestjs/common";
 import { Request } from "express";
-import { SetDto } from "src/core/set/dto/set.dto";
-import { SetServicePort } from "src/core/set/ports/set.service.port";
+import { SetDto } from "src/core/set/api/set.dto";
+import { SetServicePort } from "src/core/set/api/set.service.port";
 
 @Controller()
 export class HomeController {

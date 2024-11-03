@@ -13,9 +13,7 @@ export function IngestMissingCards() {
         descriptor.value = async function (...args: any[]) {
             let result = (await originalMethod.apply(this, args)) ?? [];
             if (0 === result.length) {
-                const setCards: Card[] = await this.ingestionService.fetchSetCards(
-                    args[0],
-                );
+                const setCards: Card[] = await this.ingestionService.fetchSetCards(args[0]);
                 await this.repository.save(setCards);
             }
             return await originalMethod.apply(this, args);
@@ -51,9 +49,7 @@ export function IngestMissingSets() {
             let result = await originalMethod.apply(this, args);
             if (null === result || 0 === result.length) {
                 const setSets: Set[] = await this.ingestionService.fetchAllSets();
-                setSets.forEach((set) => {
-                    this.repository.saveSet(set);
-                });
+                setSets.forEach((set) => this.repository.saveSet(set));
             }
             return await originalMethod.apply(this, args);
         };

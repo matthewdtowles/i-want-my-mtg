@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { CardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
-import { IngestionOrchestratorPort } from "src/core/ingestion/ports/ingestion.orchestrator.port";
+import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { Role } from "./auth/roles.decorator";
 import { RolesGuard } from "./auth/roles.guard";

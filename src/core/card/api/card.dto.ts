@@ -8,8 +8,16 @@ import {
     IsPositive,
     IsString
 } from "class-validator";
-import { CardRarity } from "../card-rarity.enum";
 import { PartialType } from "@nestjs/mapped-types";
+
+export enum CardRarity {
+    Common = "common",
+    Uncommon = "uncommon",
+    Rare = "rare",
+    Mythic = "mythic",
+    Bonus = "bonus",
+    Special = "special",
+}
 
 export class CardDto {
     readonly id: number;

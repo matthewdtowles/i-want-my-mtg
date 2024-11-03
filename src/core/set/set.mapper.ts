@@ -1,8 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Set } from "src/core/set/set.entity";
 import { CardMapper } from "../card/card.mapper";
-import { CreateSetDto } from "./dto/create-set.dto";
-import { SetDto } from "./dto/set.dto";
+import { CreateSetDto, SetDto } from "./api/set.dto";
 
 @Injectable()
 export class SetMapper {

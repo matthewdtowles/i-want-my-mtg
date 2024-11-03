@@ -4,7 +4,7 @@ import { SetDto } from '../../src/adapters/mtgjson-ingestion/dto/set.dto';
 import { SetList } from '../../src/adapters/mtgjson-ingestion/dto/setList.dto';
 import { MtgJsonIngestionMapper } from '../../src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper';
 import { CreateCardDto } from '../../src/core/card/api/card.dto';
-import { CreateSetDto } from '../../src/core/set/dto/create-set.dto';
+import { CreateSetDto } from '../../src/core/set/api/set.dto';
 import { MtgJsonIngestionTestUtils } from './mtgjson-ingestion-test-utils';
 
 describe('MtgJsonIngestionMapper', () => {

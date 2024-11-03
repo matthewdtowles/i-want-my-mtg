@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from '../../src/adapters/http/card.controller';
 import { CardServicePort } from '../../src/core/card/api/card.service.port';
 import { CardMapper } from '../../src/core/card/card.mapper';
-import { IngestionOrchestratorPort } from '../../src/core/ingestion/ports/ingestion.orchestrator.port';
+import { IngestionOrchestratorPort } from '../../src/core/ingestion/api/ingestion.orchestrator.port';
 
 describe('CardController', () => {
     let controller: CardController;

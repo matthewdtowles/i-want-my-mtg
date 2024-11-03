@@ -47,7 +47,7 @@ export class UserService implements UserServicePort {
     }
 
     private async encrypt(password: string): Promise<string> {
-        const saltRounds = 10; // TODO: check best practices
+        const saltRounds = 10;
         return await bcrypt.hash(password, saltRounds);
     }
 }

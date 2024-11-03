@@ -3,8 +3,8 @@ import { SetRepository } from "src//adapters/database/set.repository";
 import { DatabaseModule } from "src/adapters/database/database.module";
 import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
 import { CardMapper } from "../card/card.mapper";
-import { SetRepositoryPort } from "./ports/set.repository.port";
-import { SetServicePort } from "./ports/set.service.port";
+import { SetRepositoryPort } from "./api/set.repository.port";
+import { SetServicePort } from "./api/set.service.port";
 import { SetMapper } from "./set.mapper";
 import { SetService } from "./set.service";
 

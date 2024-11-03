@@ -6,9 +6,7 @@ import { UserDto } from "src/core/user/api/user.dto";
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-    constructor(
-        @Inject(AuthServicePort) private readonly authService: AuthServicePort,
-    ) {
+    constructor(@Inject(AuthServicePort) private readonly authService: AuthServicePort) {
         super({
             usernameField: "email",
             passwordField: "password",

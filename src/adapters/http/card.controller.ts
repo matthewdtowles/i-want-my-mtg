@@ -17,8 +17,8 @@ import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { Role } from "./auth/roles.decorator";
 import { RolesGuard } from "./auth/roles.guard";
-import { UserRole } from "./auth/user.role";
 import { UserGuard } from "./auth/user.guard";
+import { UserRole } from "./auth/user.role";
 
 @Controller("card")
 export class CardController {

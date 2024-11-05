@@ -8,17 +8,17 @@
         <th>Price</th>
     </thead>
     <tbody>
-    {{#each cards}}
+    {{#each set.cards}}
         <tr class="card-set-card">
             <td class="card-set-card-owned">
-                {{>cardsOwned}}
+                {{>cardsOwned card=this inventory=@root.inventory}}
             </td>
             <td class="card-set-card-number">{{this.number}}</td>
             <td class="card-set-card-name">
                 <a class="card-set-card-link" href="{{this.url}}">{{this.name}}</a>
             </td>
             <td class="card-set-card-mana-cost">
-                {{>manaCost}}
+                {{>manaCost card=this}}
             </td>
             <td class="card-set-card-rarity">{{this.rarity}}</td>
             <td class="card-set-card-price">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>

@@ -36,7 +36,7 @@ export interface SetServicePort {
      * Return set including cards with code
      *
      * @param setCode
-     * @returns set with code
+     * @returns set with code | null if not found
      */
-    findByCode(setCode: string): Promise<SetDto>;
+    findByCode(setCode: string): Promise<SetDto | null>;
 }

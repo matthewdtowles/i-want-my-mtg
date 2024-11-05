@@ -1,4 +1,5 @@
 import { Logger, Module } from "@nestjs/common";
+import { AggregatorModule } from "./aggregator/aggregator.module";
 import { AuthModule } from "./auth/auth.module";
 import { CardModule } from "./card/card.module";
 import { IngestionModule } from "./ingestion/ingestion.module";
@@ -8,20 +9,22 @@ import { UserModule } from "./user/user.module";
 
 @Module({
     imports: [
+        AggregatorModule,
         AuthModule,
         CardModule,
+        IngestionModule,
         InventoryModule,
         SetModule,
         UserModule,
-        IngestionModule,
     ],
     exports: [
+        AggregatorModule,
         AuthModule,
         CardModule,
+        IngestionModule,
         InventoryModule,
         SetModule,
         UserModule,
-        IngestionModule,
     ],
 })
 export class CoreModule {

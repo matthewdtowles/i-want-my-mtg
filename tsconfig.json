@@ -18,11 +18,12 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "src/*": ["src/*"],
-      "src/core/*": ["src/core/*"],
-      "src/adapters/*": ["src/adapters/*"]
+      "@src/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "test/test-utils.ts"],
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

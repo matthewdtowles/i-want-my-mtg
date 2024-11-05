@@ -37,7 +37,7 @@ export class SetService implements SetServicePort {
         return this.mapper.entitiesToDtos(setEntities);
     }
 
-    async findByCode(setCode: string): Promise<SetDto> {
+    async findByCode(setCode: string): Promise<SetDto | null> {
         const setEntity: Set = await this.repository.findByCode(setCode);
         return this.mapper.entityToDto(setEntity);
     }

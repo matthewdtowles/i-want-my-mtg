@@ -28,13 +28,25 @@ export class InventoryService implements InventoryServicePort {
         return this.mapper.toDtos(savedItems);
     }
 
-    async findByUser(userId: number): Promise<InventoryDto[]> {
+    async findOneForUser(userId: number, cardId: number): Promise<InventoryDto | null> {
+        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
+        this.LOGGER.debug(`Found ${JSON.stringify(foundItem)} inventory item for user ${userId} and card ${cardId}`);
+        return this.mapper.toDto(foundItem);
+    }
+
+    async findOneCardForUser(userId: number, cardId: number): Promise<InventoryCardDto | null> {
+        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
+        this.LOGGER.debug(`Found ${JSON.stringify(foundItem)} inventory item for user ${userId} and card ${cardId}`);
+        return this.mapper.toInventoryCardDto(foundItem);
+    }
+
+    async findAllForUser(userId: number): Promise<InventoryDto[]> {
         const foundItems: Inventory[] = await this.repository.findByUser(userId);
         this.LOGGER.debug(`Found ${JSON.stringify(foundItems)} inventory items for user ${userId}`);
         return this.mapper.toDtos(foundItems);
     }
 
-    async findCardsByUser(userId: number): Promise<InventoryCardDto[]> {
+    async findAllCardsForUser(userId: number): Promise<InventoryCardDto[]> {
         const foundCards: Inventory[] = await this.repository.findByUser(userId);
         this.LOGGER.debug(`Found ${JSON.stringify(foundCards)} inventory items for user ${userId}`);
         return this.mapper.toInventoryCardDtos(foundCards);

@@ -70,6 +70,6 @@ export class CardController {
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        return await this.aggregatorService.findInventoryCardBySetNumber(setCode, setNumber.toString(), userId);
+        return await this.aggregatorService.findInventoryCardBySetNumber(setCode, setNumber, userId);
     }
 }

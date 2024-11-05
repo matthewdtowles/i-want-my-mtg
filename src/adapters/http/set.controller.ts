@@ -32,7 +32,7 @@ export class SetController {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
         const _set: SetDto = await this.setService.findByCode(setCode);
         const _inventory: InventoryDto[] = req.user
-            ? await this.inventoryService.findByUser(req.user.id) : [];
+            ? await this.inventoryService.findAllForUser(req.user.id) : [];
         return {
             set: _set,
             inventory: _inventory,

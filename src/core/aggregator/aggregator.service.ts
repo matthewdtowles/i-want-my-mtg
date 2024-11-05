@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CardServicePort } from "../card/api/card.service.port";
-import { InventoryCardDto } from "../inventory/api/inventory.dto";
+import { InventoryCardDto, InventoryDto } from "../inventory/api/inventory.dto";
 import { InventoryServicePort } from "../inventory/api/inventory.service.port";
 import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
@@ -26,7 +26,7 @@ export class AggregatorService implements AggregatorServicePort {
         if (!set.cards || set.cards.length === 0) {
             throw new Error(`Set with code ${setCode} has no cards`);
         }
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findCardsByUser(userId);
+        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const setInventoryCards: InventoryCardDto[] = inventoryCards
             ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
@@ -39,14 +39,34 @@ export class AggregatorService implements AggregatorServicePort {
         return {
             ...set,
             cards: updatedSetCards,
-       };
+        };
     }
 
     async findInventoryCardById(cardId: number, userId: number): Promise<InventoryCardAggregateDto> {
-        throw new Error("Method not implemented.");
+        const card = await this.cardService.findById(cardId);
+        if (!card) {
+            throw new Error(`Card with id ${cardId} not found`);
+        }
+        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, cardId);
+        const foundCard: InventoryCardAggregateDto = {
+            ...card,
+            quantity: inventoryItem ? inventoryItem.quantity : 0,
+        };
+        this.LOGGER.debug(`Found card ${JSON.stringify(foundCard)} for user ${userId}`);
+        return foundCard;
     }
 
-    async findInventoryCardBySetNumber(setCode: string, cardNumber: string, userId: number): Promise<InventoryCardAggregateDto> {
-        throw new Error("Method not implemented.");
+    async findInventoryCardBySetNumber(setCode: string, cardNumber: number, userId: number): Promise<InventoryCardAggregateDto> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber);
+        if (!card) {
+            throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
+        }
+        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, card.id);
+        const foundCard: InventoryCardAggregateDto = {
+            ...card,
+            quantity: inventoryItem ? inventoryItem.quantity : 0,
+        };
+        this.LOGGER.debug(`Found card ${JSON.stringify(foundCard)} for user ${userId}`);
+        return foundCard;
     }
 }

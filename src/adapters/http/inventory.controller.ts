@@ -36,7 +36,7 @@ export class InventoryController {
         if (!req.user.id) {
             throw new Error("ID not found in request user");
         }
-        const _inventory: InventoryCardDto[] = await this.inventoryService.findCardsByUser(req.user.id);
+        const _inventory: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(req.user.id);
         this.LOGGER.debug(`inventory stringified: ${JSON.stringify(_inventory)}`);
         return {
             user: req.user,

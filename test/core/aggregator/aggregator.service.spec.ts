@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AggregatorService } from '../../../src/core/aggregator/aggregator.service';
-import { InventoryCardAggregateDto, InventorySetAggregateDto } from '../../../src/core/aggregator/api/aggregate.dto';
-import { CardServicePort } from '../../../src/core/card/api/card.service.port';
-import { InventoryServicePort } from '../../../src/core/inventory/api/inventory.service.port';
-import { SetServicePort } from '../../../src/core/set/api/set.service.port';
-import { TestUtils } from '../../test-utils';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AggregatorService } from "src/core/aggregator/aggregator.service";
+import { InventoryCardAggregateDto, InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { CardServicePort } from "src/core/card/api/card.service.port";
+import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
+import { SetServicePort } from "src/core/set/api/set.service.port";
+import { TestUtils } from "../../test-utils";
+import { CardDto } from "src/core/card/api/card.dto";
 
 describe("AggregatorService", () => {
     let subject: AggregatorService;
@@ -27,10 +28,12 @@ describe("AggregatorService", () => {
         save: jest.fn(),
     };
     const mockInventoryService: InventoryServicePort = {
-        findByUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()),
-        findCardsByUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryCardDtos()),
+        findAllForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()),
+        findAllCardsForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryCardDtos()),
         create: jest.fn(),
         update: jest.fn(),
+        findOneForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()[0]),
+        findOneCardForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryCardDtos()[0]),
     };
 
     beforeEach(async () => {
@@ -63,7 +66,7 @@ describe("AggregatorService", () => {
 
         it("should return set with inventory agg cards with quantity 0 if user not logged in", async () => {
             const invalidUserId = -1;
-            jest.spyOn(mockInventoryService, "findCardsByUser").mockResolvedValueOnce([]);
+            jest.spyOn(mockInventoryService, "findAllCardsForUser").mockResolvedValueOnce([]);
             const result: InventorySetAggregateDto = await subject.findInventorySetByCode(setCode, invalidUserId);
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
@@ -73,7 +76,7 @@ describe("AggregatorService", () => {
         });
 
         it("should return set with inventory agg cards with quantity 0 if user has no inventory", async () => {
-            jest.spyOn(mockInventoryService, "findCardsByUser").mockResolvedValueOnce([]);
+            jest.spyOn(mockInventoryService, "findAllCardsForUser").mockResolvedValueOnce([]);
             const result = await subject.findInventorySetByCode(setCode, userId);
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
@@ -85,7 +88,7 @@ describe("AggregatorService", () => {
         it("should find set with cards and replace cards with inventory cards", async () => {
             const userId = testUtils.MOCK_USER_ID;
             const result = await subject.findInventorySetByCode(setCode, userId);
-            expect (result).toBeDefined();
+            expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
             result.cards.forEach((card: InventoryCardAggregateDto) => {
                 expect(card.quantity).toBeDefined();
@@ -101,20 +104,37 @@ describe("AggregatorService", () => {
 
     describe("findInventoryCardById", () => {
         it("should throw error if card with cardId not found", async () => {
+            jest.spyOn(mockCardService, "findById").mockResolvedValueOnce(null);
             const cardId = 1;
-            const userId = 1;
-            jest.spyOn(subject, "findInventoryCardById").mockRejectedValue(new Error(`Card with id ${cardId} not found`));
-
             await expect(subject.findInventoryCardById(cardId, userId)).rejects.toThrow(`Card with id ${cardId} not found`);
         });
 
         it("should return inventory card with quantity 0 if userId invalid", async () => {
-
+            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 0,
+            };
+            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
         });
         it("should return inventory card with quantity 0 if no inventory item found", async () => {
+            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 0,
+            };
+            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
         });
 
         it("should return inventory card with quantity if inventory item found", async () => {
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 4,
+            };
+            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
         });
     });
 

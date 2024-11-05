@@ -33,7 +33,7 @@ export class InventoryCli {
         describe: "retrieve user inventory",
     })
     async getUserInventory(@Positional({ name: "user" }) _user: number,): Promise<void> {
-        const inventory: InventoryCardDto[] = await this.service.findCardsByUser(_user);
+        const inventory: InventoryCardDto[] = await this.service.findAllCardsForUser(_user);
         this.LOGGER.log(`${JSON.stringify(inventory, null, 4)}`);
     }
 
@@ -58,7 +58,7 @@ export class InventoryCli {
             ]);
             this.LOGGER.debug(`Inventory service save returned ${savedInventory}`);
         }
-        const userInventory: InventoryDto[] = await this.service.findByUser(_user);
+        const userInventory: InventoryDto[] = await this.service.findAllForUser(_user);
         if (!userInventory) {
             this.LOGGER.error(`Undefined. Inventory service unable to create entity.`,);
         } else if (userInventory.length === 1) {
@@ -82,7 +82,7 @@ export class InventoryCli {
         });
         await this.service.update(inventoryToDelete); // cleanup
         const remainingInventory: InventoryDto[] =
-            await this.service.findByUser(_user);
+            await this.service.findAllForUser(_user);
         this.LOGGER.log(
             `Remaining is: (should be empty after this)${remainingInventory}`,
         );

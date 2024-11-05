@@ -26,6 +26,7 @@ describe('InventoryService', () => {
         save: jest.fn().mockResolvedValue(mockInventoryList),
         findByUser: jest.fn().mockResolvedValue(mockInventoryList),
         delete: jest.fn(),
+        findOne: jest.fn()
     };
 
     beforeEach(async () => {
@@ -70,13 +71,13 @@ describe('InventoryService', () => {
     });
 
     it('should find inventory items for a user', async () => {
-        const foundItems: InventoryDto[] = await service.findByUser(testUtils.MOCK_USER_ID);
+        const foundItems: InventoryDto[] = await service.findAllForUser(testUtils.MOCK_USER_ID);
         expect(repository.findByUser).toHaveBeenCalled();
         expect(foundItems).toEqual(testUtils.getMockInventoryDtos());
     });
 
     it('should find inventory items with cards for a user', async () => {
-        const foundItems: InventoryCardDto[] = await service.findCardsByUser(testUtils.MOCK_USER_ID);
+        const foundItems: InventoryCardDto[] = await service.findAllCardsForUser(testUtils.MOCK_USER_ID);
         expect(repository.findByUser).toHaveBeenCalled();
         expect(foundItems).toEqual(testUtils.getMockInventoryCardDtos());
     });

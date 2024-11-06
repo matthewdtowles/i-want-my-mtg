@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Logger, Param, Render, Req, UseGuards } from "@nestjs/common";
+import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
-import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
@@ -28,15 +28,9 @@ export class SetController {
     async findBySetCode(
         @Param("setCode") setCode: string,
         @Req() req: AuthenticatedRequest
-    ): Promise<{ set: SetDto, inventory: InventoryDto[] }> {
+    ): Promise<InventorySetAggregateDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
-        const _set: SetDto = await this.setService.findByCode(setCode);
-        // const _inventory: InventoryDto[] = req.user
-        //     ? await this.aggregatorService.findInventorySetByCode(req.user.id) : [];
-        // return {
-        //     set: _set,
-        //     inventory: _inventory,
-        // };
-        return null;
+        const userId = req.user ? req.user.id : 0;
+        return await this.aggregatorService.findInventorySetByCode(setCode, userId);
     }
 }

@@ -3,11 +3,11 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { create } from 'express-handlebars';
 import { join } from 'path';
+import { SetController } from 'src/adapters/http/set.controller';
+import { AggregatorServicePort } from 'src/core/aggregator/api/aggregator.service.port';
+import { SetDto } from 'src/core/set/api/set.dto';
+import { SetServicePort } from 'src/core/set/api/set.service.port';
 import * as request from 'supertest';
-import { SetController } from '../../src/adapters/http/set.controller';
-import { CardServicePort } from '../../src/core/card/api/card.service.port';
-import { SetDto } from '../../src/core/set/api/set.dto';
-import { SetServicePort } from '../../src/core/set/api/set.service.port';
 
 const mockSet: SetDto = {
     keyruneCode: 'kld',
@@ -54,13 +54,10 @@ describe('SetController', () => {
         save: jest.fn(),
     };
 
-    const mockCardService: CardServicePort = {
-        save: jest.fn(),
-        findAllInSet: jest.fn(),
-        findAllWithName: jest.fn(),
-        findById: jest.fn(),
-        findBySetCodeAndNumber: jest.fn(),
-        findByUuid: jest.fn(),
+    const mockAggregatorService: AggregatorServicePort = {
+        findInventorySetByCode: jest.fn().mockResolvedValue([]),
+        findInventoryCardById: jest.fn(),
+        findInventoryCardBySetNumber: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -72,8 +69,8 @@ describe('SetController', () => {
                     useValue: mockSetService,
                 },
                 {
-                    provide: CardServicePort,
-                    useValue: mockCardService,
+                    provide: AggregatorServicePort,
+                    useValue: mockAggregatorService,
                 }
             ],
         }).compile();

@@ -1,20 +1,20 @@
-import { CardSet } from '../../src/adapters/mtgjson-ingestion/dto/cardSet.dto';
-import { Identifiers } from '../../src/adapters/mtgjson-ingestion/dto/identifiers.dto';
-import { SetDto } from '../../src/adapters/mtgjson-ingestion/dto/set.dto';
-import { SetList } from '../../src/adapters/mtgjson-ingestion/dto/setList.dto';
-import { CreateCardDto } from '../../src/core/card/api/card.dto';
-import { CreateSetDto } from '../../src/core/set/api/set.dto';
+import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
+import { Identifiers } from "src/adapters/mtgjson-ingestion/dto/identifiers.dto";
+import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
+import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
+import { CreateCardDto } from "src/core/card/api/card.dto";
+import { CreateSetDto } from "src/core/set/api/set.dto";
 
 export class MtgJsonIngestionTestUtils {
 
-    readonly MOCK_SET_CODE: string = 'set';
+    readonly MOCK_SET_CODE: string = "set";
     private readonly MOCK_BASE_SET_SIZE: number = 3;
-    private readonly MOCK_SET_NAME: string = 'Setname';
-    private readonly MOCK_RELEASE_DATE: string = '1970-01-01';
-    private readonly MOCK_SET_TYPE: string = 'expansion';
-    private readonly MOCK_SET_URL: string = 'sets/set';
-    private readonly MOCK_ROOT_SCRYFALL_ID: string = 'abc123def456';
-    private readonly IMG_SRC_BASE: string = 'https://cards.scryfall.io/normal/front/';
+    private readonly MOCK_SET_NAME: string = "Setname";
+    private readonly MOCK_RELEASE_DATE: string = "1970-01-01";
+    private readonly MOCK_SET_TYPE: string = "expansion";
+    private readonly MOCK_SET_URL: string = "sets/set";
+    private readonly MOCK_ROOT_SCRYFALL_ID: string = "abc123def456";
+    private readonly IMG_SRC_BASE: string = "https://cards.scryfall.io/normal/front/";
 
     getMockSetDto(): SetDto {
         let set: SetDto = new SetDto();
@@ -37,27 +37,27 @@ export class MtgJsonIngestionTestUtils {
             let card = new CardSet();
             card.identifiers = new Identifiers();
             card.isReserved = false;
-            card.manaCost = '{' + i + '}{W}';
-            card.name = 'Test Card Name' + i;
+            card.manaCost = "{" + i + "}{W}";
+            card.name = "Test Card Name" + i;
             card.number = i.toString();
-            card.rarity = i % 2 === 1 ? 'common' : 'uncommon';
+            card.rarity = i % 2 === 1 ? "common" : "uncommon";
             card.identifiers.scryfallId = i + this.MOCK_ROOT_SCRYFALL_ID;
-            card.originalText = 'Test card text.';
+            card.originalText = "Test card text.";
             card.setCode = this.MOCK_SET_CODE;
-            card.uuid = 'abcd-1234-efgh-5678-ijkl-901' + i;
+            card.uuid = "abcd-1234-efgh-5678-ijkl-901" + i;
             cards.push(card);
         }
         let bonusCard = new CardSet();
         bonusCard.identifiers = new Identifiers();
         bonusCard.isReserved = false;
-        bonusCard.manaCost = '{U/G}{B/W}{R/U}';
-        bonusCard.name = 'Test Bonus Card Name';
+        bonusCard.manaCost = "{U/G}{B/W}{R/U}";
+        bonusCard.name = "Test Bonus Card Name";
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
-        bonusCard.originalText = 'Bonus card text.';
-        bonusCard.rarity = 'mythic'
+        bonusCard.originalText = "Bonus card text.";
+        bonusCard.rarity = "mythic"
         bonusCard.identifiers.scryfallId = bonusCard.number + this.MOCK_ROOT_SCRYFALL_ID;
         bonusCard.setCode = this.MOCK_SET_CODE;
-        bonusCard.uuid = 'zyxw-0987-vutsr-6543-qponm-21098';
+        bonusCard.uuid = "zyxw-0987-vutsr-6543-qponm-21098";
         cards.push(bonusCard);
         return cards;
     }
@@ -82,29 +82,29 @@ export class MtgJsonIngestionTestUtils {
         const cards: CreateCardDto[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             const card: CreateCardDto = {
-                imgSrc: this.IMG_SRC_BASE + i + '/' + 'a/' + i + this.MOCK_ROOT_SCRYFALL_ID + '.jpg',
+                imgSrc: this.IMG_SRC_BASE + i + "/" + "a/" + i + this.MOCK_ROOT_SCRYFALL_ID + ".jpg",
                 isReserved: false,
-                manaCost: '{' + i + '}{W}',
-                name: 'Test Card Name' + i,
+                manaCost: "{" + i + "}{W}",
+                name: "Test Card Name" + i,
                 number: i.toString(),
-                originalText: 'Test card text.',
-                rarity: i % 2 === 1 ? 'common' : 'uncommon',
+                originalText: "Test card text.",
+                rarity: i % 2 === 1 ? "common" : "uncommon",
                 setCode: this.MOCK_SET_CODE,
-                uuid: 'abcd-1234-efgh-5678-ijkl-901' + i,
+                uuid: "abcd-1234-efgh-5678-ijkl-901" + i,
                 url: `/card/${this.MOCK_SET_CODE}/${i}`,
             };
             cards.push(card);
         }
         const bonusCard: CreateCardDto = {
-            imgSrc: this.IMG_SRC_BASE + '4/a/4' + this.MOCK_ROOT_SCRYFALL_ID + '.jpg',
+            imgSrc: this.IMG_SRC_BASE + "4/a/4" + this.MOCK_ROOT_SCRYFALL_ID + ".jpg",
             isReserved: false,
-            manaCost: '{U/G}{B/W}{R/U}',
-            name: 'Test Bonus Card Name',
+            manaCost: "{U/G}{B/W}{R/U}",
+            name: "Test Bonus Card Name",
             number: (this.MOCK_BASE_SET_SIZE + 1).toString(),
-            originalText: 'Bonus card text.',
-            rarity: 'mythic',
+            originalText: "Bonus card text.",
+            rarity: "mythic",
             setCode: this.MOCK_SET_CODE,
-            uuid: 'zyxw-0987-vutsr-6543-qponm-21098',
+            uuid: "zyxw-0987-vutsr-6543-qponm-21098",
             url: `/card/${this.MOCK_SET_CODE}/${(this.MOCK_BASE_SET_SIZE + 1).toString()}`,
         };
         cards.push(bonusCard);

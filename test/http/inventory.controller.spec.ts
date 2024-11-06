@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { InventoryController } from '../../src/adapters/http/inventory.controller';
+import { Test, TestingModule } from "@nestjs/testing";
+import { InventoryController } from "src/adapters/http/inventory.controller";
 
-describe('InventoryController', () => {
+describe("InventoryController", () => {
     let controller: InventoryController;
 
     beforeEach(async () => {
@@ -9,7 +9,7 @@ describe('InventoryController', () => {
             controllers: [InventoryController],
             providers: [
                 {
-                    provide: 'InventoryServicePort',
+                    provide: "InventoryServicePort",
                     useValue: {
                         create: jest.fn(),
                         update: jest.fn(),
@@ -23,7 +23,7 @@ describe('InventoryController', () => {
         controller = module.get<InventoryController>(InventoryController);
     });
 
-    it('should be defined', () => {
+    it("should be defined", () => {
         expect(controller).toBeDefined();
     });
 });

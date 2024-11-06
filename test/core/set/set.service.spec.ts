@@ -1,13 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CardMapper } from '../../../src/core/card/card.mapper';
-import { SetDto } from '../../../src/core/set/api/set.dto';
-import { SetRepositoryPort } from '../../../src/core/set/api/set.repository.port';
-import { Set } from '../../../src/core/set/set.entity';
-import { SetMapper } from '../../../src/core/set/set.mapper';
-import { SetService } from '../../../src/core/set/set.service';
-import { TestUtils } from '../../test-utils';
+import { Test, TestingModule } from "@nestjs/testing";
+import { CardMapper } from "src/core/card/card.mapper";
+import { SetDto } from "src/core/set/api/set.dto";
+import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
+import { Set } from "src/core/set/set.entity";
+import { SetMapper } from "src/core/set/set.mapper";
+import { SetService } from "src/core/set/set.service";
+import { TestUtils } from "../../test-utils";
 
-describe('SetService', () => {
+describe("SetService", () => {
     let service: SetService;
     let repository: SetRepositoryPort;
 
@@ -43,29 +43,29 @@ describe('SetService', () => {
         jest.clearAllMocks()
     });
 
-    it('should be defined', async () => {
+    it("should be defined", async () => {
         expect(service).toBeDefined();
     });
 
-    it('should save sets and return saved sets', async () => {
+    it("should save sets and return saved sets", async () => {
         const savedSets: SetDto[] = await service.save(testUtils.getMockCreateSetDtos());
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedSets).toEqual(testUtils.mapSetEntitiesToDtos(mockSets))
     });
 
-    it('should find all sets - cards not included', async () => {
+    it("should find all sets - cards not included", async () => {
         const foundSets: SetDto[] = await service.findAll();
         expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
         expect(foundSets).toEqual(testUtils.mapSetEntitiesToDtos(mockSets));
     });
 
-    it('should find all sets in given format - cards not included', async () => {
-        const foundSets: SetDto[] = await service.findAllInFormat('standard');
+    it("should find all sets in given format - cards not included", async () => {
+        const foundSets: SetDto[] = await service.findAllInFormat("standard");
         expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
         expect(foundSets).toEqual(testUtils.mapSetEntitiesToDtos(mockSets));
     });
 
-    it('should find set with cards by given set code', async () => {
+    it("should find set with cards by given set code", async () => {
         const foundSetWithCards: SetDto = await service.findByCode(mockSetCode);
         expect(repository.findByCode).toHaveBeenCalledTimes(1);
         expect(foundSetWithCards).toEqual(testUtils.mapSetEntityToDto(mockSets[0]))

@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CardMapper } from '../../../src/core/card/card.mapper';
-import { SetMapper } from '../../../src/core/set/set.mapper';
+import { Test, TestingModule } from "@nestjs/testing";
+import { CardMapper } from "src/core/card/card.mapper";
+import { SetMapper } from "src/core/set/set.mapper";
 
-describe('CardMapper', () => {
+describe("CardMapper", () => {
     let cardMapper: CardMapper;
 
     beforeAll(async () => {
@@ -15,7 +15,7 @@ describe('CardMapper', () => {
         cardMapper = module.get<CardMapper>(CardMapper);
     });
 
-    it('should be defined', () => {
+    it("should be defined", () => {
         expect(cardMapper).toBeDefined();
     });
 });

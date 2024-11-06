@@ -1,8 +1,8 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AuthServicePort } from "../../../src/core/auth/api/auth.service.port";
-import { LocalStrategy } from "../../../src/core/auth/local.strategy";
-import { UserDto } from "../../../src/core/user/api/user.dto";
+import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { LocalStrategy } from "src/core/auth/local.strategy";
+import { UserDto } from "src/core/user/api/user.dto";
 
 describe("LocalStrategy", () => {
     let localStrategy: LocalStrategy;

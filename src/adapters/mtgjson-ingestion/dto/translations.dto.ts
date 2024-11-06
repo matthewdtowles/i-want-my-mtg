@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class Translations {
-  'Ancient Greek'?: string;
+  "Ancient Greek"?: string;
   Arabic?: string;
-  'Chinese Simplified'?: string;
-  'Chinese Traditional'?: string;
+  "Chinese Simplified"?: string;
+  "Chinese Traditional"?: string;
   French?: string;
   German?: string;
   Hebrew?: string;
@@ -14,7 +14,7 @@ export class Translations {
   Korean?: string;
   Latin?: string;
   Phyrexian?: string;
-  'Portuguese (Brazil)'?: string;
+  "Portuguese (Brazil)"?: string;
   Russian?: string;
   Sanskrit?: string;
   Spanish?: string;

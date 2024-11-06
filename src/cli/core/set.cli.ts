@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Command, Positional } from 'nestjs-command';
-import { SetDto } from 'src/core/set/api/set.dto';
-import { SetServicePort } from 'src/core/set/api/set.service.port';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Command, Positional } from "nestjs-command";
+import { SetDto } from "src/core/set/api/set.dto";
+import { SetServicePort } from "src/core/set/api/set.service.port";
 
 @Injectable()
 export class SetCli {
@@ -14,8 +14,8 @@ export class SetCli {
 
 
     @Command({
-        command: 'sets:get',
-        describe: 'Retrieve list of all sets without cards'
+        command: "sets:get",
+        describe: "Retrieve list of all sets without cards"
     })
     async listSets(): Promise<void> {
         const sets: SetDto[] = await this.service.findAll();
@@ -24,13 +24,13 @@ export class SetCli {
 
 
     @Command({
-        command: 'set:get <code>',
-        describe: 'Retrieve list of all sets without cards'
+        command: "set:get <code>",
+        describe: "Retrieve list of all sets without cards"
     })
     async getSetByCode(@Positional({
-        name: 'code',
-        describe: 'the official set code',
-        type: 'string'
+        name: "code",
+        describe: "the official set code",
+        type: "string"
     }) code: string): Promise<void> {
         const sets: SetDto = await this.service.findByCode(code);
         this.LOGGER.log(this.formatOutput(sets));

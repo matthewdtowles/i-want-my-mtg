@@ -103,10 +103,11 @@ describe("AggregatorService", () => {
     });
 
     describe("findInventoryCardById", () => {
+        const cardId = 1;
         it("should throw error if card with cardId not found", async () => {
             jest.spyOn(mockCardService, "findById").mockResolvedValueOnce(null);
-            const cardId = 1;
-            await expect(subject.findInventoryCardById(cardId, userId)).rejects.toThrow(`Card with id ${cardId} not found`);
+            await expect(subject.findInventoryCardById(cardId, userId))
+                .rejects.toThrow(`Card with id ${cardId} not found`);
         });
 
         it("should return inventory card with quantity 0 if userId invalid", async () => {
@@ -116,8 +117,9 @@ describe("AggregatorService", () => {
                 ...card,
                 quantity: 0,
             };
-            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
+            await expect(subject.findInventoryCardById(cardId, -1)).resolves.toEqual(expectedCard);
         });
+
         it("should return inventory card with quantity 0 if no inventory item found", async () => {
             jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
             const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
@@ -125,7 +127,7 @@ describe("AggregatorService", () => {
                 ...card,
                 quantity: 0,
             };
-            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
+            await expect(subject.findInventoryCardById(cardId, userId)).resolves.toEqual(expectedCard);
         });
 
         it("should return inventory card with quantity if inventory item found", async () => {
@@ -134,21 +136,49 @@ describe("AggregatorService", () => {
                 ...card,
                 quantity: 4,
             };
-            await expect(subject.findInventoryCardById(1, -1)).resolves.toEqual(expectedCard);
+            await expect(subject.findInventoryCardById(cardId, userId)).resolves.toEqual(expectedCard);
         });
     });
 
     describe("findInventoryCardBySetNumber", () => {
-        it("should throw error if card with cardId not found", async () => {
+        const cardNumber = 1;
+        it("should throw error if card not found", async () => {
+            jest.spyOn(mockCardService, "findBySetCodeAndNumber").mockResolvedValueOnce(null);
+            await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
+                .rejects.toThrow(`Card #${cardNumber} in set ${setCode} not found`);
         });
 
         it("should return inventory card with quantity 0 if userId invalid", async () => {
-
+            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 0,
+            };
+            await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, -1))
+                .resolves.toEqual(expectedCard);
         });
+
         it("should return inventory card with quantity 0 if no inventory item found", async () => {
+            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 0,
+            };
+            await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
+                .resolves.toEqual(expectedCard);
         });
 
         it("should return inventory card with quantity if inventory item found", async () => {
+            const card: CardDto = testUtils.getMockCardDtos(setCode)[0];
+            const expectedCard: InventoryCardAggregateDto = {
+                ...card,
+                quantity: 4,
+            };
+            await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
+                .resolves.toEqual(expectedCard);
+
         });
     });
 });

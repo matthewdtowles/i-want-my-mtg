@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
+import { User } from "src/core/user/user.entity";
 import { InsertResult, Repository } from "typeorm";
-import { User } from "../../core/user/user.entity";
 
 @Injectable()
 export class UserRepository implements UserRepositoryPort {

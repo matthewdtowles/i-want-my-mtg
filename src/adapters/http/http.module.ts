@@ -17,7 +17,7 @@ import { UserController } from "./user.controller";
         UserController,
     ],
     imports: [CoreModule],
-    exports: [CoreModule],
+    // exports: [CoreModule],
 })
 export class HttpModule {
     private readonly LOGGER: Logger = new Logger(HttpModule.name);

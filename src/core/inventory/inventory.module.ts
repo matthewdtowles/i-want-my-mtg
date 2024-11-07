@@ -11,14 +11,8 @@ import { InventoryService } from "./inventory.service";
 @Module({
     imports: [DatabaseModule],
     providers: [
-        {
-            provide: InventoryServicePort,
-            useClass: InventoryService,
-        },
-        {
-            provide: InventoryRepositoryPort,
-            useClass: InventoryRepository,
-        },
+        { provide: InventoryServicePort, useClass: InventoryService },
+        { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         InventoryMapper,
         CardMapper,
         UserMapper,

@@ -1,11 +1,11 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AggregatorService } from "src/core/aggregator/aggregator.service";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { CardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 import { TestUtils } from "../../test-utils";
-import { CardDto } from "src/core/card/api/card.dto";
 
 describe("AggregatorService", () => {
     let subject: AggregatorService;

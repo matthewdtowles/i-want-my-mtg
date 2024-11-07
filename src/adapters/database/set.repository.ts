@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
+import { Set } from "src/core/set/set.entity";
 import { Repository } from "typeorm";
-import { Set } from "../../core/set/set.entity";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {

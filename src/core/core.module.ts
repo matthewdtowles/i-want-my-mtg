@@ -15,7 +15,7 @@ import { UserModule } from "./user/user.module";
         IngestionModule,
         InventoryModule,
         SetModule,
-        UserModule,
+        UserModule
     ],
     exports: [
         AggregatorModule,
@@ -24,8 +24,8 @@ import { UserModule } from "./user/user.module";
         IngestionModule,
         InventoryModule,
         SetModule,
-        UserModule,
-    ],
+        UserModule
+    ]
 })
 export class CoreModule {
     private readonly LOGGER: Logger = new Logger(CoreModule.name);

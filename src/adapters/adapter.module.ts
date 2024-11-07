@@ -5,7 +5,7 @@ import { MtgJsonIngestionModule } from "./mtgjson-ingestion/mtgjson-ingestion.mo
 
 @Module({
     imports: [DatabaseModule, HttpModule, MtgJsonIngestionModule],
-    exports: [DatabaseModule, HttpModule, MtgJsonIngestionModule],
+    exports: [DatabaseModule, HttpModule, MtgJsonIngestionModule]
 })
 export class AdapterModule {
     private readonly LOGGER: Logger = new Logger(AdapterModule.name);

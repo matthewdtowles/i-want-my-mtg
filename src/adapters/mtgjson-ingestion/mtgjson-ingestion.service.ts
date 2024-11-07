@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CreateCardDto } from "src/core/card/api/card.dto";
+import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
 import { CreateSetDto } from "src/core/set/api/set.dto";
-import { IngestionServicePort } from "../../core/ingestion/api/ingestion.service.port";
 import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 import { MtgJsonApiClient } from "./mtgjson-api.client";

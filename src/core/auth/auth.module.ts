@@ -23,10 +23,7 @@ import { AuthService } from "./auth.service";
         }),
     ],
     providers: [
-        {
-            provide: AuthServicePort,
-            useClass: AuthService,
-        },
+        { provide: AuthServicePort, useClass: AuthService },
         JwtStrategy,
         LocalStrategy,
     ],

@@ -1,31 +1,12 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { CardController } from "src/adapters/http/card.controller";
+import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { CardMapper } from "src/core/card/card.mapper";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 
 describe("CardController", () => {
     let controller: CardController;
-    let mockCardService: CardServicePort = {
-        save: jest.fn(),
-        findAllInSet: jest.fn(),
-        findAllWithName: jest.fn(),
-        findById: jest.fn(),
-        findBySetCodeAndNumber: jest.fn(),
-        findByUuid: jest.fn(),
-    };
-    let mockIngestionOrchestrator: IngestionOrchestratorPort = {
-        ingestAllSetMeta: jest.fn(),
-        ingestAllSetCards: jest.fn(),
-        ingestSetCards: jest.fn()
-    };
-    const mockAggregatorService: AggregatorServicePort = {
-        findInventoryCardById: jest.fn(),
-        findInventoryCardBySetNumber: jest.fn(),
-        findInventorySetByCode: jest.fn(),
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CardController],
@@ -33,15 +14,15 @@ describe("CardController", () => {
                 CardMapper,
                 {
                     provide: CardServicePort,
-                    useValue: mockCardService,
+                    useValue: {},
                 },
                 {
                     provide: IngestionOrchestratorPort,
-                    useValue: mockIngestionOrchestrator,
+                    useValue: {},
                 },
                 {
                     provide: AggregatorServicePort,
-                    useValue: mockAggregatorService,
+                    useValue: {},
                 }
             ],
         }).compile();

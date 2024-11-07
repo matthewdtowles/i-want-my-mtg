@@ -18,7 +18,10 @@ export class AggregatorService implements AggregatorServicePort {
         @Inject(SetServicePort) private readonly setService: SetServicePort,
     ) { }
 
-    async findInventorySetByCode(setCode: string, userId: number): Promise<InventorySetAggregateDto> {
+    async findInventorySetByCode(
+        setCode: string,
+        userId: number
+    ): Promise<InventorySetAggregateDto> {
         const set: SetDto = await this.setService.findByCode(setCode);
         if (!set) {
             throw new Error(`Set with code ${setCode} not found`);
@@ -26,7 +29,8 @@ export class AggregatorService implements AggregatorServicePort {
         if (!set.cards || set.cards.length === 0) {
             throw new Error(`Set with code ${setCode} has no cards`);
         }
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
+        const inventoryCards: InventoryCardDto[] = await this.inventoryService
+            .findAllCardsForUser(userId);
         const setInventoryCards: InventoryCardDto[] = inventoryCards
             ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
@@ -42,7 +46,10 @@ export class AggregatorService implements AggregatorServicePort {
         };
     }
 
-    async findInventoryCardById(cardId: number, userId: number): Promise<InventoryCardAggregateDto> {
+    async findInventoryCardById(
+        cardId: number,
+        userId: number
+    ): Promise<InventoryCardAggregateDto> {
         const card = await this.cardService.findById(cardId);
         if (!card) {
             throw new Error(`Card with id ${cardId} not found`);
@@ -56,7 +63,11 @@ export class AggregatorService implements AggregatorServicePort {
         return foundCard;
     }
 
-    async findInventoryCardBySetNumber(setCode: string, cardNumber: number, userId: number): Promise<InventoryCardAggregateDto> {
+    async findInventoryCardBySetNumber(
+        setCode: string,
+        cardNumber: number,
+        userId: number
+    ): Promise<InventoryCardAggregateDto> {
         const card = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber);
         if (!card) {
             throw new Error(`Card #${cardNumber} in set ${setCode} not found`);

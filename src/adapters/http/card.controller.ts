@@ -27,7 +27,7 @@ export class CardController {
     constructor(
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
         @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort,
-        @Inject(IngestionOrchestratorPort) private readonly ingestionOrchestrator: IngestionOrchestratorPort,
+        @Inject(IngestionOrchestratorPort) private readonly ingestionOrchestrator: IngestionOrchestratorPort
     ) { }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -70,6 +70,7 @@ export class CardController {
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        return await this.aggregatorService.findInventoryCardBySetNumber(setCode, setNumber, userId);
+        return await this.aggregatorService
+            .findInventoryCardBySetNumber(setCode, setNumber, userId);
     }
 }

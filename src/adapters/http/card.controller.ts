@@ -2,12 +2,14 @@ import {
     Body,
     Controller,
     Get,
+    HttpStatus,
     Inject,
     Logger,
     Param,
     Patch,
     Render, Req, UseGuards
 } from "@nestjs/common";
+import { BaseHttpDto } from "src/adapters/http/base.http.dto";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { UpdateCardDto } from "src/core/card/api/card.dto";
@@ -47,10 +49,16 @@ export class CardController {
     async findOne(
         @Param("id") id: string,
         @Req() req: AuthenticatedRequest
-    ): Promise<InventoryCardAggregateDto> {
+    ): Promise<CardHttpDto> {
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
-        return await this.aggregatorService.findInventoryCardById(Number(id), userId);
+        const _card: InventoryCardAggregateDto = await this.aggregatorService
+            .findInventoryCardById(Number(id), userId);
+        return {
+            status: HttpStatus.OK,
+            card: _card,
+            message: "Card found"
+        };
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -67,10 +75,19 @@ export class CardController {
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: number,
         @Req() req: AuthenticatedRequest
-    ): Promise<InventoryCardAggregateDto> {
+    ): Promise<CardHttpDto> {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        return await this.aggregatorService
+        const _card = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
+        return {
+            status: HttpStatus.OK,
+            card: _card,
+            message: null
+        };
     }
+}
+
+export class CardHttpDto extends BaseHttpDto {
+    readonly card: InventoryCardAggregateDto;
 }

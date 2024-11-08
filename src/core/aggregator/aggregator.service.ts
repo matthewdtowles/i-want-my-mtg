@@ -18,6 +18,21 @@ export class AggregatorService implements AggregatorServicePort {
         @Inject(SetServicePort) private readonly setService: SetServicePort,
     ) { }
 
+    async findByUser(userId: number): Promise<InventoryCardAggregateDto[]> {
+        const inventoryCards: InventoryCardDto[] = await this.inventoryService
+            .findAllCardsForUser(userId);
+        const cards: InventoryCardAggregateDto[] = [];
+        for (const item of inventoryCards) {
+            const card = await this.cardService.findById(item.card.id);
+            cards.push({
+                ...card,
+                quantity: item.quantity,
+            });
+        }
+        this.LOGGER.debug(`Found ${cards.length} cards for user ${userId}`);
+        return cards;
+    }
+
     async findInventorySetByCode(
         setCode: string,
         userId: number

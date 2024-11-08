@@ -1,9 +1,10 @@
-<form class="quantity-form" data-item-id="{{this.card.id}}">
+<form class="quantity-form" data-item-id="{{card.id}}">
     <button type="button" class="increment-quantity">+</button>
     <input type="number" 
         name="quantity-owned" 
         class="quantity-owned" 
-        value="{{#if this.quantity}}{{this.quantity}}{{else}}0{{/if}}"
-        data-id="{{this.card.id}}" />
+        value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}"
+        data-id="{{card.id}}" />
     <button type="button" class="decrement-quantity">-</button>
 </form>
+<script src="/public/js/updateInventory.js" defer></script>

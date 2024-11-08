@@ -1,5 +1,5 @@
 <div id="user-inventory">
-    <h3 id="user-inventory-heading">{{this.user.name}}'s Inventory</h3>
+    <h3 id="user-inventory-heading">{{this.username}}'s Inventory</h3>
     <section id="user-inventory-metadata">
         <div id="user-inventory-value" class="user-inventory-metadata-item">
             <p class="user-inventory-metadata-heading">Value</p>
@@ -17,21 +17,20 @@
             </tr>
         </thead>
         <tbody>
-        {{#each inventory}}
+        {{#each cards}}
             <tr>
-                <td>{{>cardsOwned}}</td>
+                <td>{{>cardsOwned card=this}}</td>
                 <td>
-                    <a href="{{this.card.url}}">{{this.card.name}}</a>
-                    <img src="{{this.card.imgSrc}}" alt="{{this.card.name}}" />
+                    <a href="{{card.url}}">{{card.name}}</a>
+                    <img src="{{card.imgSrc}}" alt="{{card.name}}" />
                 </td>
                 <td>
-                    <i class="ss ss-{{this.card.setCode}} ss-fw"></i>
-                    <a href="/sets/{{this.card.setCode}}">{{this.card.setCode}}</a>
+                    <i class="ss ss-{{card.setCode}} ss-fw"></i>
+                    <a href="/sets/{{card.setCode}}">{{card.setCode}}</a>
                 </td>
-                <td>{{#if this.card.price}}{{this.card.price}}{{else}}0{{/if}}</td>
+                <td>{{#if card.price}}{{card.price}}{{else}}0{{/if}}</td>
             </tr>
         {{/each}}
         </tbody>
     </table>
 </div>
-<script src="public/js/updateInventory.js" defer></script>

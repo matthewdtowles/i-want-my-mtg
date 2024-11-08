@@ -13,7 +13,10 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { BaseHttpDto } from "src/adapters/http/base.http.dto";
+import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
@@ -23,25 +26,29 @@ export class InventoryController {
     private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
     constructor(
-        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort
+        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
+        @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort,
     ) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(@Req() req: AuthenticatedRequest) {
+    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryHttpDto> {
         if (!req.user) {
             throw new Error("User not found in request");
         }
         if (!req.user.id) {
             throw new Error("ID not found in request user");
         }
-        const _inventory: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-        this.LOGGER.debug(`inventory stringified: ${JSON.stringify(_inventory)}`);
+        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService.findByUser(req.user.id);
+        this.LOGGER.debug(`User inventory cards stringified: ${JSON.stringify(_cards)}`);
+        const _username = req.user.name;
         return {
-            user: req.user,
-            inventory: _inventory,
+            cards: _cards,
+            username: _username,
             value: 0, // TODO: Calculate the total value of the inventory
+            status: HttpStatus.OK,
+            message: `Inventory for ${_username} found`,
         };
     }
 
@@ -105,4 +112,10 @@ export class InventoryController {
                 .json({ message: `Error updating inventory: ${error.message}` });
         }
     }
+}
+
+export class InventoryHttpDto extends BaseHttpDto {
+    readonly cards: InventoryCardAggregateDto[];
+    readonly username: string;
+    readonly value: number;
 }

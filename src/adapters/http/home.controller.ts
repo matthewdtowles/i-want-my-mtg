@@ -7,9 +7,7 @@ import { SetServicePort } from "src/core/set/api/set.service.port";
 export class HomeController {
     private readonly LOGGER: Logger = new Logger(HomeController.name);
 
-    constructor(
-        @Inject(SetServicePort) private readonly setService: SetServicePort,
-    ) { }
+    constructor(@Inject(SetServicePort) private readonly setService: SetServicePort) { }
 
     @Get("/")
     @Render("index")

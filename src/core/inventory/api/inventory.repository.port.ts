@@ -16,6 +16,13 @@ export interface InventoryRepositoryPort {
 
     /**
      * @param userId
+     * @param cardId
+     * @returns user's single inventory entity matching cardId
+     */
+    findOne(userId: number, cardId: number): Promise<Inventory | null>;
+
+    /**
+     * @param userId
      * @returns user's inventory entities
      */
     findByUser(userId: number): Promise<Inventory[]>;

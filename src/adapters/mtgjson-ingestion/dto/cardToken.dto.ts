@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Identifiers } from './identifiers.dto';
-import { RelatedCards } from './relatedCards.dto';
+import { Injectable } from "@nestjs/common";
+import { Identifiers } from "./identifiers.dto";
+import { RelatedCards } from "./relatedCards.dto";
 
 @Injectable()
 export class CardToken {

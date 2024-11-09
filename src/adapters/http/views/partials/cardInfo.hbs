@@ -1,36 +1,35 @@
 <div id="card-image">
-    <img src="{{this.imgSrc}}" alt="{{this.name}} - ({{this.setCode}})"/>
+    <img src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})"/>
 </div>
 
 <div id="card-identity">
-    <div id="card-name">{{this.name}}</div>
+    <div id="card-name">{{card.name}}</div>
     <div id="card-set">
-        <i class="ss ss-{{this.setCode}} ss-2x"></i>
-        <span id="set-name">{{this.set.name}}</span>
-        <span id="set-code"> ({{this.set.code}})</span>
+        <i class="ss ss-{{card.setCode}} ss-2x"></i>
+        <span id="set-code">{{card.setCode}}</span>
     </div>
 </div>
 
 <div id="play-info">
     <h4>
-        <span>{{this.name}}</span>
-        <span>{{>manaCost}}</span>
+        <span>{{card.name}}</span>
+        <span>{{>manaCost card=card}}</span>
     </h4>
     <h5>Original Text</h5>
-    <p class="card-type">{{this.type}}</p>
-    <p class="card-original-text">{{this.originalText}}</p>
-    <p class="card-rarity">{{this.rarity}}</p>
-    <p class="card-number">{{this.number}}</p>
+    <p class="card-type">{{card.type}}</p>
+    <p class="card-original-text">{{card.originalText}}</p>
+    <p class="card-rarity">{{card.rarity}}</p>
+    <p class="card-number">{{card.number}}</p>
     <table class="card-legalities">
         <tbody>
         {{!-- TODO: hard code each format? I.e.: 
             <td>Standard</td>
-            <td>{{this.standard}}</td>
+            <td>{{card.standard}}</td>
         etc --}}
-            {{#each this.legalities}}
+            {{#each card.legalities}}
             <tr>
-                <td>{{this.key}}</td>
-                <td>{{this.value}}</td>
+                <td>{{card.key}}</td>
+                <td>{{card.value}}</td>
             </tr>
             {{/each}}
         </tbody>
@@ -47,16 +46,16 @@
         <h4 id="card-other-printings-title">Other Printings</h4>
         <table>
             <tbody>
-            {{#each this.otherPrintings}}
+            {{#each card.otherPrintings}}
                 <tr>
-                    <td class="set-icon"><i class="ss ss-{{this.setCode}}"></i></td>
-                    <td class="other-printing-url"><a href="{{this.url}}">{{this.set.name}}</a></td>
+                    <td class="set-icon"><i class="ss ss-{{card.setCode}}"></i></td>
+                    <td class="other-printing-url"><a href="{{card.url}}">{{card.set.name}}</a></td>
                     <td class="other-differentiators">
-                    {{#each this.differentiators}}
-                        <span class="differentiators-description">{{this.description}}</span>
+                    {{#each card.differentiators}}
+                        <span class="differentiators-description">{{card.description}}</span>
                     {{/each}}
                     </td>
-                    <td class="other-printing-price">{{this.price}}</td>
+                    <td class="other-printing-price">{{card.price}}</td>
                 </tr>
             {{/each}}
             </tbody>

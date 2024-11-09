@@ -1,25 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CardController } from '../../src/adapters/http/card.controller';
-import { CardServicePort } from '../../src/core/card/api/card.service.port';
-import { CardMapper } from '../../src/core/card/card.mapper';
-import { IngestionOrchestratorPort } from '../../src/core/ingestion/api/ingestion.orchestrator.port';
+import { Test, TestingModule } from "@nestjs/testing";
+import { CardController } from "src/adapters/http/card.controller";
+import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { CardServicePort } from "src/core/card/api/card.service.port";
+import { CardMapper } from "src/core/card/card.mapper";
+import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 
-describe('CardController', () => {
+describe("CardController", () => {
     let controller: CardController;
-    let mockCardService: CardServicePort = {
-        save: jest.fn(),
-        findAllInSet: jest.fn(),
-        findAllWithName: jest.fn(),
-        findById: jest.fn(),
-        findBySetCodeAndNumber: jest.fn(),
-        findByUuid: jest.fn(),
-    };
-    let mockIngestionOrchestrator: IngestionOrchestratorPort = {
-        ingestAllSetMeta: jest.fn(),
-        ingestAllSetCards: jest.fn(),
-        ingestSetCards: jest.fn()
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CardController],
@@ -27,18 +14,22 @@ describe('CardController', () => {
                 CardMapper,
                 {
                     provide: CardServicePort,
-                    useValue: mockCardService,
+                    useValue: {},
                 },
                 {
-                    provide: 'IngestionOrchestratorPort',
-                    useValue: mockIngestionOrchestrator,
+                    provide: IngestionOrchestratorPort,
+                    useValue: {},
                 },
+                {
+                    provide: AggregatorServicePort,
+                    useValue: {},
+                }
             ],
         }).compile();
         controller = module.get<CardController>(CardController);
     });
 
-    it('should be defined', () => {
+    it("should be defined", () => {
         expect(controller).toBeDefined();
     });
 });

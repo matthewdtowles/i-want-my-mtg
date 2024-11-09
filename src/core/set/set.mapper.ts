@@ -5,11 +5,13 @@ import { CreateSetDto, SetDto } from "./api/set.dto";
 
 @Injectable()
 export class SetMapper {
+
     private readonly LOGGER: Logger = new Logger(SetMapper.name);
 
     constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
     dtoToEntity(createSetDto: CreateSetDto): Set {
+        this.LOGGER.debug(`dtoToEntity`);
         const set: Set = new Set();
         set.baseSize = createSetDto.baseSize;
         set.block = createSetDto.block;
@@ -28,7 +30,7 @@ export class SetMapper {
     }
 
     entityToDto(set: Set): SetDto {
-        this.LOGGER.debug(`entityToDto ${JSON.stringify(set)}`);
+        this.LOGGER.debug(`entityToDto`);
         const dto: SetDto = {
             baseSize: set.baseSize,
             block: set.block,
@@ -49,6 +51,7 @@ export class SetMapper {
     }
 
     private buildSetUrl(code: string): string {
+        this.LOGGER.debug(`buildSetUrl`);
         return "sets/" + code.toLowerCase();
     }
 }

@@ -1,6 +1,6 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { IsEmail, IsEnum, IsInt, IsPositive, IsString, IsStrongPassword, MinLength } from "class-validator";
-import { UserRole } from "src/adapters/http/auth/user.role";
+import { UserRole } from "src/adapters/http/auth/auth.types";
 
 export class UserDto {
     readonly id: number;

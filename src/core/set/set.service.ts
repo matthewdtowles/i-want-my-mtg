@@ -19,6 +19,7 @@ export class SetService implements SetServicePort {
     ) { }
 
     async save(setDtos: CreateSetDto[]): Promise<SetDto[]> {
+        this.LOGGER.debug(`Calling save`);
         const setEntities: Set[] = this.mapper.dtosToEntities(setDtos);
         const savedSetEntities: Set[] = await this.repository.save(setEntities);
         return this.mapper.entitiesToDtos(savedSetEntities);
@@ -27,17 +28,18 @@ export class SetService implements SetServicePort {
     async findAll(): Promise<SetDto[]> {
         this.LOGGER.debug(`Calling findAll()`);
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
-        this.LOGGER.debug(`Found: ${setEntities ? setEntities.length : "not an array"}`);
         return this.mapper.entitiesToDtos(setEntities);
     }
 
     async findAllInFormat(format: string): Promise<SetDto[]> {
+        this.LOGGER.debug(`Calling findAllInFormat(${format})`);
         // TODO: update when we track legality
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
         return this.mapper.entitiesToDtos(setEntities);
     }
 
-    async findByCode(setCode: string): Promise<SetDto> {
+    async findByCode(setCode: string): Promise<SetDto | null> {
+        this.LOGGER.debug(`Calling findByCode(${setCode})`);
         const setEntity: Set = await this.repository.findByCode(setCode);
         return this.mapper.entityToDto(setEntity);
     }

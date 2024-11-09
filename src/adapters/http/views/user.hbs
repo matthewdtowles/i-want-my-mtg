@@ -8,7 +8,7 @@
         <input id="user-email" type="email" name="email" value="{{ user.email }}" />
         <label for="user-password">Password</label>
         <input id="user-password" type="password" name="password">
-{{!-- TODO: probably shouldn't pass the user id this way, but extract from request/resposne  --}}
+{{!-- TODO: DO NOT pass the user id this way, but extract from request/resposne  --}}
         <input id="user-id" type="hidden" name="id" value="{{ user.id }}" />
         <button id="update-user-btn" type="submit">Submit</button>
     </form>

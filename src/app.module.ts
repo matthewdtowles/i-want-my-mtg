@@ -28,8 +28,8 @@ import { CoreModule } from "./core/core.module";
                 autoLoadEntities: true,
                 synchronize: configService.get("NODE_ENV") !== "production",
                 dropSchema: false,
-                logging:
-                    configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
+                // logging: configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
+                logging: false,
                 extra: {
                     connectionLimit: 10,
                     queueLimit: 0,

@@ -16,43 +16,40 @@ export class InventoryService implements InventoryServicePort {
     ) { }
 
     async create(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
+        this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
         const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
         const savedItems: Inventory[] = await this.repository.save(entities);
         return this.mapper.toDtos(savedItems);
     }
 
     async update(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
-        const cleanItems: InventoryDto[] = await this.cleanUpForSave(inventoryItems);
-        const entities: Inventory[] = this.mapper.toEntities(cleanItems);
+        this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
+        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
         const savedItems: Inventory[] = await this.repository.save(entities);
         return this.mapper.toDtos(savedItems);
     }
 
-    async findByUser(userId: number): Promise<InventoryDto[]> {
+    async findOneForUser(userId: number, cardId: number): Promise<InventoryDto | null> {
+        this.LOGGER.debug(`findOneForUser ${userId} ${cardId}`);
+        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
+        return this.mapper.toDto(foundItem);
+    }
+
+    async findOneCardForUser(userId: number, cardId: number): Promise<InventoryCardDto | null> {
+        this.LOGGER.debug(`findOneCardForUser ${userId} ${cardId}`);
+        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
+        return this.mapper.toInventoryCardDto(foundItem);
+    }
+
+    async findAllForUser(userId: number): Promise<InventoryDto[]> {
+        this.LOGGER.debug(`findAllForUser ${userId}`);
         const foundItems: Inventory[] = await this.repository.findByUser(userId);
-        this.LOGGER.debug(`Found ${JSON.stringify(foundItems)} inventory items for user ${userId}`);
         return this.mapper.toDtos(foundItems);
     }
 
-    async findCardsByUser(userId: number): Promise<InventoryCardDto[]> {
+    async findAllCardsForUser(userId: number): Promise<InventoryCardDto[]> {
+        this.LOGGER.debug(`findAllCardsForUser ${userId}`);
         const foundCards: Inventory[] = await this.repository.findByUser(userId);
-        this.LOGGER.debug(`Found ${JSON.stringify(foundCards)} inventory items for user ${userId}`);
         return this.mapper.toInventoryCardDtos(foundCards);
-    }
-
-    private async cleanUpForSave(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
-        const itemsToDelete: InventoryDto[] = [];
-        const itemsToSave: InventoryDto[] = [];
-        inventoryItems.forEach(item => {
-            if (item.quantity > 0) {
-                itemsToSave.push(item);
-            } else {
-                itemsToDelete.push(item);
-            }
-        });
-        if (itemsToDelete.length > 0) {
-            await Promise.all(itemsToDelete.map(item => this.repository.delete(item.userId, item.cardId)));
-        }
-        return itemsToSave
     }
 }

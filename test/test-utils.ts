@@ -1,12 +1,13 @@
-import { UserRole } from "src/adapters/http/auth/user.role";
+import { UserRole } from "src/adapters/http/auth/auth.types";
+import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { CardDto, CreateCardDto } from "src/core/card/api/card.dto";
+import { Card } from "src/core/card/card.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
+import { Set } from "src/core/set/set.entity";
 import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
 import { User } from "src/core/user/user.entity";
-import { CardDto, CreateCardDto } from "../src/core/card/api/card.dto";
-import { Card } from "../src/core/card/card.entity";
-import { Set } from "../src/core/set/set.entity";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
@@ -18,6 +19,7 @@ export class TestUtils {
     readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
     readonly MOCK_USER_ID = 1;
     readonly MOCK_BASE_SIZE = 3;
+    readonly MOCK_QUANTITY = 4;
     readonly MOCK_USER_EMAIL = "test-email@iwmmtg.com";
     readonly MOCK_USER_NAME = "test-user";
     readonly MOCK_PASSWORD = "password";
@@ -65,9 +67,16 @@ export class TestUtils {
         const set: Set = new Set();
         set.code = setCode;
         set.baseSize = this.MOCK_BASE_SIZE;
+        set.keyruneCode = this.MOCK_SET_CODE.toLowerCase();
         set.name = "Test Set";
         set.releaseDate = "2022-01-01";
         set.type = "expansion";
+        return set;
+    }
+
+    getMockSetWithCards(setCode: string): Set {
+        const set: Set = this.getMockSet(setCode);
+        set.cards = this.getMockCards(setCode);
         return set;
     }
 
@@ -91,13 +100,22 @@ export class TestUtils {
         return this.getMockSets().map((set) => this.mapSetEntityToDto(set));
     }
 
+    getMockSetDto(setCode: string): SetDto {
+        return this.mapSetEntityToDto(this.getMockSet(setCode));
+    }
+
+    getMockSetDtoWithCards(setCode: string): SetDto {
+        return this.mapSetEntityToDto(this.getMockSetWithCards(setCode));
+    }
+
     getMockCreateInventoryDtos(): InventoryDto[] {
         const inventoryDtos: InventoryDto[] = [];
         for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
+            const _cardId = this.getMockCardDtos(this.MOCK_SET_CODE)[i].id;
             const inventoryDto: InventoryDto = {
                 userId: this.MOCK_USER_ID,
-                cardId: this.getMockCardDtos(this.MOCK_SET_CODE)[i].id,
-                quantity: this.MOCK_BASE_SIZE,
+                cardId: _cardId,
+                quantity: _cardId % 2 !== 0 ? this.MOCK_QUANTITY : 0,
             };
             inventoryDtos.push(inventoryDto);
         }
@@ -132,6 +150,15 @@ export class TestUtils {
             userId: inventory.userId,
             cardId: inventory.cardId,
             quantity: inventory.quantity,
+        }));
+    }
+
+    getMockInventoryCardAggregateDtos(): InventoryCardAggregateDto[] {
+        const inventory = this.getMockInventoryCardDtos();
+        return this.getMockCardDtos(this.MOCK_SET_CODE).map((card: CardDto) => ({
+            ...card,
+            id: card.id,
+            quantity: inventory.find((item: InventoryCardDto) => item.card.id === card.id).quantity ?? 0,
         }));
     }
 

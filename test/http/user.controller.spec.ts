@@ -1,13 +1,12 @@
 import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Response } from "express";
-import { AuthenticatedRequest } from "../../src/adapters/http/auth/authenticated.request";
-import { LocalAuthGuard } from "../../src/adapters/http/auth/local.auth.guard";
-import { UserRole } from "../../src/adapters/http/auth/user.role";
-import { UserController } from "../../src/adapters/http/user.controller";
-import { AuthServicePort } from "../../src/core/auth/api/auth.service.port";
-import { CreateUserDto, UserDto } from "../../src/core/user/api/user.dto";
-import { UserServicePort } from "../../src/core/user/api/user.service.port";
+import { AuthenticatedRequest, UserRole } from "src/adapters/http/auth/auth.types";
+import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
+import { UserController } from "src/adapters/http/user.controller";
+import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
+import { UserServicePort } from "src/core/user/api/user.service.port";
 
 const createUserDto: CreateUserDto = {
     email: "test-email1@iwantmymtg.com",
@@ -106,11 +105,11 @@ describe("UserController", () => {
     });
 
     it("should remove given user", async () => {
-        jest.spyOn(service, 'remove').mockResolvedValue(undefined);
-        jest.spyOn(service, 'findById').mockResolvedValue(null);
+        jest.spyOn(service, "remove").mockResolvedValue(undefined);
+        jest.spyOn(service, "findById").mockResolvedValue(null);
         await controller.remove(res, req);
         expect(service.remove).toHaveBeenCalledWith(req.user.id);
         expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('User deleted') }));
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("User deleted") }));
     });
 });

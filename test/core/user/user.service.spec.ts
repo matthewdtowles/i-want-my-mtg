@@ -1,12 +1,12 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { UserRole } from "../../../src/adapters/http/auth/user.role";
-import { CardMapper } from "../../../src/core/card/card.mapper";
-import { InventoryMapper } from "../../../src/core/inventory/inventory.mapper";
-import { CreateUserDto, UserDto } from "../../../src/core/user/api/user.dto";
-import { UserRepositoryPort } from "../../../src/core/user/api/user.repository.port";
-import { User } from "../../../src/core/user/user.entity";
-import { UserMapper } from "../../../src/core/user/user.mapper";
-import { UserService } from "../../../src/core/user/user.service";
+import { UserRole } from "src/adapters/http/auth/auth.types";
+import { CardMapper } from "src/core/card/card.mapper";
+import { InventoryMapper } from "src/core/inventory/inventory.mapper";
+import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
+import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
+import { User } from "src/core/user/user.entity";
+import { UserMapper } from "src/core/user/user.mapper";
+import { UserService } from "src/core/user/user.service";
 
 describe("UserService", () => {
     let service: UserService;

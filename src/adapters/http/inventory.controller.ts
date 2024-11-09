@@ -13,9 +13,12 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { BaseHttpDto } from "src/adapters/http/base.http.dto";
+import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
-import { AuthenticatedRequest } from "./auth/authenticated.request";
+import { AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
 @Controller("inventory")
@@ -23,25 +26,30 @@ export class InventoryController {
     private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
     constructor(
-        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort
+        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
+        @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort,
     ) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(@Req() req: AuthenticatedRequest) {
+    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryHttpDto> {
+        this.LOGGER.debug(`Find user inventory`);
         if (!req.user) {
             throw new Error("User not found in request");
         }
         if (!req.user.id) {
             throw new Error("ID not found in request user");
         }
-        const _inventory: InventoryCardDto[] = await this.inventoryService.findCardsByUser(req.user.id);
-        this.LOGGER.debug(`inventory stringified: ${JSON.stringify(_inventory)}`);
+        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService
+            .findByUser(req.user.id);
+        const _username = req.user.name;
         return {
-            user: req.user,
-            inventory: _inventory,
+            cards: _cards,
+            username: _username,
             value: 0, // TODO: Calculate the total value of the inventory
+            status: HttpStatus.OK,
+            message: `Inventory for ${_username} found`,
         };
     }
 
@@ -52,6 +60,7 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
+        this.LOGGER.debug(`Create inventory`);
         try {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("User not found in request");
@@ -60,9 +69,7 @@ export class InventoryController {
                 ...dto,
                 userId: req.user.id,
             }));
-            this.LOGGER.debug(`create ${JSON.stringify(updatedDtos)}`);
             const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
-            this.LOGGER.debug(`createdItems ${JSON.stringify(createdItems)}`);
             return res.status(HttpStatus.CREATED).json({
                 message: `Added inventory items`,
                 inventory: createdItems,
@@ -81,20 +88,17 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
-        this.LOGGER.debug(`update inventory called on ${JSON.stringify(updateInventoryDtos)}`);
+        this.LOGGER.debug(`Update inventory`);
         try {
             if (!req || !req.user || !req.user.id) {
                 this.LOGGER.error(`User not found in request`);
                 throw new Error("User not found in request");
             }
-            this.LOGGER.debug(`mapping UpdateInventoryDto[] to include userId`);
             const completeDtos = updateInventoryDtos.map(dto => ({
                 ...dto,
                 userId: req.user.id,
             }));
-            this.LOGGER.debug(`MAPPING COMPLETE --> update ${JSON.stringify(completeDtos)}`);
             const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
-            this.LOGGER.debug(`updatedInventory ${JSON.stringify(updatedInventory)}`);
             return res.status(HttpStatus.OK).json({
                 message: `Updated inventory`,
                 inventory: updatedInventory,
@@ -105,4 +109,10 @@ export class InventoryController {
                 .json({ message: `Error updating inventory: ${error.message}` });
         }
     }
+}
+
+export class InventoryHttpDto extends BaseHttpDto {
+    readonly cards: InventoryCardAggregateDto[];
+    readonly username: string;
+    readonly value: number;
 }

@@ -8,10 +8,7 @@ import { MtgJsonIngestionService } from "./mtgjson-ingestion.service";
     providers: [
         MtgJsonApiClient,
         MtgJsonIngestionMapper,
-        {
-            provide: IngestionServicePort,
-            useClass: MtgJsonIngestionService,
-        },
+        { provide: IngestionServicePort, useClass: MtgJsonIngestionService },
     ],
     exports: [IngestionServicePort, MtgJsonApiClient, MtgJsonIngestionMapper],
 })

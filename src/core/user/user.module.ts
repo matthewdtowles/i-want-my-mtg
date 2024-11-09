@@ -8,22 +8,13 @@ import { UserMapper } from "./user.mapper";
 import { UserService } from "./user.service";
 
 @Module({
-    imports: [
-        DatabaseModule,
-        InventoryModule,
-    ],
+    imports: [DatabaseModule, InventoryModule],
     providers: [
-        {
-            provide: UserServicePort,
-            useClass: UserService,
-        },
-        {
-            provide: UserRepositoryPort,
-            useClass: UserRepository,
-        },
+        { provide: UserServicePort, useClass: UserService },
+        { provide: UserRepositoryPort, useClass: UserRepository },
         UserMapper,
     ],
-    exports: [UserRepositoryPort, UserServicePort, UserMapper],
+    exports: [UserRepositoryPort, UserServicePort, UserMapper]
 })
 export class UserModule {
     private readonly LOGGER: Logger = new Logger(UserModule.name);

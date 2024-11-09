@@ -6,6 +6,7 @@ import { SetList } from "./dto/setList.dto";
 @Injectable()
 export class MtgJsonApiClient {
     private readonly LOGGER: Logger = new Logger(MtgJsonApiClient.name);
+
     private readonly CARD_PROVIDER_URL: string = "https://mtgjson.com/api/v5/";
     private readonly CARD_PROVIDER_FILE_EXT: string = ".json";
     private readonly SET_LIST_PATH: string = "SetList.json";

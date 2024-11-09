@@ -11,18 +11,12 @@ import { SetService } from "./set.service";
 @Module({
     imports: [DatabaseModule, MtgJsonIngestionModule],
     providers: [
-        {
-            provide: SetServicePort,
-            useClass: SetService,
-        },
-        {
-            provide: SetRepositoryPort,
-            useClass: SetRepository,
-        },
+        { provide: SetServicePort, useClass: SetService },
+        { provide: SetRepositoryPort, useClass: SetRepository },
         SetMapper,
-        CardMapper,
+        CardMapper
     ],
-    exports: [SetServicePort, SetRepositoryPort, SetMapper],
+    exports: [SetServicePort, SetRepositoryPort, SetMapper]
 })
 export class SetModule {
     private readonly LOGGER: Logger = new Logger(SetModule.name);

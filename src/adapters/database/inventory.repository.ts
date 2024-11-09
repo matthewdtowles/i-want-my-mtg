@@ -49,11 +49,6 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
     async delete(userId: number, cardId: number): Promise<void> {
         this.LOGGER.debug(`delete userId: ${userId}, cardId: ${cardId}`);
-        // TODO: is this necessary to check if the connection is initialized?
-        const connection = this.inventoryRepository.manager.connection;
-        if (!connection.isInitialized) {
-            await connection.initialize(); // Reconnect if the connection is closed
-        }
         try {
             await this.inventoryRepository
                 .createQueryBuilder()

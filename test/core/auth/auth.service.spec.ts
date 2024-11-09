@@ -1,7 +1,7 @@
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
-import { UserRole } from "src/adapters/http/auth/user.role";
+import { UserRole } from "src/adapters/http/auth/auth.types";
 import { AuthToken } from "src/core/auth/api/auth.types";
 import { AuthService } from "src/core/auth/auth.service";
 import { UserDto } from "src/core/user/api/user.dto";

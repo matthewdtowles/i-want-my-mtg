@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { UserRole } from "src/adapters/http/auth/user.role";
+import { UserRole } from "src/adapters/http/auth/auth.types";
 import { CardMapper } from "src/core/card/card.mapper";
 import { InventoryMapper } from "src/core/inventory/inventory.mapper";
 import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";

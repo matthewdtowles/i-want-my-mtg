@@ -1,13 +1,13 @@
-import { UserRole } from "src/adapters/http/auth/user.role";
+import { UserRole } from "src/adapters/http/auth/auth.types";
+import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
+import { CardDto, CreateCardDto } from "src/core/card/api/card.dto";
+import { Card } from "src/core/card/card.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
+import { Set } from "src/core/set/set.entity";
 import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
 import { User } from "src/core/user/user.entity";
-import { CardDto, CreateCardDto } from "src/core/card/api/card.dto";
-import { Card } from "src/core/card/card.entity";
-import { Set } from "src/core/set/set.entity";
-import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";

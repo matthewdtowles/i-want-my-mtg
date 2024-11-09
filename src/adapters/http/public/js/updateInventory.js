@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
                     console.log(`updatedInventory = ${JSON.stringify(updatedInventory)}`);
                     updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
+                } else {
+                    console.log(`Quantity is already 0`);
+                    updatedQuantity = 0;
                 }
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);

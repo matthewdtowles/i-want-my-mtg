@@ -23,9 +23,6 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: SetDto[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
-        if (savedSets) {
-            this.LOGGER.log(`Saved Sets: ${savedSets.forEach(ss => ss.name)}`);
-        }
         return savedSets;
     }
 

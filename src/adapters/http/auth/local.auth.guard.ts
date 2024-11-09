@@ -7,7 +7,7 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { Observable } from "rxjs";
-import { AUTH_TOKEN_NAME } from "./auth.constants";
+import { AUTH_TOKEN_NAME } from "./auth.types";
 
 /**
  * Trigger local auth strategy to validate email and password during login
@@ -25,28 +25,17 @@ export class LocalAuthGuard extends AuthGuard("local") {
         }
         const jwt = request.cookies[AUTH_TOKEN_NAME];
         request.headers[AUTH_TOKEN_NAME] = `Bearer ${jwt}`;
-        this.LOGGER.debug(`Request headers updated: ${JSON.stringify(request.headers)}`);
-        const isAuthenticated = super.canActivate(context);
-        if (isAuthenticated) {
-            this.LOGGER.debug(`LocalAuthGuard canActivate: true`);
-        } else {
-            this.LOGGER.error(`LocalAuthGuard canActivate: false`);
-        }
-        return isAuthenticated;
+        return super.canActivate(context);
     }
 
     handleRequest(err, user, info) {
         this.LOGGER.debug(`LocalAuthGuard handleRequest called`);
         if (err) {
-            this.LOGGER.error(err);
             throw err;
         }
         if (!user) {
-            const msg = `Unauthorized user in request`;
-            this.LOGGER.error(msg);
-            throw new UnauthorizedException(msg);
+            throw new UnauthorizedException(`Unauthorized user in request`);
         }
-        this.LOGGER.debug(`LocalAuthGuard handleRequest returning user: ${JSON.stringify(user)}`);
         return user;
     }
 }

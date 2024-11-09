@@ -11,6 +11,7 @@ export class CardMapper {
     }
 
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
+        this.LOGGER.debug(`dtoToEntity`);
         const card: Card = new Card();
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
@@ -26,6 +27,7 @@ export class CardMapper {
     }
 
     readDtoToEntity(cardDto: CardDto): Card {
+        this.LOGGER.debug(`readDtoToEntity`);
         const card: Card = new Card();
         card.id = cardDto.id;
         card.imgSrc = cardDto.imgSrc;
@@ -42,11 +44,11 @@ export class CardMapper {
     }
 
     entitiesToDtos(cards: Card[]): CardDto[] {
-        this.LOGGER.debug(`entitiesToDtos ${JSON.stringify(cards)}`);
         return cards.map((card: Card) => this.entityToDto(card));
     }
 
     entityToDto(card: Card): CardDto {
+        this.LOGGER.debug(`entityToDto`);
         const cardDto: CardDto = {
             id: card.id,
             imgSrc: card.imgSrc,
@@ -64,6 +66,7 @@ export class CardMapper {
     }
 
     private mapManaToView(manaCost: string): string[] {
+        this.LOGGER.debug(`mapManaToView ${manaCost}`);
         return typeof manaCost === "string" ? manaCost
             .toLowerCase()
             .trim()
@@ -75,6 +78,7 @@ export class CardMapper {
     }
 
     private mapManaToRepo(manaCost: string[]): string {
+        this.LOGGER.debug(`mapManaToRepo ${JSON.stringify(manaCost)}`);
         return manaCost ? manaCost.map((token) => `{${token}}`).join("") : null;
     }
 }

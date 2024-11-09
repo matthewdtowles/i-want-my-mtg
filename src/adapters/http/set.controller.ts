@@ -14,7 +14,7 @@ import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto"
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
-import { AuthenticatedRequest } from "./auth/authenticated.request";
+import { AuthenticatedRequest } from "./auth/auth.types";
 import { UserGuard } from "./auth/user.guard";
 
 @Controller("sets")

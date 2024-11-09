@@ -1,9 +1,8 @@
 import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Response } from "express";
-import { AuthenticatedRequest } from "src/adapters/http/auth/authenticated.request";
+import { AuthenticatedRequest, UserRole } from "src/adapters/http/auth/auth.types";
 import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
-import { UserRole } from "src/adapters/http/auth/user.role";
 import { UserController } from "src/adapters/http/user.controller";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";

@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Logger, Render, Req } from "@nestjs/common";
+import { Controller, Get, HttpStatus, Inject, Logger, Render, Req } from "@nestjs/common";
+import { HttpStatusCode } from "axios";
 import { Request } from "express";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
@@ -18,7 +19,7 @@ export class HomeController {
         const _status =
             req &&
             req.query &&
-            "200" === req.query.status &&
+            HttpStatus.OK.toString() === req.query.status &&
             "logout" === req.query.action;
         const _message: string = _status ? `User logged out` : null;
         return {

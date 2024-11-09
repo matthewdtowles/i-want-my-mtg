@@ -18,8 +18,7 @@ import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
 import { UserServicePort } from "src/core/user/api/user.service.port";
-import { AUTH_TOKEN_NAME } from "./auth/auth.constants";
-import { AuthenticatedRequest } from "./auth/authenticated.request";
+import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
 @Controller("user")
@@ -35,11 +34,13 @@ export class UserController {
     @Get("create")
     @Render("createUser")
     createForm() {
+        this.LOGGER.debug(`Create user form called`);
         return {};
     }
 
     @Post("create")
     async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
+        this.LOGGER.debug(`Create user called`);
         try {
             const createdUser: UserDto = await this.userService.create(createUserDto);
             if (!createdUser) {
@@ -64,8 +65,8 @@ export class UserController {
     @Get()
     @Render("user")
     async findById(@Req() req: AuthenticatedRequest) {
+        this.LOGGER.debug(`Find user by ID`);
         if (!req) {
-            this.LOGGER.error("Request undefined, unauthorized to view user");
             throw new Error("Request undefined, unauthorized to view user");
         }
         if (!req.user) {
@@ -90,6 +91,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+        this.LOGGER.debug(`Update user`);
         try {
             const updatedUser: UserDto = await this.userService.update(updateUserDto);
             return res.status(HttpStatus.OK).json({
@@ -106,6 +108,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Delete()
     async remove(@Res() res: Response, @Req() req: AuthenticatedRequest) {
+        this.LOGGER.debug(`Delete user`);
         try {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to delete user");

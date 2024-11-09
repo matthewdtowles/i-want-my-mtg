@@ -1,7 +1,7 @@
 import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as request from "supertest";
-import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.constants";
+import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
 import { AuthController } from "src/adapters/http/auth/auth.controller";
 import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
 import { AuthToken } from "src/core/auth/api/auth.types";

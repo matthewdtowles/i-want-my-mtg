@@ -9,21 +9,20 @@ import {
     Patch,
     Render, Req, UseGuards
 } from "@nestjs/common";
+import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
 import { BaseHttpDto } from "src/adapters/http/base.http.dto";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
-import { AuthenticatedRequest } from "./auth/authenticated.request";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
-import { Role } from "./auth/roles.decorator";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
-import { UserRole } from "./auth/user.role";
 
 @Controller("card")
 export class CardController {
+
     private readonly LOGGER: Logger = new Logger(CardController.name);
 
     constructor(
@@ -37,9 +36,9 @@ export class CardController {
     @Get(":setCode")
     @Render("ingestCards")
     async ingestCards(@Param("setCode") setCode: string) {
+        this.LOGGER.debug(`ingestCards for set ${setCode}`);
         return {
-            cards: await this.ingestionOrchestrator.ingestSetCards(setCode),
-            inventory: [],
+            cards: await this.ingestionOrchestrator.ingestSetCards(setCode)
         };
     }
 
@@ -65,6 +64,7 @@ export class CardController {
     @Patch(":id")
     @Role(UserRole.Admin)
     async update(@Body() updateCardDtos: UpdateCardDto[]) {
+        this.LOGGER.debug(`Update cards`);
         return await this.cardService.save(updateCardDtos);
     }
 
@@ -83,7 +83,7 @@ export class CardController {
         return {
             status: HttpStatus.OK,
             card: _card,
-            message: null
+            message: "Card found"
         };
     }
 }

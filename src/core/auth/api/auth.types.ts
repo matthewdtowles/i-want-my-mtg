@@ -12,6 +12,6 @@ export interface JwtPayload {
      */
     sub: string;
     email: string;
-    // TODO: remove role; lookup on RoleGuarded pages by user ID ?
+    // TODO: remove role; lookup on RoleGuarded pages by user ID
     role: string;
 }

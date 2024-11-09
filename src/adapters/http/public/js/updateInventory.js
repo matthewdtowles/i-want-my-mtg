@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity  = await addInventoryItem(quantityOwned.value, cardId);
             quantityOwned.value = updatedQuantity;
-            console.log(`New quantity after increment: ${quantityOwned.value}`);
         });
 
         decrementButton.addEventListener("click", async (event) => {
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId);
             quantityOwned.value = updatedQuantity
-            console.log(`New quantity after decrement: ${quantityOwned.value}`);
         });
 
         async function addInventoryItem(_quantity, _cardId) {
@@ -28,11 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
-                console.log(`Sending ${method} request to update inventory for cardId: ${cardIdInt}, new quantity: ${qtyInt + 1}`);
                 const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, method);
-                console.log(`Added inventory: ${JSON.stringify(updatedInventory)}`);
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
-                console.log(`Updated quantity: ${updatedQuantity}`);
             } catch (error) {
                 console.error(`Error in addInventoryItem => ${error}`);
             }
@@ -45,11 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
-                console.log(`Sending PATCH request to update inventory for cardId: ${cardIdInt}, new quantity: ${qtyInt - 1}`);
                 const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
-                console.log(`Removed item from inventory: ${JSON.stringify(updatedInventory)}`);
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
-                console.log(`Updated quantity: ${updatedQuantity}`);
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);
             }
@@ -57,7 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         async function updateInventory(_quantity, _cardId, _method) {
-            console.log(`updateInventory called with quantity: ${_quantity}, cardId: ${_cardId}, method: ${_method}`);
             const response = await fetch('/inventory', {
                 method: _method,
                 headers: {
@@ -74,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             try {
                 const data = await response.json();
-                console.log(`Update inventory response data => ${JSON.stringify(data)}`);
                 return data && data.inventory && data.inventory[0] ? data.inventory[0] : null;
             } catch (error) {
                 console.error(`Error in updateInventory => ${error}`);

@@ -12,25 +12,18 @@ export class InventoryRepository implements InventoryRepositoryPort {
     constructor(@InjectRepository(Inventory) private readonly repository: Repository<Inventory>) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`1 save ${inventoryItems.length} inventory items`);
+        this.LOGGER.debug(`save ${inventoryItems.length} inventory items`);
         const savedItems: Inventory[] = [];
         for (const item of inventoryItems) {
             if (item.quantity > 0) {
-                this.LOGGER.debug(`2 saving item: ${JSON.stringify(item)}`);
                 const savedItem: Inventory = await this.repository.save(item);
-                this.LOGGER.debug(`3 savedItem: ${JSON.stringify(savedItem)}`);
+                this.LOGGER.debug(`Saved inventory item: ${JSON.stringify(savedItem)}`);
                 savedItems.push(savedItem);
-                this.LOGGER.debug(`4 savedItems.length (SO FAR): ${savedItems.length}`);
-                this.LOGGER.debug(`5 savedItems (SO FAR): ${JSON.stringify(savedItems)}`);
             } else {
-                this.LOGGER.debug(`6 deleting item: ${JSON.stringify(item)}`);
                 await this.delete(item.userId, item.cardId);
                 savedItems.push(item);
-                this.LOGGER.debug(`7 savedItems.length (SO FAR): ${savedItems.length}`);
-                this.LOGGER.debug(`8 savedItems (SO FAR): ${JSON.stringify(savedItems)}`);
             }
         }
-        this.LOGGER.debug(`FINALE* * * * * * Inv Repository saved: ${JSON.stringify(savedItems)} inventory items`);
         return savedItems;
     }
 

@@ -19,8 +19,6 @@ export class InventoryService implements InventoryServicePort {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
         const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
         const savedItems: Inventory[] = await this.repository.save(entities);
-        this.LOGGER.debug(`createdItems.length: ${savedItems.length}`);
-        this.LOGGER.debug(`createdItems: ${JSON.stringify(savedItems)}`);
         return this.mapper.toDtos(savedItems);
     }
 
@@ -28,8 +26,6 @@ export class InventoryService implements InventoryServicePort {
         this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
         const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
         const savedItems: Inventory[] = await this.repository.save(entities);
-        this.LOGGER.debug(`savedItems.length: ${savedItems.length}`);
-        this.LOGGER.debug(`savedItems: ${JSON.stringify(savedItems)}`);
         return this.mapper.toDtos(savedItems);
     }
 

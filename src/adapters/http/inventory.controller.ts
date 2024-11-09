@@ -70,8 +70,6 @@ export class InventoryController {
                 userId: req.user.id,
             }));
             const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
-            this.LOGGER.debug(`createdItems.length: ${createdItems.length}`);
-            this.LOGGER.debug(`**********************************Created inventory: ${JSON.stringify(createdItems)}`);
             return res.status(HttpStatus.CREATED).json({
                 message: `Added inventory items`,
                 inventory: createdItems,
@@ -101,8 +99,6 @@ export class InventoryController {
                 userId: req.user.id,
             }));
             const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
-            this.LOGGER.debug(`updatedInventory.length: ${updatedInventory.length}`);
-            this.LOGGER.debug(`**********************************Updated inventory: ${JSON.stringify(updatedInventory)}`);
             return res.status(HttpStatus.OK).json({
                 message: `Updated inventory`,
                 inventory: updatedInventory,

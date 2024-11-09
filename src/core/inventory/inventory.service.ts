@@ -24,8 +24,9 @@ export class InventoryService implements InventoryServicePort {
 
     async update(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
         this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
-        const cleanItems: InventoryDto[] = await this.cleanUpForSave(inventoryItems);
-        const entities: Inventory[] = this.mapper.toEntities(cleanItems);
+        // const cleanItems: InventoryDto[] = await this.cleanUpForSave(inventoryItems);
+        // const entities: Inventory[] = this.mapper.toEntities(cleanItems);
+        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
         const savedItems: Inventory[] = await this.repository.save(entities);
         return this.mapper.toDtos(savedItems);
     }
@@ -54,20 +55,20 @@ export class InventoryService implements InventoryServicePort {
         return this.mapper.toInventoryCardDtos(foundCards);
     }
 
-    private async cleanUpForSave(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
-        this.LOGGER.debug(`cleanUpForSave`);
-        const itemsToDelete: InventoryDto[] = [];
-        const itemsToSave: InventoryDto[] = [];
-        inventoryItems.forEach(item => {
-            if (item.quantity > 0) {
-                itemsToSave.push(item);
-            } else {
-                itemsToDelete.push(item);
-            }
-        });
-        if (itemsToDelete.length > 0) {
-            await Promise.all(itemsToDelete.map(item => this.repository.delete(item.userId, item.cardId)));
-        }
-        return itemsToSave
-    }
+    // private async cleanUpForSave(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
+    //     this.LOGGER.debug(`cleanUpForSave`);
+    //     const itemsToDelete: InventoryDto[] = [];
+    //     const itemsToSave: InventoryDto[] = [];
+    //     inventoryItems.forEach(item => {
+    //         if (item.quantity >= 0) {
+    //             itemsToSave.push(item);
+    //         } else {
+    //             itemsToDelete.push(item);
+    //         }
+    //     });
+    //     if (itemsToDelete.length > 0) {
+    //         await Promise.all(itemsToDelete.map(item => this.repository.delete(item.userId, item.cardId)));
+    //     }
+    //     return itemsToSave
+    // }
 }

@@ -1,6 +1,5 @@
 import { NestFactory } from "@nestjs/core";
 import { CommandModule, CommandService } from "nestjs-command";
-// TODO: remove this import?:
 import "tsconfig-paths/register";
 import { CliModule } from "./cli/cli.module";
 

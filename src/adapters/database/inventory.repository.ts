@@ -15,6 +15,14 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`save ${inventoryItems.length} inventory items`);
+        const savedItems: Inventory[] = [];
+        inventoryItems.forEach(async (item: Inventory) => {
+            if (item.quantity > 0) {
+                savedItems.push(await this.inventoryRepository.save(item));
+            } else {
+                await this.inventoryRepository.delete(item);
+            }
+        });
         return await this.inventoryRepository.save(inventoryItems);
     }
 
@@ -25,8 +33,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
                 userId: _userId,
                 cardId: _cardId,
             },
-            // TODO: needed? Should this be split out?
-            relations: ["card", "user"],
+            relations: ["card"],
         });
     }
 
@@ -36,8 +43,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
             where: {
                 userId: _userId,
             },
-            // TODO: needed? Should this be split out?
-            relations: ["card", "user"],
+            relations: ["card"],
         });
     }
 

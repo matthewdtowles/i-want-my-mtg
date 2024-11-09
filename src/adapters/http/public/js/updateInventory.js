@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const qtyInt = parseInt(_quantity);
                 const cardIdInt = parseInt(_cardId);
                 if (qtyInt > 0) {
-                    const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
+                    const updatedInventory = await updateInventory((qtyInt - 1), cardIdInt, 'PATCH') ?? 0;
                     console.log(`updatedInventory = ${JSON.stringify(updatedInventory)}`);
                     updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
                 } else {
@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);
             }
+            updatedQuantity
             return updatedQuantity;
         }
 

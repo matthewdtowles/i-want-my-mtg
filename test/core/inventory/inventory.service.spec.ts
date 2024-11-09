@@ -66,7 +66,6 @@ describe("InventoryService", () => {
         jest.spyOn(repository, "save").mockResolvedValueOnce([]);
         const savedItems: InventoryDto[] = await service.update(mockDeleteInventoryDtos);
         expect(repository.save).toHaveBeenCalled();
-        expect(repository.delete).toHaveBeenCalled();
         expect(savedItems).toEqual([]);
     });
 

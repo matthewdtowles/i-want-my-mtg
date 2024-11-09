@@ -26,6 +26,7 @@ export class InventoryMapper {
         inventoryEntity.cardId = dto.cardId;
         inventoryEntity.user = new User();
         inventoryEntity.user.id = dto.userId;
+        inventoryEntity.userId = dto.userId;
         return inventoryEntity;
     }
 
@@ -41,7 +42,7 @@ export class InventoryMapper {
         const inventory: InventoryDto = {
             cardId: inventoryEntity.cardId,
             quantity: inventoryEntity.quantity,
-            userId: inventoryEntity.user.id
+            userId: inventoryEntity.user.id ?? inventoryEntity.userId,
         };
         return inventory;
     }
@@ -59,7 +60,7 @@ export class InventoryMapper {
         const inventory: InventoryCardDto = {
             card: this.cardMapper.entityToDto(inventoryEntity.card),
             quantity: inventoryEntity.quantity,
-            userId: inventoryEntity.user.id
+            userId: inventoryEntity.user && inventoryEntity.user.id ? inventoryEntity.userId : 0,
         };
         return inventory;
     }

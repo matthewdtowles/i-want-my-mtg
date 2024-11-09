@@ -9,26 +9,34 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
     private readonly LOGGER: Logger = new Logger(InventoryRepository.name);
 
-    constructor(
-        @InjectRepository(Inventory) private readonly inventoryRepository: Repository<Inventory>
-    ) { }
+    constructor(@InjectRepository(Inventory) private readonly repository: Repository<Inventory>) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`save ${inventoryItems.length} inventory items`);
+        this.LOGGER.debug(`1 save ${inventoryItems.length} inventory items`);
         const savedItems: Inventory[] = [];
-        inventoryItems.forEach(async (item: Inventory) => {
+        for (const item of inventoryItems) {
             if (item.quantity > 0) {
-                savedItems.push(await this.inventoryRepository.save(item));
+                this.LOGGER.debug(`2 saving item: ${JSON.stringify(item)}`);
+                const savedItem: Inventory = await this.repository.save(item);
+                this.LOGGER.debug(`3 savedItem: ${JSON.stringify(savedItem)}`);
+                savedItems.push(savedItem);
+                this.LOGGER.debug(`4 savedItems.length (SO FAR): ${savedItems.length}`);
+                this.LOGGER.debug(`5 savedItems (SO FAR): ${JSON.stringify(savedItems)}`);
             } else {
-                await this.inventoryRepository.delete(item);
+                this.LOGGER.debug(`6 deleting item: ${JSON.stringify(item)}`);
+                await this.delete(item.userId, item.cardId);
+                savedItems.push(item);
+                this.LOGGER.debug(`7 savedItems.length (SO FAR): ${savedItems.length}`);
+                this.LOGGER.debug(`8 savedItems (SO FAR): ${JSON.stringify(savedItems)}`);
             }
-        });
-        return await this.inventoryRepository.save(inventoryItems);
+        }
+        this.LOGGER.debug(`FINALE* * * * * * Inv Repository saved: ${JSON.stringify(savedItems)} inventory items`);
+        return savedItems;
     }
 
     async findOne(_userId: number, _cardId: number): Promise<Inventory | null> {
         this.LOGGER.debug(`findOne userId: ${_userId}, cardId: ${_cardId}`);
-        return await this.inventoryRepository.findOne({
+        return await this.repository.findOne({
             where: {
                 userId: _userId,
                 cardId: _cardId,
@@ -39,7 +47,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
     async findByUser(_userId: number): Promise<Inventory[]> {
         this.LOGGER.debug(`findByUser userId: ${_userId}`);
-        return await this.inventoryRepository.find({
+        return await this.repository.find({
             where: {
                 userId: _userId,
             },
@@ -50,7 +58,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async delete(userId: number, cardId: number): Promise<void> {
         this.LOGGER.debug(`delete userId: ${userId}, cardId: ${cardId}`);
         try {
-            await this.inventoryRepository
+            await this.repository
                 .createQueryBuilder()
                 .delete()
                 .from(Inventory)

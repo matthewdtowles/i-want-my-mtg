@@ -41,7 +41,8 @@ export class InventoryController {
         if (!req.user.id) {
             throw new Error("ID not found in request user");
         }
-        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService.findByUser(req.user.id);
+        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService
+            .findByUser(req.user.id);
         const _username = req.user.name;
         return {
             cards: _cards,
@@ -69,6 +70,8 @@ export class InventoryController {
                 userId: req.user.id,
             }));
             const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
+            this.LOGGER.debug(`createdItems.length: ${createdItems.length}`);
+            this.LOGGER.debug(`**********************************Created inventory: ${JSON.stringify(createdItems)}`);
             return res.status(HttpStatus.CREATED).json({
                 message: `Added inventory items`,
                 inventory: createdItems,
@@ -98,6 +101,8 @@ export class InventoryController {
                 userId: req.user.id,
             }));
             const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
+            this.LOGGER.debug(`updatedInventory.length: ${updatedInventory.length}`);
+            this.LOGGER.debug(`**********************************Updated inventory: ${JSON.stringify(updatedInventory)}`);
             return res.status(HttpStatus.OK).json({
                 message: `Updated inventory`,
                 inventory: updatedInventory,

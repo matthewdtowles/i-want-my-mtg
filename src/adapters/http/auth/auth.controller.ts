@@ -14,8 +14,7 @@ import { Response } from "express";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
 import { UserDto } from "src/core/user/api/user.dto";
-import { AUTH_TOKEN_NAME } from "./auth.types";
-import { AuthenticatedRequest } from "./auth.types";
+import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 
 @Controller("auth")
@@ -45,7 +44,7 @@ export class AuthController {
             this.LOGGER.error(`Login failed`);
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }
-        this.LOGGER.debug(`${user.name} logged in`);
+        this.LOGGER.log(`${user.name} logged in`);
         res
             .cookie(AUTH_TOKEN_NAME, authToken.access_token, {
                 httpOnly: true,

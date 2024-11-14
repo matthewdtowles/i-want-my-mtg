@@ -20,6 +20,14 @@ import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dt
 import { UserServicePort } from "src/core/user/api/user.service.port";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+import { IsEmail, IsString } from "class-validator";
+
+export class UpdateUserHttpDto {
+    @IsString()
+    readonly name: string;
+    @IsEmail()
+    readonly email: string;
+}
 
 @Controller("user")
 export class UserController {
@@ -32,7 +40,7 @@ export class UserController {
     ) { }
 
     @Get("create")
-    @Render("createUser")
+    @Render("create-user")
     createForm() {
         this.LOGGER.debug(`Create user form called`);
         return {};
@@ -55,7 +63,7 @@ export class UserController {
                 sameSite: "strict",
                 secure: process.env.NODE_ENV === "production",
                 maxAge: 3600000,
-            }).redirect(`/user?action=create&status=${HttpStatus.CREATED}`);
+            }).redirect(`/user?action=create&status=${HttpStatus.CREATED}`); // TODO: redirect to another page???
         } catch (error) {
             res.redirect(`/user/create?action=create&status=${HttpStatus.BAD_REQUEST}`);
         }
@@ -84,15 +92,27 @@ export class UserController {
             req.query.action === "login";
         return {
             message: login ? `${foundUser.name} - logged in` : null,
-            user: await this.userService.findById(id),
+            user: foundUser,
         };
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch()
-    async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    async update(
+        @Body() httpUserDto: UpdateUserHttpDto,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest
+    ) {
         this.LOGGER.debug(`Update user`);
         try {
+            if (!req || !req.user || !req.user.id) {
+                throw new Error("Unauthorized to update user");
+            }
+            const updateUserDto: UpdateUserDto = {
+                id: req.user.id,
+                name: httpUserDto.name,
+                email: httpUserDto.email,
+            };
             const updatedUser: UserDto = await this.userService.update(updateUserDto);
             return res.status(HttpStatus.OK).json({
                 message: `User ${updatedUser.name} updated successfully`,

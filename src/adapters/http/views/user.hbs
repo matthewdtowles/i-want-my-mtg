@@ -6,10 +6,6 @@
         <input id="user-name" type="text" name="name" value="{{ user.name }}" />
         <label for="user-email">Email</label>
         <input id="user-email" type="email" name="email" value="{{ user.email }}" />
-        <label for="user-password">Password</label>
-        <input id="user-password" type="password" name="password">
-{{!-- TODO: DO NOT pass the user id this way, but extract from request/resposne  --}}
-        <input id="user-id" type="hidden" name="id" value="{{ user.id }}" />
         <button id="update-user-btn" type="submit">Submit</button>
     </form>
 
@@ -18,34 +14,34 @@
 
     <script>
         const messageEl = document.getElementById('response-message');
-        // TODO: make generic and move out for all templates to use
-        // UPDATE
         document.getElementById('user-update-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
-            data.id = parseInt(data.id, 10);
-            console.log(`data.id = ${data.id}`);
+            console.log(data);
             const response = await fetch('/user', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: data,
+                body: JSON.stringify(data),
             });
+            if (response.ok) {
+                const result = await response.json();
+                messageEl.textContent = result.message;
+            } else {
+                messageEl.textContent = 'Failed to update user';
+            }
         });
 
-        // DELETE
         document.getElementById('delete-user-btn').addEventListener('click', async () => {
-            const userId = document.getElementById('user-id').value;
-            const response = await fetch(`/user/${userId}`, {
+            const response = await fetch(`/user`, {
                 method: 'DELETE',
             });
             if (response.ok) {
                 const result = await response.json();
                 messageEl.textContent = result.message;
             } else {
-                // TODO: can we use the result message?
                 messageEl.textContent = 'Failed to delete user';
             }
         });

@@ -1,5 +1,13 @@
 import { PartialType } from "@nestjs/mapped-types";
-import { IsEmail, IsEnum, IsInt, IsPositive, IsString, IsStrongPassword, MinLength } from "class-validator";
+import {
+    IsEmail,
+    IsEnum,
+    IsInt,
+    IsPositive,
+    IsString,
+    IsStrongPassword,
+    MinLength
+} from "class-validator";
 import { UserRole } from "src/adapters/http/auth/auth.types";
 
 export class UserDto {
@@ -23,8 +31,10 @@ export class CreateUserDto {
     readonly password: string;
 }
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto {
     @IsInt()
     @IsPositive()
-    id: number;
+    readonly id: number;
+    readonly email: string;
+    readonly name: string;
 }

@@ -16,6 +16,7 @@ export class UserMapper {
             name: user.name,
             role: user.role,
         };
+        this.LOGGER.debug(`entityToDto userDto ${JSON.stringify(userDto)}`);
         return userDto;
     }
 
@@ -45,7 +46,7 @@ export class UserMapper {
         user.id = userDto.id;
         user.email = userDto.email;
         user.name = userDto.name;
-        user.password = userDto.password;
+        this.LOGGER.debug(`updateDtoToEntity user ${JSON.stringify(user)}`);
         return user;
     }
 }

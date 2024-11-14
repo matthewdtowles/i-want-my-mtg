@@ -21,9 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         async function addInventoryItem(_quantity, _cardId) {
             let updatedQuantity = _quantity;
-            console.log(`Add inventory => ${_quantity} + 1 for card ${_cardId}`);
             try {
-                const qtyInt = parseInt(_quantity);
+                const qtyInt = parseInt(updatedQuantity);
                 const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
                 const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, method);
@@ -36,9 +35,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         async function removeInventoryItem(_quantity, _cardId) {
             let updatedQuantity = _quantity;
-            console.log(`Remove inventory => ${_quantity} - 1 for card ${_cardId}`);
             try {
-                const qtyInt = parseInt(_quantity);
+                const qtyInt = parseInt(updatedQuantity);
                 const cardIdInt = parseInt(_cardId);
                 const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;

@@ -27,6 +27,7 @@ export class UserService implements UserServicePort {
     async findById(id: number): Promise<UserDto | null> {
         this.LOGGER.debug(`findById ${id}`);
         const user: User = await this.repository.findById(id);
+        this.LOGGER.debug(`findById user ${JSON.stringify(user)}`);
         return user ? this.mapper.entityToDto(user) : null;
     }
 
@@ -45,8 +46,8 @@ export class UserService implements UserServicePort {
     async update(userDto: UpdateUserDto): Promise<UserDto | null> {
         this.LOGGER.debug(`update`);
         const user: User = this.mapper.updateDtoToEntity(userDto);
-        user.password = userDto.password;
-        const savedUser: User = (await this.repository.update(user)) ?? new User();
+        const savedUser: User = await this.repository.update(user) ?? new User();
+        this.LOGGER.debug(`update savedUser ${JSON.stringify(savedUser)}`);
         return user ? this.mapper.entityToDto(savedUser) : null;
     }
 

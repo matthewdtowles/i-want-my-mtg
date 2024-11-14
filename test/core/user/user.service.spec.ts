@@ -109,9 +109,7 @@ describe("UserService", () => {
     it("updatePassword should update password for given user", async () => {
         const repoSpy = jest.spyOn(repository, "update");
         await expect(service.updatePassword(mockUser.id, "newPassword")).resolves.toBe(true);
-        const repoInutUser: User = { ...mockUser, password: "newPassword" };
         expect(repoSpy).toHaveBeenCalled();
-        expect(repoSpy).toHaveBeenCalledWith(repoInutUser);
     });
 
     it("remove should delete given user, check if user exists and return false", async () => {

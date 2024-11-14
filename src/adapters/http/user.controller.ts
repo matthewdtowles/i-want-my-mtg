@@ -124,7 +124,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Patch("password")
     async updatePassword(
-        @Body() password: string,
+        @Body("password") password: string,
         @Res() res: Response,
         @Req() req: AuthenticatedRequest
     ) {

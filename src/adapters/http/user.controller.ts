@@ -104,6 +104,12 @@ export class UserController {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to update user");
             }
+            if (req.user.email === httpUserDto.email && req.user.name === httpUserDto.name) {
+                return res.status(HttpStatus.OK).json({
+                    message: "No changes detected",
+                    user: req.user,
+                });
+            }
             const updateUserDto: UpdateUserDto = {
                 id: req.user.id,
                 name: httpUserDto.name,

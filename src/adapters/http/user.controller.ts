@@ -133,10 +133,9 @@ export class UserController {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to update user password");
             }
-            const updatedUser: UserDto = await this.userService.updatePassword(password);
+            const pwdUpdated: boolean = await this.userService.updatePassword(req.user.id, password);
             return res.status(HttpStatus.OK).json({
-                message: `User ${updatedUser.name} updated successfully`,
-                user: updatedUser,
+                message: pwdUpdated ? "Password updated" : "Error updating password",
             });
         } catch (error) {
             return res

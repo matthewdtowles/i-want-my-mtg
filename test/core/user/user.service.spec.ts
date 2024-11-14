@@ -43,6 +43,7 @@ describe("UserService", () => {
             inputUser.name = user.name ?? mockUser.name;
             inputUser.email = user.email ?? mockUser.email;
             inputUser.role = user.role ?? mockUser.role;
+            inputUser.password = user.password ?? mockUser.password;
             return Promise.resolve(inputUser);
         })
     };
@@ -70,18 +71,20 @@ describe("UserService", () => {
     });
 
     it("create should successfully insert a user", async () => {
-        expect(service.create(createUser)).resolves.toEqual(userDto);
+        const repoSpy = jest.spyOn(repository, "create");
+        await expect(service.create(createUser)).resolves.toEqual(userDto);
+        expect(repoSpy).toHaveBeenCalled();
     });
 
     it("findById should get a single user with given id", async () => {
         const repoSpy = jest.spyOn(repository, "findById");
-        expect(service.findById(1)).resolves.toEqual(userDto);
+        await expect(service.findById(1)).resolves.toEqual(userDto);
         expect(repoSpy).toHaveBeenCalled();
     });
 
     it("findByEmail should get a single user with given email", async () => {
         const repoSpy = jest.spyOn(repository, "findByEmail");
-        expect(service.findByEmail(mockUser.email)).resolves.toEqual(userDto);
+        await expect(service.findByEmail(mockUser.email)).resolves.toEqual(userDto);
         expect(repoSpy).toHaveBeenCalledWith(mockUser.email);
     });
 
@@ -95,12 +98,20 @@ describe("UserService", () => {
 
         await expect(service.update(updateUserDto)).resolves.toEqual(expectedUserDto);
 
-        const repoSpy = jest.spyOn(mockUserRepository, "update");
+        const repoSpy = jest.spyOn(repository, "update");
         const repoInputUser: User = new User();
         repoInputUser.id = updateUserDto.id;
         repoInputUser.name = updateUserDto.name;
         repoInputUser.email = updateUserDto.email;
         expect(repoSpy).toHaveBeenCalledWith(repoInputUser);
+    });
+
+    it("updatePassword should update password for given user", async () => {
+        const repoSpy = jest.spyOn(repository, "update");
+        await expect(service.updatePassword(mockUser.id, "newPassword")).resolves.toBe(true);
+        const repoInutUser: User = { ...mockUser, password: "newPassword" };
+        expect(repoSpy).toHaveBeenCalled();
+        expect(repoSpy).toHaveBeenCalledWith(repoInutUser);
     });
 
     it("remove should delete given user, check if user exists and return false", async () => {

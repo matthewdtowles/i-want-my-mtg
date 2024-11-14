@@ -52,7 +52,12 @@ export class UserService implements UserServicePort {
     }
 
     async updatePassword(userId: number, password: string): Promise<boolean> {
-        return false;
+        this.LOGGER.debug(`updatePassword userId:${userId}, pwd:${password}`);
+        const user: User = new User();
+        user.id = userId;
+        user.password = await this.encrypt(password);
+        this.LOGGER.debug(`Input user ${JSON.stringify(user)}`);
+        return !!await this.repository.update(user);
     }
 
     async remove(id: number): Promise<void> {

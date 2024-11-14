@@ -16,12 +16,8 @@ export class HomeController {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
         const setDtos: SetDto[] = await this.setService.findAll();
         // if number of action/status combos grows, create their own map/dict
-        const _status =
-            req &&
-            req.query &&
-            HttpStatus.OK.toString() === req.query.status &&
-            "logout" === req.query.action;
-        const _message: string = _status ? `User logged out` : null;
+        const _status: string = req.query.status as string ?? null;
+        const _message: string = req.query.message as string ?? null;
         return {
             message: _message,
             status: _status,

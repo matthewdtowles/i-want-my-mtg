@@ -13,6 +13,7 @@ import {
     Res,
     UseGuards,
 } from "@nestjs/common";
+import { IsEmail, IsString } from "class-validator";
 import { Response } from "express";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
@@ -20,7 +21,6 @@ import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dt
 import { UserServicePort } from "src/core/user/api/user.service.port";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
-import { IsEmail, IsString } from "class-validator";
 
 export class UpdateUserHttpDto {
     @IsString()
@@ -49,24 +49,20 @@ export class UserController {
     @Post("create")
     async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Create user called`);
-        try {
-            const createdUser: UserDto = await this.userService.create(createUserDto);
-            if (!createdUser) {
-                throw new Error(`Could not create user`);
-            }
-            const authToken: AuthToken = await this.authService.login(createdUser);
-            if (!authToken) {
-                throw new Error(`Could not create auth token`);
-            }
-            res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
-                httpOnly: true,
-                sameSite: "strict",
-                secure: process.env.NODE_ENV === "production",
-                maxAge: 3600000,
-            }).redirect(`/user?action=create&status=${HttpStatus.CREATED}`); // TODO: redirect to another page???
-        } catch (error) {
-            res.redirect(`/user/create?action=create&status=${HttpStatus.BAD_REQUEST}`);
+        const createdUser: UserDto = await this.userService.create(createUserDto);
+        if (!createdUser) {
+            throw new Error(`Could not create user`);
         }
+        const authToken: AuthToken = await this.authService.login(createdUser);
+        if (!authToken) {
+            throw new Error(`Could not create auth token`);
+        }
+        res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 3600000,
+        }).redirect(`/?action=create&status=${HttpStatus.CREATED}&message=User%20created`);
     }
 
     @UseGuards(JwtAuthGuard)

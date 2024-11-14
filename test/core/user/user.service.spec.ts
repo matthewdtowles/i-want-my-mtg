@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { CardMapper } from "src/core/card/card.mapper";
 import { InventoryMapper } from "src/core/inventory/inventory.mapper";
-import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
+import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
 import { User } from "src/core/user/user.entity";
 import { UserMapper } from "src/core/user/user.mapper";
@@ -36,8 +36,15 @@ describe("UserService", () => {
         create: jest.fn().mockResolvedValue(mockUser),
         findByEmail: jest.fn().mockResolvedValue(mockUser),
         findById: jest.fn().mockResolvedValue(mockUser),
-        update: jest.fn().mockResolvedValue(mockUser),
         delete: jest.fn(),
+        update: jest.fn().mockImplementation((user: User): Promise<User> => {
+            const inputUser: User = new User();
+            inputUser.id = user.id ?? mockUser.id;
+            inputUser.name = user.name ?? mockUser.name;
+            inputUser.email = user.email ?? mockUser.email;
+            inputUser.role = user.role ?? mockUser.role;
+            return Promise.resolve(inputUser);
+        })
     };
 
     beforeEach(async () => {
@@ -76,6 +83,24 @@ describe("UserService", () => {
         const repoSpy = jest.spyOn(repository, "findByEmail");
         expect(service.findByEmail(mockUser.email)).resolves.toEqual(userDto);
         expect(repoSpy).toHaveBeenCalledWith(mockUser.email);
+    });
+
+    it("update should save given user and return result after update", async () => {
+        const updateUserDto: UpdateUserDto = {
+            id: mockUser.id,
+            name: mockUser.name,
+            email: "updated-email1@iwantmymtg.com",
+        };
+        const expectedUserDto: UserDto = { ...userDto, email: updateUserDto.email };
+
+        await expect(service.update(updateUserDto)).resolves.toEqual(expectedUserDto);
+
+        const repoSpy = jest.spyOn(mockUserRepository, "update");
+        const repoInputUser: User = new User();
+        repoInputUser.id = updateUserDto.id;
+        repoInputUser.name = updateUserDto.name;
+        repoInputUser.email = updateUserDto.email;
+        expect(repoSpy).toHaveBeenCalledWith(repoInputUser);
     });
 
     it("remove should delete given user, check if user exists and return false", async () => {

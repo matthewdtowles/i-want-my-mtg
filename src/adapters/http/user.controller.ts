@@ -122,6 +122,30 @@ export class UserController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Patch("password")
+    async updatePassword(
+        @Body() password: string,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest
+    ) {
+        this.LOGGER.debug(`Update user password`);
+        try {
+            if (!req || !req.user || !req.user.id) {
+                throw new Error("Unauthorized to update user password");
+            }
+            const updatedUser: UserDto = await this.userService.updatePassword(password);
+            return res.status(HttpStatus.OK).json({
+                message: `User ${updatedUser.name} updated successfully`,
+                user: updatedUser,
+            });
+        } catch (error) {
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({ message: `Error updating user: ${error.message}` });
+        }
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Delete()
     async remove(@Res() res: Response, @Req() req: AuthenticatedRequest) {
         this.LOGGER.debug(`Delete user`);

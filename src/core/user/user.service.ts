@@ -51,6 +51,10 @@ export class UserService implements UserServicePort {
         return user ? this.mapper.entityToDto(savedUser) : null;
     }
 
+    async updatePassword(userId: number, password: string): Promise<boolean> {
+        return false;
+    }
+
     async remove(id: number): Promise<void> {
         this.LOGGER.debug(`remove ${id}`);
         await this.repository.delete(id);

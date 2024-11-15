@@ -1,5 +1,5 @@
 <div id="card-image">
-    <img src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})"/>
+    <img src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
 </div>
 
 <div id="card-identity">
@@ -22,10 +22,10 @@
     <p class="card-number">{{card.number}}</p>
     <table class="card-legalities">
         <tbody>
-        {{!-- TODO: hard code each format? I.e.: 
+            {{!-- TODO: hard code each format? I.e.:
             <td>Standard</td>
             <td>{{card.standard}}</td>
-        etc --}}
+            etc --}}
             {{#each card.legalities}}
             <tr>
                 <td>{{card.key}}</td>
@@ -46,19 +46,20 @@
         <h4 id="card-other-printings-title">Other Printings</h4>
         <table>
             <tbody>
-            {{#each card.otherPrintings}}
+                {{#each card.otherPrintings}}
                 <tr>
                     <td class="set-icon"><i class="ss ss-{{card.setCode}}"></i></td>
                     <td class="other-printing-url"><a href="{{card.url}}">{{card.set.name}}</a></td>
                     <td class="other-differentiators">
-                    {{#each card.differentiators}}
+                        {{#each card.differentiators}}
                         <span class="differentiators-description">{{card.description}}</span>
-                    {{/each}}
+                        {{/each}}
                     </td>
                     <td class="other-printing-price">{{card.price}}</td>
                 </tr>
-            {{/each}}
+                {{/each}}
             </tbody>
         </table>
     </div>
 </div>
+<script src="/public/js/updateInventory.js" defer></script>

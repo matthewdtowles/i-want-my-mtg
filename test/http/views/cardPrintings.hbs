@@ -19,7 +19,7 @@
 </div>
 <table id="all-printings-card-listing">
     <tbody>
-    {{#each this.cards}}
+        {{#each this.cards}}
         <tr>
             <td class="card-printing-owned">
                 {{>cardsOwned}}
@@ -37,6 +37,7 @@
                 <p>{{this.price}}</p>
             </td>
         </tr>
-    {{/each}}
+        {{/each}}
     </tbody>
-</table>    
+</table>
+<script src="/public/js/updateInventory.js" defer></script>

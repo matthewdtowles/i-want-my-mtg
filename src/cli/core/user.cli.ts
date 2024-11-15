@@ -45,7 +45,6 @@ export class UserCli {
         return true;
     }
 
-    // TODO: admin only
     @Command({
         command: "user:get <email>",
         describe: "Retrieve user with given email",

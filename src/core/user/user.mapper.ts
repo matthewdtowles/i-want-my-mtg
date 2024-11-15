@@ -39,7 +39,6 @@ export class UserMapper {
         return user;
     }
 
-    // TODO: test if handles partial updates and also how to impl if not
     updateDtoToEntity(userDto: UpdateUserDto): User {
         this.LOGGER.debug(`updateDtoToEntity`);
         const user: User = new User();

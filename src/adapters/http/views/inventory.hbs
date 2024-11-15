@@ -5,7 +5,7 @@
             <p class="user-inventory-metadata-heading">Value</p>
             <p class="user-inventory-metadata-data">{{this.value}}</p>
         </div>
-   </section>
+    </section>
 
     <table id="user-inventory-cards">
         <thead>
@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-        {{#each cards}}
+            {{#each cards}}
             <tr>
                 <td>{{>cardsOwned card=this}}</td>
                 <td>
@@ -30,7 +30,8 @@
                 </td>
                 <td>{{#if this.price}}{{this.price}}{{else}}0{{/if}}</td>
             </tr>
-        {{/each}}
+            {{/each}}
         </tbody>
     </table>
 </div>
+<script src="/public/js/updateInventory.js" defer></script>

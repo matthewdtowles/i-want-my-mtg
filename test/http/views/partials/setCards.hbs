@@ -8,7 +8,7 @@
         <th>Price</th>
     </thead>
     <tbody>
-    {{#each set.cards}}
+        {{#each set.cards}}
         <tr class="card-set-card">
             <td class="card-set-card-owned">
                 {{>cardsOwned card=this}}
@@ -23,6 +23,7 @@
             <td class="card-set-card-rarity">{{this.rarity}}</td>
             <td class="card-set-card-price">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
         </tr>
-    {{/each}}
+        {{/each}}
     </tbody>
 </table>
+<script src="/public/js/updateInventory.js" defer></script>

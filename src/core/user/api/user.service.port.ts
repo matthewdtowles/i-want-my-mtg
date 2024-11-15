@@ -48,6 +48,14 @@ export interface UserServicePort {
     update(user: UpdateUserDto): Promise<UserDto | null>;
 
     /**
+     * Update User password
+     *
+     * @param password
+     * @returns true if password updated
+     */
+    updatePassword(userId: number, password: string): Promise<boolean>;
+
+    /**
      * Delete User with id from all records
      *
      * @param id

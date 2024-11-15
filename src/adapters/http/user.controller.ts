@@ -13,6 +13,7 @@ import {
     Res,
     UseGuards,
 } from "@nestjs/common";
+import { IsEmail, IsString } from "class-validator";
 import { Response } from "express";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
@@ -20,6 +21,13 @@ import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dt
 import { UserServicePort } from "src/core/user/api/user.service.port";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+
+export class UpdateUserHttpDto {
+    @IsString()
+    readonly name: string;
+    @IsEmail()
+    readonly email: string;
+}
 
 @Controller("user")
 export class UserController {
@@ -32,7 +40,7 @@ export class UserController {
     ) { }
 
     @Get("create")
-    @Render("createUser")
+    @Render("create-user")
     createForm() {
         this.LOGGER.debug(`Create user form called`);
         return {};
@@ -41,24 +49,20 @@ export class UserController {
     @Post("create")
     async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Create user called`);
-        try {
-            const createdUser: UserDto = await this.userService.create(createUserDto);
-            if (!createdUser) {
-                throw new Error(`Could not create user`);
-            }
-            const authToken: AuthToken = await this.authService.login(createdUser);
-            if (!authToken) {
-                throw new Error(`Could not create auth token`);
-            }
-            res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
-                httpOnly: true,
-                sameSite: "strict",
-                secure: process.env.NODE_ENV === "production",
-                maxAge: 3600000,
-            }).redirect(`/user?action=create&status=${HttpStatus.CREATED}`);
-        } catch (error) {
-            res.redirect(`/user/create?action=create&status=${HttpStatus.BAD_REQUEST}`);
+        const createdUser: UserDto = await this.userService.create(createUserDto);
+        if (!createdUser) {
+            throw new Error(`Could not create user`);
         }
+        const authToken: AuthToken = await this.authService.login(createdUser);
+        if (!authToken) {
+            throw new Error(`Could not create auth token`);
+        }
+        res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 3600000,
+        }).redirect(`/?action=create&status=${HttpStatus.CREATED}&message=User%20created`);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -84,19 +88,60 @@ export class UserController {
             req.query.action === "login";
         return {
             message: login ? `${foundUser.name} - logged in` : null,
-            user: await this.userService.findById(id),
+            user: foundUser,
         };
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch()
-    async update(@Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    async update(
+        @Body() httpUserDto: UpdateUserHttpDto,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest
+    ) {
         this.LOGGER.debug(`Update user`);
         try {
+            if (!req || !req.user || !req.user.id) {
+                throw new Error("Unauthorized to update user");
+            }
+            if (req.user.email === httpUserDto.email && req.user.name === httpUserDto.name) {
+                return res.status(HttpStatus.OK).json({
+                    message: "No changes detected",
+                    user: req.user,
+                });
+            }
+            const updateUserDto: UpdateUserDto = {
+                id: req.user.id,
+                name: httpUserDto.name,
+                email: httpUserDto.email,
+            };
             const updatedUser: UserDto = await this.userService.update(updateUserDto);
             return res.status(HttpStatus.OK).json({
                 message: `User ${updatedUser.name} updated successfully`,
                 user: updatedUser,
+            });
+        } catch (error) {
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({ message: `Error updating user: ${error.message}` });
+        }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch("password")
+    async updatePassword(
+        @Body("password") password: string,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest
+    ) {
+        this.LOGGER.debug(`Update user password`);
+        try {
+            if (!req || !req.user || !req.user.id) {
+                throw new Error("Unauthorized to update user password");
+            }
+            const pwdUpdated: boolean = await this.userService.updatePassword(req.user.id, password);
+            return res.status(HttpStatus.OK).json({
+                message: pwdUpdated ? "Password updated" : "Error updating password",
             });
         } catch (error) {
             return res

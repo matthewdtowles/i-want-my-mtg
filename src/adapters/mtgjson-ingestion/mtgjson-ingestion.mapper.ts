@@ -7,8 +7,7 @@ import { SetList } from "./dto/setList.dto";
 
 @Injectable()
 export class MtgJsonIngestionMapper {
-    private readonly SCRYFALL_CARD_IMAGE_URL: string =
-        "https://cards.scryfall.io/";
+    private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io/";
     private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = [
         "small",
         "normal",
@@ -27,9 +26,7 @@ export class MtgJsonIngestionMapper {
             block: setMeta.block,
             keyruneCode: setMeta.keyruneCode.toLowerCase(),
             name: setMeta.name,
-            parentCode: setMeta.parentCode
-                ? setMeta.parentCode.toLowerCase()
-                : undefined,
+            parentCode: setMeta.parentCode ? setMeta.parentCode.toLowerCase() : null,
             releaseDate: setMeta.releaseDate,
             type: setMeta.type,
             url: this.buildSetUrl(setMeta.code.toLowerCase()),
@@ -39,7 +36,7 @@ export class MtgJsonIngestionMapper {
 
     toCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {
         const cards: CreateCardDto[] = [];
-        setCards.forEach((c) => {
+        setCards.forEach((c: CardSet) => {
             cards.push(this.toCreateCardDto(c));
         });
         return cards;
@@ -47,7 +44,7 @@ export class MtgJsonIngestionMapper {
 
     toCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
         const sets: CreateSetDto[] = [];
-        setLists.forEach((s) => {
+        setLists.forEach((s: SetList) => {
             sets.push(this.toCreateSetDto(s));
         });
         return sets;
@@ -77,23 +74,19 @@ export class MtgJsonIngestionMapper {
         return this.buildScryfallImgPath(card);
     }
 
-    private buildScryfallImgPath(card: CardSet): string {
-        // TODO: handle NPE
+    private buildScryfallImgPath(card: CardSet): string | null {
+        if (!card.identifiers || !card.identifiers.scryfallId) {
+            return null;
+        }
         const scryfallId: string = card.identifiers.scryfallId;
-        return (
-            this.SCRYFALL_CARD_IMAGE_URL +
-            "normal/front/" +
-            scryfallId.charAt(0) +
-            "/" +
-            scryfallId.charAt(1) +
-            "/" +
-            scryfallId +
-            ".jpg"
-        );
+        return (this.SCRYFALL_CARD_IMAGE_URL + "normal/front/" + scryfallId.charAt(0) + "/" +
+            scryfallId.charAt(1) + "/" + scryfallId + ".jpg");
     }
 
-    private buildMultiverseImgPath(card: CardSet): string {
-        // TODO: handle NPE
+    private buildMultiverseImgPath(card: CardSet): string | null {
+        if (!card.identifiers || !card.identifiers.multiverseId) {
+            return null;
+        }
         return this.GATHERER_CARD_IMAGE_URL + card.identifiers.multiverseId;
     }
 

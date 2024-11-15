@@ -117,6 +117,7 @@ export class MtgJsonIngestionTestUtils {
             block: this.MOCK_SET_NAME,
             keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
             name: this.MOCK_SET_NAME,
+            parentCode: null,
             releaseDate: this.MOCK_RELEASE_DATE,
             code: this.MOCK_SET_CODE,
             type: this.MOCK_SET_TYPE,

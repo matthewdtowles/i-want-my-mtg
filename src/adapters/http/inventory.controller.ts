@@ -21,6 +21,12 @@ import { InventoryServicePort } from "src/core/inventory/api/inventory.service.p
 import { AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
+export class InventoryHttpDto extends BaseHttpDto {
+    readonly cards: InventoryCardAggregateDto[];
+    readonly username: string;
+    readonly value: number;
+}
+
 @Controller("inventory")
 export class InventoryController {
     private readonly LOGGER: Logger = new Logger(InventoryController.name);
@@ -109,10 +115,4 @@ export class InventoryController {
                 .json({ message: `Error updating inventory: ${error.message}` });
         }
     }
-}
-
-export class InventoryHttpDto extends BaseHttpDto {
-    readonly cards: InventoryCardAggregateDto[];
-    readonly username: string;
-    readonly value: number;
 }

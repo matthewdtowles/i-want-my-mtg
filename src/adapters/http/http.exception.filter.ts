@@ -20,7 +20,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const _status: number = exception.getStatus
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
-
         response.status(_status).render("error", {
             status: _status,
             message: exception.message || "Internal Server Error",

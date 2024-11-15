@@ -11,6 +11,7 @@
             <span> | </span>
             <a href="/user/create">Create Account</a>
         </li>
+        <li><a href="/auth/logout">Logout</a></li>
     </ul>
 </nav>
-<p class="{{ status }}">{{ message }}</p>
+<p id="response-message" class="message-{{ status }}">{{ message }}</p>

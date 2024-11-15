@@ -59,6 +59,6 @@ export class AuthController {
     async logout(@Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Logging out user`);
         res.clearCookie(AUTH_TOKEN_NAME);
-        res.redirect(`/?action=logout&status=${HttpStatus.OK}`);
+        res.redirect(`/?action=logout&status=${HttpStatus.OK}&message=Logged%20out`);
     }
 }

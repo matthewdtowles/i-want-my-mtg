@@ -29,9 +29,6 @@ logs
 *.seed
 *.pid.lock
 
-# Ignore configuration files that may contain sensitive information
-*.config.js
-
 # Ignore package-lock.json for npm
 package-lock.json
 

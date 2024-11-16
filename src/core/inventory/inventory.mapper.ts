@@ -6,7 +6,6 @@ import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
 
 @Injectable()
 export class InventoryMapper {
-
     private readonly LOGGER: Logger = new Logger(InventoryMapper.name);
 
     constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
@@ -16,7 +15,6 @@ export class InventoryMapper {
     }
 
     toEntity(dto: InventoryDto): Inventory | null {
-        this.LOGGER.debug(`toEntity`);
         if (!dto) {
             this.LOGGER.error("toEntity called with null dto");
             return null;
@@ -52,7 +50,6 @@ export class InventoryMapper {
     }
 
     toInventoryCardDto(inventoryEntity: Inventory): InventoryCardDto | null {
-        this.LOGGER.debug(`toInventoryCardDto`);
         if (!inventoryEntity) {
             this.LOGGER.error("toDto called with null entity");
             return null;

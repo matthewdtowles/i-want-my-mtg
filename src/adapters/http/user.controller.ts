@@ -15,6 +15,7 @@ import {
 } from "@nestjs/common";
 import { IsEmail, IsString } from "class-validator";
 import { Response } from "express";
+import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
@@ -29,9 +30,12 @@ export class UpdateUserHttpDto {
     readonly email: string;
 }
 
+export class UserHttpDto extends BaseHttpDto {
+    readonly user: UserDto;
+}
+
 @Controller("user")
 export class UserController {
-
     private readonly LOGGER = new Logger(UserController.name);
 
     constructor(
@@ -68,7 +72,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("user")
-    async findById(@Req() req: AuthenticatedRequest) {
+    async findById(@Req() req: AuthenticatedRequest): Promise<UserHttpDto> {
         this.LOGGER.debug(`Find user by ID`);
         if (!req) {
             throw new Error("Request undefined, unauthorized to view user");
@@ -89,9 +93,14 @@ export class UserController {
         return {
             message: login ? `${foundUser.name} - logged in` : null,
             user: foundUser,
+            status: login ? ActionStatus.SUCCESS : ActionStatus.NONE,
         };
     }
 
+    // TODO:
+    // - add return type in signature
+    // - update error return
+    // update return if no changes
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
@@ -119,6 +128,7 @@ export class UserController {
             return res.status(HttpStatus.OK).json({
                 message: `User ${updatedUser.name} updated successfully`,
                 user: updatedUser,
+                status: ActionStatus.SUCCESS,
             });
         } catch (error) {
             return res

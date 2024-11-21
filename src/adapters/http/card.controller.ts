@@ -22,7 +22,6 @@ import { UserGuard } from "./auth/user.guard";
 
 @Controller("card")
 export class CardController {
-
     private readonly LOGGER: Logger = new Logger(CardController.name);
 
     constructor(

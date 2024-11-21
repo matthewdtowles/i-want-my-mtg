@@ -5,3 +5,11 @@
 .bg-error {
     background-color: rgb(252 165 165);
 }
+
+.bg-warning {
+    background-color: rgb(255 255 0);
+}
+
+.bg-info {
+    background-color: rgb(173 216 230);
+}

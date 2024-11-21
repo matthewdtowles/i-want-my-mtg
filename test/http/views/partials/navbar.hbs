@@ -53,7 +53,7 @@
             href="/auth/logout">Logout</a>
     </div>
 </nav>
-<p id="response-message" class="bg-{{ status }} hidden fixed top-4 right-4 text-white p-4 rounded">
+<p id="response-message" class="bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden fixed top-4 right-4 text-white p-4 rounded">
     {{message}}
 </p>
 
@@ -61,7 +61,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         const message = document.getElementById("response-message");
         console.log(`message: ${message}`);
-        if (message.textContent) {
+        if (message.textContent.trim().length > 0) {
             message.classList.remove("hidden");
             setTimeout(() => {
                 message.classList.add("hidden");

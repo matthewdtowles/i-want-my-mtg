@@ -10,7 +10,7 @@ import {
     Render, Req, UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
-import { BaseHttpDto } from "src/adapters/http/base.http.dto";
+import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { UpdateCardDto } from "src/core/card/api/card.dto";
@@ -54,9 +54,9 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardById(Number(id), userId);
         return {
-            status: HttpStatus.OK,
+            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             card: _card,
-            message: "Card found"
+            message: HttpStatus.OK ? "Card found" : "Card not found"
         };
     }
 
@@ -78,12 +78,12 @@ export class CardController {
     ): Promise<CardHttpDto> {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        const _card = await this.aggregatorService
+        const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         return {
-            status: HttpStatus.OK,
+            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             card: _card,
-            message: "Card found"
+            message: HttpStatus.OK ? "Card found" : "Card not found"
         };
     }
 }

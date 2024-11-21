@@ -1,15 +1,13 @@
 import {
     Controller,
-    Get,
-    HttpStatus,
-    Inject,
+    Get, Inject,
     Logger,
     Param,
     Render,
     Req,
     UseGuards
 } from "@nestjs/common";
-import { BaseHttpDto } from "src/adapters/http/base.http.dto";
+import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { SetDto } from "src/core/set/api/set.dto";
@@ -32,9 +30,9 @@ export class SetController {
         this.LOGGER.debug(`get setListing`);
         const _setList: SetDto[] = await this.setService.findAll();
         return {
-            status: HttpStatus.OK,
+            status: _setList ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             setList: _setList,
-            message: "Sets found"
+            message: _setList ? `${_setList.length} sets found` : "No sets found"
         };
     }
 
@@ -50,9 +48,9 @@ export class SetController {
         const _set: InventorySetAggregateDto = await this.aggregatorService
             .findInventorySetByCode(setCode, userId);
         return {
-            status: HttpStatus.OK,
+            status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             set: _set,
-            message: "Set found"
+            message: _set ? `Found set: ${_set.name}` : "Set not found"
         };
     }
 }

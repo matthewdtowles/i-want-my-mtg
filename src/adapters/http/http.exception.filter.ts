@@ -7,6 +7,7 @@ import {
     Logger,
 } from "@nestjs/common";
 import { Response } from "express";
+import { ActionStatus } from "src/adapters/http/http.types";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -21,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
         response.status(_status).render("error", {
-            status: _status,
+            status: ActionStatus.ERROR,
             message: exception.message || "Internal Server Error",
         });
     }

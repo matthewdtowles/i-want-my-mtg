@@ -97,27 +97,24 @@ export class UserController {
         };
     }
 
-    // TODO:
-    // - add return type in signature
-    // - update error return
-    // update return if no changes
+
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
         @Body() httpUserDto: UpdateUserHttpDto,
-        @Res() res: Response,
         @Req() req: AuthenticatedRequest
-    ) {
+    ): Promise<UserHttpDto | BaseHttpDto> {
         this.LOGGER.debug(`Update user`);
         try {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to update user");
             }
             if (req.user.email === httpUserDto.email && req.user.name === httpUserDto.name) {
-                return res.status(HttpStatus.OK).json({
+                return {
                     message: "No changes detected",
-                    user: req.user,
-                });
+                    user: null,
+                    status: ActionStatus.NONE,
+                };
             }
             const updateUserDto: UpdateUserDto = {
                 id: req.user.id,
@@ -125,15 +122,17 @@ export class UserController {
                 email: httpUserDto.email,
             };
             const updatedUser: UserDto = await this.userService.update(updateUserDto);
-            return res.status(HttpStatus.OK).json({
+            return {
                 message: `User ${updatedUser.name} updated successfully`,
                 user: updatedUser,
                 status: ActionStatus.SUCCESS,
-            });
+            };
         } catch (error) {
-            return res
-                .status(HttpStatus.BAD_REQUEST)
-                .json({ message: `Error updating user: ${error.message}` });
+            return {
+                message: `Error updating user: ${error.message}`,
+                user: null,
+                status: ActionStatus.ERROR,
+            };
         }
     }
 
@@ -141,28 +140,30 @@ export class UserController {
     @Patch("password")
     async updatePassword(
         @Body("password") password: string,
-        @Res() res: Response,
         @Req() req: AuthenticatedRequest
-    ) {
+    ): Promise<BaseHttpDto> {
         this.LOGGER.debug(`Update user password`);
         try {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to update user password");
             }
             const pwdUpdated: boolean = await this.userService.updatePassword(req.user.id, password);
-            return res.status(HttpStatus.OK).json({
+            return {
                 message: pwdUpdated ? "Password updated" : "Error updating password",
-            });
+                status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            };
         } catch (error) {
-            return res
-                .status(HttpStatus.BAD_REQUEST)
-                .json({ message: `Error updating user: ${error.message}` });
+            return {
+                message: `Error updating user: ${error.message}`,
+                status: ActionStatus.ERROR,
+            }
         }
     }
 
+
     @UseGuards(JwtAuthGuard)
     @Delete()
-    async remove(@Res() res: Response, @Req() req: AuthenticatedRequest) {
+    async remove(@Req() req: AuthenticatedRequest): Promise<BaseHttpDto> {
         this.LOGGER.debug(`Delete user`);
         try {
             if (!req || !req.user || !req.user.id) {
@@ -174,13 +175,15 @@ export class UserController {
             if (user && user.name) {
                 throw new Error("Could not delete user");
             }
-            return res
-                .status(HttpStatus.OK)
-                .json({ message: "User deleted successfully" });
+            return {
+                message: "User deleted successfully",
+                status: ActionStatus.SUCCESS,
+            };
         } catch (error) {
-            return res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({ message: error.message });
+            return { 
+               message: error.message,
+                status: ActionStatus.ERROR,
+            };
         }
     }
 }

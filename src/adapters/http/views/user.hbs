@@ -25,9 +25,10 @@
         messageEl.classList.remove("bg-info", "bg-success", "bg-error");
         if (response.ok) {
             const result = await response.json();
+            const className = result.status ? `bg-${result.status}` : "bg-info";
             messageEl.textContent = result.message;
-            console.log(`From user.hbs: ${result.status}`);
-            messageEl.classList.add(`bg-${result.status}`);
+            console.log(`Status from user.hbs: ${result.status}`);
+            messageEl.classList.add(className);
         } else {
             messageEl.textContent = `Failed to ${method} user`;
             messageEl.classList.add("bg-error");
@@ -64,7 +65,8 @@
         updateMessage(response, messageEl, "update");
     });
 
-    document.getElementById("delete-user-btn").addEventListener("click", async () => {
+    document.getElementById("delete-user-btn").addEventListener("click", async (event) => {
+        event.preventDefault();
         const response = await fetch(`/user`, {
             method: "DELETE",
         });

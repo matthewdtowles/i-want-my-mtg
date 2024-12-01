@@ -1,6 +1,7 @@
-import { Controller, Get, HttpStatus, Inject, Logger, Render, Req } from "@nestjs/common";
-import { HttpStatusCode } from "axios";
+import { Controller, Get, Inject, Logger, Render, Req } from "@nestjs/common";
 import { Request } from "express";
+import { ActionStatus } from "src/adapters/http/http.types";
+import { SetListHttpDto } from "src/adapters/http/set.controller";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 
@@ -12,16 +13,14 @@ export class HomeController {
 
     @Get("/")
     @Render("index")
-    async getHomePage(@Req() req: Request) {
+    async getHomePage(@Req() req: Request): Promise<SetListHttpDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
         const setDtos: SetDto[] = await this.setService.findAll();
-        // if number of action/status combos grows, create their own map/dict
-        const _status: string = req.query.status as string ?? null;
         const _message: string = req.query.message as string ?? null;
         return {
-            message: _message,
-            status: _status,
             setList: setDtos,
+            message: _message,
+            status: setDtos ? ActionStatus.SUCCESS : ActionStatus.ERROR
         };
     }
 }

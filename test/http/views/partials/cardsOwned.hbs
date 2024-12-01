@@ -1,9 +1,9 @@
 <form class="quantity-form" data-item-id="{{card.id}}">
-    <button type="button" class="increment-quantity">+</button>
-    <input type="number" 
-        name="quantity-owned" 
-        class="quantity-owned" 
-        value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}"
-        data-id="{{card.id}}" />
-    <button type="button" class="decrement-quantity">-</button>
+    <button type="button"
+        class="increment-quantity px-3 py-2 bg-gray-200 border border-gray-300 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring">+</button>
+    <input type="number" name="quantity-owned"
+        class="quantity-owned form-input w-16 text-center border-gray-300 rounded focus:ring focus:ring-blue-300 focus:outline-none"
+        value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}" data-id="{{card.id}}" />
+    <button type="button"
+        class="decrement-quantity px-3 py-2 bg-gray-200 border border-gray-300 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring">-</button>
 </form>

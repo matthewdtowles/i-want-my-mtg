@@ -13,7 +13,7 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { BaseHttpDto } from "src/adapters/http/base.http.dto";
+import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
@@ -54,8 +54,8 @@ export class InventoryController {
             cards: _cards,
             username: _username,
             value: 0, // TODO: Calculate the total value of the inventory
-            status: HttpStatus.OK,
-            message: `Inventory for ${_username} found`,
+            status: _cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            message: _cards ? `Inventory for ${_username} found` : `Inventory not found for ${_username}`,
         };
     }
 

@@ -1,11 +1,21 @@
-<div id="login-container">
-    <h3 id="page-title">User Login</h3>
-
-    <form id="login-form" method="post">
-        <label for="user-email">Email</label>
-        <input id="user-email" type="email" name="email" />
-        <label for="user-password">Password</label>
-        <input id="user-password" type="password" name="password" />
-        <button id="login-btn" type="submit">Login</button>
+<div class="login-container">
+    <h3 class="page-title">User Login</h3>
+    {{!-- TODO: impl js input validation to update this with feedback on user input --}}
+    <p class="page-subtitle">Please login to access your account</p>
+    <form id="login-form" class="mt-6" method="post">
+        <div class="mb-4">
+            <label class="input-label" for="user-email">Email</label>
+            <input id="user-email" class="input-field" type="email" name="email" />
+        </div>
+        <div class="mb-6">
+            <label class="input-label" for="user-password">Password</label>
+            <input id="user-password" class="input-field" type="password" name="password" />
+        </div>
+        <button id="login-btn" class="btn-primary" type="submit">Login</button>
     </form>
+    <div class="mt-4 text-center">
+        <a href="#" class="text-purple-600 hover:underline">
+            Forgot your password?
+        </a>
+    </div>
 </div>

@@ -6,7 +6,19 @@ module.exports = {
         './node_modules/@tailwindcss/**/*.js',
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                teal: {
+                    500: '#009d9a',
+                    300: '#8de1e0',
+                },
+                purple: {
+                    600: '#9a009d',
+                    300: '#e08de1',
+                },
+                white: '#ffffff',
+            },
+        },
     },
     plugins: [
         require('@tailwindcss/typography'),

@@ -1837,6 +1837,11 @@ select {
   margin-bottom: 1rem;
 }
 
+.my-6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 .my-8 {
   margin-top: 2rem;
   margin-bottom: 2rem;
@@ -1956,6 +1961,10 @@ select {
   border-bottom-width: 2px;
 }
 
+.border-t {
+  border-top-width: 1px;
+}
+
 .border-t-2 {
   border-top-width: 2px;
 }
@@ -1973,6 +1982,11 @@ select {
 .border-red-300 {
   --tw-border-opacity: 1;
   border-color: rgb(252 165 165 / var(--tw-border-opacity, 1));
+}
+
+.border-teal-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(163 236 227 / var(--tw-border-opacity, 1));
 }
 
 .bg-gray-200 {
@@ -2310,6 +2324,34 @@ select {
 .response-message-success {
   --tw-bg-opacity: 1;
   background-color: rgb(40 173 168 / var(--tw-bg-opacity, 1));
+}
+
+.section-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 42rem;
+  border-radius: 0.5rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
+  padding: 1.5rem;
+}
+
+.settings-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2.5rem;
+  width: 100%;
+  max-width: 48rem;
+  border-radius: 0.5rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
+  padding: 2rem;
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
 .hover\:prose-lg:hover {

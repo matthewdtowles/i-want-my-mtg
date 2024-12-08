@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 .btn {
-    @apply text-base font-medium rounded-lg p-3;
+    @apply py-2 px-4 rounded-lg shadow-md;
 }
 
 .btn-primary {
-    @apply w-full bg-teal-500 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-teal-600 focus:ring-4 focus:ring-teal-300;
+    @apply bg-teal-500 text-white hover:bg-teal-600 focus:ring-4 focus:ring-teal-300;
 }
 
 .btn-secondary {
-    @apply bg-slate-100 text-slate-900;
+    @apply bg-purple-500 text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300;
 }
 
 .btn-tertiary {
-    @apply bg-slate-200 text-slate-900;
+    @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-4 focus:ring-blue-300;
 }
 
 .input-field {
-    @apply mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none
+    @apply mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
 }
 
 .input-label {
@@ -31,21 +31,37 @@
 }
 
 .login-container {
-    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-md w-full
+    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-md w-full mx-auto mt-10;
 }
 
 .navbar-link {
-    @apply text-white hover:text-teal-100 px-3 py-2 rounded-md text-sm font-medium
+    @apply text-white hover:text-teal-100 px-3 py-2 rounded-md text-sm font-medium;
 }
 
 .navbar-link-mobile {
-    @apply text-white hover:text-teal-100 block px-3 py-2 rounded-md text-base font-medium
+    @apply text-white hover:text-teal-100 block px-3 py-2 rounded-md text-base font-medium;
 }
 
 .page-title {
-    @apply text-2xl font-bold text-center text-teal-500;
+    @apply text-teal-900 text-2xl font-bold mb-4;
 }
 
 .page-subtitle {
-    @apply text-sm text-center mt-2 text-purple-600;
+    @apply text-teal-700 text-lg mb-6;
+}
+
+.response-message {
+    @apply fixed top-4 right-4 text-white p-4 rounded shadow-lg;
+}
+
+.response-message-error {
+    @apply bg-red-500;
+}
+
+.response-message-info {
+    @apply bg-blue-500;
+}
+
+.response-message-success {
+    @apply bg-teal-500;
 }

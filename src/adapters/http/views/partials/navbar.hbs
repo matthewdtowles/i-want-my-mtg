@@ -33,19 +33,17 @@
     <div id="mobile-menu" class="hidden md:hidden">
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
-        <a class="navbar-link-mobile" href="/inventory">MyInventory</a>
+        <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
         {{!-- TODO: If logged in: --}}
-        <a class="navbar-link-mobile" href="/user">My
-            Account</a>
+        <a class="navbar-link-mobile" href="/user">My Account</a>
         {{!-- TODO: Else/If not logged in --}}
         <a class="navbar-link-mobile" href="/auth/login">Login</a>
-        <a class="navbar-link-mobile" href="/user/create">Create
-            Account</a>
+        <a class="navbar-link-mobile" href="/user/create">Create Account</a>
         <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
     </div>
 </nav>
 <p id="response-message"
-    class="bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden fixed top-4 right-4 text-white p-4 rounded">
+    class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden">
     {{message}}
 </p>
 
@@ -78,5 +76,4 @@
             menu.classList.toggle("hidden");
         });
     });
-
 </script>

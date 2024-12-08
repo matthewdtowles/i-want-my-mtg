@@ -1,4 +1,4 @@
-<nav class="bg-gray-800">
+<nav class="bg-purple-600 shadow-lg p-4">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
@@ -6,25 +6,20 @@
             </div>
             {{!-- Desktop --}}
             <div class="hidden md:flex space-x-4 items-center">
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium" href="/">Home</a>
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium" href="/sets">Sets</a>
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    href="/inventory">MyInventory</a>
+                <a class="navbar-link" href="/">Home</a>
+                <a class="navbar-link" href="/sets">Sets</a>
+                <a class="navbar-link" href="/inventory">My Inventory</a>
                 {{!-- TODO: If logged in: --}}
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium" href="/user">My
-                    Account</a>
+                <a class="navbar-link" href="/user">My Account</a>
                 {{!-- TODO: Else/If not logged in --}}
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    href="/auth/login">Login</a>
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    href="/user/create">Create Account</a>
-                <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    href="/auth/logout">Logout</a>
+                <a class="navbar-link" href="/auth/login">Login</a>
+                <a class="navbar-link" href="/user/create">Create Account</a>
+                <a class="navbar-link" href="/auth/logout">Logout</a>
             </div>
             {{!-- Mobile Menu Button--}}
             <div class="md:hidden flex items-center">
                 <button id="mobile-menu-button"
-                    class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                    class="text-teal-500 hover:text-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -36,24 +31,19 @@
     </div>
     {{!-- Mobile Menu --}}
     <div id="mobile-menu" class="hidden md:hidden">
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" href="/">Home</a>
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" href="/sets">Sets</a>
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-            href="/inventory">MyInventory</a>
+        <a class="navbar-link-mobile" href="/">Home</a>
+        <a class="navbar-link-mobile" href="/sets">Sets</a>
+        <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
         {{!-- TODO: If logged in: --}}
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" href="/user">My
-            Account</a>
+        <a class="navbar-link-mobile" href="/user">My Account</a>
         {{!-- TODO: Else/If not logged in --}}
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-            href="/auth/login">Login</a>
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-            href="/user/create">Create
-            Account</a>
-        <a class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-            href="/auth/logout">Logout</a>
+        <a class="navbar-link-mobile" href="/auth/login">Login</a>
+        <a class="navbar-link-mobile" href="/user/create">Create Account</a>
+        <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
     </div>
 </nav>
-<p id="response-message" class="bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden fixed top-4 right-4 text-white p-4 rounded">
+<p id="response-message"
+    class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden">
     {{message}}
 </p>
 
@@ -67,9 +57,23 @@
                 message.classList.add("hidden");
             }, 3000);
         }
-    });
-    document.getElementById("mobile-menu-button").addEventListener("click", () => {
-        const menu = document.getElementById("mobile-menu");
-        menu.classList.toggle("hidden");
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "childList" && mutation.target === message) {
+                    if (message.textContent.trim().length > 0) {
+                        message.classList.remove("hidden");
+                        setTimeout(() => {
+                            message.classList.add("hidden");
+                        }, 3000);
+                    }
+                }
+            });
+        });
+        observer.observe(message, { childList: true });
+
+        document.getElementById("mobile-menu-button").addEventListener("click", () => {
+            const menu = document.getElementById("mobile-menu");
+            menu.classList.toggle("hidden");
+        });
     });
 </script>

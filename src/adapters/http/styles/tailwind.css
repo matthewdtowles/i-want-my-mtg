@@ -65,3 +65,11 @@
 .response-message-success {
     @apply bg-teal-500;
 }
+
+.section-container {
+    @apply max-w-2xl w-full mx-auto my-8 p-6 bg-teal-100 rounded-lg;
+}
+
+.settings-container {
+    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
+}

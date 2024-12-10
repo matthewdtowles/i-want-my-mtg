@@ -18,8 +18,9 @@ export class HomeController {
         const setDtos: SetDto[] = await this.setService.findAll();
         const _message: string = req.query.message as string ?? null;
         return {
-            setList: setDtos,
+            authenticated: req.isAuthenticated(),
             message: _message,
+            setList: setDtos,
             status: setDtos ? ActionStatus.SUCCESS : ActionStatus.ERROR
         };
     }

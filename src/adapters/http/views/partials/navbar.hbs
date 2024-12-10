@@ -8,13 +8,14 @@
             <div class="hidden md:flex space-x-4 items-center">
                 <a class="navbar-link" href="/">Home</a>
                 <a class="navbar-link" href="/sets">Sets</a>
+                {{#if authenticated}}
                 <a class="navbar-link" href="/inventory">My Inventory</a>
-                {{!-- TODO: If logged in: --}}
                 <a class="navbar-link" href="/user">My Account</a>
-                {{!-- TODO: Else/If not logged in --}}
+                <a class="navbar-link" href="/auth/logout">Logout</a>
+                {{else}}
                 <a class="navbar-link" href="/auth/login">Login</a>
                 <a class="navbar-link" href="/user/create">Create Account</a>
-                <a class="navbar-link" href="/auth/logout">Logout</a>
+                {{/if}}
             </div>
             {{!-- Mobile Menu Button--}}
             <div class="md:hidden flex items-center">
@@ -33,17 +34,17 @@
     <div id="mobile-menu" class="hidden md:hidden">
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
+        {{#if authenticated}}
         <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
-        {{!-- TODO: If logged in: --}}
         <a class="navbar-link-mobile" href="/user">My Account</a>
-        {{!-- TODO: Else/If not logged in --}}
+        <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
+        {{else}}
         <a class="navbar-link-mobile" href="/auth/login">Login</a>
         <a class="navbar-link-mobile" href="/user/create">Create Account</a>
-        <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
+        {{/if}}
     </div>
 </nav>
-<p id="response-message"
-    class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden">
+<p id="response-message" class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden">
     {{message}}
 </p>
 

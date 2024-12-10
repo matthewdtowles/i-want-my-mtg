@@ -67,7 +67,7 @@
 }
 
 .section-container {
-    @apply max-w-2xl w-full mx-auto my-8 p-6 bg-teal-100 rounded-lg;
+    @apply max-w-2xl w-full mx-auto my-8 p-6 bg-teal-100 border-b border-teal-200;
 }
 
 .settings-container {

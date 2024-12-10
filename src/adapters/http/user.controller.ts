@@ -91,9 +91,10 @@ export class UserController {
             req.query.status === HttpStatus.OK.toString() &&
             req.query.action === "login";
         return {
+            authenticated: req.isAuthenticated(),
             message: login ? `${foundUser.name} - logged in` : null,
-            user: foundUser,
             status: login ? ActionStatus.SUCCESS : ActionStatus.NONE,
+            user: foundUser,
         };
     }
 
@@ -111,9 +112,10 @@ export class UserController {
             }
             if (req.user.email === httpUserDto.email && req.user.name === httpUserDto.name) {
                 return {
+                    authenticated: req.isAuthenticated(),
                     message: "No changes detected",
-                    user: null,
                     status: ActionStatus.NONE,
+                    user: null,
                 };
             }
             const updateUserDto: UpdateUserDto = {
@@ -123,15 +125,17 @@ export class UserController {
             };
             const updatedUser: UserDto = await this.userService.update(updateUserDto);
             return {
+                authenticated: req.isAuthenticated(),
                 message: `User ${updatedUser.name} updated successfully`,
-                user: updatedUser,
                 status: ActionStatus.SUCCESS,
+                user: updatedUser,
             };
         } catch (error) {
             return {
+                authenticated: false,
                 message: `Error updating user: ${error.message}`,
-                user: null,
                 status: ActionStatus.ERROR,
+                user: null,
             };
         }
     }
@@ -149,11 +153,13 @@ export class UserController {
             }
             const pwdUpdated: boolean = await this.userService.updatePassword(req.user.id, password);
             return {
+                authenticated: req.isAuthenticated(),
                 message: pwdUpdated ? "Password updated" : "Error updating password",
                 status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             };
         } catch (error) {
             return {
+                authenticated: false,
                 message: `Error updating user: ${error.message}`,
                 status: ActionStatus.ERROR,
             }
@@ -176,12 +182,14 @@ export class UserController {
                 throw new Error("Could not delete user");
             }
             return {
+                authenticated: req.isAuthenticated(),
                 message: "User deleted successfully",
                 status: ActionStatus.SUCCESS,
             };
         } catch (error) {
-            return { 
-               message: error.message,
+            return {
+                authenticated: false,
+                message: error.message,
                 status: ActionStatus.ERROR,
             };
         }

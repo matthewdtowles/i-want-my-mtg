@@ -24,6 +24,7 @@ export class SetController {
         @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort
     ) { }
 
+    @UseGuards(UserGuard)
     @Get()
     @Render("setListPage")
     async setListing(@Req() req: AuthenticatedRequest): Promise<SetListHttpDto> {

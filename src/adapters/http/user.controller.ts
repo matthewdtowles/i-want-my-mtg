@@ -24,10 +24,8 @@ import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
 export class UpdateUserHttpDto {
-    @IsString()
-    readonly name: string;
-    @IsEmail()
-    readonly email: string;
+    @IsString() readonly name: string;
+    @IsEmail() readonly email: string;
 }
 
 export class UserHttpDto extends BaseHttpDto {

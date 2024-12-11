@@ -20,11 +20,8 @@ async function bootstrap() {
     });
     app.engine("hbs", hbs.engine);
     app.setViewEngine("hbs");
-
     app.use(cookieParser());
-
     app.useGlobalFilters(new HttpExceptionFilter());
-
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true, // Strip unknown properties
@@ -32,7 +29,6 @@ async function bootstrap() {
             transform: true, // Automatically transform payloads to DTO
         }),
     );
-
     await app.listen(3000);
 }
 bootstrap();

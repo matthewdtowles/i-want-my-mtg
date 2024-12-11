@@ -24,15 +24,17 @@ export class SetController {
         @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort
     ) { }
 
+    @UseGuards(UserGuard)
     @Get()
     @Render("setListPage")
-    async setListing(): Promise<SetListHttpDto> {
+    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListHttpDto> {
         this.LOGGER.debug(`get setListing`);
         const _setList: SetDto[] = await this.setService.findAll();
         return {
-            status: _setList ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            authenticated: req.isAuthenticated(),
+            message: _setList ? `${_setList.length} sets found` : "No sets found",
             setList: _setList,
-            message: _setList ? `${_setList.length} sets found` : "No sets found"
+            status: _setList ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
 
@@ -48,9 +50,10 @@ export class SetController {
         const _set: InventorySetAggregateDto = await this.aggregatorService
             .findInventorySetByCode(setCode, userId);
         return {
-            status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            authenticated: req.isAuthenticated(),
+            message: _set ? `Found set: ${_set.name}` : "Set not found",
             set: _set,
-            message: _set ? `Found set: ${_set.name}` : "Set not found"
+            status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
 }

@@ -40,7 +40,7 @@ export class AuthController {
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }
         const authToken: AuthToken = await this.authService.login(req.user);
-        if (!authToken) {
+        if (!authToken || !authToken.access_token) {
             this.LOGGER.error(`Login failed`);
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }

@@ -53,9 +53,10 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardById(Number(id), userId);
         return {
-            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            authenticated: req.isAuthenticated(),
             card: _card,
-            message: HttpStatus.OK ? "Card found" : "Card not found"
+            message: HttpStatus.OK ? "Card found" : "Card not found",
+            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
 
@@ -80,9 +81,10 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         return {
-            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            authenticated: req.isAuthenticated(),
             card: _card,
-            message: HttpStatus.OK ? "Card found" : "Card not found"
+            message: HttpStatus.OK ? "Card found" : "Card not found",
+            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
 }

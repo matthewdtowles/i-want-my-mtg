@@ -1,0 +1,13 @@
+<nav class="breadcrumb-layout" aria-label="breadcrumb">
+    <div class="breadcrumb">
+        {{#each breadcrumbs}}
+            {{#if @last}}
+                <span class="breadcrumb-item active" aria-current="page">{{label}}</span>
+            {{else}}
+                <span class="breadcrumb-item">
+                    <a class="link" href="{{url}}">{{label}} / </a>
+                </span>
+            {{/if}}
+        {{/each}}
+    </div>
+</nav>

@@ -178,7 +178,6 @@ describe("AggregatorService", () => {
             };
             await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
                 .resolves.toEqual(expectedCard);
-
         });
     });
 });

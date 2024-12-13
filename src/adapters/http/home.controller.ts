@@ -21,6 +21,7 @@ export class HomeController {
         const _message: string = req.query.message as string ?? null;
         return {
             authenticated: req.isAuthenticated(),
+            breadcrumbs: [],
             message: _message,
             setList: setDtos,
             status: setDtos ? ActionStatus.SUCCESS : ActionStatus.ERROR

@@ -1,7 +1,8 @@
 export class BaseHttpDto {
+    readonly authenticated: boolean = false;
+    readonly breadcrumbs: Breadcrumb[] = [];
     readonly message: string | null;
     readonly status: ActionStatus = ActionStatus.NONE;
-    readonly authenticated: boolean = false;
 }
 
 export enum ActionStatus {
@@ -10,4 +11,9 @@ export enum ActionStatus {
     WARNING = "warning",
     INFO = "info",
     NONE = null,
+}
+
+export class Breadcrumb {
+    readonly label: string;
+    readonly url: string;
 }

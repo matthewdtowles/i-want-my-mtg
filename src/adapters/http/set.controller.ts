@@ -22,7 +22,7 @@ export class SetController {
     constructor(
         @Inject(SetServicePort) private readonly setService: SetServicePort,
         @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort
-    ) { }
+    ) { } 
 
     @UseGuards(UserGuard)
     @Get()
@@ -32,6 +32,10 @@ export class SetController {
         const _setList: SetDto[] = await this.setService.findAll();
         return {
             authenticated: req.isAuthenticated(),
+            breadcrumbs: [
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+            ],
             message: _setList ? `${_setList.length} sets found` : "No sets found",
             setList: _setList,
             status: _setList ? ActionStatus.SUCCESS : ActionStatus.ERROR,
@@ -51,6 +55,11 @@ export class SetController {
             .findInventorySetByCode(setCode, userId);
         return {
             authenticated: req.isAuthenticated(),
+            breadcrumbs: [
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+                { label: _set.name, url: `/sets/${setCode}` },
+            ],
             message: _set ? `Found set: ${_set.name}` : "Set not found",
             set: _set,
             status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,

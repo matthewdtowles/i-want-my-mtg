@@ -52,11 +52,15 @@ export class InventoryController {
         const _username = req.user.name;
         return {
             authenticated: req.isAuthenticated(),
+            breadcrumbs: [
+                { label: "Home", url: "/" },
+                { label: "Inventory", url: "/inventory" },
+            ],
             cards: _cards,
             message: _cards ? `Inventory for ${_username} found` : `Inventory not found for ${_username}`,
             status: _cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             username: _username,
-            value: 0, // TODO: Calculate the total value of the inventory
+            value: 0,
         };
     }
 

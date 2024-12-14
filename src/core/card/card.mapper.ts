@@ -5,6 +5,8 @@ import { CardDto, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 @Injectable()
 export class CardMapper {
 
+    private rarityCache: { [key: string]: string } = {};
+
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
         return cardDtos.map((c: CreateCardDto | UpdateCardDto) => this.dtoToEntity(c));
     }
@@ -17,7 +19,7 @@ export class CardMapper {
         card.name = cardDto.name;
         card.number = cardDto.number;
         card.originalText = cardDto.originalText;
-        card.rarity = cardDto.rarity;
+        card.rarity = cardDto.rarity.toLowerCase();
         card.setCode = cardDto.setCode;
         card.url = cardDto.url;
         card.uuid = cardDto.uuid;
@@ -29,11 +31,11 @@ export class CardMapper {
         card.id = cardDto.id;
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
-        card.manaCost = this.mapManaToRepo(cardDto.manaCost);
+        card.manaCost = this.manaForRepo(cardDto.manaCost);
         card.name = cardDto.name;
         card.number = cardDto.number;
         card.originalText = cardDto.originalText;
-        card.rarity = cardDto.rarity;
+        card.rarity = cardDto.rarity.toLowerCase();
         card.setCode = cardDto.setCode;
         card.url = cardDto.url;
         card.uuid = cardDto.uuid;
@@ -49,11 +51,11 @@ export class CardMapper {
             id: card.id,
             imgSrc: card.imgSrc,
             isReserved: card.isReserved,
-            manaCost: this.mapManaToView(card.manaCost),
+            manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
             originalText: card.originalText,
-            rarity: card.rarity,
+            rarity: this.rarityForView(card.rarity),
             setCode: card.setCode,
             url: card.url,
             uuid: card.uuid,
@@ -61,7 +63,19 @@ export class CardMapper {
         return cardDto;
     }
 
-    private mapManaToView(manaCost: string): string[] {
+    private rarityForView(word: string): string {
+        if (!word) {
+            return word;
+        }
+        if (this.rarityCache[word]) {
+            return this.rarityCache[word];
+        }
+        const rarity = word.charAt(0).toUpperCase() + word.slice(1);
+        this.rarityCache[word] = rarity;
+        return rarity;
+    }
+
+    private manaForView(manaCost: string): string[] {
         return typeof manaCost === "string" ? manaCost
             .toLowerCase()
             .trim()
@@ -72,7 +86,7 @@ export class CardMapper {
             : null;
     }
 
-    private mapManaToRepo(manaCost: string[]): string {
+    private manaForRepo(manaCost: string[]): string {
         return manaCost ? manaCost.map((token) => `{${token}}`).join("") : null;
     }
 }

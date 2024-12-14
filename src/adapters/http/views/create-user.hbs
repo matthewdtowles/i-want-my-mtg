@@ -1,12 +1,18 @@
-<div id="create-user-container">
-    <h3 id="page-title">Create User Account</h3>
-    <form id="create-user-form" action="/user/create" method="post">
-        <label for="user-name">User Name</label>
-        <input id="user-name" type="text" name="name">
-        <label for="user-email">Email</label>
-        <input id="user-email" type="email" name="email">
-        <label for="user-password">Password</label>
-        <input id="user-password" type="password" name="password">
-        <button id="submit-button" type="submit">Submit</button>
+<div class="create-user-container">
+    <h2 class="page-title">Create User Account</h2>
+    <form id="create-user-form" class="mt-6" action="/user/create" method="post">
+        <div class="mb-4">
+            <label class="input-label" for="user-name">User Name</label>
+            <input id="user-name" class="input-field" type="text" name="name">
+        </div>
+        <div class="mb-4">
+            <label class="input-label" for="user-email">Email</label>
+            <input id="user-email" class="input-field" type="email" name="email">
+        </div>
+        <div class="mb-4">
+            <label class="input-label" for="user-password">Password</label>
+            <input id="user-password" class="input-field" type="password" name="password">
+        </div>
+        <button id="submit-button" class="btn btn-primary" type="submit">Submit</button>
     </form>
 </div>

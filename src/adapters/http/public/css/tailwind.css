@@ -2189,6 +2189,21 @@ select {
   --tw-ring-color: rgb(158 159 255 / var(--tw-ring-opacity, 1));
 }
 
+.create-user-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2.5rem;
+  width: 100%;
+  max-width: 48rem;
+  border-radius: 0.5rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
+  padding: 2rem;
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
 .input-field {
   margin-top: 0.25rem;
   width: 100%;

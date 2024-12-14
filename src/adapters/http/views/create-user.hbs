@@ -3,15 +3,15 @@
     <form id="create-user-form" class="mt-6" action="/user/create" method="post">
         <div class="mb-4">
             <label class="input-label" for="user-name">User Name</label>
-            <input id="user-name" class="input-field" type="text" name="name">
+            <input id="user-name" class="input-field" type="text" name="name" required>
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-email">Email</label>
-            <input id="user-email" class="input-field" type="email" name="email">
+            <input id="user-email" class="input-field" type="email" name="email" required>
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-password">Password</label>
-            <input id="user-password" class="input-field" type="password" name="password">
+            <input id="user-password" class="input-field" type="password" name="password" required>
         </div>
         <button id="submit-button" class="btn btn-primary" type="submit">Submit</button>
     </form>

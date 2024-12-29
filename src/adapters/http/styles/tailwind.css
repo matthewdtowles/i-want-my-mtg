@@ -51,6 +51,10 @@
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-md w-full mx-auto mt-10;
 }
 
+.logo {
+    @apply h-20 w-auto;
+}
+
 .navbar-link {
     @apply text-white hover:text-teal-100 px-3 py-2 rounded-md text-sm font-medium;
 }

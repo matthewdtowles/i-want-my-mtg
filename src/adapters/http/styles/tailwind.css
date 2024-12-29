@@ -27,6 +27,10 @@
     @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-4 focus:ring-blue-300;
 }
 
+.card-image {
+    @apply w-full md:rounded-card-sm rounded-card-md sm:rounded-card-lg;
+}
+
 .create-user-container {
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
 }

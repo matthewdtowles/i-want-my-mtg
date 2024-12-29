@@ -1,65 +1,65 @@
-<div id="card-image">
-    <img src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
-</div>
+<section class="card-info">
 
-<div id="card-identity">
-    <div id="card-name">{{card.name}}</div>
-    <div id="card-set">
-        <i class="ss ss-{{card.setCode}} ss-2x"></i>
-        <span id="set-code">{{card.setCode}}</span>
-    </div>
-</div>
+    <section class="card-image">
+        <img src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
+    </section>
 
-<div id="play-info">
-    <h4>
+    <h3 class="card-title">
+        <div>
+            <i class="ss ss-{{card.setCode}} ss-2x"></i>
+            <span>{{card.setCode}}</span>
+        </div>
         <span>{{card.name}}</span>
         <span>{{>manaCost card=card}}</span>
-    </h4>
-    <h5>Original Text</h5>
-    <p class="card-type">{{card.type}}</p>
-    <p class="card-original-text">{{card.originalText}}</p>
-    <p class="card-rarity">{{card.rarity}}</p>
-    <p class="card-number">{{card.number}}</p>
-    <table class="card-legalities">
+    </h3>
+
+    {{!-- TODO: update to ORACLE text --}}
+    <section class="play-info">
+        <h3>Original Text</h3>
+        <p class="card-type">{{card.type}}</p>
+        {{!-- TODO: impl card-subtype --}}
+        {{!-- <p class"card-subtype">{{card.subtype}}</p> --}}
+        {{!-- TODO: update to ORACLE text --}}
+        {{!-- <h3>Oracle Text</h3>
+        <p class="card-oracle-text">{{card.oracleText}}</p> --}}
+        <p class="card-original-text">{{card.originalText}}</p>
+        <p class="card-rarity">{{card.rarity}}</p>
+        <p class="card-number">{{card.number}}</p>
+    </section>
+
+    <section class="card-legalities">
+        <ul>
+            {{#each card.legalities as |legality|}}
+            <li>{{legality.key}}: {{legality.value}}</li>
+            {{/each}}
+        </ul>
+    </section>
+</section>
+
+<section class="price-info">{{#if card.price}}{{card.price}}{{else}}0{{/if}}</section>
+
+<section class="inventory-info">
+    {{>cardsOwned}}
+</section>
+
+<section class="other-printings">
+    <h3 class="other-printings-title">Other Printings</h3>
+    <table>
         <tbody>
-            {{!-- TODO: hard code each format? I.e.:
-            <td>Standard</td>
-            <td>{{card.standard}}</td>
-            etc --}}
-            {{#each card.legalities}}
+            {{#each card.otherPrintings as |printing|}}
             <tr>
-                <td>{{card.key}}</td>
-                <td>{{card.value}}</td>
+                <td class="set-icon"><i class="ss ss-{{printing.setCode}}"></i></td>
+                <td class="other-printing-url"><a href="{{printing.url}}">{{printing.set.name}}</a></td>
+                <td class="other-differentiators">
+                    {{#each printing.differentiators as |diff|}}
+                    <span class="differentiators-description">{{diff.description}}</span>
+                    {{/each}}
+                </td>
+                <td class="other-printing-price">{{#if printing.price}}{{printing.price}}{{else}}0{{/if}}</td>
             </tr>
             {{/each}}
         </tbody>
     </table>
-</div>
+</section>
 
-<div id="price-info"><!-- TODO: fill in with price info --></div>
-
-<div id="inventory-info">
-    <div>
-        {{>cardsOwned}}
-    </div>
-    <div id="card-other-printings">
-        <h4 id="card-other-printings-title">Other Printings</h4>
-        <table>
-            <tbody>
-                {{#each card.otherPrintings}}
-                <tr>
-                    <td class="set-icon"><i class="ss ss-{{card.setCode}}"></i></td>
-                    <td class="other-printing-url"><a href="{{card.url}}">{{card.set.name}}</a></td>
-                    <td class="other-differentiators">
-                        {{#each card.differentiators}}
-                        <span class="differentiators-description">{{card.description}}</span>
-                        {{/each}}
-                    </td>
-                    <td class="other-printing-price">{{card.price}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-    </div>
-</div>
 <script src="/public/js/updateInventory.js" defer></script>

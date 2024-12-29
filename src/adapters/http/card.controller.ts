@@ -66,14 +66,6 @@ export class CardController {
         };
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Patch(":id")
-    @Role(UserRole.Admin)
-    async update(@Body() updateCardDtos: UpdateCardDto[]) {
-        this.LOGGER.debug(`Update cards`);
-        return await this.cardService.save(updateCardDtos);
-    }
-
     @UseGuards(UserGuard)
     @Get(":setCode/:setNumber")
     @Render("card")
@@ -98,6 +90,14 @@ export class CardController {
             message: HttpStatus.OK ? "Card found" : "Card not found",
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Patch(":id")
+    @Role(UserRole.Admin)
+    async update(@Body() updateCardDtos: UpdateCardDto[]) {
+        this.LOGGER.debug(`Update cards`);
+        return await this.cardService.save(updateCardDtos);
     }
 }
 

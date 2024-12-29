@@ -7,6 +7,11 @@ module.exports = {
     ],
     theme: {
         extend: {
+            borderRadius: {
+                'card-lg': '2.0rem',
+                'card-md': '1.5rem',
+                'card-sm': '0.66rem',
+            },
             colors: {
                 aqua: {
                     600: '#268894',
@@ -54,6 +59,11 @@ module.exports = {
                     50: '#f1fcfa',
                 },
                 white: '#ffffff',
+            },
+        },
+        variants: {
+            extend: {
+                borderRadius: ['responsive'],
             },
         },
     },

@@ -6,6 +6,7 @@ import { create } from "express-handlebars";
 import { join } from "path";
 import { HttpExceptionFilter } from "./adapters/http/http.exception.filter";
 import { AppModule } from "./app.module";
+import { helpers } from "handlebars";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -17,6 +18,10 @@ async function bootstrap() {
         partialsDir: join(__dirname, ".", "adapters/http/views", "partials"),
         defaultLayout: "main",
         extname: ".hbs",
+        helpers: {
+            toUpperCase: (str: string) => str.toUpperCase(),
+            toLowerCase: (str: string) => str.toLowerCase(),
+        },
     });
     app.engine("hbs", hbs.engine);
     app.setViewEngine("hbs");

@@ -88,9 +88,37 @@
 }
 
 .section-container {
-    @apply max-w-2xl w-full mx-auto my-8 p-6 bg-teal-100 border-b border-teal-200;
+    @apply bg-white border-b border-gray-200 rounded-lg p-6 mb-6;
+}
+
+.section-content {
+    @apply text-sm text-gray-600;
+}
+
+.section-title {
+    @apply text-lg font-semibold mb-2;
 }
 
 .settings-container {
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
+}
+
+.subsection-container {
+    @apply mb-6 border-b border-gray-200;
+}
+
+.table-cell {
+    @apply p-4;
+}
+
+.table-container {
+    @apply min-w-full bg-white;
+}
+
+.table-link {
+    @apply text-blue-500 hover:underline;
+}
+
+.table-row {
+    @apply border-b;
 }

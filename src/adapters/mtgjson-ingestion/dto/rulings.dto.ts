@@ -2,6 +2,6 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class Rulings {
-  date: string;
-  text: string;
-};
+    date: string;
+    text: string;
+}

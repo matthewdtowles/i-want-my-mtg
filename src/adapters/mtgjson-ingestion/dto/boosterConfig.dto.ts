@@ -4,7 +4,7 @@ import { BoosterSheet } from "./boosterSheet.dto";
 
 @Injectable()
 export class BoosterConfig {
-  boosters: Record<string, BoosterPack[]>;
-  boostersTotalWeight: number;
-  sheets: Record<string, BoosterSheet>;
+    boosters: Record<string, BoosterPack[]>;
+    boostersTotalWeight: number;
+    sheets: Record<string, BoosterSheet>;
 };

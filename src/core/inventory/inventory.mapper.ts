@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
@@ -6,7 +6,6 @@ import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
 
 @Injectable()
 export class InventoryMapper {
-    private readonly LOGGER: Logger = new Logger(InventoryMapper.name);
 
     constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
@@ -16,7 +15,6 @@ export class InventoryMapper {
 
     toEntity(dto: InventoryDto): Inventory | null {
         if (!dto) {
-            this.LOGGER.error("toEntity called with null dto");
             return null;
         }
         const inventoryEntity: Inventory = new Inventory();
@@ -34,7 +32,6 @@ export class InventoryMapper {
 
     toDto(inventoryEntity: Inventory): InventoryDto | null {
         if (!inventoryEntity) {
-            this.LOGGER.error("toDto called with null entity");
             return null;
         }
         const inventory: InventoryDto = {
@@ -51,7 +48,6 @@ export class InventoryMapper {
 
     toInventoryCardDto(inventoryEntity: Inventory): InventoryCardDto | null {
         if (!inventoryEntity) {
-            this.LOGGER.error("toDto called with null entity");
             return null;
         }
         const inventory: InventoryCardDto = {

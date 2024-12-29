@@ -2,11 +2,11 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
-                <a href="#" class="text-white text-lg font-bold">I Want My MTG</a>
+                <a class="text-white text-lg font-bold" href="/">I Want My MTG</a>
             </div>
             {{!-- Desktop --}}
             <div class="hidden md:flex space-x-4 items-center">
-                <a class="navbar-link" href="/">Home</a>
+                <a class="navbar-link" href="/"><img src="/public/images/logo.png" alt="logo" /></a>
                 <a class="navbar-link" href="/sets">Sets</a>
                 {{#if authenticated}}
                 <a class="navbar-link" href="/inventory">My Inventory</a>
@@ -44,7 +44,7 @@
         {{/if}}
     </div>
 </nav>
-<p id="response-message" class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden">
+<p id="response-message" class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden" role="alert">
     {{message}}
 </p>
 

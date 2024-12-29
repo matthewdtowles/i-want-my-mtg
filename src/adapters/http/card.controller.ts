@@ -55,22 +55,15 @@ export class CardController {
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
-                {label: "Home", url: "/"},
-                {label: _card.setCode.toUpperCase(), url: `/sets/${_card.setCode}`},
-                {label: _card.name, url: `/card/${_card.setCode}/${_card.number}`},
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+                { label: _card.setCode.toUpperCase(), url: `/sets/${_card.setCode}` },
+                { label: _card.name, url: `/card/${_card.setCode}/${_card.number}` },
             ],
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
-    }
-
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Patch(":id")
-    @Role(UserRole.Admin)
-    async update(@Body() updateCardDtos: UpdateCardDto[]) {
-        this.LOGGER.debug(`Update cards`);
-        return await this.cardService.save(updateCardDtos);
     }
 
     @UseGuards(UserGuard)
@@ -88,14 +81,23 @@ export class CardController {
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
-                {label: "Home", url: "/"},
-                {label: setCode.toUpperCase(), url: `/sets/${setCode}`},
-                {label: _card.name, url: `/card/${setCode}/${setNumber}`},
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+                { label: setCode.toUpperCase(), url: `/sets/${setCode}` },
+                { label: _card.name, url: `/card/${setCode}/${setNumber}` },
             ],
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Patch(":id")
+    @Role(UserRole.Admin)
+    async update(@Body() updateCardDtos: UpdateCardDto[]) {
+        this.LOGGER.debug(`Update cards`);
+        return await this.cardService.save(updateCardDtos);
     }
 }
 

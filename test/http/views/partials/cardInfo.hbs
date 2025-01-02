@@ -1,63 +1,69 @@
-<section class="card-info flex flex-col md:flex-row bg-white shadow-lg rounded-lg p-6 mb-6">
+<section class="card-info flex flex-col md:flex-row section-container">
 
     <section class="md:w-1/3 mb-4 md:mb-0">
-        <img class="card-image w-full" src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
+        <img class="card-image" src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
     </section>
 
     <section class="play-info md:w-2/3 md:pl-6">
         <h3 class="card-title text-2xl font-bold mb-4">
-            <div class="flex items-center mb-2">
-                <i class="ss ss-{{card.setCode}} ss-2x mr-2"></i>
-                <span span="text-lg font-medium">{{card.setCode}}</span>
+            <div class="text-xl">
+                <span>{{card.name}}</span>
+                <span>{{>manaCost card=card}}</span>
             </div>
-            <span class="block text-xl">{{card.name}}</span>
-            <span class="block">{{>manaCost card=card}}</span>
+            <div class="flex items-center mb-2">
+                <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
+                <span class="text-lg font-medium">{{toUpperCase card.setCode}}</span>
+            </div>
         </h3>
         {{!-- TODO: update to ORACLE text --}}
-        <h3 class="text-lg font-semibold mb-2">Original Text</h3>
-        <p class="card-type text-sm text-gray-600 mb-2">{{card.type}}</p>
-        {{!-- TODO: impl card-subtype --}}
-        {{!-- <p class"card-subtype">{{card.subtype}}</p> --}}
-        {{!-- TODO: update to ORACLE text --}}
-        {{!-- <h3>Oracle Text</h3>
-        <p class="card-oracle-text">{{card.oracleText}}</p> --}}
-        <p class="card-original-text text-sm text-gray-600 mb-2">{{card.originalText}}</p>
-        <p class="card-rarity text-sm text-gray-600 mb-2">{{card.rarity}}</p>
-        <p class="card-number text-sm text-gray-600">{{card.number}}</p>
+        <section class="subsection-container">
+            <section class="subsection-container">
+                <h3 class="section-title">Original Text</h3>
+                <p class="card-type section-content">{{card.type}}</p>
+                {{!-- TODO: impl card-subtype --}}
+                {{!-- <p class"card-subtype">{{card.subtype}}</p> --}}
+                {{!-- TODO: update to ORACLE text --}}
+                {{!-- <h3>Oracle Text</h3>
+                <p class="card-oracle-text">{{card.oracleText}}</p> --}}
+                <p class="card-original-text section-content">
+                    {{card.originalText}}
+                </p>
+            </section>
+            <p class="card-rarity section-content">{{card.rarity}}</p>
+            <p class="card-number section-content">#{{card.number}}</p>
+        </section>
+        <section class="card-legalities subsection-container">
+            <h3 class="section-title">Legalities</h3>
+            <ul class="list-disc list-inside section-content">
+                {{#each card.legalities as |legality|}}
+                <li>{{legality.key}}: {{legality.value}}</li>
+                {{/each}}
+            </ul>
+        </section>
     </section>
 
-    <section class="card-legalities md:w-full mt-4">
-        <h3 class="text-lg font-semibold mb-2">Legalities</h3>
-        <ul class="list-disc list-inside text-sm text-gray-600">
-            {{#each card.legalities as |legality|}}
-            <li>{{legality.key}}: {{legality.value}}</li>
-            {{/each}}
-        </ul>
+    <section class="inventory-info md:w-1/3 ml-4">
+        <h3 class="section-title">My Inventory</h3>
+        {{>cardsOwned}}
     </section>
 </section>
 
-<section class="price-info text-lg font-semibold mb-4">
-    {{#if card.price}}{{card.price}}{{else}}0{{/if}}
+<section class="price-info section-container">
+    <h3 class="section-title">Price</h3>
+    <span>$</span>{{#if card.price}}{{card.price}}{{else}}0.00{{/if}}
 </section>
 
-<section class="inventory-info">
-    {{>cardsOwned}}
-</section>
-
-<section class="other-printings">
-    <h3 class="other-printings-title">Other Printings</h3>
-    <table>
+<section class="other-printings section-container">
+    <h3 class="section-title other-printings-title">Other Printings</h3>
+    <table class="table-container">
         <tbody>
-            {{#each card.otherPrintings as |printing|}}
-            <tr>
-                <td class="set-icon"><i class="ss ss-{{printing.setCode}}"></i></td>
-                <td class="other-printing-url"><a href="{{printing.url}}">{{printing.set.name}}</a></td>
-                <td class="other-differentiators">
-                    {{#each printing.differentiators as |diff|}}
-                    <span class="differentiators-description">{{diff.description}}</span>
-                    {{/each}}
+            {{#each otherPrintings as |p|}}
+            <tr class="table-row">
+                <td class="set-icon table-cell"><i class="ss ss-{{p.setCode}}"></i></td>
+                <td class="other-printing-url table-cell">
+                    <a class="table-link" href="{{p.url}}">{{toUpperCase p.setCode}}</a>
                 </td>
-                <td class="other-printing-price">{{#if printing.price}}{{printing.price}}{{else}}0{{/if}}</td>
+                <td class="other-printing-price table-cell text-right">${{#if p.price}}{{p.price}}{{else}}0.00{{/if}}</td>
             </tr>
             {{/each}}
         </tbody>

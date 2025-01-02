@@ -53,29 +53,21 @@
     <span>$</span>{{#if card.price}}{{card.price}}{{else}}0.00{{/if}}
 </section>
 
-{{#if card.otherPrintings}}
 <section class="other-printings section-container">
     <h3 class="section-title other-printings-title">Other Printings</h3>
     <table class="table-container">
         <tbody>
-            {{#each card.otherPrintings as |printing|}}
+            {{#each otherPrintings as |p|}}
             <tr class="table-row">
-                <td class="set-icon table-cell"><i class="ss ss-{{printing.setCode}}"></i></td>
+                <td class="set-icon table-cell"><i class="ss ss-{{p.setCode}}"></i></td>
                 <td class="other-printing-url table-cell">
-                    <a class="table-link" href="{{printing.url}}">{{printing.set.name}}</a>
+                    <a class="table-link" href="{{p.url}}">{{toUpperCase p.setCode}}</a>
                 </td>
-                <td class="other-differentiators table-cell">
-                    {{#each printing.differentiators as |diff|}}
-                    <span class="differentiators-description block section-content">{{diff.description}}</span>
-                    {{/each}}
-                </td>
-                <td class="other-printing-price table-cell text-right">${{#if
-                    printing.price}}{{printing.price}}{{else}}0.00{{/if}}</td>
+                <td class="other-printing-price table-cell text-right">${{#if p.price}}{{p.price}}{{else}}0.00{{/if}}</td>
             </tr>
             {{/each}}
         </tbody>
     </table>
 </section>
-{{/if}}
 
 <script src="/public/js/updateInventory.js" defer></script>

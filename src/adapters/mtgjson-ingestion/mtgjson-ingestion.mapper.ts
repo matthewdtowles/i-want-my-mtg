@@ -67,7 +67,7 @@ export class MtgJsonIngestionMapper {
     }
 
     private buildCardUrl(card: CardSet): string {
-        return `/card/${card.setCode}/${card.number}`;
+        return `/card/${card.setCode.toLowerCase()}/${card.number}`;
     }
 
     private buildCardImgSrc(card: CardSet): string {

@@ -59,9 +59,9 @@
         <tbody>
             {{#each otherPrintings as |p|}}
             <tr class="table-row">
-                <td class="set-icon table-cell"><i class="ss ss-{{p.setCode}}"></i>{{toUpperCase p.setCode}}</td>
+                <td class="set-icon table-cell"><i class="ss ss-{{p.setCode}}"></i></td>
                 <td class="other-printing-url table-cell">
-                    <a class="table-link" href="{{p.url}}">{{p.name}}</a>
+                    <a class="table-link" href="{{p.url}}">{{toUpperCase p.setCode}}</a>
                 </td>
                 <td class="other-printing-price table-cell text-right">${{#if p.price}}{{p.price}}{{else}}0.00{{/if}}</td>
             </tr>

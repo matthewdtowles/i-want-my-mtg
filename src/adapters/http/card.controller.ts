@@ -91,6 +91,8 @@ export class CardController {
             ],
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
+            // TODO: filter not working --- FIX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // caller is providing an uppercase setCode, but the setCode in the card is lowercase
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };

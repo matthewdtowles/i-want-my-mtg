@@ -28,13 +28,19 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
 
     async ingestAllSetCards(): Promise<SetDto[]> {
         this.LOGGER.debug(`ingestAllSetCards`);
+        const missedSets: string[] = [];
         const sets: SetDto[] = await this.setService.findAll();
         for (let i = 0; i < sets.length; i++) {
-            const cards: CardDto[] = await this.ingestSetCards(sets[i].code);
-            for (let j = 0; j < cards.length; j++) {
-                sets[i].cards.push(cards[j]);
+            try {
+                const cards: CardDto[] = await this.ingestSetCards(sets[i].code);
+                for (let j = 0; j < cards.length; j++) {
+                    sets[i].cards.push(cards[j]);
+                }
+            } catch (error) {
+                missedSets.push(sets[i].code);
             }
         }
+        this.LOGGER.log(`Missed Sets: ${JSON.stringify(missedSets)}`);
         return sets;
     }
 

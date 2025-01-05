@@ -1,5 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
+import { SetDto } from "src/core/set/api/set.dto";
+import { Set } from "src/core/set/set.entity";
 import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 
 @Injectable()
@@ -43,12 +45,21 @@ export class CardMapper {
             number: card.number,
             oracleText: card.oracleText,
             rarity: this.rarityForView(card.rarity),
+            set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
             type: card.type,
             uuid: card.uuid,
             url: this.buildCardUrl(card),
         };
         return cardDto;
+    }
+
+    private setEntityToDto(set: Set): SetDto {
+        return {
+            ...set,
+            cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
+            url: this.buildSetUrl(set),
+        };
     }
 
     private rarityForView(word: string): string {
@@ -76,6 +87,10 @@ export class CardMapper {
 
     private buildCardUrl(card: Card): string {
         return `/card/${card.setCode.toLowerCase()}/${card.number}`;
+    }
+
+    private buildSetUrl(set: Set): string {
+        return `/set/${set.code.toLowerCase()}`;
     }
 
     private buildImgSrc(card: Card, size: CardImgType): string {

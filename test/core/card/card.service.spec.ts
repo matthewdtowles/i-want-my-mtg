@@ -63,18 +63,18 @@ describe("CardService", () => {
     it("should find a card by id", async () => {
         const foundCard: CardDto | null = await service.findById(1);
         expect(repository.findById).toHaveBeenCalledWith(1);
-        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0], "normal"));
     });
 
     it("should find a card by setCode and number", async () => {
         const foundCard: CardDto = await service.findBySetCodeAndNumber(mockSetCode, 1);
         expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(mockSetCode, 1);
-        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0], "normal"));
     });
 
     it("should find a card by UUID", async () => {
         const foundCard: CardDto | null = await service.findByUuid(mockCards[0].uuid);
         expect(repository.findByUuid).toHaveBeenCalledWith(mockCards[0].uuid);
-        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0]));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0], "normal"));
     });
 });

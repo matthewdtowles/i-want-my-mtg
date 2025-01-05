@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
-import { CardDto, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 
 @Injectable()
 export class CardMapper {
 
+    private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
     private rarityCache: { [key: string]: string } = {};
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
@@ -13,52 +14,39 @@ export class CardMapper {
 
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
         const card: Card = new Card();
+        card.artist = cardDto.artist;
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
         card.manaCost = cardDto.manaCost;
         card.name = cardDto.name;
         card.number = cardDto.number;
-        card.originalText = cardDto.originalText;
+        card.oracleText = cardDto.oracleText;
         card.rarity = cardDto.rarity.toLowerCase();
         card.setCode = cardDto.setCode;
-        card.url = cardDto.url;
+        card.type = cardDto.type;
         card.uuid = cardDto.uuid;
         return card;
     }
 
-    readDtoToEntity(cardDto: CardDto): Card {
-        const card: Card = new Card();
-        card.id = cardDto.id;
-        card.imgSrc = cardDto.imgSrc;
-        card.isReserved = cardDto.isReserved;
-        card.manaCost = this.manaForRepo(cardDto.manaCost);
-        card.name = cardDto.name;
-        card.number = cardDto.number;
-        card.originalText = cardDto.originalText;
-        card.rarity = cardDto.rarity.toLowerCase();
-        card.setCode = cardDto.setCode;
-        card.url = cardDto.url;
-        card.uuid = cardDto.uuid;
-        return card;
+    entitiesToDtos(cards: Card[], imgType: CardImgType): CardDto[] {
+        return cards.map((card: Card) => this.entityToDto(card, imgType));
     }
 
-    entitiesToDtos(cards: Card[]): CardDto[] {
-        return cards.map((card: Card) => this.entityToDto(card));
-    }
-
-    entityToDto(card: Card): CardDto {
+    entityToDto(card: Card, imgType: CardImgType): CardDto {
         const cardDto: CardDto = {
             id: card.id,
-            imgSrc: card.imgSrc,
+            artist: card.artist,
+            imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
-            originalText: card.originalText,
+            oracleText: card.oracleText,
             rarity: this.rarityForView(card.rarity),
             setCode: card.setCode,
-            url: card.url,
+            type: card.type,
             uuid: card.uuid,
+            url: this.buildCardUrl(card),
         };
         return cardDto;
     }
@@ -86,7 +74,11 @@ export class CardMapper {
             : null;
     }
 
-    private manaForRepo(manaCost: string[]): string {
-        return manaCost ? manaCost.map((token) => `{${token}}`).join("") : null;
+    private buildCardUrl(card: Card): string {
+        return `/card/${card.setCode.toLowerCase()}/${card.number}`;
+    }
+
+    private buildImgSrc(card: Card, size: CardImgType): string {
+        return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
 }

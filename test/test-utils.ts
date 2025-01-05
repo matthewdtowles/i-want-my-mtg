@@ -15,7 +15,7 @@ export class TestUtils {
     readonly MOCK_CARD_NAME = "Test Card Name";
     readonly MOCK_SET_URL = "sets/set";
     readonly MOCK_ROOT_SCRYFALL_ID = "abc123def456";
-    readonly IMG_SRC_BASE = "https://cards.scryfall.io/normal/front/";
+    readonly IMG_SRC_BASE = "https://cards.scryfall.io";
     readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
     readonly MOCK_USER_ID = 1;
     readonly MOCK_BASE_SIZE = 3;
@@ -26,7 +26,8 @@ export class TestUtils {
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
-            imgSrc: `${this.IMG_SRC_BASE}${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
+            artist: "artist",
+            imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
             manaCost: `{${i + 1}}{W}`,
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
@@ -34,8 +35,8 @@ export class TestUtils {
             originalText: "Test card text.",
             rarity: i % 2 === 0 ? "Common" : "Uncommon",
             setCode,
-            url: `${this.MOCK_SET_URL}/${i + 1}`,
             uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
+            type: "type",
         }));
     }
 
@@ -50,7 +51,7 @@ export class TestUtils {
 
     getMockCardDtos(setCode: string): CardDto[] {
         return this.getMockCards(setCode).map((card) =>
-            this.mapCardEntityToDto(card),
+            this.mapCardEntityToDto(card, "small"),
         );
     }
 
@@ -164,7 +165,7 @@ export class TestUtils {
 
     entityToInventoryCardDto(inventory: Inventory): InventoryCardDto {
         return {
-            card: inventory.card ? this.mapCardEntityToDto(inventory.card) : undefined,
+            card: inventory.card ? this.mapCardEntityToDto(inventory.card, "small") : undefined,
             quantity: inventory.quantity,
             userId: inventory.user.id || 0,
         };
@@ -206,24 +207,26 @@ export class TestUtils {
         return userDto;
     }
 
-    mapCardEntityToDto(card: Card): CardDto {
+    mapCardEntityToDto(card: Card, imgSize: string): CardDto {
         return {
             id: card.id,
-            imgSrc: card.imgSrc,
+            artist: card.artist,
+            imgSrc: `${this.IMG_SRC_BASE}/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
             manaCost: this.manaCostToArray(card.manaCost),
             name: card.name,
             number: card.number,
-            originalText: card.originalText,
+            oracleText: card.oracleText,
             rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1),
             setCode: card.set.code,
-            url: card.url,
             uuid: card.uuid,
+            type: card.type,
+            url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
         };
     }
 
     mapCardEntitiesToDtos(cards: Card[]): CardDto[] {
-        return cards.map((card) => this.mapCardEntityToDto(card));
+        return cards.map((card) => this.mapCardEntityToDto(card, "small"));
     }
 
     mapSetEntityToDto(set: Set): SetDto {
@@ -245,28 +248,7 @@ export class TestUtils {
         return sets.map((set) => this.mapSetEntityToDto(set));
     }
 
-    mapCardDtoToEntity(cardDto: CardDto): Card {
-        return {
-            id: cardDto.id,
-            imgSrc: cardDto.imgSrc,
-            isReserved: cardDto.isReserved,
-            manaCost: this.manaCostToString(cardDto.manaCost),
-            name: cardDto.name,
-            number: cardDto.number,
-            originalText: cardDto.originalText,
-            rarity: cardDto.rarity.toLowerCase(),
-            set: this.getMockSet(cardDto.setCode),
-            setCode: cardDto.setCode,
-            url: cardDto.url,
-            uuid: cardDto.uuid,
-        };
-    }
-
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
-    }
-
-    private manaCostToString(manaCost: string[] | undefined): string | undefined {
-        return manaCost ? manaCost.map((token) => `{${token}}`).join("") : undefined;
     }
 }

@@ -7,19 +7,8 @@ import { SetList } from "./dto/setList.dto";
 
 @Injectable()
 export class MtgJsonIngestionMapper {
-    private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io/";
-    private readonly SCRYFALL_CARD_IMAGE_FORMATS: string[] = [
-        "small",
-        "normal",
-        "large",
-        "art_crop",
-    ];
-    private readonly SCRYFALL_CARD_IMAGE_SIDES: string[] = ["front", "back"];
-    private readonly GATHERER_CARD_IMAGE_URL: string =
-        "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=";
 
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
-        console.log(setMeta);
         const set: CreateSetDto = {
             code: setMeta.code.toLowerCase(),
             baseSize: setMeta.baseSetSize,
@@ -29,7 +18,6 @@ export class MtgJsonIngestionMapper {
             parentCode: setMeta.parentCode ? setMeta.parentCode.toLowerCase() : null,
             releaseDate: setMeta.releaseDate,
             type: setMeta.type,
-            url: this.buildSetUrl(setMeta.code.toLowerCase()),
         };
         return set;
     }
@@ -51,46 +39,33 @@ export class MtgJsonIngestionMapper {
     }
 
     private toCreateCardDto(setCard: CardSet): CreateCardDto {
-        const card: CreateCardDto = {
+        return {
+            artist: setCard.artist,
             imgSrc: this.buildCardImgSrc(setCard),
             isReserved: setCard.isReserved,
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
-            originalText: setCard.originalText,
+            oracleText: setCard.originalText,
             rarity: setCard.rarity,
             setCode: setCard.setCode.toLowerCase(),
-            url: this.buildCardUrl(setCard),
             uuid: setCard.uuid,
+            type: setCard.type,
         };
-        return card;
-    }
-
-    private buildCardUrl(card: CardSet): string {
-        return `/card/${card.setCode.toLowerCase()}/${card.number}`;
     }
 
     private buildCardImgSrc(card: CardSet): string {
         return this.buildScryfallImgPath(card);
     }
 
-    private buildScryfallImgPath(card: CardSet): string | null {
-        if (!card.identifiers || !card.identifiers.scryfallId) {
-            return null;
+    private buildScryfallImgPath(card: CardSet): string {
+        if (!card.identifiers) {
+            throw new Error(`Card ${card.name} has no identifiers`);
+        }
+        if (!card.identifiers.scryfallId) {
+            throw new Error(`Card ${card.name} has no scryfallId`);
         }
         const scryfallId: string = card.identifiers.scryfallId;
-        return (this.SCRYFALL_CARD_IMAGE_URL + "normal/front/" + scryfallId.charAt(0) + "/" +
-            scryfallId.charAt(1) + "/" + scryfallId + ".jpg");
-    }
-
-    private buildMultiverseImgPath(card: CardSet): string | null {
-        if (!card.identifiers || !card.identifiers.multiverseId) {
-            return null;
-        }
-        return this.GATHERER_CARD_IMAGE_URL + card.identifiers.multiverseId;
-    }
-
-    private buildSetUrl(code: string): string {
-        return `sets/${code.toLowerCase()}`;
+        return `${scryfallId.charAt(0)}/${scryfallId.charAt(1)}/${scryfallId}.jpg`;
     }
 }

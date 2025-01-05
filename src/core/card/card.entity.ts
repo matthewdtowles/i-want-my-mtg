@@ -13,10 +13,13 @@ export class Card {
     id: number;
 
     @Column()
+    artist: string;
+
+    @Column()
     imgSrc: string;
 
     @Column({ default: false })
-    isReserved?: boolean;
+    isReserved: boolean;
 
     @Column({ nullable: true })
     manaCost?: string;
@@ -31,7 +34,7 @@ export class Card {
         nullable: true,
         type: "text",
     })
-    originalText?: string;
+    oracleText?: string;
 
     @Column()
     rarity: string;
@@ -48,7 +51,7 @@ export class Card {
     setCode: string;
 
     @Column()
-    url: string;
+    type: string;
 
     @Column()
     uuid: string;

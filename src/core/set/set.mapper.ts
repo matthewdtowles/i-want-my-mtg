@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CardImgType } from "src/core/card/api/card.dto";
 import { Set } from "src/core/set/set.entity";
 import { CardMapper } from "../card/card.mapper";
 import { CreateSetDto, SetDto } from "./api/set.dto";
@@ -26,10 +27,10 @@ export class SetMapper {
     }
 
     entityToDto(set: Set): SetDto {
-        const dto: SetDto = {
+        return {
             baseSize: set.baseSize,
             block: set.block,
-            cards: set.cards ? this.cardMapper.entitiesToDtos(set.cards) : [],
+            cards: set.cards ? this.cardMapper.entitiesToDtos(set.cards, CardImgType.SMALL) : [],
             code: set.code,
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,
@@ -37,8 +38,7 @@ export class SetMapper {
             releaseDate: set.releaseDate,
             type: set.type,
             url: this.buildSetUrl(set.code),
-        };
-        return dto;
+        }
     }
 
     entitiesToDtos(sets: Set[]): SetDto[] {

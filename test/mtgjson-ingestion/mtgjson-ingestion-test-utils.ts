@@ -43,6 +43,7 @@ export class MtgJsonIngestionTestUtils {
             card.identifiers.scryfallId = i + this.MOCK_ROOT_SCRYFALL_ID;
             card.originalText = "Test card text.";
             card.setCode = this.MOCK_SET_CODE;
+            card.text = "Test card text.";
             card.uuid = `abcd-1234-efgh-5678-ijkl-901${i}`;
             card.type = "type";
             cards.push(card);
@@ -58,6 +59,7 @@ export class MtgJsonIngestionTestUtils {
         bonusCard.rarity = "mythic"
         bonusCard.identifiers.scryfallId = bonusCard.number + this.MOCK_ROOT_SCRYFALL_ID;
         bonusCard.setCode = this.MOCK_SET_CODE;
+        bonusCard.text = "Bonus card text.";
         bonusCard.type = "type";
         bonusCard.uuid = "zyxw-0987-vutsr-6543-qponm-21098";
         cards.push(bonusCard);

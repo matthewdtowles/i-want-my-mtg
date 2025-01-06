@@ -46,7 +46,7 @@ export class MtgJsonIngestionMapper {
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
-            oracleText: setCard.originalText,
+            oracleText: setCard.text,
             rarity: setCard.rarity,
             setCode: setCard.setCode.toLowerCase(),
             uuid: setCard.uuid,

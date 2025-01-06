@@ -75,9 +75,6 @@ export class CreateSetDto {
 
     @IsEnum(SetType)
     readonly type: string;
-
-    @IsString()
-    readonly url: string;
 }
 
 export class UpdateSetDto extends PartialType(CreateSetDto) { }

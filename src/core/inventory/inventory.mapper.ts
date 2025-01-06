@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CardImgType } from "src/core/card/api/card.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
@@ -51,7 +52,7 @@ export class InventoryMapper {
             return null;
         }
         const inventory: InventoryCardDto = {
-            card: this.cardMapper.entityToDto(inventoryEntity.card),
+            card: this.cardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL),
             quantity: inventoryEntity.quantity,
             userId: inventoryEntity.user && inventoryEntity.user.id
                 ? inventoryEntity.user.id : inventoryEntity.userId,

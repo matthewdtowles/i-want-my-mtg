@@ -12,25 +12,20 @@
             </div>
             <div class="flex items-center mb-2">
                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
-                <span class="text-lg font-medium">{{toUpperCase card.setCode}}</span>
+                <span class="text-lg font-medium">{{toUpperCase card.setCode}} {{card.set.name}}</span>
             </div>
         </h3>
-        {{!-- TODO: update to ORACLE text --}}
         <section class="subsection-container">
             <section class="subsection-container">
-                <h3 class="section-title">Original Text</h3>
+                <h3 class="section-title">Oracle Text</h3>
                 <p class="card-type section-content">{{card.type}}</p>
-                {{!-- TODO: impl card-subtype --}}
-                {{!-- <p class"card-subtype">{{card.subtype}}</p> --}}
-                {{!-- TODO: update to ORACLE text --}}
-                {{!-- <h3>Oracle Text</h3>
-                <p class="card-oracle-text">{{card.oracleText}}</p> --}}
-                <p class="card-original-text section-content">
-                    {{card.originalText}}
+                <p class="card-oracle-text section-content">
+                    {{card.oracleText}}
                 </p>
             </section>
             <p class="card-rarity section-content">{{card.rarity}}</p>
             <p class="card-number section-content">#{{card.number}}</p>
+            <p class="card-artist section-content">Illustrated by {{card.artist}}</p>
         </section>
         <section class="card-legalities subsection-container">
             <h3 class="section-title">Legalities</h3>
@@ -61,9 +56,11 @@
             <tr class="table-row">
                 <td class="set-icon table-cell"><i class="ss ss-{{p.setCode}}"></i></td>
                 <td class="other-printing-url table-cell">
-                    <a class="table-link" href="{{p.url}}">{{toUpperCase p.setCode}}</a>
+                    <a class="table-link" href="{{p.url}}">{{p.set.name}}</a>
+                    <span> ({{toUpperCase p.setCode}})</span>
                 </td>
-                <td class="other-printing-price table-cell text-right">${{#if p.price}}{{p.price}}{{else}}0.00{{/if}}</td>
+                <td class="other-printing-price table-cell text-right">${{#if p.price}}{{p.price}}{{else}}0.00{{/if}}
+                </td>
             </tr>
             {{/each}}
         </tbody>

@@ -1,89 +1,112 @@
-## Running the app
+# I Want My MTG
+
+## Overview
+
+"I Want My MTG" is a project for managing and viewing Magic: The Gathering cards. This project uses NestJS, TypeORM, and other modern web technologies.
+
+## Prerequisites
+
+- Node.js (>= 14.x)
+- npm (>= 6.x)
+- MySQL (>= 5.7)
+
+## Getting Started
+
+### Install Dependencies
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Test
+### Environment Variables
+
+Create a `.env` file in the root directory and add the following environment variables:
+
+```env
+# Database configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=password
+DB_DATABASE=mtg
+
+# JWT configuration
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRATION=3600s
+
+# Other configurations
+API_BASE_URL=https://api.example.com
+SCRYFALL_CARD_IMAGE_URL=https://cards.scryfall.io
+```
+
+### Database Setup
+
+Make sure you have MySQL running and create a database named `mtg`. Then, run the following command to synchronize the database schema:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run typeorm schema:sync
 ```
 
-# Notes on TypeORM Migrations:
+### Running the Project
 
-## Create OneToOne relationship
-```TypeScript
-@Entity
-export class Card {
-  @OneToOne(() => CardMetadata, (metadata) => mmetadata.card, {
-    cascade: true, // makes metadata entry get saved as well
-  })
-  metadata: CardMetadata;
-}
+To start the project in development mode, run:
+
+```bash
+npm run start:dev
 ```
 
-## One to Many & Many to One
-```TypeScript
-@Entity
-export class Artist {
-  @PrimaryGeneratedColumn()
-  id: number;
+The project will be running at `http://localhost:3000`.
 
-  // other cols...
+### Running Tests
 
-  @OneToMany(() => Card, (card) => card.artist);
-  cards: Card[]; 
-}
+To run the tests, use the following command:
 
-@Entity
-export class Card {
-  // other cols...
-  @ManyToOne(() => Artist, (artist) => artist.cards)
-  artist: Artist;
-}
-// which one owns relationship? 
-// should be each card has an artist
+```bash
+npm run test
 ```
 
-## ManyTOMany
-- `Set` owns `Card` and each Set has many cards. Each atomic card can be in many sets.
-```TypeScript
-@Entity
-export class Set {
-  @ManyToMany(()=> Card, (card) => card.sets)
-  @JoinTable() // since Set owns Card
-  cards: Card[]
-}
+To run tests with coverage, use:
 
-@Entity
-export class Card {
-  @ManyToMany(() => Set, (set) => set.cards)
-  sets: Set[];
-}
-// ORM creates junction table in background: set_cards_card_sets
+```bash
+npm run test:cov
 ```
 
-## Dir Struct
-src/entities/Card.ts, Set.ts, etc...
+### Project Structure
+
+- `src/`: The main source code directory.
+  - `adapters/`: Contains the HTTP and database adapters.
+  - `core/`: Contains the core business logic and domain models.
+  - `modules/`: Contains the NestJS modules.
+- `test/`: Contains the test files.
+
+### Scripts
+
+- `npm run start`: Start the project in production mode.
+- `npm run start:dev`: Start the project in development mode.
+- `npm run test`: Run the tests.
+- `npm run test:cov`: Run the tests with coverage.
+- `npm run lint`: Run the linter.
+- `npm run build`: Build the project.
+- See `package.json` for all other scripts
+
+### Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+
+# Future Considerations
+
+## Notes on TypeORM Migrations:
+
+### Dir Struct
 src/migrations/0001_initial.ts (each file can be gen'd by type orm)
 src/ormconfig.ts
 
-## ormconfig.ts example
+### ormconfig.ts example
 ```TypeScript
 import {TypeOrmModule} from '@nestjs/typeorm';
 import { User } from './entities/User';
@@ -99,19 +122,10 @@ export default {
 export const TypeOrmConfig = TypeOrmModule.forRoot(ormconfig);
 ```
 
-## Generate new migration file
+### Generate new migration file
 `npx typeorm migration:create <migration_name>`
 
-## Run Migrations
+### Run Migrations
 `npx typeorm migration:run`
 
-  
 _See TypeOrm docs for details on query builder, example queries, and more_ 
-
-
-# Front End
-
-## Styles
-
-### Mana Cost
-- Ref: https://mana.andrewgioia.com/

@@ -1,5 +1,5 @@
+import { PartialType } from "@nestjs/mapped-types";
 import {
-    IsArray,
     IsBoolean,
     IsEnum,
     IsInt,
@@ -8,7 +8,7 @@ import {
     IsPositive,
     IsString
 } from "class-validator";
-import { PartialType } from "@nestjs/mapped-types";
+import { SetDto } from "src/core/set/api/set.dto";
 
 export enum CardRarity {
     Common = "common",
@@ -19,26 +19,40 @@ export enum CardRarity {
     Special = "special",
 }
 
+export enum CardImgType {
+    SMALL = "small",
+    NORMAL = "normal",
+    LARGE = "large",
+    ART_CROP = "art_crop",
+}
+
 export class CardDto {
     readonly id: number;
+    readonly artist: string;
     readonly imgSrc: string;
-    readonly isReserved?: boolean;
+    readonly isReserved: boolean;
     readonly manaCost?: string[];
     readonly name: string;
     readonly number: string;
-    readonly originalText?: string;
+    readonly oracleText?: string;
     readonly rarity: string;
+    readonly set?: SetDto;
     readonly setCode: string;
+    readonly type: string;
     readonly url: string;
     readonly uuid: string;
 }
 
 export class CreateCardDto {
+
+    @IsString()
+    readonly artist: string;
+
     @IsString()
     readonly imgSrc: string;
 
     @IsBoolean()
-    readonly isReserved?: boolean;
+    readonly isReserved: boolean;
 
     @IsOptional()
     @IsString()
@@ -47,16 +61,12 @@ export class CreateCardDto {
     @IsString()
     readonly name: string;
 
-    @IsOptional()
-    @IsArray()
-    readonly notes?: string[];
-
     @IsString()
     readonly number: string;
 
     @IsOptional()
     @IsString()
-    readonly originalText?: string;
+    readonly oracleText?: string;
 
     @IsEnum(CardRarity)
     readonly rarity: string;
@@ -66,7 +76,7 @@ export class CreateCardDto {
     readonly setCode: string;
 
     @IsString()
-    readonly url: string;
+    readonly type: string;
 
     @IsString()
     readonly uuid: string;

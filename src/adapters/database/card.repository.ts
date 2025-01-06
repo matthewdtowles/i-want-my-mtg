@@ -12,15 +12,15 @@ export class CardRepository implements CardRepositoryPort {
 
     async save(cards: Card[]): Promise<Card[]> {
         this.LOGGER.debug(`Save ${cards.length} total cards`);
-        const saveCards: Card[] = [];
         await Promise.all(
             cards.map(async (c) => {
                 const existingCard: Card = await this.findByUuid(c.uuid);
-                const updatedCard = this.cardRepository.merge(c, existingCard);
-                saveCards.push(updatedCard);
+                if (existingCard) {
+                    c.id = existingCard.id;
+                }
             }),
         );
-        return (await this.cardRepository.save(cards)) ?? [];
+        return await this.cardRepository.save(cards);
     }
 
     async findAllInSet(code: string): Promise<Card[]> {
@@ -60,7 +60,7 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findByUuid(_uuid: string): Promise<Card | null> {
-        this.LOGGER.debug(`Find card by uuid ${_uuid}`);
+        // this.LOGGER.debug(`Find card by uuid ${_uuid}`);
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
             relations: ["set"],

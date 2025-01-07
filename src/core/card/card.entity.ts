@@ -1,9 +1,11 @@
+import { Legality } from "./legality.entity";
 import { Set } from "src/core/set/set.entity";
 import {
     Column,
     Entity,
     JoinColumn,
     ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
 } from "typeorm";
 
@@ -20,6 +22,9 @@ export class Card {
 
     @Column({ default: false })
     isReserved: boolean;
+
+    @OneToMany(() => Legality, (legality) => legality.card, { cascade: true })
+    legalities: Legality[];
 
     @Column({ nullable: true })
     manaCost?: string;

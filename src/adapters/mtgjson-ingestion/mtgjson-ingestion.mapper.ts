@@ -9,7 +9,7 @@ import { SetList } from "./dto/setList.dto";
 export class MtgJsonIngestionMapper {
 
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
-        const set: CreateSetDto = {
+        return {
             code: setMeta.code.toLowerCase(),
             baseSize: setMeta.baseSetSize,
             block: setMeta.block,
@@ -19,7 +19,6 @@ export class MtgJsonIngestionMapper {
             releaseDate: setMeta.releaseDate,
             type: setMeta.type,
         };
-        return set;
     }
 
     toCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {

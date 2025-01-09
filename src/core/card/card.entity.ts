@@ -1,4 +1,4 @@
-import { Legality } from "./legality.entity";
+import { Legality } from "../legality/legality.entity";
 import { Set } from "src/core/set/set.entity";
 import {
     Column,

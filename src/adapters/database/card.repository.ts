@@ -13,7 +13,7 @@ export class CardRepository implements CardRepositoryPort {
     async save(cards: Card[]): Promise<Card[]> {
         this.LOGGER.debug(`Save ${cards.length} total cards`);
         await Promise.all(
-            cards.map(async (c) => {
+            cards.map(async (c: Card) => {
                 const existingCard: Card = await this.findByUuid(c.uuid);
                 if (existingCard) {
                     c.id = existingCard.id;
@@ -36,7 +36,7 @@ export class CardRepository implements CardRepositoryPort {
         this.LOGGER.debug(`Find all cards with name ${_name}`);
         return (await this.cardRepository.find({
             where: { name: _name, },
-            relations: ["set"],
+            relations: ["set", "legalities"],
         })) ?? []
     }
 
@@ -44,7 +44,7 @@ export class CardRepository implements CardRepositoryPort {
         this.LOGGER.debug(`Find card by id ${_id}`);
         return await this.cardRepository.findOne({
             where: { id: _id, },
-            relations: ["set"],
+            relations: ["set", "legalities"],
         });
     }
 
@@ -55,15 +55,14 @@ export class CardRepository implements CardRepositoryPort {
                 set: { code: code, },
                 number: String(_number),
             },
-            relations: ["set"],
+            relations: ["set", "legalities"],
         });
     }
 
     async findByUuid(_uuid: string): Promise<Card | null> {
-        // this.LOGGER.debug(`Find card by uuid ${_uuid}`);
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
-            relations: ["set"],
+            relations: ["set", "legalities"],
         });
     }
 

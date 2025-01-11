@@ -35,11 +35,12 @@ export class CardMapper {
     }
 
     entityToDto(card: Card, imgType: CardImgType): CardDto {
-        const cardDto: CardDto = {
+        return {
             id: card.id,
             artist: card.artist,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
+            legalities: card.legalities ? card.legalities : [],
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
@@ -51,7 +52,6 @@ export class CardMapper {
             uuid: card.uuid,
             url: this.buildCardUrl(card),
         };
-        return cardDto;
     }
 
     private setEntityToDto(set: Set): SetDto {

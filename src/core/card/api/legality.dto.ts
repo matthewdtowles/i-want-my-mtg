@@ -15,10 +15,10 @@ export enum Format {
 }
 
 export enum LegalityStatus {
-    Legal = "legal",
-    Banned = "banned",
-    Restricted = "restricted",
-    NotLegal = "not_legal",
+    Legal = "Legal",
+    Banned = "Banned",
+    Restricted = "Restricted",
+    NotLegal = "Not Legal",
 }
 
 export class LegalityDto {

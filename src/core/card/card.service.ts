@@ -39,6 +39,10 @@ export class CardService implements CardServicePort {
     async findAllWithName(name: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllWithName ${name}`);
         const foundCards: Card[] = await this.repository.findAllWithName(name);
+        const legality = await this.fillMissingFormats(foundCards[0].id);
+        for (const card of foundCards) {
+            card.legalities = legality;
+        }
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
@@ -54,12 +58,18 @@ export class CardService implements CardServicePort {
     async findBySetCodeAndNumber(setCode: string, number: number): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
         const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
+        if (foundCard) {
+            foundCard.legalities = await this.fillMissingFormats(foundCard.id);
+        }
         return this.mapper.entityToDto(foundCard, CardImgType.NORMAL);
     }
 
     async findByUuid(uuid: string): Promise<CardDto | null> {
         this.LOGGER.debug(`findByUuid ${uuid}`);
         const foundCard: Card = await this.repository.findByUuid(uuid);
+        if (foundCard) {
+            foundCard.legalities = await this.fillMissingFormats(foundCard.id);
+        }
         return this.mapper.entityToDto(foundCard, CardImgType.NORMAL);
     }
 
@@ -93,16 +103,15 @@ export class CardService implements CardServicePort {
                     ...dto,
                 }
             }
-            // Handle legalities
             const legalities: Legality[] = card.legalities || [];
-            const updatedLegalities: Legality[] = this.updateLegalities(card.id, legalities);
+            const updatedLegalities: Legality[] = this.updateLegalities(legalities);
             card.legalities = updatedLegalities;
             cardsToSave.push(card);
         }
         return cardsToSave;
     }
 
-    private updateLegalities(cardId: number, legalities: Legality[]): Legality[] {
+    private updateLegalities(legalities: Legality[]): Legality[] {
         const formats = Object.values(Format);
         const updatedLegalities = formats.map(format => {
             const existingLegality = legalities.find(l => l.format === format);
@@ -110,7 +119,6 @@ export class CardService implements CardServicePort {
                 return existingLegality;
             }
             const newLegality = new Legality();
-            newLegality.cardId = cardId;
             newLegality.format = format;
             newLegality.status = LegalityStatus.NotLegal;
             return newLegality;

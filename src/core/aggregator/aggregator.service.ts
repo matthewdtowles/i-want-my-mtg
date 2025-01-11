@@ -6,6 +6,7 @@ import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
+import { CardDto } from "src/core/card/api/card.dto";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -86,7 +87,7 @@ export class AggregatorService implements AggregatorServicePort {
         userId: number
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCards for set: ${setCode}, card #: ${cardNumber}, user:  ${userId}`);
-        const card = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber);
+        const card: CardDto = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber);
         if (!card) {
             throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
         }

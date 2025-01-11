@@ -1,12 +1,10 @@
 import { Logger, Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { LegalityRepository } from "src/adapters/database/legality.repository";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { LegalityRepositoryPort } from "src/core/legality/api/legality.repository.port";
-import { Legality } from "src/core/legality/legality.entity";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
 import { Set } from "src/core/set/set.entity";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
@@ -21,14 +19,12 @@ import { UserRepository } from "./user.repository";
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
-        { provide: LegalityRepositoryPort, useClass: LegalityRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
     ],
     exports: [
         CardRepositoryPort,
         InventoryRepositoryPort,
-        LegalityRepositoryPort,
         SetRepositoryPort,
         UserRepositoryPort,
         TypeOrmModule,

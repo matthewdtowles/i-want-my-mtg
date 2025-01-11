@@ -18,6 +18,7 @@ export enum LegalityStatus {
     Legal = "legal",
     Banned = "banned",
     Restricted = "restricted",
+    NotLegal = "not_legal",
 }
 
 export class LegalityDto {

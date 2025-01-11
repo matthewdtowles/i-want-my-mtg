@@ -1,7 +1,9 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CreateCardDto } from "src/core/card/api/card.dto";
+import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
@@ -29,6 +31,7 @@ export class TestUtils {
             artist: "artist",
             imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
+            legalities: [],
             manaCost: `{${i + 1}}{W}`,
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
             number: `${i + 1}`,
@@ -40,12 +43,21 @@ export class TestUtils {
         }));
     }
 
-    getMockCards(setCode: string): Card[] {
-        return this.getMockCreateCardDtos(setCode).map((dto, index) => ({
+    getMockUpdateCardDtos(setCode: string): UpdateCardDto[] {
+        const createDtos: CreateCardDto[] = this.getMockCreateCardDtos(setCode);
+        return createDtos.map((dto, i) => ({
             ...dto,
-            id: index + 1,
+            id: i + 1,
+        }));
+    }
+
+    getMockCards(setCode: string): Card[] {
+        return this.getMockCreateCardDtos(setCode).map((dto, i) => ({
+            ...dto,
+            id: i + 1,
             manaCost: dto.manaCost,
             set: this.getMockSet(setCode),
+            legalities: [],
         }));
     }
 
@@ -205,6 +217,33 @@ export class TestUtils {
             role: user.role
         };
         return userDto;
+    }
+
+    getMockLegality(cardId: number, format: Format, status: LegalityStatus, card: Card): Legality {
+        return {
+            cardId,
+            format,
+            status,
+            card,
+        };
+    }
+
+    getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus, card: Card): LegalityDto {
+        const entity: Legality = this.getMockLegality(cardId, format, status, card);
+        return {
+            cardId: entity.cardId,
+            format: entity.format,
+            status: entity.status,
+        };
+    }
+
+    getMockLegalities(setSize: number, format: Format, status: LegalityStatus): Legality[] {
+        return Array.from({ length: setSize }, (_, i) => ({
+            cardId: i + 1,
+            format: format.valueOf(),
+            status: status.valueOf(),
+            card: this.getMockCards(this.MOCK_SET_CODE)[i],
+        }));
     }
 
     mapCardEntityToDto(card: Card, imgSize: string): CardDto {

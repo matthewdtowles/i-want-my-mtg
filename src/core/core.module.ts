@@ -6,7 +6,6 @@ import { IngestionModule } from "./ingestion/ingestion.module";
 import { InventoryModule } from "./inventory/inventory.module";
 import { SetModule } from "./set/set.module";
 import { UserModule } from "./user/user.module";
-import { LegalityModule } from "src/core/legality/legality.module";
 
 @Module({
     imports: [
@@ -15,7 +14,6 @@ import { LegalityModule } from "src/core/legality/legality.module";
         CardModule,
         IngestionModule,
         InventoryModule,
-        LegalityModule,
         SetModule,
         UserModule
     ],
@@ -25,7 +23,6 @@ import { LegalityModule } from "src/core/legality/legality.module";
         CardModule,
         IngestionModule,
         InventoryModule,
-        LegalityModule,
         SetModule,
         UserModule
     ]

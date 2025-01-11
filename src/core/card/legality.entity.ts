@@ -1,6 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Card } from "../card/card.entity";
-import { Format, LegalityStatus } from "./api/legality.dto";
+import { Format, LegalityStatus } from "../card/api/legality.dto";
 
 @Entity()
 export class Legality {
@@ -15,7 +15,7 @@ export class Legality {
     format: string
 
     @ManyToOne(() => Card, (card) => card.legalities, { onDelete: "CASCADE" })
-    @JoinColumn({ 
+    @JoinColumn({
         name: "cardId",
         referencedColumnName: "id",
         foreignKeyConstraintName: "FK_Legality_Card",

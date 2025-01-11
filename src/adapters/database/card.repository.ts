@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
 import { Repository } from "typeorm";
+import { Legality } from "src/core/card/legality.entity";
+
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
@@ -12,14 +14,6 @@ export class CardRepository implements CardRepositoryPort {
 
     async save(cards: Card[]): Promise<Card[]> {
         this.LOGGER.debug(`Save ${cards.length} total cards`);
-        await Promise.all(
-            cards.map(async (c: Card) => {
-                const existingCard: Card = await this.findByUuid(c.uuid);
-                if (existingCard) {
-                    c.id = existingCard.id;
-                }
-            }),
-        );
         return await this.cardRepository.save(cards);
     }
 
@@ -29,6 +23,7 @@ export class CardRepository implements CardRepositoryPort {
             where: {
                 set: { code: code, },
             },
+            relations: ["legalities"],
         })) ?? [];
     }
 
@@ -70,4 +65,5 @@ export class CardRepository implements CardRepositoryPort {
         this.LOGGER.debug(`Delete card ${card.id}`);
         await this.cardRepository.delete(card);
     }
+
 }

@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsPositive } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsPositive } from "class-validator";
 
 export enum Format {
     Standard = "standard",
@@ -15,10 +15,9 @@ export enum Format {
 }
 
 export enum LegalityStatus {
-    Legal = "Legal",
-    Banned = "Banned",
-    Restricted = "Restricted",
-    NotLegal = "Not Legal",
+    Legal = "legal",
+    Banned = "banned",
+    Restricted = "restricted",
 }
 
 export class LegalityDto {

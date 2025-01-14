@@ -252,6 +252,13 @@ export class TestUtils {
             artist: card.artist,
             imgSrc: `${this.IMG_SRC_BASE}/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
+            legalities: card.legalities.map((legality) =>
+                this.getMockLegalityDto(
+                    legality.cardId,
+                    legality.format as Format,
+                    legality.status as LegalityStatus, card
+                )
+            ),
             manaCost: this.manaCostToArray(card.manaCost),
             name: card.name,
             number: card.number,

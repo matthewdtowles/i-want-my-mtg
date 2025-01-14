@@ -3,6 +3,7 @@ import { Identifiers } from "src/adapters/mtgjson-ingestion/dto/identifiers.dto"
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { CreateCardDto } from "src/core/card/api/card.dto";
+import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 
 export class MtgJsonIngestionTestUtils {
@@ -36,6 +37,29 @@ export class MtgJsonIngestionTestUtils {
             card.artist = "artist";
             card.identifiers = new Identifiers();
             card.isReserved = false;
+            card.legalities = {
+                // standard purposely omitted for testing
+                alchemy: "legal",
+                brawl: "not legal",
+                commander: "legal",
+                duel: "legal",
+                explorer: "legal",
+                future: "legal",
+                gladiator: "legal",
+                historic: "legal",
+                historicbrawl: "legal",
+                legacy: "legal",
+                modern: "banned",
+                oathbreaker: "legal",
+                oldschool: "legal",
+                pauper: "",
+                paupercommander: "legal",
+                penny: "legal",
+                pioneer: "legal",
+                predh: "legal",
+                premodern: "legal",
+                vintage: "legal",
+            },
             card.manaCost = `{${i}}{W}`;
             card.name = "Test Card Name" + i;
             card.number = i.toString();
@@ -52,6 +76,29 @@ export class MtgJsonIngestionTestUtils {
         bonusCard.artist = "artist";
         bonusCard.identifiers = new Identifiers();
         bonusCard.isReserved = false;
+        bonusCard.legalities = {
+            // standard purposely omitted for testing
+            alchemy: "legal",
+            brawl: "not legal",
+            commander: "legal",
+            duel: "legal",
+            explorer: "legal",
+            future: "legal",
+            gladiator: "legal",
+            historic: "legal",
+            historicbrawl: "legal",
+            legacy: "legal",
+            modern: "banned",
+            oathbreaker: "legal",
+            oldschool: "legal",
+            pauper: "",
+            paupercommander: "legal",
+            penny: "legal",
+            pioneer: "legal",
+            predh: "legal",
+            premodern: "legal",
+            vintage: "legal",
+        },
         bonusCard.manaCost = "{U/G}{B/W}{R/U}";
         bonusCard.name = "Test Bonus Card Name";
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
@@ -89,6 +136,7 @@ export class MtgJsonIngestionTestUtils {
                 artist: "artist",
                 imgSrc: `${i}/a/${i}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
                 isReserved: false,
+                legalities: this.getExpectedLegalityDtos(),
                 manaCost: `{${i}}{W}`,
                 name: `Test Card Name${i}`,
                 number: `${i}`,
@@ -104,6 +152,7 @@ export class MtgJsonIngestionTestUtils {
             artist: "artist",
             imgSrc: `4/a/4${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
+            legalities: this.getExpectedLegalityDtos(),
             manaCost: "{U/G}{B/W}{R/U}",
             name: "Test Bonus Card Name",
             number: `${this.MOCK_BASE_SET_SIZE + 1}`,
@@ -136,5 +185,55 @@ export class MtgJsonIngestionTestUtils {
         const expectedSets: CreateSetDto[] = [];
         expectedSets.push(this.getExpectedCreateSetDto());
         return expectedSets;
+    }
+
+    getExpectedLegalityDtos(): LegalityDto[] {
+        return [
+            {
+                cardId: null,
+                format: "brawl",
+                status: "not legal",
+            },
+            {
+                cardId: null,
+                format: "commander",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "explorer",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "historic",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "legacy",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "modern",
+                status: "banned",
+            },
+            {
+                cardId: null,
+                format: "oathbreaker",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "pioneer",
+                status: "legal",
+            },
+            {
+                cardId: null,
+                format: "vintage",
+                status: "legal",
+            },
+        ];
     }
 }

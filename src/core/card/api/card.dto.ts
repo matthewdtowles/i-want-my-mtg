@@ -8,7 +8,7 @@ import {
     IsPositive,
     IsString
 } from "class-validator";
-import { Legality } from "src/core/card/legality.entity";
+import { LegalityDto } from "src/core/card/api/legality.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 
 export enum CardRarity {
@@ -32,7 +32,7 @@ export class CardDto {
     readonly artist: string;
     readonly imgSrc: string;
     readonly isReserved: boolean;
-    readonly legalities?: Legality[];
+    readonly legalities?: LegalityDto[];
     readonly manaCost?: string[];
     readonly name: string;
     readonly number: string;
@@ -57,7 +57,7 @@ export class CreateCardDto {
     readonly isReserved: boolean;
 
     @IsOptional()
-    readonly legalities?: Legality[];
+    readonly legalities?: LegalityDto[];
 
     @IsOptional()
     @IsString()

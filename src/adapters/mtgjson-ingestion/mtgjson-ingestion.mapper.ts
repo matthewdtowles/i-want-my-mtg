@@ -4,6 +4,8 @@ import { CreateSetDto } from "src/core/set/api/set.dto";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
+import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
+import { Format, LegalityDto } from "src/core/card/api/legality.dto";
 
 @Injectable()
 export class MtgJsonIngestionMapper {
@@ -42,6 +44,7 @@ export class MtgJsonIngestionMapper {
             artist: setCard.artist,
             imgSrc: this.buildCardImgSrc(setCard),
             isReserved: setCard.isReserved,
+            legalities: this.toLegalityDto(setCard.legalities),
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
@@ -51,6 +54,21 @@ export class MtgJsonIngestionMapper {
             uuid: setCard.uuid,
             type: setCard.type,
         };
+    }
+
+    private toLegalityDto(legalities: Legalities): LegalityDto[] {
+        const legalitiesDto: LegalityDto[] = [];
+        const formats = Object.values(Format);
+        Object.entries(legalities).forEach(([key, value]) => {
+            if (formats.includes(key as Format) && value) {
+                legalitiesDto.push({
+                    format: key,
+                    status: value,
+                    cardId: null,
+                });
+            }
+        });
+        return legalitiesDto;
     }
 
     private buildCardImgSrc(card: CardSet): string {

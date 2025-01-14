@@ -22,6 +22,9 @@ export class CardService implements CardServicePort {
         if (!cardDtos || cardDtos.length === 0) {
             return [];
         }
+        // TODO: ensure we do NOT save NOT LEGAL legality statuses
+        // TODO: save card then save legality:
+        // TODO: update each legality with cardId after card saved
         const cardsToSave: Card[] = await this.prepareSave(cardDtos);
         const savedCards: Card[] = await this.repository.save(cardsToSave);
         return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
@@ -85,7 +88,7 @@ export class CardService implements CardServicePort {
             const newLegality = new Legality();
             newLegality.cardId = cardId;
             newLegality.format = format;
-            newLegality.status = LegalityStatus.NotLegal;
+            newLegality.status = null;
             return newLegality;
         });
         return filledLegalities;
@@ -93,19 +96,26 @@ export class CardService implements CardServicePort {
 
     private async prepareSave(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<Card[]> {
         const cardsToSave: Card[] = [];
+        // for each card we try to save,
+        // if card does not already exist, create new card
+        // if card already exists, update card with new data
         for (const dto of cardDtos) {
             let card: Card = await this.repository.findBySetCodeAndNumber(dto.setCode, Number(dto.number));
             if (!card) {
                 card = this.mapper.dtoToEntity(dto);
             } else {
+                const _legalities: Legality[] = this.mapper.dtoToEntity(dto).legalities || [];
                 card = {
                     ...card,
                     ...dto,
-                }
+                    legalities: _legalities,
+                };
             }
+            // get all legalities for each card
+            // for each format, if legality does not exist, delete it from db,
+            // otherwise set legality status for format¸
             const legalities: Legality[] = card.legalities || [];
-            const updatedLegalities: Legality[] = this.updateLegalities(legalities);
-            card.legalities = updatedLegalities;
+            card.legalities = this.updateLegalities(legalities);;
             cardsToSave.push(card);
         }
         return cardsToSave;
@@ -120,7 +130,7 @@ export class CardService implements CardServicePort {
             }
             const newLegality = new Legality();
             newLegality.format = format;
-            newLegality.status = LegalityStatus.NotLegal;
+            newLegality.status = null;
             return newLegality;
         });
         return updatedLegalities;

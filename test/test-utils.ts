@@ -31,7 +31,7 @@ export class TestUtils {
             artist: "artist",
             imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
-            legalities: [],
+            legalities: this.getMockLegalities(i + 1),
             manaCost: `{${i + 1}}{W}`,
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
             number: `${i + 1}`,
@@ -57,7 +57,8 @@ export class TestUtils {
             id: i + 1,
             manaCost: dto.manaCost,
             set: this.getMockSet(setCode),
-            legalities: [],
+            setCode: setCode,
+            legalities: this.getMockLegalities(i + 1),
         }));
     }
 
@@ -219,30 +220,21 @@ export class TestUtils {
         return userDto;
     }
 
-    getMockLegality(cardId: number, format: Format, status: LegalityStatus, card: Card): Legality {
+    getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus): LegalityDto {
         return {
+            cardId: cardId,
+            format: format,
+            status: status
+        };
+    }
+
+
+    getMockLegalities(cardId: number): Legality[] {
+        return Object.values(Format).map((format) => ({
             cardId,
             format,
-            status,
-            card,
-        };
-    }
-
-    getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus, card: Card): LegalityDto {
-        const entity: Legality = this.getMockLegality(cardId, format, status, card);
-        return {
-            cardId: entity.cardId,
-            format: entity.format,
-            status: entity.status,
-        };
-    }
-
-    getMockLegalities(setSize: number, format: Format, status: LegalityStatus): Legality[] {
-        return Array.from({ length: setSize }, (_, i) => ({
-            cardId: i + 1,
-            format: format.valueOf(),
-            status: status.valueOf(),
-            card: this.getMockCards(this.MOCK_SET_CODE)[i],
+            status: LegalityStatus.Legal,
+            card: undefined,
         }));
     }
 
@@ -256,7 +248,7 @@ export class TestUtils {
                 this.getMockLegalityDto(
                     legality.cardId,
                     legality.format as Format,
-                    legality.status as LegalityStatus, card
+                    legality.status as LegalityStatus,
                 )
             ),
             manaCost: this.manaCostToArray(card.manaCost),

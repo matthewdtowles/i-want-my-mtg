@@ -228,7 +228,6 @@ export class TestUtils {
         };
     }
 
-
     getMockLegalities(cardId: number): Legality[] {
         return Object.values(Format).map((format) => ({
             cardId,

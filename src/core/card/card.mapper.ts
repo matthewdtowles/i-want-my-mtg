@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { Format, LegalityDto } from "src/core/card/api/legality.dto";
+import { Injectable, Logger } from "@nestjs/common";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
@@ -10,6 +10,7 @@ import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 @Injectable()
 export class CardMapper {
 
+    private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
     private rarityCache: { [key: string]: string } = {};
 
@@ -96,19 +97,27 @@ export class CardMapper {
 
         // Add existing legalities to the map
         card.legalities.forEach(legality => legalitiesMap.set(legality.format as Format, legality));
+        this.LOGGER.debug(`Legalities for ${card.name}: ${JSON.stringify(card.legalities)}`);
 
         // Ensure every format is represented
         Object.values(Format).forEach(format => {
-            if (!legalitiesMap.has(format)) {
+            this.LOGGER.debug(`Checking format ${format}`);
+            const legality: LegalityDto = legalitiesMap.get(format);
+            if (!legality || !Object.values(LegalityStatus).includes(legality.status as LegalityStatus)) {
+                this.LOGGER.debug(`Adding format ${format} with status Not Legal`);
                 legalitiesMap.set(format, {
                     cardId: card.id,
                     format,
                     status: "Not Legal",
                 });
+            } else {
+                this.LOGGER.debug(`Format ${format} already exists`);
             }
         });
 
-        return Array.from(legalitiesMap.values());
+        const legalities: LegalityDto[] = Array.from(legalitiesMap.values());
+        this.LOGGER.debug(`Mapped legalities for ${card.name}: ${JSON.stringify(legalities)}`);
+        return legalities;
     }
 
     private buildCardUrl(card: Card): string {
@@ -136,6 +145,9 @@ export class CardMapper {
     }
 
     private toLegalityEntity(dto: LegalityDto): Legality {
+        if (!dto || !dto.format || !dto.status) {
+            return null;
+        }
         const entity: Legality = new Legality();
         entity.cardId = dto.cardId;
         entity.format = dto.format;

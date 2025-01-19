@@ -44,7 +44,7 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findBySetCodeAndNumber(code: string, _number: number,): Promise<Card | null> {
-        this.LOGGER.debug(`Find card by set code ${code} and number ${_number}`);
+        // this.LOGGER.debug(`Find card by set code ${code} and number ${_number}`);
         return await this.cardRepository.findOne({
             where: {
                 set: { code: code, },
@@ -66,4 +66,17 @@ export class CardRepository implements CardRepositoryPort {
         await this.cardRepository.delete(card);
     }
 
+    async findLegalities(cardId: number): Promise<Legality[]> {
+        const card: Card = await this.cardRepository.findOne({
+            where: { id: cardId },
+            relations: ["legalities"],
+        });
+        return card.legalities;
+    }
+    async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
+        throw new Error("Method not implemented.");
+    }
+    async deleteLegality(cardId: number, format: string): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
 }

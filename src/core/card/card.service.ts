@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Format } from "src/core/card/api/legality.dto";
+import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 import { CardRepositoryPort } from "./api/card.repository.port";
 import { CardServicePort } from "./api/card.service.port";
@@ -22,11 +22,10 @@ export class CardService implements CardServicePort {
         if (!cardDtos || cardDtos.length === 0) {
             return [];
         }
-        // TODO: ensure we do NOT save NOT LEGAL legality statuses
-        // TODO: save card then save legality:
-        // TODO: update each legality with cardId after card saved
         const cardsToSave: Card[] = await this.prepareSave(cardDtos);
+        this.LOGGER.debug(`cards to save: ${cardsToSave.length}`);
         const savedCards: Card[] = await this.repository.save(cardsToSave);
+        this.LOGGER.debug(`saved card ${JSON.stringify(savedCards)}`);
         return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
     }
 
@@ -94,7 +93,9 @@ export class CardService implements CardServicePort {
         return filledLegalities;
     }
 
-    private async prepareSave(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<Card[]> {
+    async prepareSave(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<Card[]> {
+        this.LOGGER.debug(`prepareSave: cardDto length: ${cardDtos.length}`);
+        this.LOGGER.debug(`prepareSave: cardDto (input) -> ${JSON.stringify(cardDtos[0])}`);
         const cardsToSave: Card[] = [];
         // for each card we try to save,
         // if card does not already exist, create new card
@@ -104,36 +105,45 @@ export class CardService implements CardServicePort {
             if (!card) {
                 card = this.mapper.dtoToEntity(dto);
             } else {
-                const _legalities: Legality[] = this.mapper.dtoToEntity(dto).legalities || [];
+                const _legalities: Legality[] = this.mapper.toLegalityEntities(card?.legalities ?? null) || [];
                 card = {
                     ...card,
-                    ...dto,
-                    legalities: _legalities,
+                    ...this.mapper.dtoToEntity(dto),
                 };
             }
             // get all legalities for each card
             // for each format, if legality does not exist, delete it from db,
             // otherwise set legality status for format¸
             const legalities: Legality[] = card.legalities || [];
-            card.legalities = this.updateLegalities(legalities);;
+            card.legalities = await this.updateLegalities(legalities, card.id);
             cardsToSave.push(card);
         }
+        this.LOGGER.debug(`prepareSave: card (output) -> ${JSON.stringify(cardsToSave[0])}`);
         return cardsToSave;
     }
 
-    private updateLegalities(legalities: Legality[]): Legality[] {
-        const formats = Object.values(Format);
-        const updatedLegalities = formats.map(format => {
-            const existingLegality = legalities.find(l => l.format === format);
-            if (existingLegality) {
-                return existingLegality;
-            }
-            const newLegality = new Legality();
-            newLegality.format = format;
-            newLegality.status = null;
-            return newLegality;
-        });
-        return updatedLegalities;
+    async updateLegalities(legalities: Legality[], cardId: number): Promise<Legality[]> {
+        // FIXME: THIS FUNCTION IS THE ROOT CAUSE OF THE STATUS NULL ISSUE
+        // TODO: delete legalities from db that are not in the dto
+        const existingLegalities: Legality[] = await this.repository.findLegalities(cardId);
+
+        // Identify formats of input legalities
+        const inputFormats = new Set(legalities.map(l => l.format));
+
+        // Identify legalities to delete
+        const legalitiesToDelete = existingLegalities.filter(existingLegality => !inputFormats.has(existingLegality.format));
+
+        // Delete legalities that are not in the input
+        if (legalitiesToDelete.length > 0) {
+            const deletePromises = legalitiesToDelete.map(legality =>
+                this.repository.deleteLegality(legality.cardId, legality.format)
+            );
+            await Promise.all(deletePromises);
+        }
+        // Save input legalities
+        // legalities = await this.repository.saveLegalities(legalities);
+
+        return legalities;
     }
 
 

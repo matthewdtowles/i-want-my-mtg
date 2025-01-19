@@ -5,7 +5,6 @@ import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
 import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
-import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 
 @Injectable()
 export class CardMapper {
@@ -16,6 +15,7 @@ export class CardMapper {
 
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
+        this.LOGGER.debug(`dtosToEntities`);
         return cardDtos.map((c: CreateCardDto | UpdateCardDto) => this.dtoToEntity(c));
     }
 
@@ -61,6 +61,13 @@ export class CardMapper {
         return dto;
     }
 
+    toLegalityEntities(dtos: LegalityDto[]): Legality[] {
+        this.LOGGER.debug(`toLegalityEntities dto: ${JSON.stringify(dtos[0])}`);
+        const entities: Legality[] = dtos.map((dto: LegalityDto) => this.toLegalityEntity(dto));
+        this.LOGGER.debug(`toLegalityEntities entity: ${JSON.stringify(entities[0])}`);
+        return entities;
+    }
+
     private setEntityToDto(set: Set): SetDto {
         return {
             ...set,
@@ -96,8 +103,12 @@ export class CardMapper {
         const legalitiesMap = new Map<Format, LegalityDto>();
 
         // Add existing legalities to the map
-        card.legalities.forEach(legality => legalitiesMap.set(legality.format as Format, legality));
+        if (!card || !card.legalities) {
+            this.LOGGER.debug(`No legalities for ${card.name}`);
+            return [];
+        }
         this.LOGGER.debug(`Legalities for ${card.name}: ${JSON.stringify(card.legalities)}`);
+        card.legalities.forEach(legality => legalitiesMap.set(legality.format as Format, legality));
 
         // Ensure every format is represented
         Object.values(Format).forEach(format => {
@@ -146,16 +157,16 @@ export class CardMapper {
 
     private toLegalityEntity(dto: LegalityDto): Legality {
         if (!dto || !dto.format || !dto.status) {
+            this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
             return null;
         }
+        this.LOGGER.debug(`toLegalityEntity dto: ${dto.format} ${dto.status}`);
         const entity: Legality = new Legality();
         entity.cardId = dto.cardId;
         entity.format = dto.format;
         entity.status = dto.status;
+        this.LOGGER.debug(`toLegalityEntity entity: ${entity.format} ${entity.status}`);
         return entity;
     }
 
-    private toLegalityEntities(dtos: LegalityDto[]): Legality[] {
-        return dtos.map((dto: LegalityDto) => this.toLegalityEntity(dto));
-    }
 }

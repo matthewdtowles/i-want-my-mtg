@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { CreateCardDto } from "src/core/card/api/card.dto";
 import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
 import { CreateSetDto } from "src/core/set/api/set.dto";
@@ -9,6 +9,8 @@ import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
 
 @Injectable()
 export class MtgJsonIngestionService implements IngestionServicePort {
+    private readonly LOGGER = new Logger(MtgJsonIngestionService.name);
+
     constructor(
         private readonly apiClient: MtgJsonApiClient,
         private readonly dataMapper: MtgJsonIngestionMapper,
@@ -20,12 +22,15 @@ export class MtgJsonIngestionService implements IngestionServicePort {
     }
 
     async fetchSetByCode(code: string): Promise<CreateSetDto> {
-        const set: SetDto = await this.apiClient.fetchSet(code);
+    const set: SetDto = await this.apiClient.fetchSet(code);
         return this.dataMapper.toCreateSetDto(set);
     }
 
     async fetchSetCards(code: string): Promise<CreateCardDto[]> {
         const setDto: SetDto = await this.apiClient.fetchSet(code);
-        return this.dataMapper.toCreateCardDtos(setDto.cards);
+        this.LOGGER.debug(`fetchSetCards* * * * * * * * * * * * * * * * * * * * * * * * * *`);
+        this.LOGGER.debug(`fetchSetCards: ${JSON.stringify(setDto?.cards[0]?.legalities)}`);
+        const createCardDtos: CreateCardDto[] = this.dataMapper.toCreateCardDtos(setDto.cards);
+        return createCardDtos;
     }
 }

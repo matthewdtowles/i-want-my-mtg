@@ -23,9 +23,7 @@ export class CardService implements CardServicePort {
             return [];
         }
         const cardsToSave: Card[] = await this.prepareSave(cardDtos);
-        this.LOGGER.debug(`cards to save: ${cardsToSave.length}`);
         const savedCards: Card[] = await this.repository.save(cardsToSave);
-        this.LOGGER.debug(`saved card ${JSON.stringify(savedCards)}`);
         return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
     }
 
@@ -94,8 +92,6 @@ export class CardService implements CardServicePort {
     }
 
     async prepareSave(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<Card[]> {
-        this.LOGGER.debug(`prepareSave: cardDto length: ${cardDtos.length}`);
-        this.LOGGER.debug(`prepareSave: cardDto (input) -> ${JSON.stringify(cardDtos[0])}`);
         const cardsToSave: Card[] = [];
         // for each card we try to save,
         // if card does not already exist, create new card
@@ -105,7 +101,6 @@ export class CardService implements CardServicePort {
             if (!card) {
                 card = this.mapper.dtoToEntity(dto);
             } else {
-                const _legalities: Legality[] = this.mapper.toLegalityEntities(card?.legalities ?? null) || [];
                 card = {
                     ...card,
                     ...this.mapper.dtoToEntity(dto),
@@ -114,17 +109,13 @@ export class CardService implements CardServicePort {
             // get all legalities for each card
             // for each format, if legality does not exist, delete it from db,
             // otherwise set legality status for format¸
-            const legalities: Legality[] = card.legalities || [];
-            card.legalities = await this.updateLegalities(legalities, card.id);
+            await this.updateLegalities(card.legalities, card.id);
             cardsToSave.push(card);
         }
-        this.LOGGER.debug(`prepareSave: card (output) -> ${JSON.stringify(cardsToSave[0])}`);
         return cardsToSave;
     }
 
-    async updateLegalities(legalities: Legality[], cardId: number): Promise<Legality[]> {
-        // FIXME: THIS FUNCTION IS THE ROOT CAUSE OF THE STATUS NULL ISSUE
-        // TODO: delete legalities from db that are not in the dto
+    async updateLegalities(legalities: Legality[], cardId: number): Promise<void> {
         const existingLegalities: Legality[] = await this.repository.findLegalities(cardId);
 
         // Identify formats of input legalities
@@ -140,10 +131,6 @@ export class CardService implements CardServicePort {
             );
             await Promise.all(deletePromises);
         }
-        // Save input legalities
-        // legalities = await this.repository.saveLegalities(legalities);
-
-        return legalities;
     }
 
 

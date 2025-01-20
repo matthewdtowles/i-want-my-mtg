@@ -62,10 +62,19 @@ export class CardMapper {
     }
 
     toLegalityEntities(dtos: LegalityDto[]): Legality[] {
-        this.LOGGER.debug(`toLegalityEntities dto: ${JSON.stringify(dtos[0])}`);
-        const entities: Legality[] = dtos.map((dto: LegalityDto) => this.toLegalityEntity(dto));
-        this.LOGGER.debug(`toLegalityEntities entity: ${JSON.stringify(entities[0])}`);
-        return entities;
+        return dtos.map((dto: LegalityDto) => this.toLegalityEntity(dto));
+    }
+
+    toLegalityEntity(dto: LegalityDto): Legality {
+        if (!dto || !dto.format || !dto.status) {
+            this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
+            return null;
+        }
+        const entity: Legality = new Legality();
+        entity.cardId = dto.cardId;
+        entity.format = dto.format;
+        entity.status = dto.status;
+        return entity;
     }
 
     private setEntityToDto(set: Set): SetDto {
@@ -141,32 +150,6 @@ export class CardMapper {
 
     private buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
-    }
-
-    private toLegalityDto(entity: Legality): LegalityDto {
-        return {
-            cardId: entity.cardId,
-            format: entity.format,
-            status: entity.status,
-        };
-    }
-
-    private toLegalityDtos(entities: Legality[]): LegalityDto[] {
-        return entities.map((entity: Legality) => this.toLegalityDto(entity));
-    }
-
-    private toLegalityEntity(dto: LegalityDto): Legality {
-        if (!dto || !dto.format || !dto.status) {
-            this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
-            return null;
-        }
-        this.LOGGER.debug(`toLegalityEntity dto: ${dto.format} ${dto.status}`);
-        const entity: Legality = new Legality();
-        entity.cardId = dto.cardId;
-        entity.format = dto.format;
-        entity.status = dto.status;
-        this.LOGGER.debug(`toLegalityEntity entity: ${entity.format} ${entity.status}`);
-        return entity;
     }
 
 }

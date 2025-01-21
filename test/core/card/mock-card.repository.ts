@@ -1,5 +1,6 @@
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 
 export class MockCardRepository implements CardRepositoryPort {
     save = jest.fn((cards: Card[]): Promise<Card[]> => {
@@ -27,6 +28,18 @@ export class MockCardRepository implements CardRepositoryPort {
     });
 
     delete = jest.fn((card: Card): Promise<void> => {
+        return Promise.resolve();
+    });
+
+    findLegalities = jest.fn((cardId: number): Promise<Legality[]> => {
+        return Promise.resolve([]);
+    });
+
+    saveLegalities = jest.fn((legalities: Legality[]): Promise<Legality[]> =>{
+        return Promise.resolve(legalities);
+    });
+
+    deleteLegality = jest.fn((cardId: number, format: string): Promise<void> => {
         return Promise.resolve();
     });
 }

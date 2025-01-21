@@ -191,11 +191,6 @@ export class MtgJsonIngestionTestUtils {
         return [
             {
                 cardId: null,
-                format: "brawl",
-                status: "not legal",
-            },
-            {
-                cardId: null,
                 format: "commander",
                 status: "legal",
             },

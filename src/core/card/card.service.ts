@@ -93,9 +93,6 @@ export class CardService implements CardServicePort {
 
     async prepareSave(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<Card[]> {
         const cardsToSave: Card[] = [];
-        // for each card we try to save,
-        // if card does not already exist, create new card
-        // if card already exists, update card with new data
         for (const dto of cardDtos) {
             let card: Card = await this.repository.findBySetCodeAndNumber(dto.setCode, Number(dto.number));
             if (!card) {
@@ -106,20 +103,17 @@ export class CardService implements CardServicePort {
                     ...this.mapper.dtoToEntity(dto),
                 };
             }
-            // get all legalities for each card
-            // for each format, if legality does not exist, delete it from db,
-            // otherwise set legality status for format¸
             await this.updateLegalities(card.legalities, card.id);
             cardsToSave.push(card);
         }
         return cardsToSave;
     }
 
-    async updateLegalities(legalities: Legality[], cardId: number): Promise<void> {
+    private async updateLegalities(legalities: Legality[], cardId: number): Promise<void> {
         const existingLegalities: Legality[] = await this.repository.findLegalities(cardId);
 
         // Identify formats of input legalities
-        const inputFormats = new Set(legalities.map(l => l.format));
+        const inputFormats: Set<string> = new Set(legalities.map((l: Legality) => l.format));
 
         // Identify legalities to delete
         const legalitiesToDelete = existingLegalities.filter(existingLegality => !inputFormats.has(existingLegality.format));

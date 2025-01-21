@@ -114,22 +114,36 @@ describe("CardService", () => {
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(existingCards));
     });
 
-    it("should fill missing formats with NotLegal status", async () => {
+    /*
+    TODO:
+    test that the following can be done either here on mapper, etc..:
+    - existingLegalities = look up legalities in DB
+    - for each e in existingLegalities, if e not in inputLegalities, delete(e) from DB
+    - save inputLegalities such that the status is updated if different than what already exists
+        - i.e.: make sure "update" is working
+    - return all legalities for the card
+    */
+    it("save should not save legality with invalid status", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        const existingCards: Card[] = mockCards.map((card, index) => ({
+        const expectedCards: Card[] = mockCards.map((card, i) => ({
             ...card,
-            id: index + 1,
+            id: i + 1,
+            legalities: card.legalities.map(legality => ({
+                ...legality,
+                cardId: i + 1,
+            })),
         }));
         jest.spyOn(repository, 'findBySetCodeAndNumber').mockImplementation((setCode, number) => {
             return Promise.resolve(
-                existingCards.find(
+                expectedCards.find(
                     card => card.setCode === setCode && Number(card.number) === number
                 ) || null
             );
         });
-        jest.spyOn(repository, 'save').mockResolvedValue(existingCards);
+        jest.spyOn(repository, 'save').mockImplementation(cards => Promise.resolve(cards));
         const savedCards: CardDto[] = await service.save(createCardDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(existingCards));
+        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(expectedCards));
     });
 });
+

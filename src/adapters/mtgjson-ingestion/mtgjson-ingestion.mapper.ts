@@ -1,15 +1,14 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 import { CreateCardDto } from "src/core/card/api/card.dto";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
-import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 
 @Injectable()
 export class MtgJsonIngestionMapper {
-    private readonly LOGGER = new Logger(MtgJsonIngestionMapper.name);
 
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
         return {
@@ -29,7 +28,6 @@ export class MtgJsonIngestionMapper {
         setCards.forEach((c: CardSet) => {
             cards.push(this.toCreateCardDto(c));
         });
-        this.LOGGER.debug(`toCreateCardDtos 2: ${JSON.stringify(cards[0])}`);
         return cards;
     }
 
@@ -42,7 +40,6 @@ export class MtgJsonIngestionMapper {
     }
 
     toCreateCardDto(setCard: CardSet): CreateCardDto {
-        this.LOGGER.debug(`toCreateCardDto: ${JSON.stringify(setCard)}`);
         return {
             artist: setCard.artist,
             imgSrc: this.buildCardImgSrc(setCard),
@@ -62,26 +59,21 @@ export class MtgJsonIngestionMapper {
     toLegalityDtos(legalities: Legalities): LegalityDto[] {
         const legalitiesDto: LegalityDto[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
-            this.LOGGER.debug(`toLegalityDtos: f/s: ${format}/${status}`);
             if (this.isValidFormat(format) && this.isValidStatus(status)) {
-                this.LOGGER.debug(`toLegalityDtos: f/s: ${format}/${status} is valid`);
                 legalitiesDto.push(this.createLegalityDto(format, status));
             }
         });
-        this.LOGGER.debug(`toLegalityDtos: ${JSON.stringify(legalitiesDto)}`);
         return legalitiesDto;
     }
 
     isValidFormat(format: string): boolean {
-        const valid: boolean = Object.values(Format).includes(format.toLowerCase() as Format);
-        this.LOGGER.debug(`isValidFormat: ${format} is ${valid}`);
+        const valid: boolean = Object.values(Format).includes(format?.toLowerCase() as Format);
         return valid;
     }
 
     isValidStatus(status: string): boolean {
-        status = status.toLowerCase();
+        status = status?.toLowerCase();
         const valid: boolean = Object.values(LegalityStatus).includes(status as LegalityStatus);
-        this.LOGGER.debug(`isValidStatus: ${status} is ${valid}`);
         return valid;
     }
 

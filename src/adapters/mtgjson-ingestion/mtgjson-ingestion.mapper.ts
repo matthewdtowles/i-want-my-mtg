@@ -67,14 +67,11 @@ export class MtgJsonIngestionMapper {
     }
 
     isValidFormat(format: string): boolean {
-        const valid: boolean = Object.values(Format).includes(format?.toLowerCase() as Format);
-        return valid;
+        return Object.values(Format).includes(format?.toLowerCase() as Format);
     }
 
     isValidStatus(status: string): boolean {
-        status = status?.toLowerCase();
-        const valid: boolean = Object.values(LegalityStatus).includes(status as LegalityStatus);
-        return valid;
+        return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
     }
 
     createLegalityDto(format: string, status: string): LegalityDto {

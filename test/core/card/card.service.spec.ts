@@ -124,7 +124,7 @@ describe("CardService", () => {
     - return all legalities for the card
     */
     it("save should not save legality with invalid status", async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const inputCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         const expectedCards: Card[] = mockCards.map((card, i) => ({
             ...card,
             id: i + 1,
@@ -141,7 +141,7 @@ describe("CardService", () => {
             );
         });
         jest.spyOn(repository, 'save').mockImplementation(cards => Promise.resolve(cards));
-        const savedCards: CardDto[] = await service.save(createCardDtos);
+        const savedCards: CardDto[] = await service.save(inputCreateCardDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(expectedCards));
     });

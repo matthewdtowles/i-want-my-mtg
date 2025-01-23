@@ -237,6 +237,33 @@ export class TestUtils {
         }));
     }
 
+
+    mapCreateCardDtosToEntities(createCardDtos: CreateCardDto[]): Card[] {
+
+        return createCardDtos.map((dto, i) => this.mapCreateCardDtoToEntity(dto, i + 1));
+    }
+
+    mapCreateCardDtoToEntity(createCardDto: CreateCardDto, _id: number): Card {
+        return {
+            id: _id,
+            artist: createCardDto.artist,
+            imgSrc: createCardDto.imgSrc,
+            isReserved: createCardDto.isReserved,
+            legalities: createCardDto.legalities.map((legality) =>
+                this.mapLegalityDtoToEntity(legality)
+            ),
+            manaCost: createCardDto.manaCost,
+            name: createCardDto.name,
+            number: createCardDto.number,
+            oracleText: createCardDto.oracleText,
+            rarity: createCardDto.rarity.toLowerCase(),
+            setCode: createCardDto.setCode,
+            type: createCardDto.type,
+            uuid: createCardDto.uuid,
+            set: this.getMockSet(createCardDto.setCode),
+        };
+    }
+
     mapCardEntityToDto(card: Card, imgSize: string): CardDto {
         return {
             id: card.id,
@@ -293,6 +320,15 @@ export class TestUtils {
 
     mapSetEntitiesToDtos(sets: Set[]): SetDto[] {
         return sets.map((set) => this.mapSetEntityToDto(set));
+    }
+
+    mapLegalityDtoToEntity(legalityDto: LegalityDto): Legality {
+        return {
+            cardId: legalityDto.cardId,
+            format: legalityDto.format,
+            status: legalityDto.status,
+            card: undefined,
+        };
     }
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {

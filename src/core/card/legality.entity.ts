@@ -1,7 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Card } from "../card/card.entity";
 import { Format, LegalityStatus } from "../card/api/legality.dto";
-import { Optional } from "@nestjs/common";
+import { Card } from "../card/card.entity";
 
 @Entity()
 export class Legality {
@@ -13,7 +12,7 @@ export class Legality {
         type: "enum",
         enum: Format,
     })
-    format: string
+    format: string;
 
     @ManyToOne(() => Card, (card) => card.legalities, { onDelete: "CASCADE" })
     @JoinColumn({

@@ -44,7 +44,6 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findBySetCodeAndNumber(code: string, _number: number,): Promise<Card | null> {
-        // this.LOGGER.debug(`Find card by set code ${code} and number ${_number}`);
         return await this.cardRepository.findOne({
             where: {
                 set: { code: code, },
@@ -73,10 +72,14 @@ export class CardRepository implements CardRepositoryPort {
         });
         return card.legalities;
     }
+
     async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
-        throw new Error("Method not implemented.");
+        this.LOGGER.debug(`Save ${legalities.length} legalities`);
+        return await this.cardRepository.manager.save(legalities);
     }
+
     async deleteLegality(cardId: number, format: string): Promise<void> {
-        throw new Error("Method not implemented.");
+        this.LOGGER.debug(`Delete legality for card ${cardId} in format ${format}`);
+        await this.cardRepository.manager.delete(Legality, { cardId: cardId, format: format });
     }
 }

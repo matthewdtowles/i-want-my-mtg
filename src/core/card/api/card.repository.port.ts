@@ -54,7 +54,7 @@ export interface CardRepositoryPort {
     delete(card: Card): Promise<void>;
 
     /**
- * @param cardId
+     * @param cardId
      * @returns legalities for card with cardId
      */
     findLegalities(cardId: number): Promise<Legality[]>;

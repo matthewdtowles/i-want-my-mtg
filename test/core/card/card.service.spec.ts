@@ -4,8 +4,9 @@ import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
-import { MockCardRepository } from "./mock-card.repository";
+import { MockCardRepository } from "./mock.card.repository";
 import { TestUtils } from "../../test-utils";
+import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 
 describe("CardService", () => {
     let service: CardService;
@@ -115,13 +116,7 @@ describe("CardService", () => {
     });
 
     /*
-    TODO:
-    test that the following can be done either here on mapper, etc..:
-    - existingLegalities = look up legalities in DB
-    - for each e in existingLegalities, if e not in inputLegalities, delete(e) from DB
-    - save inputLegalities such that the status is updated if different than what already exists
-        - i.e.: make sure "update" is working
-    - return all legalities for the card
+    TODO: REVIEW BELOW TEST:
     */
     it("save should not save legality with invalid status", async () => {
         const inputCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
@@ -144,6 +139,91 @@ describe("CardService", () => {
         const savedCards: CardDto[] = await service.save(inputCreateCardDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(expectedCards));
+    });
+
+    it('should not save a card legality if legality status is invalid', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        createCardDtos[0].legalities[0] = {
+            ...createCardDtos[0].legalities[0],
+            status: 'invalidStatus' as LegalityStatus,
+        };
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(0);
+        expect(savedCards).toEqual([]);
+    });
+
+    it('should not save card legality if legality format is invalid', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        createCardDtos[0].legalities[0] = {
+            ...createCardDtos[0].legalities[0],
+            format: 'invalidFormat' as Format,
+        };
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not save legality without a cardId', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        createCardDtos[0].legalities[0] = {
+            ...createCardDtos[0].legalities[0],
+            cardId: null,
+        };
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(0);
+        expect(savedCards).toEqual([]);
+    });
+
+    it('should not save legality with a cardId if a card does not exist with that cardId', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        createCardDtos[0].legalities[0].cardId = 999; // Non-existent cardId
+
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(0);
+        expect(savedCards).toEqual([]);
+    });
+
+    it('should save legality if valid format, status, cardId (card exists) and legality not already saved for a card in db', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const mockCards = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
+        repository.save(mockCards);
+
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
+    });
+
+    it('should delete legality in db if not in given card legalities', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const mockCards: Card[] = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
+        repository.save(mockCards);
+
+        // Remove a legality from the input DTOs
+        createCardDtos[0].legalities.pop();
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards[0].legalities.length).toBe(createCardDtos[0].legalities.length);
+    });
+
+    it('should update legality in db if legality in card but has different status than the instance already saved in db', async () => {
+        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const mockCards = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
+        repository.save(mockCards);
+
+        // Change the status of a legality in the input DTOs
+        createCardDtos[0].legalities[0] = {
+            ...createCardDtos[0].legalities[0],
+            status: LegalityStatus.Banned,
+        };
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards[0].legalities[0].status).toBe(LegalityStatus.Banned);
     });
 });
 

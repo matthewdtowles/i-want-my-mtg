@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsOptional, IsPositive } from "class-validator";
+import { IsEnum, IsInt, IsPositive } from "class-validator";
 
 export enum Format {
     Standard = "standard",

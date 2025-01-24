@@ -69,4 +69,8 @@ export class MockCardRepository implements CardRepositoryPort {
             card.legalities = card.legalities.filter(l => l.format !== format);
         }
     }
+
+    reset(): void {
+        this.cards = [];
+    }
 }

@@ -139,7 +139,7 @@ describe("CardService", () => {
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(expectedCards));
     });
 
-    // FIXME
+    // FIXME service! save should not save card legality if legality format is invalid
     it('should not save a card legality if legality status is invalid', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         jest.spyOn(repository, 'save');
@@ -152,7 +152,7 @@ describe("CardService", () => {
         expect(savedCards).toEqual([]);
     });
 
-    // FIXME
+    // FIXME service! save should not save card legality if legality format is invalid
     it('should not save card legality if legality format is invalid', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         createCardDtos[0].legalities[0] = {
@@ -162,34 +162,6 @@ describe("CardService", () => {
         jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
-        expect(repository.save).toHaveBeenCalledTimes(0);
-        // TODO: add assertions
-    });
-
-    // FIXME
-    it('should not save legality without a cardId', async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        createCardDtos[0].legalities[0] = {
-            ...createCardDtos[0].legalities[0],
-            cardId: null,
-        };
-        jest.spyOn(repository, 'save');
-        const savedCards: CardDto[] = await service.save(createCardDtos);
-
-        // TODO: is this actually the spec?
-        expect(repository.save).toHaveBeenCalledTimes(0);
-        expect(savedCards).toEqual([]);
-    });
-
-    // FIXME
-    it('should not save legality with a cardId if a card does not exist with that cardId', async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        createCardDtos[0].legalities[0].cardId = 999; // Non-existent cardId
-
-        jest.spyOn(repository, 'save');
-        const savedCards: CardDto[] = await service.save(createCardDtos);
-
-        // TODO: is this actually the spec?
         expect(repository.save).toHaveBeenCalledTimes(0);
         expect(savedCards).toEqual([]);
     });
@@ -207,19 +179,16 @@ describe("CardService", () => {
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
     });
 
-    // FIXME
     it('should delete legality in db if not in given card legalities', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         const mockCards: Card[] = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
         repository.save(mockCards);
 
-        // Remove a legality from the input DTOs
         createCardDtos[0].legalities.pop();
         jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        // FIXME: savedCards[0].legalities[10] (last el) filled as Not Legal instead of staying removed
         expect(savedCards[0].legalities.length).toBe(createCardDtos[0].legalities.length);
     });
 

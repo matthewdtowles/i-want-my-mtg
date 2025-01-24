@@ -46,8 +46,8 @@ export class CardMapper {
             artist: card.artist,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
-            // FIXME: this is not exclusive to the view layer!!!!!! Should NOT map NOT LEGAL for missing formats!!!!!!
-            legalities: this.legalitiesForView(card),
+            // FIXME: this is not exclusive to the view layer!!!!!! Should NOT map NOT LEGAL for missing formats!!!!!!8
+            legalities: this.toLegalityDtos(card.legalities),
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
@@ -76,6 +76,55 @@ export class CardMapper {
         entity.format = dto.format;
         entity.status = dto.status;
         return entity;
+    }
+
+    toLegalityDtos(entities: Legality[]): LegalityDto[] {
+        return entities?.map((entity: Legality) => this.toLegalityDto(entity)) || [];
+    }
+
+    toLegalityDto(entity: Legality): LegalityDto | null {
+        if (!entity || !entity.format || !entity.status) {
+            this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
+            return null;
+        }
+        const dto: LegalityDto = {
+            cardId: entity.cardId,
+            format: entity.format,
+            status: entity.status,
+        };
+        return dto;
+    }
+
+    legalitiesForView(card: Card): LegalityDto[] {
+        const legalitiesMap = new Map<Format, LegalityDto>();
+
+        // Add existing legalities to the map
+        if (!card || !card.legalities) {
+            this.LOGGER.debug(`No legalities for ${card.name}`);
+            return [];
+        }
+        this.LOGGER.debug(`Legalities for ${card.name}: ${JSON.stringify(card.legalities)}`);
+        card.legalities.forEach(legality => legalitiesMap.set(legality.format as Format, legality));
+
+        // Ensure every format is represented
+        Object.values(Format).forEach(format => {
+            this.LOGGER.debug(`Checking format ${format}`);
+            const legality: LegalityDto = legalitiesMap.get(format);
+            if (!legality || !Object.values(LegalityStatus).includes(legality.status as LegalityStatus)) {
+                this.LOGGER.debug(`Adding format ${format} with status Not Legal`);
+                legalitiesMap.set(format, {
+                    cardId: card.id,
+                    format,
+                    status: "Not Legal",
+                });
+            } else {
+                this.LOGGER.debug(`Format ${format} already exists`);
+            }
+        });
+
+        const legalities: LegalityDto[] = Array.from(legalitiesMap.values());
+        this.LOGGER.debug(`Mapped legalities for ${card.name}: ${JSON.stringify(legalities)}`);
+        return legalities;
     }
 
     private setEntityToDto(set: Set): SetDto {
@@ -107,38 +156,6 @@ export class CardMapper {
             .replaceAll("}", "")
             .split("{")
             : null;
-    }
-
-    private legalitiesForView(card: Card): LegalityDto[] {
-        const legalitiesMap = new Map<Format, LegalityDto>();
-
-        // Add existing legalities to the map
-        if (!card || !card.legalities) {
-            this.LOGGER.debug(`No legalities for ${card.name}`);
-            return [];
-        }
-        this.LOGGER.debug(`Legalities for ${card.name}: ${JSON.stringify(card.legalities)}`);
-        card.legalities.forEach(legality => legalitiesMap.set(legality.format as Format, legality));
-
-        // Ensure every format is represented
-        Object.values(Format).forEach(format => {
-            this.LOGGER.debug(`Checking format ${format}`);
-            const legality: LegalityDto = legalitiesMap.get(format);
-            if (!legality || !Object.values(LegalityStatus).includes(legality.status as LegalityStatus)) {
-                this.LOGGER.debug(`Adding format ${format} with status Not Legal`);
-                legalitiesMap.set(format, {
-                    cardId: card.id,
-                    format,
-                    status: "Not Legal",
-                });
-            } else {
-                this.LOGGER.debug(`Format ${format} already exists`);
-            }
-        });
-
-        const legalities: LegalityDto[] = Array.from(legalitiesMap.values());
-        this.LOGGER.debug(`Mapped legalities for ${card.name}: ${JSON.stringify(legalities)}`);
-        return legalities;
     }
 
     private buildCardUrl(card: Card): string {

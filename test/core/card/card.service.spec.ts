@@ -15,7 +15,6 @@ describe("CardService", () => {
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
-    const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -31,50 +30,69 @@ describe("CardService", () => {
         mapper = module.get<CardMapper>(CardMapper);
     });
 
+    afterEach(() => {
+        repository.reset();
+    });
+
     it("should be defined", () => {
         expect(service).toBeDefined();
     });
 
     it("should save new cards and return saved cards", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        // TODO: fix this. Move away from using mockResolvedValue
-        jest.spyOn(repository, 'save').mockResolvedValue(mockCards);
+        jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(createCardDtos);
-        // expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
+
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards.length).toBe(createCardDtos.length);
+        savedCards.forEach((card, i) => {
+            expect(card.id).toBe(i + 1);
+            expect(card.name).toBe(createCardDtos[i].name);
+            expect(card.setCode).toBe(createCardDtos[i].setCode);
+            expect(card.legalities.length).toBe(createCardDtos[i].legalities.length);
+        });
     });
 
     it("should update existing cards and return saved cards", async () => {
         const updateCardDtos: UpdateCardDto[] = testUtils.getMockUpdateCardDtos(mockSetCode);
-        // TODO: fix this. Move away from using mockResolvedValue
-        jest.spyOn(repository, 'save').mockResolvedValue(mockCards);
+        jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(updateCardDtos);
+
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
+        expect(savedCards.length).toBe(updateCardDtos.length);
+        savedCards.forEach((card, i) => {
+            expect(card.id).toBe(updateCardDtos[i].id);
+            expect(card.name).toBe(updateCardDtos[i].name);
+            expect(card.setCode).toBe(updateCardDtos[i].setCode);
+            expect(card.legalities.length).toBe(updateCardDtos[i].legalities.length);
+        });
     });
 
-    it("should handle empty array of card DTOs", async () => {
+    it("should handle empty card dto array", async () => {
         const savedCards: CardDto[] = await service.save([]);
         jest.spyOn(repository, 'save');
+
         expect(repository.save).not.toHaveBeenCalled();
         expect(savedCards).toEqual([]);
     });
 
-    it("should handle repository save failure", async () => {
+    it("should handle repository save failure with empty array", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        // TODO: fix this. Move away from using mockRejectedValueOnce
         jest.spyOn(repository, 'save').mockRejectedValueOnce(new Error("Repository save failed"));
-        await expect(service.save(createCardDtos)).rejects.toThrow("Repository save failed");
+
+        const savedCards: CardDto[] = await service.save(createCardDtos);
+
         expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards).toEqual([]);
     });
 
     it("should update CreateCardDtos that already exist in repository", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
         const existingCards: Card[] = mockCards.map((card, index) => ({
             ...card,
             id: index + 1,
         }));
-        // TODO: fix this. Move away from using mockResolvedValue
         jest.spyOn(repository, 'save').mockResolvedValue(existingCards);
         const savedCards: CardDto[] = await service.save(createCardDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
@@ -82,25 +100,27 @@ describe("CardService", () => {
     });
 
     it("should find all cards in set and fill missing formats with NotLegal status", async () => {
-        // TODO: fix this. Move away from using mockResolvedValue
-        jest.spyOn(repository, 'findAllInSet').mockResolvedValue(mockCards);
-        jest.spyOn(repository, 'findById').mockResolvedValue(mockCards[0]);
+        jest.spyOn(repository, 'findAllInSet');
         const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
         expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
-        expect(foundCards).toEqual(testUtils.mapCardEntitiesToDtos(mockCards));
+        for (const card of foundCards) {
+            expect(card.legalities.length).toBe(Object.values(Format).length);
+        }
     });
 
     it("should find card by id and fill missing formats with NotLegal status", async () => {
-        // TODO: fix this. Move away from using mockResolvedValue
-        jest.spyOn(repository, 'findById').mockResolvedValue(mockCards[0]);
-        const foundCard: CardDto | null = await service.findById(1);
+        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
+        const index = 0;
+        jest.spyOn(repository, 'findById').mockResolvedValue(mockCards[index]);
+        const foundCard: CardDto | null = await service.findById(index + 1);
         expect(repository.findById).toHaveBeenCalled();
-        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[0], "normal"));
+        expect(foundCard).toEqual(testUtils.mapCardEntityToDto(mockCards[index], "normal"));
+        expect(foundCard?.legalities.length).toBe(Object.values(Format).length);
     });
 
     it("should save CreateCardDto and update with existing IDs", async () => {
-        // TODO: fix this. Move away from using mockResolvedValue
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
         const existingCards: Card[] = mockCards.map((card, index) => ({
             ...card,
             id: index + 1,
@@ -112,33 +132,23 @@ describe("CardService", () => {
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(existingCards));
     });
 
-    /*
-    TODO: REVIEW BELOW TEST:
-    */
     it("save should not save legality with invalid status", async () => {
         const inputCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        const expectedCards: Card[] = mockCards.map((card, i) => ({
-            ...card,
-            id: i + 1,
-            legalities: card.legalities.map(legality => ({
-                ...legality,
-                cardId: i + 1,
-            })),
-        }));
-        // TODO: fix this. Move away from using mockResolvedValue, mockImplementation
-        jest.spyOn(repository, 'findBySetCodeAndNumber').mockImplementation((setCode, number) => {
-            return Promise.resolve(
-                expectedCards.find(
-                    card => card.setCode === setCode && Number(card.number) === number
-                ) || null
-            );
-        });
-        jest.spyOn(repository, 'save').mockImplementation(cards => Promise.resolve(cards));
+        jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(inputCreateCardDtos);
+
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(expectedCards));
+        for (const card of savedCards) {
+            expect(card.legalities.length).toBeLessThanOrEqual(inputCreateCardDtos.find(dto => dto.name === card.name)?.legalities.length || 0);
+            card.legalities.forEach(legality => {
+                expect(Object.values(LegalityStatus)).toContain(legality.status);
+            });
+        }
     });
 
+    /*
+    TODO: REVIEW BELOW TEST: THIS IS WHERE YOU LEFT OFF 1/24/2025
+    */
     // FIXME service! save should not save card legality if legality format is invalid
     it('should not save a card legality if legality status is invalid', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);

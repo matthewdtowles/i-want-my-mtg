@@ -1,6 +1,6 @@
+import { Card } from "src/core/card/card.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Format, LegalityStatus } from "../card/api/legality.dto";
-import { Card } from "../card/card.entity";
 
 @Entity()
 export class Legality {
@@ -14,17 +14,13 @@ export class Legality {
     })
     format: string;
 
-    @ManyToOne(() => Card, (card) => card.legalities, { onDelete: "CASCADE" })
-    @JoinColumn({
-        name: "cardId",
-        referencedColumnName: "id",
-        foreignKeyConstraintName: "FK_Legality_Card",
-    })
-    card: Card;
-
     @Column({
         type: "enum",
         enum: LegalityStatus,
     })
     status: string;
+
+    @ManyToOne(() => Card, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "cardId", referencedColumnName: "id" })
+    card?: Card;
 }

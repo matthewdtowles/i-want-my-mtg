@@ -9,7 +9,7 @@ export class MockCardRepository implements CardRepositoryPort {
     async save(_cards: Card[]): Promise<Card[]> {
         _cards.forEach(card => {
             const existingCardIndex: number = this.cards.findIndex(c => c.id === card.id);
-            if (existingCardIndex !== -1) {
+            if (existingCardIndex >= 0) {
                 this.cards[existingCardIndex] = card;
             } else {
                 card.id = this.cards.length + 1;

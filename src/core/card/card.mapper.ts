@@ -46,7 +46,6 @@ export class CardMapper {
             artist: card.artist,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
-            // FIXME: this is not exclusive to the view layer!!!!!! Should NOT map NOT LEGAL for missing formats!!!!!!8
             legalities: this.toLegalityDtos(card.legalities),
             manaCost: this.manaForView(card.manaCost),
             name: card.name,

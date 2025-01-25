@@ -146,36 +146,65 @@ describe("CardService", () => {
         }
     });
 
-    /*
-    TODO: REVIEW BELOW TEST: THIS IS WHERE YOU LEFT OFF 1/24/2025
-    */
-    // FIXME service! save should not save card legality if legality format is invalid
-    it('should not save a card legality if legality status is invalid', async () => {
+
+    // FIXME! 
+    // TODO: prior to removing invalid legalities from dto, ensure that they DB is cleaned up 
+    // i.e.: update db with given legalities by removing legalities that are invalid
+    // then remove invalid legalities from dto
+    // then dto to entity then save the entity with only valid legalities to DB 
+    it('should save card and not save a card legality if legality status is invalid', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        jest.spyOn(repository, 'save');
         createCardDtos[0].legalities[0] = {
             ...createCardDtos[0].legalities[0],
             status: 'invalidStatus' as LegalityStatus,
         };
+
+        const validCreateCardDtos = createCardDtos.map(dto => ({
+            ...dto,
+            legalities: dto.legalities.filter(legality => Object.values(LegalityStatus).includes(legality.status as LegalityStatus)),
+        }));
+
+        jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(createCardDtos);
-        expect(repository.save).toHaveBeenCalledTimes(0);
-        expect(savedCards).toEqual([]);
+
+        // expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards.length).toBe(validCreateCardDtos.length);
+        savedCards.forEach((card, i) => {
+            expect(card.legalities.length).toBe(validCreateCardDtos[i].legalities.length);
+            for (const legality of card.legalities) {
+                expect(Object.values(LegalityStatus)).toContain(legality.status);
+            }
+        });
     });
 
-    // FIXME service! save should not save card legality if legality format is invalid
-    it('should not save card legality if legality format is invalid', async () => {
+    it('should save card and not save card legality if legality format is invalid', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         createCardDtos[0].legalities[0] = {
             ...createCardDtos[0].legalities[0],
             format: 'invalidFormat' as Format,
         };
-        jest.spyOn(repository, 'save');
-        const savedCards: CardDto[] = await service.save(createCardDtos);
 
-        expect(repository.save).toHaveBeenCalledTimes(0);
-        expect(savedCards).toEqual([]);
+        const validCreateCardDtos = createCardDtos.map(dto => ({
+            ...dto,
+            legalities: dto.legalities.filter(legality => Object.values(Format).includes(legality.format as Format)),
+        }));
+
+        jest.spyOn(repository, 'save');
+        const savedCards: CardDto[] = await service.save(validCreateCardDtos);
+
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(savedCards.length).toBe(validCreateCardDtos.length);
+        savedCards.forEach((card, i) => {
+            expect(card.legalities.length).toBe(validCreateCardDtos[i].legalities.length);
+            for (const legality of card.legalities) {
+                expect(Object.values(Format)).toContain(legality.format);
+            }
+        });
     });
 
+    /*
+    TODO: REVIEW BELOW TEST: THIS IS WHERE YOU LEFT OFF 1/24/2025
+    */
     it('should save legality if valid format, status, cardId (card exists) and legality not already saved for a card in db', async () => {
         // TODO: fix this. Move away from using mockResolvedValue
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);

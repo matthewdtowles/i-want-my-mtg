@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/legality.dto";
 import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 import { CardRepositoryPort } from "./api/card.repository.port";
 import { CardServicePort } from "./api/card.service.port";
@@ -104,7 +104,7 @@ export class CardService implements CardServicePort {
     }
 
     private extractFormats(legalities: Legality[]): Set<string> {
-        return new Set(legalities.map((l: Legality) => l.format));
+        return new Set(legalities.map((l: Legality) => l?.format));
     }
 
     private identifyLegalitiesToDelete(existingLegalities: Legality[], cardlegalityFormats: Set<string>): Legality[] {

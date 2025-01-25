@@ -66,7 +66,7 @@ export class CardMapper {
     }
 
     toLegalityEntity(dto: LegalityDto): Legality {
-        if (!dto || !dto.format || !dto.status) {
+        if (!this.isValidLegalityDto(dto)) {
             this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
             return null;
         }
@@ -82,7 +82,7 @@ export class CardMapper {
     }
 
     toLegalityDto(entity: Legality): LegalityDto | null {
-        if (!entity || !entity.format || !entity.status) {
+        if (!this.isValidLegalityEntity(entity)) {
             this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
             return null;
         }
@@ -167,6 +167,21 @@ export class CardMapper {
 
     private buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
+    }
+
+    private isValidLegalityDto(dto: LegalityDto): boolean {
+        return this.isValidlegality(dto.cardId, dto.format, dto.status);
+    }
+
+    private isValidLegalityEntity(entity: Legality): boolean {
+        return this.isValidlegality(entity.cardId, entity.format, entity.status);
+    }
+
+    private isValidlegality(cardId: number, format: string, status: string): boolean {
+        const validCardId: boolean = cardId && cardId > 0;
+        const validFormat: boolean = Object.values(Format).includes(format as Format);
+        const validStatus: boolean = Object.values(LegalityStatus).includes(status as LegalityStatus);
+        return validCardId && validFormat && validStatus
     }
 
 }

@@ -183,18 +183,17 @@ export class CardMapper {
     }
 
     private isValidLegalityDto(dto: LegalityDto): boolean {
-        return this.isValidlegality(dto?.cardId, dto?.format, dto?.status);
+        return this.isValidlegality(dto?.format, dto?.status);
     }
 
     private isValidLegalityEntity(entity: Legality): boolean {
-        return this.isValidlegality(entity?.cardId, entity?.format, entity?.status);
+        return this.isValidlegality(entity?.format, entity?.status);
     }
 
-    private isValidlegality(cardId: number, format: string, status: string): boolean {
-        const validCardId: boolean = cardId && cardId > 0;
-        const validFormat: boolean = Object.values(Format).includes(format as Format);
-        const validStatus: boolean = Object.values(LegalityStatus).includes(status as LegalityStatus);
-        return validCardId && validFormat && validStatus
+    private isValidlegality(format: string, status: string): boolean {
+        const validFormat: boolean = Object.values(Format).includes(format?.toLowerCase() as Format);
+        const validStatus: boolean = Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
+        return validFormat && validStatus
     }
 
 }

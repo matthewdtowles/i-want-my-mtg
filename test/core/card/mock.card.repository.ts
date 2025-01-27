@@ -13,6 +13,9 @@ export class MockCardRepository implements CardRepositoryPort {
                 this.cards[existingCardIndex] = card;
             } else {
                 card.id = this.cards.length + 1;
+                card?.legalities?.forEach(legality => {
+                    legality.cardId = card.id;
+                });
                 this.cards.push(card);
             }
         });

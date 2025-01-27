@@ -27,14 +27,19 @@ export class CardService implements CardServicePort {
             for (const dto of cardDtos) {
                 const legalitiesToSave: Legality[] = [];
                 const legalitiesToDelete: Legality[] = [];
-                const previouslySavedCard: Card = await this.repository.findBySetCodeAndNumber(dto.setCode, dto.number);
+                this.LOGGER.debug(`Processing card setCode: ${dto?.setCode} number: ${dto?.number}`);
+                const previouslySavedCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
                 const card: Card = previouslySavedCard ? { ...previouslySavedCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (this.isValidCard(card)) {
+                    // extract valid legalities to save later
                     for (const legality of card?.legalities) {
+                        legality.cardId = card.id;
                         if (this.isValidLegality(legality)) {
                             legalitiesToSave.push(legality);
                         }
                     }
+
+                    // extract legalities to delete
                     if (previouslySavedCard && previouslySavedCard.legalities) {
                         for (const existingLegality of previouslySavedCard.legalities) {
                             if (!legalitiesToSave.some(l => l.format === existingLegality?.format)) {
@@ -42,22 +47,31 @@ export class CardService implements CardServicePort {
                             }
                         }
                     }
+
+                    // delete legalities that are not in the new list
                     const legalityDeletionPromises = legalitiesToDelete?.map(l => {
-                        this.repository.deleteLegality(l?.cardId, l?.format)
+                        if (l && l.cardId && l.format) {
+                            this.repository.deleteLegality(l.cardId, l.format)
+                        }
                     });
+                    // wait for all deletions to complete
                     if (legalityDeletionPromises && legalityDeletionPromises.length > 0) {
                         await Promise.all(legalityDeletionPromises);
                     }
+
                     card.legalities = legalitiesToSave;
                     cardsToSave.push(card);
+
                 }
             }
+            this.LOGGER.debug(`Saving ${cardsToSave.length} cards`);
+            this.LOGGER.debug(`First card to save: ${JSON.stringify(cardsToSave[0])}`);
             const savedCards: Card[] = await this.repository.save(cardsToSave);
             return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
         } catch (error) {
             this.LOGGER.error(`Error saving cards: ${error}`);
+            throw error;
         }
-        return [];
     }
 
     private isValidCard(card: Card): boolean {

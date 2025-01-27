@@ -10,7 +10,10 @@ import { Legality } from "src/core/card/legality.entity";
 export class CardRepository implements CardRepositoryPort {
     private readonly LOGGER: Logger = new Logger(CardRepository.name);
 
-    constructor(@InjectRepository(Card) private readonly cardRepository: Repository<Card>) { }
+    constructor(
+        @InjectRepository(Card) private readonly cardRepository: Repository<Card>,
+        @InjectRepository(Legality) private readonly legalityRepository: Repository<Legality>,
+    ) { }
 
     async save(cards: Card[]): Promise<Card[]> {
         this.LOGGER.debug(`Save ${cards.length} total cards`);
@@ -75,11 +78,11 @@ export class CardRepository implements CardRepositoryPort {
 
     async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
         this.LOGGER.debug(`Save ${legalities.length} legalities`);
-        return await this.cardRepository.manager.save(legalities);
+        return await this.legalityRepository.save(legalities);
     }
 
     async deleteLegality(cardId: number, format: string): Promise<void> {
         this.LOGGER.debug(`Delete legality for card ${cardId} in format ${format}`);
-        await this.cardRepository.manager.delete(Legality, { cardId: cardId, format: format });
+        await this.legalityRepository.delete({ cardId: cardId, format: format });
     }
 }

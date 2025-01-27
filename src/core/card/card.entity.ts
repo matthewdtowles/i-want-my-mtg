@@ -28,7 +28,7 @@ export class Card {
     @Column({ default: false })
     isReserved: boolean;
 
-    @OneToMany(() => Legality, (legality) => legality.card, { cascade: true })
+    @OneToMany(() => Legality, legality => legality.card, { cascade: true })
     legalities: Legality[];
 
     @Column({ nullable: true })

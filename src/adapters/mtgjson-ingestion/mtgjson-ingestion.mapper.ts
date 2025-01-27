@@ -7,6 +7,7 @@ import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 
+
 @Injectable()
 export class MtgJsonIngestionMapper {
 
@@ -39,23 +40,6 @@ export class MtgJsonIngestionMapper {
         return sets;
     }
 
-    toCreateCardDto(setCard: CardSet): CreateCardDto {
-        return {
-            artist: setCard.artist,
-            imgSrc: this.buildCardImgSrc(setCard),
-            isReserved: setCard.isReserved,
-            legalities: this.toLegalityDtos(setCard.legalities),
-            manaCost: setCard.manaCost,
-            name: setCard.name,
-            number: parseInt(setCard.number, 10 ),
-            oracleText: setCard.text,
-            rarity: setCard.rarity,
-            setCode: setCard.setCode.toLowerCase(),
-            uuid: setCard.uuid,
-            type: setCard.type,
-        };
-    }
-
     toLegalityDtos(legalities: Legalities): LegalityDto[] {
         const legalitiesDto: LegalityDto[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
@@ -66,15 +50,24 @@ export class MtgJsonIngestionMapper {
         return legalitiesDto;
     }
 
-    isValidFormat(format: string): boolean {
-        return Object.values(Format).includes(format?.toLowerCase() as Format);
+    private toCreateCardDto(setCard: CardSet): CreateCardDto {
+        return {
+            artist: setCard.artist,
+            imgSrc: this.buildCardImgSrc(setCard),
+            isReserved: setCard.isReserved,
+            legalities: this.toLegalityDtos(setCard.legalities),
+            manaCost: setCard.manaCost,
+            name: setCard.name,
+            number: this.extractNumber(setCard.number),
+            oracleText: setCard.text,
+            rarity: setCard.rarity,
+            setCode: setCard.setCode.toLowerCase(),
+            uuid: setCard.uuid,
+            type: setCard.type,
+        };
     }
 
-    isValidStatus(status: string): boolean {
-        return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
-    }
-
-    createLegalityDto(format: string, status: string): LegalityDto {
+    private createLegalityDto(format: string, status: string): LegalityDto {
         return {
             format: format as Format,
             status: status as LegalityStatus,
@@ -82,11 +75,19 @@ export class MtgJsonIngestionMapper {
         };
     }
 
-    buildCardImgSrc(card: CardSet): string {
+    private isValidFormat(format: string): boolean {
+        return Object.values(Format).includes(format?.toLowerCase() as Format);
+    }
+
+    private isValidStatus(status: string): boolean {
+        return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
+    }
+
+    private buildCardImgSrc(card: CardSet): string {
         return this.buildScryfallImgPath(card);
     }
 
-    buildScryfallImgPath(card: CardSet): string {
+    private buildScryfallImgPath(card: CardSet): string {
         if (!card.identifiers) {
             throw new Error(`Card ${card.name} has no identifiers`);
         }
@@ -95,5 +96,10 @@ export class MtgJsonIngestionMapper {
         }
         const scryfallId: string = card.identifiers.scryfallId;
         return `${scryfallId.charAt(0)}/${scryfallId.charAt(1)}/${scryfallId}.jpg`;
+    }
+
+    private extractNumber(value: string): number {
+        const numericString: string = value.replace(/\D/g, "");
+        return parseInt(numericString, 10);
     }
 }

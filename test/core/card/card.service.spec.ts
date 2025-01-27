@@ -82,14 +82,12 @@ describe("CardService", () => {
         expect(savedCards).toEqual([]);
     });
 
-    it("should handle repository save failure with empty array", async () => {
+    it("should handle repository save failure for logging and rethrow", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         jest.spyOn(repository, 'save').mockRejectedValueOnce(new Error("Repository save failed"));
 
-        const savedCards: CardDto[] = await service.save(createCardDtos);
-
+        await expect(service.save(createCardDtos)).rejects.toThrow("Repository save failed");
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards).toEqual([]);
     });
 
     it("should update CreateCardDtos that already exist in repository", async () => {

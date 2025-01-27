@@ -47,7 +47,7 @@ export class CardRepository implements CardRepositoryPort {
         return await this.cardRepository.findOne({
             where: {
                 set: { code: code, },
-                number: String(_number),
+                number: _number,
             },
             relations: ["set", "legalities"],
         });

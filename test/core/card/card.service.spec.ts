@@ -215,7 +215,7 @@ describe("CardService", () => {
             format: 'invalidFormat' as Format,
         };
 
-        const validCreateCardDtos = createCardDtos.map(dto => ({
+        const expectedValidCardDtos = createCardDtos.map(dto => ({
             ...dto,
             legalities: dto.legalities.filter(legality => Object.values(Format).includes(legality.format as Format)),
         }));
@@ -224,9 +224,9 @@ describe("CardService", () => {
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards.length).toBe(validCreateCardDtos.length);
+        expect(savedCards.length).toBe(expectedValidCardDtos.length);
         savedCards.forEach((card, i) => {
-            expect(card.legalities.length).toBe(validCreateCardDtos[i].legalities.length);
+            expect(card.legalities.length).toBe(expectedValidCardDtos[i].legalities.length);
             for (const legality of card.legalities) {
                 expect(Object.values(Format)).toContain(legality.format);
             }

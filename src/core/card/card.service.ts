@@ -18,11 +18,6 @@ export class CardService implements CardServicePort {
         @Inject(CardMapper) private readonly mapper: CardMapper,
     ) { }
 
-    // FIXME!
-    // 1. Remove invalid legalities from DB
-    // 2. Remove invalid legalities from DTO
-    // 3. Convert DTO to Entity
-    // 4. Save Entity with only valid legalities to DB
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
         if (!cardDtos || cardDtos.length === 0) {
@@ -43,16 +38,14 @@ export class CardService implements CardServicePort {
                             legalitiesToDelete.push(legality);
                         }
                     }
-                    const legalityDeletionPromises = legalitiesToDelete?.map(l =>
-                        this.repository.deleteLegality(l.cardId, l.format)
-                    );
+                    const legalityDeletionPromises = legalitiesToDelete?.map(l => {
+                        this.repository.deleteLegality(l?.cardId, l?.format)
+                    });
                     if (legalityDeletionPromises && legalityDeletionPromises.length > 0) {
                         await Promise.all(legalityDeletionPromises);
                     }
                     card.legalities = legalitiesToSave;
                     cardsToSave.push(card);
-                } else {
-
                 }
             }
 

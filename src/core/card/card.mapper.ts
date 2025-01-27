@@ -82,6 +82,13 @@ export class CardMapper {
     }
 
     toLegalityDto(entity: Legality): LegalityDto | null {
+        // FIXME: This is not allowing "Not Legal to be a status on the DTO"
+        // TODO: solution? -> allow "Not Legal" as a status on the DTO only
+        // TODO: OR -> check individual fields for validity
+        // TODO: OR -> separate DTOs as input and output
+        // ie: input DTOs need to be mapped to entities and must be valid
+        // ie2: output DTOs must have valid formats and cardIds
+        // BUT -> input for delete would be cardId adn format too, but that is exceptional case ->-> provide cardId and format as input for deleteLegality
         if (!this.isValidLegalityEntity(entity)) {
             this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
             return null;

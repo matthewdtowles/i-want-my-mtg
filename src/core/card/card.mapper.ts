@@ -62,26 +62,20 @@ export class CardMapper {
     }
 
     toLegalityEntities(dtos: LegalityDto[]): Legality[] {
-        // FIXME: code expects invalid legalities to be included as null so that they can be deleted, 
-        // but if they're null...how can that work?
-        return dtos.reduce((entities: Legality[], dto: LegalityDto) => {
+        return dtos?.reduce((entities: Legality[], dto: LegalityDto) => {
             if (this.isValidLegalityDto(dto)) {
                 const entity: Legality = this.toLegalityEntity(dto);
                 if (entity) {
                     entities.push(entity);
                 }
             } else {
-                this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
+                this.LOGGER.debug(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
             }
             return entities;
         }, []);
     }
 
     toLegalityEntity(dto: LegalityDto): Legality {
-        if (!this.isValidLegalityDto(dto)) {
-            this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
-            return null;
-        }
         const entity: Legality = new Legality();
         entity.cardId = dto.cardId;
         entity.format = dto.format;
@@ -90,14 +84,14 @@ export class CardMapper {
     }
 
     toLegalityDtos(entities: Legality[]): LegalityDto[] {
-        return entities.reduce((dtos: LegalityDto[], entity: Legality) => {
+        return entities?.reduce((dtos: LegalityDto[], entity: Legality) => {
             if (this.isValidLegalityEntity(entity)) {
                 const dto: LegalityDto = this.toLegalityDto(entity);
                 if (dto) {
                     dtos.push(dto);
                 }
             } else {
-                this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
+                this.LOGGER.debug(`Invalid Legality: ${JSON.stringify(entity)}`);
             }
             return dtos;
         }, []);

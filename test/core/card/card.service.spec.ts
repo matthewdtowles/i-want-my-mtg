@@ -165,101 +165,47 @@ describe("CardService", () => {
 
         expect(repository.save).toHaveBeenCalledTimes(1);
         for (const card of savedCards) {
-            expect(card.legalities.length).toBeLessThanOrEqual(inputCreateCardDtos.find(dto => dto.name === card.name)?.legalities.length || 0);
+            const inputCardLegalityLength: number = inputCreateCardDtos.find(dto => dto.name === card.name)?.legalities.length || 0;
+            expect(card.legalities.length).toBeGreaterThan(0);
+            expect(card.legalities.length).toBeLessThanOrEqual(inputCardLegalityLength)
             card.legalities.forEach(legality => {
                 expect(Object.values(LegalityStatus)).toContain(legality.status);
             });
         }
     });
 
-    it('temp', async () => {
-        const legalities: LegalityDto[] = [
-            {
-                cardId: 1,
-                format: Format.Standard,
-                status: LegalityStatus.Banned,
-            },
-            {
-                cardId: 1,
-                format: Format.Modern,
-                status: "Not Legal",
-            },
-            {
-                cardId: 1,
-                format: Format.Legacy,
-                status: LegalityStatus.Legal
-            },
-            {
-                cardId: 1,
-                format: "fake",
-                status: LegalityStatus.Legal,
-            }
-        ];
-        const expectedInvalidLegalities: LegalityDto[] = [
-            {
-                cardId: 1,
-                format: "fake",
-                status: LegalityStatus.Legal,
-            }
-        ];
-        const inputFormats: Set<string> = new Set([Format.Standard, Format.Modern, Format.Legacy]);
-        const filterResult: LegalityDto[] = legalities.filter(l => !inputFormats.has(l.format));
-        expect(filterResult).toEqual(expectedInvalidLegalities);
-    });
 
-
-    // FIXME: code expects invalid legalities to be included as null so that they can be deleted, 
-    it('should save card and delete each invalid legality', async () => {
-        repository.populate(testUtils.getMockCards(mockSetCode));
+    it('should save card, delete out-dated legality, save valid input legalities', async () => {
+        const existingCards: Card[] = testUtils.getMockCards(mockSetCode);
+        repository.populate(existingCards);
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        // invalid legality status - should remove if in DB
         createCardDtos[0].legalities[0] = {
             ...createCardDtos[0].legalities[0],
             status: 'invalidStatus' as LegalityStatus,
         };
-
-        const validCreateCardDtos = createCardDtos.map(dto => ({
-            ...dto,
-            legalities: dto.legalities.filter(legality => Object.values(LegalityStatus).includes(legality.status as LegalityStatus)),
-        }));
+        // invalid legality format - should remove if in DB
+        createCardDtos[0].legalities[1] = {
+            ...createCardDtos[0].legalities[1],
+            format: 'invalidFormat' as Format,
+        };
+        // the absence of the format means the missing format should be removed from db
+        createCardDtos[0].legalities[2] = null;
 
         jest.spyOn(repository, 'save');
         jest.spyOn(repository, 'deleteLegality');
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(repository.deleteLegality).toHaveBeenCalledTimes(1);
-        expect(savedCards.length).toBe(validCreateCardDtos.length);
-        savedCards.forEach((card, i) => {
-            expect(card.legalities.length).toBe(validCreateCardDtos[i].legalities.length);
-            for (const legality of card.legalities) {
-                expect(Object.values(LegalityStatus)).toContain(legality.status);
-            }
-        });
-    });
-
-    it('should save card and not save card legality if legality format is invalid', async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        createCardDtos[0].legalities[0] = {
-            ...createCardDtos[0].legalities[0],
-            format: 'invalidFormat' as Format,
-        };
-
-        const expectedValidCardDtos = createCardDtos.map(dto => ({
-            ...dto,
-            legalities: dto.legalities.filter(legality => Object.values(Format).includes(legality.format as Format)),
-        }));
-
-        jest.spyOn(repository, 'save');
-        const savedCards: CardDto[] = await service.save(createCardDtos);
-
-        expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedCards.length).toBe(expectedValidCardDtos.length);
-        savedCards.forEach((card, i) => {
-            expect(card.legalities.length).toBe(expectedValidCardDtos[i].legalities.length);
-            for (const legality of card.legalities) {
-                expect(Object.values(Format)).toContain(legality.format);
-            }
-        });
+        expect(repository.deleteLegality).toHaveBeenCalledTimes(3);
+        expect(savedCards.length).toBeGreaterThan(0);
+        expect(savedCards.length).toBe(createCardDtos.length);
+        expect(savedCards[0].legalities.length).toBe(createCardDtos[0].legalities.length - 3);
+        for (const legality of savedCards[0].legalities) {
+            expect(Object.values(LegalityStatus)).toContain(legality.status);
+            expect(Object.values(Format)).toContain(legality.format);
+            expect(legality.cardId).toBe(savedCards[0].id);
+        }
     });
 
     /*

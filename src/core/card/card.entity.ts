@@ -1,3 +1,4 @@
+import { IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 import { Legality } from "./legality.entity";
 import { Set } from "src/core/set/set.entity";
 import {
@@ -15,9 +16,13 @@ export class Card {
     id: number;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     artist: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     imgSrc: string;
 
     @Column({ default: false })
@@ -30,18 +35,25 @@ export class Card {
     manaCost?: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     name: string;
 
     @Column()
-    number: string;
+    @IsNumber()
+    @IsNotEmpty()
+    number: number;
 
     @Column({
         nullable: true,
         type: "text",
     })
+    @IsString()
     oracleText?: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     rarity: string;
 
     @ManyToOne(() => Set, (set) => set.cards)
@@ -53,11 +65,18 @@ export class Card {
     set: Set;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     setCode: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     type: string;
 
     @Column()
+    @IsUUID()
+    @IsNotEmpty()
     uuid: string;
+
 }

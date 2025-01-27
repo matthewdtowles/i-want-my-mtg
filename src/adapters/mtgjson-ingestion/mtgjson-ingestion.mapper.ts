@@ -47,7 +47,7 @@ export class MtgJsonIngestionMapper {
             legalities: this.toLegalityDtos(setCard.legalities),
             manaCost: setCard.manaCost,
             name: setCard.name,
-            number: setCard.number,
+            number: parseInt(setCard.number, 10 ),
             oracleText: setCard.text,
             rarity: setCard.rarity,
             setCode: setCard.setCode.toLowerCase(),

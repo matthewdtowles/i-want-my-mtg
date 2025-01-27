@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
@@ -146,13 +146,42 @@ describe("CardService", () => {
         }
     });
 
+    it('temp', async () => {
+        const legalities: LegalityDto[] = [
+            {
+                cardId: 1,
+                format: Format.Standard,
+                status: LegalityStatus.Banned,
+            },
+            {
+                cardId: 1,
+                format: Format.Modern,
+                status: "Not Legal",
+            },
+            {
+                cardId: 1,
+                format: Format.Legacy,
+                status: LegalityStatus.Legal
+            },
+            {
+                cardId: 1,
+                format: "fake",
+                status: LegalityStatus.Legal,
+            }
+        ];
+        const expectedInvalidLegalities: LegalityDto[] = [
+            {
+                cardId: 1,
+                format: "fake",
+                status: LegalityStatus.Legal,
+            }
+        ];
+        const inputFormats: Set<string> = new Set([Format.Standard, Format.Modern, Format.Legacy]);
+        const filterResult: LegalityDto[] = legalities.filter(l => !inputFormats.has(l.format));
+        expect(filterResult).toEqual(expectedInvalidLegalities);
+    });
 
-    // FIXME! 
-    // TODO: prior to removing invalid legalities from dto, ensure that they DB is cleaned up 
-    // i.e.: update db with given legalities by removing legalities that are invalid
-    // then remove invalid legalities from dto
-    // then dto to entity then save the entity with only valid legalities to DB 
-    it('should save card and not save a card legality if legality status is invalid', async () => {
+    it('should save card and delete each invalid legality', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         createCardDtos[0].legalities[0] = {
             ...createCardDtos[0].legalities[0],
@@ -165,9 +194,11 @@ describe("CardService", () => {
         }));
 
         jest.spyOn(repository, 'save');
+        jest.spyOn(repository, 'deleteLegality');
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
-        // expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(repository.deleteLegality).toHaveBeenCalledTimes(1);
         expect(savedCards.length).toBe(validCreateCardDtos.length);
         savedCards.forEach((card, i) => {
             expect(card.legalities.length).toBe(validCreateCardDtos[i].legalities.length);
@@ -190,7 +221,7 @@ describe("CardService", () => {
         }));
 
         jest.spyOn(repository, 'save');
-        const savedCards: CardDto[] = await service.save(validCreateCardDtos);
+        const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedCards.length).toBe(validCreateCardDtos.length);
@@ -206,7 +237,6 @@ describe("CardService", () => {
     TODO: REVIEW BELOW TEST: THIS IS WHERE YOU LEFT OFF 1/24/2025
     */
     it('should save legality if valid format, status, cardId (card exists) and legality not already saved for a card in db', async () => {
-        // TODO: fix this. Move away from using mockResolvedValue
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         const mockCards = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
         repository.save(mockCards);

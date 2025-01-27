@@ -209,8 +209,8 @@ describe("CardService", () => {
 
 
     // FIXME: code expects invalid legalities to be included as null so that they can be deleted, 
-    // but if they're null...how can that work?
     it('should save card and delete each invalid legality', async () => {
+        repository.populate(testUtils.getMockCards(mockSetCode));
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         createCardDtos[0].legalities[0] = {
             ...createCardDtos[0].legalities[0],

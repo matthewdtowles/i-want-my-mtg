@@ -15,6 +15,7 @@ describe("CardService", () => {
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
+    const allFormats = Object.values(Format);
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -65,6 +66,11 @@ describe("CardService", () => {
             expect(card.name).toBe(updateCardDtos[i].name);
             expect(card.setCode).toBe(updateCardDtos[i].setCode);
             expect(card.legalities.length).toBe(updateCardDtos[i].legalities.length);
+            card.legalities.forEach(legality => {
+                expect(Object.values(LegalityStatus)).toContain(legality.status);
+                expect(Object.values(Format)).toContain(legality.format);
+                expect(legality.cardId).toBe(card.id);
+            });
         });
     });
 
@@ -88,26 +94,46 @@ describe("CardService", () => {
 
     it("should update CreateCardDtos that already exist in repository", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
-        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
-        const existingCards: Card[] = mockCards.map((card, index) => ({
+        const existingCards: Card[] = testUtils.getMockCards(mockSetCode).map((card, i) => ({
             ...card,
-            id: index + 1,
+            id: i + 1,
         }));
         jest.spyOn(repository, 'save').mockResolvedValue(existingCards);
         const savedCards: CardDto[] = await service.save(createCardDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedCards).toEqual(testUtils.mapCardEntitiesToDtos(existingCards));
-    });
-
-    it("should find all cards in set and fill missing formats with NotLegal status", async () => {
-        jest.spyOn(repository, 'findAllInSet');
-        const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
-        expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
-        for (const card of foundCards) {
-            expect(card.legalities.length).toBe(Object.values(Format).length);
+        for (const card of savedCards) {
+            expect(card.legalities.length).toBe(createCardDtos.find(dto =>
+                dto.name === card.name)?.legalities.length
+            );
+            card.legalities.forEach(legality => {
+                expect(Object.values(LegalityStatus)).toContain(legality.status);
+                expect(Object.values(Format)).toContain(legality.format);
+                expect(legality.cardId).toBe(card.id);
+            });
         }
     });
 
+    it("should find all cards in set and fill missing formats with NotLegal status", async () => {
+        // TODO: make it so that card legalities are missing some formats
+        // and then the remainder need to be added with Not Legal
+        repository.populate(testUtils.getMockCards(mockSetCode));
+        jest.spyOn(repository, 'findAllInSet');
+        const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
+        expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
+        expect(foundCards.length).toBeGreaterThan(0);
+        for (const card of foundCards) {
+            expect(card.legalities.length).toBe(Object.values(Format).length);
+            card.legalities.forEach(legality => {
+                expect(Object.values(LegalityStatus)).toContain(legality.status || "Not Legal");
+                expect(Object.values(Format)).toContain(legality.format);
+                expect(legality.cardId).toBe(card.id);
+            });
+        }
+
+    });
+
+    // should include Not Legal for find*
     it("should find card by id and fill missing formats with NotLegal status", async () => {
         const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
         const index = 0;
@@ -181,6 +207,9 @@ describe("CardService", () => {
         expect(filterResult).toEqual(expectedInvalidLegalities);
     });
 
+
+    // FIXME: code expects invalid legalities to be included as null so that they can be deleted, 
+    // but if they're null...how can that work?
     it('should save card and delete each invalid legality', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         createCardDtos[0].legalities[0] = {

@@ -6,7 +6,6 @@ import { CardServicePort } from "./api/card.service.port";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";
-import { isInstance } from "class-validator";
 
 @Injectable()
 export class CardService implements CardServicePort {
@@ -28,14 +27,19 @@ export class CardService implements CardServicePort {
             for (const dto of cardDtos) {
                 const legalitiesToSave: Legality[] = [];
                 const legalitiesToDelete: Legality[] = [];
-                let card: Card = await this.repository.findBySetCodeAndNumber(dto.setCode, Number(dto.number));
-                card = card ? { ...card, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+                const previouslySavedCard: Card = await this.repository.findBySetCodeAndNumber(dto.setCode, dto.number);
+                const card: Card = previouslySavedCard ? { ...previouslySavedCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (this.isValidCard(card)) {
                     for (const legality of card?.legalities) {
                         if (this.isValidLegality(legality)) {
                             legalitiesToSave.push(legality);
-                        } else {
-                            legalitiesToDelete.push(legality);
+                        }
+                    }
+                    if (previouslySavedCard && previouslySavedCard.legalities) {
+                        for (const existingLegality of previouslySavedCard.legalities) {
+                            if (!legalitiesToSave.some(l => l.format === existingLegality?.format)) {
+                                legalitiesToDelete.push(existingLegality);
+                            }
                         }
                     }
                     const legalityDeletionPromises = legalitiesToDelete?.map(l => {
@@ -48,7 +52,6 @@ export class CardService implements CardServicePort {
                     cardsToSave.push(card);
                 }
             }
-
             const savedCards: Card[] = await this.repository.save(cardsToSave);
             return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
         } catch (error) {

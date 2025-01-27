@@ -232,14 +232,12 @@ export class TestUtils {
         return Object.values(Format).map((format) => ({
             cardId,
             format,
-            status: LegalityStatus.Legal,
-            card: undefined,
+            status: LegalityStatus.Legal
         }));
     }
 
 
     mapCreateCardDtosToEntities(createCardDtos: CreateCardDto[]): Card[] {
-
         return createCardDtos.map((dto, i) => this.mapCreateCardDtoToEntity(dto, i + 1));
     }
 

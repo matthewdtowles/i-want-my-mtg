@@ -62,7 +62,19 @@ export class CardMapper {
     }
 
     toLegalityEntities(dtos: LegalityDto[]): Legality[] {
-        return dtos.map((dto: LegalityDto) => this.toLegalityEntity(dto));
+        // FIXME: code expects invalid legalities to be included as null so that they can be deleted, 
+        // but if they're null...how can that work?
+        return dtos.reduce((entities: Legality[], dto: LegalityDto) => {
+            if (this.isValidLegalityDto(dto)) {
+                const entity: Legality = this.toLegalityEntity(dto);
+                if (entity) {
+                    entities.push(entity);
+                }
+            } else {
+                this.LOGGER.error(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
+            }
+            return entities;
+        }, []);
     }
 
     toLegalityEntity(dto: LegalityDto): Legality {
@@ -78,30 +90,30 @@ export class CardMapper {
     }
 
     toLegalityDtos(entities: Legality[]): LegalityDto[] {
-        return entities?.map((entity: Legality) => this.toLegalityDto(entity)) || [];
+        return entities.reduce((dtos: LegalityDto[], entity: Legality) => {
+            if (this.isValidLegalityEntity(entity)) {
+                const dto: LegalityDto = this.toLegalityDto(entity);
+                if (dto) {
+                    dtos.push(dto);
+                }
+            } else {
+                this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
+            }
+            return dtos;
+        }, []);
     }
 
-    toLegalityDto(entity: Legality): LegalityDto | null {
-        // FIXME: This is not allowing "Not Legal to be a status on the DTO"
-        // TODO: solution? -> allow "Not Legal" as a status on the DTO only
-        // TODO: OR -> check individual fields for validity
-        // TODO: OR -> separate DTOs as input and output
-        // ie: input DTOs need to be mapped to entities and must be valid
-        // ie2: output DTOs must have valid formats and cardIds
-        // BUT -> input for delete would be cardId adn format too, but that is exceptional case ->-> provide cardId and format as input for deleteLegality
-        if (!this.isValidLegalityEntity(entity)) {
-            this.LOGGER.error(`Invalid Legality: ${JSON.stringify(entity)}`);
-            return null;
-        }
+    toLegalityDto(entity: Legality): LegalityDto {
         const dto: LegalityDto = {
-            cardId: entity.cardId,
-            format: entity.format,
-            status: entity.status,
+            cardId: entity?.cardId,
+            format: entity?.format,
+            status: entity?.status,
         };
         return dto;
     }
 
-    legalitiesForView(card: Card): LegalityDto[] {
+    // TODO: Remove? Evaluate first.
+    private legalitiesForView(card: Card): LegalityDto[] {
         const legalitiesMap = new Map<Format, LegalityDto>();
 
         // Add existing legalities to the map
@@ -177,11 +189,11 @@ export class CardMapper {
     }
 
     private isValidLegalityDto(dto: LegalityDto): boolean {
-        return this.isValidlegality(dto.cardId, dto.format, dto.status);
+        return this.isValidlegality(dto?.cardId, dto?.format, dto?.status);
     }
 
     private isValidLegalityEntity(entity: Legality): boolean {
-        return this.isValidlegality(entity.cardId, entity.format, entity.status);
+        return this.isValidlegality(entity?.cardId, entity?.format, entity?.status);
     }
 
     private isValidlegality(cardId: number, format: string, status: string): boolean {

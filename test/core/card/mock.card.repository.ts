@@ -73,4 +73,8 @@ export class MockCardRepository implements CardRepositoryPort {
     reset(): void {
         this.cards = [];
     }
+
+    populate(cards: Card[]): void {
+        this.cards = cards;
+    }
 }

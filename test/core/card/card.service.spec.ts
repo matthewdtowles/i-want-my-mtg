@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
@@ -176,6 +176,7 @@ describe("CardService", () => {
 
 
     it('should save card, delete out-dated legality, save valid input legalities', async () => {
+        // establish existing cards in DB
         const existingCards: Card[] = testUtils.getMockCards(mockSetCode);
         repository.populate(existingCards);
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
@@ -189,7 +190,7 @@ describe("CardService", () => {
             ...createCardDtos[0].legalities[1],
             format: 'invalidFormat' as Format,
         };
-        // the absence of the format means the missing format should be removed from db
+        // the absence of the format means the missing format should be removed from DB
         createCardDtos[0].legalities[2] = null;
 
         jest.spyOn(repository, 'save');
@@ -197,6 +198,7 @@ describe("CardService", () => {
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
+        // the 3 invalid legalities should be removed since they were previously in DB
         expect(repository.deleteLegality).toHaveBeenCalledTimes(3);
         expect(savedCards.length).toBeGreaterThan(0);
         expect(savedCards.length).toBe(createCardDtos.length);
@@ -208,9 +210,6 @@ describe("CardService", () => {
         }
     });
 
-    /*
-    TODO: REVIEW BELOW TEST: THIS IS WHERE YOU LEFT OFF 1/24/2025
-    */
     it('should save legality if valid format, status, cardId (card exists) and legality not already saved for a card in db', async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         const mockCards = createCardDtos.map((dto, i) => testUtils.mapCreateCardDtoToEntity(dto, i + 1));
@@ -230,9 +229,11 @@ describe("CardService", () => {
 
         createCardDtos[0].legalities.pop();
         jest.spyOn(repository, 'save');
+        jest.spyOn(repository, 'deleteLegality');
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(repository.deleteLegality).toHaveBeenCalledTimes(1);
         expect(savedCards[0].legalities.length).toBe(createCardDtos[0].legalities.length);
     });
 
@@ -249,6 +250,8 @@ describe("CardService", () => {
         const savedCards: CardDto[] = await service.save(createCardDtos);
 
         expect(savedCards[0].legalities[0].status).toBe(LegalityStatus.Banned);
+        expect(savedCards[0].legalities[1].status).toBe(LegalityStatus.Legal);
+        expect(savedCards[1].legalities[0].status).toBe(LegalityStatus.Legal);
     });
 });
 

@@ -1,5 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
 import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
@@ -7,10 +9,13 @@ import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.d
 @Injectable()
 export class CardMapper {
 
+    private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
     private rarityCache: { [key: string]: string } = {};
 
+
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
+        this.LOGGER.debug(`dtosToEntities`);
         return cardDtos.map((c: CreateCardDto | UpdateCardDto) => this.dtoToEntity(c));
     }
 
@@ -19,6 +24,7 @@ export class CardMapper {
         card.artist = cardDto.artist;
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
+        card.legalities = this.toLegalityEntities(cardDto.legalities);
         card.manaCost = cardDto.manaCost;
         card.name = cardDto.name;
         card.number = cardDto.number;
@@ -35,11 +41,12 @@ export class CardMapper {
     }
 
     entityToDto(card: Card, imgType: CardImgType): CardDto {
-        const cardDto: CardDto = {
+        const dto: CardDto = {
             id: card.id,
             artist: card.artist,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
+            legalities: this.toLegalityDtos(card.legalities),
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
@@ -51,7 +58,82 @@ export class CardMapper {
             uuid: card.uuid,
             url: this.buildCardUrl(card),
         };
-        return cardDto;
+        return dto;
+    }
+
+    entitiesToDtosForView(cards: Card[], imgType: CardImgType): CardDto[] {
+        return cards.map((card: Card) => this.entityToDtoForView(card, imgType));
+    }
+
+    entityToDtoForView(card: Card, imgType: CardImgType): CardDto {
+        const dto: CardDto = this.entityToDto(card, imgType);
+        return {
+            ...dto,
+            legalities: this.fillMissingFormats(dto)
+        };
+    }
+
+    toLegalityEntities(dtos: LegalityDto[]): Legality[] {
+        return dtos?.reduce((entities: Legality[], dto: LegalityDto) => {
+            if (this.isValidLegalityDto(dto)) {
+                const entity: Legality = this.toLegalityEntity(dto);
+                if (entity) {
+                    entities.push(entity);
+                }
+            } else {
+                this.LOGGER.debug(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
+            }
+            return entities;
+        }, []);
+    }
+
+    toLegalityEntity(dto: LegalityDto): Legality {
+        const entity: Legality = new Legality();
+        entity.cardId = dto.cardId;
+        entity.format = dto.format;
+        entity.status = dto.status;
+        return entity;
+    }
+
+    toLegalityDtos(entities: Legality[]): LegalityDto[] {
+        return entities?.reduce((dtos: LegalityDto[], entity: Legality) => {
+            if (this.isValidLegalityEntity(entity)) {
+                const dto: LegalityDto = this.toLegalityDto(entity);
+                if (dto) {
+                    dtos.push(dto);
+                }
+            } else {
+                this.LOGGER.debug(`Invalid Legality: ${JSON.stringify(entity)}`);
+            }
+            return dtos;
+        }, []);
+    }
+
+    toLegalityDto(entity: Legality): LegalityDto {
+        const dto: LegalityDto = {
+            cardId: entity?.cardId,
+            format: entity?.format,
+            status: entity?.status,
+        };
+        return dto;
+    }
+
+    private fillMissingFormats(card: CardDto): LegalityDto[] {
+        const existingLegalities: LegalityDto[] = card.legalities || [];
+        const formats: Format[] = Object.values(Format);
+        const filledLegalities: LegalityDto[] = formats.map(format => {
+            const existingLegality: LegalityDto | undefined = existingLegalities.find(l => l.format === format);
+            if (existingLegality) {
+                return existingLegality;
+            }
+            const newLegality: LegalityDto = {
+                cardId: card.id,
+                format: format,
+                status: "Not Legal"
+            }
+            return newLegality;
+        });
+        return filledLegalities;
     }
 
     private setEntityToDto(set: Set): SetDto {
@@ -96,4 +178,19 @@ export class CardMapper {
     private buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
+
+    private isValidLegalityDto(dto: LegalityDto): boolean {
+        return this.isValidlegality(dto?.format, dto?.status);
+    }
+
+    private isValidLegalityEntity(entity: Legality): boolean {
+        return this.isValidlegality(entity?.format, entity?.status);
+    }
+
+    private isValidlegality(format: string, status: string): boolean {
+        const validFormat: boolean = Object.values(Format).includes(format?.toLowerCase() as Format);
+        const validStatus: boolean = Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
+        return validFormat && validStatus
+    }
+
 }

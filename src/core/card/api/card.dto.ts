@@ -4,10 +4,12 @@ import {
     IsEnum,
     IsInt,
     IsLowercase,
+    IsNumber,
     IsOptional,
     IsPositive,
     IsString
 } from "class-validator";
+import { LegalityDto } from "src/core/card/api/legality.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 
 export enum CardRarity {
@@ -31,9 +33,10 @@ export class CardDto {
     readonly artist: string;
     readonly imgSrc: string;
     readonly isReserved: boolean;
+    readonly legalities?: LegalityDto[];
     readonly manaCost?: string[];
     readonly name: string;
-    readonly number: string;
+    readonly number: number;
     readonly oracleText?: string;
     readonly rarity: string;
     readonly set?: SetDto;
@@ -55,14 +58,17 @@ export class CreateCardDto {
     readonly isReserved: boolean;
 
     @IsOptional()
+    readonly legalities?: LegalityDto[];
+
+    @IsOptional()
     @IsString()
     readonly manaCost?: string;
 
     @IsString()
     readonly name: string;
 
-    @IsString()
-    readonly number: string;
+    @IsNumber()
+    readonly number: number;
 
     @IsOptional()
     @IsString()

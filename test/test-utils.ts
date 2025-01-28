@@ -1,7 +1,9 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CreateCardDto } from "src/core/card/api/card.dto";
+import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
@@ -29,10 +31,11 @@ export class TestUtils {
             artist: "artist",
             imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
+            legalities: this.getMockLegalities(i + 1),
             manaCost: `{${i + 1}}{W}`,
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
-            number: `${i + 1}`,
-            originalText: "Test card text.",
+            number: i + 1,
+            oracleText: "Test card text.",
             rarity: i % 2 === 0 ? "Common" : "Uncommon",
             setCode,
             uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
@@ -40,12 +43,22 @@ export class TestUtils {
         }));
     }
 
-    getMockCards(setCode: string): Card[] {
-        return this.getMockCreateCardDtos(setCode).map((dto, index) => ({
+    getMockUpdateCardDtos(setCode: string): UpdateCardDto[] {
+        const createDtos: CreateCardDto[] = this.getMockCreateCardDtos(setCode);
+        return createDtos.map((dto, i) => ({
             ...dto,
-            id: index + 1,
+            id: i + 1,
+        }));
+    }
+
+    getMockCards(setCode: string): Card[] {
+        return this.getMockCreateCardDtos(setCode).map((dto, i) => ({
+            ...dto,
+            id: i + 1,
             manaCost: dto.manaCost,
             set: this.getMockSet(setCode),
+            setCode: setCode,
+            legalities: this.getMockLegalities(i + 1),
         }));
     }
 
@@ -207,18 +220,77 @@ export class TestUtils {
         return userDto;
     }
 
+    getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus): LegalityDto {
+        return {
+            cardId: cardId,
+            format: format,
+            status: status
+        };
+    }
+
+    getMockLegalities(cardId: number): Legality[] {
+        return Object.values(Format).map((format) => ({
+            cardId,
+            format,
+            status: LegalityStatus.Legal
+        }));
+    }
+
+
+    mapCreateCardDtosToEntities(createCardDtos: CreateCardDto[]): Card[] {
+        return createCardDtos.map((dto, i) => this.mapCreateCardDtoToEntity(dto, i + 1));
+    }
+
+    mapCreateCardDtoToEntity(createCardDto: CreateCardDto, _id: number): Card {
+        return {
+            id: _id,
+            artist: createCardDto.artist,
+            imgSrc: createCardDto.imgSrc,
+            isReserved: createCardDto.isReserved,
+            legalities: createCardDto.legalities.map((legality) =>
+                this.mapLegalityDtoToEntity(legality)
+            ),
+            manaCost: createCardDto.manaCost,
+            name: createCardDto.name,
+            number: createCardDto.number,
+            oracleText: createCardDto.oracleText,
+            rarity: createCardDto.rarity.toLowerCase(),
+            setCode: createCardDto.setCode,
+            type: createCardDto.type,
+            uuid: createCardDto.uuid,
+            set: this.getMockSet(createCardDto.setCode),
+        };
+    }
+
     mapCardEntityToDto(card: Card, imgSize: string): CardDto {
         return {
             id: card.id,
             artist: card.artist,
             imgSrc: `${this.IMG_SRC_BASE}/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
+            legalities: card.legalities.map((legality) =>
+                this.getMockLegalityDto(
+                    legality.cardId,
+                    legality.format as Format,
+                    legality.status as LegalityStatus,
+                )
+            ),
             manaCost: this.manaCostToArray(card.manaCost),
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
             rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1),
             setCode: card.set.code,
+            set: {
+                code: "SET",
+                baseSize: 3,
+                keyruneCode: "set",
+                name: "Test Set",
+                releaseDate: "2022-01-01",
+                type: "expansion",
+                cards: [],
+                url: "/set/set",
+            },
             uuid: card.uuid,
             type: card.type,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
@@ -246,6 +318,15 @@ export class TestUtils {
 
     mapSetEntitiesToDtos(sets: Set[]): SetDto[] {
         return sets.map((set) => this.mapSetEntityToDto(set));
+    }
+
+    mapLegalityDtoToEntity(legalityDto: LegalityDto): Legality {
+        return {
+            cardId: legalityDto.cardId,
+            format: legalityDto.format,
+            status: legalityDto.status,
+            card: undefined,
+        };
     }
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {

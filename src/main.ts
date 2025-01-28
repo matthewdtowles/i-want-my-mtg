@@ -6,7 +6,6 @@ import { create } from "express-handlebars";
 import { join } from "path";
 import { HttpExceptionFilter } from "./adapters/http/http.exception.filter";
 import { AppModule } from "./app.module";
-import { helpers } from "handlebars";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -21,6 +20,7 @@ async function bootstrap() {
         helpers: {
             toUpperCase: (str: string) => str.toUpperCase(),
             toLowerCase: (str: string) => str.toLowerCase(),
+            capitalize: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
         },
     });
     app.engine("hbs", hbs.engine);

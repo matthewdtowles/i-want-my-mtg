@@ -9,6 +9,7 @@ import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
 
 @Injectable()
 export class MtgJsonIngestionService implements IngestionServicePort {
+
     constructor(
         private readonly apiClient: MtgJsonApiClient,
         private readonly dataMapper: MtgJsonIngestionMapper,
@@ -26,6 +27,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
 
     async fetchSetCards(code: string): Promise<CreateCardDto[]> {
         const setDto: SetDto = await this.apiClient.fetchSet(code);
-        return this.dataMapper.toCreateCardDtos(setDto.cards);
+        const createCardDtos: CreateCardDto[] = this.dataMapper.toCreateCardDtos(setDto.cards);
+        return createCardDtos;
     }
 }

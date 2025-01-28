@@ -2,6 +2,7 @@ import { Logger, Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
+import { Legality } from "src/core/card/legality.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
@@ -14,7 +15,7 @@ import { SetRepository } from "./set.repository";
 import { UserRepository } from "./user.repository";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Card, Inventory, Set, User])],
+    imports: [TypeOrmModule.forFeature([Card, Inventory, Legality, Set, User])],
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },

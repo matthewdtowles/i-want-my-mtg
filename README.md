@@ -2,7 +2,7 @@
 
 ## Overview
 
-"I Want My MTG" is a project for managing and viewing Magic: The Gathering cards. This project uses NestJS, TypeORM, and other modern web technologies.
+"I Want My MTG" is a project for managing and viewing Magic: The Gathering collections. This project uses NestJS, TypeORM, and other modern web technologies.
 
 ## Prerequisites
 
@@ -24,20 +24,16 @@ Create a `.env` file in the root directory and add the following environment var
 
 ```env
 # Database configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_USERNAME=root
-DB_PASSWORD=password
-DB_DATABASE=mtg
+APP_NAME=i-want-my-mtg
+DB_HOST=<your-value-here>
+DB_PORT=<your-value-here>
+DB_USERNAME=<your-value-here>
+DB_PASSWORD=<your-value-here>
+DB_DATABASE=<your-value-here>
 
 # JWT configuration
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRATION=3600s
+JWT_SECRET=<your-value-here>
 
-# Other configurations
-API_BASE_URL=https://api.example.com
-SCRYFALL_CARD_IMAGE_URL=https://cards.scryfall.io
-```
 
 ### Database Setup
 

@@ -31,7 +31,7 @@
             <h3 class="section-title">Legalities</h3>
             <ul class="list-disc list-inside section-content">
                 {{#each card.legalities as |legality|}}
-                <li>{{legality.key}}: {{legality.value}}</li>
+                <li>{{capitalize legality.format}}: {{legality.status}}</li>
                 {{/each}}
             </ul>
         </section>

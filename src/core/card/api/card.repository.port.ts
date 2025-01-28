@@ -1,4 +1,5 @@
 import { Card } from "../card.entity";
+import { Legality } from "../legality.entity";
 
 export const CardRepositoryPort = "CardRepositoryPort";
 
@@ -12,7 +13,7 @@ export interface CardRepositoryPort {
      * @param cards
      * @returns saved card(s)
      */
-    save(card: Card[]): Promise<Card[]>;
+    save(cards: Card[]): Promise<Card[]>;
 
     /**
      * @param code three letter set code
@@ -46,9 +47,30 @@ export interface CardRepositoryPort {
     findByUuid(uuid: string): Promise<Card | null>;
 
     /**
-     * Remove card entit
+     * Remove card entity
      *
      * @param card
      */
     delete(card: Card): Promise<void>;
+
+    /**
+     * @param cardId
+     * @returns legalities for card with cardId
+     */
+    findLegalities(cardId: number): Promise<Legality[]>;
+
+    /**
+     * Create legality entities, update if they exist
+     *
+     * @param legalities
+     * @returns saved legality(ies)
+     */
+    saveLegalities(legalities: Legality[]): Promise<Legality[]>;
+
+    /**
+     * Remove legality entity
+     *
+     * @param legality
+     */
+    deleteLegality(cardId: number, format: string): Promise<void>;
 }

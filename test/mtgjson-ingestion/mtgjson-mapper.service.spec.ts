@@ -4,6 +4,7 @@ import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { CreateCardDto } from "src/core/card/api/card.dto";
+import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
 
@@ -46,6 +47,23 @@ describe("MtgJsonIngestionMapper", () => {
             const expectedSet: CreateSetDto[] = testUtils.getExpectedCreateSetDtos();
             const actualSet: CreateSetDto[] = service.toCreateSetDtos(setList);
             expect(actualSet).toEqual(expectedSet);
-        })
+        });
+
+        it("toLegalityDtos maps mtgjson legalities to LegalityDto[]", () => {
+            // expect any legality that is validFormat and isValidStatus to be mapped as is
+            // otherwise expect it to NOT be mapped at all
+            const legalities: LegalityDto[] = service.toLegalityDtos(cards[0].legalities);
+            const expectedLegalities: LegalityDto[] = [
+                { format: "commander", status: "legal", cardId: null },
+                { format: "explorer", status: "legal", cardId: null },
+                { format: "historic", status: "legal", cardId: null },
+                { format: "legacy", status: "legal", cardId: null },
+                { format: "modern", status: "banned", cardId: null },
+                { format: "oathbreaker", status: "legal", cardId: null },
+                { format: "pioneer", status: "legal", cardId: null },
+                { format: "vintage", status: "legal", cardId: null },
+            ];
+            expect(legalities).toEqual(expectedLegalities);
+        });
     });
 });

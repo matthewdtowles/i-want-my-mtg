@@ -41,7 +41,7 @@ export interface CardServicePort {
      */
     findBySetCodeAndNumber(
         setCode: string,
-        number: number,
+        number: string,
     ): Promise<CardDto | null>;
 
     /**

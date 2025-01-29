@@ -38,7 +38,7 @@ export interface CardRepositoryPort {
      * @param number card number in set
      * @returns card entity in set with code and card number in set
      */
-    findBySetCodeAndNumber(code: string, number: number): Promise<Card | null>;
+    findBySetCodeAndNumber(code: string, number: string): Promise<Card | null>;
 
     /**
      * @param uuid

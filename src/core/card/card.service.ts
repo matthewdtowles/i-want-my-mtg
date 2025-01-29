@@ -82,7 +82,7 @@ export class CardService implements CardServicePort {
         return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
     }
 
-    async findBySetCodeAndNumber(setCode: string, number: number): Promise<CardDto> {
+    async findBySetCodeAndNumber(setCode: string, number: string): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
         const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
         return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);

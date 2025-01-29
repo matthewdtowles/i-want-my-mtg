@@ -40,9 +40,9 @@ export class Card {
     name: string;
 
     @Column()
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
-    number: number;
+    number: string;
 
     @Column({
         nullable: true,

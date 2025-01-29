@@ -141,7 +141,7 @@ describe("AggregatorService", () => {
     });
 
     describe("findInventoryCardBySetNumber", () => {
-        const cardNumber = 1;
+        const cardNumber: string = "1";
         it("should throw error if card not found", async () => {
             jest.spyOn(mockCardService, "findBySetCodeAndNumber").mockResolvedValueOnce(null);
             await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))

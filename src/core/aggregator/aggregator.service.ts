@@ -83,7 +83,7 @@ export class AggregatorService implements AggregatorServicePort {
 
     async findInventoryCardBySetNumber(
         setCode: string,
-        cardNumber: number,
+        cardNumber: string,
         userId: number
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCards for set: ${setCode}, card #: ${cardNumber}, user:  ${userId}`);

@@ -30,7 +30,7 @@ export class MockCardRepository implements CardRepositoryPort {
         return this.cards.find(c => c.id === cardId);
     }
 
-    async findBySetCodeAndNumber(setCode: string, number: number): Promise<Card> {
+    async findBySetCodeAndNumber(setCode: string, number: string): Promise<Card> {
         return this.cards.find(card => card.setCode === setCode && card.number === number);
     }
 

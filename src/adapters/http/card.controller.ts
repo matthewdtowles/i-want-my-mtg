@@ -73,7 +73,7 @@ export class CardController {
     @Render("card")
     async findSetCard(
         @Param("setCode") setCode: string,
-        @Param("setNumber") setNumber: number,
+        @Param("setNumber") setNumber: string,
         @Req() req: AuthenticatedRequest
     ): Promise<CardHttpDto> {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);

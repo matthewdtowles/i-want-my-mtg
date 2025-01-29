@@ -36,7 +36,7 @@ export class CardDto {
     readonly legalities?: LegalityDto[];
     readonly manaCost?: string[];
     readonly name: string;
-    readonly number: number;
+    readonly number: string;
     readonly oracleText?: string;
     readonly rarity: string;
     readonly set?: SetDto;
@@ -68,7 +68,7 @@ export class CreateCardDto {
     readonly name: string;
 
     @IsNumber()
-    readonly number: number;
+    readonly number: string;
 
     @IsOptional()
     @IsString()

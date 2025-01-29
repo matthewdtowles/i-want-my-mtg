@@ -46,7 +46,7 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    async findBySetCodeAndNumber(code: string, _number: number): Promise<Card | null> {
+    async findBySetCodeAndNumber(code: string, _number: string): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: {
                 set: { code: code, },

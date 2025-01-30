@@ -7,15 +7,14 @@ import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
 import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
+import { Legality } from "src/core/card/legality.entity";
 
 describe("CardService", () => {
     let service: CardService;
     let repository: MockCardRepository;
-    let mapper: CardMapper;
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
-    const allFormats = Object.values(Format);
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -28,7 +27,6 @@ describe("CardService", () => {
 
         service = module.get<CardService>(CardService);
         repository = module.get<CardRepositoryPort>(CardRepositoryPort) as MockCardRepository;
-        mapper = module.get<CardMapper>(CardMapper);
     });
 
     afterEach(() => {
@@ -113,22 +111,52 @@ describe("CardService", () => {
     });
 
     it("should find all cards in set and fill missing formats with NotLegal status", async () => {
-        // TODO: make it so that card legalities are missing some formats
-        // and then the remainder need to be added with Not Legal
-        repository.populate(testUtils.getMockCards(mockSetCode));
+        const preexistingCards: Card[] = testUtils.getMockCards(mockSetCode);
+        preexistingCards.forEach(card => {
+            card.legalities = card.legalities.filter(legality => legality.format !== Format.Standard);
+            card.legalities.forEach(legality => {
+                if (legality.cardId === 1 && legality.format === Format.Modern) {
+                    legality.status = LegalityStatus.Banned;
+                }
+            });
+        });
+        // each card should have all but 1 legality format, but then need to fill in the missing format with Not Legal
+        // additinoally, card 1 will be banned in modern
+        preexistingCards.forEach(card => {
+            const standardLegality = card.legalities.find(legality => legality.format === Format.Standard);
+
+            expect(standardLegality).toBeUndefined();
+            if (card.id === 1) {
+                const modernLegality: Legality = card.legalities.find(legality => legality.format === Format.Modern);
+
+                expect(modernLegality).toBeDefined();
+                expect(modernLegality?.status).toBe(LegalityStatus.Banned);
+            } else {
+                card.legalities.forEach(legality => {
+                    if (legality.format !== Format.Standard) {
+                        // everything not standard should be legal if not cardId 1
+                        expect(legality.status).toBe(LegalityStatus.Legal);
+                    }
+                });
+            }
+        });
+        repository.populate(preexistingCards);
         jest.spyOn(repository, 'findAllInSet');
         const foundCards: CardDto[] = await service.findAllInSet(mockSetCode);
+
         expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
         expect(foundCards.length).toBeGreaterThan(0);
+
         for (const card of foundCards) {
-            expect(card.legalities.length).toBe(Object.values(Format).length);
+            // subtract 1 for standard missing
+            expect(card.legalities.length).toBe(Object.values(Format).length - 1);
+
             card.legalities.forEach(legality => {
                 expect(Object.values(LegalityStatus)).toContain(legality.status || "Not Legal");
                 expect(Object.values(Format)).toContain(legality.format);
                 expect(legality.cardId).toBe(card.id);
             });
         }
-
     });
 
     // should include Not Legal for find*

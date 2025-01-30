@@ -30,7 +30,7 @@ export enum CardImgType {
 
 export class CardDto {
     readonly id: number;
-    readonly artist: string;
+    readonly artist?: string;
     readonly imgSrc: string;
     readonly isReserved: boolean;
     readonly legalities?: LegalityDto[];
@@ -48,8 +48,9 @@ export class CardDto {
 
 export class CreateCardDto {
 
+    @IsOptional()
     @IsString()
-    readonly artist: string;
+    readonly artist?: string;
 
     @IsString()
     readonly imgSrc: string;

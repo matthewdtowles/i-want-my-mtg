@@ -15,10 +15,9 @@ export class Card {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ nullable: true })
     @IsString()
-    @IsNotEmpty()
-    artist: string;
+    artist?: string;
 
     @Column()
     @IsString()

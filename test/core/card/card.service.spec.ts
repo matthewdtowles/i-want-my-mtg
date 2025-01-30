@@ -5,9 +5,9 @@ import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
+import { Legality } from "src/core/card/legality.entity";
 import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
-import { Legality } from "src/core/card/legality.entity";
 
 describe("CardService", () => {
     let service: CardService;
@@ -124,11 +124,9 @@ describe("CardService", () => {
         // additinoally, card 1 will be banned in modern
         preexistingCards.forEach(card => {
             const standardLegality = card.legalities.find(legality => legality.format === Format.Standard);
-
             expect(standardLegality).toBeUndefined();
             if (card.id === 1) {
                 const modernLegality: Legality = card.legalities.find(legality => legality.format === Format.Modern);
-
                 expect(modernLegality).toBeDefined();
                 expect(modernLegality?.status).toBe(LegalityStatus.Banned);
             } else {
@@ -146,7 +144,6 @@ describe("CardService", () => {
 
         expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
         expect(foundCards.length).toBeGreaterThan(0);
-
         for (const card of foundCards) {
             // subtract 1 for standard missing
             expect(card.legalities.length).toBe(Object.values(Format).length - 1);

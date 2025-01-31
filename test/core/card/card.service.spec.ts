@@ -19,8 +19,8 @@ describe("CardService", () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                CardService,
                 { provide: CardRepositoryPort, useClass: MockCardRepository },
+                CardService,
                 CardMapper,
             ],
         }).compile();
@@ -88,7 +88,7 @@ describe("CardService", () => {
         expect(repository.save).toHaveBeenCalledTimes(1);
     });
 
-    it("should update CreateCardDtos that already exist in repository", async () => {
+    it("should update cards that already exist in repository", async () => {
         const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
         const existingCards: Card[] = testUtils.getMockCards(mockSetCode).map((card, i) => ({
             ...card,
@@ -123,10 +123,12 @@ describe("CardService", () => {
         // each card should have all but 1 legality format, but then need to fill in the missing format with Not Legal
         // additinoally, card 1 will be banned in modern
         preexistingCards.forEach(card => {
-            const standardLegality = card.legalities.find(legality => legality.format === Format.Standard);
+            const standardLegality = card.legalities
+                .find(legality => legality.format === Format.Standard);
             expect(standardLegality).toBeUndefined();
             if (card.id === 1) {
-                const modernLegality: Legality = card.legalities.find(legality => legality.format === Format.Modern);
+                const modernLegality: Legality = card.legalities
+                    .find(legality => legality.format === Format.Modern);
                 expect(modernLegality).toBeDefined();
                 expect(modernLegality?.status).toBe(LegalityStatus.Banned);
             } else {
@@ -156,7 +158,6 @@ describe("CardService", () => {
         }
     });
 
-    // should include Not Legal for find*
     it("should find card by id and fill missing formats with NotLegal status", async () => {
         const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
         const index = 0;
@@ -183,18 +184,28 @@ describe("CardService", () => {
 
     it("save should not save legality with invalid status", async () => {
         const inputCreateCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        inputCreateCardDtos[0].legalities[0] = {
+            ...inputCreateCardDtos[0].legalities[0],
+            status: 'invalidStatus' as LegalityStatus,
+        };
         jest.spyOn(repository, 'save');
         const savedCards: CardDto[] = await service.save(inputCreateCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        for (const card of savedCards) {
-            const inputCardLegalityLength: number = inputCreateCardDtos.find(dto => dto.name === card.name)?.legalities.length || 0;
+        expect(savedCards.length).toBeGreaterThan(0);
+
+        for (let i = 0; i < savedCards.length; i++) {
+            const card: CardDto = savedCards[i];
+            const inputCard: CreateCardDto = inputCreateCardDtos[i];
             expect(card.legalities.length).toBeGreaterThan(0);
-            expect(card.legalities.length).toBeLessThanOrEqual(inputCardLegalityLength)
+            expect(card.legalities.length).toBeLessThanOrEqual(inputCard.legalities.length);
             card.legalities.forEach(legality => {
                 expect(Object.values(LegalityStatus)).toContain(legality.status);
             });
         }
+
+        expect(savedCards[0].legalities.length).toBe(inputCreateCardDtos[0].legalities.length - 1);
+        expect(savedCards[0].legalities.length).toBe(savedCards[1].legalities.length - 1);
     });
 
 

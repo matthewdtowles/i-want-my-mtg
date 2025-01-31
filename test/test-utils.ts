@@ -34,7 +34,7 @@ export class TestUtils {
             legalities: this.getMockLegalities(i + 1),
             manaCost: `{${i + 1}}{W}`,
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
-            number: i + 1,
+            number: `${i + 1}`,
             oracleText: "Test card text.",
             rarity: i % 2 === 0 ? "Common" : "Uncommon",
             setCode,

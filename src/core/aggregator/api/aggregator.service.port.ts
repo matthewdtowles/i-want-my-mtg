@@ -50,7 +50,7 @@ export interface AggregatorServicePort {
      */
     findInventoryCardBySetNumber(
         setCode: string,
-        cardNumber: number,
+        cardnumber: string,
         userId: number
     ): Promise<InventoryCardAggregateDto | null>;
 }

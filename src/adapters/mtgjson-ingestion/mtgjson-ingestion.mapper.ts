@@ -58,7 +58,7 @@ export class MtgJsonIngestionMapper {
             legalities: this.toLegalityDtos(setCard.legalities),
             manaCost: setCard.manaCost,
             name: setCard.name,
-            number: this.extractNumber(setCard.number),
+            number: setCard.number,
             oracleText: setCard.text,
             rarity: setCard.rarity,
             setCode: setCard.setCode.toLowerCase(),
@@ -96,10 +96,5 @@ export class MtgJsonIngestionMapper {
         }
         const scryfallId: string = card.identifiers.scryfallId;
         return `${scryfallId.charAt(0)}/${scryfallId.charAt(1)}/${scryfallId}.jpg`;
-    }
-
-    private extractNumber(value: string): number {
-        const numericString: string = value.replace(/\D/g, "");
-        return parseInt(numericString, 10);
     }
 }

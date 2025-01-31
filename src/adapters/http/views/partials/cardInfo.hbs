@@ -29,11 +29,14 @@
         </section>
         <section class="card-legalities subsection-container">
             <h3 class="section-title">Legalities</h3>
-            <ul class="list-disc list-inside section-content">
+            <table class="list-disc list-inside section-content w-full">
                 {{#each card.legalities as |legality|}}
-                <li>{{capitalize legality.format}}: {{capitalize legality.status}}</li>
+                <tr>
+                    <td class="w-1/2">{{capitalize legality.format}}</td>
+                    <td class="w-1/2">{{capitalize legality.status}}</td>
+                </tr>
                 {{/each}}
-            </ul>
+            </table>
         </section>
     </section>
 

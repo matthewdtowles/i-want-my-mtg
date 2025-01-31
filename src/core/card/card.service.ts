@@ -17,6 +17,7 @@ export class CardService implements CardServicePort {
         @Inject(CardMapper) private readonly mapper: CardMapper,
     ) { }
 
+
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
         if (!cardDtos || cardDtos.length === 0) {
@@ -24,41 +25,16 @@ export class CardService implements CardServicePort {
         }
         const cardsToSave: Card[] = [];
         for (const dto of cardDtos) {
-            const legalitiesToSave: Legality[] = [];
-            const legalitiesToDelete: Legality[] = [];
-            const previouslySavedCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
-            const card: Card = previouslySavedCard
-                ? { ...previouslySavedCard, ...this.mapper.dtoToEntity(dto) }
-                : this.mapper.dtoToEntity(dto);
-            if (this.isValidCard(card)) {
-                // extract valid legalities to save later
-                for (const legality of card?.legalities) {
-                    legality.cardId = card.id;
-                    if (this.isValidLegality(legality)) {
-                        legalitiesToSave.push(legality);
-                    }
-                }
-                // extract legalities to delete
-                if (previouslySavedCard && previouslySavedCard.legalities) {
-                    for (const existingLegality of previouslySavedCard.legalities) {
-                        if (!legalitiesToSave.some(l => l.format === existingLegality?.format)) {
-                            legalitiesToDelete.push(existingLegality);
-                        }
-                    }
-                }
-                // delete legalities that are not in the new list
-                const legalityDeletionPromises = legalitiesToDelete?.map(l => {
-                    if (l && l.cardId && l.format) {
-                        this.repository.deleteLegality(l.cardId, l.format)
-                    }
-                });
-                // wait for all deletions to complete
-                if (legalityDeletionPromises && legalityDeletionPromises.length > 0) {
-                    await Promise.all(legalityDeletionPromises);
-                }
-                card.legalities = legalitiesToSave;
-                cardsToSave.push(card);
+            const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
+            const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+            if (!this.isValidCard(card)) {
+                continue;
             }
+            const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
+            const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
+            this.deleteObsoleteLegalities(legalitiesToDelete);
+            card.legalities = legalitiesToSave;
+            cardsToSave.push(card);
         }
         const savedCards: Card[] = await this.repository.save(cardsToSave);
         return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
@@ -82,7 +58,7 @@ export class CardService implements CardServicePort {
         return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
     }
 
-    async findBySetCodeAndNumber(setCode: string, number: number): Promise<CardDto> {
+    async findBySetCodeAndNumber(setCode: string, number: string): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
         const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
         return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
@@ -108,5 +84,27 @@ export class CardService implements CardServicePort {
 
     private isValidStatus(status: string): boolean {
         return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
+    }
+
+    private extractLegalitiesToSave(card: Card): Legality[] {
+        return card?.legalities?.map(legality => {
+            legality.cardId = card.id;
+            if (this.isValidLegality(legality)) {
+                return legality;
+            }
+        });
+    }
+
+    private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
+        return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
+            !newLegalities.some(l => l.format === existingLegality.format)
+        ) : [];
+    }
+
+    private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
+        const legalityDeletionPromises = legalitiesToDelete?.map(l => {
+            this.repository.deleteLegality(l.cardId, l.format)
+        });
+        await Promise.all(legalityDeletionPromises);
     }
 }

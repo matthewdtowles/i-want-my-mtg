@@ -30,13 +30,13 @@ export enum CardImgType {
 
 export class CardDto {
     readonly id: number;
-    readonly artist: string;
+    readonly artist?: string;
     readonly imgSrc: string;
     readonly isReserved: boolean;
     readonly legalities?: LegalityDto[];
     readonly manaCost?: string[];
     readonly name: string;
-    readonly number: number;
+    readonly number: string;
     readonly oracleText?: string;
     readonly rarity: string;
     readonly set?: SetDto;
@@ -48,8 +48,9 @@ export class CardDto {
 
 export class CreateCardDto {
 
+    @IsOptional()
     @IsString()
-    readonly artist: string;
+    readonly artist?: string;
 
     @IsString()
     readonly imgSrc: string;
@@ -68,7 +69,7 @@ export class CreateCardDto {
     readonly name: string;
 
     @IsNumber()
-    readonly number: number;
+    readonly number: string;
 
     @IsOptional()
     @IsString()

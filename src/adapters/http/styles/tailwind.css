@@ -88,7 +88,7 @@
 }
 
 .section-container {
-    @apply bg-white border-b border-gray-200 rounded-lg p-6 mb-6;
+    @apply bg-white border-b border-gray-200 p-6 m-6;
 }
 
 .section-content {

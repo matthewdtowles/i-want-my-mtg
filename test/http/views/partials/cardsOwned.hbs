@@ -1,19 +1,13 @@
-{{!-- <form class="quantity-form" data-item-id="{{card.id}}">
-    <button type="button"
-        class="increment-quantity px-3 py-2 bg-gray-200 border border-gray-300 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring">+</button>
-    <input type="number" name="quantity-owned"
-        class="quantity-owned form-input w-16 text-center border-gray-300 rounded focus:ring focus:ring-blue-300 focus:outline-none"
-        value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}" data-id="{{card.id}}" />
-    <button type="button"
-        class="decrement-quantity px-3 py-2 bg-gray-200 border border-gray-300 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring">-</button>
-</form> --}}
+<form class="quantity-form inline-flex items-stretch border-none rounded overflow-hidden" data-item-id="{{card.id}}">
 
-<form class="quantity-form flex items-center border border-gray-300 rounded overflow-hidden" data-item-id="{{card.id}}">
-    <button type="button"
-        class="increment-quantity px-3 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300">+</button>
-    <input type="number" name="quantity-owned"
-        class="quantity-owned form-input w-16 text-center border-l border-r border-gray-300 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+    <button type="button" class="increment-quantity flex items-center justify-center px-3 bg-teal-300 
+        text-white text-xl hover:bg-teal-400 hover:text-purple-300">+</button>
+
+    <input type="number" name="quantity-owned" class="quantity-owned form-input w-16 text-center 
+        border-none bg-teal-300 text-white text-xl focus:outline-none focus:ring-0"
         value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}" data-id="{{card.id}}" />
-    <button type="button"
-        class="decrement-quantity px-3 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300">-</button>
+
+    <button type="button" class="decrement-quantity flex items-center justify-center px-3 bg-teal-300 text-white text-xl 
+            hover:bg-teal-400 hover:text-red-300">-</button>
+
 </form>

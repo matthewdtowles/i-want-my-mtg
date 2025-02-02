@@ -1854,12 +1854,12 @@ select {
   margin-bottom: 1.5rem;
 }
 
-.ml-4 {
-  margin-left: 1rem;
-}
-
 .mr-2 {
   margin-right: 0.5rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
 }
 
 .mt-4 {
@@ -2417,8 +2417,7 @@ select {
 }
 
 .section-container {
-  margin-bottom: 1.5rem;
-  border-radius: 0.5rem;
+  margin: 1.5rem;
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -4006,14 +4005,14 @@ select {
   color: rgb(31 41 55 / var(--tw-text-opacity, 1));
 }
 
-.hover\:text-purple-300:hover {
+.hover\:text-purple-400:hover {
   --tw-text-opacity: 1;
-  color: rgb(217 186 237 / var(--tw-text-opacity, 1));
+  color: rgb(194 145 225 / var(--tw-text-opacity, 1));
 }
 
-.hover\:text-red-300:hover {
+.hover\:text-red-400:hover {
   --tw-text-opacity: 1;
-  color: rgb(252 165 165 / var(--tw-text-opacity, 1));
+  color: rgb(248 113 113 / var(--tw-text-opacity, 1));
 }
 
 .hover\:text-teal-600:hover {
@@ -4040,6 +4039,21 @@ select {
 
 .focus\:ring-inset:focus {
   --tw-ring-inset: inset;
+}
+
+.active\:bg-teal-300:active {
+  --tw-bg-opacity: 1;
+  background-color: rgb(110 218 209 / var(--tw-bg-opacity, 1));
+}
+
+.active\:text-purple-600:active {
+  --tw-text-opacity: 1;
+  color: rgb(140 70 179 / var(--tw-text-opacity, 1));
+}
+
+.active\:text-red-600:active {
+  --tw-text-opacity: 1;
+  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
 }
 
 .prose-headings\:text-ellipsis :is(:where(h1, h2, h3, h4, h5, h6, th):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
@@ -4185,6 +4199,10 @@ select {
 @media (min-width: 768px) {
   .md\:mb-0 {
     margin-bottom: 0px;
+  }
+
+  .md\:mb-6 {
+    margin-bottom: 1.5rem;
   }
 
   .md\:flex {

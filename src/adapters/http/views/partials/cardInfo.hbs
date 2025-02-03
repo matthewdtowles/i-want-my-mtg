@@ -10,6 +10,9 @@
             <div class="text-xl">
                 <span>{{card.name}}</span>
                 <span>{{>manaCost card=card}}</span>
+                {{#if card.isReserved}}
+                <span class=" text-sm text-white bg-purple-500 px-1 mx-1">Reserved List</span>
+                {{/if}}
             </div>
             <div class="flex items-center mb-2">
                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
@@ -21,9 +24,7 @@
             <section class="subsection-container">
                 <h3 class="section-title">Oracle Text</h3>
                 <p class="card-type section-content">{{card.type}}</p>
-                <p class="card-oracle-text section-content">
-                    {{card.oracleText}}
-                </p>
+                <p class="card-oracle-text section-content">{{card.oracleText}}</p>
             </section>
             <p class="card-rarity section-content">{{card.rarity}}</p>
             <p class="card-number section-content">#{{card.number}}</p>
@@ -48,10 +49,10 @@
             <h3 class="section-title">Price</h3>
             <span>${{#if card.price}}{{card.price}}{{else}}0.00{{/if}}</span>
             <section class="inventory-info"></section>
-                {{>cardsOwned}}
-            </section>
+            {{>cardsOwned}}
         </section>
     </section>
+</section>
 </section>
 
 <section class="other-printings section-container">

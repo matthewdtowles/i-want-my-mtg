@@ -1822,6 +1822,11 @@ select {
   position: relative;
 }
 
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -2024,6 +2029,11 @@ select {
   border-color: rgb(252 165 165 / var(--tw-border-opacity, 1));
 }
 
+.bg-purple-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(168 102 207 / var(--tw-bg-opacity, 1));
+}
+
 .bg-purple-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(140 70 179 / var(--tw-bg-opacity, 1));
@@ -2041,6 +2051,11 @@ select {
 
 .p-4 {
   padding: 1rem;
+}
+
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .px-3 {

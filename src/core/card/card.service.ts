@@ -52,22 +52,26 @@ export class CardService implements CardServicePort {
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
-    async findById(id: number): Promise<CardDto | null> {
+    async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
         const foundCard: Card = await this.repository.findById(id);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        return this.mapper.entityToDtoForView(foundCard, imgType);
     }
 
-    async findBySetCodeAndNumber(setCode: string, number: string): Promise<CardDto> {
+    async findBySetCodeAndNumber(
+        setCode: string,
+        number: string,
+        imgType: CardImgType = CardImgType.NORMAL
+    ): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
         const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        return this.mapper.entityToDtoForView(foundCard, imgType);
     }
 
-    async findByUuid(uuid: string): Promise<CardDto | null> {
+    async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findByUuid ${uuid}`);
         const foundCard: Card = await this.repository.findByUuid(uuid);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        return this.mapper.entityToDtoForView(foundCard, imgType);
     }
 
     private isValidCard(card: Card): boolean {

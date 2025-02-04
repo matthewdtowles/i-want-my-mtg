@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import { CardDto, CardImgType } from "src/core/card/api/card.dto";
 import { CardServicePort } from "../card/api/card.service.port";
 import { InventoryCardDto, InventoryDto } from "../inventory/api/inventory.dto";
 import { InventoryServicePort } from "../inventory/api/inventory.service.port";
@@ -6,7 +7,6 @@ import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
-import { CardDto } from "src/core/card/api/card.dto";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -25,7 +25,7 @@ export class AggregatorService implements AggregatorServicePort {
             .findAllCardsForUser(userId);
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
-            const card = await this.cardService.findById(item.card.id);
+            const card = await this.cardService.findById(item.card.id, CardImgType.SMALL);
             cards.push({
                 ...card,
                 quantity: item.quantity,
@@ -63,12 +63,9 @@ export class AggregatorService implements AggregatorServicePort {
         };
     }
 
-    async findInventoryCardById(
-        cardId: number,
-        userId: number
-    ): Promise<InventoryCardAggregateDto> {
+    async findInventoryCardById(cardId: number, userId: number): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCardById for card: ${cardId}, user: ${userId}`);
-        const card = await this.cardService.findById(cardId);
+        const card = await this.cardService.findById(cardId, CardImgType.SMALL);
         if (!card) {
             throw new Error(`Card with id ${cardId} not found`);
         }
@@ -87,12 +84,12 @@ export class AggregatorService implements AggregatorServicePort {
         userId: number
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCards for set: ${setCode}, card #: ${cardNumber}, user:  ${userId}`);
-        const card: CardDto = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber);
+        const card: CardDto = await this.cardService
+            .findBySetCodeAndNumber(setCode, cardNumber, CardImgType.SMALL);
         if (!card) {
             throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
         }
-        const inventoryItem: InventoryDto = await this.inventoryService
-            .findOneForUser(userId, card.id);
+        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, card.id);
         const foundCard: InventoryCardAggregateDto = {
             ...card,
             quantity: inventoryItem ? inventoryItem.quantity : 0,

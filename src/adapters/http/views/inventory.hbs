@@ -11,6 +11,7 @@
         <thead>
             <tr>
                 <th>Owned</th>
+                <th></th>
                 <th>Name</th>
                 <th>Set</th>
                 <th>Price</th>
@@ -21,9 +22,11 @@
             <tr>
                 <td>{{>cardsOwned card=this}}</td>
                 <td>
+                    <img src="{{this.imgSrc}}" alt="{{this.name}}" />
+                </td>
+                <td>
                     <a href="{{this.url}}">{{this.name}}</a>
                     {{>reserved card=this}}
-                    <img src="{{this.imgSrc}}" alt="{{this.name}}" />
                 </td>
                 <td>
                     <i class="ss ss-{{this.setCode}} ss-fw"></i>

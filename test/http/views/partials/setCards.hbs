@@ -16,6 +16,7 @@
             <td class="card-set-card-number">{{this.number}}</td>
             <td class="card-set-card-name">
                 <a class="card-set-card-link" href="{{this.url}}">{{this.name}}</a>
+                {{>reserved card=this}}
             </td>
             <td class="card-set-card-mana-cost">
                 {{>manaCost card=this}}

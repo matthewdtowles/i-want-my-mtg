@@ -22,6 +22,7 @@
                 <td>{{>cardsOwned card=this}}</td>
                 <td>
                     <a href="{{this.url}}">{{this.name}}</a>
+                    {{>reserved card=this}}
                     <img src="{{this.imgSrc}}" alt="{{this.name}}" />
                 </td>
                 <td>

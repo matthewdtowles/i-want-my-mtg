@@ -10,9 +10,7 @@
             <div class="text-xl">
                 <span>{{card.name}}</span>
                 <span>{{>manaCost card=card}}</span>
-                {{#if card.isReserved}}
-                <span class=" text-sm text-white bg-purple-500 px-1 mx-1">Reserved List</span>
-                {{/if}}
+                {{>reserved card=card}}
             </div>
             <div class="flex items-center mb-2">
                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>

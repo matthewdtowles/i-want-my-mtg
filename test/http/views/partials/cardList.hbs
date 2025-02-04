@@ -10,7 +10,7 @@
     {{#each cards}}
         <tr>
             <td>{{this.number}}</td>
-            <td><a href="{{this.url}}">{{this.name}}</a></td>
+            <td><a href="{{this.url}}">{{this.name}}</a>{{>reserved card=card}}</td>
             <td>{{>manaCost}}</td>
             <td>{{this.rarity}}</td>
             <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>

@@ -20,24 +20,30 @@ export class CardService implements CardServicePort {
 
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
-        if (!cardDtos || cardDtos.length === 0) {
-            return [];
-        }
-        const cardsToSave: Card[] = [];
-        for (const dto of cardDtos) {
-            const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
-            const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
-            if (!this.isValidCard(card)) {
-                continue;
+        let savedDtos: CardDto[] = [];
+        try {
+            const cardsToSave: Card[] = [];
+            for (const dto of cardDtos) {
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
+                const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+                if (!this.isValidCard(card)) {
+                    continue;
+                }
+                const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
+                const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
+                this.deleteObsoleteLegalities(legalitiesToDelete);
+                card.legalities = legalitiesToSave;
+                cardsToSave.push(card);
             }
-            const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
-            const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
-            this.deleteObsoleteLegalities(legalitiesToDelete);
-            card.legalities = legalitiesToSave;
-            cardsToSave.push(card);
+            const savedCards: Card[] = await this.repository.save(cardsToSave);
+            this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
+                savedDtos.push(dto);
+            });
+        } catch (error) {
+            const msg = `Error saving cards: ${error}`;
+            this.LOGGER.error(msg);
         }
-        const savedCards: Card[] = await this.repository.save(cardsToSave);
-        return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
+        return savedDtos;
     }
 
     async findAllInSet(setCode: string): Promise<CardDto[]> {

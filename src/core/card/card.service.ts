@@ -40,7 +40,7 @@ export class CardService implements CardServicePort {
                 savedDtos.push(dto);
             });
         } catch (error) {
-            const msg = `Error saving cards: ${error}`;
+            const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
         }
         return savedDtos;
@@ -48,8 +48,15 @@ export class CardService implements CardServicePort {
 
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllInSet ${setCode}`);
-        const foundCards: Card[] = await this.repository.findAllInSet(setCode);
-        return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
+        try {
+            const foundCards: Card[] = await this.repository.findAllInSet(setCode);
+            return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
+        } catch (error) {
+            const msg = `Error finding cards in set ${setCode}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     async findAllWithName(name: string): Promise<CardDto[]> {
@@ -60,8 +67,15 @@ export class CardService implements CardServicePort {
 
     async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
-        const foundCard: Card = await this.repository.findById(id);
-        return this.mapper.entityToDtoForView(foundCard, imgType);
+        try {
+            const foundCard: Card = await this.repository.findById(id);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with id ${id}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     async findBySetCodeAndNumber(
@@ -70,14 +84,28 @@ export class CardService implements CardServicePort {
         imgType: CardImgType = CardImgType.NORMAL
     ): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
-        const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
-        return this.mapper.entityToDtoForView(foundCard, imgType);
+        try {
+            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with setCode ${setCode} and number ${number}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findByUuid ${uuid}`);
-        const foundCard: Card = await this.repository.findByUuid(uuid);
-        return this.mapper.entityToDtoForView(foundCard, imgType);
+        try {
+            const foundCard: Card = await this.repository.findByUuid(uuid);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with uuid ${uuid}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     private isValidCard(card: Card): boolean {

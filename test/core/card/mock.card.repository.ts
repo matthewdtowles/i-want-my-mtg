@@ -41,11 +41,7 @@ export class MockCardRepository implements CardRepositoryPort {
         if (!number) {
             throw new Error("Invalid input number");
         }
-        const card: Card = this.cards.find(card => card.setCode === setCode && card.number === number);
-        if (!card) {
-            throw new Error(`Card with setCode ${setCode} and number ${number} not found`);
-        }
-        return card;
+        return this.cards.find(card => card.setCode === setCode && card.number === number);
     }
 
     async findByUuid(uuid: string): Promise<Card> {

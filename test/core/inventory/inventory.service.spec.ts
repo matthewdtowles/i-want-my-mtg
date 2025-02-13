@@ -46,9 +46,6 @@ describe("InventoryService", () => {
         expect(service).toBeDefined();
     });
 
-    // TODO: add tests for error handling in create, update, and delete
-    // TODO: add error handling for create, update, and delete
-
     it("should create inventory items and return the saved inventory items", async () => {
         repository.reset();
         jest.spyOn(repository, "save");

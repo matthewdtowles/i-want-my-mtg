@@ -21,11 +21,10 @@ export class AggregatorService implements AggregatorServicePort {
 
     async findByUser(userId: number): Promise<InventoryCardAggregateDto[]> {
         this.LOGGER.debug(`findByUser ${userId}`);
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService
-            .findAllCardsForUser(userId);
+        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
-            const card = await this.cardService.findById(item.card.id, CardImgType.SMALL);
+            const card = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
             cards.push({
                 ...card,
                 quantity: item.quantity,
@@ -46,8 +45,7 @@ export class AggregatorService implements AggregatorServicePort {
         if (!set.cards || set.cards.length === 0) {
             throw new Error(`Set with code ${setCode} has no cards`);
         }
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService
-            .findAllCardsForUser(userId);
+        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const setInventoryCards: InventoryCardDto[] = inventoryCards
             ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
@@ -69,8 +67,7 @@ export class AggregatorService implements AggregatorServicePort {
         if (!card) {
             throw new Error(`Card with id ${cardId} not found`);
         }
-        const inventoryItem: InventoryDto = await this.inventoryService
-            .findOneForUser(userId, cardId);
+        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, cardId);
         const foundCard: InventoryCardAggregateDto = {
             ...card,
             quantity: inventoryItem ? inventoryItem.quantity : 0,
@@ -84,8 +81,7 @@ export class AggregatorService implements AggregatorServicePort {
         userId: number
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCards for set: ${setCode}, card #: ${cardNumber}, user:  ${userId}`);
-        const card: CardDto = await this.cardService
-            .findBySetCodeAndNumber(setCode, cardNumber, CardImgType.SMALL);
+        const card: CardDto = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber, CardImgType.NORMAL);
         if (!card) {
             throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
         }

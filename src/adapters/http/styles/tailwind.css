@@ -27,8 +27,12 @@
     @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-4 focus:ring-blue-300;
 }
 
-.card-image {
-    @apply w-full md:rounded-card-sm rounded-card-md sm:rounded-card-lg;
+.card-img-link {
+    @apply absolute hidden z-50;
+}
+
+.card-img-preview {
+    @apply w-64 h-auto;
 }
 
 .create-user-container {

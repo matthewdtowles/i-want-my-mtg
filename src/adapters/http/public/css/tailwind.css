@@ -2266,21 +2266,15 @@ select {
   --tw-ring-color: rgb(158 159 255 / var(--tw-ring-opacity, 1));
 }
 
-.card-image {
-  width: 100%;
-  border-radius: 1.5rem;
+.card-img-link {
+  position: absolute;
+  z-index: 50;
+  display: none;
 }
 
-@media (min-width: 640px) {
-  .card-image {
-    border-radius: 2.0rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .card-image {
-    border-radius: 0.66rem;
-  }
+.card-img-preview {
+  height: auto;
+  width: 16rem;
 }
 
 .create-user-container {

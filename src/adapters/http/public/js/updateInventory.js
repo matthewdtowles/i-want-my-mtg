@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         incrementButton.addEventListener("click", async (event) => {
             event.stopImmediatePropagation();
             console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
-            const updatedQuantity  = await addInventoryItem(quantityOwned.value, cardId);
+            const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId);
             quantityOwned.value = updatedQuantity;
         });
 
@@ -69,5 +69,30 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return null;
         }
+    });
+
+    const inventoryItems = document.querySelectorAll(".inventory-item");
+    let currentImgLink = null;
+
+    inventoryItems.forEach(item => {
+        const imgLink = item.querySelector(".card-img-link");
+        const imgPreview = imgLink.querySelector(".card-img-preview");
+
+        item.addEventListener("mouseover", () => {
+            if (currentImgLink && currentImgLink !== imgLink) {
+                currentImgLink.classList.add("hidden");
+            }
+            currentImgLink = imgLink;
+            imgLink.style.display = "block";
+            imgPreview.style.display = "block";
+            const rect = item.getBoundingClientRect();
+            imgLink.style.top = `${rect.bottom + window.scrollY}px`;
+            imgLink.style.left = `${rect.left + window.scrollX}px`;
+        });
+
+        item.addEventListener("mouseout", () => {
+            imgLink.style.display = "none";
+            imgPreview.style.display = "none";
+        });
     });
 });

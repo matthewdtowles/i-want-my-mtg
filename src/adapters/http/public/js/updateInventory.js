@@ -86,8 +86,9 @@ document.addEventListener("DOMContentLoaded", function () {
             imgLink.style.display = "block";
             imgPreview.style.display = "block";
             const rect = item.getBoundingClientRect();
+            const imgWidth = imgLink.offsetWidth;
             imgLink.style.top = `${rect.bottom + window.scrollY}px`;
-            imgLink.style.left = `${rect.left + window.scrollX}px`;
+            imgLink.style.left = `${rect.left + window.scrollX + imgWidth / 4}px`;
         });
 
         item.addEventListener("mouseout", () => {

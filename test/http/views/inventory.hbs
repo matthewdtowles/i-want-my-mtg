@@ -1,4 +1,4 @@
-<div id="user-inventory">
+<section id="user-inventory" class="section-container">
     <h3 id="user-inventory-heading">{{this.username}}'s Inventory</h3>
     <section id="user-inventory-metadata">
         <div id="user-inventory-value" class="user-inventory-metadata-item">
@@ -7,11 +7,10 @@
         </div>
     </section>
 
-    <table id="user-inventory-cards">
+    <table id="user-inventory-cards" class="table-container w-full">
         <thead>
             <tr>
                 <th>Owned</th>
-                <th></th>
                 <th>Name</th>
                 <th>Set</th>
                 <th>Price</th>
@@ -20,13 +19,14 @@
         <tbody>
             {{#each cards}}
             <tr>
-                <td>{{>cardsOwned card=this}}</td>
-                <td>
-                    <img src="{{this.imgSrc}}" alt="{{this.name}}" />
-                </td>
-                <td>
+                {{!-- TODO: reduce width of Owned column to take up width of content only --}}
+                <td class="cards-owned-td">{{>cardsOwned card=this}}</td>
+                <td class="inventory-item" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>
                     {{>reserved card=this}}
+                    <a href="{{this.url}}" class="card-img-link">
+                        <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" />
+                    </a>
                 </td>
                 <td>
                     <i class="ss ss-{{this.setCode}} ss-fw"></i>
@@ -37,5 +37,5 @@
             {{/each}}
         </tbody>
     </table>
-</div>
+</section>
 <script src="/public/js/updateInventory.js" defer></script>

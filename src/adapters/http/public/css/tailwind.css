@@ -1919,6 +1919,10 @@ select {
   height: 1.5rem;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
@@ -2277,6 +2281,10 @@ select {
   width: 16rem;
 }
 
+.cards-owned-td {
+  width: 0px;
+}
+
 .create-user-container {
   margin-left: auto;
   margin-right: auto;
@@ -2484,6 +2492,7 @@ select {
   min-width: 100%;
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  text-align: justify;
 }
 
 .table-link {

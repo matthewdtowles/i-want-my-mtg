@@ -19,7 +19,8 @@
         <tbody>
             {{#each cards}}
             <tr>
-                <td>{{>cardsOwned card=this}}</td>
+                {{!-- TODO: reduce width of Owned column to take up width of content only --}}
+                <td class="cards-owned-td">{{>cardsOwned card=this}}</td>
                 <td class="inventory-item" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>
                     {{>reserved card=this}}

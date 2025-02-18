@@ -35,6 +35,10 @@
     @apply w-64 h-auto;
 }
 
+.cards-owned-td {
+    @apply w-0;
+}
+
 .create-user-container {
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
 }
@@ -116,7 +120,7 @@
 }
 
 .table-container {
-    @apply min-w-full bg-white;
+    @apply min-w-full bg-white text-justify;
 }
 
 .table-link {

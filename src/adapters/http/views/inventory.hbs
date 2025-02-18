@@ -29,8 +29,10 @@
                     </a>
                 </td>
                 <td>
-                    <i class="ss ss-{{this.setCode}} ss-fw"></i>
-                    <a href="/sets/{{this.setCode}}">{{this.setCode}}</a>
+                    <a href="/sets/{{this.setCode}}">
+                        <i class="ss ss-{{this.setCode}} ss-{{toLowerCase this.rarity}} ss-fw"></i>{{toUpperCase
+                        this.setCode}}
+                    </a>
                 </td>
                 <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
             </tr>

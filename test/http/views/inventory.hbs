@@ -1,9 +1,8 @@
 <section id="user-inventory" class="section-container">
-    <h3 id="user-inventory-heading">{{this.username}}'s Inventory</h3>
-    <section id="user-inventory-metadata">
-        <div id="user-inventory-value" class="user-inventory-metadata-item">
-            <p class="user-inventory-metadata-heading">Value</p>
-            <p class="user-inventory-metadata-data">{{this.value}}</p>
+    <h3 class="page-title">{{this.username}}'s Inventory</h3>
+    <section>
+        <div>
+            <p>Value: ${{#if this.value}}{{this.value}}{{else}}0.00{{/if}}</p>
         </div>
     </section>
 

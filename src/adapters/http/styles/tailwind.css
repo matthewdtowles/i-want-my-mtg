@@ -96,7 +96,7 @@
 }
 
 .section-container {
-    @apply bg-white border-b border-gray-200 p-6 m-6;
+    @apply bg-white border-b border-teal-100 p-6 m-6;
 }
 
 .section-content {

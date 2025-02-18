@@ -1822,6 +1822,11 @@ select {
   position: relative;
 }
 
+.-mx-6 {
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+}
+
 .mx-1 {
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -1845,6 +1850,10 @@ select {
 .my-8 {
   margin-top: 2rem;
   margin-bottom: 2rem;
+}
+
+.-mt-6 {
+  margin-top: -1.5rem;
 }
 
 .mb-2 {
@@ -2015,6 +2024,14 @@ select {
   border-bottom-width: 2px;
 }
 
+.border-l {
+  border-left-width: 1px;
+}
+
+.border-r {
+  border-right-width: 1px;
+}
+
 .border-t-2 {
   border-top-width: 2px;
 }
@@ -2041,6 +2058,11 @@ select {
 .bg-purple-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(140 70 179 / var(--tw-bg-opacity, 1));
+}
+
+.bg-teal-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
 }
 
 .bg-teal-300 {
@@ -2442,7 +2464,7 @@ select {
   margin: 1.5rem;
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(209 246 241 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
   padding: 1.5rem;

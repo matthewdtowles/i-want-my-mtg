@@ -2,14 +2,14 @@
     data-item-id="{{card.id}}">
 
     <button type="button"
-        class="increment-quantity flex items-center justify-center px-3 bg-teal-300 
-        text-white text-xl hover:bg-teal-400 hover:text-purple-400 active:bg-teal-300 active:text-purple-600">+</button>
+        class="increment-quantity inventory-controller-button hover:text-purple-400 active:text-purple-600">+</button>
 
-    <input type="number" name="quantity-owned" class="quantity-owned form-input w-16 text-center 
-        border-none bg-teal-300 text-white text-xl focus:outline-none focus:ring-0"
-        value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}" data-id="{{card.id}}" />
+    <input type="number" name="quantity-owned" class="quantity-owned text-center 
+        border-none bg-teal-300 text-white text-sm sm:text-base md:text-base lg:text-lg xs:w-12 sm:w-12 md:w-12 
+        lg:w-12 xl:w-16 focus:outline-none focus:ring-0" value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}"
+        data-id="{{card.id}}" />
 
-    <button type="button" class="decrement-quantity flex items-center justify-center px-3 bg-teal-300 text-white text-xl 
-            hover:bg-teal-400 hover:text-red-400 active:bg-teal-300 active:text-red-600">-</button>
+    <button type="button"
+        class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
 
 </form>

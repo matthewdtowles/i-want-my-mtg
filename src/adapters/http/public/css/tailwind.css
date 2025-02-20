@@ -1822,9 +1822,8 @@ select {
   position: relative;
 }
 
-.-mx-6 {
-  margin-left: -1.5rem;
-  margin-right: -1.5rem;
+.m-1 {
+  margin: 0.25rem;
 }
 
 .mx-1 {
@@ -1852,10 +1851,6 @@ select {
   margin-bottom: 2rem;
 }
 
-.-mt-6 {
-  margin-top: -1.5rem;
-}
-
 .mb-2 {
   margin-bottom: 0.5rem;
 }
@@ -1870,10 +1865,6 @@ select {
 
 .mr-2 {
   margin-right: 0.5rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
 }
 
 .mt-4 {
@@ -2020,16 +2011,16 @@ select {
   border-radius: 0.5rem;
 }
 
+.border {
+  border-width: 1px;
+}
+
+.border-b {
+  border-bottom-width: 1px;
+}
+
 .border-b-2 {
   border-bottom-width: 2px;
-}
-
-.border-l {
-  border-left-width: 1px;
-}
-
-.border-r {
-  border-right-width: 1px;
 }
 
 .border-t-2 {
@@ -2040,6 +2031,11 @@ select {
   border-style: none;
 }
 
+.border-purple-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(217 186 237 / var(--tw-border-opacity, 1));
+}
+
 .border-red-200 {
   --tw-border-opacity: 1;
   border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));
@@ -2048,6 +2044,16 @@ select {
 .border-red-300 {
   --tw-border-opacity: 1;
   border-color: rgb(252 165 165 / var(--tw-border-opacity, 1));
+}
+
+.border-teal-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 246 241 / var(--tw-border-opacity, 1));
+}
+
+.border-teal-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(110 218 209 / var(--tw-border-opacity, 1));
 }
 
 .bg-purple-500 {
@@ -2063,6 +2069,11 @@ select {
 .bg-teal-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
+}
+
+.bg-teal-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(163 236 227 / var(--tw-bg-opacity, 1));
 }
 
 .bg-teal-300 {
@@ -4040,6 +4051,11 @@ select {
   }
 }
 
+.even\:bg-teal-100:nth-child(even) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:bg-teal-400:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(64 193 186 / var(--tw-bg-opacity, 1));
@@ -4235,6 +4251,10 @@ select {
 }
 
 @media (min-width: 640px) {
+  .sm\:m-0 {
+    margin: 0px;
+  }
+
   .sm\:px-6 {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
@@ -4242,6 +4262,10 @@ select {
 }
 
 @media (min-width: 768px) {
+  .md\:m-4 {
+    margin: 1rem;
+  }
+
   .md\:mb-0 {
     margin-bottom: 0px;
   }

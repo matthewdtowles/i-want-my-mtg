@@ -1,24 +1,22 @@
-<section id="user-inventory" class="section-container">
-    <h3 class="page-title">{{this.username}}'s Inventory</h3>
-    <section>
-        <div>
-            <p>Value: ${{#if this.value}}{{this.value}}{{else}}0.00{{/if}}</p>
-        </div>
+<section class="border border-teal-100 sm:m-0 md:m-4">
+    <section class="text-center bg-teal-100 mb-4">
+        <h3 class="page-title">{{this.username}}'s Inventory</h3>
+        <p>Value: ${{#if this.value}}{{this.value}}{{else}}0.00{{/if}}</p>
     </section>
 
-    <table id="user-inventory-cards" class="table-container w-full">
+    <table class="table-container w-full">
         <thead>
-            <tr>
-                <th>Owned</th>
-                <th>Name</th>
-                <th>Set</th>
-                <th>Price</th>
+            {{!-- TODO: update colors? --}}
+            <tr class="bg-teal-200">
+                <th class="border-b border-purple-300">Owned</th>
+                <th class="border-b border-purple-300">Name</th>
+                <th class="border-b border-purple-300">Set</th>
+                <th class="border-b border-purple-300">Price</th>
             </tr>
         </thead>
         <tbody>
             {{#each cards}}
-            <tr>
-                {{!-- TODO: reduce width of Owned column to take up width of content only --}}
+            <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
                 <td class="cards-owned-td">{{>cardsOwned card=this}}</td>
                 <td class="inventory-item" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>

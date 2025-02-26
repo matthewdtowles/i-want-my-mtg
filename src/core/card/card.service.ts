@@ -20,30 +20,43 @@ export class CardService implements CardServicePort {
 
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
-        if (!cardDtos || cardDtos.length === 0) {
-            return [];
-        }
-        const cardsToSave: Card[] = [];
-        for (const dto of cardDtos) {
-            const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
-            const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
-            if (!this.isValidCard(card)) {
-                continue;
+        let savedDtos: CardDto[] = [];
+        try {
+            const cardsToSave: Card[] = [];
+            for (const dto of cardDtos) {
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
+                const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+                if (!this.isValidCard(card)) {
+                    continue;
+                }
+                const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
+                const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
+                this.deleteObsoleteLegalities(legalitiesToDelete);
+                card.legalities = legalitiesToSave;
+                cardsToSave.push(card);
             }
-            const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
-            const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
-            this.deleteObsoleteLegalities(legalitiesToDelete);
-            card.legalities = legalitiesToSave;
-            cardsToSave.push(card);
+            const savedCards: Card[] = await this.repository.save(cardsToSave);
+            this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
+                savedDtos.push(dto);
+            });
+        } catch (error) {
+            const msg = `Error saving cards: ${error.message}`;
+            this.LOGGER.error(msg);
         }
-        const savedCards: Card[] = await this.repository.save(cardsToSave);
-        return this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL);
+        return savedDtos;
     }
 
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllInSet ${setCode}`);
-        const foundCards: Card[] = await this.repository.findAllInSet(setCode);
-        return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
+        try {
+            const foundCards: Card[] = await this.repository.findAllInSet(setCode);
+            return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
+        } catch (error) {
+            const msg = `Error finding cards in set ${setCode}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     async findAllWithName(name: string): Promise<CardDto[]> {
@@ -52,22 +65,47 @@ export class CardService implements CardServicePort {
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
-    async findById(id: number): Promise<CardDto | null> {
+    async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
-        const foundCard: Card = await this.repository.findById(id);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        try {
+            const foundCard: Card = await this.repository.findById(id);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with id ${id}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
-    async findBySetCodeAndNumber(setCode: string, number: string): Promise<CardDto> {
+    async findBySetCodeAndNumber(
+        setCode: string,
+        number: string,
+        imgType: CardImgType = CardImgType.NORMAL
+    ): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
-        const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        try {
+            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with setCode ${setCode} and number ${number}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
-    async findByUuid(uuid: string): Promise<CardDto | null> {
+    async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findByUuid ${uuid}`);
-        const foundCard: Card = await this.repository.findByUuid(uuid);
-        return this.mapper.entityToDtoForView(foundCard, CardImgType.NORMAL);
+        try {
+            const foundCard: Card = await this.repository.findByUuid(uuid);
+            return this.mapper.entityToDtoForView(foundCard, imgType);
+        } catch (error) {
+            const msg = `Error finding card with uuid ${uuid}: ${error.message}`;
+            this.LOGGER.error(msg);
+            // Do not confuse caller with empty result if error occurs
+            throw new Error(msg);
+        }
     }
 
     private isValidCard(card: Card): boolean {

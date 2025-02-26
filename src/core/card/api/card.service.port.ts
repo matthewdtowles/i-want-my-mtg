@@ -1,4 +1,4 @@
-import { CardDto, CreateCardDto, UpdateCardDto } from "../api/card.dto";
+import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "../api/card.dto";
 
 export const CardServicePort = "CardServicePort";
 
@@ -30,23 +30,23 @@ export interface CardServicePort {
 
     /**
      * @param id
-     * @returns card with id | null if not found
+     * @param imgType
+     * @returns card with id
      */
-    findById(id: number): Promise<CardDto | null>;
+    findById(id: number, imgType?: CardImgType): Promise<CardDto>;
 
     /**
      * @param setCode
      * @param number
+     * @param imgType
      * @returns card with number in set
      */
-    findBySetCodeAndNumber(
-        setCode: string,
-        number: string,
-    ): Promise<CardDto | null>;
+    findBySetCodeAndNumber(setCode: string, number: string, imgType?: CardImgType): Promise<CardDto>;
 
     /**
      * @param uuid
-     * @returns card with unique uuid | null if not found
+     * @param imgType
+     * @returns card with unique uuid
      */
-    findByUuid(uuid: string): Promise<CardDto | null>;
+    findByUuid(uuid: string, imgType?: CardImgType): Promise<CardDto>;
 }

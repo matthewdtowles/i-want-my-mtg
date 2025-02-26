@@ -27,15 +27,29 @@ export class MockCardRepository implements CardRepositoryPort {
     }
 
     async findById(cardId: number): Promise<Card> {
-        return this.cards.find(c => c.id === cardId);
+        const card = this.cards.find(c => c.id === cardId);
+        if (!card) {
+            throw new Error(`Card with id ${cardId} not found`);
+        }
+        return card;
     }
 
     async findBySetCodeAndNumber(setCode: string, number: string): Promise<Card> {
+        if (!setCode) {
+            throw new Error("Invalid input setCode");
+        }
+        if (!number) {
+            throw new Error("Invalid input number");
+        }
         return this.cards.find(card => card.setCode === setCode && card.number === number);
     }
 
     async findByUuid(uuid: string): Promise<Card> {
-        return this.cards.find(card => card.uuid === uuid);
+        const card = this.cards.find(card => card.uuid === uuid);
+        if (!card) {
+            throw new Error(`Card with uuid ${uuid} not found`);
+        }
+        return card;
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
@@ -52,15 +66,22 @@ export class MockCardRepository implements CardRepositoryPort {
     }
 
     async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
+        if (!legalities || legalities.length === 0) {
+            throw new Error("No legalities provided");
+        }
         legalities.forEach(legality => {
             const card = this.cards.find(c => c.id === legality.cardId);
-            if (card) {
-                const existingLegalityIndex = card.legalities.findIndex(l => l.format === legality.format);
-                if (existingLegalityIndex !== -1) {
-                    card.legalities[existingLegalityIndex] = legality;
-                } else {
-                    card.legalities.push(legality);
-                }
+            if (!card) {
+                throw new Error(`Card with id ${legality.cardId} not found`);
+            }
+            if (!card.legalities) {
+                card.legalities = [];
+            }
+            const existingLegalityIndex = card.legalities.findIndex(l => l.format === legality.format);
+            if (existingLegalityIndex !== -1) {
+                card.legalities[existingLegalityIndex] = legality;
+            } else {
+                card.legalities.push(legality);
             }
         });
         return legalities;

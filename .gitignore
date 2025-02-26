@@ -1,6 +1,7 @@
 # Ignore built files and directories /dist/
 out/
 dist/
+coverage/
 
 # Ignore dependency directories
 node_modules/

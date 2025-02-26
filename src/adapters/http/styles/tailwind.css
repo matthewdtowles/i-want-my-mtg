@@ -27,8 +27,16 @@
     @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-4 focus:ring-blue-300;
 }
 
-.card-image {
-    @apply w-full md:rounded-card-sm rounded-card-md sm:rounded-card-lg;
+.card-img-link {
+    @apply absolute hidden z-50;
+}
+
+.card-img-preview {
+    @apply w-64 h-auto;
+}
+
+.cards-owned-td {
+    @apply w-0;
 }
 
 .create-user-container {
@@ -41,6 +49,10 @@
 
 .input-label {
     @apply block font-medium text-teal-500;
+}
+
+.inventory-controller-button {
+    @apply flex items-center justify-center px-3 bg-teal-300 text-white hover:bg-teal-400 active:bg-teal-300;
 }
 
 .link {
@@ -56,7 +68,7 @@
 }
 
 .navbar-link {
-    @apply text-white hover:text-teal-100 px-3 py-2 rounded-md text-sm font-medium;
+    @apply text-white hover:text-teal-100 px-3 py-2 rounded-md font-medium;
 }
 
 .navbar-link-mobile {
@@ -68,7 +80,11 @@
 }
 
 .page-subtitle {
-    @apply text-teal-700 text-lg mb-6;
+    @apply text-teal-700 text-lg md:text-base lg:text-xl mb-6;
+}
+
+.quantity-form {
+    @apply text-sm md:text-base lg:text-lg;
 }
 
 .response-message {
@@ -88,7 +104,7 @@
 }
 
 .section-container {
-    @apply bg-white border-b border-gray-200 p-6 m-6;
+    @apply bg-white border-b border-teal-100 p-6 m-6;
 }
 
 .section-content {
@@ -96,7 +112,7 @@
 }
 
 .section-title {
-    @apply text-lg font-semibold mb-2;
+    @apply text-lg md:text-base lg:text-xl font-semibold mb-2;
 }
 
 .settings-container {
@@ -112,7 +128,7 @@
 }
 
 .table-container {
-    @apply min-w-full bg-white;
+    @apply min-w-full bg-white text-justify;
 }
 
 .table-link {

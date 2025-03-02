@@ -2333,6 +2333,22 @@ select {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.delete-inventory-button {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: black;
+}
+
+.delete-inventory-button:hover {
+  color: red;
+}
+
+.delete-inventory-button:active {
+  color: darkred;
+}
+
 .input-field {
   margin-top: 0.25rem;
   width: 100%;

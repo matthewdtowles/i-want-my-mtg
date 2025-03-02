@@ -64,4 +64,22 @@ export class InventoryService implements InventoryServicePort {
         const foundCards: Inventory[] = await this.repository.findByUser(userId);
         return this.mapper.toInventoryCardDtos(foundCards);
     }
+
+    async delete(userId: number, cardId: number): Promise<boolean> {
+        this.LOGGER.debug(`delete ${userId} ${cardId}`);
+        let result = false;
+        if (userId && cardId) {
+            try {
+                await this.repository.delete(userId, cardId);
+                const foundItem = await this.repository.findOne(userId, cardId);
+                if (!foundItem) {
+                    result = true;
+                }
+            }
+            catch (error) {
+                this.LOGGER.error(`Failed to delete inventory: ${error.message}`);
+            }
+        }
+        return result;
+    }
 }

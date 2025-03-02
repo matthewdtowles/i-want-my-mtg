@@ -43,6 +43,19 @@
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
 }
 
+.delete-inventory-button {
+    @apply flex items-center justify-center cursor-pointer;
+    color: black;
+}
+
+.delete-inventory-button:hover {
+    color: red;
+}
+
+.delete-inventory-button:active {
+    color: darkred;
+}
+
 .input-field {
     @apply mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
 }

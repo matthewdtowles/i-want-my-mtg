@@ -58,4 +58,13 @@ export interface InventoryServicePort {
      * @returns user's inventory with cards
      */
     findAllCardsForUser(userId: number): Promise<InventoryCardDto[]>;
+
+    /**
+     * Delete user's inventory item
+     *
+     * @param userId
+     * @param cardId
+     * @returns true if item was deleted
+     */
+    delete(userId: number, cardId: number): Promise<boolean>;
 }

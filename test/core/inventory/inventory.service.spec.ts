@@ -143,4 +143,40 @@ describe("InventoryService", () => {
         expect(repository.findByUser).not.toHaveBeenCalled();
         expect(foundItems).toEqual([]);
     });
+
+    it("should delete an inventory item for a user and return true on success", async () => {
+        const userId = testUtils.MOCK_USER_ID;
+        const cardId = 1;
+        jest.spyOn(repository, "delete");
+        const result = await service.delete(userId, cardId);
+        expect(repository.delete).toHaveBeenCalledWith(userId, cardId);
+        expect(result).toBe(true);
+    });
+
+    it("should return false if userId is not provided for delete", async () => {
+        jest.spyOn(repository, "delete");
+        const cardId = 1;
+        const result = await service.delete(null, cardId);
+        expect(repository.delete).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+    });
+
+    it("should return false if cardId is not provided for delete", async () => {
+        jest.spyOn(repository, "delete");
+        const userId = testUtils.MOCK_USER_ID;
+        const result = await service.delete(userId, null);
+        expect(repository.delete).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+    });
+
+    it("should return false if inventory item not deleted", async () => {
+        jest.spyOn(repository, "findOne").mockImplementation(() => {
+            throw new Error("Item not found");
+        });
+        const userId = testUtils.MOCK_USER_ID;
+        const cardId = 1;
+        const result = await service.delete(userId, cardId);
+        expect(repository.delete).toHaveBeenCalled();
+        expect(result).toBe(false);
+    });
 });

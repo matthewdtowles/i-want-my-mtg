@@ -6,12 +6,12 @@
 
     <table class="table-container w-full">
         <thead>
-            {{!-- TODO: update colors? --}}
             <tr class="bg-teal-200">
                 <th class="border-b border-purple-300">Owned</th>
                 <th class="border-b border-purple-300">Name</th>
                 <th class="border-b border-purple-300">Set</th>
                 <th class="border-b border-purple-300">Price</th>
+                <th class="border-b border-purple-300">Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +32,9 @@
                     </a>
                 </td>
                 <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+                <td class="delete-inventory-entry">
+                    {{>deleteInventoryEntry card=this}}
+                </td>
             </tr>
             {{/each}}
         </tbody>

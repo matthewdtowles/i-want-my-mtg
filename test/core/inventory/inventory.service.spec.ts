@@ -170,7 +170,7 @@ describe("InventoryService", () => {
     });
 
     it("should return false if inventory item not deleted", async () => {
-        jest.spyOn(repository, "findOne").mockImplementation(() => {
+        jest.spyOn(repository, "delete").mockImplementation(() => {
             throw new Error("Item not found");
         });
         const userId = testUtils.MOCK_USER_ID;

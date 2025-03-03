@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpStatus,
     Inject,
@@ -118,6 +119,30 @@ export class InventoryController {
             return res
                 .status(HttpStatus.BAD_REQUEST)
                 .json({ message: `Error updating inventory: ${error.message}` });
+        }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete()
+    async delete(
+        @Body('cardId') cardId: number,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest,
+    ) {
+        this.LOGGER.debug(`Delete inventory item`);
+        try {
+            if (!req || !req.user || !req.user.id) {
+                this.LOGGER.error(`User not found in request`);
+                throw new Error("User not found in request");
+            }
+            await this.inventoryService.delete(req.user.id, cardId);
+            return res.status(HttpStatus.OK).json({
+                message: `Deleted inventory item`,
+            });
+        } catch (error) {
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({ message: `Error deleting inventory item: ${error.message}` });
         }
     }
 }

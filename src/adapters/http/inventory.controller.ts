@@ -114,7 +114,7 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Delete()
     async delete(
-        @Body('cardId') cardId: number,
+        @Body('cardId') _cardId: number,
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
@@ -123,13 +123,14 @@ export class InventoryController {
             this.LOGGER.error(`User not found in request`);
             throw new NotFoundException("User not found in request");
         }
-        if (!cardId) {
+        if (!_cardId) {
             this.LOGGER.error(`Card ID not found in request`);
             throw new BadRequestException("Card ID not found in request");
         }
-        await this.inventoryService.delete(req.user.id, cardId);
+        await this.inventoryService.delete(req.user.id, _cardId);
         return res.status(HttpStatus.OK).json({
             message: `Deleted inventory item`,
+            cardId: _cardId,
         });
     }
 }

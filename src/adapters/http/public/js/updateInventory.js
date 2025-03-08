@@ -109,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify({
                     cardId: _cardId,
-                    // quantity: 0,
                 }),
             });
             if (!response.ok) {
@@ -117,15 +116,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             try {
+                console.log(`10: Deleted card ${_cardId} from inventory`);
                 const data = await response.json();
-                if (data && data.inventory && data.inventory[0]) {
-                    const inventoryItem = data.inventory[0];
-                    const _cardId = inventoryItem.cardId;
-                    const card = document.querySelector(`.inventory-item[data-id='${_cardId}']`);
-                    const quantityOwned = card.querySelector("input[name='quantity-owned']");
-                    quantityOwned.value = inventoryItem.quantity;
-                    if (inventoryItem.quantity === 0) {
-                        card.remove();
+                console.log(`12: deleteInventory`);
+                console.log(`13: data => ${JSON.stringify(data)}`);
+                console.log(`14: data.cardId => ${JSON.stringify(data.cardId)}`);
+                if (data && data.cardId) {
+                    console.log(`15: data.cardId => ${JSON.stringify(data.cardId)}`);
+                    const cardId = data.cardId;
+                    console.log(`30: Deleted card ${cardId} from inventory`);
+                    const cardEl = document.querySelector(`.inventory-item[data-id='${cardId}']`);
+                    if (cardEl) {
+                        console.log(`40: Deleted card ${cardId} from inventory`);
+                        cardEl.closest('tr').remove(); // Remove the parent <tr> element
+                        console.log(`50: Deleted card ${cardId} from inventory`);
                     }
                 }
             } catch (error) {

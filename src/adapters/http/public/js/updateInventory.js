@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
             event.stopImmediatePropagation();
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId);
-            quantityOwned.value = updatedQuantity
+            quantityOwned.value = updatedQuantity;
         });
 
         async function addInventoryItem(_quantity, _cardId) {
@@ -71,10 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    const inventoryItems = document.querySelectorAll(".inventory-item");
     let currentImgLink = null;
 
-    inventoryItems.forEach(item => {
+    document.querySelectorAll(".inventory-item").forEach(item => {
         const imgLink = item.querySelector(".card-img-link");
         const imgPreview = imgLink.querySelector(".card-img-preview");
 
@@ -96,4 +95,43 @@ document.addEventListener("DOMContentLoaded", function () {
             imgPreview.style.display = "none";
         });
     });
+
+    document.querySelectorAll(".delete-inventory-form").forEach((form) => {
+        const deleteButton = form.querySelector(".delete-inventory-button");
+        const _cardId = form.querySelector("input[name='card-id']").value;
+        deleteButton.addEventListener("click", async (event) => {
+            event.stopImmediatePropagation();
+            console.log(`Deleting card ${_cardId} from inventory`);
+            const response = await fetch('/inventory', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cardId: _cardId,
+                    // quantity: 0,
+                }),
+            });
+            if (!response.ok) {
+                console.error(`Error in deleteInventory: ${response.statusText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            try {
+                const data = await response.json();
+                if (data && data.inventory && data.inventory[0]) {
+                    const inventoryItem = data.inventory[0];
+                    const _cardId = inventoryItem.cardId;
+                    const card = document.querySelector(`.inventory-item[data-id='${_cardId}']`);
+                    const quantityOwned = card.querySelector("input[name='quantity-owned']");
+                    quantityOwned.value = inventoryItem.quantity;
+                    if (inventoryItem.quantity === 0) {
+                        card.remove();
+                    }
+                }
+            } catch (error) {
+                console.error(`Error in deleteInventory => ${error}`);
+            }
+        });
+    });
+
 });

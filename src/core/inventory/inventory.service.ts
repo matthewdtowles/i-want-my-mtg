@@ -66,7 +66,7 @@ export class InventoryService implements InventoryServicePort {
     }
 
     async delete(userId: number, cardId: number): Promise<boolean> {
-        this.LOGGER.debug(`delete ${userId} ${cardId}`);
+        this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}`);
         let result = false;
         if (userId && cardId) {
             try {

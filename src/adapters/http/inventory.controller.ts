@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpStatus,
     Inject,
@@ -11,6 +12,8 @@ import {
     Req,
     Res,
     UseGuards,
+    BadRequestException,
+    NotFoundException,
 } from "@nestjs/common";
 import { Response } from "express";
 import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
@@ -42,13 +45,12 @@ export class InventoryController {
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryHttpDto> {
         this.LOGGER.debug(`Find user inventory`);
         if (!req.user) {
-            throw new Error("User not found in request");
+            throw new NotFoundException("User not found in request");
         }
         if (!req.user.id) {
-            throw new Error("ID not found in request user");
+            throw new NotFoundException("ID not found in request user");
         }
-        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService
-            .findByUser(req.user.id);
+        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService.findByUser(req.user.id);
         const _username = req.user.name;
         return {
             authenticated: req.isAuthenticated(),
@@ -72,24 +74,18 @@ export class InventoryController {
         @Req() req: AuthenticatedRequest,
     ) {
         this.LOGGER.debug(`Create inventory`);
-        try {
-            if (!req || !req.user || !req.user.id) {
-                throw new Error("User not found in request");
-            }
-            const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
-                ...dto,
-                userId: req.user.id,
-            }));
-            const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
-            return res.status(HttpStatus.CREATED).json({
-                message: `Added inventory items`,
-                inventory: createdItems,
-            });
-        } catch (error) {
-            return res
-                .status(HttpStatus.BAD_REQUEST)
-                .json({ message: `Error adding items to inventory: ${error.message}` });
+        if (!req || !req.user || !req.user.id) {
+            throw new NotFoundException("User not found in request");
         }
+        const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
+            ...dto,
+            userId: req.user.id,
+        }));
+        const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
+        return res.status(HttpStatus.CREATED).json({
+            message: `Added inventory items`,
+            inventory: createdItems,
+        });
     }
 
     @UseGuards(JwtAuthGuard)
@@ -100,24 +96,41 @@ export class InventoryController {
         @Req() req: AuthenticatedRequest,
     ) {
         this.LOGGER.debug(`Update inventory`);
-        try {
-            if (!req || !req.user || !req.user.id) {
-                this.LOGGER.error(`User not found in request`);
-                throw new Error("User not found in request");
-            }
-            const completeDtos = updateInventoryDtos.map(dto => ({
-                ...dto,
-                userId: req.user.id,
-            }));
-            const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
-            return res.status(HttpStatus.OK).json({
-                message: `Updated inventory`,
-                inventory: updatedInventory,
-            });
-        } catch (error) {
-            return res
-                .status(HttpStatus.BAD_REQUEST)
-                .json({ message: `Error updating inventory: ${error.message}` });
+        if (!req || !req.user || !req.user.id) {
+            this.LOGGER.error(`User not found in request`);
+            throw new NotFoundException("User not found in request");
         }
+        const completeDtos = updateInventoryDtos.map(dto => ({
+            ...dto,
+            userId: req.user.id,
+        }));
+        const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
+        return res.status(HttpStatus.OK).json({
+            message: `Updated inventory`,
+            inventory: updatedInventory,
+        });
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete()
+    async delete(
+        @Body('cardId') _cardId: number,
+        @Res() res: Response,
+        @Req() req: AuthenticatedRequest,
+    ) {
+        this.LOGGER.debug(`Delete inventory item`);
+        if (!req || !req.user || !req.user.id) {
+            this.LOGGER.error(`User not found in request`);
+            throw new NotFoundException("User not found in request");
+        }
+        if (!_cardId) {
+            this.LOGGER.error(`Card ID not found in request`);
+            throw new BadRequestException("Card ID not found in request");
+        }
+        await this.inventoryService.delete(req.user.id, _cardId);
+        return res.status(HttpStatus.OK).json({
+            message: `Deleted inventory item`,
+            cardId: _cardId,
+        });
     }
 }

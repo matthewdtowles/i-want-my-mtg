@@ -32,11 +32,7 @@ export class MockInventoryRepository implements InventoryRepositoryPort {
     }
 
     async findOne(userId: number, cardId: number): Promise<Inventory> {
-        const inventory = this.inventory.find(i => i.userId === userId && i.cardId === cardId);
-        if (!inventory) {
-            throw new Error(`Inventory item not found for user ${userId} and card ${cardId}`);
-        }
-        return inventory;
+        return this.inventory.find(i => i.userId === userId && i.cardId === cardId);
     }
 
     async delete(userId: number, cardId: number): Promise<void> {

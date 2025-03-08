@@ -6,19 +6,19 @@
 
     <table class="table-container w-full">
         <thead>
-            {{!-- TODO: update colors? --}}
             <tr class="bg-teal-200">
                 <th class="border-b border-purple-300">Owned</th>
                 <th class="border-b border-purple-300">Name</th>
                 <th class="border-b border-purple-300">Set</th>
                 <th class="border-b border-purple-300">Price</th>
+                <th class="border-b border-purple-300">Delete</th>
             </tr>
         </thead>
         <tbody>
             {{#each cards}}
             <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
                 <td class="cards-owned-td">{{>cardsOwned card=this}}</td>
-                <td class="inventory-item" data-img-src="{{this.imgSrc}}">
+                <td class="inventory-item" data-id="{{this.id}}" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>
                     {{>reserved card=this}}
                     <a href="{{this.url}}" class="card-img-link">
@@ -32,6 +32,9 @@
                     </a>
                 </td>
                 <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+                <td class="delete-inventory-entry">
+                    {{>deleteInventoryEntry card=this}}
+                </td>
             </tr>
             {{/each}}
         </tbody>

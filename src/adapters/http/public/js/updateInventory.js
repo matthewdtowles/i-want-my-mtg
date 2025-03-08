@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
             event.stopImmediatePropagation();
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId);
-            quantityOwned.value = updatedQuantity
+            quantityOwned.value = updatedQuantity;
         });
 
         async function addInventoryItem(_quantity, _cardId) {
@@ -71,10 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    const inventoryItems = document.querySelectorAll(".inventory-item");
     let currentImgLink = null;
 
-    inventoryItems.forEach(item => {
+    document.querySelectorAll(".inventory-item").forEach(item => {
         const imgLink = item.querySelector(".card-img-link");
         const imgPreview = imgLink.querySelector(".card-img-preview");
 
@@ -96,4 +95,47 @@ document.addEventListener("DOMContentLoaded", function () {
             imgPreview.style.display = "none";
         });
     });
+
+    document.querySelectorAll(".delete-inventory-form").forEach((form) => {
+        const deleteButton = form.querySelector(".delete-inventory-button");
+        const _cardId = form.querySelector("input[name='card-id']").value;
+        deleteButton.addEventListener("click", async (event) => {
+            event.stopImmediatePropagation();
+            console.log(`Deleting card ${_cardId} from inventory`);
+            const response = await fetch('/inventory', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cardId: _cardId,
+                }),
+            });
+            if (!response.ok) {
+                console.error(`Error in deleteInventory: ${response.statusText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            try {
+                console.log(`10: Deleted card ${_cardId} from inventory`);
+                const data = await response.json();
+                console.log(`12: deleteInventory`);
+                console.log(`13: data => ${JSON.stringify(data)}`);
+                console.log(`14: data.cardId => ${JSON.stringify(data.cardId)}`);
+                if (data && data.cardId) {
+                    console.log(`15: data.cardId => ${JSON.stringify(data.cardId)}`);
+                    const cardId = data.cardId;
+                    console.log(`30: Deleted card ${cardId} from inventory`);
+                    const cardEl = document.querySelector(`.inventory-item[data-id='${cardId}']`);
+                    if (cardEl) {
+                        console.log(`40: Deleted card ${cardId} from inventory`);
+                        cardEl.closest('tr').remove(); // Remove the parent <tr> element
+                        console.log(`50: Deleted card ${cardId} from inventory`);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error in deleteInventory => ${error}`);
+            }
+        });
+    });
+
 });

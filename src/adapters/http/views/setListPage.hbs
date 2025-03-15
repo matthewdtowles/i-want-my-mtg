@@ -1,56 +1,30 @@
-<div>
-    <table>
-        <tr>
-            <th>Set</th>
-            <th>Value</th>
-            <th>% Owned</th>
-            <th>Owned Value</th>
-            <th>Release Date</th>
+<table class="min-w-full bg-white">
+    <thead>
+        <tr class="bg-teal-200">
+            <th class="border-b border-purple-300 p-4">Set</th>
+            <th class="border-b border-purple-300 p-4">Value</th>
+            <th class="border-b border-purple-300 p-4">% Owned</th>
+            <th class="border-b border-purple-300 p-4">Owned Value</th>
+            <th class="border-b border-purple-300 p-4">Release Date</th>
         </tr>
+    </thead>
+    <tbody>
         {{#each setList}}
-        <tr class="set-name">
-            <td>
+        <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
+            <td class="p-4">
                 <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
-                <a href="{{this.url}}">{{this.name}}</a>
+                <a href="{{this.url}}" class="text-blue-500 hover:underline">{{this.name}}</a>
             </td>
-            <td>${{#if this.value}}{{this.value}}{{else}}0.00</td>
-            <td>
-                <progress max="{{this.baseSize}}" value="{{#if this.totalOwned}}{{this.totalOwned}}{{else}}0{{/if}}"></progress>
+            <td class="p-4">$0.00</td>
+            <td class="p-4">
+              <div class="relative w-full h-6 bg-gray-200 rounded">
+                    <div class="absolute top-0 left-0 h-full bg-teal-500 rounded" style="width: {{this.ownedPercentage}}%;"></div>
+                    <span class="absolute inset-0 flex items-center justify-center text-black font-bold">{{this.ownedPercentage}}%</span>
+                </div>
             </td>
-            <td>${{#if this.ownedValue}}{{this.ownedValue}}{{else}}0.00</td>
-            <td>{{this.releaseDate}}</td>
+            <td class="p-4">$0.00</td>
+            <td class="p-4">{{this.releaseDate}}</td>
         </tr>
         {{/each}}
-    </table>
-</div>
-
-{{!--
-+------------------+-------+
-| type             | count | card count
-+------------------+-------+
-| alchemy          |    13 |
-| archenemy        |     4 | 322
-| arsenal          |     3 | 35
-| box              |    44 | 
-| commander        |    39 |
-| core             |    25 |
-| draft_innovation |    18 | 8344
-| duel_deck        |    28 | 1931
-| expansion        |   108 |
-| from_the_vault   |    10 | 169
-| funny            |    20 | 2100
-| masterpiece      |    15 | 1230
-| masters          |    33 |
-| memorabilia      |    81 |
-| minigame         |    14 | 0
-| planechase       |     6 | 649
-| premium_deck     |     3 | 105
-| promo            |   283 |
-| spellbook        |     3 | 24
-| starter          |    15 | 1118
-| token            |    23 | 0
-| treasure_chest   |     2 | 431
-| vanguard         |     2 | 117
-+------------------+-------+
-
---}}
+    </tbody>
+</table>

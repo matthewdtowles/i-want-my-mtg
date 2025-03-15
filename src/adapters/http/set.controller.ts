@@ -22,7 +22,7 @@ export class SetController {
     constructor(
         @Inject(SetServicePort) private readonly setService: SetServicePort,
         @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort
-    ) { } 
+    ) { }
 
     @UseGuards(UserGuard)
     @Get()

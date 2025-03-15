@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const cardEl = document.querySelector(`.inventory-item[data-id='${cardId}']`);
                     if (cardEl) {
                         console.log(`40: Deleted card ${cardId} from inventory`);
-                        cardEl.closest('tr').remove(); // Remove the parent <tr> element
+                        cardEl.closest('tr').remove();
                         console.log(`50: Deleted card ${cardId} from inventory`);
                     }
                 }

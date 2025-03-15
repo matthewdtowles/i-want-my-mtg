@@ -1,3 +1,56 @@
 <div>
-    {{>setList}}
+    <table>
+        <tr>
+            <th>Set</th>
+            <th>Value</th>
+            <th>% Owned</th>
+            <th>Owned Value</th>
+            <th>Release Date</th>
+        </tr>
+        {{#each setList}}
+        <tr class="set-name">
+            <td>
+                <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                <a href="{{this.url}}">{{this.name}}</a>
+            </td>
+            <td>${{#if this.value}}{{this.value}}{{else}}0.00</td>
+            <td>
+                <progress max="{{this.baseSize}}" value="{{#if this.totalOwned}}{{this.totalOwned}}{{else}}0{{/if}}"></progress>
+            </td>
+            <td>${{#if this.ownedValue}}{{this.ownedValue}}{{else}}0.00</td>
+            <td>{{this.releaseDate}}</td>
+        </tr>
+        {{/each}}
+    </table>
 </div>
+
+{{!--
++------------------+-------+
+| type             | count | card count
++------------------+-------+
+| alchemy          |    13 |
+| archenemy        |     4 | 322
+| arsenal          |     3 | 35
+| box              |    44 | 
+| commander        |    39 |
+| core             |    25 |
+| draft_innovation |    18 | 8344
+| duel_deck        |    28 | 1931
+| expansion        |   108 |
+| from_the_vault   |    10 | 169
+| funny            |    20 | 2100
+| masterpiece      |    15 | 1230
+| masters          |    33 |
+| memorabilia      |    81 |
+| minigame         |    14 | 0
+| planechase       |     6 | 649
+| premium_deck     |     3 | 105
+| promo            |   283 |
+| spellbook        |     3 | 24
+| starter          |    15 | 1118
+| token            |    23 | 0
+| treasure_chest   |     2 | 431
+| vanguard         |     2 | 117
++------------------+-------+
+
+--}}

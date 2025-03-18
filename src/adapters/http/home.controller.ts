@@ -14,7 +14,7 @@ export class HomeController {
 
     @UseGuards(UserGuard)
     @Get("/")
-    @Render("index")
+    @Render("setListpage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListHttpDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
         const setDtos: SetDto[] = await this.setService.findAll();

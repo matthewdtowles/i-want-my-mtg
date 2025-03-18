@@ -1,3 +1,30 @@
-<div>
-    {{>setList}}
-</div>
+<table class="min-w-full bg-white">
+    <thead>
+        <tr class="bg-teal-200">
+            <th class="border-b border-purple-300 p-4">Set</th>
+            <th class="border-b border-purple-300 p-4">Value</th>
+            <th class="border-b border-purple-300 p-4">% Owned</th>
+            <th class="border-b border-purple-300 p-4">Owned Value</th>
+            <th class="border-b border-purple-300 p-4">Release Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each setList}}
+        <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
+            <td class="p-4">
+                <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                <a href="{{this.url}}" class="text-blue-500 hover:underline">{{this.name}}</a>
+            </td>
+            <td class="p-4">$0.00</td>
+            <td class="p-4">
+              <div class="relative w-full h-6 bg-gray-200 rounded">
+                    <div class="absolute top-0 left-0 h-full bg-teal-500 rounded" style="width: {{this.ownedPercentage}}%;"></div>
+                    <span class="absolute inset-0 flex items-center justify-center text-black font-bold">{{this.ownedPercentage}}%</span>
+                </div>
+            </td>
+            <td class="p-4">$0.00</td>
+            <td class="p-4">{{this.releaseDate}}</td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>

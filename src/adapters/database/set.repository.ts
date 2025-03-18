@@ -47,6 +47,13 @@ export class SetRepository implements SetRepositoryPort {
         });
     }
 
+    async findAll(): Promise<Set[]> {
+        this.LOGGER.debug(`findAll sets`);
+        return (await this.setRepository.find({
+            relations: ["cards"],
+        })) ?? [];
+    }
+
     async findAllSetsMeta(): Promise<Set[]> {
         this.LOGGER.debug(`findAllSetsMeta`);
         return (await this.setRepository.find()) ?? [];

@@ -1,28 +1,28 @@
-<table id="set-cards">
+<table class="min-w-full bg-white">
     <thead>
-        <th># Owned</th>
-        <th>Card No.</th>
-        <th>Name</th>
-        <th>Mana Cost</th>
-        <th>Rarity</th>
-        <th>Price</th>
+        <tr class="bg-teal-200">
+            <th class="border-b border-purple-300 p-4"># Owned</th>
+            <th class="border-b border-purple-300 p-4">Card No.</th>
+            <th class="border-b border-purple-300 p-4">Name</th>
+            <th class="border-b border-purple-300 p-4">Mana Cost</th>
+            <th class="border-b border-purple-300 p-4">Price</th>
+            <th class="border-b border-purple-300 p-4">Rarity</th>
+        </tr>
     </thead>
     <tbody>
         {{#each set.cards}}
-        <tr class="card-set-card">
-            <td class="card-set-card-owned">
+        <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
+            <td class="p-4">
                 {{>cardsOwned card=this}}
             </td>
-            <td class="card-set-card-number">{{this.number}}</td>
-            <td class="card-set-card-name">
-                <a class="card-set-card-link" href="{{this.url}}">{{this.name}}</a>
+            <td class="p-4">{{this.number}}</td>
+            <td class="p-4">
+                <a href="{{this.url}}" class="text-blue-500 hover:underline">{{this.name}}</a>
                 {{>reserved card=this}}
             </td>
-            <td class="card-set-card-mana-cost">
-                {{>manaCost card=this}}
-            </td>
-            <td class="card-set-card-rarity">{{this.rarity}}</td>
-            <td class="card-set-card-price">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+            <td class="p-4">{{>manaCost card=this}}</td>
+            <td class="p-4">{{this.rarity}}</td>
+            <td class="p-4">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
         </tr>
         {{/each}}
     </tbody>

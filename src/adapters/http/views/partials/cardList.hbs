@@ -1,20 +1,25 @@
-<table>
+<table class="min-w-full bg-white">
     <thead>
-        <th>Card No.</th>
-        <th>Name</th>
-        <th>Mana Cost</th>
-        <th>Rarity</th>
-        <th>Price</th>
+        <tr class="bg-teal-200">
+            <th class="border-b border-purple-300 p-4">Card No.</th>
+            <th class="border-b border-purple-300 p-4">Name</th>
+            <th class="border-b border-purple-300 p-4">Mana Cost</th>
+            <th class="border-b border-purple-300 p-4">Rarity</th>
+            <th class="border-b border-purple-300 p-4">Price</th>
+        </tr>
     </thead>
     <tbody>
-    {{#each cards}}
-        <tr>
-            <td>{{this.number}}</td>
-            <td><a href="{{this.url}}">{{this.name}}</a>{{>reserved card=card}}</td>
-            <td>{{>manaCost}}</td>
-            <td>{{this.rarity}}</td>
-            <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+        {{#each cards}}
+        <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
+            <td class="p-4">{{this.number}}</td>
+            <td class="p-4">
+                <a href="{{this.url}}" class="text-blue-500 hover:underline">{{this.name}}</a>
+                {{>reserved card=card}}
+            </td>
+            <td class="p-4">{{>manaCost}}</td>
+            <td class="p-4">{{this.rarity}}</td>
+            <td class="p-4">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
         </tr>
-    {{/each}}
+        {{/each}}
     </tbody>
 </table>

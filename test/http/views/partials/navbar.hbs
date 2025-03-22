@@ -1,4 +1,4 @@
-<nav class="bg-purple-600 shadow-lg p-4">
+<nav class="bg-purple-600 shadow-lg py-4">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
@@ -54,6 +54,9 @@
     document.addEventListener("DOMContentLoaded", () => {
         const message = document.getElementById("response-message");
         console.log(`message: ${message}`);
+        message.addEventListener("click", () => {
+            message.classList.add("hidden");
+        });
         if (message.textContent.trim().length > 0) {
             message.classList.remove("hidden");
             setTimeout(() => {

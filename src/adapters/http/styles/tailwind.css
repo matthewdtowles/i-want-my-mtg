@@ -101,7 +101,7 @@
 }
 
 .response-message {
-    @apply fixed top-4 right-4 text-white p-4 rounded shadow-lg;
+    @apply fixed top-4 right-4 text-white p-4 rounded shadow-lg cursor-pointer;
 }
 
 .response-message-error {
@@ -136,12 +136,16 @@
     @apply mb-6 border-b border-gray-200;
 }
 
-.table-cell {
-    @apply p-4;
+.table-container {
+    @apply w-full bg-white ;
 }
 
-.table-container {
-    @apply min-w-full bg-white text-justify;
+.table-header {
+    @apply border-b border-purple-300 py-2;
+}
+
+.table-header-row {
+    @apply bg-teal-200 text-left;
 }
 
 .table-link {
@@ -149,5 +153,5 @@
 }
 
 .table-row {
-    @apply border-b;
+    @apply bg-white even:bg-teal-100 border-b border-teal-300;
 }

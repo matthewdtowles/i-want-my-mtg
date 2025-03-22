@@ -6,18 +6,18 @@
 
     <table class="table-container w-full">
         <thead>
-            <tr class="bg-teal-200">
-                <th class="border-b border-purple-300">Owned</th>
-                <th class="border-b border-purple-300">Name</th>
-                <th class="border-b border-purple-300">Set</th>
-                <th class="border-b border-purple-300">Price</th>
-                <th class="border-b border-purple-300">Delete</th>
+            <tr class="table-header-row">
+                <th class="table-header pl-2">Owned</th>
+                <th class="table-header">Name</th>
+                <th class="table-header">Set</th>
+                <th class="table-header">Price</th>
+                <th class="table-header pr-2">Delete</th>
             </tr>
         </thead>
         <tbody>
             {{#each cards}}
-            <tr class="bg-white even:bg-teal-100 border-b border-teal-300">
-                <td class="cards-owned-td">{{>cardsOwned card=this}}</td>
+            <tr class="table-row">
+                <td class="cards-owned-td pl-2">{{>cardsOwned card=this}}</td>
                 <td class="inventory-item" data-id="{{this.id}}" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>
                     {{>reserved card=this}}
@@ -31,7 +31,7 @@
                     </a>
                 </td>
                 <td>${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
-                <td class="delete-inventory-entry">
+                <td class="delete-inventory-entry pr-2">
                     {{>deleteInventoryEntry card=this}}
                 </td>
             </tr>

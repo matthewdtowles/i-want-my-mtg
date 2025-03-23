@@ -24,7 +24,7 @@ export class Set {
     @Column({ nullable: true })
     parentCode?: string;
 
-    @Column()
+    @Column({ type: "date" })
     releaseDate: string;
 
     @Column()

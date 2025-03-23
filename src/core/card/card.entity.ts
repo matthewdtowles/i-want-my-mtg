@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
-import { Legality } from "./legality.entity";
+import { IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { CardRarity } from "src/core/card/api/card.dto";
 import { Set } from "src/core/set/set.entity";
 import {
     Column,
@@ -9,6 +9,7 @@ import {
     OneToMany,
     PrimaryGeneratedColumn,
 } from "typeorm";
+import { Legality } from "./legality.entity";
 
 @Entity()
 export class Card {
@@ -50,10 +51,13 @@ export class Card {
     @IsString()
     oracleText?: string;
 
-    @Column()
-    @IsString()
+    @Column({
+        type: "enum",
+        enum: CardRarity,
+        enumName: "card_rarity_enum",
+    })
     @IsNotEmpty()
-    rarity: string;
+    rarity: CardRarity;
 
     @ManyToOne(() => Set, (set) => set.cards)
     @JoinColumn({

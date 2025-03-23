@@ -4,7 +4,7 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardDto, CardImgType, CardRarity, CreateCardDto, UpdateCardDto } from "./api/card.dto";
 
 @Injectable()
 export class CardMapper {
@@ -29,7 +29,7 @@ export class CardMapper {
         card.name = cardDto.name;
         card.number = cardDto.number;
         card.oracleText = cardDto.oracleText;
-        card.rarity = cardDto.rarity.toLowerCase();
+        card.rarity = this.convertToCardRarity(cardDto.rarity);
         card.setCode = cardDto.setCode;
         card.type = cardDto.type;
         card.uuid = cardDto.uuid;
@@ -90,8 +90,8 @@ export class CardMapper {
     toLegalityEntity(dto: LegalityDto): Legality {
         const entity: Legality = new Legality();
         entity.cardId = dto.cardId;
-        entity.format = dto.format;
-        entity.status = dto.status;
+        entity.format = this.convertToFormat(dto.format);
+        entity.status = this.convertToLegalityStatus(dto.status);
         return entity;
     }
 
@@ -193,4 +193,24 @@ export class CardMapper {
         return validFormat && validStatus
     }
 
+    private convertToCardRarity(rarity: string): CardRarity {
+        if (Object.values(CardRarity).includes(rarity as CardRarity)) {
+            return rarity as CardRarity;
+        }
+        throw new Error(`Invalid rarity value: ${rarity}`);
+    }
+
+    private convertToFormat(format: string): Format {
+        if (Object.values(Format).includes(format as Format)) {
+            return format as Format;
+        }
+        throw new Error(`Invalid format value: ${format}`);
+    }
+
+    private convertToLegalityStatus(status: string): LegalityStatus {
+        if (Object.values(LegalityStatus).includes(status as LegalityStatus)) {
+            return status as LegalityStatus;
+        }
+        throw new Error(`Invalid status value: ${status}`);
+    }
 }

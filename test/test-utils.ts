@@ -1,6 +1,6 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { CardDto, CardRarity, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
@@ -59,6 +59,7 @@ export class TestUtils {
             set: this.getMockSet(setCode),
             setCode: setCode,
             legalities: this.getMockLegalities(i + 1),
+            rarity: this.convertToCardRarity(dto.rarity),
         }));
     }
 
@@ -254,7 +255,7 @@ export class TestUtils {
             name: createCardDto.name,
             number: createCardDto.number,
             oracleText: createCardDto.oracleText,
-            rarity: createCardDto.rarity.toLowerCase(),
+            rarity: this.convertToCardRarity(createCardDto.rarity),
             setCode: createCardDto.setCode,
             type: createCardDto.type,
             uuid: createCardDto.uuid,
@@ -323,13 +324,34 @@ export class TestUtils {
     mapLegalityDtoToEntity(legalityDto: LegalityDto): Legality {
         return {
             cardId: legalityDto.cardId,
-            format: legalityDto.format,
-            status: legalityDto.status,
+            format: this.convertToFormat(legalityDto.format),
+            status: this.convertToLegalityStatus(legalityDto.status),
             card: undefined,
         };
     }
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
+    }
+
+    private convertToCardRarity(rarity: string): CardRarity {
+        if (Object.values(CardRarity).includes(rarity as CardRarity)) {
+            return rarity as CardRarity;
+        }
+        throw new Error(`Invalid rarity value: ${rarity}`);
+    }
+
+    private convertToFormat(format: string): Format {
+        if (Object.values(Format).includes(format as Format)) {
+            return format as Format;
+        }
+        throw new Error(`Invalid format value: ${format}`);
+    }
+
+    private convertToLegalityStatus(status: string): LegalityStatus {
+        if (Object.values(LegalityStatus).includes(status as LegalityStatus)) {
+            return status as LegalityStatus;
+        }
+        throw new Error(`Invalid status value: ${status}`);
     }
 }

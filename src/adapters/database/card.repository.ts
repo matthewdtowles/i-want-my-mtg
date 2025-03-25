@@ -4,6 +4,7 @@ import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
 import { Repository } from "typeorm";
 import { Legality } from "src/core/card/legality.entity";
+import { Format } from "src/core/card/api/legality.dto";
 
 
 @Injectable()
@@ -81,8 +82,8 @@ export class CardRepository implements CardRepositoryPort {
         return await this.legalityRepository.save(legalities);
     }
 
-    async deleteLegality(cardId: number, format: string): Promise<void> {
-        this.LOGGER.debug(`Delete legality for card ${cardId} in format ${format}`);
-        await this.legalityRepository.delete({ cardId: cardId, format: format });
+    async deleteLegality(_cardId: number, _format: Format): Promise<void> {
+        this.LOGGER.debug(`Delete legality for card ${_cardId} in format ${_format}`);
+        await this.legalityRepository.delete({ cardId: _cardId, format: _format });
     }
 }

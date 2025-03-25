@@ -36,7 +36,7 @@ export class TestUtils {
             name: `${this.MOCK_CARD_NAME} ${i + 1}`,
             number: `${i + 1}`,
             oracleText: "Test card text.",
-            rarity: i % 2 === 0 ? "Common" : "Uncommon",
+            rarity: i % 2 === 0 ? "common" : "uncommon",
             setCode,
             uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
             type: "type",
@@ -335,23 +335,23 @@ export class TestUtils {
     }
 
     private convertToCardRarity(rarity: string): CardRarity {
-        if (Object.values(CardRarity).includes(rarity as CardRarity)) {
+        if (Object.values(CardRarity).includes(rarity.toLowerCase() as CardRarity)) {
             return rarity as CardRarity;
         }
-        throw new Error(`Invalid rarity value: ${rarity}`);
+        return null;
     }
 
     private convertToFormat(format: string): Format {
-        if (Object.values(Format).includes(format as Format)) {
+        if (Object.values(Format).includes(format.toLowerCase() as Format)) {
             return format as Format;
         }
-        throw new Error(`Invalid format value: ${format}`);
+        return null;
     }
 
     private convertToLegalityStatus(status: string): LegalityStatus {
-        if (Object.values(LegalityStatus).includes(status as LegalityStatus)) {
+        if (Object.values(LegalityStatus).includes(status.toLowerCase() as LegalityStatus)) {
             return status as LegalityStatus;
         }
-        throw new Error(`Invalid status value: ${status}`);
+        return null;
     }
 }

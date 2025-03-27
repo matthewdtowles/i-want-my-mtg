@@ -8,7 +8,7 @@
 
 - Node.js (>= 14.x)
 - npm (>= 6.x)
-- MySQL (>= 5.7)
+- PostgresQL (>= 8.x)
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ DB_HOST=<your-value-here>
 DB_PORT=<your-value-here>
 DB_USERNAME=<your-value-here>
 DB_PASSWORD=<your-value-here>
-DB_DATABASE=<your-value-here>
+DB_NAME=<your-value-here>
 
 # JWT configuration
 JWT_SECRET=<your-value-here>
@@ -37,7 +37,7 @@ JWT_SECRET=<your-value-here>
 
 ### Database Setup
 
-Make sure you have MySQL running and create a database named `mtg`. Then, run the following command to synchronize the database schema:
+Make sure you have PostgresQL running and create a database named `i_want_my_mtg`. Then, run the following command to synchronize the database schema:
 
 ```bash
 npm run typeorm schema:sync
@@ -51,7 +51,7 @@ To start the project in development mode, run:
 npm run start:dev
 ```
 
-The project will be running at `http://localhost:3000`.
+The project will be running at `http://localhost:5432`.
 
 ### Running Tests
 
@@ -85,14 +85,6 @@ npm run test:cov
 - `npm run build`: Build the project.
 - See `package.json` for all other scripts
 
-### Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-### License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 
 # Future Considerations
 
@@ -108,7 +100,7 @@ import {TypeOrmModule} from '@nestjs/typeorm';
 import { User } from './entities/User';
 
 export default {
-  type: 'mysql',
+  type: 'postgresql',
   database: ':memory:',
   entities: [User],
   migrations: [__dirname + '/migrations/*.ts'],
@@ -124,4 +116,6 @@ export const TypeOrmConfig = TypeOrmModule.forRoot(ormconfig);
 ### Run Migrations
 `npx typeorm migration:run`
 
-_See TypeOrm docs for details on query builder, example queries, and more_ 
+#
+
+[iwantmymtg.net](https://iwantmymtg.net)

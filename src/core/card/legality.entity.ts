@@ -11,14 +11,16 @@ export class Legality {
     @PrimaryColumn({
         type: "enum",
         enum: Format,
+        enumName: "format_enum",
     })
-    format: string;
+    format: Format;
 
     @Column({
         type: "enum",
         enum: LegalityStatus,
+        enumName: "legality_status_enum",
     })
-    status: string;
+    status: LegalityStatus;
 
     @ManyToOne(() => Card, { onDelete: "CASCADE" })
     @JoinColumn({ name: "cardId", referencedColumnName: "id" })

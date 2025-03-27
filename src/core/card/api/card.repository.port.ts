@@ -1,3 +1,4 @@
+import { Format } from "src/core/card/api/legality.dto";
 import { Card } from "../card.entity";
 import { Legality } from "../legality.entity";
 
@@ -72,5 +73,5 @@ export interface CardRepositoryPort {
      *
      * @param legality
      */
-    deleteLegality(cardId: number, format: string): Promise<void>;
+    deleteLegality(cardId: number, format: Format): Promise<void>;
 }

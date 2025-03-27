@@ -19,7 +19,7 @@ import { CoreModule } from "./core/core.module";
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
-                type: "mysql",
+                type: "postgres",
                 host: configService.get<string>("DB_HOST"),
                 port: configService.get<number>("DB_PORT"),
                 username: configService.get<string>("DB_USERNAME"),

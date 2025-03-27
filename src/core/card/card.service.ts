@@ -140,7 +140,7 @@ export class CardService implements CardServicePort {
     }
 
     private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
-        const legalityDeletionPromises = legalitiesToDelete?.map(l => {
+        const legalityDeletionPromises = legalitiesToDelete?.map((l: Legality) => {
             this.repository.deleteLegality(l.cardId, l.format)
         });
         await Promise.all(legalityDeletionPromises);

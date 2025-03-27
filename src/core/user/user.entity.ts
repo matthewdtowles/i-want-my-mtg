@@ -2,7 +2,7 @@ import { Exclude } from "class-transformer";
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+@Entity({ name: "users" })
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
@@ -17,6 +17,11 @@ export class User {
     @Exclude()
     password: string;
 
-    @Column({ default: UserRole.User.toString() })
-    role: string;
+    @Column({
+        type: "enum",
+        enum: UserRole,
+        enumName: "user_role_enum",
+        default: UserRole.User,
+    })
+    role: UserRole;
 }

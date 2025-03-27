@@ -10,10 +10,10 @@ export class Inventory {
     @PrimaryColumn()
     userId: number;
 
-    @Column({ default: 1 })
+    @Column({ type: "int", default: 1 })
     quantity: number;
 
-    @ManyToOne(() => Card)
+    @ManyToOne(() => Card, { onDelete: "CASCADE" })
     @JoinColumn({
         name: "cardId",
         referencedColumnName: "id",
@@ -21,7 +21,7 @@ export class Inventory {
     })
     card: Card;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: "CASCADE" })
     @JoinColumn({
         name: "userId",
         referencedColumnName: "id",

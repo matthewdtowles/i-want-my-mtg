@@ -43,6 +43,8 @@ export class MtgJsonIngestionMapper {
     toLegalityDtos(legalities: Legalities): LegalityDto[] {
         const legalitiesDto: LegalityDto[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
+            format = format.toLowerCase();
+            status = status.toLowerCase();
             if (this.isValidFormat(format) && this.isValidStatus(status)) {
                 legalitiesDto.push(this.createLegalityDto(format, status));
             }
@@ -60,7 +62,7 @@ export class MtgJsonIngestionMapper {
             name: setCard.name,
             number: setCard.number,
             oracleText: setCard.text,
-            rarity: setCard.rarity,
+            rarity: setCard.rarity.toLowerCase(),
             setCode: setCard.setCode.toLowerCase(),
             uuid: setCard.uuid,
             type: setCard.type,
@@ -76,11 +78,11 @@ export class MtgJsonIngestionMapper {
     }
 
     private isValidFormat(format: string): boolean {
-        return Object.values(Format).includes(format?.toLowerCase() as Format);
+        return Object.values(Format).includes(format as Format);
     }
 
     private isValidStatus(status: string): boolean {
-        return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
+        return Object.values(LegalityStatus).includes(status as LegalityStatus);
     }
 
     private buildCardImgSrc(card: CardSet): string {

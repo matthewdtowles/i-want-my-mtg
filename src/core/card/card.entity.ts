@@ -81,5 +81,4 @@ export class Card {
     @IsUUID()
     @IsNotEmpty()
     uuid: string;
-
 }

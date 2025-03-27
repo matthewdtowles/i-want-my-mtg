@@ -2,7 +2,7 @@ import { Exclude } from "class-transformer";
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+@Entity({ name: "users" })
 export class User {
     @PrimaryGeneratedColumn()
     id: number;

@@ -15,16 +15,18 @@ import { SetRepository } from "./set.repository";
 import { UserRepository } from "./user.repository";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Card, Inventory, Legality, Set, User])],
+    imports: [TypeOrmModule.forFeature([Card, Inventory, Legality, Price, Set, User])],
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
+        { provide: PriceRepositoryPort, useClass: PriceRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
     ],
     exports: [
         CardRepositoryPort,
         InventoryRepositoryPort,
+        PriceRepositoryPort,
         SetRepositoryPort,
         UserRepositoryPort,
         TypeOrmModule,

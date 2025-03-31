@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardDto, CardImgType } from "src/core/card/api/card.dto";
+import { CardDto } from "src/core/card/api/card.dto";
+import { CardImgType } from "src/core/card/api/card.img.type.enum";
 import { CardServicePort } from "../card/api/card.service.port";
 import { InventoryCardDto, InventoryDto } from "../inventory/api/inventory.dto";
 import { InventoryServicePort } from "../inventory/api/inventory.service.port";

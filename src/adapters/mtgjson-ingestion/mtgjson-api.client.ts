@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosResponse } from "axios";
 import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 
 @Injectable()
 export class MtgJsonApiClient {
@@ -51,5 +52,24 @@ export class MtgJsonApiClient {
             this.LOGGER.error(`Invalid response for fetchSet: ${response}`);
         }
         return set;
+    }
+
+    /**
+     * Returns all prices for today
+     *
+     * @returns array of prices from MTG JSON
+     */
+    async fetchTodayPrices(): Promise<AllPricesTodayFile[]> {
+        this.LOGGER.debug(`fetchTodayPrices`);
+        const url: string = `${this.CARD_PROVIDER_URL}AllPricesToday.json`;
+        this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
+        const response: AxiosResponse = await axios.get(url);
+        let prices: AllPricesTodayFile[] = [];
+        if (response && response.data) {
+            prices = response.data.data;
+        } else {
+            this.LOGGER.error(`Invalid response for fetchTodayPrices: ${response}`);
+        }
+        return prices;
     }
 }

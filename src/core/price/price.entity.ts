@@ -1,3 +1,7 @@
+import { IsString, IsNotEmpty, IsNumber, IsDate } from "class-validator";
+import { Card } from "src/core/card/card.entity";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+
 @Entity()
 export class Price {
     @PrimaryGeneratedColumn()
@@ -18,7 +22,8 @@ export class Price {
     @IsNotEmpty()
     date: Date;
 
-    @ManyToOne(() => Card, (card) => card.prices)
+    @ManyToOne(() => Card, (card) => card.price, { cascade: true })
+    @IsNotEmpty()
     @JoinColumn()
     card: Card;
 

@@ -4,7 +4,10 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { CardDto, CardImgType, CardRarity, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardDto } from "./api/card.dto";
+import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
+import { CardImgType } from "./api/card.img.type.enum";
+import { CardRarity } from "./api/card.rarity.enum";
 
 @Injectable()
 export class CardMapper {
@@ -12,7 +15,6 @@ export class CardMapper {
     private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
     private rarityCache: { [key: string]: string } = {};
-
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
         this.LOGGER.debug(`dtosToEntities`);

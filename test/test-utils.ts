@@ -1,6 +1,7 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CardRarity, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { CardRarity } from "src/core/card/api/card.rarity.enum";
 import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";

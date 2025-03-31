@@ -1,11 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { CreateCardDto } from "src/core/card/api/card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 import { MtgJsonApiClient } from "./mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
+
 
 @Injectable()
 export class MtgJsonIngestionService implements IngestionServicePort {
@@ -27,7 +30,12 @@ export class MtgJsonIngestionService implements IngestionServicePort {
 
     async fetchSetCards(code: string): Promise<CreateCardDto[]> {
         const setDto: SetDto = await this.apiClient.fetchSet(code);
-        const createCardDtos: CreateCardDto[] = this.dataMapper.toCreateCardDtos(setDto.cards);
-        return createCardDtos;
+        return this.dataMapper.toCreateCardDtos(setDto.cards);
     }
+
+    async fetchTodayPrices(): Promise<CreatePriceDto[]> {
+        const todayPrices: AllPricesTodayFile[] = await this.apiClient.fetchTodayPrices();
+        return this.dataMapper.toCreatePriceDtos(todayPrices);
+    }
+
 }

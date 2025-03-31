@@ -1,5 +1,6 @@
-import { CreateCardDto } from "src/core/card/api/card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 
 export const IngestionServicePort = "IngestionServicePort";
 
@@ -9,9 +10,12 @@ export const IngestionServicePort = "IngestionServicePort";
  * Implemented by Adapters
  */
 export interface IngestionServicePort {
+
     /**
      * Fetch metadata for all sets
      * Excludes cards
+     * 
+     * @returns array of sets without cards
      */
     fetchAllSetsMeta(): Promise<CreateSetDto[]>;
 
@@ -20,6 +24,7 @@ export interface IngestionServicePort {
      * Includes cards
      *
      * @param code three letter set code
+     * @returns set with cards
      */
     fetchSetByCode(code: string): Promise<CreateSetDto | null>;
 
@@ -27,6 +32,14 @@ export interface IngestionServicePort {
      * Fetch all cards in set with code
      *
      * @param string three letter set code
+     * @returns array of cards
      */
     fetchSetCards(code: string): Promise<CreateCardDto[]>;
+
+    /**
+     * Fetch all price info for all cards for current date
+     * 
+     * @returns array of price objects
+     */
+    fetchTodayPrices(): Promise<CreatePriceDto[]>;
 }

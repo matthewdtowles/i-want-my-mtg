@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
-import { CreateCardDto } from "src/core/card/api/card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 
 
 @Injectable()
@@ -50,6 +52,18 @@ export class MtgJsonIngestionMapper {
             }
         });
         return legalitiesDto;
+    }
+
+    toCreatePriceDtos(prices: AllPricesTodayFile[]): CreatePriceDto[] {
+        const pricesDto: CreatePriceDto[] = [];
+        prices.forEach((uuid, price) => {
+            const priceDto: CreatePriceDto = {
+                uuid,
+                
+            };
+            pricesDto.push(priceDto);
+        });
+        return pricesDto;
     }
 
     private toCreateCardDto(setCard: CardSet): CreateCardDto {

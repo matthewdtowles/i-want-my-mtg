@@ -54,11 +54,13 @@ export class MtgJsonIngestionMapper {
         return legalitiesDto;
     }
 
-    toCreatePriceDtos(prices: AllPricesTodayFile[]): CreatePriceDto[] {
+    toCreatePriceDtos(prices: AllPricesTodayFile): CreatePriceDto[] {
         const pricesDto: CreatePriceDto[] = [];
-        prices.forEach((uuid, price) => {
+        prices.forEach(price => {
             const priceDto: CreatePriceDto = {
-                uuid,
+                // TODO: will need to lookup cardId for given UUID -- OR add ability to find by UUID? Should UUID be FK for Price or Card.Id?
+                uuid, 
+                // TODO: fill in with CreatePriceDto properties
                 
             };
             pricesDto.push(priceDto);

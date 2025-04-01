@@ -1,44 +1,22 @@
-import { IsString, IsNotEmpty, IsNumber, IsDate } from "class-validator";
 import { Card } from "src/core/card/card.entity";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Price {
+
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    @IsString()
-    @IsNotEmpty()
-    currency: string;
-
-    @Column()
-    @IsNumber()
-    @IsNotEmpty()
-    value: number;
-
-    @Column()
-    @IsDate()
-    @IsNotEmpty()
-    date: Date;
-
-    @ManyToOne(() => Card, (card) => card.price, { cascade: true })
-    @IsNotEmpty()
-    @JoinColumn()
+    @OneToOne(() => Card, (card) => card.price, { cascade: true, onDelete: "CASCADE" })
+    @JoinColumn({ name: "cardId", referencedColumnName: "id" })
     card: Card;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
-    provider: string;
+    foil: number;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
-    url: string;
+    normal: number;
 
-    @Column()
-    @IsString()
-    @IsNotEmpty()
-    uuid: string;
+    @Column({ type: "date" })
+    lastUpdatedAt: Date;
 }

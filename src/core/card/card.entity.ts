@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { CardRarity } from "./api/card.rarity.enum";
+import { Price } from "src/core/price/price.entity";
 import { Set } from "src/core/set/set.entity";
 import {
     Column,
@@ -7,10 +7,11 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
 } from "typeorm";
+import { CardRarity } from "./api/card.rarity.enum";
 import { Legality } from "./legality.entity";
-import { Price } from "src/core/price/price.entity";
 
 @Entity()
 export class Card {
@@ -45,20 +46,12 @@ export class Card {
     @IsNotEmpty()
     number: string;
 
-    @Column({
-        nullable: true,
-        type: "text",
-    })
+    @Column({ nullable: true, type: "text" })
     @IsString()
     oracleText?: string;
 
-    // TODO: check for correctness
-    @OneToMany(() => Price, (price) => price.card, { cascade: true })
-    @JoinColumn({
-        name: "prices",
-        referencedColumnName: "id",
-        foreignKeyConstraintName: "FK_Card_Prices",
-    })
+    @OneToOne(() => Price, (price) => price.card, { cascade: true })
+    @JoinColumn({ name: "priceId", referencedColumnName: "id" })
     price: Price;
 
     @Column({
@@ -70,11 +63,7 @@ export class Card {
     rarity: CardRarity;
 
     @ManyToOne(() => Set, (set) => set.cards)
-    @JoinColumn({
-        name: "setCode",
-        referencedColumnName: "code",
-        foreignKeyConstraintName: "FK_Card_Set",
-    })
+    @JoinColumn({ name: "setCode", referencedColumnName: "code" })
     set: Set;
 
     @Column()

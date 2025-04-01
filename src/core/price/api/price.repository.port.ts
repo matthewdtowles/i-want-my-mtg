@@ -1,2 +1,3 @@
-export const PriceRepositoryPort = Symbol("PriceRepositoryPort");
+export const PriceRepositoryPort = "PriceRepositoryPort";
+
 export interface PriceRepositoryPort { }

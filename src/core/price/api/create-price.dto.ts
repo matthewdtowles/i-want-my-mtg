@@ -1,19 +1,22 @@
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsUUID, Matches } from "class-validator";
+import { IsDate, IsNotEmpty, IsOptional, IsUUID, Matches } from "class-validator";
+
 
 export class CreatePriceDto {
+
+    private static readonly USD_REGEX = /^\$?[0-9]{1,3}(\.[0-9]{1,2})?$/;
 
     @IsNotEmpty()
     @IsUUID()
     cardUuid: string;
 
     @IsOptional()
-    @Matches(/^[0-9]{1,3}(\.[0-9]{1,2})?$/, {
+    @Matches(CreatePriceDto.USD_REGEX, {
         message: "Foil price must be a number with up to 2 decimal places",
     })
     foil?: number;
 
     @IsOptional()
-    @Matches(/^[0-9]{1,3}(\.[0-9]{1,2})?$/, {
+    @Matches(CreatePriceDto.USD_REGEX, {
         message: "Normal price must be a number with up to 2 decimal places",
     })
     normal?: number;

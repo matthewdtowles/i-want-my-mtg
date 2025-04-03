@@ -10,5 +10,6 @@ export class PriceService implements PriceServicePort {
         @Inject(PriceRepositoryPort) private readonly repository: PriceRepositoryPort,
         @Inject(PriceMapper) private readonly mapper: PriceMapper,
     ) { }
-
+        //const existingPrice: Price = await this.findById(price.id);
+        //const updatedPrice = this.priceRepository.merge(price, existingPrice);
 }

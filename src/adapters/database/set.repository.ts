@@ -18,6 +18,7 @@ export class SetRepository implements SetRepositoryPort {
         }
         this.LOGGER.debug(`saving ${sets.length} total sets`);
         const saveSets: Set[] = [];
+        // TODO: MOVE TO SERVICE!
         await Promise.all(
             sets.map(async (s) => {
                 if (!s) {

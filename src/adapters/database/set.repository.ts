@@ -25,6 +25,10 @@ export class SetRepository implements SetRepositoryPort {
                     throw new Error(`Invalid set in sets.`);
                 }
                 const existingSet: Set = await this.findByCode(s.code);
+                if (existingSet) {
+                    // Preserve the name field if it already exists
+                    s.name = existingSet.name;
+                }
                 const updatedSet = this.setRepository.merge(s, existingSet);
                 saveSets.push(updatedSet);
             }),

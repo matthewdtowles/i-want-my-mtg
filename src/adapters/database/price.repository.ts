@@ -10,20 +10,20 @@ export class PriceRepository implements PriceRepositoryPort {
 
     constructor(@InjectRepository(Price) private readonly priceRepository: Repository<Price>) { }
 
-    async saveOne(price: Price): Promise<Price> {
-        if (!price) {
-            throw new Error(`Invalid input`);
-        }
-        this.LOGGER.debug(`saving price`);
-        return await this.priceRepository.save(price);
-    }
-
     async save(prices: Price[]): Promise<Price[]> {
         if (!prices) {
             throw new Error(`Invalid input`);
         }
         this.LOGGER.debug(`saving price`);
         return await this.priceRepository.save(prices);
+    }
+
+    async saveOne(price: Price): Promise<Price> {
+        if (!price) {
+            throw new Error(`Invalid input`);
+        }
+        this.LOGGER.debug(`saving price`);
+        return await this.priceRepository.save(price);
     }
 
     async findByCardId(cardId: number): Promise<Price> {
@@ -39,9 +39,9 @@ export class PriceRepository implements PriceRepositoryPort {
             where: { card: { name: cardName } },
         });
     }
-    async findByCardNameAndSetCode(cardName: string, setCode: string): Promise<Price[]> {
+    async findByCardNameAndSetCode(cardName: string, setCode: string): Promise<Price>{
         this.LOGGER.debug(`findByCardNameAndSetCode: ${cardName} ${setCode}`);
-        return await this.priceRepository.find({
+        return await this.priceRepository.findOne({
             where: { card: { name: cardName, setCode } },
         });
     }

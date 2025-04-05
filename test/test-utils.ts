@@ -1,12 +1,17 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
+import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { PriceDto } from "src/core/price/api/price.dto";
+import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
 import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
@@ -57,6 +62,7 @@ export class TestUtils {
             ...dto,
             id: i + 1,
             manaCost: dto.manaCost,
+            price: this.getMockPriceEntities()[i],
             set: this.getMockSet(setCode),
             setCode: setCode,
             legalities: this.getMockLegalities(i + 1),
@@ -256,6 +262,7 @@ export class TestUtils {
             name: createCardDto.name,
             number: createCardDto.number,
             oracleText: createCardDto.oracleText,
+            price: this.getMockPriceEntities()[_id - 1],
             rarity: this.convertToCardRarity(createCardDto.rarity),
             setCode: createCardDto.setCode,
             type: createCardDto.type,
@@ -281,7 +288,7 @@ export class TestUtils {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1),
+            rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1) as CardRarity,
             setCode: card.set.code,
             set: {
                 code: "SET",
@@ -331,6 +338,54 @@ export class TestUtils {
         };
     }
 
+    getMockPriceDtos(): PriceDto[] {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
+            id: i + 1,
+            cardId: i + 1,
+            foilValue: i + 1,
+            normalValue: i + 1,
+            lastUpdatedAt: new Date(),
+        }));
+    }
+
+    getMockPriceEntities(): any {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
+            id: i + 1,
+            card: this.getMockCards(this.MOCK_SET_CODE)[i],
+            foil: i + 1,
+            normal: i + 1,
+            lastUpdatedAt: new Date(),
+        }));
+    }
+
+    mapPriceDtoToEntity(dto: PriceDto): any {
+        const price = new Price();
+        price.id = dto.id;
+        price.card = this.getMockCards(this.MOCK_SET_CODE)[dto.cardId - 1];
+        price.foil = dto.foilValue;
+        price.normal = dto.normalValue;
+        price.lastUpdatedAt = dto.lastUpdatedAt;
+        return price;
+    }
+
+    mapPriceEntityToDto(entity: Price): PriceDto {
+        return {
+            id: entity.id,
+            cardId: entity.card.id,
+            foilValue: entity.foil,
+            normalValue: entity.normal,
+            lastUpdatedAt: entity.lastUpdatedAt,
+        };
+    }
+
+    mapPriceEntitiesToDtos(entities: Price[]): PriceDto[] {
+        return entities.map((entity) => this.mapPriceEntityToDto(entity));
+    }
+
+    mapPriceDtosToEntities(dtos: PriceDto[]): Price[] {
+        return dtos.map((dto) => this.mapPriceDtoToEntity(dto));
+    }
+
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
     }
@@ -355,4 +410,5 @@ export class TestUtils {
         }
         return null;
     }
+
 }

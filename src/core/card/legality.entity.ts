@@ -1,6 +1,7 @@
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Format, LegalityStatus } from "../card/api/legality.dto";
 
 @Entity()
 export class Legality {

@@ -6,9 +6,7 @@ import {
     Entity,
     JoinColumn,
     ManyToOne,
-    OneToMany,
-    OneToOne,
-    PrimaryGeneratedColumn,
+    OneToMany, PrimaryGeneratedColumn
 } from "typeorm";
 import { CardRarity } from "./api/card.rarity.enum";
 import { Legality } from "./legality.entity";
@@ -50,9 +48,8 @@ export class Card {
     @IsString()
     oracleText?: string;
 
-    @OneToOne(() => Price, (price) => price.card, { cascade: true })
-    @JoinColumn({ name: "priceId", referencedColumnName: "id" })
-    price: Price;
+    @OneToMany(() => Price, (price) => price.card)
+    prices: Price[];
 
     @Column({
         type: "enum",

@@ -31,6 +31,7 @@ export class TestUtils {
     readonly MOCK_USER_EMAIL = "test-email@iwmmtg.com";
     readonly MOCK_USER_NAME = "test-user";
     readonly MOCK_PASSWORD = "password";
+    readonly MOCK_DATE = new Date("2022-01-01");
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
@@ -58,16 +59,24 @@ export class TestUtils {
     }
 
     getMockCards(setCode: string): Card[] {
-        return this.getMockCreateCardDtos(setCode).map((dto, i) => ({
-            ...dto,
-            id: i + 1,
-            manaCost: dto.manaCost,
-            price: this.getMockPriceEntities()[i],
-            set: this.getMockSet(setCode),
-            setCode: setCode,
-            legalities: this.getMockLegalities(i + 1),
-            rarity: this.convertToCardRarity(dto.rarity),
-        }));
+        const prices = this.getMockPriceEntities();
+        return this.getMockCreateCardDtos(setCode).map((dto, i) => {
+            const card = new Card();
+            card.id = i + 1;
+            card.artist = dto.artist;
+            card.imgSrc = dto.imgSrc;
+            card.isReserved = dto.isReserved;
+            card.legalities = this.getMockLegalities(i + 1);
+            card.manaCost = dto.manaCost;
+            card.name = dto.name;
+            card.number = dto.number;
+            card.oracleText = dto.oracleText;
+            card.prices = prices;
+            card.set = this.getMockSet(setCode);
+            card.setCode = setCode;
+            card.rarity = this.convertToCardRarity(dto.rarity);
+            return card;
+        });
     }
 
     getMockCardDtos(setCode: string): CardDto[] {
@@ -262,7 +271,8 @@ export class TestUtils {
             name: createCardDto.name,
             number: createCardDto.number,
             oracleText: createCardDto.oracleText,
-            price: this.getMockPriceEntities()[_id - 1],
+            // TODO: check back on this because it is not set for specific card ...
+            prices: this.getMockPriceEntities(),
             rarity: this.convertToCardRarity(createCardDto.rarity),
             setCode: createCardDto.setCode,
             type: createCardDto.type,
@@ -341,40 +351,38 @@ export class TestUtils {
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             id: i + 1,
-            cardId: i + 1,
-            foilValue: i + 1,
-            normalValue: i + 1,
-            lastUpdatedAt: new Date(),
+            foil: i + 10,
+            normal: i + 5,
+            date: this.MOCK_DATE,
         }));
     }
 
-    getMockPriceEntities(): any {
-        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
-            id: i + 1,
-            card: this.getMockCards(this.MOCK_SET_CODE)[i],
-            foil: i + 1,
-            normal: i + 1,
-            lastUpdatedAt: new Date(),
-        }));
+    getMockPriceEntities(): Price[] {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => {
+            const price = new Price();
+            price.id = i + 1;
+            price.foil = i + 10;
+            price.normal = i + 5;
+            price.date = this.MOCK_DATE;
+            return price;
+        });
     }
 
-    mapPriceDtoToEntity(dto: PriceDto): any {
+    mapPriceDtoToEntity(dto: PriceDto): Price {
         const price = new Price();
         price.id = dto.id;
-        price.card = this.getMockCards(this.MOCK_SET_CODE)[dto.cardId - 1];
-        price.foil = dto.foilValue;
-        price.normal = dto.normalValue;
-        price.lastUpdatedAt = dto.lastUpdatedAt;
+        price.foil = dto.foil;
+        price.normal = dto.normal;
+        price.date = dto.date;
         return price;
     }
 
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
             id: entity.id,
-            cardId: entity.card.id,
-            foilValue: entity.foil,
-            normalValue: entity.normal,
-            lastUpdatedAt: entity.lastUpdatedAt,
+            foil: entity.foil,
+            normal: entity.normal,
+            date: entity.date,
         };
     }
 

@@ -1,4 +1,4 @@
-import { IsDate, IsPositive, IsInt } from "class-validator";
+import { IsDate, IsPositive, IsInt, IsOptional } from "class-validator";
 
 export class PriceDto {
 
@@ -6,16 +6,14 @@ export class PriceDto {
     @IsInt()
     id: number;
 
+    @IsOptional()
     @IsPositive()
-    @IsInt()
-    cardId: number;
+    foil: number;
 
+    @IsOptional()
     @IsPositive()
-    foilValue: number;
-
-    @IsPositive()
-    normalValue: number;
+    normal: number;
 
     @IsDate()
-    lastUpdatedAt: Date;
+    date: Date;
 }

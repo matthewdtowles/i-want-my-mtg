@@ -1,5 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { PriceDto } from "src/core/price/api/price.dto";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
 import { Price } from "src/core/price/price.entity";
 import { Repository } from "typeorm";
@@ -9,6 +11,10 @@ export class PriceRepository implements PriceRepositoryPort {
     private readonly LOGGER = new Logger(PriceRepository.name);
 
     constructor(@InjectRepository(Price) private readonly priceRepository: Repository<Price>) { }
+
+    create(priceDto: CreatePriceDto): Price {
+        return this.priceRepository.create(priceDto);
+    }
 
     async save(prices: Price[]): Promise<Price[]> {
         if (!prices) {
@@ -39,6 +45,7 @@ export class PriceRepository implements PriceRepositoryPort {
             where: { card: { name: cardName } },
         });
     }
+
     async findByCardNameAndSetCode(cardName: string, setCode: string): Promise<Price>{
         this.LOGGER.debug(`findByCardNameAndSetCode: ${cardName} ${setCode}`);
         return await this.priceRepository.findOne({
@@ -63,4 +70,7 @@ export class PriceRepository implements PriceRepositoryPort {
         await this.priceRepository.delete(id);
     }
 
+    private createEntity(priceDto: PriceDto): Price {
+        return this.priceRepository.create(priceDto);
+    }
 }

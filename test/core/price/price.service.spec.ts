@@ -5,14 +5,12 @@ import { PriceMapper } from "src/core/price/price.mapper";
 import { PriceService } from "src/core/price/price.service";
 import { TestUtils } from "../../test-utils";
 
-jest.mock("src/core/price/price.mapper");
 
 describe("PriceService", () => {
-    let service: PriceService;
-    let repository: jest.Mocked<PriceRepositoryPort>;
-    let mapper: jest.Mocked<PriceMapper>;
-
-    const testUtils = new TestUtils();
+    let subject: PriceService;
+    let mockPriceRepository: jest.Mocked<PriceRepositoryPort>;
+    let mockPriceMapper: jest.Mocked<PriceMapper>;
+    let testUtils: TestUtils = new TestUtils();
     const mockPrices: PriceDto[] = testUtils.getMockPriceDtos();
 
     beforeEach(async () => {
@@ -42,9 +40,9 @@ describe("PriceService", () => {
             ],
         }).compile();
 
-        service = module.get<PriceService>(PriceService);
-        repository = module.get(PriceRepositoryPort);
-        mapper = module.get(PriceMapper);
+        subject = module.get<PriceService>(PriceService);
+        mockPriceRepository = module.get(PriceRepositoryPort);
+        mockPriceMapper = module.get(PriceMapper);
     });
 
     afterEach(() => {
@@ -52,53 +50,53 @@ describe("PriceService", () => {
     });
 
     it("should be defined", () => {
-        expect(service).toBeDefined();
+        expect(subject).toBeDefined();
     });
 
     it("should save prices and return saved prices", async () => {
-        const savedPrices = await service.save(mockPrices);
-        expect(repository.save).toHaveBeenCalledWith(mockPrices.map(mapper.toEntity));
+        const savedPrices = await subject.save(mockPrices);
+        expect(mockPriceRepository.save).toHaveBeenCalledWith(mockPrices.map(mockPriceMapper.toEntity));
         expect(savedPrices).toEqual(mockPrices);
     });
 
     it("should save one price and return the saved price", async () => {
-        const savedPrice = await service.saveOne(mockPrices[0]);
-        expect(repository.saveOne).toHaveBeenCalledWith(mapper.toEntity(mockPrices[0]));
+        const savedPrice = await subject.saveOne(mockPrices[0]);
+        expect(mockPriceRepository.saveOne).toHaveBeenCalledWith(mockPriceMapper.toEntity(mockPrices[0]));
         expect(savedPrice).toEqual(mockPrices[0]);
     });
 
     it("should find a price by card ID", async () => {
-        const foundPrice = await service.findByCardId(1);
-        expect(repository.findByCardId).toHaveBeenCalledWith(1);
+        const foundPrice = await subject.findByCardId(1);
+        expect(mockPriceRepository.findByCardId).toHaveBeenCalledWith(1);
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
     it("should find prices by card name", async () => {
-        const foundPrices = await service.findByCardName("Test Card");
-        expect(repository.findByCardName).toHaveBeenCalledWith("Test Card");
+        const foundPrices = await subject.findByCardName("Test Card");
+        expect(mockPriceRepository.findByCardName).toHaveBeenCalledWith("Test Card");
         expect(foundPrices).toEqual(mockPrices);
     });
 
     it("should find a price by card name and set code", async () => {
-        const foundPrice = await service.findByCardNameAndSetCode("Test Card", "SET1");
-        expect(repository.findByCardNameAndSetCode).toHaveBeenCalledWith("Test Card", "SET1");
+        const foundPrice = await subject.findByCardNameAndSetCode("Test Card", "SET1");
+        expect(mockPriceRepository.findByCardNameAndSetCode).toHaveBeenCalledWith("Test Card", "SET1");
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
     it("should find prices by card set", async () => {
-        const foundPrices = await service.findByCardSet("SET1");
-        expect(repository.findByCardSet).toHaveBeenCalledWith("SET1");
+        const foundPrices = await subject.findByCardSet("SET1");
+        expect(mockPriceRepository.findByCardSet).toHaveBeenCalledWith("SET1");
         expect(foundPrices).toEqual(mockPrices);
     });
 
     it("should find a price by ID", async () => {
-        const foundPrice = await service.findById(1);
-        expect(repository.findById).toHaveBeenCalledWith(1);
+        const foundPrice = await subject.findById(1);
+        expect(mockPriceRepository.findById).toHaveBeenCalledWith(1);
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
     it("should delete a price by ID", async () => {
-        await service.delete(1);
-        expect(repository.delete).toHaveBeenCalledWith(1);
+        await subject.delete(1);
+        expect(mockPriceRepository.delete).toHaveBeenCalledWith(1);
     });
 });

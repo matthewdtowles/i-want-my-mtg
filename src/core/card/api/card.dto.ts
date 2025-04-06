@@ -1,7 +1,21 @@
-import { IsArray, IsBoolean, IsEnum, IsInstance, IsInt, IsLowercase, IsNumberString, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
+import {
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInstance,
+    IsInt,
+    IsLowercase,
+    IsNumberString,
+    IsOptional,
+    IsPositive,
+    IsString,
+    IsUUID
+} from "class-validator";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
+import { PriceDto } from "src/core/price/api/price.dto";
 import { SetDto } from "src/core/set/api/set.dto";
+
 
 export class CardDto {
 
@@ -38,6 +52,10 @@ export class CardDto {
     @IsOptional()
     @IsString()
     readonly oracleText?: string;
+
+    @IsInstance(PriceDto, { each: true })
+    @IsArray()
+    readonly prices: PriceDto[];
 
     @IsEnum(CardRarity)
     readonly rarity: CardRarity;

@@ -298,6 +298,7 @@ export class TestUtils {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
+            prices: card.prices.map((price) => this.mapPriceEntityToDto(price)),
             rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1) as CardRarity,
             setCode: card.set.code,
             set: {

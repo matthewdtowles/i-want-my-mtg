@@ -1,17 +1,8 @@
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { Price } from "src/core/price/price.entity";
 
 export const PriceRepositoryPort = "PriceRepositoryPort";
 
 export interface PriceRepositoryPort {
-
-    /**
-     * Creates a price entity in memory and returns it
-     * 
-     * @param {CreatePriceDto} priceDto
-     * @returns {Price} created price
-     */
-    create(priceDto: CreatePriceDto): Price;
 
     /**
      * Saves multiple price entities, updates if they exist

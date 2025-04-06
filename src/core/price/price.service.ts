@@ -1,4 +1,4 @@
-import { Logger, Inject } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
 import { PriceServicePort } from "src/core/price/api/price.service.port";

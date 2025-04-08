@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { PriceDto } from "src/core/price/api/price.dto";
+import { PriceServicePort } from "src/core/price/api/price.service.port";
 import { CardDto } from "../card/api/card.dto";
-import { CreateCardDto } from "../card/api/create-card.dto";
 import { CardServicePort } from "../card/api/card.service.port";
+import { CreateCardDto } from "../card/api/create-card.dto";
 import { CreateSetDto, SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { IngestionOrchestratorPort } from "./api/ingestion.orchestrator.port";
@@ -15,6 +18,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
         @Inject(SetServicePort) private readonly setService: SetServicePort,
+        @Inject(PriceServicePort) private readonly priceService: PriceServicePort,
     ) {
         this.LOGGER.debug("Initialized");
     }
@@ -38,6 +42,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
                     sets[i].cards.push(cards[j]);
                 }
             } catch (error) {
+                this.LOGGER.error(`Failed to ingest set cards for set ${sets[i].code}: ${error}`);
                 missedSets.push(sets[i].code);
             }
         }
@@ -51,5 +56,13 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         const savedCards: CardDto[] = await this.cardService.save(cards);
         this.LOGGER.log(`Saved ${savedCards.length} cards in set ${code}`);
         return savedCards;
+    }
+
+    async ingestTodayPrices(): Promise<PriceDto[]> {
+        this.LOGGER.debug(`ingestTodayPrices`);
+        const prices: CreatePriceDto[] = await this.ingestionService.fetchTodayPrices();
+        const savedPrices: PriceDto[] = await this.priceService.save(prices);
+        this.LOGGER.log(`Saved ${savedPrices.length} prices`);
+        return savedPrices;
     }
 }

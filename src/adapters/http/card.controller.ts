@@ -13,12 +13,13 @@ import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/aut
 import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
-import { CardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
+import { CardDto } from "src/core/card/api/card.dto";
+import { UpdateCardDto } from "src/core/card/api/create-card.dto";
 
 @Controller("card")
 export class CardController {

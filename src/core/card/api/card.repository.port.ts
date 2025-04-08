@@ -1,4 +1,4 @@
-import { Format } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/format.enum";
 import { Card } from "../card.entity";
 import { Legality } from "../legality.entity";
 

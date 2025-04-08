@@ -5,8 +5,8 @@ export class CreatePriceDto {
 
     private static readonly USD_REGEX = /^\$?[0-9]{1,3}(\.[0-9]{1,2})?$/;
 
-    @IsPositive()
-    cardId: number;
+    @IsUUID()
+    cardUuid: string;
 
     @IsOptional()
     @Matches(CreatePriceDto.USD_REGEX, {

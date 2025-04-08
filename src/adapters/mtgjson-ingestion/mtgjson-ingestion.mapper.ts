@@ -1,13 +1,16 @@
 import { Injectable } from "@nestjs/common";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
+import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
 
 
 @Injectable()
@@ -55,17 +58,34 @@ export class MtgJsonIngestionMapper {
     }
 
     toCreatePriceDtos(prices: AllPricesTodayFile): CreatePriceDto[] {
-        const pricesDto: CreatePriceDto[] = [];
-        prices.forEach(price => {
-            const priceDto: CreatePriceDto = {
-                // TODO: will need to lookup cardId for given UUID -- OR add ability to find by UUID? Should UUID be FK for Price or Card.Id?
-                uuid, 
-                // TODO: fill in with CreatePriceDto properties
-                
-            };
-            pricesDto.push(priceDto);
-        });
-        return pricesDto;
+        if (!prices || !prices.data) {
+            throw new Error("Invalid prices data");
+        }
+        if (!prices.meta || !prices.meta.date) {
+            throw new Error("Invalid prices meta data");
+        }
+        const uuids: string[] = Object.keys(prices.data);
+        for (const uuid of uuids) {
+            const priceFormats: PriceFormats = prices.data[uuid];
+            if (!priceFormats) {
+                throw new Error(`Invalid price format for uuid ${uuid}`);
+            }
+            const priceDtos: CreatePriceDto[] = [];
+            Object.entries(priceFormats).forEach(([provider, priceList]) => {
+                if (priceList && priceList.currency === "USD" && priceList.retail) {
+                    const foilRecord: Record<string, number> = priceList.retail.foil;
+                    const normalRecord: Record<string, number> = priceList.retail.normal;
+                    const _date: Date = new Date(foilRecord.key);
+                    priceDtos.push({
+                        cardUuid: uuid,
+                        foil: foilRecord.value,
+                        normal: normalRecord.value,
+                        date: _date,
+                    });
+                }
+            });
+            return priceDtos;
+        }
     }
 
     private toCreateCardDto(setCard: CardSet): CreateCardDto {

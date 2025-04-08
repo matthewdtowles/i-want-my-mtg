@@ -1,3 +1,4 @@
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 
 export const PriceServicePort = Symbol("PriceServicePort");
@@ -13,15 +14,7 @@ export interface PriceServicePort {
      * @param prices - An array of price data transfer objects to be saved.
      * @returns A promise that resolves to the saved price data transfer objects.
      */
-    save(prices: PriceDto[]): Promise<PriceDto[]>;
-
-    /**
-     * Saves a single price entry.
-     * 
-     * @param price - A price data transfer object to be saved.
-     * @returns A promise that resolves to the saved price data transfer object.
-     */
-    saveOne(price: PriceDto): Promise<PriceDto>;
+    save(prices: CreatePriceDto[]): Promise<PriceDto[]>;
 
     /**
      * Finds a price entry by the card's unique identifier.

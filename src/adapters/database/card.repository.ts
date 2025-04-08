@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
+import { Format } from "src/core/card/api/format.enum";
 import { Card } from "src/core/card/card.entity";
-import { Repository } from "typeorm";
 import { Legality } from "src/core/card/legality.entity";
-import { Format } from "src/core/card/api/legality.dto";
+import { Repository } from "typeorm";
 
 
 @Injectable()

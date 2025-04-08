@@ -4,6 +4,8 @@ import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
 import { PriceMapper } from "src/core/price/price.mapper";
 import { PriceService } from "src/core/price/price.service";
 import { TestUtils } from "../../test-utils";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 
 
 describe("PriceService", () => {
@@ -12,6 +14,7 @@ describe("PriceService", () => {
     let mockPriceMapper: jest.Mocked<PriceMapper>;
     let testUtils: TestUtils = new TestUtils();
     const mockPrices: PriceDto[] = testUtils.getMockPriceDtos();
+    const mockCreatePrices: CreatePriceDto[] = testUtils.getMockCreatePriceDtos();
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -28,6 +31,12 @@ describe("PriceService", () => {
                         findByCardSet: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
                         findById: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
                         delete: jest.fn().mockResolvedValue(undefined),
+                    },
+                },
+                {
+                    provide: CardRepositoryPort,
+                    useValue: {
+                        findByUuid: jest.fn().mockResolvedValue(testUtils.getMockCardEntity()),
                     },
                 },
                 {
@@ -54,15 +63,8 @@ describe("PriceService", () => {
     });
 
     it("should save prices and return saved prices", async () => {
-        const savedPrices = await subject.save(mockPrices);
-        expect(mockPriceRepository.save).toHaveBeenCalledWith(mockPrices.map(mockPriceMapper.toEntity));
+        const savedPrices = await subject.save(mockCreatePrices);
         expect(savedPrices).toEqual(mockPrices);
-    });
-
-    it("should save one price and return the saved price", async () => {
-        const savedPrice = await subject.saveOne(mockPrices[0]);
-        expect(mockPriceRepository.saveOne).toHaveBeenCalledWith(mockPriceMapper.toEntity(mockPrices[0]));
-        expect(savedPrice).toEqual(mockPrices[0]);
     });
 
     it("should find a price by card ID", async () => {

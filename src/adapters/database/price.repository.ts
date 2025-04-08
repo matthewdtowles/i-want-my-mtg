@@ -19,14 +19,6 @@ export class PriceRepository implements PriceRepositoryPort {
         return await this.priceRepository.save(prices);
     }
 
-    async saveOne(price: Price): Promise<Price> {
-        if (!price) {
-            throw new Error(`Invalid input`);
-        }
-        this.LOGGER.debug(`saving price`);
-        return await this.priceRepository.save(price);
-    }
-
     async findByCardId(cardId: number): Promise<Price> {
         this.LOGGER.debug(`findByCardId: ${cardId}`);
         return await this.priceRepository.findOne({

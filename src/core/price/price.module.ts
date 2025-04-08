@@ -6,9 +6,10 @@ import { PriceRepositoryPort } from "./api/price.repository.port";
 import { PriceService } from "./price.service";
 import { PriceServicePort } from "./api/price.service.port";
 import { PriceMapper } from "./price.mapper";
+import { CardModule } from "src/core/card/card.module";
 
 @Module({
-    imports: [DatabaseModule, MtgJsonIngestionModule],
+    imports: [DatabaseModule, MtgJsonIngestionModule, CardModule],
     providers: [
         { provide: PriceServicePort, useClass: PriceService },
         { provide: PriceRepositoryPort, useClass: PriceRepository },

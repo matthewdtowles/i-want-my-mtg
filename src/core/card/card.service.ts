@@ -1,10 +1,11 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 import { CardDto } from "src/core/card/api/card.dto";
-import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRepositoryPort } from "./api/card.repository.port";
 import { CardServicePort } from "./api/card.service.port";
+import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";

@@ -1,33 +1,41 @@
+import { PriceDto } from "src/core/price/api/price.dto";
 import { CardDto } from "../../card/api/card.dto";
 import { SetDto } from "../../set/api/set.dto";
 
 export const IngestionOrchestratorPort = "IngestionOrchestratorPort";
 
 /**
- * Port to ingest card data from external provider
- * Used by adapters
- * Implemented by core
+ * Interface representing the ingestion orchestrator port.
+ * Provides methods for ingesting metadata, cards, and prices from external sources.
  */
 export interface IngestionOrchestratorPort {
 
     /**
-     * Ingest all set metadata
-     * Excludes cards
-     * @returns SetDto[]
+     * Ingests metadata for all sets, excluding card details.
+     * 
+     * @returns {Promise<SetDto[]>} A promise that resolves to an array of set metadata (SetDto).
      */
     ingestAllSetMeta(): Promise<SetDto[]>;
 
     /**
-     * Ingest all set cards
-     * Includes cards
-     * @returns SetDto[]
+     * Ingests all sets along with their associated card details.
+     * 
+     * @returns {Promise<SetDto[]>} A promise that resolves to an array of sets with card details (SetDto).
      */
     ingestAllSetCards(): Promise<SetDto[]>;
 
     /**
-     * Ingest cards for set with code
-     * @param code three letter set code
-     * @returns CardDto[]
+     * Ingests all cards for a specific set identified by its code.
+     * 
+     * @param {string} code - The three-letter code representing the set.
+     * @returns {Promise<CardDto[]>} A promise that resolves to an array of card details (CardDto) for the specified set.
      */
     ingestSetCards(code: string): Promise<CardDto[]>;
+
+    /**
+     * Ingests today's price data from an external provider.
+     * 
+     * @returns {Promise<PriceDto[]>} A promise that resolves to an array of price details (PriceDto) for the current day.
+     */
+    ingestTodayPrices(): Promise<PriceDto[]>;
 }

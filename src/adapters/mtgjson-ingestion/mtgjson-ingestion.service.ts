@@ -34,7 +34,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
     }
 
     async fetchTodayPrices(): Promise<CreatePriceDto[]> {
-        const todayPrices: AllPricesTodayFile[] = await this.apiClient.fetchTodayPrices();
+        const todayPrices: AllPricesTodayFile = await this.apiClient.fetchTodayPrices();
         return this.dataMapper.toCreatePriceDtos(todayPrices);
     }
 

@@ -59,17 +59,14 @@ export class MtgJsonApiClient {
      *
      * @returns array of prices from MTG JSON
      */
-    async fetchTodayPrices(): Promise<AllPricesTodayFile[]> {
+    async fetchTodayPrices(): Promise<AllPricesTodayFile> {
         this.LOGGER.debug(`fetchTodayPrices`);
         const url: string = `${this.CARD_PROVIDER_URL}AllPricesToday.json`;
         this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
         const response: AxiosResponse = await axios.get(url);
-        let prices: AllPricesTodayFile[] = [];
-        if (response && response.data) {
-            prices = response.data.data;
-        } else {
-            this.LOGGER.error(`Invalid response for fetchTodayPrices: ${response}`);
+        if (!response || !response.data) {
+            throw new Error(`Invalid response for fetchTodayPrices: ${response}`);
         }
-        return prices;
+        return response.data.data;
     }
 }

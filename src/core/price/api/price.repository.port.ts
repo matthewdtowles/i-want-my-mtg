@@ -13,14 +13,6 @@ export interface PriceRepositoryPort {
     save(prices: Price[]): Promise<Price[]>;
 
     /**
-     * Creates price entity, updates if exists
-     * 
-     * @param {Price} price
-     * @returns {Promise<Price>} saved price
-     */
-    saveOne(price: Price): Promise<Price>;
-
-    /**
      * Finds a price by its cardId
      * 
      * @param cardId

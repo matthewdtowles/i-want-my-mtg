@@ -10,6 +10,7 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
@@ -125,6 +126,11 @@ export class TestUtils {
             type: "expansion",
             url: "sets/" + setCodes[i],
         }));
+    }
+
+    getMockCardEntity(): Card {
+        const card: Card = new Card();
+        return card;
     }
 
     getMockSetDtos(): SetDto[] {
@@ -299,7 +305,7 @@ export class TestUtils {
             number: card.number,
             oracleText: card.oracleText,
             prices: card.prices.map((price) => this.mapPriceEntityToDto(price)),
-            rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1) as CardRarity,
+            rarity: card.rarity,
             setCode: card.set.code,
             set: {
                 code: "SET",
@@ -349,6 +355,16 @@ export class TestUtils {
         };
     }
 
+    getMockCreatePriceDtos(): CreatePriceDto[] {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
+            cardUuid: `abcd-1234-efgh-5678-ijkl-${this.MOCK_SET_CODE}${i + 1}`,
+            foil: i + 10,
+            normal: i + 5,
+            date: this.MOCK_DATE,
+            cardId: i + 1,
+        }));
+    }
+
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             id: i + 1,
@@ -371,7 +387,6 @@ export class TestUtils {
 
     mapPriceDtoToEntity(dto: PriceDto): Price {
         const price = new Price();
-        price.id = dto.id;
         price.foil = dto.foil;
         price.normal = dto.normal;
         price.date = dto.date;
@@ -394,6 +409,7 @@ export class TestUtils {
     mapPriceDtosToEntities(dtos: PriceDto[]): Price[] {
         return dtos.map((dto) => this.mapPriceDtoToEntity(dto));
     }
+
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;

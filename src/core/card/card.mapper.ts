@@ -1,5 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
@@ -8,6 +7,9 @@ import { CardDto } from "./api/card.dto";
 import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRarity } from "./api/card.rarity.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 
 @Injectable()
 export class CardMapper {
@@ -53,7 +55,8 @@ export class CardMapper {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            rarity: this.rarityForView(card.rarity),
+            prices: card.prices,
+            rarity: card.rarity,
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
             type: card.type,

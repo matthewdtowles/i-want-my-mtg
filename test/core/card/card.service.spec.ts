@@ -1,13 +1,15 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardDto, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
 import { Legality } from "src/core/card/legality.entity";
 import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
+import { CardDto } from "src/core/card/api/card.dto";
+import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 
 describe("CardService", () => {
     let service: CardService;

@@ -1,3 +1,5 @@
+import { Card } from "src/core/card/card.entity";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { Price } from "src/core/price/price.entity";
 
@@ -19,37 +21,17 @@ export class PriceMapper {
     }
 
     /**
-     * Maps a Price DTO to a Price entity.
+     * Maps a CreatePriceDto and a Card to a Price entity.
      * 
-     * @param {PriceDto} priceDto - The Price DTO to map.
+     * @param {CreatePriceDto} priceDto - The DTO containing price details.
+     * @param {Card} card - The Card entity associated with the price.
      * @returns {Price} - The mapped Price entity.
      */
-    toEntity(priceDto: PriceDto): Price {
-       const price = new Price();
-        price.id = priceDto.id;
+    toEntity(priceDto: CreatePriceDto, card: Card): Price {
+        const price = new Price();
         price.foil = priceDto.foil;
         price.normal = priceDto.normal;
         price.date = priceDto.date;
         return price;
-    }
-
-    /**
-     * Maps an array of Price entities to an array of Price DTOs.
-     *
-     * @param {Price[]} prices - The array of Price entities to map.
-     * @returns {PriceDto[]} - The array of mapped Price DTOs.
-     */
-    toDtos(prices: Price[]): PriceDto[] {
-        return prices.map((price) => this.toDto(price));
-    }
-
-    /**
-     * Maps an array of Price DTOs to an array of Price entities.
-     *
-     * @param {PriceDto[]} priceDtos - The array of Price DTOs to map.
-     * @returns {Price[]} - The array of mapped Price entities.
-     */
-    toEntities(priceDtos: PriceDto[]): Price[] {
-        return priceDtos.map((priceDto) => this.toEntity(priceDto));
     }
 }

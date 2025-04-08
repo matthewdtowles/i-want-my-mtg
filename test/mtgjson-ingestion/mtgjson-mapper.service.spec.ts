@@ -3,10 +3,10 @@ import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
-import { CreateCardDto } from "src/core/card/api/card.dto";
 import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 
 describe("MtgJsonIngestionMapper", () => {
     let service: MtgJsonIngestionMapper;

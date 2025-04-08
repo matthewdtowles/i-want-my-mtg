@@ -1,5 +1,10 @@
+import { normalize } from "path";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { Identifiers } from "src/adapters/mtgjson-ingestion/dto/identifiers.dto";
+import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
+import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
+import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
@@ -38,7 +43,7 @@ export class MtgJsonIngestionTestUtils {
             card.identifiers = new Identifiers();
             card.isReserved = false;
             card.legalities = {
-                // standard purposely omitted for testing
+                // standard intentionally omitted for testing
                 alchemy: "legal",
                 brawl: "not legal",
                 commander: "legal",
@@ -60,7 +65,7 @@ export class MtgJsonIngestionTestUtils {
                 premodern: "legal",
                 vintage: "legal",
             },
-            card.manaCost = `{${i}}{W}`;
+                card.manaCost = `{${i}}{W}`;
             card.name = "Test Card Name" + i;
             card.number = i.toString();
             card.rarity = i % 2 === 1 ? "common" : "uncommon";
@@ -99,7 +104,7 @@ export class MtgJsonIngestionTestUtils {
             premodern: "legal",
             vintage: "legal",
         },
-        bonusCard.manaCost = "{U/G}{B/W}{R/U}";
+            bonusCard.manaCost = "{U/G}{B/W}{R/U}";
         bonusCard.name = "Test Bonus Card Name";
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
         bonusCard.originalText = "Bonus card text.";
@@ -228,6 +233,75 @@ export class MtgJsonIngestionTestUtils {
                 cardId: null,
                 format: "vintage",
                 status: "legal",
+            },
+        ];
+    }
+
+    getMockAllPricesTodayFile(dateKey: string, baseValue: number): AllPricesTodayFile {
+        return {
+            meta: {
+                date: dateKey,
+                version: "1.0.0",
+            },
+            data: {
+                "abcd-1234-efgh-5678-ijkl-9011": this.getMockPriceFormats(dateKey, baseValue),
+                "zyxw-0987-vutsr-6543-qponm-2109": this.getMockPriceFormats(dateKey, baseValue),
+            }
+        };
+    }
+
+    getPriceTodayRecord(uuid: string, dateKey: string, baseValue: number): Record<string, PriceFormats> {
+        return {
+            [uuid]: this.getMockPriceFormats(dateKey, baseValue),
+        };
+    }
+
+    getMockPriceFormats(dateKey: string, baseValue: number): PriceFormats {
+        return {
+            mtgo: {
+                cardhoarder: this.getMockPriceList(dateKey, (baseValue - 0.01)),
+            },
+            paper: {
+                cardkingdom: this.getMockPriceList(dateKey, baseValue),
+                cardmarket: this.getMockPriceList(dateKey, baseValue + 1),
+                cardsphere: this.getMockPriceList(dateKey, baseValue + 2),
+                tcgplayer: this.getMockPriceList(dateKey, baseValue + 3),
+            },
+        };
+    }
+
+    getMockPriceList(dateKey: string, baseValue: number): PriceList {
+        return {
+            buylist: this.getMockPricePoints(dateKey, baseValue),
+            currency: "USD",
+            retail: this.getMockPricePoints(dateKey, baseValue),
+        };
+    }
+
+    getMockPricePoints(dateKey: string, baseValue: number): PricePoints {
+        return {
+            foil: {
+                [dateKey]: baseValue * 2,
+            },
+            normal: {
+                [dateKey]: baseValue, 
+            },
+        };
+    }
+
+    getExpectedCreatePriceDtos(): any {
+        return [
+            {
+                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                foil: 1.23,
+                normal: 2.34,
+                date: new Date("2023-10-01"),
+            },
+            {
+                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                foil: 3.45,
+                normal: 4.56,
+                date: new Date("2023-10-01"),
             },
         ];
     }

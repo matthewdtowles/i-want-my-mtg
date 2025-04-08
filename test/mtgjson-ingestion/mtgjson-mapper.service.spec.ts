@@ -7,6 +7,9 @@ import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { All } from "@nestjs/common";
+import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 
 describe("MtgJsonIngestionMapper", () => {
     let service: MtgJsonIngestionMapper;
@@ -64,6 +67,27 @@ describe("MtgJsonIngestionMapper", () => {
                 { format: "vintage", status: "legal", cardId: null },
             ];
             expect(legalities).toEqual(expectedLegalities);
+        });
+
+        it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[]", () => {
+            const dateKey: string = "2023-10-01";
+            const baseValue: number = 1.0;
+            const prices = testUtils.getMockAllPricesTodayFile(dateKey, baseValue);
+            const expectedPrices = testUtils.getExpectedCreatePriceDtos();
+            const actualPrices = service.toCreatePriceDtos(prices);
+            expect(actualPrices).toEqual(expectedPrices);
+        });
+
+        it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[] with empty data", () => {
+            const prices = new AllPricesTodayFile();
+            prices.meta = { 
+                date: "2023-10-01", 
+                version: "1.0"
+            };
+            prices.data = {};
+            const expectedPrices: CreatePriceDto[] = [];
+            const actualPrices = service.toCreatePriceDtos(prices);
+            expect(actualPrices).toEqual(expectedPrices);
         });
     });
 });

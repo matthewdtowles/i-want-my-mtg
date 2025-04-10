@@ -11,6 +11,7 @@ import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
+import { Provider } from "src/core/price/api/provider.enum";
 
 
 @Injectable()
@@ -64,23 +65,30 @@ export class MtgJsonIngestionMapper {
         if (!prices.meta || !prices.meta.date) {
             throw new Error("Invalid prices meta data");
         }
+        const dateStr: string = prices.meta.date;
+        const _date: Date = new Date(dateStr);
         const uuids: string[] = Object.keys(prices.data);
         for (const uuid of uuids) {
             const priceFormats: PriceFormats = prices.data[uuid];
+            // TODO: should we actually throw here? 
             if (!priceFormats) {
                 throw new Error(`Invalid price format for uuid ${uuid}`);
             }
+            // TODO: should we actually throw here? 
+            if (!priceFormats.paper) {
+                throw new Error(`Invalid paper PriceList in PriceFormat for uuid ${uuid}`);
+            }
             const priceDtos: CreatePriceDto[] = [];
-            Object.entries(priceFormats).forEach(([provider, priceList]) => {
+            Object.entries(priceFormats.paper).forEach(([_provider, priceList]) => {
                 if (priceList && priceList.currency === "USD" && priceList.retail) {
                     const foilRecord: Record<string, number> = priceList.retail.foil;
                     const normalRecord: Record<string, number> = priceList.retail.normal;
-                    const _date: Date = new Date(foilRecord.key);
                     priceDtos.push({
                         cardUuid: uuid,
-                        foil: foilRecord.value,
-                        normal: normalRecord.value,
+                        foil: foilRecord[dateStr],
+                        normal: normalRecord[dateStr],
                         date: _date,
+                        provider: _provider as Provider,
                     });
                 }
             });

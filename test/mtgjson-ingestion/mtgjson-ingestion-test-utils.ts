@@ -1,4 +1,3 @@
-import { normalize } from "path";
 import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { Identifiers } from "src/adapters/mtgjson-ingestion/dto/identifiers.dto";
@@ -237,16 +236,19 @@ export class MtgJsonIngestionTestUtils {
         ];
     }
 
-    getMockAllPricesTodayFile(dateKey: string, baseValue: number): AllPricesTodayFile {
+    getMockAllPricesTodayFile(
+        uuids: string[],
+        dateKey: string,
+        baseValue: number,
+    ): AllPricesTodayFile {
         return {
             meta: {
                 date: dateKey,
                 version: "1.0.0",
             },
-            data: {
-                "abcd-1234-efgh-5678-ijkl-9011": this.getMockPriceFormats(dateKey, baseValue),
-                "zyxw-0987-vutsr-6543-qponm-2109": this.getMockPriceFormats(dateKey, baseValue),
-            }
+            data: uuids.reduce((acc, uuid) => {
+                return { ...acc, ...this.getPriceTodayRecord(uuid, dateKey, baseValue) };
+            }, {}),
         };
     }
 
@@ -284,7 +286,7 @@ export class MtgJsonIngestionTestUtils {
                 [dateKey]: baseValue * 2,
             },
             normal: {
-                [dateKey]: baseValue, 
+                [dateKey]: baseValue,
             },
         };
     }
@@ -293,14 +295,14 @@ export class MtgJsonIngestionTestUtils {
         return [
             {
                 cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
-                foil: 1.23,
-                normal: 2.34,
+                foil: 2.00,
+                normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
                 cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
-                foil: 3.45,
-                normal: 4.56,
+                foil: 3.00,
+                normal: 1.50,
                 date: new Date("2023-10-01"),
             },
         ];

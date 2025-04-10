@@ -1,4 +1,5 @@
-import { IsDate, IsOptional, IsPositive, IsUUID, Matches } from "class-validator";
+import { IsDate, IsEnum, IsOptional, IsUUID, Matches } from "class-validator";
+import { Provider } from "src/core/price/api/provider.enum";
 
 
 export class CreatePriceDto {
@@ -22,4 +23,7 @@ export class CreatePriceDto {
 
     @IsDate()
     date: Date;
+
+    @IsEnum(Provider)
+    provider: Provider;
 }

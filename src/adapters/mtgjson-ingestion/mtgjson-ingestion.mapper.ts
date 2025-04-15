@@ -68,6 +68,7 @@ export class MtgJsonIngestionMapper {
         const dateStr: string = prices.meta.date;
         const _date: Date = new Date(dateStr);
         const uuids: string[] = Object.keys(prices.data);
+        const priceDtos: CreatePriceDto[] = [];
         for (const uuid of uuids) {
             const priceFormats: PriceFormats = prices.data[uuid];
             // TODO: should we actually throw here? 
@@ -78,7 +79,6 @@ export class MtgJsonIngestionMapper {
             if (!priceFormats.paper) {
                 throw new Error(`Invalid paper PriceList in PriceFormat for uuid ${uuid}`);
             }
-            const priceDtos: CreatePriceDto[] = [];
             Object.entries(priceFormats.paper).forEach(([_provider, priceList]) => {
                 if (priceList && priceList.currency === "USD" && priceList.retail) {
                     const foilRecord: Record<string, number> = priceList.retail.foil;
@@ -92,8 +92,8 @@ export class MtgJsonIngestionMapper {
                     });
                 }
             });
-            return priceDtos;
         }
+        return priceDtos;
     }
 
     private toCreateCardDto(setCard: CardSet): CreateCardDto {

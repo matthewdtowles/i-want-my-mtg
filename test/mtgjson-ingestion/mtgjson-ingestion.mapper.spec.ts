@@ -23,9 +23,9 @@ describe("MtgJsonIngestionMapper", () => {
         }).compile();
         service = module.get<MtgJsonIngestionMapper>(MtgJsonIngestionMapper);
         testUtils = new MtgJsonIngestionTestUtils();
-        cards = testUtils.getMockCardSetArray();
-        set = testUtils.getMockSetDto();
-        setList = testUtils.getMockSetListArray();
+        cards = testUtils.mockCardSetArray();
+        set = testUtils.mockSetDto();
+        setList = testUtils.mockSetListArray();
     });
 
     it("should be defined", () => {
@@ -34,19 +34,19 @@ describe("MtgJsonIngestionMapper", () => {
 
     describe("DataMapperService map provider models to DTOs", () => {
         it("maps the Set model from DataProvider to CreateSetDto", () => {
-            const expectedSet: CreateSetDto = testUtils.getExpectedCreateSetDto();
+            const expectedSet: CreateSetDto = testUtils.expectedCreateSetDto();
             const actualSet: CreateSetDto = service.toCreateSetDto(set);
             expect(actualSet).toEqual(expectedSet);
         });
 
         it("map Set.CardSet model from DataProvider to CreateCardDto[]", () => {
-            const expectedCards: CreateCardDto[] = testUtils.getExpectedCreateCardDtos();
+            const expectedCards: CreateCardDto[] = testUtils.expectedCreateCardDtos();
             const actualCards: CreateCardDto[] = service.toCreateCardDtos(cards);
             expect(actualCards).toEqual(expectedCards);
         });
 
         it("map SetList model from DataProvider to CreateSetDto[]", () => {
-            const expectedSet: CreateSetDto[] = testUtils.getExpectedCreateSetDtos();
+            const expectedSet: CreateSetDto[] = testUtils.expectedCreateSetDtos();
             const actualSet: CreateSetDto[] = service.toCreateSetDtos(setList);
             expect(actualSet).toEqual(expectedSet);
         });
@@ -69,7 +69,6 @@ describe("MtgJsonIngestionMapper", () => {
         });
 
 
-        // TODO: implement/fix these tests (TDD)
         it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[]", () => {
             const dateKey: string = "2023-10-01";
             const baseValue: number = 1.0;
@@ -78,13 +77,11 @@ describe("MtgJsonIngestionMapper", () => {
                 "abcd-1234-efgh-5678-ijkl-9011",
                 "zyxw-0987-vutsr-6543-qponm-2109",
             ];
-            const prices = testUtils.getMockAllPricesTodayFile(uuids, dateKey, baseValue);
-            const expectedPrices = testUtils.getExpectedCreatePriceDtos();
-            console.log("input prices", prices);
-            const actualPrices = service.toCreatePriceDtos(prices);
-            console.log("actualPrices", actualPrices);
-            console.log("expectedPrices", expectedPrices);
+            const prices = testUtils.mockAllPricesTodayFile(uuids, dateKey, baseValue);
+            const expectedPrices: CreatePriceDto[] = testUtils.expectedCreatePriceDtos();
+            const actualPrices: CreatePriceDto[] = service.toCreatePriceDtos(prices);
             expect(actualPrices).toEqual(expectedPrices);
+            expect(actualPrices.length).toEqual(expectedPrices.length);
         });
 
         it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[] with empty data", () => {

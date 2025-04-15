@@ -12,6 +12,7 @@ import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
+import { Provider } from "src/core/price/api/provider.enum";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
@@ -362,6 +363,7 @@ export class TestUtils {
             normal: i + 5,
             date: this.MOCK_DATE,
             cardId: i + 1,
+            provider: Provider.TCGPLAYER,
         }));
     }
 

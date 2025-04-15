@@ -8,6 +8,8 @@ import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { LegalityDto } from "src/core/card/api/legality.dto";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { Provider } from "src/core/price/api/provider.enum";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 
 export class MtgJsonIngestionTestUtils {
@@ -19,11 +21,11 @@ export class MtgJsonIngestionTestUtils {
     private readonly MOCK_SET_TYPE: string = "expansion";
     private readonly MOCK_ROOT_SCRYFALL_ID: string = "abc123def456";
 
-    getMockSetDto(): SetDto {
+    mockSetDto(): SetDto {
         let set: SetDto = new SetDto();
         set.baseSetSize = this.MOCK_BASE_SET_SIZE;
         set.block = this.MOCK_SET_NAME;
-        set.cards = this.getMockCardSetArray();
+        set.cards = this.mockCardSetArray();
         set.code = this.MOCK_SET_CODE;
         set.isFoilOnly = false;
         set.isNonFoilOnly = false;
@@ -34,7 +36,7 @@ export class MtgJsonIngestionTestUtils {
         return set;
     }
 
-    getMockCardSetArray(): CardSet[] {
+    mockCardSetArray(): CardSet[] {
         let cards: CardSet[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             let card = new CardSet();
@@ -117,7 +119,7 @@ export class MtgJsonIngestionTestUtils {
         return cards;
     }
 
-    getMockSetListArray(): SetList[] {
+    mockSetListArray(): SetList[] {
         let setList: SetList[] = [];
         let set: SetList = new SetList();
         set.baseSetSize = this.MOCK_BASE_SET_SIZE;
@@ -133,14 +135,14 @@ export class MtgJsonIngestionTestUtils {
         return setList;
     }
 
-    getExpectedCreateCardDtos(): CreateCardDto[] {
+    expectedCreateCardDtos(): CreateCardDto[] {
         const cards: CreateCardDto[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             const card: CreateCardDto = {
                 artist: "artist",
                 imgSrc: `${i}/a/${i}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
                 isReserved: false,
-                legalities: this.getExpectedLegalityDtos(),
+                legalities: this.expectedLegalityDtos(),
                 manaCost: `{${i}}{W}`,
                 name: `Test Card Name${i}`,
                 number: `${i}`,
@@ -156,7 +158,7 @@ export class MtgJsonIngestionTestUtils {
             artist: "artist",
             imgSrc: `4/a/4${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
-            legalities: this.getExpectedLegalityDtos(),
+            legalities: this.expectedLegalityDtos(),
             manaCost: "{U/G}{B/W}{R/U}",
             name: "Test Bonus Card Name",
             number: `${this.MOCK_BASE_SET_SIZE + 1}`,
@@ -170,7 +172,7 @@ export class MtgJsonIngestionTestUtils {
         return cards;
     }
 
-    getExpectedCreateSetDto(): CreateSetDto {
+    expectedCreateSetDto(): CreateSetDto {
         const expectedSet: CreateSetDto = {
             baseSize: this.MOCK_BASE_SET_SIZE,
             block: this.MOCK_SET_NAME,
@@ -185,13 +187,13 @@ export class MtgJsonIngestionTestUtils {
     }
 
     // single item array for testing purposes
-    getExpectedCreateSetDtos(): CreateSetDto[] {
+    expectedCreateSetDtos(): CreateSetDto[] {
         const expectedSets: CreateSetDto[] = [];
-        expectedSets.push(this.getExpectedCreateSetDto());
+        expectedSets.push(this.expectedCreateSetDto());
         return expectedSets;
     }
 
-    getExpectedLegalityDtos(): LegalityDto[] {
+    expectedLegalityDtos(): LegalityDto[] {
         return [
             {
                 cardId: null,
@@ -236,7 +238,7 @@ export class MtgJsonIngestionTestUtils {
         ];
     }
 
-    getMockAllPricesTodayFile(
+    mockAllPricesTodayFile(
         uuids: string[],
         dateKey: string,
         baseValue: number,
@@ -247,40 +249,40 @@ export class MtgJsonIngestionTestUtils {
                 version: "1.0.0",
             },
             data: uuids.reduce((acc, uuid) => {
-                return { ...acc, ...this.getPriceTodayRecord(uuid, dateKey, baseValue) };
+                return { ...acc, ...this.priceTodayRecord(uuid, dateKey, baseValue) };
             }, {}),
         };
     }
 
-    getPriceTodayRecord(uuid: string, dateKey: string, baseValue: number): Record<string, PriceFormats> {
+    priceTodayRecord(uuid: string, dateKey: string, baseValue: number): Record<string, PriceFormats> {
         return {
-            [uuid]: this.getMockPriceFormats(dateKey, baseValue),
+            [uuid]: this.mockPriceFormats(dateKey, baseValue),
         };
     }
 
-    getMockPriceFormats(dateKey: string, baseValue: number): PriceFormats {
+    mockPriceFormats(dateKey: string, baseValue: number): PriceFormats {
         return {
             mtgo: {
-                cardhoarder: this.getMockPriceList(dateKey, (baseValue - 0.01)),
+                cardhoarder: this.mockPriceList(dateKey, (baseValue - 0.01)),
             },
             paper: {
-                cardkingdom: this.getMockPriceList(dateKey, baseValue),
-                cardmarket: this.getMockPriceList(dateKey, baseValue + 1),
-                cardsphere: this.getMockPriceList(dateKey, baseValue + 2),
-                tcgplayer: this.getMockPriceList(dateKey, baseValue + 3),
+                cardkingdom: this.mockPriceList(dateKey, baseValue),
+                cardmarket: this.mockPriceList(dateKey, baseValue, "EUR"),
+                cardsphere: this.mockPriceList(dateKey, baseValue),
+                tcgplayer: this.mockPriceList(dateKey, baseValue),
             },
         };
     }
 
-    getMockPriceList(dateKey: string, baseValue: number): PriceList {
+    mockPriceList(dateKey: string, baseValue: number, currency?: string): PriceList {
         return {
-            buylist: this.getMockPricePoints(dateKey, baseValue),
-            currency: "USD",
-            retail: this.getMockPricePoints(dateKey, baseValue),
+            buylist: this.mockPricePoints(dateKey, baseValue),
+            currency: currency || "USD",
+            retail: this.mockPricePoints(dateKey, baseValue),
         };
     }
 
-    getMockPricePoints(dateKey: string, baseValue: number): PricePoints {
+    mockPricePoints(dateKey: string, baseValue: number): PricePoints {
         return {
             foil: {
                 [dateKey]: baseValue * 2,
@@ -291,19 +293,49 @@ export class MtgJsonIngestionTestUtils {
         };
     }
 
-    getExpectedCreatePriceDtos(): any {
+    expectedCreatePriceDtos(): CreatePriceDto[] {
         return [
             {
                 cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
+                provider: Provider.CARDKINGDOM
+            },
+            {
+                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                foil: 2.00,
+                normal: 1.00,
+                date: new Date("2023-10-01"),
+                provider: Provider.CARDSPHERE
+            },
+            {
+                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                foil: 2.00,
+                normal: 1.00,
+                date: new Date("2023-10-01"),
+                provider: Provider.TCGPLAYER
             },
             {
                 cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
-                foil: 3.00,
-                normal: 1.50,
+                foil: 2.00,
+                normal: 1.00,
                 date: new Date("2023-10-01"),
+                provider: Provider.CARDKINGDOM
+            },
+            {
+                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                foil: 2.00,
+                normal: 1.00,
+                date: new Date("2023-10-01"),
+                provider: Provider.CARDSPHERE
+            },
+            {
+                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                foil: 2.00,
+                normal: 1.00,
+                date: new Date("2023-10-01"),
+                provider: Provider.TCGPLAYER
             },
         ];
     }

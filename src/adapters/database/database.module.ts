@@ -1,10 +1,13 @@
 import { Logger, Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { PriceRepository } from "src/adapters/database/price.repository";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
+import { Price } from "src/core/price/price.entity";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
 import { Set } from "src/core/set/set.entity";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";

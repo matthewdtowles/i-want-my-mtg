@@ -26,6 +26,7 @@
     "ingest:cards": "npx ts-node src/cli.ts ingest:cards",
     "ingest:set": "npx ts-node src/cli.ts ingest:set",
     "ingest:all-cards": "npx ts-node src/cli.ts ingest:all-cards",
+    "ingest:today-prices": "npx ts-node src/cli.ts ingest:today-prices",
     "ingest:test": "npx ts-node src/cli.ts ingest:test",
     "card:get": "npx ts-node src/cli.ts card:get",
     "cards:set-get": "npx ts-node src/cli.ts cards:set-get",
@@ -68,6 +69,7 @@
     "pg": "^8.14.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "stream-json": "^1.9.1",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {

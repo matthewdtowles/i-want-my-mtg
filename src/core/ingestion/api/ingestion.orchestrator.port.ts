@@ -1,6 +1,6 @@
 import { PriceDto } from "src/core/price/api/price.dto";
-import { CardDto } from "../../card/api/card.dto";
-import { SetDto } from "../../set/api/set.dto";
+import { CardDto } from "src/core/card/api/card.dto";
+import { SetDto } from "src/core/set/api/set.dto";
 
 export const IngestionOrchestratorPort = "IngestionOrchestratorPort";
 

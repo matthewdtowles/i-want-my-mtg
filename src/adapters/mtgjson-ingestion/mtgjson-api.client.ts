@@ -19,7 +19,7 @@ export class MtgJsonApiClient {
      */
     async fetchSetList(): Promise<SetList[]> {
         const url: string = this.CARD_PROVIDER_URL + this.SET_LIST_PATH;
-        this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
+        this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let setList: SetList[] = [];
         if (response && response.data && Array.isArray(response.data.data)) {
@@ -43,7 +43,7 @@ export class MtgJsonApiClient {
             this.CARD_PROVIDER_URL +
             setCode.toUpperCase() +
             this.CARD_PROVIDER_FILE_EXT;
-        this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
+        this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let set: SetDto = new SetDto();
         if (response && response.data) {
@@ -60,13 +60,12 @@ export class MtgJsonApiClient {
      * @returns array of prices from MTG JSON
      */
     async fetchTodayPrices(): Promise<AllPricesTodayFile> {
-        this.LOGGER.debug(`fetchTodayPrices`);
         const url: string = `${this.CARD_PROVIDER_URL}AllPricesToday.json`;
-        this.LOGGER.log(`${MtgJsonApiClient.name} calling ${url}`);
+        this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
         if (!response || !response.data) {
             throw new Error(`Invalid response for fetchTodayPrices: ${response}`);
         }
-        return response.data.data;
+        return response.data;
     }
 }

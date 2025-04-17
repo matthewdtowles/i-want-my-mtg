@@ -24,7 +24,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     }
 
     async ingestAllSetMeta(): Promise<SetDto[]> {
-        this.LOGGER.debug(`ingestAllSetMeta`);
+        this.LOGGER.debug(`ingest meta data for all sets`);
         const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: SetDto[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
@@ -32,7 +32,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     }
 
     async ingestAllSetCards(): Promise<SetDto[]> {
-        this.LOGGER.debug(`ingestAllSetCards`);
+        this.LOGGER.debug(`ingest all cards for all sets`);
         const missedSets: string[] = [];
         const sets: SetDto[] = await this.setService.findAll();
         for (let i = 0; i < sets.length; i++) {
@@ -51,7 +51,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     }
 
     async ingestSetCards(code: string): Promise<CardDto[]> {
-        this.LOGGER.debug(`ingestSetCards for set code: ${code}`);
+        this.LOGGER.debug(`ingest set cards for set code: ${code}`);
         const cards: CreateCardDto[] = await this.ingestionService.fetchSetCards(code);
         const savedCards: CardDto[] = await this.cardService.save(cards);
         this.LOGGER.log(`Saved ${savedCards.length} cards in set ${code}`);
@@ -59,7 +59,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     }
 
     async ingestTodayPrices(): Promise<PriceDto[]> {
-        this.LOGGER.debug(`ingestTodayPrices`);
+        this.LOGGER.debug(`ingest prices for today`);
         const prices: CreatePriceDto[] = await this.ingestionService.fetchTodayPrices();
         const savedPrices: PriceDto[] = await this.priceService.save(prices);
         this.LOGGER.log(`Saved ${savedPrices.length} prices`);

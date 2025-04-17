@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
 import { CardDto } from "src/core/card/api/card.dto";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
+import { PriceDto } from "src/core/price/api/price.dto";
+import { Price } from "src/core/price/price.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 
 @Injectable()
@@ -45,6 +47,15 @@ export class IngestionCli {
     async ingestAllCards(): Promise<SetDto[]> {
         this.LOGGER.debug(`ingestAllCards for every set invoked`);
         return await this.orchestrator.ingestAllSetCards();
+    }
+
+    @Command({
+        command: "ingest:today-prices",
+        describe: "Ingest prices for today from external API",
+    })
+    async ingestTodayPrices(): Promise<PriceDto[]> {
+        this.LOGGER.debug(`ingestTodayPrices invoked`);
+        return await this.orchestrator.ingestTodayPrices();
     }
 
     @Command({

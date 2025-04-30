@@ -1,12 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { AllPricesTodayFile } from "src/adapters/mtgjson-ingestion/dto/allPricesTodayFile.dto";
 import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { LegalityDto } from "src/core/card/api/legality.dto";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
 
@@ -66,34 +64,6 @@ describe("MtgJsonIngestionMapper", () => {
                 { format: "vintage", status: "legal", cardId: null },
             ];
             expect(legalities).toEqual(expectedLegalities);
-        });
-
-
-        it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[]", () => {
-            const dateKey: string = "2023-10-01";
-            const baseValue: number = 1.0;
-
-            const uuids: string[] = [
-                "abcd-1234-efgh-5678-ijkl-9011",
-                "zyxw-0987-vutsr-6543-qponm-2109",
-            ];
-            const prices = testUtils.mockAllPricesTodayFile(uuids, dateKey, baseValue);
-            const expectedPrices: CreatePriceDto[] = testUtils.expectedCreatePriceDtos();
-            const actualPrices: CreatePriceDto[] = service.toCreatePriceDtos(prices);
-            expect(actualPrices).toEqual(expectedPrices);
-            expect(actualPrices.length).toEqual(expectedPrices.length);
-        });
-
-        it("toPriceDtos maps mtgjson AllPricesTodayFile to CreatePriceDto[] with empty data", () => {
-            const prices = new AllPricesTodayFile();
-            prices.meta = {
-                date: "2023-10-01",
-                version: "1.0"
-            };
-            prices.data = {};
-            const expectedPrices: CreatePriceDto[] = [];
-            const actualPrices = service.toCreatePriceDtos(prices);
-            expect(actualPrices).toEqual(expectedPrices);
         });
     });
 });

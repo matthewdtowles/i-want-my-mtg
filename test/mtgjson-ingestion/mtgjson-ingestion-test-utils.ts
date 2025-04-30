@@ -11,6 +11,7 @@ import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { Provider } from "src/core/price/api/provider.enum";
 import { CreateSetDto } from "src/core/set/api/set.dto";
+import { Readable } from "stream";
 
 export class MtgJsonIngestionTestUtils {
 
@@ -238,19 +239,31 @@ export class MtgJsonIngestionTestUtils {
         ];
     }
 
+    mockPriceStream(): Readable {
+        const uuids: string[] = [
+            "abcd-1234-efgh-5678-ijkl-9011",
+            "zyxw-0987-vutsr-6543-qponm-2109",
+        ];
+        const dateKey: string = "2023-10-01";
+        const baseValue: number = 1.00;
+        return Readable.from(Object.entries(this.mockAllPricesTodayFile(uuids, dateKey, baseValue)));
+    }
+
     mockAllPricesTodayFile(
         uuids: string[],
         dateKey: string,
         baseValue: number,
     ): AllPricesTodayFile {
+        const _data: Record<string, PriceFormats> = {};
+        for (const uuid of uuids) {
+            _data[uuid] = this.mockPriceFormats(dateKey, baseValue);
+        }
         return {
             meta: {
                 date: dateKey,
                 version: "1.0.0",
             },
-            data: uuids.reduce((acc, uuid) => {
-                return { ...acc, ...this.priceTodayRecord(uuid, dateKey, baseValue) };
-            }, {}),
+            data: _data,
         };
     }
 

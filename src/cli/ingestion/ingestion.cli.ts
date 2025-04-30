@@ -3,7 +3,6 @@ import { Command, Positional } from "nestjs-command";
 import { CardDto } from "src/core/card/api/card.dto";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 import { PriceDto } from "src/core/price/api/price.dto";
-import { Price } from "src/core/price/price.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 
 @Injectable()

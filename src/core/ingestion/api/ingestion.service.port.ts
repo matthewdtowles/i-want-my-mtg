@@ -37,9 +37,9 @@ export interface IngestionServicePort {
     fetchSetCards(code: string): Promise<CreateCardDto[]>;
 
     /**
-     * Fetch all price info for all cards for current date
-     * 
-     * @returns array of price objects
+     * Fetch all prices for today as a stream
+     *
+     * @returns AsyncGenerator of writable price DTO
      */
-    fetchTodayPrices(): Promise<CreatePriceDto[]>;
+    fetchTodayPrices(): AsyncGenerator<CreatePriceDto>;
 }

@@ -62,19 +62,35 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.debug(`ingest prices for today`);
         const missedPrices: string[] = [];
         const priceDtos: AsyncGenerator<CreatePriceDto> = this.ingestionService.fetchTodayPrices();
+        const batchSize: number = 100;
+        const batch: Promise<void>[] = [];
         for await (const price of priceDtos) {
             const uuid: string = price.cardUuid;
-            try {
-                const card: CardDto = await this.cardService.findByUuid(uuid);
-                if (!card) {
-                    throw new Error(`Card with UUID ${uuid} not found`);
-                }
-                await this.priceService.save(price);
-                this.LOGGER.log(`Saved price for card ${uuid}`);
-            } catch (error) {
-                this.LOGGER.error(`Failed to ingest price for card ${uuid}: ${error}`);
-                missedPrices.push(uuid);
+            // TODO: add counter for captured prices and missed prices
+            // TODO: need to update save to check if price exists and update instead - perhaps use upsert or my own insert/update logic
+            batch.push(
+                (async () => {
+                    try {
+                        const card: CardDto = await this.cardService.findByUuid(uuid);
+                        if (!card) {
+                            throw new Error(`Card with UUID ${uuid} not found`);
+                        }
+                        await this.priceService.save(price);
+                        this.LOGGER.log(`Saved price for card ${uuid}`);
+                    } catch (error) {
+                        this.LOGGER.error(`Failed to ingest price for card ${uuid}: ${error}`);
+                        missedPrices.push(uuid);
+                    }
+                })()
+            );
+            if (batch.length >= batchSize) {
+                await Promise.all(batch);
+                batch.length = 0; // Clear the batch
             }
+        }
+        // TODO: TRYING TO USE BATCHING
+        if (batch.length > 0) {
+            await Promise.all(batch);
         }
         this.LOGGER.log(`Total prices that could not be saved: ${missedPrices.length}`);
         return missedPrices;

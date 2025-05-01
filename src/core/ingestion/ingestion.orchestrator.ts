@@ -70,6 +70,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
                     throw new Error(`Card with UUID ${uuid} not found`);
                 }
                 await this.priceService.save(price);
+                this.LOGGER.log(`Saved price for card ${uuid}`);
             } catch (error) {
                 this.LOGGER.error(`Failed to ingest price for card ${uuid}: ${error}`);
                 missedPrices.push(uuid);

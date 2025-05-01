@@ -51,20 +51,16 @@ describe("MtgJsonIngestionService", () => {
     });
 
     it('should stream CreatePriceDto objects for valid paper retail data', async () => {
-        // Arrange: mock stream of one card with valid USD retail prices
         const cardUuid = 'abc-123';
         const mockStream = asyncIterable([
             { key: cardUuid, value: testUtils.mockPriceFormats("2024-01-01", 1) },
         ]);
         jest.spyOn(apiClient, 'fetchTodayPricesStream').mockResolvedValue(mockStream as any);
 
-        // Act: collect streamed results
         const results: CreatePriceDto[] = [];
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }
-
-        // Assert: should yield 2 DTOs (one per date)
         expect(results).toHaveLength(3);
         expect(results[0]).toEqual({
             cardUuid,
@@ -108,7 +104,7 @@ describe("MtgJsonIngestionService", () => {
             paper: {
                 cardmarket: {
                     currency: 'USD',
-                    buylist: { '2024-01-01': 3.00 }, // no retail
+                    buylist: { '2024-01-01': 3.00 },
                 },
             },
         };

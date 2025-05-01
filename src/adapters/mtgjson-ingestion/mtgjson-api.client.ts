@@ -28,10 +28,8 @@ export class MtgJsonApiClient {
         let setList: SetList[] = [];
         if (response && response.data && Array.isArray(response.data.data)) {
             setList = response.data.data;
-        } else {
-            this.LOGGER.error(`Invalid response for fetchSetList: ${response}`);
         }
-        return setList;
+        throw new Error(`Invalid response for fetchSetList: ${response}`);
     }
 
     /**
@@ -49,10 +47,8 @@ export class MtgJsonApiClient {
         let set: SetDto = new SetDto();
         if (response && response.data) {
             set = response.data.data;
-        } else {
-            this.LOGGER.error(`Invalid response for fetchSet: ${response}`);
         }
-        return set;
+        throw new Error(`Invalid response for fetchSet: ${response}`);
     }
 
     /**

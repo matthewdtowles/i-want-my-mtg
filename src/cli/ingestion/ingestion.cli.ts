@@ -52,9 +52,10 @@ export class IngestionCli {
         command: "ingest:today-prices",
         describe: "Ingest prices for today from external API",
     })
-    async ingestTodayPrices(): Promise<PriceDto[]> {
+    async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`ingestTodayPrices invoked`);
-        return await this.orchestrator.ingestTodayPrices();
+        const missedPrices: string[] = await this.orchestrator.ingestTodayPrices();
+        this.LOGGER.log(`Missed Prices: ${JSON.stringify(missedPrices)}`);
     }
 
     @Command({

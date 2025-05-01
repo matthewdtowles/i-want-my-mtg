@@ -16,7 +16,18 @@ export class PriceService implements PriceServicePort {
         @Inject(PriceMapper) private readonly mapper: PriceMapper,
     ) { }
 
-    async save(priceDtos: CreatePriceDto[]): Promise<PriceDto[]> {
+    async save(priceDto: CreatePriceDto): Promise<PriceDto> {
+        const card: Card = await this.cardRepository.findByUuid(priceDto.cardUuid);
+        if (!card) {
+            throw new Error(`Card with UUID ${priceDto.cardUuid} not found`);
+        }
+        const priceEntity: Price = this.mapper.toEntity(priceDto, card);
+        return await this.priceRepository.save(priceEntity).then((savedEntity) =>
+            this.mapper.toDto(savedEntity)
+        );
+    }
+
+    async saveMany(priceDtos: CreatePriceDto[]): Promise<PriceDto[]> {
         const priceEntities: Price[] = await Promise.all(
             priceDtos.map(async (p) => {
                 const card: Card = await this.cardRepository.findByUuid(p.cardUuid);
@@ -26,7 +37,7 @@ export class PriceService implements PriceServicePort {
                 return this.mapper.toEntity(p, card);
             })
         );
-        return await this.priceRepository.save(priceEntities).then((savedEntities) =>
+        return await this.priceRepository.saveMany(priceEntities).then((savedEntities) =>
             savedEntities.map((e) => this.mapper.toDto(e))
         );
     }

@@ -40,7 +40,6 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findById(_id: number): Promise<Card | null> {
-        this.LOGGER.debug(`Find card by id ${_id}`);
         return await this.cardRepository.findOne({
             where: { id: _id, },
             relations: ["set", "legalities"],

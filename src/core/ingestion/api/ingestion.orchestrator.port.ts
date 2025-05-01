@@ -35,7 +35,7 @@ export interface IngestionOrchestratorPort {
     /**
      * Ingests today's price data from an external provider.
      * 
-     * @returns {Promise<PriceDto[]>} A promise that resolves to an array of price details (PriceDto) for the current day.
+     * @returns {Promise<boolean>} array of Card UUIDs that were not ingested
      */
-    ingestTodayPrices(): Promise<PriceDto[]>;
+    ingestTodayPrices(): Promise<string[]>;
 }

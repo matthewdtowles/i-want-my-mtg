@@ -58,11 +58,24 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         return savedCards;
     }
 
-    async ingestTodayPrices(): Promise<PriceDto[]> {
+    async ingestTodayPrices(): Promise<string[]> {
         this.LOGGER.debug(`ingest prices for today`);
-        const prices: CreatePriceDto[] = await this.ingestionService.fetchTodayPrices();
-        const savedPrices: PriceDto[] = await this.priceService.save(prices);
-        this.LOGGER.log(`Saved ${savedPrices.length} prices`);
-        return savedPrices;
+        const missedPrices: string[] = [];
+        const priceDtos: AsyncGenerator<CreatePriceDto> = this.ingestionService.fetchTodayPrices();
+        for await (const price of priceDtos) {
+            const uuid: string = price.cardUuid;
+            try {
+                const card: CardDto = await this.cardService.findByUuid(uuid);
+                if (!card) {
+                    throw new Error(`Card with UUID ${uuid} not found`);
+                }
+                await this.priceService.save(price);
+            } catch (error) {
+                this.LOGGER.error(`Failed to ingest price for card ${uuid}: ${error}`);
+                missedPrices.push(uuid);
+            }
+        }
+        this.LOGGER.log(`Total prices that could not be saved: ${missedPrices.length}`);
+        return missedPrices;
     }
 }

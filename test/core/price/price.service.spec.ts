@@ -23,8 +23,8 @@ describe("PriceService", () => {
                 {
                     provide: PriceRepositoryPort,
                     useValue: {
-                        save: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
-                        saveOne: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
+                        save: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
+                        saveMany: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
                         findByCardId: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
                         findByCardName: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
                         findByCardNameAndSetCode: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
@@ -62,8 +62,13 @@ describe("PriceService", () => {
         expect(subject).toBeDefined();
     });
 
+    it("should save a price and return saved price", async () => {
+        const savedPrice = await subject.save(mockCreatePrices[0]);
+        expect(savedPrice).toEqual(mockPrices[0]);
+    });
+
     it("should save prices and return saved prices", async () => {
-        const savedPrices = await subject.save(mockCreatePrices);
+        const savedPrices = await subject.saveMany(mockCreatePrices);
         expect(savedPrices).toEqual(mockPrices);
     });
 

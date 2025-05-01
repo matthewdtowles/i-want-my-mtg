@@ -32,6 +32,7 @@ export class PriceMapper {
         price.foil = priceDto.foil;
         price.normal = priceDto.normal;
         price.date = priceDto.date;
+        price.card = card;
         return price;
     }
 }

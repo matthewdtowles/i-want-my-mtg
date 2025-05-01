@@ -3,6 +3,13 @@ import { Price } from "src/core/price/price.entity";
 export const PriceRepositoryPort = "PriceRepositoryPort";
 
 export interface PriceRepositoryPort {
+    /**
+     * Saves a price entity, updates if it exists
+     * 
+     * @param {Price} price
+     * @returns {Promise<Price>} saved price
+     */
+    save(price: Price): Promise<Price>;
 
     /**
      * Saves multiple price entities, updates if they exist
@@ -10,7 +17,7 @@ export interface PriceRepositoryPort {
      * @param {Price[]} prices
      * @returns {Promise<Price[]>} saved prices
      */
-    save(prices: Price[]): Promise<Price[]>;
+    saveMany(prices: Price[]): Promise<Price[]>;
 
     /**
      * Finds a price by its cardId

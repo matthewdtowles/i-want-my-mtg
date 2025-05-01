@@ -1,7 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
-import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
-import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
@@ -14,7 +12,6 @@ import { SetList } from "./dto/setList.dto";
 
 @Injectable()
 export class MtgJsonIngestionMapper {
-    private readonly LOGGER: Logger = new Logger(MtgJsonIngestionMapper.name);
 
     toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
         return {

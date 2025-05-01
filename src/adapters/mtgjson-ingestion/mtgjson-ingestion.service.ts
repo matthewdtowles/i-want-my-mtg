@@ -40,7 +40,6 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         this.LOGGER.debug(`Fetching today prices`);
         const priceStream: Readable = await this.apiClient.fetchTodayPricesStream();
         for await (const { key: cardUuid, value: priceFormats } of priceStream) {
-            this.LOGGER.debug(`Processing cardUuid: ${cardUuid}, priceFormats: ${JSON.stringify(priceFormats)}`);
             const paperPrices: Record<string, PriceList> = priceFormats.paper;
             if (!paperPrices) continue;
             for (const [provider, priceList] of Object.entries(paperPrices)) {

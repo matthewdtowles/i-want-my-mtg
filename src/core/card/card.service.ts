@@ -55,10 +55,8 @@ export class CardService implements CardServicePort {
             const foundCards: Card[] = await this.repository.findAllInSet(setCode);
             return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
         } catch (error) {
-            const msg = `Error finding cards in set ${setCode}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding cards in set ${setCode}: ${error.message}`);
         }
     }
 
@@ -74,10 +72,8 @@ export class CardService implements CardServicePort {
             const foundCard: Card = await this.repository.findById(id);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with id ${id}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with id ${id}: ${error.message}`);
         }
     }
 
@@ -91,23 +87,18 @@ export class CardService implements CardServicePort {
             const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with setCode ${setCode} and number ${number}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with setCode ${setCode} and number ${number}: ${error.message}`);
         }
     }
 
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
-        this.LOGGER.debug(`findByUuid ${uuid}`);
         try {
             const foundCard: Card = await this.repository.findByUuid(uuid);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with uuid ${uuid}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with uuid ${uuid}: ${error.message}`);
         }
     }
 

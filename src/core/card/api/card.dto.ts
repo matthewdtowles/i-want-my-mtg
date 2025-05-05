@@ -53,9 +53,8 @@ export class CardDto {
     @IsString()
     readonly oracleText?: string;
 
-    @IsInstance(PriceDto, { each: true })
-    @IsArray()
-    readonly prices: PriceDto[];
+    @IsInstance(PriceDto)
+    readonly price: PriceDto;
 
     @IsEnum(CardRarity)
     readonly rarity: CardRarity;

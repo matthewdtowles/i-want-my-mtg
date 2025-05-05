@@ -4,6 +4,11 @@ import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-i
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
+import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
+
+// TODO: simplify this test by using mock from the last test
+
+
 
 function* syncIterable<T>(items: T[]): Generator<T> {
     for (const item of items) yield item;
@@ -50,12 +55,12 @@ describe("MtgJsonIngestionService", () => {
         expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateCardDtos());
     });
 
-    it('should stream CreatePriceDto objects for valid paper retail data', async () => {
-        const cardUuid = 'abc-123';
+    it("should stream CreatePriceDto objects for valid paper retail data", async () => {
+        const cardUuid = "abc-123";
         const mockStream = asyncIterable([
             { key: cardUuid, value: testUtils.mockPriceFormats("2024-01-01", 1) },
         ]);
-        jest.spyOn(apiClient, 'fetchTodayPricesStream').mockResolvedValue(mockStream as any);
+        jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(mockStream as any);
 
         const results: CreatePriceDto[] = [];
         for await (const dto of service.fetchTodayPrices()) {
@@ -64,59 +69,116 @@ describe("MtgJsonIngestionService", () => {
         expect(results).toHaveLength(3);
         expect(results[0]).toEqual({
             cardUuid,
-            date: new Date('2024-01-01'),
+            date: new Date("2024-01-01"),
             foil: 2,
             normal: 1,
-            provider: 'cardkingdom',
         });
         expect(results[1]).toEqual({
             cardUuid,
-            date: new Date('2024-01-01'),
-            provider: 'cardsphere',
+            date: new Date("2024-01-01"),
             foil: 2,
             normal: 1,
         });
     });
 
-    it('should skip non-USD currencies', async () => {
+    it("should skip non-USD currencies", async () => {
         const mockNonUsd = {
             paper: {
                 cardkingdom: {
-                    currency: 'EUR',
-                    retail: { '2024-01-01': 9.99 },
+                    currency: "EUR",
+                    retail: { "2024-01-01": 9.99 },
                 },
             },
         };
-        jest.spyOn(apiClient, 'fetchTodayPricesStream').mockResolvedValue(
-            asyncIterable([{ key: 'id1', value: mockNonUsd }]) as any
+        jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(
+            asyncIterable([{ key: "id1", value: mockNonUsd }]) as any
         );
-
         const results = [];
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }
-
         expect(results).toHaveLength(0);
     });
 
-    it('should skip entries with no retail prices', async () => {
+    it("should skip entries with no retail prices", async () => {
         const mockNoRetail = {
             paper: {
                 cardmarket: {
-                    currency: 'USD',
-                    buylist: { '2024-01-01': 3.00 },
+                    currency: "USD",
+                    buylist: { "2024-01-01": 3.00 },
                 },
             },
         };
-        jest.spyOn(apiClient, 'fetchTodayPricesStream').mockResolvedValue(
-            asyncIterable([{ key: 'id2', value: mockNoRetail }]) as any
+        jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(
+            asyncIterable([{ key: "id2", value: mockNoRetail }]) as any
         );
-
         const results = [];
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }
-
         expect(results).toHaveLength(0);
+    });
+
+    it("should average prices for same card on the same date from all providers", async () => {
+        const cardUuid: string = "abc-123";
+        const dateStr: string = "2024-01-01";
+        const mockPriceFormats: PriceFormats = {
+            mtgo: {
+                cardhoarder: {
+                    currency: "USD",
+                    retail: {
+                        normal: { [dateStr]: 1 },
+                        foil: { [dateStr]: 2 },
+                    },
+                },
+            },
+            paper: {
+                cardkingdom: {
+                    currency: "USD",
+                    retail: {
+                        normal: { [dateStr]: 3.90 },
+                        foil: { [dateStr]: 5 },
+                    },
+                },
+                cardmarket: {
+                    currency: "EUR",
+                    retail: {
+                        normal: { [dateStr]: 12 },
+                        foil: { [dateStr]: 20 },
+                    },
+                },
+                cardsphere: {
+                    currency: "USD",
+                    retail: {
+                        normal: { [dateStr]: 4.50 },
+                        foil: { [dateStr]: 8 },
+                    },
+                },
+                tcgplayer: {
+                    currency: "USD",
+                    retail: {
+                        normal: { [dateStr]: 4 },
+                        foil: { [dateStr]: 8 },
+                    },
+                },
+            },
+        };
+
+        const mockStream = asyncIterable([
+            { key: cardUuid, value: mockPriceFormats },
+        ]);
+        jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(mockStream as any);
+
+        const results: CreatePriceDto[] = []
+        for await (const dto of service.fetchTodayPrices()) {
+            results.push(dto);
+        }
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+            cardUuid,
+            date: new Date(dateStr),
+            foil: 7,
+            normal: 4.14,
+        });
     });
 });

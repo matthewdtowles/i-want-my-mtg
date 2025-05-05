@@ -42,7 +42,7 @@ export class PriceRepository implements PriceRepositoryPort {
     }
 
     async findById(id: number): Promise<Price> {
-        return this.priceRepository.findOne({ where: { id } });
+        return this.priceRepository.findOne({ where: { cardId: id } });
     }
 
     async delete(id: number): Promise<void> {

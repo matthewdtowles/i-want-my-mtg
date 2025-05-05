@@ -12,7 +12,6 @@ import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
-import { Provider } from "src/core/price/api/provider.enum";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
@@ -61,7 +60,7 @@ export class TestUtils {
     }
 
     getMockCards(setCode: string): Card[] {
-        const prices = this.getMockPriceEntities();
+        const price: Price = this.getMockPriceEntities()[0];
         return this.getMockCreateCardDtos(setCode).map((dto, i) => {
             const card = new Card();
             card.id = i + 1;
@@ -73,7 +72,7 @@ export class TestUtils {
             card.name = dto.name;
             card.number = dto.number;
             card.oracleText = dto.oracleText;
-            card.prices = prices;
+            card.price = price;
             card.set = this.getMockSet(setCode);
             card.setCode = setCode;
             card.rarity = this.convertToCardRarity(dto.rarity);
@@ -279,7 +278,7 @@ export class TestUtils {
             number: createCardDto.number,
             oracleText: createCardDto.oracleText,
             // TODO: check back on this because it is not set for specific card ...
-            prices: this.getMockPriceEntities(),
+            price: this.getMockPriceEntities()[0],
             rarity: this.convertToCardRarity(createCardDto.rarity),
             setCode: createCardDto.setCode,
             type: createCardDto.type,
@@ -305,7 +304,7 @@ export class TestUtils {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            prices: card.prices.map((price) => this.mapPriceEntityToDto(price)),
+            price: this.mapPriceEntityToDto(card.price),
             rarity: card.rarity,
             setCode: card.set.code,
             set: {
@@ -363,13 +362,12 @@ export class TestUtils {
             normal: i + 5,
             date: this.MOCK_DATE,
             cardId: i + 1,
-            provider: Provider.TCGPLAYER,
         }));
     }
 
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
-            id: i + 1,
+            cardId: i + 1,
             foil: i + 10,
             normal: i + 5,
             date: this.MOCK_DATE,
@@ -379,7 +377,7 @@ export class TestUtils {
     getMockPriceEntities(): Price[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => {
             const price = new Price();
-            price.id = i + 1;
+            price.cardId = i + 1;
             price.foil = i + 10;
             price.normal = i + 5;
             price.date = this.MOCK_DATE;
@@ -397,7 +395,7 @@ export class TestUtils {
 
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
-            id: entity.id,
+            cardId: entity.cardId,
             foil: entity.foil,
             normal: entity.normal,
             date: entity.date,

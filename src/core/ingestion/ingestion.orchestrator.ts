@@ -85,7 +85,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
             );
             if (batch.length >= batchSize) {
                 await Promise.all(batch);
-                batch.length = 0; // Clear the batch
+                batch.length = 0; 
             }
         }
         // TODO: TRYING TO USE BATCHING

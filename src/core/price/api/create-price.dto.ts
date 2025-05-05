@@ -1,29 +1,21 @@
-import { IsDate, IsEnum, IsOptional, IsUUID, Matches } from "class-validator";
-import { Provider } from "src/core/price/api/provider.enum";
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsUUID } from "class-validator";
 
 
 export class CreatePriceDto {
 
-    private static readonly USD_REGEX = /^\$?[0-9]{1,3}(\.[0-9]{1,2})?$/;
-
     @IsUUID()
+    @IsNotEmpty()
     cardUuid: string;
 
     @IsOptional()
-    @Matches(CreatePriceDto.USD_REGEX, {
-        message: "Foil price must be a number with up to 2 decimal places",
-    })
+    @IsNumber()
     foil?: number;
 
     @IsOptional()
-    @Matches(CreatePriceDto.USD_REGEX, {
-        message: "Normal price must be a number with up to 2 decimal places",
-    })
+    @IsNumber()
     normal?: number;
 
     @IsDate()
+    @IsNotEmpty()
     date: Date;
-
-    @IsEnum(Provider)
-    provider: Provider;
 }

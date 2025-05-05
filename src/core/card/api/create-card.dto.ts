@@ -4,6 +4,7 @@ import {
     IsEnum,
     IsInt,
     IsLowercase,
+    IsNotEmpty,
     IsNumber,
     IsOptional,
     IsPositive,
@@ -19,6 +20,7 @@ export class CreateCardDto {
     readonly artist?: string;
 
     @IsString()
+    @IsNotEmpty()
     readonly imgSrc: string;
 
     @IsBoolean()
@@ -32,9 +34,11 @@ export class CreateCardDto {
     readonly manaCost?: string;
 
     @IsString()
+    @IsNotEmpty()
     readonly name: string;
 
     @IsNumber()
+    @IsNotEmpty()
     readonly number: string;
 
     @IsOptional()
@@ -42,16 +46,20 @@ export class CreateCardDto {
     readonly oracleText?: string;
 
     @IsEnum(CardRarity)
+    @IsNotEmpty()
     readonly rarity: string;
 
     @IsLowercase()
     @IsString()
+    @IsNotEmpty()
     readonly setCode: string;
 
     @IsString()
+    @IsNotEmpty()
     readonly type: string;
 
     @IsString()
+    @IsNotEmpty()
     readonly uuid: string;
 }
 

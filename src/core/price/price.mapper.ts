@@ -13,7 +13,7 @@ export class PriceMapper {
      */
     toDto(price: Price): PriceDto {
         return {
-            id: price.id,
+            cardId: price.cardId,
             foil: price.foil,
             normal: price.normal,
             date: price.date,
@@ -29,10 +29,10 @@ export class PriceMapper {
      */
     toEntity(priceDto: CreatePriceDto, card: Card): Price {
         const price = new Price();
+        price.cardId = card.id;
         price.foil = priceDto.foil;
         price.normal = priceDto.normal;
         price.date = priceDto.date;
-        price.card = card;
         return price;
     }
 }

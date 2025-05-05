@@ -9,7 +9,6 @@ import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { LegalityDto } from "src/core/card/api/legality.dto";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { Provider } from "src/core/price/api/provider.enum";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { Readable } from "stream";
 
@@ -313,42 +312,36 @@ export class MtgJsonIngestionTestUtils {
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.CARDKINGDOM
             },
             {
                 cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.CARDSPHERE
             },
             {
                 cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.TCGPLAYER
             },
             {
                 cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.CARDKINGDOM
             },
             {
                 cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.CARDSPHERE
             },
             {
                 cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
-                provider: Provider.TCGPLAYER
             },
         ];
     }

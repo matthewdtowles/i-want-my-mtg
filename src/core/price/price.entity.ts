@@ -1,21 +1,16 @@
-import { Card } from "src/core/card/card.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Price {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    cardId: number;
 
     @Column({ type: 'decimal', nullable: true })
-    foil: number;
+    foil: number | null;
 
     @Column({ type: 'decimal', nullable: true })
-    normal: number;
+    normal: number | null;
 
     @Column({ type: "date" })
     date: Date;
-
-    @ManyToOne(() => Card, (card) => card.prices, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "cardId" })
-    card: Card;
 }

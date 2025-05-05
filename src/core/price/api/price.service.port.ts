@@ -33,39 +33,6 @@ export interface PriceServicePort {
     findByCardId(cardId: number): Promise<PriceDto | null>;
 
     /**
-     * Finds price entries by the card's name.
-     * 
-     * @param cardName - The name of the card.
-     * @returns A promise that resolves to an array of price data transfer objects.
-     */
-    findByCardName(cardName: string): Promise<PriceDto[]>;
-
-    /**
-     * Finds a price entry by the card's name and set code.
-     * 
-     * @param cardName - The name of the card.
-     * @param setCode - The code of the set the card belongs to.
-     * @returns A promise that resolves to the price data transfer object or null if not found.
-     */
-    findByCardNameAndSetCode(cardName: string, setCode: string): Promise<PriceDto | null>;
-
-    /**
-     * Finds price entries by the set code.
-     * 
-     * @param setCode - The code of the set.
-     * @returns A promise that resolves to an array of price data transfer objects.
-     */
-    findByCardSet(setCode: string): Promise<PriceDto[]>;
-
-    /**
-     * Finds a price entry by its unique identifier.
-     * 
-     * @param id - The unique identifier of the price entry.
-     * @returns A promise that resolves to the price data transfer object or null if not found.
-     */
-    findById(id: number): Promise<PriceDto | null>;
-
-    /**
      * Deletes a price entry by its unique identifier.
      * 
      * @param id - The unique identifier of the price entry to be deleted.

@@ -28,39 +28,6 @@ export interface PriceRepositoryPort {
     findByCardId(cardId: number): Promise<Price>;
 
     /**
-     * Finds a price by its cardName
-     *
-     * @param cardName
-     * @returns {Promise<Price[]>} The prices with the given cardName
-     */
-    findByCardName(cardName: string): Promise<Price[]>;
-
-    /**
-     * Finds a price by its cardName and setCode
-     *
-     * @param cardName
-     * @param setCode
-     * @returns {Promise<Price>} The price with the given cardName and setCode
-     */
-    findByCardNameAndSetCode(cardName: string, setCode: string): Promise<Price>;
-
-    /**
-     * Finds a price by its setCode
-     *
-     * @param setCode
-     * @returns {Promise<Price[]>} The prices with the given setCode
-     */
-    findByCardSet(setCode: string): Promise<Price[]>;
-
-    /**
-     * Finds a price by its id
-     *
-     *  @param {number} id The id of the price
-     * @returns {Promise<Price>} The price with the given id
-     */
-    findById(id: number): Promise<Price>;
-
-    /**
      * Deletes a price by its id
      *
      * @param {number} id The id of the price

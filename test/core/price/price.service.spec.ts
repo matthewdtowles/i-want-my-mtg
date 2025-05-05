@@ -78,30 +78,6 @@ describe("PriceService", () => {
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
-    it("should find prices by card name", async () => {
-        const foundPrices = await subject.findByCardName("Test Card");
-        expect(mockPriceRepository.findByCardName).toHaveBeenCalledWith("Test Card");
-        expect(foundPrices).toEqual(mockPrices);
-    });
-
-    it("should find a price by card name and set code", async () => {
-        const foundPrice = await subject.findByCardNameAndSetCode("Test Card", "SET1");
-        expect(mockPriceRepository.findByCardNameAndSetCode).toHaveBeenCalledWith("Test Card", "SET1");
-        expect(foundPrice).toEqual(mockPrices[0]);
-    });
-
-    it("should find prices by card set", async () => {
-        const foundPrices = await subject.findByCardSet("SET1");
-        expect(mockPriceRepository.findByCardSet).toHaveBeenCalledWith("SET1");
-        expect(foundPrices).toEqual(mockPrices);
-    });
-
-    it("should find a price by ID", async () => {
-        const foundPrice = await subject.findById(1);
-        expect(mockPriceRepository.findById).toHaveBeenCalledWith(1);
-        expect(foundPrice).toEqual(mockPrices[0]);
-    });
-
     it("should delete a price by ID", async () => {
         await subject.delete(1);
         expect(mockPriceRepository.delete).toHaveBeenCalledWith(1);

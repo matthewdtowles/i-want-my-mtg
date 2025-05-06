@@ -16,30 +16,18 @@ export class PriceService implements PriceServicePort {
         @Inject(PriceMapper) private readonly mapper: PriceMapper,
     ) { }
 
-    async save(priceDto: CreatePriceDto): Promise<PriceDto> {
-        const card: Card = await this.cardRepository.findByUuid(priceDto.cardUuid);
-        if (!card) {
-            throw new Error(`Card with UUID ${priceDto.cardUuid} not found`);
-        }
-        const priceEntity: Price = this.mapper.toEntity(priceDto, card);
-        return await this.priceRepository.save(priceEntity).then((savedEntity) =>
-            this.mapper.toDto(savedEntity)
-        );
-    }
-
-    async saveMany(priceDtos: CreatePriceDto[]): Promise<PriceDto[]> {
+    async save(priceDtos: CreatePriceDto[]): Promise<void> {
+        if (0 === priceDtos.length) return;
+        const uuids: string[] = [...new Set(priceDtos.map((p) => p.cardUuid))];
+        const cards: Card[] = await this.cardRepository.findByUuids(uuids);
+        const cardMap: Map<string, number> = new Map(cards.map((c) => [c.uuid, c.id]));
         const priceEntities: Price[] = await Promise.all(
-            priceDtos.map(async (p) => {
-                const card: Card = await this.cardRepository.findByUuid(p.cardUuid);
-                if (!card) {
-                    throw new Error(`Card with UUID ${p.cardUuid} not found`);
-                }
-                return this.mapper.toEntity(p, card);
-            })
-        );
-        return await this.priceRepository.saveMany(priceEntities).then((savedEntities) =>
-            savedEntities.map((e) => this.mapper.toDto(e))
-        );
+            priceDtos.map((p) => {
+                const cardId: number = cardMap.get(p.cardUuid);
+                if (!cardId) return null;
+                return this.mapper.toEntity(p, cardId);
+            }).filter((p): p is Price => p !== null));
+        await this.priceRepository.save(priceEntities)
     }
 
     async findByCardId(cardId: number): Promise<PriceDto> {

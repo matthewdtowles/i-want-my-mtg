@@ -4,7 +4,7 @@ import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Format } from "src/core/card/api/format.enum";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 
 @Injectable()
@@ -60,6 +60,13 @@ export class CardRepository implements CardRepositoryPort {
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
             relations: ["set", "legalities"],
+        });
+    }
+
+    async findByUuids(_uuids: string[]): Promise<Card[]> {
+        return await this.cardRepository.find({
+            where: { uuid: In(_uuids), },
+            select: ["id", "uuid"],
         });
     }
 

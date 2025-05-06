@@ -24,12 +24,12 @@ export class PriceMapper {
      * Maps a CreatePriceDto and a Card to a Price entity.
      * 
      * @param {CreatePriceDto} priceDto - The DTO containing price details.
-     * @param {Card} card - The Card entity associated with the price.
+     * @param {number} cardId - The Card entity associated with the price.
      * @returns {Price} - The mapped Price entity.
      */
-    toEntity(priceDto: CreatePriceDto, card: Card): Price {
+    toEntity(priceDto: CreatePriceDto, cardId: number): Price {
         const price = new Price();
-        price.cardId = card.id;
+        price.cardId = cardId;
         price.foil = priceDto.foil;
         price.normal = priceDto.normal;
         price.date = priceDto.date;

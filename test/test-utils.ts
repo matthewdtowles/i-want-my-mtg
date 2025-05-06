@@ -129,8 +129,25 @@ export class TestUtils {
     }
 
     getMockCardEntity(): Card {
-        const card: Card = new Card();
-        return card;
+        return this.getMockCardEntities()[0];
+    }
+
+    getMockCardEntities(): Card[] {
+        return this.getMockCreateCardDtos(this.MOCK_SET_CODE).map((dto, i) => {
+            const card = new Card();
+            card.id = i + 1;
+            card.artist = dto.artist;
+            card.imgSrc = dto.imgSrc;
+            card.isReserved = dto.isReserved;
+            card.legalities = this.getMockLegalities(i + 1);
+            card.manaCost = dto.manaCost;
+            card.name = dto.name;
+            card.number = dto.number;
+            card.oracleText = dto.oracleText;
+            card.price = this.getMockPriceEntities()[0];
+            card.setCode = this.MOCK_SET_CODE;
+            return card;
+        });
     }
 
     getMockSetDtos(): SetDto[] {

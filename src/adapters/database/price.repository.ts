@@ -9,11 +9,7 @@ export class PriceRepository implements PriceRepositoryPort {
 
     constructor(@InjectRepository(Price) private readonly priceRepository: Repository<Price>) { }
 
-    async save(price: Price): Promise<Price> {
-        return this.priceRepository.save(price);
-    }
-
-    async saveMany(prices: Price[]): Promise<Price[]> {
+    async save(prices: Price[]): Promise<Price[]> {
         return await this.priceRepository.save(prices);
     }
 

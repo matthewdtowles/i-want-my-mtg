@@ -1,16 +1,18 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
 import { PriceMapper } from "src/core/price/price.mapper";
 import { PriceService } from "src/core/price/price.service";
 import { TestUtils } from "../../test-utils";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
+import { Card } from "src/core/card/card.entity";
 
 
 describe("PriceService", () => {
     let subject: PriceService;
-    let mockPriceRepository: jest.Mocked<PriceRepositoryPort>;
+    let mockPriceRepo: jest.Mocked<PriceRepositoryPort>;
+    let mockCardRepo: jest.Mocked<CardRepositoryPort>;
     let mockPriceMapper: jest.Mocked<PriceMapper>;
     let testUtils: TestUtils = new TestUtils();
     const mockPrices: PriceDto[] = testUtils.getMockPriceDtos();
@@ -37,6 +39,7 @@ describe("PriceService", () => {
                     provide: CardRepositoryPort,
                     useValue: {
                         findByUuid: jest.fn().mockResolvedValue(testUtils.getMockCardEntity()),
+                        findByUuids: jest.fn().mockResolvedValue(testUtils.getMockCardEntities()),
                     },
                 },
                 {
@@ -50,7 +53,8 @@ describe("PriceService", () => {
         }).compile();
 
         subject = module.get<PriceService>(PriceService);
-        mockPriceRepository = module.get(PriceRepositoryPort);
+        mockCardRepo = module.get(CardRepositoryPort);
+        mockPriceRepo = module.get(PriceRepositoryPort);
         mockPriceMapper = module.get(PriceMapper);
     });
 
@@ -62,24 +66,44 @@ describe("PriceService", () => {
         expect(subject).toBeDefined();
     });
 
-    it("should save a price and return saved price", async () => {
-        const savedPrice = await subject.save(mockCreatePrices[0]);
-        expect(savedPrice).toEqual(mockPrices[0]);
-    });
+    it("should save averaged prices with normal and/or foil", async () => {
+        const _date: Date = new Date("2024-05-05");
+        const dtos: CreatePriceDto[] = [
+            { cardUuid: 'uuid-1', date: _date, normal: 1.1 },
+            { cardUuid: 'uuid-2', date: _date, foil: 2.2 },
+        ];
+        const mockCards: Card[] = [];
+        dtos.forEach((dto, i) => {
+            const card: Card = new Card();
+            card.uuid = dto.cardUuid;
+            card.id = i + 1;
+            mockCards.push(card);
+        });
+        mockCardRepo.findByUuids.mockResolvedValue(mockCards);
+        mockPriceMapper.toEntity.mockImplementation((dto, cardId) => {
+            return {
+                cardId,
+                date: dto.date,
+                normal: dto.normal ?? null,
+                foil: dto.foil ?? null,
+            };
+        });
+        await subject.save(dtos);
 
-    it("should save prices and return saved prices", async () => {
-        const savedPrices = await subject.saveMany(mockCreatePrices);
-        expect(savedPrices).toEqual(mockPrices);
+        expect(mockPriceRepo.save).toHaveBeenCalledWith([
+            { cardId: 1, date: dtos[0].date, normal: 1.1, foil: null },
+            { cardId: 2, date: dtos[1].date, normal: null, foil: 2.2 },
+        ]);
     });
 
     it("should find a price by card ID", async () => {
         const foundPrice = await subject.findByCardId(1);
-        expect(mockPriceRepository.findByCardId).toHaveBeenCalledWith(1);
+        expect(mockPriceRepo.findByCardId).toHaveBeenCalledWith(1);
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
     it("should delete a price by ID", async () => {
         await subject.delete(1);
-        expect(mockPriceRepository.delete).toHaveBeenCalledWith(1);
+        expect(mockPriceRepo.delete).toHaveBeenCalledWith(1);
     });
 });

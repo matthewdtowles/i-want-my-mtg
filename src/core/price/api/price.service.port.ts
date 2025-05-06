@@ -9,20 +9,11 @@ export const PriceServicePort = Symbol("PriceServicePort");
  */
 export interface PriceServicePort {
     /**
-     * Saves a single price entry.
-     * 
-     * @param price - The price data transfer object to be saved.
-     * @returns A promise that resolves to the saved price data transfer object.
-     */
-    save(price: CreatePriceDto): Promise<PriceDto>;
-
-    /**
-     * Saves multiple price entries.
+     * Saves given price entries.
      * 
      * @param prices - An array of price data transfer objects to be saved.
-     * @returns A promise that resolves to the saved price data transfer objects.
      */
-    saveMany(prices: CreatePriceDto[]): Promise<PriceDto[]>;
+    save(price: CreatePriceDto[]): Promise<void>;
 
     /**
      * Finds a price entry by the card's unique identifier.

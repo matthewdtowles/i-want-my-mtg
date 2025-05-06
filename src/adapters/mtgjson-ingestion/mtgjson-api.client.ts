@@ -25,11 +25,11 @@ export class MtgJsonApiClient {
         const url: string = `${this.CARD_PROVIDER_URL}/${this.SET_LIST_PATH}`;
         this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
-        let setList: SetList[] = [];
-        if (response && response.data && Array.isArray(response.data.data)) {
-            setList = response.data.data;
-        }
-        throw new Error(`Invalid response for fetchSetList: ${response}`);
+        if (!response) throw new Error("No response from provider");
+        if (!response.data) throw new Error("No data in response from provider");
+        if (!response.data.data) throw new Error("No data.data in response from provider");
+        if (!Array.isArray(response.data.data)) throw new Error("Response.data.data is not an array");
+        return response.data.data;
     }
 
     /**
@@ -40,15 +40,14 @@ export class MtgJsonApiClient {
      * @returns a SetDto from MTG JSON
      */
     async fetchSet(setCode: string): Promise<SetDto> {
-        this.LOGGER.debug(`fetchSet with code ${setCode}`);
         const url: string = `${this.CARD_PROVIDER_URL}/${setCode.toUpperCase()}.json`;
         this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
         let set: SetDto = new SetDto();
-        if (response && response.data) {
-            set = response.data.data;
-        }
-        throw new Error(`Invalid response for fetchSet: ${response}`);
+        if (!response) throw new Error("No response from provider");
+        if (!response.data) throw new Error("No data in response from provider");
+        if (!response.data.data) throw new Error("No data.data in response from provider");
+        return response.data.data;
     }
 
     /**

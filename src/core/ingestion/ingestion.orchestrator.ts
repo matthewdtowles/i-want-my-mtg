@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceDto } from "src/core/price/api/price.dto";
 import { PriceServicePort } from "src/core/price/api/price.service.port";
 import { CardDto } from "../card/api/card.dto";
 import { CardServicePort } from "../card/api/card.service.port";
@@ -13,6 +12,7 @@ import { IngestionServicePort } from "./api/ingestion.service.port";
 @Injectable()
 export class IngestionOrchestrator implements IngestionOrchestratorPort {
     private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
+    private readonly BATCH_SIZE: number = 100;
 
     constructor(
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
@@ -58,41 +58,29 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         return savedCards;
     }
 
-    async ingestTodayPrices(): Promise<string[]> {
-        this.LOGGER.debug(`ingest prices for today`);
-        const missedPrices: string[] = [];
-        const priceDtos: AsyncGenerator<CreatePriceDto> = this.ingestionService.fetchTodayPrices();
-        const batchSize: number = 100;
-        const batch: Promise<void>[] = [];
-        for await (const price of priceDtos) {
-            const uuid: string = price.cardUuid;
-            // TODO: add counter for captured prices and missed prices
-            // TODO: need to update save to check if price exists and update instead - perhaps use upsert or my own insert/update logic
-            batch.push(
-                (async () => {
-                    try {
-                        const card: CardDto = await this.cardService.findByUuid(uuid);
-                        if (!card) {
-                            throw new Error(`Card with UUID ${uuid} not found`);
-                        }
-                        await this.priceService.save(price);
-                        this.LOGGER.log(`Saved price for card ${uuid}`);
-                    } catch (error) {
-                        this.LOGGER.error(`Failed to ingest price for card ${uuid}: ${error}`);
-                        missedPrices.push(uuid);
-                    }
-                })()
-            );
-            if (batch.length >= batchSize) {
-                await Promise.all(batch);
-                batch.length = 0; 
+    async ingestTodayPrices(): Promise<void> {
+        this.LOGGER.debug(`Ingest prices for today.`);
+        const batch: CreatePriceDto[] = [];
+        for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
+            batch.push(priceDto);
+            if (batch.length >= this.BATCH_SIZE) {
+                await this.flushBatch(batch);
             }
         }
-        // TODO: TRYING TO USE BATCHING
         if (batch.length > 0) {
-            await Promise.all(batch);
+            await this.flushBatch(batch);
         }
-        this.LOGGER.log(`Total prices that could not be saved: ${missedPrices.length}`);
-        return missedPrices;
+        this.LOGGER.log(`Price ingestion completed.`);
+    }
+
+    private async flushBatch(batch: CreatePriceDto[]): Promise<void> {
+        try {
+            await this.priceService.save(batch);
+        } catch (error) {
+            this.LOGGER.error(`Failed to save batch: ${error}`);
+        } finally {
+            // Clear the batch after processing
+            batch.length = 0;
+        }
     }
 }

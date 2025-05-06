@@ -1,4 +1,3 @@
-import { PriceDto } from "src/core/price/api/price.dto";
 import { CardDto } from "src/core/card/api/card.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 
@@ -34,8 +33,6 @@ export interface IngestionOrchestratorPort {
 
     /**
      * Ingests today's price data from an external provider.
-     * 
-     * @returns {Promise<boolean>} array of Card UUIDs that were not ingested
      */
-    ingestTodayPrices(): Promise<string[]>;
+    ingestTodayPrices(): Promise<void>;
 }

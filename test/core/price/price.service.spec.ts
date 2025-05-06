@@ -96,6 +96,15 @@ describe("PriceService", () => {
         ]);
     });
 
+    it("should skip unknown card UUIDs", async () => {
+        const dtos: CreatePriceDto[] = [
+            { cardUuid: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 },
+        ];
+        mockCardRepo.findByUuids.mockResolvedValue([]);
+        await subject.save(dtos);
+        expect(mockPriceRepo.save).toHaveBeenCalledWith([]);
+    });
+
     it("should find a price by card ID", async () => {
         const foundPrice = await subject.findByCardId(1);
         expect(mockPriceRepo.findByCardId).toHaveBeenCalledWith(1);

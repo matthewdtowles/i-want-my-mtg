@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
-import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
@@ -41,78 +40,10 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         for await (const { key: cardUuid, value: priceFormats } of priceStream) {
             const paperPrices: Record<string, PriceList> = priceFormats.paper;
             if (!paperPrices) continue;
-            const priceDto: CreatePriceDto = this.toCreatePriceDto(cardUuid, paperPrices);
+            const priceDto: CreatePriceDto = this.dataMapper.toCreatePriceDto(cardUuid, paperPrices);
             if (priceDto) {
                 yield priceDto;
             }
         }
-    }
-
-    private toCreatePriceDto(cardUuid: string, paperPrices: Record<string, PriceList>): CreatePriceDto {
-        const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
-        const foilPrice: number = this.determinePrice(extractedPrices.foil);
-        const normalPrice: number = this.determinePrice(extractedPrices.normal);
-        let priceDto: CreatePriceDto;
-        if (foilPrice || normalPrice) {
-            priceDto = {
-                cardUuid,
-                date: new Date(this.extractDate(paperPrices)),
-                foil: foilPrice,
-                normal: normalPrice,
-            };
-        }
-        return priceDto;
-    }
-
-    private extractDate(paperPrices: Record<string, PriceList>): string {
-        for (const [_, priceList] of Object.entries(paperPrices)) {
-            if (!priceList || !priceList.retail) continue;
-            const pricePoints: PricePoints = priceList.retail;
-            let dateStr: string = Object.keys(pricePoints.normal || {})[0];
-            if (!dateStr) {
-                dateStr = Object.keys(pricePoints.foil || {})[0];
-            }
-            if (dateStr) {
-                return dateStr;
-            }
-        }
-        throw new Error("No date found in paper prices");
-    }
-
-    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPricesDto {
-        const foilPrices: number[] = [];
-        const normalPrices: number[] = [];
-        for (const [_, priceList] of Object.entries(paperPrices)) {
-            if (!priceList || !priceList.retail) continue;
-            if (priceList.currency !== "USD") continue;
-            const pricePoints: PricePoints = priceList.retail;
-            if (pricePoints.foil) {
-                for (const [_, foilPrice] of Object.entries(pricePoints.foil)) {
-                    foilPrices.push(foilPrice);
-                }
-            }
-            if (pricePoints.normal) {
-                for (const [_, normalPrice] of Object.entries(pricePoints.normal)) {
-                    normalPrices.push(normalPrice);
-                }
-            }
-        }
-        return new ExtractedPricesDto(foilPrices, normalPrices);
-    }
-
-    private determinePrice(prices: number[]): number {
-        const total: number = prices.reduce((acc, price) => acc + price, 0);
-        const avg: number = total / prices.length;
-        return Math.ceil(avg * 100) / 100; // Round to hundredths
-    }
-}
-
-class ExtractedPricesDto {
-    foil: number[];
-    normal: number[];
-
-    constructor(foil: number[], normal: number[]) {
-        this.foil = foil;
-        this.normal = normal;
     }
 }

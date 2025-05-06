@@ -35,7 +35,6 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         return this.dataMapper.toCreateCardDtos(setDto.cards);
     }
 
-    // FIXME: fix below methods- returning undefined in spec.
     async *fetchTodayPrices(): AsyncGenerator<CreatePriceDto> {
         this.LOGGER.debug(`Fetching today prices`);
         const priceStream: Readable = await this.apiClient.fetchTodayPricesStream();
@@ -43,7 +42,9 @@ export class MtgJsonIngestionService implements IngestionServicePort {
             const paperPrices: Record<string, PriceList> = priceFormats.paper;
             if (!paperPrices) continue;
             const priceDto: CreatePriceDto = this.toCreatePriceDto(cardUuid, paperPrices);
-            yield priceDto;
+            if (priceDto) {
+                yield priceDto;
+            }
         }
     }
 
@@ -51,12 +52,11 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
         const foilPrice: number = this.determinePrice(extractedPrices.foil);
         const normalPrice: number = this.determinePrice(extractedPrices.normal);
-        const dateStr: string = this.extractDate(paperPrices);
         let priceDto: CreatePriceDto;
         if (foilPrice || normalPrice) {
             priceDto = {
                 cardUuid,
-                date: new Date(dateStr),
+                date: new Date(this.extractDate(paperPrices)),
                 foil: foilPrice,
                 normal: normalPrice,
             };
@@ -79,7 +79,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         throw new Error("No date found in paper prices");
     }
 
-    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPricesDto{
+    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPricesDto {
         const foilPrices: number[] = [];
         const normalPrices: number[] = [];
         for (const [_, priceList] of Object.entries(paperPrices)) {

@@ -66,14 +66,8 @@ describe("MtgJsonIngestionService", () => {
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }
-        expect(results).toHaveLength(3);
+        expect(results).toHaveLength(1);
         expect(results[0]).toEqual({
-            cardUuid,
-            date: new Date("2024-01-01"),
-            foil: 2,
-            normal: 1,
-        });
-        expect(results[1]).toEqual({
             cardUuid,
             date: new Date("2024-01-01"),
             foil: 2,

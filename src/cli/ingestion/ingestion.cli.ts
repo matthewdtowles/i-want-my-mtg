@@ -54,8 +54,7 @@ export class IngestionCli {
     })
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`ingestTodayPrices invoked`);
-        const missedPrices: string[] = await this.orchestrator.ingestTodayPrices();
-        this.LOGGER.log(`Missed Prices: ${JSON.stringify(missedPrices)}`);
+        await this.orchestrator.ingestTodayPrices();
     }
 
     @Command({

@@ -30,8 +30,8 @@ export class PriceMapper {
     toEntity(priceDto: CreatePriceDto, cardId: number): Price {
         const price = new Price();
         price.cardId = cardId;
-        price.foil = priceDto.foil;
-        price.normal = priceDto.normal;
+        price.foil = !isNaN(priceDto.foil) ? priceDto.foil : null;
+        price.normal = !isNaN(priceDto.normal) ? priceDto.normal :  null;
         price.date = priceDto.date;
         return price;
     }

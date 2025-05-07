@@ -59,8 +59,8 @@ export class MtgJsonIngestionMapper {
 
     toCreatePriceDto(cardUuid: string, paperPrices: Record<string, PriceList>): CreatePriceDto {
         const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
-        const foilPrice: number = this.determinePrice(extractedPrices.foil);
-        const normalPrice: number = this.determinePrice(extractedPrices.normal);
+        const foilPrice: number | null =  this.determinePrice(extractedPrices.foil);
+        const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
         let priceDto: CreatePriceDto;
         if (foilPrice || normalPrice) {
             priceDto = {
@@ -157,9 +157,12 @@ export class MtgJsonIngestionMapper {
         return new ExtractedPricesDto(foilPrices, normalPrices);
     }
 
-    private determinePrice(prices: number[]): number {
+    private determinePrice(prices: number[]): number | null {
         const total: number = prices.reduce((acc, price) => acc + price, 0);
         const avg: number = total / prices.length;
+        if (isNaN(avg) || avg === 0) {
+            return null;
+        }
         return Math.ceil(avg * 100) / 100; // Round to hundredths
     }
 }

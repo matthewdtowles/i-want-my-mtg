@@ -32,6 +32,7 @@ export class MtgJsonApiClient {
         return response.data.data;
     }
 
+    // TODO: return Readable stream
     /**
      * Returns Set object for given code
      * Includes all CardSet objects in the Set
@@ -43,7 +44,6 @@ export class MtgJsonApiClient {
         const url: string = `${this.CARD_PROVIDER_URL}/${setCode.toUpperCase()}.json`;
         this.LOGGER.log(`Calling provider API ${url}`);
         const response: AxiosResponse = await axios.get(url);
-        let set: SetDto = new SetDto();
         if (!response) throw new Error("No response from provider");
         if (!response.data) throw new Error("No data in response from provider");
         if (!response.data.data) throw new Error("No data.data in response from provider");

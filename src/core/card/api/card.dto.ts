@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import {
     IsArray,
     IsBoolean,
@@ -9,7 +10,8 @@ import {
     IsOptional,
     IsPositive,
     IsString,
-    IsUUID
+    IsUUID,
+    ValidateNested
 } from "class-validator";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
@@ -53,8 +55,10 @@ export class CardDto {
     @IsString()
     readonly oracleText?: string;
 
-    @IsInstance(PriceDto)
-    readonly price: PriceDto;
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => PriceDto)
+    readonly prices: PriceDto[];
 
     @IsEnum(CardRarity)
     readonly rarity: CardRarity;

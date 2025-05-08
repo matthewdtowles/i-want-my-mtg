@@ -50,8 +50,8 @@ export class Card {
     @IsString()
     oracleText?: string;
 
-    @OneToOne(() => Price, (price) => price.card, { cascade: true, nullable: true })
-    price?: Price;
+    @OneToMany(() => Price, (price) => price.cardId, { cascade: true })
+    prices: Price[];
 
     @Column({
         type: "enum",

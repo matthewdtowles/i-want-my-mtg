@@ -55,7 +55,7 @@ export class CardMapper {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            price: card.price,
+            prices: card.prices,
             rarity: card.rarity,
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,

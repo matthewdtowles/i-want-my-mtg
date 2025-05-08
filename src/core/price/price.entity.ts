@@ -1,8 +1,11 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Price {
-    @PrimaryColumn({ name: "card_id" })
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column({ name: "card_id" })
     cardId: number;
 
     @Column({ type: 'decimal', nullable: true })

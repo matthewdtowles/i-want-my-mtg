@@ -82,7 +82,8 @@ describe("PriceService", () => {
         mockCardRepo.findByUuids.mockResolvedValue(mockCards);
         mockPriceMapper.toEntity.mockImplementation((dto, cardId) => {
             return {
-                cardId,
+                id: cardId,
+                cardId: cardId,
                 date: dto.date,
                 normal: dto.normal ?? null,
                 foil: dto.foil ?? null,
@@ -91,8 +92,8 @@ describe("PriceService", () => {
         await subject.save(dtos);
 
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { cardId: 1, date: dtos[0].date, normal: 1.1, foil: null },
-            { cardId: 2, date: dtos[1].date, normal: null, foil: 2.2 },
+            { id: 1, cardId: 1, date: dtos[0].date, normal: 1.1, foil: null },
+            { id: 2, cardId: 2, date: dtos[1].date, normal: null, foil: 2.2 },
         ]);
     });
 

@@ -37,6 +37,23 @@ export class MtgJsonIngestionMapper {
         return cards;
     }
 
+    toCreateCardDto(setCard: CardSet): CreateCardDto {
+        return {
+            artist: setCard.artist,
+            imgSrc: this.buildCardImgSrc(setCard),
+            isReserved: setCard.isReserved,
+            legalities: this.toLegalityDtos(setCard.legalities),
+            manaCost: setCard.manaCost,
+            name: setCard.name,
+            number: setCard.number,
+            oracleText: setCard.text,
+            rarity: setCard.rarity.toLowerCase(),
+            setCode: setCard.setCode.toLowerCase(),
+            uuid: setCard.uuid,
+            type: setCard.type,
+        };
+    }
+
     toCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
         const sets: CreateSetDto[] = [];
         setLists.forEach((s: SetList) => {
@@ -59,7 +76,7 @@ export class MtgJsonIngestionMapper {
 
     toCreatePriceDto(cardUuid: string, paperPrices: Record<string, PriceList>): CreatePriceDto {
         const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
-        const foilPrice: number | null =  this.determinePrice(extractedPrices.foil);
+        const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
         const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
         let priceDto: CreatePriceDto;
         if (foilPrice || normalPrice) {
@@ -71,23 +88,6 @@ export class MtgJsonIngestionMapper {
             };
         }
         return priceDto;
-    }
-
-    private toCreateCardDto(setCard: CardSet): CreateCardDto {
-        return {
-            artist: setCard.artist,
-            imgSrc: this.buildCardImgSrc(setCard),
-            isReserved: setCard.isReserved,
-            legalities: this.toLegalityDtos(setCard.legalities),
-            manaCost: setCard.manaCost,
-            name: setCard.name,
-            number: setCard.number,
-            oracleText: setCard.text,
-            rarity: setCard.rarity.toLowerCase(),
-            setCode: setCard.setCode.toLowerCase(),
-            uuid: setCard.uuid,
-            type: setCard.type,
-        };
     }
 
     private createLegalityDto(format: string, status: string): LegalityDto {

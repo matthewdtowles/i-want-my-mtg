@@ -12,7 +12,7 @@ import { IngestionServicePort } from "./api/ingestion.service.port";
 @Injectable()
 export class IngestionOrchestrator implements IngestionOrchestratorPort {
     private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
-    private readonly BATCH_SIZE: number = 100;
+    private readonly BUF_SIZE: number = 100;
 
     constructor(
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
@@ -23,52 +23,54 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.debug("Initialized");
     }
 
-    async ingestAllSetMeta(): Promise<SetDto[]> {
+    async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingest meta data for all sets`);
         const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: SetDto[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
-        return savedSets;
     }
 
-    async ingestAllSetCards(): Promise<SetDto[]> {
+    async ingestAllSetCards(): Promise<void> {
         this.LOGGER.debug(`ingest all cards for all sets`);
         const missedSets: string[] = [];
         const sets: SetDto[] = await this.setService.findAll();
         for (let i = 0; i < sets.length; i++) {
             try {
-                const cards: CardDto[] = await this.ingestSetCards(sets[i].code);
-                for (let j = 0; j < cards.length; j++) {
-                    sets[i].cards.push(cards[j]);
-                }
+                await this.ingestSetCards(sets[i].code);
             } catch (error) {
                 this.LOGGER.error(`Failed to ingest set cards for set ${sets[i].code}: ${error}`);
                 missedSets.push(sets[i].code);
             }
         }
         this.LOGGER.log(`Missed Sets: ${JSON.stringify(missedSets)}`);
-        return sets;
     }
 
-    async ingestSetCards(code: string): Promise<CardDto[]> {
+    async ingestSetCards(code: string): Promise<void> {
         this.LOGGER.debug(`ingest set cards for set code: ${code}`);
-        const cards: CreateCardDto[] = await this.ingestionService.fetchSetCards(code);
-        const savedCards: CardDto[] = await this.cardService.save(cards);
-        this.LOGGER.log(`Saved ${savedCards.length} cards in set ${code}`);
-        return savedCards;
+        const buffer: CreateCardDto[] = [];
+        for await (const cardDto of this.ingestionService.fetchSetCards(code)) {
+            buffer.push(cardDto);
+            if (buffer.length >= this.BUF_SIZE) {
+                await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
+            }
+        }
+        if (buffer.length > 0) {
+            await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
+        }
+        this.LOGGER.log(`Saved cards in set ${code}`);
     }
 
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`Ingest prices for today.`);
-        const batch: CreatePriceDto[] = [];
+        const buffer: CreatePriceDto[] = [];
         for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
-            batch.push(priceDto);
-            if (batch.length >= this.BATCH_SIZE) {
-                await this.flushBatch(batch);
+            buffer.push(priceDto);
+            if (buffer.length >= this.BUF_SIZE) {
+                await this.flushPriceBuffer(buffer);
             }
         }
-        if (batch.length > 0) {
-            await this.flushBatch(batch);
+        if (buffer.length > 0) {
+            await this.flushPriceBuffer(buffer);
         }
         this.LOGGER.log(`Price ingestion completed.`);
     }
@@ -80,16 +82,38 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Missing prices filled for date: ${date}`);
     }
 
-    private async flushBatch(batch: CreatePriceDto[]): Promise<void> {
+    private async flushBuffer<T>(buffer: T[], saveMethod: (buffer: T[]) => Promise<void>): Promise<void> {
         try {
-            await this.priceService.save(batch);
+            await saveMethod(buffer);
         } catch (error) {
-            this.LOGGER.error(`Failed to save batch: ${error}`);
+            this.LOGGER.error(`Failed to save buffer: ${error}`);
         } finally {
-            // Clear the batch after processing
-            batch.length = 0;
+            // Clear the buffer after processing
+            buffer.length = 0;
         }
     }
+
+    private async flushPriceBuffer(buffer: CreatePriceDto[]): Promise<void> {
+        try {
+            await this.priceService.save(buffer);
+        } catch (error) {
+            this.LOGGER.error(`Failed to save buffer: ${error}`);
+        } finally {
+            // Clear the buffer after processing
+            buffer.length = 0;
+        }
+    }
+
+    // private async flushCardBuffer(buffer: CreateCardDto[]): Promise<void> {
+    //     try {
+    //         await this.cardService.save(buffer);
+    //     } catch (error) {
+    //         this.LOGGER.error(`Failed to save buffer: ${error}`);
+    //     } finally {
+    //         // Clear the buffer after processing
+    //         buffer.length = 0;
+    //     }
+    // }
 
     private todayDateStr(): string {
         return new Date().toISOString().split("T")[0];

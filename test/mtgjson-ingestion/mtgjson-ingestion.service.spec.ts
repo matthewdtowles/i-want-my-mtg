@@ -1,10 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
 import { MtgJsonApiClient } from "src/adapters/mtgjson-ingestion/mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
-import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
+import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
+import exp from "constants";
 
 // TODO: simplify this test by using mock from the last test
 
@@ -50,9 +53,22 @@ describe("MtgJsonIngestionService", () => {
         expect(await service.fetchSetByCode(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateSetDto());
     });
 
-    it("fetchSetCards should return array of every card as CreateCardDto in given set", async () => {
-        jest.spyOn(apiClient, "fetchSet").mockResolvedValue(testUtils.mockSetDto());
-        expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateCardDtos());
+    // it("fetchSetCards should return array of every card as CreateCardDto in given set", async () => {
+    //     jest.spyOn(apiClient, "fetchSet").mockResolvedValue(testUtils.mockSetDto());
+    //     expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateCardDtos());
+    // });
+
+    it("fetchSetCards should stream CreateCardDto objects for given set", async () => {
+        const mockSetCards: CardSet[] = testUtils.mockSetDto().cards;
+        const mockStream = asyncIterable(mockSetCards);
+        jest.spyOn(apiClient, "fetchSetCardsStream").mockResolvedValue(mockStream as any);
+        const results: CreateCardDto[] = [];
+        for await (const dto of service.fetchSetCards(testUtils.MOCK_SET_CODE)) {
+            results.push(dto);
+        }
+        expect(results.length).toBeGreaterThan(0);
+        expect(results).toHaveLength(mockSetCards.length);
+        expect(results).toEqual(testUtils.expectedCreateCardDtos());
     });
 
     it("should stream CreatePriceDto objects for valid paper retail data", async () => {

@@ -17,9 +17,9 @@ export class IngestionCli {
         command: "ingest:all-sets",
         describe: "Ingest all set meta for every set from external API",
     })
-    async ingestAllSetMeta(): Promise<SetDto[]> {
+    async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingestAllSetMeta invoked`);
-        return await this.orchestrator.ingestAllSetMeta();
+        await this.orchestrator.ingestAllSetMeta();
     }
 
     @Command({
@@ -33,18 +33,18 @@ export class IngestionCli {
             type: "string",
         })
         code: string,
-    ): Promise<CardDto[]> {
+    ): Promise<void> {
         this.LOGGER.debug(`ingestSetCards invoked with code: ${code}`);
-        return await this.orchestrator.ingestSetCards(code);
+        await this.orchestrator.ingestSetCards(code);
     }
 
     @Command({
         command: "ingest:all-cards",
         describe: "Ingest all cards in all sets",
     })
-    async ingestAllCards(): Promise<SetDto[]> {
+    async ingestAllCards(): Promise<void> {
         this.LOGGER.debug(`ingestAllCards for every set invoked`);
-        return await this.orchestrator.ingestAllSetCards();
+        await this.orchestrator.ingestAllSetCards();
     }
 
     @Command({

@@ -4,6 +4,7 @@ import { Readable } from "stream";
 import { chain } from "stream-chain";
 import { parser } from "stream-json";
 import { pick } from "stream-json/filters/Pick";
+import { streamArray } from "stream-json/streamers/StreamArray";
 import { streamObject } from "stream-json/streamers/StreamObject";
 import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
@@ -48,6 +49,20 @@ export class MtgJsonApiClient {
         if (!response.data) throw new Error("No data in response from provider");
         if (!response.data.data) throw new Error("No data.data in response from provider");
         return response.data.data;
+    }
+
+    async fetchSetCardsStream(setCode: string): Promise<Readable> {
+        const url: string = `${this.CARD_PROVIDER_URL}/${setCode.toUpperCase()}.json`;
+        this.LOGGER.log(`Calling provider API ${url}`);
+        const response: AxiosResponse = await axios.get(url, { responseType: "stream" });
+        const pipeline = chain([
+            response.data,
+            parser(),
+            pick({ filter: "data.cards" }),
+            streamArray(),
+            async (data) => data.value,
+        ]);
+        return pipeline;
     }
 
     /**

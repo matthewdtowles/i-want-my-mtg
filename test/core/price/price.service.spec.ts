@@ -16,7 +16,6 @@ describe("PriceService", () => {
     let mockPriceMapper: jest.Mocked<PriceMapper>;
     let testUtils: TestUtils = new TestUtils();
     const mockPrices: PriceDto[] = testUtils.getMockPriceDtos();
-    const mockCreatePrices: CreatePriceDto[] = testUtils.getMockCreatePriceDtos();
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -83,7 +82,7 @@ describe("PriceService", () => {
         mockPriceMapper.toEntity.mockImplementation((dto, cardId) => {
             return {
                 id: cardId,
-                cardId: cardId,
+                card: { id: cardId } as Card,
                 date: dto.date,
                 normal: dto.normal ?? null,
                 foil: dto.foil ?? null,
@@ -91,9 +90,14 @@ describe("PriceService", () => {
         });
         await subject.save(dtos);
 
+        const _cards: Card[] = [
+            { id: 1 } as Card,
+            { id: 2 } as Card,
+        ];
+
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { id: 1, cardId: 1, date: dtos[0].date, normal: 1.1, foil: null },
-            { id: 2, cardId: 2, date: dtos[1].date, normal: null, foil: 2.2 },
+            { id: 1, card: _cards[0], date: dtos[0].date, normal: 1.1, foil: null },
+            { id: 2, card: _cards[1], date: dtos[1].date, normal: null, foil: 2.2 },
         ]);
     });
 
@@ -126,9 +130,10 @@ describe("PriceService", () => {
         mockPriceRepo.findAllIds = jest.fn().mockResolvedValue(existingPriceCardIds);
 
         await subject.fillMissingPrices(date);
-
+        const _card: Card = new Card();
+        _card.id = 3;
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { cardId: 3, date: new Date(date), normal: null, foil: null },
+            { card: _card, date: new Date(date), normal: null, foil: null },
         ]);
     });
 });

@@ -393,7 +393,9 @@ export class TestUtils {
     getMockPriceEntities(): Price[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => {
             const price = new Price();
-            price.cardId = i + 1;
+            const card: Card = new Card();
+            card.id = i + 1;
+            price.card = card;
             price.foil = i + 10;
             price.normal = i + 5;
             price.date = this.MOCK_DATE;
@@ -411,7 +413,7 @@ export class TestUtils {
 
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
-            cardId: entity.cardId,
+            cardId: entity.card.id,
             foil: entity.foil,
             normal: entity.normal,
             date: entity.date,

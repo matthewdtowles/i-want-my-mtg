@@ -55,7 +55,14 @@ export class CardMapper {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            prices: card.prices.map(p => ({ cardId: p.card.id, ...p })),
+            prices: Array.isArray(card?.prices) ? card.prices.map(p => (
+                {
+                    cardId: p.card.id,
+                    normal: p.normal,
+                    foil: p.foil,
+                    date: p.date,
+                })
+            ) : [],
             rarity: card.rarity,
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
@@ -149,7 +156,7 @@ export class CardMapper {
         };
     }
 
-    private manaForView(manaCost: string): string[] {
+    private manaForView(manaCost: string): string[] | null {
         return typeof manaCost === "string" ? manaCost
             .toLowerCase()
             .trim()

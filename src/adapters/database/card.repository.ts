@@ -27,7 +27,7 @@ export class CardRepository implements CardRepositoryPort {
             where: {
                 set: { code: code, },
             },
-            relations: ["legalities"],
+            relations: ["legalities", "price"],
         })) ?? [];
     }
 
@@ -35,14 +35,14 @@ export class CardRepository implements CardRepositoryPort {
         this.LOGGER.debug(`Find all cards with name ${_name}`);
         return (await this.cardRepository.find({
             where: { name: _name, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "price"],
         })) ?? []
     }
 
     async findById(_id: number): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: { id: _id, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "price"],
         });
     }
 
@@ -52,14 +52,14 @@ export class CardRepository implements CardRepositoryPort {
                 set: { code: code, },
                 number: _number,
             },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "price"],
         });
     }
 
     async findByUuid(_uuid: string): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "price"],
         });
     }
 

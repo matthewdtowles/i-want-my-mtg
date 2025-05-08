@@ -50,7 +50,8 @@ export class Card {
     @IsString()
     oracleText?: string;
 
-    @OneToOne(() => Price, (price) => price.cardId)
+    @OneToOne(() => Price, { cascade: true, nullable: true })
+    @JoinColumn({ name: "id" })
     price?: Price;
 
     @Column({

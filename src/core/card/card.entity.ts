@@ -50,7 +50,7 @@ export class Card {
     @IsString()
     oracleText?: string;
 
-    @OneToMany(() => Price, (price) => price.cardId, { cascade: true })
+    @OneToMany(() => Price, (price) => price.card, { cascade: true })
     prices: Price[];
 
     @Column({

@@ -15,10 +15,11 @@ export class PriceRepository implements PriceRepositoryPort {
 
     async findByCardId(cardId: number): Promise<Price> {
         return await this.priceRepository.findOne({
-            where: { cardId }
+            where: { card: { id: cardId } }
         });
     }
 
+    // TODO: probably need to FIX this
     async findAllIds(): Promise<number[]> {
         return await this.priceRepository
             .createQueryBuilder("price")

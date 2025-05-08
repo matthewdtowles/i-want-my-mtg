@@ -1,22 +1,22 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
 import { CardDto } from "./api/card.dto";
-import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRarity } from "./api/card.rarity.enum";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 
 @Injectable()
 export class CardMapper {
 
     private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
-    private rarityCache: { [key: string]: string } = {};
+
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
         this.LOGGER.debug(`dtosToEntities`);
@@ -55,7 +55,7 @@ export class CardMapper {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            prices: card.prices,
+            prices: card.prices.map(p => ({ cardId: p.card.id, ...p })),
             rarity: card.rarity,
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
@@ -147,18 +147,6 @@ export class CardMapper {
             cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
             url: this.buildSetUrl(set),
         };
-    }
-
-    private rarityForView(word: string): string {
-        if (!word) {
-            return word;
-        }
-        if (this.rarityCache[word]) {
-            return this.rarityCache[word];
-        }
-        const rarity = word.charAt(0).toUpperCase() + word.slice(1);
-        this.rarityCache[word] = rarity;
-        return rarity;
     }
 
     private manaForView(manaCost: string): string[] {

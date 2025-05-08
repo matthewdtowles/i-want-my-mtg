@@ -44,7 +44,9 @@ export class PriceService implements PriceServicePort {
         const missingCardIds: number[] = allCards.filter((cardId) => !existingPriceCardIds.includes(cardId));
         const missingPrices: Price[] = missingCardIds.map((cardId) => {
             const price = new Price();
-            price.cardId = cardId;
+            const card: Card = new Card();
+            card.id = cardId;
+            price.card = card;
             price.normal = null;
             price.foil = null;
             price.date = new Date(date);

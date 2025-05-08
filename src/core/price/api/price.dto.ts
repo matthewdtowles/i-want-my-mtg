@@ -1,4 +1,4 @@
-export class PriceDto { 
+export class PriceDto {
     cardId: number;
     foil: number | null;
     normal: number | null;

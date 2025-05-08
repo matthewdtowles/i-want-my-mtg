@@ -4,9 +4,9 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommandModule } from "nestjs-command";
 import { join } from "path";
+import { DataSource } from "typeorm";
 import { AdapterModule } from "./adapters/adapter.module";
 import { CoreModule } from "./core/core.module";
-import { AppDataSource } from "./data-source";
 
 @Module({
     imports: [
@@ -18,7 +18,7 @@ import { AppDataSource } from "./data-source";
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: async (configService: ConfigService) => ({
+            useFactory: (configService: ConfigService) => ({
                 type: "postgres",
                 host: configService.get<string>("DB_HOST"),
                 port: configService.get<number>("DB_PORT"),
@@ -27,10 +27,18 @@ import { AppDataSource } from "./data-source";
                 database: configService.get<string>("DB_NAME"),
                 autoLoadEntities: true,
                 synchronize: configService.get("NODE_ENV") !== "production",
+                dropSchema: false,
+                // logging: configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
+                logging: false,
+                extra: {
+                    connectionLimit: 10,
+                    queueLimit: 0,
+                    waitForConnections: true,
+                },
             }),
-            dataSourceFactory: async () => {
+            dataSourceFactory: async (options) => {
                 try {
-                    return await AppDataSource.initialize();
+                    return await new DataSource(options).initialize();
                 } catch (error) {
                     console.error("Error initializing the database connection:", error);
                     throw error;

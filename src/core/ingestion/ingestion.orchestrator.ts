@@ -73,6 +73,13 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Price ingestion completed.`);
     }
 
+    async fillMissingPrices(): Promise<void> {
+        this.LOGGER.debug(`Fill missing prices for today.`);
+        const date: string = this.todayDateStr();
+        await this.priceService.fillMissingPrices(date);
+        this.LOGGER.log(`Missing prices filled for date: ${date}`);
+    }
+
     private async flushBatch(batch: CreatePriceDto[]): Promise<void> {
         try {
             await this.priceService.save(batch);
@@ -82,5 +89,9 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
             // Clear the batch after processing
             batch.length = 0;
         }
+    }
+
+    private todayDateStr(): string {
+        return new Date().toISOString().split("T")[0];
     }
 }

@@ -55,6 +55,11 @@ export interface CardRepositoryPort {
     findByUuids(uuids: string[]): Promise<Card[]>;
 
     /**
+     * @returns all card ids
+     */
+    findAllIds(): Promise<number[]>;
+
+    /**
      * Remove card entity
      *
      * @param card

@@ -22,18 +22,18 @@ export class Card {
     @IsString()
     artist?: string;
 
-    @Column()
+    @Column({ name: "img_src" })
     @IsString()
     @IsNotEmpty()
     imgSrc: string;
 
-    @Column({ default: false })
+    @Column({ default: false, name: "is_reserved" })
     isReserved: boolean;
 
     @OneToMany(() => Legality, legality => legality.card, { cascade: true })
     legalities: Legality[];
 
-    @Column({ nullable: true })
+    @Column({ name: "mana_cost", nullable: true })
     manaCost?: string;
 
     @Column()
@@ -46,7 +46,7 @@ export class Card {
     @IsNotEmpty()
     number: string;
 
-    @Column({ nullable: true, type: "text" })
+    @Column({ name: "oracle_text", nullable: true, type: "text" })
     @IsString()
     oracleText?: string;
 
@@ -66,7 +66,7 @@ export class Card {
     @JoinColumn({ name: "setCode", referencedColumnName: "code" })
     set: Set;
 
-    @Column()
+    @Column({ name: "set_code" })
     @IsString()
     @IsNotEmpty()
     setCode: string;

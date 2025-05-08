@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Price {
-    @PrimaryColumn()
+    @PrimaryColumn({ name: "card_id" })
     cardId: number;
 
     @Column({ type: 'decimal', nullable: true })

@@ -30,4 +30,11 @@ export interface PriceServicePort {
      * @returns A promise that resolves when the deletion is complete.
      */
     delete(id: number): Promise<void>;
+
+    /**
+     * Fills the price table with  entries for cards with NULL normal and foil prices.
+     * 
+     * @param date - The date to use for the new price entries.
+     */
+    fillMissingPrices(date: string): Promise<void>;
 }

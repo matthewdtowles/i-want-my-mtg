@@ -58,7 +58,7 @@ export class CardMapper {
             oracleText: card.oracleText,
             prices: Array.isArray(card?.prices) ? card.prices.map(p => (
                 {
-                    cardId: p.card.id,
+                    cardId: card.id,
                     normal: p.normal,
                     foil: p.foil,
                     date: p.date,

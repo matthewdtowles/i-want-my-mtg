@@ -40,7 +40,7 @@ export class SetRepository implements SetRepositoryPort {
         this.LOGGER.debug(`findByCode ${code}`);
         const set: Set = await this.setRepository.findOne({
             where: { code: code, },
-            relations: ["cards"],
+            relations: ["cards", "cards.prices"],
         });
         this.LOGGER.debug(`Found set: ${JSON.stringify(set)}`);
         return set ?? null;
@@ -50,7 +50,7 @@ export class SetRepository implements SetRepositoryPort {
         this.LOGGER.debug(`findByName ${setName}`);
         return await this.setRepository.findOne({
             where: { name: setName, },
-            relations: ["cards"],
+            relations: ["cards", "cards.legalities", "cards.prices"],
         });
     }
 

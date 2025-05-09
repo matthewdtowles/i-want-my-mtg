@@ -62,7 +62,7 @@ export class Card {
     rarity: CardRarity;
 
     @ManyToOne(() => Set, (set) => set.cards)
-    @JoinColumn({ name: "setCode", referencedColumnName: "code" })
+    @JoinColumn({ name: "set_code", referencedColumnName: "code" })
     set: Set;
 
     @Column({ name: "set_code" })

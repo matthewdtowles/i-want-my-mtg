@@ -41,6 +41,7 @@ export class AggregatorService implements AggregatorServicePort {
         this.LOGGER.debug(`findInventorySetByCode for set: ${setCode}, user: ${userId}`);
         const set: SetDto = await this.setService.findByCode(setCode);
         if (!set) throw new Error(`Set with code ${setCode} not found`);
+        this.LOGGER.debug(`-- TEMP --Found set: ${JSON.stringify(set)}`);
         if (!set.cards || set.cards.length === 0) throw new Error(`Set with code ${setCode} has no cards`);
         const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const setInventoryCards: InventoryCardDto[] = inventoryCards

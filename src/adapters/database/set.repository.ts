@@ -38,10 +38,12 @@ export class SetRepository implements SetRepositoryPort {
 
     async findByCode(code: string): Promise<Set | null> {
         this.LOGGER.debug(`findByCode ${code}`);
-        return await this.setRepository.findOne({
+        const set: Set = await this.setRepository.findOne({
             where: { code: code, },
             relations: ["cards"],
         });
+        this.LOGGER.debug(`Found set: ${JSON.stringify(set)}`);
+        return set ?? null;
     }
 
     async findByName(setName: string): Promise<Set | null> {

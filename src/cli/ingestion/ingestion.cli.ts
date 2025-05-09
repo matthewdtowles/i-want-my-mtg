@@ -1,8 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { CardDto } from "src/core/card/api/card.dto";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
-import { SetDto } from "src/core/set/api/set.dto";
 
 @Injectable()
 export class IngestionCli {

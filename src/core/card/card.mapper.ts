@@ -58,8 +58,8 @@ export class CardMapper {
             prices: Array.isArray(card?.prices) ? card.prices.map(p => (
                 {
                     cardId: card.id,
-                    normal: p.normal,
-                    foil: p.foil,
+                    normal: this.toDollar(p.normal),
+                    foil: this.toDollar(p.foil),
                     date: p.date,
                 })
             ) : [],
@@ -212,5 +212,10 @@ export class CardMapper {
             return status as LegalityStatus;
         }
         throw new Error(`Invalid status value: ${status}`);
+    }
+
+    private toDollar(amount: any): string {
+        const number = parseFloat(amount);
+        return !isNaN(number) ? number.toFixed(2) : "0.00";
     }
 }

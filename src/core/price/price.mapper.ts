@@ -14,10 +14,14 @@ export class PriceMapper {
     toDto(price: Price): PriceDto {
         return {
             cardId: price.card.id,
-            foil: price.foil,
-            normal: price.normal,
+            foil: this.toDollar(price.foil),
+            normal: this.toDollar(price.normal),
             date: price.date,
         };
+    }
+
+    toDollar(number: number): string {
+        return number !== null ? number.toFixed(2) : "0.00";
     }
 
     /**

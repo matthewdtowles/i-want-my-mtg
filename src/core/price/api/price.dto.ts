@@ -1,6 +1,7 @@
 export class PriceDto {
     cardId: number;
-    foil: number | null;
-    normal: number | null;
+    // TODO: convert both to string for READ ops (i.e.: when this is used)
+    foil: string | number | null;
+    normal: string | number | null;
     date: Date;
 }

@@ -33,9 +33,7 @@
                     <img src="{{this.image}}" alt="{{this.name}} ({{this.set.code}})" />
                 </a>
             </td>
-            <td class="card-printing-price">
-                <p>{{this.price.normal}}</p>
-            </td>
+            <td class="card-printing-price">{{>price prices=}}</td>
         </tr>
         {{/each}}
     </tbody>

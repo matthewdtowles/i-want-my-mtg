@@ -45,7 +45,7 @@
     <section class="price-info md:w-1/3 md:pl-6 mb-4 md:mb-0 border-none">
         <section class="subjsection-container">
             <h3 class="section-title">Price</h3>
-            <span>${{#if card.price.normal}}{{card.price.normal}}{{else}}0.00{{/if}}</span>
+            {{>price prices=card.prices}}
             <section class="inventory-info"></section>
             {{>cardsOwned}}
         </section>
@@ -64,9 +64,7 @@
                     <a class="table-link" href="{{p.url}}">{{p.set.name}}</a>
                     <span> ({{toUpperCase p.setCode}})</span>
                 </td>
-                <td class="other-printing-price py-2 text-right">
-                    ${{#if p.price.normal}}{{p.price.normal}}{{else}}0.00{{/if}}
-                </td>
+                <td class="other-printing-price py-2 text-right">{{>price prices=p.prices}}</td>
             </tr>
             {{/each}}
         </tbody>

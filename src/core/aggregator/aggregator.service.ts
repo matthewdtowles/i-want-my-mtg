@@ -61,7 +61,7 @@ export class AggregatorService implements AggregatorServicePort {
 
     async findInventoryCardById(cardId: number, userId: number): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCardById for card: ${cardId}, user: ${userId}`);
-        const card = await this.cardService.findById(cardId, CardImgType.SMALL);
+        const card: CardDto = await this.cardService.findById(cardId, CardImgType.SMALL);
         if (!card) throw new Error(`Card with id ${cardId} not found`);
         const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, cardId);
         const foundCard: InventoryCardAggregateDto = {

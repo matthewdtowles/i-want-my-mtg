@@ -42,7 +42,6 @@ export class SetRepository implements SetRepositoryPort {
             where: { code: code, },
             relations: ["cards", "cards.prices"],
         });
-        this.LOGGER.debug(`Found set: ${JSON.stringify(set)}`);
         return set ?? null;
     }
 

@@ -31,9 +31,7 @@
                         {{toUpperCase this.setCode}}
                     </a>
                 </td>
-                <td>
-                    ${{#if this.price.normal}}{{this.price.normal}}{{else}}0.00{{/if}}
-                </td>
+                <td>{{>price card=this}}</td>
                 <td class="delete-inventory-entry pr-2">
                     {{>deleteInventoryEntry card=this}}
                 </td>

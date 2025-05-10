@@ -44,7 +44,6 @@ export class CardMapper {
         return cards.map((card: Card) => this.entityToDto(card, imgType));
     }
 
-    // FIXME: is this breaking the set cards page?
     entityToDto(card: Card, imgType: CardImgType): CardDto {
         const dto: CardDto = {
             id: card.id,

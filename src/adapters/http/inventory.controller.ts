@@ -57,7 +57,7 @@ export class InventoryController {
             message: _cards ? `Inventory for ${_username} found` : `Inventory not found for ${_username}`,
             status: _cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             username: _username,
-            value: 0,
+            value: 0,// TODO: calculate value as sum of all prices
         };
     }
 
@@ -118,7 +118,7 @@ export class InventoryController {
         });
     }
 
-    validateAuthenticatedRequest(req: AuthenticatedRequest): void {
+    private validateAuthenticatedRequest(req: AuthenticatedRequest): void {
         if (!req) throw new NotFoundException("Request not found");
         if (!req.user) throw new NotFoundException("User not found in request");
         if (!req.user.id) throw new NotFoundException("User does not have valid ID");

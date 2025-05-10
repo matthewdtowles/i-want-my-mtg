@@ -32,7 +32,15 @@
                     </a>
                 </td>
                 <td>
-                    ${{#if this.price.normal}}{{this.price.normal}}{{else}}0.00{{/if}}
+                    {{#each this.prices}}
+                        ${{#if this.normal}}
+                            {{this.normal}}
+                        {{else if this.foil}}
+                            {{this.foil}}
+                        {{else}}
+                            0.00
+                        {{/if}}
+                    {{/each}}
                 </td>
                 <td class="delete-inventory-entry pr-2">
                     {{>deleteInventoryEntry card=this}}

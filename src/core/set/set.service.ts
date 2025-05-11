@@ -33,7 +33,7 @@ export class SetService implements SetServicePort {
 
     async findAllInFormat(format: string): Promise<SetDto[]> {
         this.LOGGER.debug(`Calling findAllInFormat(${format})`);
-        // TODO: update when we track legality
+        // TODO: sort by format, block, release date ?
         const setEntities: Set[] = await this.repository.findAllSetsMeta();
         return this.mapper.entitiesToDtos(setEntities);
     }

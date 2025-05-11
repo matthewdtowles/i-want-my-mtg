@@ -35,23 +35,6 @@ export interface InventoryServicePort {
     findOneForUser(userId: number, cardId: number): Promise<InventoryDto| null>;
 
     /**
-     * Returns user's inventory item with card matching cardId
-     *
-     * @param userId
-     * @param cardId
-     * @returns user's inventory item with card matching cardId
-     */
-    findOneCardForUser(userId: number, cardId: number): Promise<InventoryCardDto | null>;
-
-    /**
-     * Return user's inventory items
-     *
-     * @param userId
-     * @returns user's inventory items
-     */
-    findAllForUser(userId: number): Promise<InventoryDto[]>;
-
-    /**
      * Return user's inventory with cards
      * 
      * @param userId

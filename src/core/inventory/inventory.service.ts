@@ -38,24 +38,6 @@ export class InventoryService implements InventoryServicePort {
         return this.mapper.toDto(foundItem);
     }
 
-    async findOneCardForUser(userId: number, cardId: number): Promise<InventoryCardDto | null> {
-        this.LOGGER.debug(`findOneCardForUser ${userId} ${cardId}`);
-        if (!userId || !cardId) {
-            return null;
-        }
-        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
-        return this.mapper.toInventoryCardDto(foundItem);
-    }
-
-    async findAllForUser(userId: number): Promise<InventoryDto[]> {
-        this.LOGGER.debug(`findAllForUser ${userId}`);
-        if (!userId) {
-            return [];
-        }
-        const foundItems: Inventory[] = await this.repository.findByUser(userId);
-        return this.mapper.toDtos(foundItems);
-    }
-
     async findAllCardsForUser(userId: number): Promise<InventoryCardDto[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
         if (!userId) {

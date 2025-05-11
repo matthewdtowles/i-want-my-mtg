@@ -93,43 +93,6 @@ describe("InventoryService", () => {
         expect(foundItem).toBeNull();
     });
 
-    it("should find an inventory item with cards for a user", async () => {
-        jest.spyOn(repository, "findOne");
-        const id = 1;
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(testUtils.MOCK_USER_ID, id);
-        expect(repository.findOne).toHaveBeenCalled();
-        expect(foundItem).toEqual(testUtils.getMockInventoryCardDtos()[id - 1]);
-    });
-
-    it("should return null if userId is not provided for findOneCardForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const id = 1;
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(null, id);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
-    });
-
-    it("should return null if cardId is not provided for findOneCardForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(testUtils.MOCK_USER_ID, null);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
-    });
-
-    it("should find inventory items for a user", async () => {
-        jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryDto[] = await service.findAllForUser(testUtils.MOCK_USER_ID);
-        expect(repository.findByUser).toHaveBeenCalled();
-        expect(foundItems).toEqual(testUtils.getMockInventoryDtos());
-    });
-
-    it("should return an empty array if userId is not provided for findAllForUser", async () => {
-        jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryDto[] = await service.findAllForUser(null);
-        expect(repository.findByUser).not.toHaveBeenCalled();
-        expect(foundItems).toEqual([]);
-    });
-
     it("should find inventory items with cards for a user", async () => {
         jest.spyOn(repository, "findByUser");
         const foundItems: InventoryCardDto[] = await service.findAllCardsForUser(testUtils.MOCK_USER_ID);

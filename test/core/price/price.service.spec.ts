@@ -61,10 +61,6 @@ describe("PriceService", () => {
         jest.clearAllMocks();
     });
 
-    it("should be defined", () => {
-        expect(subject).toBeDefined();
-    });
-
     it("should save averaged prices with normal and/or foil", async () => {
         const _date: Date = new Date("2024-05-05");
         const dtos: CreatePriceDto[] = [
@@ -106,18 +102,22 @@ describe("PriceService", () => {
             { cardUuid: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 },
         ];
         mockCardRepo.findByUuids.mockResolvedValue([]);
+
         await subject.save(dtos);
+
         expect(mockPriceRepo.save).toHaveBeenCalledWith([]);
     });
 
     it("should find a price by card ID", async () => {
         const foundPrice = await subject.findByCardId(1);
+
         expect(mockPriceRepo.findByCardId).toHaveBeenCalledWith(1);
         expect(foundPrice).toEqual(mockPrices[0]);
     });
 
     it("should delete a price by ID", async () => {
         await subject.delete(1);
+
         expect(mockPriceRepo.delete).toHaveBeenCalledWith(1);
     });
 
@@ -132,6 +132,7 @@ describe("PriceService", () => {
         await subject.fillMissingPrices(date);
         const _card: Card = new Card();
         _card.id = 3;
+
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
             { card: _card, date: new Date(date), normal: null, foil: null },
         ]);

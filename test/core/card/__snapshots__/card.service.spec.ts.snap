@@ -320,35 +320,6 @@ exports[`CardService should find all cards in a set 1`] = `
 ]
 `;
 
-exports[`CardService should save legalities and delete previously saved legalities not given 1`] = `
-[
-  {
-    "artist": undefined,
-    "id": 1,
-    "imgSrc": "https://cards.scryfall.io/small/front/imgSrc",
-    "isReserved": false,
-    "legalities": [
-      {
-        "cardId": 1,
-        "format": "legacy",
-        "status": "legal",
-      },
-    ],
-    "manaCost": null,
-    "name": "Card 1",
-    "number": "1",
-    "oracleText": undefined,
-    "prices": [],
-    "rarity": "common",
-    "set": null,
-    "setCode": "SET",
-    "type": "type",
-    "url": "/card/set/1",
-    "uuid": "uuid-123",
-  },
-]
-`;
-
 exports[`CardService should save new cards and return saved cards 1`] = `
 [
   {

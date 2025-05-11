@@ -1,5 +1,4 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
 import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
@@ -10,19 +9,15 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
-import { User } from "src/core/user/user.entity";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
     readonly MOCK_SET_NAME = "Test Set";
     readonly MOCK_CARD_NAME = "Test Card Name";
-    readonly MOCK_SET_URL = "sets/set";
     readonly MOCK_ROOT_SCRYFALL_ID = "abc123def456";
     readonly IMG_SRC_BASE = "https://cards.scryfall.io";
     readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
@@ -149,16 +144,8 @@ export class TestUtils {
         });
     }
 
-    getMockSetDtos(): SetDto[] {
-        return this.getMockSets().map((set) => this.mapSetEntityToDto(set));
-    }
-
     getMockSetDto(setCode: string): SetDto {
         return this.mapSetEntityToDto(this.getMockSet(setCode));
-    }
-
-    getMockSetDtoWithCards(setCode: string): SetDto {
-        return this.mapSetEntityToDto(this.getMockSetWithCards(setCode));
     }
 
     getMockCreateInventoryDtos(): InventoryDto[] {
@@ -206,15 +193,6 @@ export class TestUtils {
         }));
     }
 
-    getMockInventoryCardAggregateDtos(): InventoryCardAggregateDto[] {
-        const inventory = this.getMockInventoryCardDtos();
-        return this.getMockCardDtos(this.MOCK_SET_CODE).map((card: CardDto) => ({
-            ...card,
-            id: card.id,
-            quantity: inventory.find((item: InventoryCardDto) => item.card.id === card.id).quantity ?? 0,
-        }));
-    }
-
     entityToInventoryCardDto(inventory: Inventory): InventoryCardDto {
         return {
             card: inventory.card ? this.mapCardEntityToDto(inventory.card, "small") : undefined,
@@ -225,38 +203,6 @@ export class TestUtils {
 
     entityListToInventoryCardDtos(inventoryList: Inventory[]): InventoryCardDto[] {
         return inventoryList.map(item => this.entityToInventoryCardDto(item));
-    }
-
-    getMockCreateUserDto(): CreateUserDto {
-        const user: CreateUserDto = {
-            email: this.MOCK_USER_EMAIL,
-            name: this.MOCK_USER_NAME,
-            password: this.MOCK_PASSWORD,
-        };
-        return user;
-    }
-
-    getMockUser(): User {
-        const userDto = this.getMockCreateUserDto();
-        const user: User = {
-            id: this.MOCK_USER_ID,
-            email: userDto.email,
-            name: userDto.name,
-            password: this.MOCK_PASSWORD,
-            role: UserRole.User,
-        };
-        return user;
-    }
-
-    getMockUserDto(): UserDto {
-        const user: User = this.getMockUser();
-        const userDto: UserDto = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
-        };
-        return userDto;
     }
 
     getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus): LegalityDto {
@@ -273,34 +219,6 @@ export class TestUtils {
             format,
             status: LegalityStatus.Legal
         }));
-    }
-
-
-    mapCreateCardDtosToEntities(createCardDtos: CreateCardDto[]): Card[] {
-        return createCardDtos.map((dto, i) => this.mapCreateCardDtoToEntity(dto, i + 1));
-    }
-
-    mapCreateCardDtoToEntity(createCardDto: CreateCardDto, _id: number): Card {
-        return {
-            id: _id,
-            artist: createCardDto.artist,
-            imgSrc: createCardDto.imgSrc,
-            isReserved: createCardDto.isReserved,
-            legalities: createCardDto.legalities.map((legality) =>
-                this.mapLegalityDtoToEntity(legality)
-            ),
-            manaCost: createCardDto.manaCost,
-            name: createCardDto.name,
-            number: createCardDto.number,
-            oracleText: createCardDto.oracleText,
-            // TODO: check back on this because it is not set for specific card ...
-            prices: this.getMockPriceEntities(),
-            rarity: this.convertToCardRarity(createCardDto.rarity),
-            setCode: createCardDto.setCode,
-            type: createCardDto.type,
-            uuid: createCardDto.uuid,
-            set: this.getMockSet(createCardDto.setCode),
-        };
     }
 
     mapCardEntityToDto(card: Card, imgSize: string): CardDto {
@@ -339,10 +257,6 @@ export class TestUtils {
         };
     }
 
-    mapCardEntitiesToDtos(cards: Card[]): CardDto[] {
-        return cards.map((card) => this.mapCardEntityToDto(card, "small"));
-    }
-
     mapSetEntityToDto(set: Set): SetDto {
         return {
             baseSize: set.baseSize,
@@ -362,30 +276,11 @@ export class TestUtils {
         return sets.map((set) => this.mapSetEntityToDto(set));
     }
 
-    mapLegalityDtoToEntity(legalityDto: LegalityDto): Legality {
-        return {
-            cardId: legalityDto.cardId,
-            format: this.convertToFormat(legalityDto.format),
-            status: this.convertToLegalityStatus(legalityDto.status),
-            card: undefined,
-        };
-    }
-
-    getMockCreatePriceDtos(): CreatePriceDto[] {
-        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
-            cardUuid: `abcd-1234-efgh-5678-ijkl-${this.MOCK_SET_CODE}${i + 1}`,
-            foil: i + 10,
-            normal: i + 5,
-            date: this.MOCK_DATE,
-            cardId: i + 1,
-        }));
-    }
-
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             cardId: i + 1,
-            foil: i + 10,
-            normal: i + 5,
+            foil: this.toDollar(i + 10),
+            normal: this.toDollar(i + 5),
             date: this.MOCK_DATE,
         }));
     }
@@ -405,8 +300,8 @@ export class TestUtils {
 
     mapPriceDtoToEntity(dto: PriceDto): Price {
         const price = new Price();
-        price.foil = dto.foil;
-        price.normal = dto.normal;
+        price.foil = parseFloat(dto.foil);
+        price.normal = parseFloat(dto.normal);
         price.date = dto.date;
         return price;
     }
@@ -414,8 +309,8 @@ export class TestUtils {
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
             cardId: entity.card.id,
-            foil: entity.foil,
-            normal: entity.normal,
+            foil: this.toDollar(entity.foil),
+            normal: this.toDollar(entity.normal),
             date: entity.date,
         };
     }
@@ -423,11 +318,6 @@ export class TestUtils {
     mapPriceEntitiesToDtos(entities: Price[]): PriceDto[] {
         return entities.map((entity) => this.mapPriceEntityToDto(entity));
     }
-
-    mapPriceDtosToEntities(dtos: PriceDto[]): Price[] {
-        return dtos.map((dto) => this.mapPriceDtoToEntity(dto));
-    }
-
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
         return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
@@ -440,18 +330,8 @@ export class TestUtils {
         return null;
     }
 
-    private convertToFormat(format: string): Format {
-        if (Object.values(Format).includes(format.toLowerCase() as Format)) {
-            return format as Format;
-        }
-        return null;
+    private toDollar(amount: any): string {
+        const number = parseFloat(amount);
+        return !isNaN(number) ? number.toFixed(2) : "0.00";
     }
-
-    private convertToLegalityStatus(status: string): LegalityStatus {
-        if (Object.values(LegalityStatus).includes(status.toLowerCase() as LegalityStatus)) {
-            return status as LegalityStatus;
-        }
-        return null;
-    }
-
 }

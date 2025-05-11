@@ -13,12 +13,13 @@ import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/aut
 import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
-import { CardDto, UpdateCardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
+import { CardDto } from "src/core/card/api/card.dto";
+import { UpdateCardDto } from "src/core/card/api/create-card.dto";
 
 @Controller("card")
 export class CardController {
@@ -53,6 +54,7 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardById(Number(id), userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+        this.LOGGER.debug(`findOne card: ${JSON.stringify(_card)}`);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
@@ -81,6 +83,7 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+        this.LOGGER.debug(`findSetCard card: ${JSON.stringify(_card)}`);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

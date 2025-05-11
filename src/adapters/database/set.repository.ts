@@ -18,12 +18,17 @@ export class SetRepository implements SetRepositoryPort {
         }
         this.LOGGER.debug(`saving ${sets.length} total sets`);
         const saveSets: Set[] = [];
+        // TODO: MOVE TO SERVICE!
         await Promise.all(
             sets.map(async (s) => {
                 if (!s) {
                     throw new Error(`Invalid set in sets.`);
                 }
                 const existingSet: Set = await this.findByCode(s.code);
+                if (existingSet) {
+                    // Preserve the name field if it already exists
+                    s.name = existingSet.name;
+                }
                 const updatedSet = this.setRepository.merge(s, existingSet);
                 saveSets.push(updatedSet);
             }),
@@ -33,17 +38,18 @@ export class SetRepository implements SetRepositoryPort {
 
     async findByCode(code: string): Promise<Set | null> {
         this.LOGGER.debug(`findByCode ${code}`);
-        return await this.setRepository.findOne({
+        const set: Set = await this.setRepository.findOne({
             where: { code: code, },
-            relations: ["cards"],
+            relations: ["cards", "cards.prices"],
         });
+        return set ?? null;
     }
 
     async findByName(setName: string): Promise<Set | null> {
         this.LOGGER.debug(`findByName ${setName}`);
         return await this.setRepository.findOne({
             where: { name: setName, },
-            relations: ["cards"],
+            relations: ["cards", "cards.legalities", "cards.prices"],
         });
     }
 

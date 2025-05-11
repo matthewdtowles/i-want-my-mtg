@@ -1,0 +1,11 @@
+<span>
+{{#each this.prices}}
+    ${{#if this.normal}}
+        {{this.normal}}
+    {{else if this.foil}}
+        {{this.foil}}
+    {{else}}
+        0.00
+    {{/if}}
+{{/each}}
+</span>

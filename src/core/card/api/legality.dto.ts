@@ -1,24 +1,7 @@
 import { IsEnum, IsInt, IsPositive } from "class-validator";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 
-export enum Format {
-    Standard = "standard",
-    Commander = "commander",
-    Modern = "modern",
-    Legacy = "legacy",
-    Vintage = "vintage",
-    Brawl = "brawl",
-    Explorer = "explorer",
-    Historic = "historic",
-    Oathbreaker = "oathbreaker",
-    Pauper = "pauper",
-    Pioneer = "pioneer",
-}
-
-export enum LegalityStatus {
-    Legal = "legal",
-    Banned = "banned",
-    Restricted = "restricted",
-}
 
 export class LegalityDto {
     @IsInt()

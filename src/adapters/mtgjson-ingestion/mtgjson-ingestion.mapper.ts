@@ -1,7 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
-import { CreateCardDto } from "src/core/card/api/card.dto";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
+import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
@@ -32,6 +37,23 @@ export class MtgJsonIngestionMapper {
         return cards;
     }
 
+    toCreateCardDto(setCard: CardSet): CreateCardDto {
+        return {
+            artist: setCard.artist,
+            imgSrc: this.buildCardImgSrc(setCard),
+            isReserved: setCard.isReserved,
+            legalities: this.toLegalityDtos(setCard.legalities),
+            manaCost: setCard.manaCost,
+            name: setCard.name,
+            number: setCard.number,
+            oracleText: setCard.text,
+            rarity: setCard.rarity.toLowerCase(),
+            setCode: setCard.setCode.toLowerCase(),
+            uuid: setCard.uuid,
+            type: setCard.type,
+        };
+    }
+
     toCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
         const sets: CreateSetDto[] = [];
         setLists.forEach((s: SetList) => {
@@ -52,21 +74,20 @@ export class MtgJsonIngestionMapper {
         return legalitiesDto;
     }
 
-    private toCreateCardDto(setCard: CardSet): CreateCardDto {
-        return {
-            artist: setCard.artist,
-            imgSrc: this.buildCardImgSrc(setCard),
-            isReserved: setCard.isReserved,
-            legalities: this.toLegalityDtos(setCard.legalities),
-            manaCost: setCard.manaCost,
-            name: setCard.name,
-            number: setCard.number,
-            oracleText: setCard.text,
-            rarity: setCard.rarity.toLowerCase(),
-            setCode: setCard.setCode.toLowerCase(),
-            uuid: setCard.uuid,
-            type: setCard.type,
-        };
+    toCreatePriceDto(cardUuid: string, paperPrices: Record<string, PriceList>): CreatePriceDto {
+        const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
+        const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
+        const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
+        let priceDto: CreatePriceDto;
+        if (foilPrice || normalPrice) {
+            priceDto = {
+                cardUuid,
+                date: new Date(this.extractDate(paperPrices)),
+                foil: foilPrice,
+                normal: normalPrice,
+            };
+        }
+        return priceDto;
     }
 
     private createLegalityDto(format: string, status: string): LegalityDto {
@@ -98,5 +119,60 @@ export class MtgJsonIngestionMapper {
         }
         const scryfallId: string = card.identifiers.scryfallId;
         return `${scryfallId.charAt(0)}/${scryfallId.charAt(1)}/${scryfallId}.jpg`;
+    }
+
+    private extractDate(paperPrices: Record<string, PriceList>): string {
+        for (const [_, priceList] of Object.entries(paperPrices)) {
+            if (!priceList || !priceList.retail) continue;
+            const pricePoints: PricePoints = priceList.retail;
+            let dateStr: string = Object.keys(pricePoints.normal || {})[0];
+            if (!dateStr) {
+                dateStr = Object.keys(pricePoints.foil || {})[0];
+            }
+            if (dateStr) {
+                return dateStr;
+            }
+        }
+        throw new Error("No date found in paper prices");
+    }
+
+    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPricesDto {
+        const foilPrices: number[] = [];
+        const normalPrices: number[] = [];
+        for (const [_, priceList] of Object.entries(paperPrices)) {
+            if (!priceList || !priceList.retail) continue;
+            if (priceList.currency !== "USD") continue;
+            const pricePoints: PricePoints = priceList.retail;
+            if (pricePoints.foil) {
+                for (const [_, foilPrice] of Object.entries(pricePoints.foil)) {
+                    foilPrices.push(foilPrice);
+                }
+            }
+            if (pricePoints.normal) {
+                for (const [_, normalPrice] of Object.entries(pricePoints.normal)) {
+                    normalPrices.push(normalPrice);
+                }
+            }
+        }
+        return new ExtractedPricesDto(foilPrices, normalPrices);
+    }
+
+    private determinePrice(prices: number[]): number | null {
+        const total: number = prices.reduce((acc, price) => acc + price, 0);
+        const avg: number = total / prices.length;
+        if (isNaN(avg) || avg === 0) {
+            return null;
+        }
+        return Math.ceil(avg * 100) / 100; // Round to hundredths
+    }
+}
+
+class ExtractedPricesDto {
+    foil: number[];
+    normal: number[];
+
+    constructor(foil: number[], normal: number[]) {
+        this.foil = foil;
+        this.normal = normal;
     }
 }

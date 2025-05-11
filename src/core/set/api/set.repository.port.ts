@@ -3,38 +3,46 @@ import { Set } from "../set.entity";
 export const SetRepositoryPort = "SetRepositoryPort";
 
 /**
- * Persistence layer for Set entity
+ * Interface representing the repository port for managing Set entities.
  */
 export interface SetRepositoryPort {
+
     /**
-     * Create set entities, update if they exist
+     * Creates or updates Set entities.
      *
-     * @param set
-     * @returns saved set(s)
+     * @param {Set[]} set - The array of Set entities to save.
+     * @returns {Promise<Set[]>} A promise that resolves to the saved Set entities.
      */
     save(set: Set[]): Promise<Set[]>;
 
     /**
-     * @returns all sets - cards not included
+     * Retrieves metadata for all Set entities without including cards.
+     *
+     * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
     findAllSetsMeta(): Promise<Set[]>;
 
     /**
-     * @param code unique three-letter set code (PK)
-     * @returns set entity with code, null if not found
+     * Finds a Set entity by its unique three-letter code.
+     *
+     * @param {string} code - The unique three-letter set code (primary key).
+     * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
      */
     findByCode(code: string): Promise<Set | null>;
 
     /**
-     * @param name unique set name
-     * @returns set entity with name, null if not found
+     * Finds a Set entity by its unique name.
+     *
+     * @param {string} name - The unique name of the set.
+     * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
      */
     findByName(name: string): Promise<Set | null>;
 
     /**
-     * Remove set entity
+     * Removes a Set entity.
      *
-     * @param set
+     * @param {Set} set - The Set entity to remove.
+     * @returns {Promise<void>} A promise that resolves when the Set entity is removed.
      */
     delete(set: Set): Promise<void>;
 }

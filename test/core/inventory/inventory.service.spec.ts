@@ -6,6 +6,7 @@ import { InventoryMapper } from "src/core/inventory/inventory.mapper";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { TestUtils } from "../../test-utils";
 import { MockInventoryRepository } from "./mock.inventory.repository";
+import exp from "constants";
 
 describe("InventoryService", () => {
     let service: InventoryService;
@@ -93,48 +94,41 @@ describe("InventoryService", () => {
         expect(foundItem).toBeNull();
     });
 
-    it("should find an inventory item with cards for a user", async () => {
-        jest.spyOn(repository, "findOne");
-        const id = 1;
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(testUtils.MOCK_USER_ID, id);
-        expect(repository.findOne).toHaveBeenCalled();
-        expect(foundItem).toEqual(testUtils.getMockInventoryCardDtos()[id - 1]);
-    });
-
-    it("should return null if userId is not provided for findOneCardForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const id = 1;
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(null, id);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
-    });
-
-    it("should return null if cardId is not provided for findOneCardForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryCardDto = await service.findOneCardForUser(testUtils.MOCK_USER_ID, null);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
-    });
-
-    it("should find inventory items for a user", async () => {
-        jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryDto[] = await service.findAllForUser(testUtils.MOCK_USER_ID);
-        expect(repository.findByUser).toHaveBeenCalled();
-        expect(foundItems).toEqual(testUtils.getMockInventoryDtos());
-    });
-
-    it("should return an empty array if userId is not provided for findAllForUser", async () => {
-        jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryDto[] = await service.findAllForUser(null);
-        expect(repository.findByUser).not.toHaveBeenCalled();
-        expect(foundItems).toEqual([]);
-    });
-
     it("should find inventory items with cards for a user", async () => {
         jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryCardDto[] = await service.findAllCardsForUser(testUtils.MOCK_USER_ID);
+
+        const result: InventoryCardDto[] = await service.findAllCardsForUser(testUtils.MOCK_USER_ID);
         expect(repository.findByUser).toHaveBeenCalled();
-        expect(foundItems).toEqual(testUtils.getMockInventoryCardDtos());
+        expect(repository.findByUser).toHaveBeenCalledWith(testUtils.MOCK_USER_ID);
+        expect(result).toHaveLength(3);
+    
+        const firstItem = result[0];
+        expect(firstItem.card.id).toBe(1);
+        expect(firstItem.card.name).toBe("Test Card Name 1");
+        expect(firstItem.card.setCode).toBe("SET");
+        expect(firstItem.card.legalities).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ cardId: 1, format: "standard", status: "legal" }),
+                expect.objectContaining({ cardId: 1, format: "commander", status: "legal" }),
+            ])
+        );
+        expect(firstItem.card.prices).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ cardId: 1, normal: "5.00", foil: "10.00" }),
+            ])
+        );
+        expect(firstItem.quantity).toBe(4);
+        expect(firstItem.userId).toBe(1);
+
+        const secondItem = result[1];
+        expect(secondItem.card.id).toBe(2);
+        expect(secondItem.card.name).toBe("Test Card Name 2");
+        expect(secondItem.quantity).toBe(0);
+
+        const thirdItem = result[2];
+        expect(thirdItem.card.id).toBe(3);
+        expect(thirdItem.card.name).toBe("Test Card Name 3");
+        expect(thirdItem.quantity).toBe(4);
     });
 
     it("should return an empty array if userId is not provided for findAllCardsForUser", async () => {

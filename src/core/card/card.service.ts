@@ -1,8 +1,11 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Format, LegalityStatus } from "src/core/card/api/legality.dto";
-import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardDto } from "src/core/card/api/card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CardImgType } from "./api/card.img.type.enum";
 import { CardRepositoryPort } from "./api/card.repository.port";
 import { CardServicePort } from "./api/card.service.port";
+import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";
@@ -52,10 +55,8 @@ export class CardService implements CardServicePort {
             const foundCards: Card[] = await this.repository.findAllInSet(setCode);
             return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
         } catch (error) {
-            const msg = `Error finding cards in set ${setCode}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding cards in set ${setCode}: ${error.message}`);
         }
     }
 
@@ -71,10 +72,8 @@ export class CardService implements CardServicePort {
             const foundCard: Card = await this.repository.findById(id);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with id ${id}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with id ${id}: ${error.message}`);
         }
     }
 
@@ -88,23 +87,18 @@ export class CardService implements CardServicePort {
             const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with setCode ${setCode} and number ${number}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with setCode ${setCode} and number ${number}: ${error.message}`);
         }
     }
 
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
-        this.LOGGER.debug(`findByUuid ${uuid}`);
         try {
             const foundCard: Card = await this.repository.findByUuid(uuid);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
-            const msg = `Error finding card with uuid ${uuid}: ${error.message}`;
-            this.LOGGER.error(msg);
             // Do not confuse caller with empty result if error occurs
-            throw new Error(msg);
+            throw new Error(`Error finding card with uuid ${uuid}: ${error.message}`);
         }
     }
 

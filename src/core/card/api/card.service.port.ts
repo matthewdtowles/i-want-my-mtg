@@ -1,4 +1,6 @@
-import { CardDto, CardImgType, CreateCardDto, UpdateCardDto } from "../api/card.dto";
+import { CardImgType } from "src/core/card/api/card.img.type.enum";
+import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { CardDto } from "../api/card.dto";
 
 export const CardServicePort = "CardServicePort";
 

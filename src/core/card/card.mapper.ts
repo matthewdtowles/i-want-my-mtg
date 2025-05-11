@@ -1,17 +1,21 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { CardDto, CardImgType, CardRarity, CreateCardDto, UpdateCardDto } from "./api/card.dto";
+import { CardDto } from "./api/card.dto";
+import { CardImgType } from "./api/card.img.type.enum";
+import { CardRarity } from "./api/card.rarity.enum";
+import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 
 @Injectable()
 export class CardMapper {
 
     private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
-    private rarityCache: { [key: string]: string } = {};
 
 
     dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
@@ -51,7 +55,15 @@ export class CardMapper {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            rarity: this.rarityForView(card.rarity),
+            prices: Array.isArray(card?.prices) ? card.prices.map(p => (
+                {
+                    cardId: card.id,
+                    normal: this.toDollar(p.normal),
+                    foil: this.toDollar(p.foil),
+                    date: p.date,
+                })
+            ) : [],
+            rarity: card.rarity,
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
             type: card.type,
@@ -144,19 +156,7 @@ export class CardMapper {
         };
     }
 
-    private rarityForView(word: string): string {
-        if (!word) {
-            return word;
-        }
-        if (this.rarityCache[word]) {
-            return this.rarityCache[word];
-        }
-        const rarity = word.charAt(0).toUpperCase() + word.slice(1);
-        this.rarityCache[word] = rarity;
-        return rarity;
-    }
-
-    private manaForView(manaCost: string): string[] {
+    private manaForView(manaCost: string): string[] | null {
         return typeof manaCost === "string" ? manaCost
             .toLowerCase()
             .trim()
@@ -212,5 +212,10 @@ export class CardMapper {
             return status as LegalityStatus;
         }
         throw new Error(`Invalid status value: ${status}`);
+    }
+
+    private toDollar(amount: any): string {
+        const number = parseFloat(amount);
+        return !isNaN(number) ? number.toFixed(2) : "0.00";
     }
 }

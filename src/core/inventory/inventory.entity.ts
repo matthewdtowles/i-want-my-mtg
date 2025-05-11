@@ -4,10 +4,10 @@ import { Card } from "../card/card.entity";
 
 @Entity()
 export class Inventory {
-    @PrimaryColumn()
+    @PrimaryColumn({ name: "card_id" })
     cardId: number;
 
-    @PrimaryColumn()
+    @PrimaryColumn({ name: "user_id" })
     userId: number;
 
     @Column({ type: "int", default: 1 })
@@ -15,7 +15,7 @@ export class Inventory {
 
     @ManyToOne(() => Card, { onDelete: "CASCADE" })
     @JoinColumn({
-        name: "cardId",
+        name: "card_id",
         referencedColumnName: "id",
         foreignKeyConstraintName: "FK_Inventory_Card",
     })
@@ -23,7 +23,7 @@ export class Inventory {
 
     @ManyToOne(() => User, { onDelete: "CASCADE" })
     @JoinColumn({
-        name: "userId",
+        name: "user_id",
         referencedColumnName: "id",
         foreignKeyConstraintName: "FK_Inventory_User",
     })

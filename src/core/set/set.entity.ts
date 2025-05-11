@@ -1,12 +1,12 @@
+import { Card } from "src/core/card/card.entity";
 import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
-import { Card } from "../card/card.entity";
 
 @Entity()
 export class Set {
     @PrimaryColumn()
     code: string;
 
-    @Column()
+    @Column({ name: "base_size" })
     baseSize: number;
 
     @Column({ nullable: true })
@@ -15,16 +15,16 @@ export class Set {
     @OneToMany(() => Card, (card) => card.set)
     cards: Card[];
 
-    @Column()
+    @Column({ name: "keyrune_code" })
     keyruneCode: string;
 
     @Column()
     name: string;
 
-    @Column({ nullable: true })
+    @Column({ name: "parent_code", nullable: true })
     parentCode?: string;
 
-    @Column({ type: "date" })
+    @Column({ name: "release_date", type: "date" })
     releaseDate: string;
 
     @Column()

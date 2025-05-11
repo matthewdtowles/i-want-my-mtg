@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
+import { Format } from "src/core/card/api/format.enum";
 import { Card } from "src/core/card/card.entity";
-import { Repository } from "typeorm";
 import { Legality } from "src/core/card/legality.entity";
-import { Format } from "src/core/card/api/legality.dto";
+import { In, Repository } from "typeorm";
 
 
 @Injectable()
@@ -27,7 +27,7 @@ export class CardRepository implements CardRepositoryPort {
             where: {
                 set: { code: code, },
             },
-            relations: ["legalities"],
+            relations: ["legalities", "prices"],
         })) ?? [];
     }
 
@@ -35,15 +35,14 @@ export class CardRepository implements CardRepositoryPort {
         this.LOGGER.debug(`Find all cards with name ${_name}`);
         return (await this.cardRepository.find({
             where: { name: _name, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "prices"],
         })) ?? []
     }
 
     async findById(_id: number): Promise<Card | null> {
-        this.LOGGER.debug(`Find card by id ${_id}`);
         return await this.cardRepository.findOne({
             where: { id: _id, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "prices"],
         });
     }
 
@@ -53,15 +52,30 @@ export class CardRepository implements CardRepositoryPort {
                 set: { code: code, },
                 number: _number,
             },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "prices"],
         });
     }
 
     async findByUuid(_uuid: string): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
-            relations: ["set", "legalities"],
+            relations: ["set", "legalities", "prices"],
         });
+    }
+
+    async findByUuids(_uuids: string[]): Promise<Card[]> {
+        return await this.cardRepository.find({
+            where: { uuid: In(_uuids), },
+            select: ["id", "uuid"],
+        });
+    }
+
+    async findAllIds(): Promise<number[]> {
+        return await this.cardRepository
+            .createQueryBuilder("card")
+            .select("card.id", "id")
+            .getRawMany()
+            .then((row) => row.map((r) => r.id));
     }
 
     async delete(card: Card): Promise<void> {

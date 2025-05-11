@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { CardRarity } from "src/core/card/api/card.dto";
+import { Price } from "src/core/price/price.entity";
 import { Set } from "src/core/set/set.entity";
 import {
     Column,
@@ -7,8 +7,10 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
-    PrimaryGeneratedColumn,
+    OneToOne,
+    PrimaryGeneratedColumn
 } from "typeorm";
+import { CardRarity } from "./api/card.rarity.enum";
 import { Legality } from "./legality.entity";
 
 @Entity()
@@ -20,18 +22,18 @@ export class Card {
     @IsString()
     artist?: string;
 
-    @Column()
+    @Column({ name: "img_src" })
     @IsString()
     @IsNotEmpty()
     imgSrc: string;
 
-    @Column({ default: false })
+    @Column({ default: false, name: "is_reserved" })
     isReserved: boolean;
 
     @OneToMany(() => Legality, legality => legality.card, { cascade: true })
     legalities: Legality[];
 
-    @Column({ nullable: true })
+    @Column({ name: "mana_cost", nullable: true })
     manaCost?: string;
 
     @Column()
@@ -44,12 +46,12 @@ export class Card {
     @IsNotEmpty()
     number: string;
 
-    @Column({
-        nullable: true,
-        type: "text",
-    })
+    @Column({ name: "oracle_text", nullable: true, type: "text" })
     @IsString()
     oracleText?: string;
+
+    @OneToMany(() => Price, (price) => price.card, { cascade: true })
+    prices: Price[];
 
     @Column({
         type: "enum",
@@ -60,14 +62,10 @@ export class Card {
     rarity: CardRarity;
 
     @ManyToOne(() => Set, (set) => set.cards)
-    @JoinColumn({
-        name: "setCode",
-        referencedColumnName: "code",
-        foreignKeyConstraintName: "FK_Card_Set",
-    })
+    @JoinColumn({ name: "set_code", referencedColumnName: "code" })
     set: Set;
 
-    @Column()
+    @Column({ name: "set_code" })
     @IsString()
     @IsNotEmpty()
     setCode: string;
@@ -77,7 +75,7 @@ export class Card {
     @IsNotEmpty()
     type: string;
 
-    @Column()
+    @Column({ unique: true })
     @IsUUID()
     @IsNotEmpty()
     uuid: string;

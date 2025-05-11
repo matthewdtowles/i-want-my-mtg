@@ -1,21 +1,23 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto, CardRarity, CreateCardDto, UpdateCardDto } from "src/core/card/api/card.dto";
-import { Format, LegalityDto, LegalityStatus } from "src/core/card/api/legality.dto";
+import { CardDto } from "src/core/card/api/card.dto";
+import { CardRarity } from "src/core/card/api/card.rarity.enum";
+import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { Format } from "src/core/card/api/format.enum";
+import { LegalityDto } from "src/core/card/api/legality.dto";
+import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { PriceDto } from "src/core/price/api/price.dto";
+import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { CreateUserDto, UserDto } from "src/core/user/api/user.dto";
-import { User } from "src/core/user/user.entity";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
     readonly MOCK_SET_NAME = "Test Set";
     readonly MOCK_CARD_NAME = "Test Card Name";
-    readonly MOCK_SET_URL = "sets/set";
     readonly MOCK_ROOT_SCRYFALL_ID = "abc123def456";
     readonly IMG_SRC_BASE = "https://cards.scryfall.io";
     readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
@@ -25,6 +27,7 @@ export class TestUtils {
     readonly MOCK_USER_EMAIL = "test-email@iwmmtg.com";
     readonly MOCK_USER_NAME = "test-user";
     readonly MOCK_PASSWORD = "password";
+    readonly MOCK_DATE = new Date("2022-01-01");
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
@@ -52,15 +55,23 @@ export class TestUtils {
     }
 
     getMockCards(setCode: string): Card[] {
-        return this.getMockCreateCardDtos(setCode).map((dto, i) => ({
-            ...dto,
-            id: i + 1,
-            manaCost: dto.manaCost,
-            set: this.getMockSet(setCode),
-            setCode: setCode,
-            legalities: this.getMockLegalities(i + 1),
-            rarity: this.convertToCardRarity(dto.rarity),
-        }));
+        return this.getMockCreateCardDtos(setCode).map((dto, i) => {
+            const card = new Card();
+            card.id = i + 1;
+            card.artist = dto.artist;
+            card.imgSrc = dto.imgSrc;
+            card.isReserved = dto.isReserved;
+            card.legalities = this.getMockLegalities(i + 1);
+            card.manaCost = dto.manaCost;
+            card.name = dto.name;
+            card.number = dto.number;
+            card.oracleText = dto.oracleText;
+            card.prices = this.getMockPriceEntities();
+            card.set = this.getMockSet(setCode);
+            card.setCode = setCode;
+            card.rarity = this.convertToCardRarity(dto.rarity);
+            return card;
+        });
     }
 
     getMockCardDtos(setCode: string): CardDto[] {
@@ -111,16 +122,30 @@ export class TestUtils {
         }));
     }
 
-    getMockSetDtos(): SetDto[] {
-        return this.getMockSets().map((set) => this.mapSetEntityToDto(set));
+    getMockCardEntity(): Card {
+        return this.getMockCardEntities()[0];
+    }
+
+    getMockCardEntities(): Card[] {
+        return this.getMockCreateCardDtos(this.MOCK_SET_CODE).map((dto, i) => {
+            const card = new Card();
+            card.id = i + 1;
+            card.artist = dto.artist;
+            card.imgSrc = dto.imgSrc;
+            card.isReserved = dto.isReserved;
+            card.legalities = this.getMockLegalities(i + 1);
+            card.manaCost = dto.manaCost;
+            card.name = dto.name;
+            card.number = dto.number;
+            card.oracleText = dto.oracleText;
+            card.prices = this.getMockPriceEntities();
+            card.setCode = this.MOCK_SET_CODE;
+            return card;
+        });
     }
 
     getMockSetDto(setCode: string): SetDto {
         return this.mapSetEntityToDto(this.getMockSet(setCode));
-    }
-
-    getMockSetDtoWithCards(setCode: string): SetDto {
-        return this.mapSetEntityToDto(this.getMockSetWithCards(setCode));
     }
 
     getMockCreateInventoryDtos(): InventoryDto[] {
@@ -168,15 +193,6 @@ export class TestUtils {
         }));
     }
 
-    getMockInventoryCardAggregateDtos(): InventoryCardAggregateDto[] {
-        const inventory = this.getMockInventoryCardDtos();
-        return this.getMockCardDtos(this.MOCK_SET_CODE).map((card: CardDto) => ({
-            ...card,
-            id: card.id,
-            quantity: inventory.find((item: InventoryCardDto) => item.card.id === card.id).quantity ?? 0,
-        }));
-    }
-
     entityToInventoryCardDto(inventory: Inventory): InventoryCardDto {
         return {
             card: inventory.card ? this.mapCardEntityToDto(inventory.card, "small") : undefined,
@@ -187,38 +203,6 @@ export class TestUtils {
 
     entityListToInventoryCardDtos(inventoryList: Inventory[]): InventoryCardDto[] {
         return inventoryList.map(item => this.entityToInventoryCardDto(item));
-    }
-
-    getMockCreateUserDto(): CreateUserDto {
-        const user: CreateUserDto = {
-            email: this.MOCK_USER_EMAIL,
-            name: this.MOCK_USER_NAME,
-            password: this.MOCK_PASSWORD,
-        };
-        return user;
-    }
-
-    getMockUser(): User {
-        const userDto = this.getMockCreateUserDto();
-        const user: User = {
-            id: this.MOCK_USER_ID,
-            email: userDto.email,
-            name: userDto.name,
-            password: this.MOCK_PASSWORD,
-            role: UserRole.User,
-        };
-        return user;
-    }
-
-    getMockUserDto(): UserDto {
-        const user: User = this.getMockUser();
-        const userDto: UserDto = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
-        };
-        return userDto;
     }
 
     getMockLegalityDto(cardId: number, format: Format, status: LegalityStatus): LegalityDto {
@@ -235,32 +219,6 @@ export class TestUtils {
             format,
             status: LegalityStatus.Legal
         }));
-    }
-
-
-    mapCreateCardDtosToEntities(createCardDtos: CreateCardDto[]): Card[] {
-        return createCardDtos.map((dto, i) => this.mapCreateCardDtoToEntity(dto, i + 1));
-    }
-
-    mapCreateCardDtoToEntity(createCardDto: CreateCardDto, _id: number): Card {
-        return {
-            id: _id,
-            artist: createCardDto.artist,
-            imgSrc: createCardDto.imgSrc,
-            isReserved: createCardDto.isReserved,
-            legalities: createCardDto.legalities.map((legality) =>
-                this.mapLegalityDtoToEntity(legality)
-            ),
-            manaCost: createCardDto.manaCost,
-            name: createCardDto.name,
-            number: createCardDto.number,
-            oracleText: createCardDto.oracleText,
-            rarity: this.convertToCardRarity(createCardDto.rarity),
-            setCode: createCardDto.setCode,
-            type: createCardDto.type,
-            uuid: createCardDto.uuid,
-            set: this.getMockSet(createCardDto.setCode),
-        };
     }
 
     mapCardEntityToDto(card: Card, imgSize: string): CardDto {
@@ -280,7 +238,8 @@ export class TestUtils {
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            rarity: card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1),
+            prices: this.mapPriceEntitiesToDtos(card.prices),
+            rarity: card.rarity,
             setCode: card.set.code,
             set: {
                 code: "SET",
@@ -296,10 +255,6 @@ export class TestUtils {
             type: card.type,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
         };
-    }
-
-    mapCardEntitiesToDtos(cards: Card[]): CardDto[] {
-        return cards.map((card) => this.mapCardEntityToDto(card, "small"));
     }
 
     mapSetEntityToDto(set: Set): SetDto {
@@ -321,13 +276,47 @@ export class TestUtils {
         return sets.map((set) => this.mapSetEntityToDto(set));
     }
 
-    mapLegalityDtoToEntity(legalityDto: LegalityDto): Legality {
+    getMockPriceDtos(): PriceDto[] {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
+            cardId: i + 1,
+            foil: this.toDollar(i + 10),
+            normal: this.toDollar(i + 5),
+            date: this.MOCK_DATE,
+        }));
+    }
+
+    getMockPriceEntities(): Price[] {
+        return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => {
+            const price = new Price();
+            const card: Card = new Card();
+            card.id = i + 1;
+            price.card = card;
+            price.foil = i + 10;
+            price.normal = i + 5;
+            price.date = this.MOCK_DATE;
+            return price;
+        });
+    }
+
+    mapPriceDtoToEntity(dto: PriceDto): Price {
+        const price = new Price();
+        price.foil = parseFloat(dto.foil);
+        price.normal = parseFloat(dto.normal);
+        price.date = dto.date;
+        return price;
+    }
+
+    mapPriceEntityToDto(entity: Price): PriceDto {
         return {
-            cardId: legalityDto.cardId,
-            format: this.convertToFormat(legalityDto.format),
-            status: this.convertToLegalityStatus(legalityDto.status),
-            card: undefined,
+            cardId: entity.card.id,
+            foil: this.toDollar(entity.foil),
+            normal: this.toDollar(entity.normal),
+            date: entity.date,
         };
+    }
+
+    mapPriceEntitiesToDtos(entities: Price[]): PriceDto[] {
+        return entities.map((entity) => this.mapPriceEntityToDto(entity));
     }
 
     private manaCostToArray(manaCost: string | undefined): string[] | undefined {
@@ -341,17 +330,8 @@ export class TestUtils {
         return null;
     }
 
-    private convertToFormat(format: string): Format {
-        if (Object.values(Format).includes(format.toLowerCase() as Format)) {
-            return format as Format;
-        }
-        return null;
-    }
-
-    private convertToLegalityStatus(status: string): LegalityStatus {
-        if (Object.values(LegalityStatus).includes(status.toLowerCase() as LegalityStatus)) {
-            return status as LegalityStatus;
-        }
-        return null;
+    private toDollar(amount: any): string {
+        const number = parseFloat(amount);
+        return !isNaN(number) ? number.toFixed(2) : "0.00";
     }
 }

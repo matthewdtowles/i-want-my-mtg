@@ -3,4 +3,7 @@ import { CardSet } from "./cardSet.dto";
 import { Meta } from "./meta.dto";
 
 @Injectable()
-export class ModernFile { meta: Meta; data: Record<string, CardSet>; }
+export class ModernFile {
+    meta: Meta;
+    data: Record<string, CardSet>;
+}

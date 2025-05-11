@@ -18,7 +18,7 @@
             </td>
             <td class="py-2">{{>manaCost}}</td>
             <td class="py-2">{{this.rarity}}</td>
-            <td class="py-2 pr-2">${{#if this.price}}{{this.price}}{{else}}0.00{{/if}}</td>
+            <td class="py-2 pr-2">{{>price card=this}}</td>
         </tr>
         {{/each}}
     </tbody>

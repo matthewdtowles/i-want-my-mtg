@@ -52,8 +52,19 @@ export class MockCardRepository implements CardRepositoryPort {
         return card;
     }
 
+    async findByUuids(uuids: string[]): Promise<Card[]> {
+        if (!uuids || uuids.length === 0) {
+            throw new Error("No UUIDs provided");
+        }
+        return this.cards.filter(card => uuids.includes(card.uuid));
+    }
+
     async findAllWithName(name: string): Promise<Card[]> {
         return this.cards.filter(card => card.name === name);
+    }
+
+    async findAllIds(): Promise<number[]> {
+        return this.cards.map(card => card.id);
     }
 
     async delete(card: Card): Promise<void> {

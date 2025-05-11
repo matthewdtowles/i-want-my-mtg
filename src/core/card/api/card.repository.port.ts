@@ -1,4 +1,4 @@
-import { Format } from "src/core/card/api/legality.dto";
+import { Format } from "src/core/card/api/format.enum";
 import { Card } from "../card.entity";
 import { Legality } from "../legality.entity";
 
@@ -46,6 +46,18 @@ export interface CardRepositoryPort {
      * @returns card entity with uuid, null if not found
      */
     findByUuid(uuid: string): Promise<Card | null>;
+
+    /**
+     * 
+     * @param uuids
+     * @returns card entities with uuids
+     */
+    findByUuids(uuids: string[]): Promise<Card[]>;
+
+    /**
+     * @returns all card ids
+     */
+    findAllIds(): Promise<number[]>;
 
     /**
      * Remove card entity

@@ -47,17 +47,20 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
 
     async ingestSetCards(code: string): Promise<void> {
         this.LOGGER.debug(`ingest set cards for set code: ${code}`);
+        let totalSaved: number = 0;
         const buffer: CreateCardDto[] = [];
         for await (const cardDto of this.ingestionService.fetchSetCards(code)) {
             buffer.push(cardDto);
             if (buffer.length >= this.BUF_SIZE) {
+                totalSaved += buffer.length;
                 await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
             }
         }
         if (buffer.length > 0) {
+            totalSaved += buffer.length;
             await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
         }
-        this.LOGGER.log(`Saved cards in set ${code}`);
+        this.LOGGER.log(`Saved ${totalSaved} cards in set ${code}`);
     }
 
     async ingestTodayPrices(): Promise<void> {

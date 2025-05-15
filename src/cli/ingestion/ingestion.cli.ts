@@ -77,7 +77,7 @@ export class IngestionCli {
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`ingestTodayPrices invoked`);
         await this.orchestrator.ingestTodayPrices();
-        await this.orchestrator.fillMissingPrices();
+        // await this.orchestrator.fillMissingPrices();
         this.LOGGER.log(`Today prices ingestion completed successfully.`);
     }
 

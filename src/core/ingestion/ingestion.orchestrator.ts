@@ -1,19 +1,19 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { PriceServicePort } from "src/core/price/api/price.service.port";
-import { CardDto } from "../card/api/card.dto";
+import { Timing } from "src/shared/decorators/timing.decorator";
 import { CardServicePort } from "../card/api/card.service.port";
 import { CreateCardDto } from "../card/api/create-card.dto";
 import { CreateSetDto, SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { IngestionOrchestratorPort } from "./api/ingestion.orchestrator.port";
 import { IngestionServicePort } from "./api/ingestion.service.port";
-import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
 export class IngestionOrchestrator implements IngestionOrchestratorPort {
     private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
-    private readonly BUF_SIZE: number = 100;
+    private readonly PRICE_BUF_SIZE: number = 1000;
+    private readonly CARD_BUF_SIZE: number = 10;
 
     constructor(
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
@@ -55,7 +55,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         const buffer: CreateCardDto[] = [];
         for await (const cardDto of this.ingestionService.fetchSetCards(code)) {
             buffer.push(cardDto);
-            if (buffer.length >= this.BUF_SIZE) {
+            if (buffer.length >= this.CARD_BUF_SIZE) {
                 totalSaved += buffer.length;
                 await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
             }
@@ -73,7 +73,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         const buffer: CreatePriceDto[] = [];
         for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
             buffer.push(priceDto);
-            if (buffer.length >= this.BUF_SIZE) {
+            if (buffer.length >= this.PRICE_BUF_SIZE) {
                 await this.flushPriceBuffer(buffer);
             }
         }

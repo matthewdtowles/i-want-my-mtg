@@ -8,6 +8,7 @@ import { CreateSetDto, SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { IngestionOrchestratorPort } from "./api/ingestion.orchestrator.port";
 import { IngestionServicePort } from "./api/ingestion.service.port";
+import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
 export class IngestionOrchestrator implements IngestionOrchestratorPort {
@@ -23,6 +24,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.debug("Initialized");
     }
 
+    @Timing()
     async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingest meta data for all sets`);
         const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
@@ -30,6 +32,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
     }
 
+    @Timing()
     async ingestAllSetCards(): Promise<void> {
         this.LOGGER.debug(`ingest all cards for all sets`);
         const missedSets: string[] = [];
@@ -45,6 +48,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Missed Sets: ${JSON.stringify(missedSets)}`);
     }
 
+    @Timing()
     async ingestSetCards(code: string): Promise<void> {
         this.LOGGER.debug(`ingest set cards for set code: ${code}`);
         let totalSaved: number = 0;
@@ -63,6 +67,7 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Saved ${totalSaved} cards in set ${code}`);
     }
 
+    @Timing()
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`Ingest prices for today.`);
         const buffer: CreatePriceDto[] = [];
@@ -78,6 +83,9 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         this.LOGGER.log(`Price ingestion completed.`);
     }
 
+    // TODO: test ingestion without using fillMissingPrices since we should not need it since 
+    // moving to one-to-many relationship
+    @Timing()
     async fillMissingPrices(): Promise<void> {
         this.LOGGER.debug(`Fill missing prices for today.`);
         const date: string = this.todayDateStr();

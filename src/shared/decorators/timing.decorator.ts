@@ -5,8 +5,12 @@ export function Timing(): MethodDecorator {
             const start = Date.now();
             console.log(`[${String(propertyKey)}] Execution started...`);
             const result = await originalMethod.apply(this, args);
-            const end = Date.now();
-            console.log(`[${String(propertyKey)}] Execution finished. Time taken: ${end - start}ms`);
+            const duration = Date.now() - start;
+            if (duration > 500) {
+                console.warn(`[${String(propertyKey)}] Execution took ${duration}ms`);
+            } else {
+                console.debug(`[${String(propertyKey)}] Execution took ${duration}ms`);
+            }
             return result;
         };
         return descriptor;

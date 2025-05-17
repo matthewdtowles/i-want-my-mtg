@@ -74,25 +74,16 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
         for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
             buffer.push(priceDto);
             if (buffer.length >= this.PRICE_BUF_SIZE) {
-                await this.flushPriceBuffer(buffer);
+                await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
             }
         }
         if (buffer.length > 0) {
-            await this.flushPriceBuffer(buffer);
+            await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
         }
         this.LOGGER.log(`Price ingestion completed.`);
     }
 
-    // TODO: test ingestion without using fillMissingPrices since we should not need it since 
-    // moving to one-to-many relationship
     @Timing()
-    async fillMissingPrices(): Promise<void> {
-        this.LOGGER.debug(`Fill missing prices for today.`);
-        const date: string = this.todayDateStr();
-        await this.priceService.fillMissingPrices(date);
-        this.LOGGER.log(`Missing prices filled for date: ${date}`);
-    }
-
     private async flushBuffer<T>(buffer: T[], saveMethod: (buffer: T[]) => Promise<void>): Promise<void> {
         try {
             await saveMethod(buffer);
@@ -102,31 +93,5 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
             // Clear the buffer after processing
             buffer.length = 0;
         }
-    }
-
-    private async flushPriceBuffer(buffer: CreatePriceDto[]): Promise<void> {
-        try {
-            await this.priceService.save(buffer);
-        } catch (error) {
-            this.LOGGER.error(`Failed to save buffer: ${error}`);
-        } finally {
-            // Clear the buffer after processing
-            buffer.length = 0;
-        }
-    }
-
-    // private async flushCardBuffer(buffer: CreateCardDto[]): Promise<void> {
-    //     try {
-    //         await this.cardService.save(buffer);
-    //     } catch (error) {
-    //         this.LOGGER.error(`Failed to save buffer: ${error}`);
-    //     } finally {
-    //         // Clear the buffer after processing
-    //         buffer.length = 0;
-    //     }
-    // }
-
-    private todayDateStr(): string {
-        return new Date().toISOString().split("T")[0];
     }
 }

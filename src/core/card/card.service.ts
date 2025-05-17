@@ -9,6 +9,7 @@ import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";
+import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
 export class CardService implements CardServicePort {
@@ -21,6 +22,7 @@ export class CardService implements CardServicePort {
     ) { }
 
 
+    @Timing()
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
         let savedDtos: CardDto[] = [];
@@ -49,6 +51,7 @@ export class CardService implements CardServicePort {
         return savedDtos;
     }
 
+    @Timing()
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllInSet ${setCode}`);
         try {
@@ -60,12 +63,14 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findAllWithName(name: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllWithName ${name}`);
         const foundCards: Card[] = await this.repository.findAllWithName(name);
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
+    @Timing()
     async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
         try {
@@ -77,6 +82,7 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findBySetCodeAndNumber(
         setCode: string,
         number: string,
@@ -92,6 +98,7 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         try {
             const foundCard: Card = await this.repository.findByUuid(uuid);
@@ -102,22 +109,27 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     private isValidCard(card: Card): boolean {
         return card !== null && card !== undefined;
     }
 
+    @Timing()
     private isValidLegality(legality: Legality): boolean {
         return legality && this.isValidFormat(legality.format) && this.isValidStatus(legality.status);
     }
 
+    @Timing()
     private isValidFormat(format: string): boolean {
         return Object.values(Format).includes(format?.toLowerCase() as Format);
     }
 
+    @Timing()
     private isValidStatus(status: string): boolean {
         return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
     }
 
+    @Timing()
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map(legality => {
             legality.cardId = card.id;
@@ -127,12 +139,14 @@ export class CardService implements CardServicePort {
         });
     }
 
+    @Timing()
     private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
         return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
             !newLegalities.some(l => l.format === existingLegality.format)
         ) : [];
     }
 
+    @Timing()
     private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
         const legalityDeletionPromises = legalitiesToDelete?.map((l: Legality) => {
             this.repository.deleteLegality(l.cardId, l.format)

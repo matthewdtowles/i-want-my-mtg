@@ -28,8 +28,4 @@ export interface IngestionOrchestratorPort {
      */
     ingestTodayPrices(): Promise<void>;
 
-    /**
-     * Fills missing prices for cards with NULL normal and foil prices.
-     */
-    fillMissingPrices(): Promise<void>;
 }

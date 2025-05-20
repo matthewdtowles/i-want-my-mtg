@@ -28,8 +28,9 @@ export class CardService implements CardServicePort {
         let savedDtos: CardDto[] = [];
         try {
             const cardsToSave: Card[] = [];
+            const relations: string[] = ["set", "legalities"];
             for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, ["legalities"]);
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (!this.isValidCard(card)) {
                     continue;
@@ -41,9 +42,11 @@ export class CardService implements CardServicePort {
                 cardsToSave.push(card);
             }
             const savedCards: Card[] = await this.repository.save(cardsToSave);
-            this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
-                savedDtos.push(dto);
-            });
+            if (Array.isArray(savedCards) && savedCards.length === 0) {
+                this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
+                    savedDtos.push(dto);
+                });
+            }
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
@@ -82,6 +85,7 @@ export class CardService implements CardServicePort {
         }
     }
 
+    // FIXME: THIS IS THE BOTTLENECK ON INGESTION - each lookup is ~80ms PER CARD!
     @Timing()
     async findBySetCodeAndNumber(
         setCode: string,
@@ -89,8 +93,9 @@ export class CardService implements CardServicePort {
         imgType: CardImgType = CardImgType.NORMAL
     ): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
+        const relations: string[] = ["set", "legalities", "prices"];
         try {
-            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
+            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number, relations);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
             // Do not confuse caller with empty result if error occurs
@@ -109,27 +114,22 @@ export class CardService implements CardServicePort {
         }
     }
 
-    @Timing()
     private isValidCard(card: Card): boolean {
         return card !== null && card !== undefined;
     }
 
-    @Timing()
     private isValidLegality(legality: Legality): boolean {
         return legality && this.isValidFormat(legality.format) && this.isValidStatus(legality.status);
     }
 
-    @Timing()
     private isValidFormat(format: string): boolean {
         return Object.values(Format).includes(format?.toLowerCase() as Format);
     }
 
-    @Timing()
     private isValidStatus(status: string): boolean {
         return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
     }
 
-    @Timing()
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map(legality => {
             legality.cardId = card.id;
@@ -139,18 +139,21 @@ export class CardService implements CardServicePort {
         });
     }
 
-    @Timing()
     private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
-        return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
-            !newLegalities.some(l => l.format === existingLegality.format)
-        ) : [];
+        if (Array.isArray(newLegalities)) {
+            return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
+                !newLegalities.some(l => l.format === existingLegality.format)
+            ) : [];
+        }
+        return [];
     }
 
-    @Timing()
     private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
-        const legalityDeletionPromises = legalitiesToDelete?.map((l: Legality) => {
-            this.repository.deleteLegality(l.cardId, l.format)
-        });
-        await Promise.all(legalityDeletionPromises);
+        if (Array.isArray(legalitiesToDelete)) {
+            const legalityDeletionPromises = legalitiesToDelete.map((l: Legality) => {
+                return this.repository.deleteLegality(l.cardId, l.format);
+            });
+            await Promise.all(legalityDeletionPromises);
+        }
     }
 }

@@ -8,6 +8,7 @@ import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
+import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -71,6 +72,7 @@ export class AggregatorService implements AggregatorServicePort {
         return foundCard;
     }
 
+    @Timing()
     async findInventoryCardBySetNumber(
         setCode: string,
         cardNumber: string,

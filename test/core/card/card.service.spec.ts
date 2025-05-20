@@ -218,11 +218,12 @@ describe("CardService", () => {
     it("should throw error with message if card lookup error occurs with findBySetCodeAndNumber", async () => {
         const setCode = "INVALID_SET";
         const number = "999";
+        const relations: string[] = ["set", "legalities", "prices"];
         jest.spyOn(repository, "findBySetCodeAndNumber").mockRejectedValueOnce(new Error("Repository error"));
 
         await expect(service.findBySetCodeAndNumber(setCode, number))
             .rejects.toThrow(`Error finding card with setCode ${setCode} and number ${number}: Repository error`);
-        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number);
+        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number, relations);
     });
 
     it("should throw error with message if card lookup error occurs with findByUuid", async () => {

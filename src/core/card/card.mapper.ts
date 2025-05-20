@@ -10,18 +10,13 @@ import { CardDto } from "./api/card.dto";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRarity } from "./api/card.rarity.enum";
 import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 @Injectable()
 export class CardMapper {
 
     private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
-
-
-    dtosToEntities(cardDtos: CreateCardDto[] | UpdateCardDto[]): Card[] {
-        this.LOGGER.debug(`dtosToEntities`);
-        return cardDtos.map((c: CreateCardDto | UpdateCardDto) => this.dtoToEntity(c));
-    }
 
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
         const card: Card = new Card();
@@ -58,8 +53,8 @@ export class CardMapper {
             prices: Array.isArray(card?.prices) ? card.prices.map(p => (
                 {
                     cardId: card.id,
-                    normal: this.toDollar(p.normal),
-                    foil: this.toDollar(p.foil),
+                    normal: toDollar(p.normal),
+                    foil: toDollar(p.foil),
                     date: p.date,
                 })
             ) : [],
@@ -212,10 +207,5 @@ export class CardMapper {
             return status as LegalityStatus;
         }
         throw new Error(`Invalid status value: ${status}`);
-    }
-
-    private toDollar(amount: any): string {
-        const number = parseFloat(amount);
-        return !isNaN(number) ? number.toFixed(2) : "0.00";
     }
 }

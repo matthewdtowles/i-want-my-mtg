@@ -51,14 +51,19 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
+    // FIXME: 38 - 60ms execution time
     @Timing()
-    async findBySetCodeAndNumber(code: string, _number: string): Promise<Card | null> {
+    async findBySetCodeAndNumber(
+        _code: string,
+        _number: string,
+        _relations: string[] = ["set", "legalities", "price"]
+    ): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: {
-                set: { code: code, },
+                set: { code: _code, },
                 number: _number,
             },
-            relations: ["set", "legalities", "prices"],
+            relations: _relations,
         });
     }
 

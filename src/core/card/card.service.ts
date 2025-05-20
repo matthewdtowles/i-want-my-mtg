@@ -85,7 +85,6 @@ export class CardService implements CardServicePort {
         }
     }
 
-    // FIXME: THIS IS THE BOTTLENECK ON INGESTION - each lookup is ~80ms PER CARD!
     @Timing()
     async findBySetCodeAndNumber(
         setCode: string,

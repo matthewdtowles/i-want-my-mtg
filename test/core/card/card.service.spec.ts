@@ -46,14 +46,51 @@ describe("CardService", () => {
     });
 
     it("should update existing cards and return saved cards", async () => {
-        const updateCardDtos: UpdateCardDto[] = testUtils.getMockUpdateCardDtos(mockSetCode);
+        const existingCard: Card = new Card();
+        existingCard.id = 1;
+        existingCard.name = "Card 1";
+        existingCard.setCode = mockSetCode;
+        existingCard.legalities = [
+            { format: Format.Standard, status: LegalityStatus.Legal, cardId: 1 }
+        ];
+        existingCard.imgSrc = "imgSrc";
+        existingCard.isReserved = false;
+        existingCard.number = "1";
+        existingCard.rarity = CardRarity.Common;
+        existingCard.type = "type";
+        existingCard.uuid = "uuid-123";
+        repository.populate([existingCard]);
+
+        const updateCardDtos: CreateCardDto[] = [
+            {
+                name: "Card 1",
+                setCode: mockSetCode,
+                legalities: [
+                    { format: Format.Standard, status: LegalityStatus.Banned, cardId: 1 }
+                ],
+                imgSrc: "imgSrcUpdated",
+                isReserved: true,
+                number: "1",
+                rarity: CardRarity.Common,
+                type: "type",
+                uuid: "uuid-123"
+            }
+        ];
+
         jest.spyOn(repository, "save");
 
         const result: CardDto[] = await service.save(updateCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(result.length).toBe(updateCardDtos.length);
-        expect(result).toMatchSnapshot();
+        expect(result.length).toBe(1);
+        expect(result[0].name).toBe("Card 1");
+        expect(result[0].isReserved).toBe(true);
+        expect(result[0].rarity).toBe(CardRarity.Common);
+        expect(result[0].legalities).toContainEqual({
+            format: Format.Standard,
+            status: LegalityStatus.Banned,
+            cardId: 1,
+        });
     });
 
     it("should handle empty card dto array", async () => {

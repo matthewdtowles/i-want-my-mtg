@@ -28,9 +28,9 @@ export class CardService implements CardServicePort {
         let savedDtos: CardDto[] = [];
         try {
             const cardsToSave: Card[] = [];
-            const relations: string[] = ["set", "legalities"];
+            const relations: string[] = ["legalities"];
             for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, ["legalities"]);
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations); 
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (!this.isValidCard(card)) {
                     continue;
@@ -42,7 +42,7 @@ export class CardService implements CardServicePort {
                 cardsToSave.push(card);
             }
             const savedCards: Card[] = await this.repository.save(cardsToSave);
-            if (Array.isArray(savedCards) && savedCards.length === 0) {
+            if (Array.isArray(savedCards) && savedCards.length > 0) {
                 this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
                     savedDtos.push(dto);
                 });

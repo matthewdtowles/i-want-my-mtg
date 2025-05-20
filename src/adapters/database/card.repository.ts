@@ -51,7 +51,6 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    // FIXME: 38 - 60ms execution time
     @Timing()
     async findBySetCodeAndNumber(
         _code: string,

@@ -13,10 +13,10 @@ import { PriceDto } from "src/core/price/api/price.dto";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
-    readonly MOCK_USER_ID = 1;
     readonly MOCK_BASE_SIZE = 3;
     readonly MOCK_QUANTITY = 4;
 
@@ -136,7 +136,7 @@ export class TestUtils {
         for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
             const _cardId = this.getMockCardDtos(this.MOCK_SET_CODE)[i].id;
             const inventoryDto: InventoryDto = {
-                userId: this.MOCK_USER_ID,
+                userId: 1,
                 cardId: _cardId,
                 quantity: _cardId % 2 !== 0 ? this.MOCK_QUANTITY : 0,
             };
@@ -151,7 +151,7 @@ export class TestUtils {
             id: i + 1,
             userId: dto.userId,
             user: {
-                id: this.MOCK_USER_ID,
+                id: 1,
                 email: "test-email@iwmmtg.com",
                 name: "test-user",
                 inventory: [],
@@ -217,11 +217,11 @@ export class TestUtils {
                     legality.status as LegalityStatus,
                 )
             ),
-            manaCost: this.manaCostToArray(card.manaCost),
+            manaCost: card.manaCost ? card.manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined,
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            prices: this.mapPriceEntitiesToDtos(card.prices),
+            prices: card.prices.map((e) => this.mapPriceEntityToDto(e)),
             rarity: card.rarity,
             setCode: card.set.code,
             set: {
@@ -262,8 +262,8 @@ export class TestUtils {
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             cardId: i + 1,
-            foil: this.toDollar(i + 10),
-            normal: this.toDollar(i + 5),
+            foil: toDollar(i + 10),
+            normal: toDollar(i + 5),
             date: new Date("2022-01-01"),
         }));
     }
@@ -292,18 +292,14 @@ export class TestUtils {
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
             cardId: entity.card.id,
-            foil: this.toDollar(entity.foil),
-            normal: this.toDollar(entity.normal),
+            foil: toDollar(entity.foil),
+            normal: toDollar(entity.normal),
             date: entity.date,
         };
     }
 
     mapPriceEntitiesToDtos(entities: Price[]): PriceDto[] {
         return entities.map((entity) => this.mapPriceEntityToDto(entity));
-    }
-
-    private manaCostToArray(manaCost: string | undefined): string[] | undefined {
-        return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
     }
 
     private convertToCardRarity(rarity: string): CardRarity {
@@ -313,8 +309,4 @@ export class TestUtils {
         return null;
     }
 
-    private toDollar(amount: any): string {
-        const number = parseFloat(amount);
-        return !isNaN(number) ? number.toFixed(2) : "0.00";
-    }
 }

@@ -10,9 +10,9 @@ import { TestUtils } from "../../test-utils";
 describe("AggregatorService", () => {
     let subject: AggregatorService;
     const testUtils: TestUtils = new TestUtils();
-    const setCode = testUtils.MOCK_SET_CODE;
+    const setCode = "SET";
     const set = testUtils.getMockSetWithCards(setCode);
-    const userId = testUtils.MOCK_USER_ID;
+    const userId = 1;
     const mockCardDtos: CardDto[] = testUtils.getMockCardDtos(setCode);
     const mockCardService: CardServicePort = {
         save: jest.fn(),
@@ -88,7 +88,6 @@ describe("AggregatorService", () => {
         });
 
         it("should find set with cards and replace cards with inventory cards", async () => {
-            const userId = testUtils.MOCK_USER_ID;
             const result = await subject.findInventorySetByCode(setCode, userId);
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);

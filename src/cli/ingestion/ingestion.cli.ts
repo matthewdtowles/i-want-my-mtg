@@ -1,5 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import * as fs from "fs";
 import { Command, Positional } from "nestjs-command";
+import * as path from "path";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 
 @Injectable()
@@ -18,6 +20,29 @@ export class IngestionCli {
     async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingestAllSetMeta invoked`);
         await this.orchestrator.ingestAllSetMeta();
+    }
+
+    @Command({
+        command: "ingest:file:cards <file>",
+        describe: "Ingest all cards in each set from csv file",
+    })
+    async ingestSetCardsFromFile(
+        @Positional({
+            name: "file",
+            describe: "the set codes",
+            type: "string",
+        })
+        file: string,
+    ): Promise<void> {
+        const filePath: string = path.resolve(file);
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`File not found: ${filePath}`);
+        }
+        const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+        const setCodes: string[] = fileContent.split(",");
+        for (const code of setCodes) {
+            await this.orchestrator.ingestSetCards(code);
+        }
     }
 
     @Command({
@@ -52,9 +77,11 @@ export class IngestionCli {
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`ingestTodayPrices invoked`);
         await this.orchestrator.ingestTodayPrices();
-        await this.orchestrator.fillMissingPrices();
+        // await this.orchestrator.fillMissingPrices();
         this.LOGGER.log(`Today prices ingestion completed successfully.`);
     }
+
+
 
     @Command({
         command: "ingest:test <input>",

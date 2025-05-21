@@ -27,6 +27,7 @@
     "ingest:set": "npx ts-node src/cli.ts ingest:set",
     "ingest:all-cards": "npx ts-node src/cli.ts ingest:all-cards",
     "ingest:today-prices": "npx ts-node src/cli.ts ingest:today-prices",
+    "ingest:file:cards": "npx ts-node src/cli.ts ingest:file:cards",
     "ingest:test": "npx ts-node src/cli.ts ingest:test",
     "card:get": "npx ts-node src/cli.ts card:get",
     "cards:set-get": "npx ts-node src/cli.ts cards:set-get",

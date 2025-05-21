@@ -1,7 +1,7 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
@@ -13,44 +13,27 @@ import { PriceDto } from "src/core/price/api/price.dto";
 import { Price } from "src/core/price/price.entity";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
-    readonly MOCK_SET_NAME = "Test Set";
-    readonly MOCK_CARD_NAME = "Test Card Name";
-    readonly MOCK_ROOT_SCRYFALL_ID = "abc123def456";
-    readonly IMG_SRC_BASE = "https://cards.scryfall.io";
-    readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
-    readonly MOCK_USER_ID = 1;
     readonly MOCK_BASE_SIZE = 3;
     readonly MOCK_QUANTITY = 4;
-    readonly MOCK_USER_EMAIL = "test-email@iwmmtg.com";
-    readonly MOCK_USER_NAME = "test-user";
-    readonly MOCK_PASSWORD = "password";
-    readonly MOCK_DATE = new Date("2022-01-01");
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             artist: "artist",
-            imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
+            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
             isReserved: false,
             legalities: this.getMockLegalities(i + 1),
             manaCost: `{${i + 1}}{W}`,
-            name: `${this.MOCK_CARD_NAME} ${i + 1}`,
+            name: `Test Card Name ${i + 1}`,
             number: `${i + 1}`,
             oracleText: "Test card text.",
             rarity: i % 2 === 0 ? "common" : "uncommon",
             setCode,
             uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
             type: "type",
-        }));
-    }
-
-    getMockUpdateCardDtos(setCode: string): UpdateCardDto[] {
-        const createDtos: CreateCardDto[] = this.getMockCreateCardDtos(setCode);
-        return createDtos.map((dto, i) => ({
-            ...dto,
-            id: i + 1,
         }));
     }
 
@@ -110,13 +93,13 @@ export class TestUtils {
         const setCodes: string[] = [this.MOCK_SET_CODE, "ETS", "TES"];
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             baseSize: this.MOCK_BASE_SIZE,
-            block: this.MOCK_SET_NAME,
+            block: "Test Set",
             code: setCodes[i],
             imgSrc: null,
             keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
-            name: this.MOCK_SET_NAME + i,
+            name: "Test Set" + i,
             parentCode: this.MOCK_SET_CODE,
-            releaseDate: this.MOCK_SET_RELEASE_DATE,
+            releaseDate: "2022-01-01",
             type: "expansion",
             url: "sets/" + setCodes[i],
         }));
@@ -153,7 +136,7 @@ export class TestUtils {
         for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
             const _cardId = this.getMockCardDtos(this.MOCK_SET_CODE)[i].id;
             const inventoryDto: InventoryDto = {
-                userId: this.MOCK_USER_ID,
+                userId: 1,
                 cardId: _cardId,
                 quantity: _cardId % 2 !== 0 ? this.MOCK_QUANTITY : 0,
             };
@@ -168,11 +151,11 @@ export class TestUtils {
             id: i + 1,
             userId: dto.userId,
             user: {
-                id: this.MOCK_USER_ID,
-                email: this.MOCK_USER_EMAIL,
-                name: this.MOCK_USER_NAME,
+                id: 1,
+                email: "test-email@iwmmtg.com",
+                name: "test-user",
                 inventory: [],
-                password: this.MOCK_PASSWORD,
+                password: "password",
                 role: UserRole.User,
             },
             cardId: mockCards[i].id,
@@ -225,7 +208,7 @@ export class TestUtils {
         return {
             id: card.id,
             artist: card.artist,
-            imgSrc: `${this.IMG_SRC_BASE}/${imgSize}/front/${card.imgSrc}`,
+            imgSrc: `https://cards.scryfall.io/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
             legalities: card.legalities.map((legality) =>
                 this.getMockLegalityDto(
@@ -234,11 +217,11 @@ export class TestUtils {
                     legality.status as LegalityStatus,
                 )
             ),
-            manaCost: this.manaCostToArray(card.manaCost),
+            manaCost: card.manaCost ? card.manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined,
             name: card.name,
             number: card.number,
             oracleText: card.oracleText,
-            prices: this.mapPriceEntitiesToDtos(card.prices),
+            prices: card.prices.map((e) => this.mapPriceEntityToDto(e)),
             rarity: card.rarity,
             setCode: card.set.code,
             set: {
@@ -279,9 +262,9 @@ export class TestUtils {
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             cardId: i + 1,
-            foil: this.toDollar(i + 10),
-            normal: this.toDollar(i + 5),
-            date: this.MOCK_DATE,
+            foil: toDollar(i + 10),
+            normal: toDollar(i + 5),
+            date: new Date("2022-01-01"),
         }));
     }
 
@@ -293,7 +276,7 @@ export class TestUtils {
             price.card = card;
             price.foil = i + 10;
             price.normal = i + 5;
-            price.date = this.MOCK_DATE;
+            price.date =  new Date("2022-01-01");
             return price;
         });
     }
@@ -309,18 +292,14 @@ export class TestUtils {
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
             cardId: entity.card.id,
-            foil: this.toDollar(entity.foil),
-            normal: this.toDollar(entity.normal),
+            foil: toDollar(entity.foil),
+            normal: toDollar(entity.normal),
             date: entity.date,
         };
     }
 
     mapPriceEntitiesToDtos(entities: Price[]): PriceDto[] {
         return entities.map((entity) => this.mapPriceEntityToDto(entity));
-    }
-
-    private manaCostToArray(manaCost: string | undefined): string[] | undefined {
-        return manaCost ? manaCost.toLowerCase().replace(/[{}]/g, "").split("") : undefined;
     }
 
     private convertToCardRarity(rarity: string): CardRarity {
@@ -330,8 +309,4 @@ export class TestUtils {
         return null;
     }
 
-    private toDollar(amount: any): string {
-        const number = parseFloat(amount);
-        return !isNaN(number) ? number.toFixed(2) : "0.00";
-    }
 }

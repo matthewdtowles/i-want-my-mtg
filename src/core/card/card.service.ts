@@ -9,6 +9,7 @@ import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";
+import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
 export class CardService implements CardServicePort {
@@ -21,13 +22,15 @@ export class CardService implements CardServicePort {
     ) { }
 
 
+    @Timing()
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
         let savedDtos: CardDto[] = [];
         try {
             const cardsToSave: Card[] = [];
+            const relations: string[] = ["legalities"];
             for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number);
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations); 
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (!this.isValidCard(card)) {
                     continue;
@@ -39,9 +42,11 @@ export class CardService implements CardServicePort {
                 cardsToSave.push(card);
             }
             const savedCards: Card[] = await this.repository.save(cardsToSave);
-            this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
-                savedDtos.push(dto);
-            });
+            if (Array.isArray(savedCards) && savedCards.length > 0) {
+                this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
+                    savedDtos.push(dto);
+                });
+            }
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
@@ -49,6 +54,7 @@ export class CardService implements CardServicePort {
         return savedDtos;
     }
 
+    @Timing()
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllInSet ${setCode}`);
         try {
@@ -60,12 +66,14 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findAllWithName(name: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllWithName ${name}`);
         const foundCards: Card[] = await this.repository.findAllWithName(name);
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
+    @Timing()
     async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
         try {
@@ -77,14 +85,16 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findBySetCodeAndNumber(
         setCode: string,
         number: string,
         imgType: CardImgType = CardImgType.NORMAL
     ): Promise<CardDto> {
         this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
+        const relations: string[] = ["set", "legalities", "prices"];
         try {
-            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number);
+            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number, relations);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
             // Do not confuse caller with empty result if error occurs
@@ -92,6 +102,7 @@ export class CardService implements CardServicePort {
         }
     }
 
+    @Timing()
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         try {
             const foundCard: Card = await this.repository.findByUuid(uuid);
@@ -128,15 +139,20 @@ export class CardService implements CardServicePort {
     }
 
     private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
-        return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
-            !newLegalities.some(l => l.format === existingLegality.format)
-        ) : [];
+        if (Array.isArray(newLegalities)) {
+            return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
+                !newLegalities.some(l => l.format === existingLegality.format)
+            ) : [];
+        }
+        return [];
     }
 
     private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
-        const legalityDeletionPromises = legalitiesToDelete?.map((l: Legality) => {
-            this.repository.deleteLegality(l.cardId, l.format)
-        });
-        await Promise.all(legalityDeletionPromises);
+        if (Array.isArray(legalitiesToDelete)) {
+            const legalityDeletionPromises = legalitiesToDelete.map((l: Legality) => {
+                return this.repository.deleteLegality(l.cardId, l.format);
+            });
+            await Promise.all(legalityDeletionPromises);
+        }
     }
 }

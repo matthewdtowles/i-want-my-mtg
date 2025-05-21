@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
@@ -46,14 +46,51 @@ describe("CardService", () => {
     });
 
     it("should update existing cards and return saved cards", async () => {
-        const updateCardDtos: UpdateCardDto[] = testUtils.getMockUpdateCardDtos(mockSetCode);
+        const existingCard: Card = new Card();
+        existingCard.id = 1;
+        existingCard.name = "Card 1";
+        existingCard.setCode = mockSetCode;
+        existingCard.legalities = [
+            { format: Format.Standard, status: LegalityStatus.Legal, cardId: 1 }
+        ];
+        existingCard.imgSrc = "imgSrc";
+        existingCard.isReserved = false;
+        existingCard.number = "1";
+        existingCard.rarity = CardRarity.Common;
+        existingCard.type = "type";
+        existingCard.uuid = "uuid-123";
+        repository.populate([existingCard]);
+
+        const updateCardDtos: CreateCardDto[] = [
+            {
+                name: "Card 1",
+                setCode: mockSetCode,
+                legalities: [
+                    { format: Format.Standard, status: LegalityStatus.Banned, cardId: 1 }
+                ],
+                imgSrc: "imgSrcUpdated",
+                isReserved: true,
+                number: "1",
+                rarity: CardRarity.Common,
+                type: "type",
+                uuid: "uuid-123"
+            }
+        ];
+
         jest.spyOn(repository, "save");
 
         const result: CardDto[] = await service.save(updateCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(result.length).toBe(updateCardDtos.length);
-        expect(result).toMatchSnapshot();
+        expect(result.length).toBe(1);
+        expect(result[0].name).toBe("Card 1");
+        expect(result[0].isReserved).toBe(true);
+        expect(result[0].rarity).toBe(CardRarity.Common);
+        expect(result[0].legalities).toContainEqual({
+            format: Format.Standard,
+            status: LegalityStatus.Banned,
+            cardId: 1,
+        });
     });
 
     it("should handle empty card dto array", async () => {
@@ -218,11 +255,12 @@ describe("CardService", () => {
     it("should throw error with message if card lookup error occurs with findBySetCodeAndNumber", async () => {
         const setCode = "INVALID_SET";
         const number = "999";
+        const relations: string[] = ["set", "legalities", "prices"];
         jest.spyOn(repository, "findBySetCodeAndNumber").mockRejectedValueOnce(new Error("Repository error"));
 
         await expect(service.findBySetCodeAndNumber(setCode, number))
             .rejects.toThrow(`Error finding card with setCode ${setCode} and number ${number}: Repository error`);
-        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number);
+        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number, relations);
     });
 
     it("should throw error with message if card lookup error occurs with findByUuid", async () => {

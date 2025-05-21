@@ -37,18 +37,13 @@ export class CardController {
     @Render("ingestCards")
     async ingestCards(@Param("setCode") setCode: string) {
         this.LOGGER.debug(`ingestCards for set ${setCode}`);
-        return {
-            cards: await this.ingestionOrchestrator.ingestSetCards(setCode)
-        };
+        return { cards: await this.ingestionOrchestrator.ingestSetCards(setCode) };
     }
 
     @UseGuards(UserGuard)
     @Get(":id")
     @Render("card")
-    async findOne(
-        @Param("id") id: string,
-        @Req() req: AuthenticatedRequest
-    ): Promise<CardHttpDto> {
+    async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardHttpDto> {
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
         const _card: InventoryCardAggregateDto = await this.aggregatorService

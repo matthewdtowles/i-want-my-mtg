@@ -55,3 +55,6 @@ price-example.txt
 data.sql
 
 AllPricesToday.json
+
+missed-sets.csv
+set-sizes.sql

@@ -12,7 +12,7 @@ describe("SetService", () => {
     let repository: SetRepositoryPort;
 
     const testUtils: TestUtils = new TestUtils();
-    const mockSetCode: string = testUtils.MOCK_SET_CODE;
+    const mockSetCode: string = "SET";
     const mockSets: Set[] = testUtils.getMockSets();
 
     const mockSetRepository: SetRepositoryPort = {

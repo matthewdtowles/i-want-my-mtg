@@ -1,7 +1,7 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { CreateCardDto, UpdateCardDto } from "src/core/card/api/create-card.dto";
+import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
@@ -16,41 +16,24 @@ import { Set } from "src/core/set/set.entity";
 
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
-    readonly MOCK_SET_NAME = "Test Set";
-    readonly MOCK_CARD_NAME = "Test Card Name";
-    readonly MOCK_ROOT_SCRYFALL_ID = "abc123def456";
-    readonly IMG_SRC_BASE = "https://cards.scryfall.io";
-    readonly MOCK_SET_RELEASE_DATE = "2022-01-01";
     readonly MOCK_USER_ID = 1;
     readonly MOCK_BASE_SIZE = 3;
     readonly MOCK_QUANTITY = 4;
-    readonly MOCK_USER_EMAIL = "test-email@iwmmtg.com";
-    readonly MOCK_USER_NAME = "test-user";
-    readonly MOCK_PASSWORD = "password";
-    readonly MOCK_DATE = new Date("2022-01-01");
 
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             artist: "artist",
-            imgSrc: `${i + 1}/a/${i + 1}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
+            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
             isReserved: false,
             legalities: this.getMockLegalities(i + 1),
             manaCost: `{${i + 1}}{W}`,
-            name: `${this.MOCK_CARD_NAME} ${i + 1}`,
+            name: `Test Card Name ${i + 1}`,
             number: `${i + 1}`,
             oracleText: "Test card text.",
             rarity: i % 2 === 0 ? "common" : "uncommon",
             setCode,
             uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
             type: "type",
-        }));
-    }
-
-    getMockUpdateCardDtos(setCode: string): UpdateCardDto[] {
-        const createDtos: CreateCardDto[] = this.getMockCreateCardDtos(setCode);
-        return createDtos.map((dto, i) => ({
-            ...dto,
-            id: i + 1,
         }));
     }
 
@@ -110,13 +93,13 @@ export class TestUtils {
         const setCodes: string[] = [this.MOCK_SET_CODE, "ETS", "TES"];
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             baseSize: this.MOCK_BASE_SIZE,
-            block: this.MOCK_SET_NAME,
+            block: "Test Set",
             code: setCodes[i],
             imgSrc: null,
             keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
-            name: this.MOCK_SET_NAME + i,
+            name: "Test Set" + i,
             parentCode: this.MOCK_SET_CODE,
-            releaseDate: this.MOCK_SET_RELEASE_DATE,
+            releaseDate: "2022-01-01",
             type: "expansion",
             url: "sets/" + setCodes[i],
         }));
@@ -169,10 +152,10 @@ export class TestUtils {
             userId: dto.userId,
             user: {
                 id: this.MOCK_USER_ID,
-                email: this.MOCK_USER_EMAIL,
-                name: this.MOCK_USER_NAME,
+                email: "test-email@iwmmtg.com",
+                name: "test-user",
                 inventory: [],
-                password: this.MOCK_PASSWORD,
+                password: "password",
                 role: UserRole.User,
             },
             cardId: mockCards[i].id,
@@ -225,7 +208,7 @@ export class TestUtils {
         return {
             id: card.id,
             artist: card.artist,
-            imgSrc: `${this.IMG_SRC_BASE}/${imgSize}/front/${card.imgSrc}`,
+            imgSrc: `https://cards.scryfall.io/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
             legalities: card.legalities.map((legality) =>
                 this.getMockLegalityDto(
@@ -281,7 +264,7 @@ export class TestUtils {
             cardId: i + 1,
             foil: this.toDollar(i + 10),
             normal: this.toDollar(i + 5),
-            date: this.MOCK_DATE,
+            date: new Date("2022-01-01"),
         }));
     }
 
@@ -293,7 +276,7 @@ export class TestUtils {
             price.card = card;
             price.foil = i + 10;
             price.normal = i + 5;
-            price.date = this.MOCK_DATE;
+            price.date =  new Date("2022-01-01");
             return price;
         });
     }

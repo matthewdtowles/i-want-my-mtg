@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
 import { Set } from "src/core/set/set.entity";
-import { Repository } from "typeorm";
+import { MoreThan, Repository } from "typeorm";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
@@ -40,29 +40,29 @@ export class SetRepository implements SetRepositoryPort {
         this.LOGGER.debug(`findByCode ${code}`);
         const set: Set = await this.setRepository.findOne({
             where: { code: code, },
+            order: {
+                cards: {
+                    id: "ASC",
+                },
+            },
             relations: ["cards", "cards.prices"],
         });
         return set ?? null;
     }
 
-    async findByName(setName: string): Promise<Set | null> {
-        this.LOGGER.debug(`findByName ${setName}`);
-        return await this.setRepository.findOne({
-            where: { name: setName, },
-            relations: ["cards", "cards.legalities", "cards.prices"],
-        });
-    }
-
-    async findAll(): Promise<Set[]> {
-        this.LOGGER.debug(`findAll sets`);
-        return (await this.setRepository.find({
-            relations: ["cards"],
-        })) ?? [];
-    }
-
     async findAllSetsMeta(): Promise<Set[]> {
         this.LOGGER.debug(`findAllSetsMeta`);
-        return (await this.setRepository.find()) ?? [];
+        return (await this.setRepository.find(
+            {
+                where: {
+                    baseSize: MoreThan(0),
+                },
+                order: {
+                    releaseDate: "DESC",
+                    name: "ASC",
+                },
+            }
+        )) ?? [];
     }
 
     async delete(set: Set): Promise<void> {

@@ -17,7 +17,6 @@ export class CardRepository implements CardRepositoryPort {
         @InjectRepository(Legality) private readonly legalityRepository: Repository<Legality>,
     ) { }
 
-    @Timing()
     async save(cards: Card[]): Promise<Card[]> {
         this.LOGGER.debug(`Save ${cards.length} total cards`);
         return await this.cardRepository.save(cards);
@@ -30,6 +29,7 @@ export class CardRepository implements CardRepositoryPort {
             where: {
                 set: { code: code, },
             },
+            order: { number: "ASC", },
             relations: ["legalities", "prices"],
         })) ?? [];
     }
@@ -43,7 +43,6 @@ export class CardRepository implements CardRepositoryPort {
         })) ?? []
     }
 
-    @Timing()
     async findById(_id: number): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: { id: _id, },
@@ -51,7 +50,6 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    @Timing()
     async findBySetCodeAndNumber(
         _code: string,
         _number: string,
@@ -66,7 +64,6 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    @Timing()
     async findByUuid(_uuid: string): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: { uuid: _uuid, },
@@ -91,28 +88,11 @@ export class CardRepository implements CardRepositoryPort {
             .then((row) => row.map((r) => r.id));
     }
 
-    @Timing()
     async delete(card: Card): Promise<void> {
         this.LOGGER.debug(`Delete card ${card.id}`);
         await this.cardRepository.delete(card);
     }
 
-    @Timing()
-    async findLegalities(cardId: number): Promise<Legality[]> {
-        const card: Card = await this.cardRepository.findOne({
-            where: { id: cardId },
-            relations: ["legalities"],
-        });
-        return card.legalities;
-    }
-
-    @Timing()
-    async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
-        this.LOGGER.debug(`Save ${legalities.length} legalities`);
-        return await this.legalityRepository.save(legalities);
-    }
-
-    @Timing()
     async deleteLegality(_cardId: number, _format: Format): Promise<void> {
         this.LOGGER.debug(`Delete legality for card ${_cardId} in format ${_format}`);
         await this.legalityRepository.delete({ cardId: _cardId, format: _format });

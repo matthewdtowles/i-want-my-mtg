@@ -78,7 +78,6 @@ export class CardController {
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
-        this.LOGGER.debug(`findSetCard card: ${JSON.stringify(_card)}`);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

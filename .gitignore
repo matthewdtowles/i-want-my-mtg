@@ -39,22 +39,4 @@ yarn.lock
 # Ignore .DS_Store files (Mac)
 .DS_Store
 
-# Ignore Thumbs.db files (Windows)
-Thumbs.db
-
-scratch.txt
-
-MtgJsonEnumVals.json
-
-authentication-instructions.md
-how-to*
-
-command-cheat-sheet.md
-
-price-example.txt
-data.sql
-
-AllPricesToday.json
-
-missed-sets.csv
-set-sizes.sql
+.notes*

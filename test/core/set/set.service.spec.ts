@@ -19,7 +19,6 @@ describe("SetService", () => {
         save: jest.fn().mockResolvedValue(mockSets),
         findAllSetsMeta: jest.fn().mockResolvedValue(mockSets),
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
-        findByName: jest.fn().mockResolvedValue(mockSets[0]),
         delete: jest.fn(),
     };
 
@@ -55,12 +54,6 @@ describe("SetService", () => {
 
     it("should find all sets - cards not included", async () => {
         const foundSets: SetDto[] = await service.findAll();
-        expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
-        expect(foundSets).toEqual(testUtils.mapSetEntitiesToDtos(mockSets));
-    });
-
-    it("should find all sets in given format - cards not included", async () => {
-        const foundSets: SetDto[] = await service.findAllInFormat("standard");
         expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
         expect(foundSets).toEqual(testUtils.mapSetEntitiesToDtos(mockSets));
     });

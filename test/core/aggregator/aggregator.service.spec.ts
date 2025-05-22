@@ -25,7 +25,6 @@ describe("AggregatorService", () => {
     const mockSetService: SetServicePort = {
         findByCode: jest.fn().mockResolvedValue(testUtils.getMockSetWithCards(setCode)),
         findAll: jest.fn(),
-        findAllInFormat: jest.fn(),
         save: jest.fn(),
     };
     const mockInventoryService: InventoryServicePort = {

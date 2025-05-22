@@ -71,33 +71,6 @@ export class MockCardRepository implements CardRepositoryPort {
         this.cards = this.cards.filter(c => c.id !== card.id);
     }
 
-    async findLegalities(cardId: number): Promise<Legality[]> {
-        const card = this.cards.find(c => c.id === cardId);
-        return card?.legalities || [];
-    }
-
-    async saveLegalities(legalities: Legality[]): Promise<Legality[]> {
-        if (!legalities || legalities.length === 0) {
-            throw new Error("No legalities provided");
-        }
-        legalities.forEach(legality => {
-            const card = this.cards.find(c => c.id === legality.cardId);
-            if (!card) {
-                throw new Error(`Card with id ${legality.cardId} not found`);
-            }
-            if (!card.legalities) {
-                card.legalities = [];
-            }
-            const existingLegalityIndex = card.legalities.findIndex(l => l.format === legality.format);
-            if (existingLegalityIndex !== -1) {
-                card.legalities[existingLegalityIndex] = legality;
-            } else {
-                card.legalities.push(legality);
-            }
-        });
-        return legalities;
-    }
-
     async deleteLegality(cardId: number, format: string): Promise<void> {
         const card = this.cards.find(c => c.id === cardId);
         if (card) {

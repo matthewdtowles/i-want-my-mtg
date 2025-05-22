@@ -24,15 +24,6 @@ export interface SetServicePort {
     findAll(): Promise<SetDto[]>;
 
     /**
-     * Return metadata of every set in format
-     * Does not include cards
-     *
-     * @param format
-     * @returns all sets without cards that are legal in format
-     */
-    findAllInFormat(format: string): Promise<SetDto[]>;
-
-    /**
      * Return set including cards with code
      *
      * @param setCode

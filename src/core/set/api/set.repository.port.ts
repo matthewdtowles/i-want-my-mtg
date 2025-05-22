@@ -31,14 +31,6 @@ export interface SetRepositoryPort {
     findByCode(code: string): Promise<Set | null>;
 
     /**
-     * Finds a Set entity by its unique name.
-     *
-     * @param {string} name - The unique name of the set.
-     * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
-     */
-    findByName(name: string): Promise<Set | null>;
-
-    /**
      * Removes a Set entity.
      *
      * @param {Set} set - The Set entity to remove.

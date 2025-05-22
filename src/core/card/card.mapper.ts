@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityDto } from "src/core/card/api/legality.dto";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
@@ -6,16 +6,15 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
+import { toDollar } from "src/shared/utils/formatting.util";
 import { CardDto } from "./api/card.dto";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRarity } from "./api/card.rarity.enum";
 import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
-import { toDollar } from "src/shared/utils/formatting.util";
 
 @Injectable()
 export class CardMapper {
 
-    private readonly LOGGER: Logger = new Logger(CardMapper.name);
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
@@ -84,11 +83,7 @@ export class CardMapper {
         return dtos?.reduce((entities: Legality[], dto: LegalityDto) => {
             if (this.isValidLegalityDto(dto)) {
                 const entity: Legality = this.toLegalityEntity(dto);
-                if (entity) {
-                    entities.push(entity);
-                }
-            } else {
-                this.LOGGER.debug(`Invalid LegalityDto: ${JSON.stringify(dto)}`);
+                if (entity) entities.push(entity);
             }
             return entities;
         }, []);
@@ -106,11 +101,7 @@ export class CardMapper {
         return entities?.reduce((dtos: LegalityDto[], entity: Legality) => {
             if (this.isValidLegalityEntity(entity)) {
                 const dto: LegalityDto = this.toLegalityDto(entity);
-                if (dto) {
-                    dtos.push(dto);
-                }
-            } else {
-                this.LOGGER.debug(`Invalid Legality: ${JSON.stringify(entity)}`);
+                if (dto) dtos.push(dto);
             }
             return dtos;
         }, []);

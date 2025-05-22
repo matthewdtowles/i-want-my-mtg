@@ -11,6 +11,8 @@ export class InventoryCardAggregateDto extends CardDto {
     @IsInt()
     @IsPositive()
     readonly quantity: number = 0;
+    readonly foilValue?: string;
+    readonly normalValue?: string;
 }
 
 /**

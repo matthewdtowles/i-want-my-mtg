@@ -48,9 +48,13 @@ export class AggregatorService implements AggregatorServicePort {
             ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
             const inventoryItem = setInventoryCards.find(inv => inv.card.id === card.id);
+            const hasFoil = card.prices && card.prices.length > 0 && card.prices[0].foil;
+            const hasNormal = card.prices && card.prices.length > 0 && card.prices[0].normal;
             return {
                 ...card,
                 quantity: inventoryItem ? inventoryItem.quantity : 0,
+                foilValue: hasFoil ? card.prices[0].foil : null,
+                normalValue: hasNormal ? card.prices[0].normal : null,
             };
         });
         return {

@@ -116,6 +116,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 0,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardById(cardId, -1)).resolves.toEqual(expectedCard);
         });
@@ -126,6 +128,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 0,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardById(cardId, userId)).resolves.toEqual(expectedCard);
         });
@@ -135,6 +139,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 4,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardById(cardId, userId)).resolves.toEqual(expectedCard);
         });
@@ -154,6 +160,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 0,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, -1))
                 .resolves.toEqual(expectedCard);
@@ -165,6 +173,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 0,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
                 .resolves.toEqual(expectedCard);
@@ -175,6 +185,8 @@ describe("AggregatorService", () => {
             const expectedCard: InventoryCardAggregateDto = {
                 ...card,
                 quantity: 4,
+                displayPrice: card.prices[0].normal,
+                foilDisplayPrice: card.prices[0].foil,
             };
             await expect(subject.findInventoryCardBySetNumber(setCode, cardNumber, userId))
                 .resolves.toEqual(expectedCard);

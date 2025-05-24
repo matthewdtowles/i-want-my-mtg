@@ -1,5 +1,3 @@
-import { Type } from "class-transformer";
-import { IsInt, IsPositive } from "class-validator";
 import { CardDto } from "src/core/card/api/card.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 
@@ -8,11 +6,9 @@ import { SetDto } from "src/core/set/api/set.dto";
  * Use this DTO to represent a card from an inventory.
  */
 export class InventoryCardAggregateDto extends CardDto {
-    @IsInt()
-    @IsPositive()
     readonly quantity: number = 0;
-    readonly foilValue?: string;
-    readonly normalValue?: string;
+    readonly displayPrice?: string;
+    readonly foilDisplayPrice?: string;
 }
 
 /**
@@ -20,6 +16,5 @@ export class InventoryCardAggregateDto extends CardDto {
  * Use this DTO to represent a set of cards with inventory data.
  */
 export class InventorySetAggregateDto extends SetDto {
-    @Type(() => InventoryCardAggregateDto)
     readonly cards: InventoryCardAggregateDto[] = [];
 }

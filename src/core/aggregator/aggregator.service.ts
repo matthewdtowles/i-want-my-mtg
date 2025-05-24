@@ -69,12 +69,15 @@ export class AggregatorService implements AggregatorServicePort {
         return this.createInventoryCardAggregate(card, inventoryItem);
     }
 
+    // TODO: may need to export this logic to be available to all services using cards/prices!!!
     private createInventoryCardAggregate(
         card: CardDto,
         inventoryItem: InventoryDto | InventoryCardDto
     ): InventoryCardAggregateDto {
-        const hasFoil = card.prices && card.prices.length > 0 && card.prices[0].foil;
-        const hasNormal = card.prices && card.prices.length > 0 && card.prices[0].normal;
+        const hasFoil = card.prices && card.prices.length > 0 && card.prices[0].foil
+            && card.prices[0].foil !== "0.00"; // TODO: EVALUATE - should this logic be here or keep 0.00 and do in HBS?
+        const hasNormal = card.prices && card.prices.length > 0 && card.prices[0].normal
+            && card.prices[0].normal !== "0.00";
         let normal: string;
         let foil: string;
         if (!hasFoil && !hasNormal) {

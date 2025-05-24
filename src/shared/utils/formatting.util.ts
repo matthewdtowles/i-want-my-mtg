@@ -5,5 +5,5 @@ export function toDollar(amount: number): string {
         dollarAmount = roundedNumber.toFixed(2);
         dollarAmount = dollarAmount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
-    return `${dollarAmount}`;
+    return dollarAmount;
 }

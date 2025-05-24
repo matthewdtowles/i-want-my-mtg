@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
 import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
+import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { CardDto } from "src/core/card/api/card.dto";
@@ -22,7 +23,6 @@ import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orch
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
-import { breadcrumbsForCard } from "src/adapters/http/view.util";
 
 @Controller("card")
 export class CardController {
@@ -58,8 +58,6 @@ export class CardController {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
             card: _card,
-            foilValue: _card.prices ? _card.prices[0].foil : null,
-            normalValue: _card.prices ? _card.prices[0].normal : null,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== _card.setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
@@ -85,8 +83,6 @@ export class CardController {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
             card: _card,
-            foilValue: _card.prices ? _card.prices[0].foil : null,
-            normalValue: _card.prices ? _card.prices[0].normal : null,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
@@ -104,7 +100,5 @@ export class CardController {
 
 export class CardHttpDto extends BaseHttpDto {
     readonly card: InventoryCardAggregateDto;
-    readonly foilValue: string | null;
-    readonly normalValue: string | null;
     readonly otherPrintings: CardDto[];
 }

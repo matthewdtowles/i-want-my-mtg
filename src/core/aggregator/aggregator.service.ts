@@ -75,11 +75,23 @@ export class AggregatorService implements AggregatorServicePort {
     ): InventoryCardAggregateDto {
         const hasFoil = card.prices && card.prices.length > 0 && card.prices[0].foil;
         const hasNormal = card.prices && card.prices.length > 0 && card.prices[0].normal;
+        let normal: string;
+        let foil: string;
+        if (!hasFoil && !hasNormal) {
+            normal = foil = "--";
+        } else if (hasFoil && !hasNormal) {
+            normal = foil = card.prices[0].foil;
+        } else if (!hasFoil && hasNormal) {
+            normal = foil = card.prices[0].normal;
+        } else {
+            normal = card.prices[0].normal;
+            foil = card.prices[0].foil;
+        }
         return {
             ...card,
             quantity: inventoryItem ? inventoryItem.quantity : 0,
-            foilDisplayPrice: hasFoil ? card.prices[0].foil : null,
-            displayPrice: hasNormal ? card.prices[0].normal : null,
+            displayPrice: normal,
+            foilDisplayPrice: foil,
         };
     }
 }

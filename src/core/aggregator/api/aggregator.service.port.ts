@@ -19,10 +19,7 @@ export interface AggregatorServicePort {
      * @param userId - if invalid, return set with cards with quantity == 0
      * @returns set with aggregated cards (i.e.: with quantities)
      */
-    findInventorySetByCode(
-        setCode: string,
-        userId: number
-    ): Promise<InventorySetAggregateDto | null>;
+    findInventorySetByCode(setCode: string, userId: number): Promise<InventorySetAggregateDto | null>;
 
     /**
      * Returns card with inventory information for logged in user
@@ -33,10 +30,7 @@ export interface AggregatorServicePort {
      * @see findInventoryCardBySetNumber
      * @returns card with quantity
      */
-    findInventoryCardById(
-        cardId: number,
-        userId: number
-    ): Promise<InventoryCardAggregateDto | null>;
+    findInventoryCardById(cardId: number, userId: number): Promise<InventoryCardAggregateDto | null>;
 
     /**
      * Returns card with inventory information for logged in user

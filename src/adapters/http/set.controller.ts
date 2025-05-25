@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get, Inject,
+    Get,
+    Inject,
     Logger,
     Param,
     Render,

@@ -9,7 +9,7 @@ import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
 import { Legality } from "./legality.entity";
-import { Timing } from "src/shared/decorators/timing.decorator";
+
 
 @Injectable()
 export class CardService implements CardServicePort {
@@ -22,7 +22,6 @@ export class CardService implements CardServicePort {
     ) { }
 
 
-    @Timing()
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
         this.LOGGER.debug(`save ${cardDtos.length} cards`);
         let savedDtos: CardDto[] = [];
@@ -30,7 +29,7 @@ export class CardService implements CardServicePort {
             const cardsToSave: Card[] = [];
             const relations: string[] = ["legalities"];
             for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations); 
+                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations);
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (!this.isValidCard(card)) {
                     continue;
@@ -54,7 +53,6 @@ export class CardService implements CardServicePort {
         return savedDtos;
     }
 
-    @Timing()
     async findAllInSet(setCode: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllInSet ${setCode}`);
         try {
@@ -66,14 +64,12 @@ export class CardService implements CardServicePort {
         }
     }
 
-    @Timing()
     async findAllWithName(name: string): Promise<CardDto[]> {
         this.LOGGER.debug(`findAllWithName ${name}`);
         const foundCards: Card[] = await this.repository.findAllWithName(name);
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
-    @Timing()
     async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
         try {
@@ -85,7 +81,6 @@ export class CardService implements CardServicePort {
         }
     }
 
-    @Timing()
     async findBySetCodeAndNumber(
         setCode: string,
         number: string,
@@ -102,7 +97,6 @@ export class CardService implements CardServicePort {
         }
     }
 
-    @Timing()
     async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         try {
             const foundCard: Card = await this.repository.findByUuid(uuid);

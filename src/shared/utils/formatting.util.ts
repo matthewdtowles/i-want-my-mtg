@@ -1,5 +1,5 @@
 export function toDollar(amount: number): string {
-    let dollarAmount = "0.00";
+    let dollarAmount = null;
     if (amount) {
         const roundedNumber = Math.ceil(amount * 100) / 100;
         dollarAmount = roundedNumber.toFixed(2);

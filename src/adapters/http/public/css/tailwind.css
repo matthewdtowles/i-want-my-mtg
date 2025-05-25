@@ -2675,6 +2675,16 @@ select {
   background-color: rgb(209 246 241 / var(--tw-bg-opacity, 1));
 }
 
+.foil-mode .normal-price,
+.foil-mode .owned-normal {
+  display: none ;
+}
+
+.foil-mode .foil-price,
+.foil-mode .owned-foil {
+  display: inline ;
+}
+
 .hover\:prose-lg:hover {
   font-size: 1.125rem;
   line-height: 1.7777778;

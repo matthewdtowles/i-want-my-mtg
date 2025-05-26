@@ -6,9 +6,7 @@ import {
     Entity,
     JoinColumn,
     ManyToOne,
-    OneToMany,
-    OneToOne,
-    PrimaryGeneratedColumn
+    OneToMany, PrimaryGeneratedColumn
 } from "typeorm";
 import { CardRarity } from "./api/card.rarity.enum";
 import { Legality } from "./legality.entity";

@@ -1,4 +1,4 @@
-import { IsInt } from "class-validator";
+import { IsBoolean, IsInt } from "class-validator";
 import { CardDto } from "src/core/card/api/card.dto";
 
 /**
@@ -12,6 +12,9 @@ export class InventoryDto {
     @IsInt()
     readonly quantity: number;
 
+    @IsBoolean()
+    readonly isFoil: boolean;
+
     @IsInt()
     readonly userId: number;
 }
@@ -23,5 +26,6 @@ export class InventoryDto {
 export class InventoryCardDto {
     readonly card: CardDto;
     readonly quantity: number;
+    readonly isFoil: boolean;
     readonly userId: number;
 }

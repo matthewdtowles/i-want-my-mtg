@@ -10,6 +10,9 @@ export class Inventory {
     @PrimaryColumn({ name: "user_id" })
     userId: number;
 
+    @PrimaryColumn({ name: "foil", type: "boolean" })
+    isFoil: boolean;
+
     @Column({ type: "int", default: 1 })
     quantity: number;
 

@@ -52,8 +52,8 @@ export class CardMapper {
             prices: Array.isArray(card?.prices) ? card.prices.map(p => (
                 {
                     cardId: card.id,
-                    normal: toDollar(p.normal),
-                    foil: toDollar(p.foil),
+                    normal: p.normal,
+                    foil: p.foil,
                     date: p.date,
                 })
             ) : [],

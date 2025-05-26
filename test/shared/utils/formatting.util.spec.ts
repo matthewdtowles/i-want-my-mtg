@@ -14,12 +14,12 @@ describe("toDollar", () => {
     });
 
     it("should handle zero correctly", () => {
-        expect(toDollar(0)).toBe(null);
+        expect(toDollar(0)).toBe("-");
     });
 
     it("should handle null and undefined values correctly", () => {
-        expect(toDollar(null)).toBe(null);
-        expect(toDollar(undefined)).toBe(null);
+        expect(toDollar(null)).toBe("-");
+        expect(toDollar(undefined)).toBe("-");
     });
 
     it("should handle more than 2 decimals correctly", () => {

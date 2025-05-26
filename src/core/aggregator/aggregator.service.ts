@@ -8,6 +8,7 @@ import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -74,26 +75,11 @@ export class AggregatorService implements AggregatorServicePort {
         card: CardDto,
         inventoryItem: InventoryDto | InventoryCardDto
     ): InventoryCardAggregateDto {
-        const hasFoil = card.prices && card.prices.length > 0 && card.prices[0].foil;
-        const hasNormal = card.prices && card.prices.length > 0 && card.prices[0].normal;
-        let normal: string;
-        let foil: string;
-        if (hasFoil && hasNormal) {
-            normal = card.prices[0].normal;
-            foil = card.prices[0].foil;
-        } else if (hasFoil && !hasNormal) {
-            normal = foil = card.prices[0].foil;
-        } else if (!hasFoil && hasNormal) {
-            normal = card.prices[0].normal;
-            foil = "--";
-        } else {
-            normal = foil = "--";
-        }
         return {
             ...card,
             quantity: inventoryItem ? inventoryItem.quantity : 0,
-            displayPrice: normal,
-            foilDisplayPrice: foil,
+            displayPrice: toDollar(card.prices[0]?.normal),
+            foilDisplayPrice: toDollar(card.prices[0]?.foil),
         };
     }
 }

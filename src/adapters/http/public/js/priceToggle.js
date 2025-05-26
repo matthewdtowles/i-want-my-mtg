@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateDisplay() {
         root.classList.toggle("foil-mode", showingFoil);
-        toggleBtn.textContent = showingFoil ? "Show Normal Prices" : "Show Foil Prices";
+        toggleBtn.textContent = showingFoil ? "Normal" : "Foil";
     }
 
     if (toggleBtn) {

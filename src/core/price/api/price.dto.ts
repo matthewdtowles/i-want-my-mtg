@@ -1,6 +1,6 @@
 export class PriceDto {
     cardId: number;
-    foil: string;
-    normal: string;
+    foil: number;
+    normal: number;
     date: Date;
 }

@@ -113,7 +113,7 @@ describe("InventoryService", () => {
         );
         expect(firstItem.card.prices).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ cardId: 1, normal: "5.00", foil: "10.00" }),
+                expect.objectContaining({ cardId: 1, normal: 5, foil: 10 }),
             ])
         );
         expect(firstItem.quantity).toBe(4);

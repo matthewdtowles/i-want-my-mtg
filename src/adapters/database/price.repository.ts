@@ -19,15 +19,6 @@ export class PriceRepository implements PriceRepositoryPort {
         });
     }
 
-    // TODO: probably need to FIX this
-    async findAllIds(): Promise<number[]> {
-        return await this.priceRepository
-            .createQueryBuilder("price")
-            .select("price.card_id", "cardId")
-            .getRawMany()
-            .then((row) => row.map((r) => r.cardId));
-    }
-
     async delete(id: number): Promise<void> {
         await this.priceRepository.delete(id);
     }

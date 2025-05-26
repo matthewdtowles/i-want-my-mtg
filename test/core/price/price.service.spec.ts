@@ -120,21 +120,4 @@ describe("PriceService", () => {
 
         expect(mockPriceRepo.delete).toHaveBeenCalledWith(1);
     });
-
-    it("should fill price table with NULL normal and foil for each card without price", async () => {
-        const date: string = "2024-01-01";
-        const allCardIds: number[] = [1, 2, 3];
-        const existingPriceCardIds: number[] = [1, 2];
-
-        mockCardRepo.findAllIds = jest.fn().mockResolvedValue(allCardIds);
-        mockPriceRepo.findAllIds = jest.fn().mockResolvedValue(existingPriceCardIds);
-
-        await subject.fillMissingPrices(date);
-        const _card: Card = new Card();
-        _card.id = 3;
-
-        expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { card: _card, date: new Date(date), normal: null, foil: null },
-        ]);
-    });
 });

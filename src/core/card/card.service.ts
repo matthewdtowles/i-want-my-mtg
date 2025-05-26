@@ -23,7 +23,6 @@ export class CardService implements CardServicePort {
 
 
     async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
-        this.LOGGER.debug(`save ${cardDtos.length} cards`);
         let savedDtos: CardDto[] = [];
         try {
             const cardsToSave: Card[] = [];

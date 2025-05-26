@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
 import { Set } from "src/core/set/set.entity";
@@ -6,7 +6,6 @@ import { MoreThan, Repository } from "typeorm";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
-    private readonly LOGGER: Logger = new Logger(SetRepository.name);
 
     constructor(@InjectRepository(Set) private readonly setRepository: Repository<Set>) { }
 
@@ -16,20 +15,17 @@ export class SetRepository implements SetRepositoryPort {
         } else if (sets.length === 0) {
             throw new Error(`Invalid input. Sets array given is empty.`);
         }
-        this.LOGGER.debug(`saving ${sets.length} total sets`);
         const saveSets: Set[] = [];
         // TODO: MOVE TO SERVICE!
         await Promise.all(
             sets.map(async (s) => {
-                if (!s) {
-                    throw new Error(`Invalid set in sets.`);
-                }
+                if (!s) throw new Error(`Invalid set in sets.`);
                 const existingSet: Set = await this.findByCode(s.code);
                 if (existingSet) {
                     // Preserve the name field if it already exists
                     s.name = existingSet.name;
                 }
-                const updatedSet = this.setRepository.merge(s, existingSet);
+                const updatedSet: Set = this.setRepository.merge(s, existingSet);
                 saveSets.push(updatedSet);
             }),
         );
@@ -37,7 +33,6 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async findByCode(code: string): Promise<Set | null> {
-        this.LOGGER.debug(`findByCode ${code}`);
         const set: Set = await this.setRepository.findOne({
             where: { code: code, },
             order: {
@@ -51,7 +46,6 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async findAllSetsMeta(): Promise<Set[]> {
-        this.LOGGER.debug(`findAllSetsMeta`);
         return (await this.setRepository.find(
             {
                 where: {
@@ -66,7 +60,6 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async delete(set: Set): Promise<void> {
-        this.LOGGER.debug(`delete ${set.code}`);
         await this.setRepository.delete(set);
     }
 }

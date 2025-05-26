@@ -10,18 +10,20 @@ export class InventoryCli {
     constructor(@Inject(InventoryServicePort) private readonly service: InventoryServicePort) { }
 
     @Command({
-        command: "inventory:save <user> <card> <quantity>",
+        command: "inventory:save <user> <card> <quantity> <isFoil>",
         describe: "save inventory item",
     })
     async save(
         @Positional({ name: "user" }) _user: number,
         @Positional({ name: "card" }) _card: number,
         @Positional({ name: "quantity" }) _quantity: number,
+        @Positional({ name: "isFoil" }) _isFoil: boolean = false,
     ): Promise<boolean> {
         const updateDto: InventoryDto = {
             userId: _user,
             cardId: _card,
             quantity: _quantity,
+            isFoil: _isFoil,
         };
         const savedInventory: InventoryDto[] = await this.service.update([updateDto]);
         this.LOGGER.log(`${JSON.stringify(savedInventory, null, 4)}`);

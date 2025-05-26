@@ -20,13 +20,6 @@ export interface PriceRepositoryPort {
     findByCardId(cardId: number): Promise<Price>;
 
     /**
-     * Finds all price ids
-     * 
-     * @returns {Promise<number[]>} The ids of all prices
-     */
-    findAllIds(): Promise<number[]>;
-
-    /**
      * Deletes a price by its id
      *
      * @param {number} id The id of the price

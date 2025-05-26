@@ -37,23 +37,4 @@ export class PriceService implements PriceServicePort {
     async delete(id: number): Promise<void> {
         return await this.priceRepository.delete(id);
     }
-
-    async fillMissingPrices(date: string): Promise<void> {
-        const allCards: number[] = await this.cardRepository.findAllIds();
-        const existingPriceCardIds: number[] = await this.priceRepository.findAllIds();
-        const missingCardIds: number[] = allCards.filter((cardId) => !existingPriceCardIds.includes(cardId));
-        const missingPrices: Price[] = missingCardIds.map((cardId) => {
-            const price = new Price();
-            const card: Card = new Card();
-            card.id = cardId;
-            price.card = card;
-            price.normal = null;
-            price.foil = null;
-            price.date = new Date(date);
-            return price;
-        });
-        if (missingPrices.length > 0) {
-            await this.priceRepository.save(missingPrices);
-        }
-    }
 }

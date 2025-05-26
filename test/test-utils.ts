@@ -262,8 +262,8 @@ export class TestUtils {
     getMockPriceDtos(): PriceDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             cardId: i + 1,
-            foil: toDollar(i + 10),
-            normal: toDollar(i + 5),
+            foil: i + 10,
+            normal: i + 5,
             date: new Date("2022-01-01"),
         }));
     }
@@ -283,8 +283,8 @@ export class TestUtils {
 
     mapPriceDtoToEntity(dto: PriceDto): Price {
         const price = new Price();
-        price.foil = parseFloat(dto.foil);
-        price.normal = parseFloat(dto.normal);
+        price.foil = dto.foil;
+        price.normal = dto.normal;
         price.date = dto.date;
         return price;
     }
@@ -292,8 +292,8 @@ export class TestUtils {
     mapPriceEntityToDto(entity: Price): PriceDto {
         return {
             cardId: entity.card.id,
-            foil: toDollar(entity.foil),
-            normal: toDollar(entity.normal),
+            foil: entity.foil,
+            normal: entity.normal,
             date: entity.date,
         };
     }

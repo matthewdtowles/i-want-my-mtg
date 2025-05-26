@@ -1,18 +1,2 @@
-{{!-- TODO: move this logic out to map to PriceDto for reads so that it is ready to go --}}
-<span>
-{{#if prices}}
-    {{#each prices}}
-        ${{#if this.normal}}
-            {{this.normal}}
-        {{else}}
-            {{#if this.foil}}
-                {{this.foil}}
-            {{else}}
-                0.00
-            {{/if}}
-        {{/if}}
-    {{/each}}
-{{else}}
-    --
-{{/if}}
-</span>
+<span class="normal-price">{{card.displayPrice}}</span>
+<span class="foil-price hidden">{{card.foilDisplayPrice}}</span>

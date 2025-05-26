@@ -7,6 +7,7 @@ export class PriceMapper {
 
     /**
      * Maps a Price entity to a Price DTO.
+     * Keep number values for further processing.
      * 
      * @param {Price} price - The Price entity to map.
      * @returns {PriceDto} - The mapped Price DTO.
@@ -14,14 +15,10 @@ export class PriceMapper {
     toDto(price: Price): PriceDto {
         return {
             cardId: price.card.id,
-            foil: this.toDollar(price.foil),
-            normal: this.toDollar(price.normal),
+            foil: price.foil,
+            normal: price.normal,
             date: price.date,
         };
-    }
-
-    toDollar(number: number): string {
-        return number !== null ? number.toFixed(2) : "0.00";
     }
 
     /**
@@ -37,7 +34,7 @@ export class PriceMapper {
         card.id = cardId;
         price.card = card;
         price.foil = !isNaN(priceDto.foil) ? priceDto.foil : null;
-        price.normal = !isNaN(priceDto.normal) ? priceDto.normal :  null;
+        price.normal = !isNaN(priceDto.normal) ? priceDto.normal : null;
         price.date = priceDto.date;
         return price;
     }

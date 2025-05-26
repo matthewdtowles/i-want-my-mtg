@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get, Inject,
+    Get,
+    Inject,
     Logger,
     Param,
     Render,
@@ -51,8 +52,7 @@ export class SetController {
     ): Promise<SetHttpDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
         const userId = req.user ? req.user.id : 0;
-        const _set: InventorySetAggregateDto = await this.aggregatorService
-            .findInventorySetByCode(setCode, userId);
+        const _set: InventorySetAggregateDto = await this.aggregatorService.findInventorySetByCode(setCode, userId);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

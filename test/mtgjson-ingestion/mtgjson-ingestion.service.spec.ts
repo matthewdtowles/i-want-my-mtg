@@ -7,11 +7,9 @@ import { CreatePriceDto } from "src/core/price/api/create-price.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
 import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import exp from "constants";
+
 
 // TODO: simplify this test by using mock from the last test
-
-
 
 function* syncIterable<T>(items: T[]): Generator<T> {
     for (const item of items) yield item;

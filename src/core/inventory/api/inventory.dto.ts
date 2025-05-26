@@ -1,4 +1,3 @@
-import { Type } from "class-transformer";
 import { IsInt } from "class-validator";
 import { CardDto } from "src/core/card/api/card.dto";
 
@@ -22,7 +21,6 @@ export class InventoryDto {
  * Used when cards are not already in context
  */
 export class InventoryCardDto {
-    @Type(() => CardDto)
     readonly card: CardDto;
     readonly quantity: number;
     readonly userId: number;

@@ -33,7 +33,6 @@ export class MtgJsonApiClient {
         return response.data.data;
     }
 
-    // TODO: return Readable stream
     /**
      * Returns Set object for given code
      * Includes all CardSet objects in the Set

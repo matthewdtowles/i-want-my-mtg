@@ -7,19 +7,22 @@ import {
     Logger,
     Param,
     Patch,
-    Render, Req, UseGuards
+    Render,
+    Req,
+    UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
 import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
+import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { CardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
+import { UpdateCardDto } from "src/core/card/api/create-card.dto";
 import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
-import { CardDto } from "src/core/card/api/card.dto";
-import { UpdateCardDto } from "src/core/card/api/create-card.dto";
 
 @Controller("card")
 export class CardController {
@@ -44,20 +47,16 @@ export class CardController {
     @Get(":id")
     @Render("card")
     async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardHttpDto> {
+
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardById(Number(id), userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
-        this.LOGGER.debug(`findOne card: ${JSON.stringify(_card)}`);
+
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: [
-                { label: "Home", url: "/" },
-                { label: "Sets", url: "/sets" },
-                { label: _card.setCode.toUpperCase(), url: `/sets/${_card.setCode}` },
-                { label: _card.name, url: `/card/${_card.setCode}/${_card.number}` },
-            ],
+            breadcrumbs: breadcrumbsForCard(_card),
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== _card.setCode),
@@ -73,19 +72,16 @@ export class CardController {
         @Param("setNumber") setNumber: string,
         @Req() req: AuthenticatedRequest
     ): Promise<CardHttpDto> {
+
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
         const _card: InventoryCardAggregateDto = await this.aggregatorService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: [
-                { label: "Home", url: "/" },
-                { label: "Sets", url: "/sets" },
-                { label: setCode.toUpperCase(), url: `/sets/${setCode}` },
-                { label: _card.name, url: `/card/${setCode}/${setNumber}` },
-            ],
+            breadcrumbs: breadcrumbsForCard(_card),
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),

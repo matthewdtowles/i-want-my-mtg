@@ -8,7 +8,7 @@ import { SetDto } from "../set/api/set.dto";
 import { SetServicePort } from "../set/api/set.service.port";
 import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
-import { Timing } from "src/shared/decorators/timing.decorator";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -26,19 +26,13 @@ export class AggregatorService implements AggregatorServicePort {
         const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
-            const card = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
-            cards.push({
-                ...card,
-                quantity: item.quantity,
-            });
+            const card: CardDto = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
+            cards.push(this.createInventoryCardAggregate(card, item));
         }
         return cards;
     }
 
-    async findInventorySetByCode(
-        setCode: string,
-        userId: number
-    ): Promise<InventorySetAggregateDto> {
+    async findInventorySetByCode(setCode: string, userId: number): Promise<InventorySetAggregateDto> {
         this.LOGGER.debug(`findInventorySetByCode for set: ${setCode}, user: ${userId}`);
         const set: SetDto = await this.setService.findByCode(setCode);
         if (!set) throw new Error(`Set with code ${setCode} not found`);
@@ -47,11 +41,8 @@ export class AggregatorService implements AggregatorServicePort {
         const setInventoryCards: InventoryCardDto[] = inventoryCards
             ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
-            const inventoryItem = setInventoryCards.find(inv => inv.card.id === card.id);
-            return {
-                ...card,
-                quantity: inventoryItem ? inventoryItem.quantity : 0,
-            };
+            const inventoryItem: InventoryCardDto = setInventoryCards.find(inv => inv.card.id === card.id);
+            return this.createInventoryCardAggregate(card, inventoryItem);
         });
         return {
             ...set,
@@ -64,14 +55,9 @@ export class AggregatorService implements AggregatorServicePort {
         const card: CardDto = await this.cardService.findById(cardId, CardImgType.SMALL);
         if (!card) throw new Error(`Card with id ${cardId} not found`);
         const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, cardId);
-        const foundCard: InventoryCardAggregateDto = {
-            ...card,
-            quantity: inventoryItem ? inventoryItem.quantity : 0,
-        };
-        return foundCard;
+        return this.createInventoryCardAggregate(card, inventoryItem);
     }
 
-    @Timing()
     async findInventoryCardBySetNumber(
         setCode: string,
         cardNumber: string,
@@ -81,10 +67,19 @@ export class AggregatorService implements AggregatorServicePort {
         const card: CardDto = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber, CardImgType.NORMAL);
         if (!card) throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
         const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, card.id);
-        const foundCard: InventoryCardAggregateDto = {
+        return this.createInventoryCardAggregate(card, inventoryItem);
+    }
+
+    // TODO: may need to export this logic to be available to all services using cards/prices!!!
+    private createInventoryCardAggregate(
+        card: CardDto,
+        inventoryItem: InventoryDto | InventoryCardDto
+    ): InventoryCardAggregateDto {
+        return {
             ...card,
             quantity: inventoryItem ? inventoryItem.quantity : 0,
+            displayPrice: toDollar(card.prices[0]?.normal),
+            foilDisplayPrice: toDollar(card.prices[0]?.foil),
         };
-        return foundCard;
     }
 }

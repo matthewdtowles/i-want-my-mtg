@@ -137,6 +137,7 @@ export class TestUtils {
             const _cardId = this.getMockCardDtos(this.MOCK_SET_CODE)[i].id;
             const inventoryDto: InventoryDto = {
                 userId: 1,
+                isFoil: false,
                 cardId: _cardId,
                 quantity: _cardId % 2 !== 0 ? this.MOCK_QUANTITY : 0,
             };
@@ -150,6 +151,7 @@ export class TestUtils {
         return this.getMockCreateInventoryDtos().map((dto, i) => ({
             id: i + 1,
             userId: dto.userId,
+            isFoil: false,
             user: {
                 id: 1,
                 email: "test-email@iwmmtg.com",
@@ -171,6 +173,7 @@ export class TestUtils {
     getMockInventoryDtos(): InventoryDto[] {
         return this.getMockInventoryList().map((inventory) => ({
             userId: inventory.userId,
+            isFoil: inventory.isFoil,
             cardId: inventory.cardId,
             quantity: inventory.quantity,
         }));
@@ -179,6 +182,7 @@ export class TestUtils {
     entityToInventoryCardDto(inventory: Inventory): InventoryCardDto {
         return {
             card: inventory.card ? this.mapCardEntityToDto(inventory.card, "small") : undefined,
+            isFoil: inventory.isFoil,
             quantity: inventory.quantity,
             userId: inventory.user.id || 0,
         };

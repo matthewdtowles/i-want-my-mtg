@@ -16,6 +16,7 @@ describe("InventoryService", () => {
     const mockDeleteInventoryDtos: InventoryDto[] = testUtils.getMockCreateInventoryDtos().map((i: InventoryDto) => {
         return {
             cardId: i.cardId,
+            isFoil: i.isFoil,
             quantity: 0,
             userId: i.userId,
         };
@@ -40,10 +41,6 @@ describe("InventoryService", () => {
 
     afterEach(() => {
         repository.reset();
-    });
-
-    it("should be defined", () => {
-        expect(service).toBeDefined();
     });
 
     it("should create inventory items and return the saved inventory items", async () => {

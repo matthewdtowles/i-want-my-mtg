@@ -21,6 +21,7 @@ export class InventoryMapper {
         const inventoryEntity: Inventory = new Inventory();
         inventoryEntity.quantity = dto.quantity ?? 0;
         inventoryEntity.cardId = dto.cardId;
+        inventoryEntity.isFoil = dto.isFoil ?? false;
         inventoryEntity.user = new User();
         inventoryEntity.user.id = dto.userId;
         inventoryEntity.userId = dto.userId;
@@ -37,6 +38,7 @@ export class InventoryMapper {
         }
         const inventory: InventoryDto = {
             cardId: inventoryEntity.cardId,
+            isFoil: inventoryEntity.isFoil,
             quantity: inventoryEntity.quantity,
             userId: inventoryEntity.userId,
         };
@@ -53,6 +55,7 @@ export class InventoryMapper {
         }
         const inventory: InventoryCardDto = {
             card: this.cardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL),
+            isFoil: inventoryEntity.isFoil,
             quantity: inventoryEntity.quantity,
             userId: inventoryEntity.user && inventoryEntity.user.id
                 ? inventoryEntity.user.id : inventoryEntity.userId,

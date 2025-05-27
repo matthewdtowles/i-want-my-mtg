@@ -23,6 +23,8 @@ export class TestUtils {
     getMockCreateCardDtos(setCode: string): CreateCardDto[] {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => ({
             artist: "artist",
+            hasFoil: false,
+            hasNonFoil: true,
             imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
             isReserved: false,
             legalities: this.getMockLegalities(i + 1),
@@ -212,6 +214,8 @@ export class TestUtils {
         return {
             id: card.id,
             artist: card.artist,
+            hasFoil: false,
+            hasNonFoil: true,
             imgSrc: `https://cards.scryfall.io/${imgSize}/front/${card.imgSrc}`,
             isReserved: card.isReserved,
             legalities: card.legalities.map((legality) =>

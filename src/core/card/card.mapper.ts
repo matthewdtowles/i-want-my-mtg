@@ -20,6 +20,8 @@ export class CardMapper {
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
         const card: Card = new Card();
         card.artist = cardDto.artist;
+        card.hasFoil = cardDto.hasFoil;
+        card.hasNonFoil = cardDto.hasNonFoil;
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
         card.legalities = this.toLegalityEntities(cardDto.legalities);
@@ -42,6 +44,8 @@ export class CardMapper {
         const dto: CardDto = {
             id: card.id,
             artist: card.artist,
+            hasFoil: card.hasFoil,
+            hasNonFoil: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
             legalities: this.toLegalityDtos(card.legalities),

@@ -74,14 +74,6 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    async findAllIds(): Promise<number[]> {
-        return await this.cardRepository
-            .createQueryBuilder("card")
-            .select("card.id", "id")
-            .getRawMany()
-            .then((row) => row.map((r) => r.id));
-    }
-
     async delete(card: Card): Promise<void> {
         await this.cardRepository.delete(card);
     }

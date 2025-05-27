@@ -4,6 +4,8 @@ exports[`CardService should find all cards in a set 1`] = `
 [
   {
     "artist": "artist",
+    "hasFoil": undefined,
+    "hasNonFoil": undefined,
     "id": 1,
     "imgSrc": "https://cards.scryfall.io/small/front/1/a/1abc123def456.jpg",
     "isReserved": false,
@@ -109,6 +111,8 @@ exports[`CardService should find all cards in a set 1`] = `
   },
   {
     "artist": "artist",
+    "hasFoil": undefined,
+    "hasNonFoil": undefined,
     "id": 2,
     "imgSrc": "https://cards.scryfall.io/small/front/2/a/2abc123def456.jpg",
     "isReserved": false,
@@ -214,6 +218,8 @@ exports[`CardService should find all cards in a set 1`] = `
   },
   {
     "artist": "artist",
+    "hasFoil": undefined,
+    "hasNonFoil": undefined,
     "id": 3,
     "imgSrc": "https://cards.scryfall.io/small/front/3/a/3abc123def456.jpg",
     "isReserved": false,
@@ -324,6 +330,8 @@ exports[`CardService should save new cards and return saved cards 1`] = `
 [
   {
     "artist": "artist",
+    "hasFoil": false,
+    "hasNonFoil": true,
     "id": 1,
     "imgSrc": "https://cards.scryfall.io/small/front/1/a/1abc123def456.jpg",
     "isReserved": false,
@@ -401,6 +409,8 @@ exports[`CardService should save new cards and return saved cards 1`] = `
   },
   {
     "artist": "artist",
+    "hasFoil": false,
+    "hasNonFoil": true,
     "id": 2,
     "imgSrc": "https://cards.scryfall.io/small/front/2/a/2abc123def456.jpg",
     "isReserved": false,
@@ -478,6 +488,8 @@ exports[`CardService should save new cards and return saved cards 1`] = `
   },
   {
     "artist": "artist",
+    "hasFoil": false,
+    "hasNonFoil": true,
     "id": 3,
     "imgSrc": "https://cards.scryfall.io/small/front/3/a/3abc123def456.jpg",
     "isReserved": false,

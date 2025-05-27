@@ -68,6 +68,8 @@ describe("CardService", () => {
                 legalities: [
                     { format: Format.Standard, status: LegalityStatus.Banned, cardId: 1 }
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrcUpdated",
                 isReserved: true,
                 number: "1",
@@ -138,6 +140,8 @@ describe("CardService", () => {
                         cardId: 1
                     },
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrc",
                 isReserved: false,
                 number: "1",
@@ -203,6 +207,8 @@ describe("CardService", () => {
                         cardId: 1
                     },
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrc",
                 isReserved: false,
                 number: "1",

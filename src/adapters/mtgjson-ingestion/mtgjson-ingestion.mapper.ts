@@ -40,6 +40,8 @@ export class MtgJsonIngestionMapper {
     toCreateCardDto(setCard: CardSet): CreateCardDto {
         return {
             artist: setCard.artist,
+            hasFoil: setCard.hasFoil,
+            hasNonFoil: setCard.hasNonFoil,
             imgSrc: this.buildCardImgSrc(setCard),
             isReserved: setCard.isReserved,
             legalities: this.toLegalityDtos(setCard.legalities),

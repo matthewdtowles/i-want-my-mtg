@@ -20,6 +20,12 @@ export class Card {
     @IsString()
     artist?: string;
 
+    @Column({ name: "has_foil" })
+    hasFoil: boolean;
+
+    @Column({ name: "has_non_foil" })
+    hasNonFoil: boolean;
+
     @Column({ name: "img_src" })
     @IsString()
     @IsNotEmpty()

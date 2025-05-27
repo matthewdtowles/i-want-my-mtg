@@ -16,7 +16,6 @@ export class SetRepository implements SetRepositoryPort {
             throw new Error(`Invalid input. Sets array given is empty.`);
         }
         const saveSets: Set[] = [];
-        // TODO: MOVE TO SERVICE!
         await Promise.all(
             sets.map(async (s) => {
                 if (!s) throw new Error(`Invalid set in sets.`);

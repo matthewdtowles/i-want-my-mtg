@@ -63,10 +63,6 @@ export class MockCardRepository implements CardRepositoryPort {
         return this.cards.filter(card => card.name === name);
     }
 
-    async findAllIds(): Promise<number[]> {
-        return this.cards.map(card => card.id);
-    }
-
     async delete(card: Card): Promise<void> {
         this.cards = this.cards.filter(c => c.id !== card.id);
     }

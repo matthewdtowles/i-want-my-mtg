@@ -7,6 +7,8 @@ import { SetDto } from "src/core/set/api/set.dto";
 export class CardDto {
     readonly id: number;
     readonly artist?: string;
+    readonly hasFoil: boolean;
+    readonly hasNonFoil: boolean;
     readonly imgSrc: string;
     readonly isReserved: boolean;
     readonly legalities?: LegalityDto[];

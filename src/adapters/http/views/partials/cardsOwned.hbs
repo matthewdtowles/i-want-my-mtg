@@ -11,6 +11,7 @@
         focus:outline-none focus:ring-0" value="{{#if card.quantity}}{{card.quantity}}{{else}}0{{/if}}"
         data-id="{{card.id}}" />
 
+    <input type="hidden" name="isFoil" value="{{isFoil}}">
     <button type="button"
         class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
 

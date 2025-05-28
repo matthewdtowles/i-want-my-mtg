@@ -7,8 +7,10 @@ import { SetDto } from "src/core/set/api/set.dto";
  */
 export class InventoryCardAggregateDto extends CardDto {
     readonly quantity: number = 0;
+    // TODO: UPDATE -- displayValue, isFoil as new fields
     readonly displayPrice?: string;
     readonly foilDisplayPrice?: string;
+
 }
 
 /**

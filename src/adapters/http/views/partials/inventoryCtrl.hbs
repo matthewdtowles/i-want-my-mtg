@@ -1,0 +1,10 @@
+{{#if card.hasNonFoil}}
+<span class="non-foil-inventory-controller">
+    {{>cardsOwned isFoil=false card=card}}
+</span>
+{{/if}}
+{{#if card.hasFoil}}
+<span class="foil-inventory-controller hidden">
+    {{>cardsOwned isFoil=true card=card}}
+</span>
+{{/if}}

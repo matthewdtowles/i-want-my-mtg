@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".quantity-form").forEach((form) => {
         const quantityOwned = form.querySelector("input[name='quantity-owned']");
         const cardId = quantityOwned.dataset.id;
-        const isFoil = quantityOwned.dataset.foil;
+        const isFoil = form.querySelector("input[name='isFoil']").value === "true";
         const incrementButton = form.querySelector(".increment-quantity");
         const decrementButton = form.querySelector(".decrement-quantity");
 
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
             quantityOwned.value = updatedQuantity;
         });
 
-        async function addInventoryItem(_quantity, _cardId, _isFoil) {
+        async function addInventoryItem(_quantity, _cardId, isFoil) {
             let updatedQuantity = _quantity;
             try {
                 const qtyInt = parseInt(updatedQuantity);

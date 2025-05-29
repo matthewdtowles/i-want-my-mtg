@@ -13,16 +13,7 @@
         {{#each set.cards}}
         <tr class="table-row">
             <td class="py-2 pl-2">
-                {{#if this.hasNonFoil}}
-                <span class="non-foil-inventory-controller">
-                    {{>cardsOwned isFoil=false card=this}}
-                </span>
-                {{/if}}
-                {{#if this.hasFoil}}
-                <span class="foil-inventory-controller">
-                    {{>cardsOwned isFoil=true card=this}}
-                </span>
-                {{/if}}
+                {{>inventoryCtrl card=this}}
             </td>
             <td class="py-2">{{this.number}}</td>
             <td class="py-2">

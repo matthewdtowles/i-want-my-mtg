@@ -2676,8 +2676,7 @@ select {
 }
 
 .foil-mode .normal-price,
-.foil-mode .owned-normal,
-.foil-inventory-controller {
+.foil-mode .owned-normal {
   display: none ;
 }
 

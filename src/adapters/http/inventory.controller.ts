@@ -70,11 +70,17 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Create inventory`);
         this.validateAuthenticatedRequest(req);
+
+        console.log(`Received create inventory request IN: ${JSON.stringify(createInventoryDtos)}`);
+
         const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
             ...dto,
             userId: req.user.id,
         }));
         const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
+
+        console.log(`Created inventory items OUT: ${JSON.stringify(createdItems)}`);
+
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
             inventory: createdItems,
@@ -90,11 +96,17 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Update inventory`);
         this.validateAuthenticatedRequest(req);
+
+        console.log(`Received update inventory request IN: ${JSON.stringify(updateInventoryDtos)}`);
+
         const completeDtos = updateInventoryDtos.map(dto => ({
             ...dto,
             userId: req.user.id,
         }));
         const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
+
+        console.log(`Updated inventory items OUT: ${JSON.stringify(updatedInventory)}`);
+
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,
             inventory: updatedInventory,

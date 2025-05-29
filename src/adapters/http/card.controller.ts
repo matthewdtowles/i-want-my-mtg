@@ -50,8 +50,7 @@ export class CardController {
 
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
-        const _card: InventoryCardAggregateDto = await this.aggregatorService
-            .findInventoryCardById(Number(id), userId);
+        const _card: InventoryCardAggregateDto = await this.aggregatorService.findInventoryCardById(Number(id), userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
 
         return {
@@ -98,6 +97,7 @@ export class CardController {
     }
 }
 
+// FIXME: InventoryCardAggregateDto has variants array rather than direct attributes
 export class CardHttpDto extends BaseHttpDto {
     readonly card: InventoryCardAggregateDto;
     readonly otherPrintings: CardDto[];

@@ -1,14 +1,14 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardImgType } from "src/core/card/api/card.img.type.enum";
-import { CardServicePort } from "../card/api/card.service.port";
-import { InventoryCardDto, InventoryDto } from "../inventory/api/inventory.dto";
-import { InventoryServicePort } from "../inventory/api/inventory.service.port";
-import { SetDto } from "../set/api/set.dto";
-import { SetServicePort } from "../set/api/set.service.port";
-import { InventoryCardAggregateDto, InventorySetAggregateDto } from "./api/aggregate.dto";
-import { AggregatorServicePort } from "./api/aggregator.service.port";
+import { CardServicePort } from "src/core/card/api/card.service.port";
+import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
+import { SetDto } from "src/core/set/api/set.dto";
+import { SetServicePort } from "src/core/set/api/set.service.port";
 import { toDollar } from "src/shared/utils/formatting.util";
+import { InventoryCardAggregateDto, InventoryCardVariant, InventorySetAggregateDto, VariantType } from "./api/aggregate.dto";
+import { AggregatorServicePort } from "./api/aggregator.service.port";
 
 @Injectable()
 export class AggregatorService implements AggregatorServicePort {
@@ -27,7 +27,7 @@ export class AggregatorService implements AggregatorServicePort {
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
             const card: CardDto = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
-            cards.push(this.createInventoryCardAggregate(card, item));
+            cards.push(this.mapInventoryCardAggregate(card, [item]));
         }
         return cards;
     }
@@ -37,12 +37,11 @@ export class AggregatorService implements AggregatorServicePort {
         const set: SetDto = await this.setService.findByCode(setCode);
         if (!set) throw new Error(`Set with code ${setCode} not found`);
         if (!set.cards || set.cards.length === 0) throw new Error(`Set with code ${setCode} has no cards`);
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
-        const setInventoryCards: InventoryCardDto[] = inventoryCards
-            ? inventoryCards.filter(item => item.card.setCode === setCode) : [];
+        const invCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
+        const setInvCards: InventoryCardDto[] = invCards ? invCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
-            const inventoryItem: InventoryCardDto = setInventoryCards.find(inv => inv.card.id === card.id);
-            return this.createInventoryCardAggregate(card, inventoryItem);
+            const invItems: InventoryCardDto[] = setInvCards.filter(inv => inv.card.id === card.id);
+            return this.mapInventoryCardAggregate(card, invItems);
         });
         return {
             ...set,
@@ -54,32 +53,47 @@ export class AggregatorService implements AggregatorServicePort {
         this.LOGGER.debug(`findInventoryCardById for card: ${cardId}, user: ${userId}`);
         const card: CardDto = await this.cardService.findById(cardId, CardImgType.SMALL);
         if (!card) throw new Error(`Card with id ${cardId} not found`);
-        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, cardId);
-        return this.createInventoryCardAggregate(card, inventoryItem);
+        const inventoryItems: InventoryDto[] = await this.inventoryService.findForUser(userId, cardId);
+        return this.mapInventoryCardAggregate(card, inventoryItems);
     }
 
     async findInventoryCardBySetNumber(
         setCode: string,
         cardNumber: string,
-        userId: number
+        userId: number,
     ): Promise<InventoryCardAggregateDto> {
         this.LOGGER.debug(`findInventoryCards for set: ${setCode}, card #: ${cardNumber}, user: ${userId}`);
         const card: CardDto = await this.cardService.findBySetCodeAndNumber(setCode, cardNumber, CardImgType.NORMAL);
         if (!card) throw new Error(`Card #${cardNumber} in set ${setCode} not found`);
-        const inventoryItem: InventoryDto = await this.inventoryService.findOneForUser(userId, card.id);
-        return this.createInventoryCardAggregate(card, inventoryItem);
+        const inventoryItems: InventoryDto[] = await this.inventoryService.findForUser(userId, card.id);
+        return this.mapInventoryCardAggregate(card, inventoryItems);
     }
 
     // TODO: may need to export this logic to be available to all services using cards/prices!!!
-    private createInventoryCardAggregate(
+    private mapInventoryCardAggregate(
         card: CardDto,
-        inventoryItem: InventoryDto | InventoryCardDto
+        inventoryItems: InventoryDto[] | InventoryCardDto[]
     ): InventoryCardAggregateDto {
+        const variants: InventoryCardVariant[] = [];
+        if (card.hasNonFoil) {
+            const inv: InventoryDto | InventoryCardDto = inventoryItems.find(item => !item.isFoil);
+            variants.push({
+                displayValue: toDollar(card.prices[0]?.normal),
+                quantity: inv ? inv.quantity : 0,
+                type: VariantType.NORMAL,
+            });
+        }
+        if (card.hasFoil) {
+            const inv: InventoryDto | InventoryCardDto = inventoryItems.find(item => item.isFoil);
+            variants.push({
+                displayValue: toDollar(card.prices[0]?.foil),
+                quantity: inv ? inv.quantity : 0,
+                type: VariantType.FOIL,
+            });
+        }
         return {
             ...card,
-            quantity: inventoryItem ? inventoryItem.quantity : 0,
-            displayPrice: toDollar(card.prices[0]?.normal),
-            foilDisplayPrice: toDollar(card.prices[0]?.foil),
+            variants,
         };
     }
 }

@@ -71,21 +71,21 @@ describe("InventoryService", () => {
 
     it("should find an inventory item for a user", async () => {
         jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(1, 1);
+        const foundItem: InventoryDto = await service.findForUser(1, 1);
         expect(repository.findOne).toHaveBeenCalled();
         expect(foundItem).toEqual(testUtils.getMockInventoryDtos()[0]);
     });
 
     it("should return null if userId is not provided for findOneForUser", async () => {
         jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(null, 1);
+        const foundItem: InventoryDto = await service.findForUser(null, 1);
         expect(repository.findOne).not.toHaveBeenCalled();
         expect(foundItem).toBeNull();
     });
 
     it("should return null if cardId is not provided for findOneForUser", async () => {
         jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(1, null);
+        const foundItem: InventoryDto = await service.findForUser(1, null);
         expect(repository.findOne).not.toHaveBeenCalled();
         expect(foundItem).toBeNull();
     });

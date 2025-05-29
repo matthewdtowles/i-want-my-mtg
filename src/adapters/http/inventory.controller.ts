@@ -70,17 +70,11 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Create inventory`);
         this.validateAuthenticatedRequest(req);
-
-        console.log(`Received create inventory request IN: ${JSON.stringify(createInventoryDtos)}`);
-
         const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
             ...dto,
             userId: req.user.id,
         }));
         const createdItems: InventoryDto[] = await this.inventoryService.create(updatedDtos);
-
-        console.log(`Created inventory items OUT: ${JSON.stringify(createdItems)}`);
-
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
             inventory: createdItems,
@@ -96,17 +90,11 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Update inventory`);
         this.validateAuthenticatedRequest(req);
-
-        console.log(`Received update inventory request IN: ${JSON.stringify(updateInventoryDtos)}`);
-
         const completeDtos = updateInventoryDtos.map(dto => ({
             ...dto,
             userId: req.user.id,
         }));
         const updatedInventory: InventoryDto[] = await this.inventoryService.update(completeDtos);
-
-        console.log(`Updated inventory items OUT: ${JSON.stringify(updatedInventory)}`);
-
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,
             inventory: updatedInventory,
@@ -117,13 +105,14 @@ export class InventoryController {
     @Delete()
     async delete(
         @Body('cardId') _cardId: number,
+        @Body('isFoil') isFoil: boolean,
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
         this.LOGGER.debug(`Delete inventory item`);
         this.validateAuthenticatedRequest(req);
         if (!_cardId) throw new BadRequestException("Card ID not found in request");
-        await this.inventoryService.delete(req.user.id, _cardId);
+        await this.inventoryService.delete(req.user.id, _cardId, isFoil);
         return res.status(HttpStatus.OK).json({
             message: `Deleted inventory item`,
             cardId: _cardId,

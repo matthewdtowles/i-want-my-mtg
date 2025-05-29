@@ -16,18 +16,29 @@ export class InventoryRepository implements InventoryRepositoryPort {
                 const savedItem: Inventory = await this.repository.save(item);
                 savedItems.push(savedItem);
             } else {
-                await this.delete(item.userId, item.cardId);
+                await this.delete(item.userId, item.cardId, item.isFoil);
                 savedItems.push(item);
             }
         }
         return savedItems;
     }
 
-    async findOne(_userId: number, _cardId: number): Promise<Inventory | null> {
+    async findOne(_userId: number, _cardId: number, _isFoil: boolean): Promise<Inventory | null> {
         return await this.repository.findOne({
             where: {
                 userId: _userId,
                 cardId: _cardId,
+                isFoil: _isFoil,
+            },
+            relations: ["card"],
+        });
+    }
+
+    async findByCard(userId: number, cardId: number): Promise<Inventory[]> {
+        return await this.repository.find({
+            where: {
+                userId: userId,
+                cardId: cardId,
             },
             relations: ["card"],
         });
@@ -42,7 +53,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         });
     }
 
-    async delete(userId: number, cardId: number): Promise<void> {
+    async delete(userId: number, cardId: number, foil: boolean): Promise<void> {
         try {
             await this.repository
                 .createQueryBuilder()
@@ -50,6 +61,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
                 .from(Inventory)
                 .where("userId = :userId", { userId })
                 .andWhere("cardId = :cardId", { cardId })
+                .andWhere("foil = :foil", { foil })
                 .execute();
         } catch (error) {
             throw new Error(`Failed to delete inventory: ${error.message}`);

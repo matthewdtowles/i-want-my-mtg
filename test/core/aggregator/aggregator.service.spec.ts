@@ -32,7 +32,7 @@ describe("AggregatorService", () => {
         findAllCardsForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryCardDtos()),
         create: jest.fn(),
         update: jest.fn(),
-        findOneForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()[0]),
+        findForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()[0]),
         delete: function (userId: number, cardId: number): Promise<boolean> {
             throw new Error("Function not implemented.");
         }

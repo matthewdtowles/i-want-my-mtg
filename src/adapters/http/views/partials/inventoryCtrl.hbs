@@ -1,10 +1,5 @@
-{{#if card.hasNonFoil}}
-<span class="non-foil-inventory-controller">
-    {{>cardsOwned isFoil=false card=card}}
-</span>
-{{/if}}
-{{#if card.hasFoil}}
-<span class="foil-inventory-controller hidden">
-    {{>cardsOwned isFoil=true card=card}}
-</span>
-{{/if}}
+{{#each card.variants as |variant|}}
+    <span class="{{variant.type}}-inventory-controller {{#unless @first}}hidden{{/unless}}">
+        {{>cardsOwned variant=variant card=../card}}
+    </span>
+{{/each}}

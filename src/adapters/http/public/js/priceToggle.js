@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
         root.classList.toggle("foil-mode", showingFoil);
         toggleBtn.textContent = showingFoil ? "Normal" : "Foil";
 
-        document.querySelectorAll(".non-foil-inventory-controller").forEach(el => {
+        document.querySelectorAll(".normal-inventory-controller").forEach(el => {
             el.classList.toggle("hidden", showingFoil);
         });
 

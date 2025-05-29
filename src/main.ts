@@ -21,6 +21,7 @@ async function bootstrap() {
             toUpperCase: (str: string) => str.toUpperCase(),
             toLowerCase: (str: string) => str.toLowerCase(),
             capitalize: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
+            eq: (a: string, b: string) => a === b,
         },
     });
     app.engine("hbs", hbs.engine);

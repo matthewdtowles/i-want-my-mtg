@@ -88,7 +88,6 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
-    console.log("Received inventory update:", updateInventoryDtos); // TODO: REMOVE
         this.LOGGER.debug(`Update inventory`);
         this.validateAuthenticatedRequest(req);
         const completeDtos = updateInventoryDtos.map(dto => ({

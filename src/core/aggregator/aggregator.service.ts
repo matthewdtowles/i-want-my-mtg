@@ -7,7 +7,12 @@ import { InventoryServicePort } from "src/core/inventory/api/inventory.service.p
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 import { toDollar } from "src/shared/utils/formatting.util";
-import { InventoryCardAggregateDto, InventoryCardVariant, InventorySetAggregateDto, VariantType } from "./api/aggregate.dto";
+import {
+    InventoryCardAggregateDto,
+    InventoryCardVariant,
+    InventorySetAggregateDto,
+    VariantType
+} from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
 
 @Injectable()
@@ -20,14 +25,20 @@ export class AggregatorService implements AggregatorServicePort {
         @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
         @Inject(SetServicePort) private readonly setService: SetServicePort,
     ) { }
-
     async findByUser(userId: number): Promise<InventoryCardAggregateDto[]> {
         this.LOGGER.debug(`findByUser ${userId}`);
         const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
             const card: CardDto = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
-            cards.push(this.mapInventoryCardAggregate(card, [item]));
+            cards.push({
+                ...card,
+                variants: [{
+                    displayValue: item.isFoil ? toDollar(card.prices[0]?.foil) : toDollar(card.prices[0]?.normal),
+                    quantity: item.quantity,
+                    type: item.isFoil ? VariantType.FOIL : VariantType.NORMAL,
+                }]
+            });
         }
         return cards;
     }
@@ -69,7 +80,19 @@ export class AggregatorService implements AggregatorServicePort {
         return this.mapInventoryCardAggregate(card, inventoryItems);
     }
 
-    // TODO: may need to export this logic to be available to all services using cards/prices!!!
+    private mapForInventory(card: CardDto, inventoryItem: InventoryCardDto): InventoryCardAggregateDto {
+        return {
+            ...card,
+            variants: [
+                {
+                    displayValue: inventoryItem.isFoil ? toDollar(card.prices[0]?.foil) : toDollar(card.prices[0]?.normal),
+                    quantity: inventoryItem.quantity,
+                    type: inventoryItem.isFoil ? VariantType.FOIL : VariantType.NORMAL,
+                },
+            ]
+        };
+    }
+
     private mapInventoryCardAggregate(
         card: CardDto,
         inventoryItems: InventoryDto[] | InventoryCardDto[]

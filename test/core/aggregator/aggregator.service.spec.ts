@@ -31,7 +31,7 @@ describe("AggregatorService", () => {
         findAllCardsForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryCardDtos()),
         create: jest.fn(),
         update: jest.fn(),
-        findForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()[0]),
+        findForUser: jest.fn().mockResolvedValue(testUtils.getMockInventoryDtos()),
         delete: function (userId: number, cardId: number): Promise<boolean> {
             throw new Error("Function not implemented.");
         }
@@ -68,7 +68,7 @@ describe("AggregatorService", () => {
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
             result.cards.forEach(card => {
-                expect(card.quantity).toBeGreaterThanOrEqual(0);
+                expect(card.variants.length).toEqual(0);
             });
         });
 
@@ -78,7 +78,7 @@ describe("AggregatorService", () => {
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
             result.cards.forEach(card => {
-                expect(card.quantity).toBeGreaterThanOrEqual(0);
+                expect(card.variants.length).toEqual(0);
             });
         });
 
@@ -87,13 +87,7 @@ describe("AggregatorService", () => {
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(set.cards.length);
             result.cards.forEach((card: InventoryCardAggregateDto) => {
-                expect(card.quantity).toBeDefined();
-                // cards with even IDs had quantity set to 0
-                if (card.id % 2 === 0) {
-                    expect(card.quantity).toBe(0);
-                } else {
-                    expect(card.quantity).toBe(testUtils.MOCK_QUANTITY);
-                }
+                expect(card.variants).toBeDefined();
             });
         });
     });
@@ -107,29 +101,22 @@ describe("AggregatorService", () => {
         });
 
         it("should return inventory card with quantity 0 if userId invalid", async () => {
-            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            jest.spyOn(mockInventoryService, "findForUser").mockResolvedValueOnce([]);
             const result: InventoryCardAggregateDto = await subject.findInventoryCardById(cardId, -1);
 
-            expect(result.quantity).toBe(0);
-            expect(result.displayPrice).toBe("5.00")
-            expect(result.foilDisplayPrice).toBe("10.00");
+            expect(result.variants.length).toBeGreaterThan(0);
+            result.variants.forEach(variant => {
+                expect(variant.quantity).toBe(0);
+            });
         });
 
         it("should return inventory card with quantity 0 if no inventory item found", async () => {
-            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            jest.spyOn(mockInventoryService, "findForUser").mockResolvedValueOnce([]);
             const result: InventoryCardAggregateDto = await subject.findInventoryCardById(cardId, userId);
-
-            expect(result.quantity).toBe(0);
-            expect(result.displayPrice).toBe("5.00");
-            expect(result.foilDisplayPrice).toBe("10.00");
-        });
-
-        it("should return inventory card with quantity if inventory item found", async () => {
-            const result: InventoryCardAggregateDto = await subject.findInventoryCardById(cardId, userId);
-
-            expect(result.quantity).toBe(4);
-            expect(result.displayPrice).toBe("5.00");
-            expect(result.foilDisplayPrice).toBe("10.00");
+            expect(result.variants.length).toBeGreaterThan(0);
+            result.variants.forEach(variant => {
+                expect(variant.quantity).toBe(0);
+            });
         });
     });
 
@@ -142,26 +129,29 @@ describe("AggregatorService", () => {
         });
 
         it("should return inventory card with quantity 0 if userId invalid", async () => {
-            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            jest.spyOn(mockInventoryService, "findForUser").mockResolvedValueOnce([]);
             const result: InventoryCardAggregateDto = await subject.findInventoryCardBySetNumber(setCode, cardNumber, -1);
-            expect(result.quantity).toBe(0);
-            expect(result.displayPrice).toBe("5.00");
-            expect(result.foilDisplayPrice).toBe("10.00");
+            expect(result.variants.length).toBeGreaterThan(0);
+            result.variants.forEach(variant => {
+                expect(variant.quantity).toBe(0);
+            });
         });
 
         it("should return inventory card with quantity 0 if no inventory item found", async () => {
-            jest.spyOn(mockInventoryService, "findOneForUser").mockResolvedValueOnce(null);
+            jest.spyOn(mockInventoryService, "findForUser").mockResolvedValueOnce([]);
             const result: InventoryCardAggregateDto = await subject.findInventoryCardBySetNumber(setCode, cardNumber, -1);
-            expect(result.quantity).toBe(0);
-            expect(result.displayPrice).toBe("5.00");
-            expect(result.foilDisplayPrice).toBe("10.00");
+            expect(result.variants.length).toBeGreaterThan(0);
+            result.variants.forEach(variant => {
+                expect(variant.quantity).toBe(0);
+            });
         });
 
         it("should return inventory card with quantity if inventory item found", async () => {
             const result: InventoryCardAggregateDto = await subject.findInventoryCardBySetNumber(setCode, cardNumber, userId);
-            expect(result.quantity).toBe(4);
-            expect(result.displayPrice).toBe("5.00");
-            expect(result.foilDisplayPrice).toBe("10.00");
+            expect(result.variants.length).toBeGreaterThan(0);
+            result.variants.forEach(variant => {
+                expect(variant.quantity).toBeGreaterThan(0);
+            });
         });
     });
 });

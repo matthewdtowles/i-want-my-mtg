@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         async function updateInventory(_quantity, _cardId, _isFoil, _method) {
-console.log("Sending inventory update:", { cardId: _cardId, isFoil: _isFoil, quantity: _quantity });// TODO REMOVE
             const response = await fetch('/inventory', {
                 method: _method,
                 headers: {
@@ -102,7 +101,7 @@ console.log("Sending inventory update:", { cardId: _cardId, isFoil: _isFoil, qua
     document.querySelectorAll(".delete-inventory-form").forEach((form) => {
         const deleteButton = form.querySelector(".delete-inventory-button");
         const _cardId = form.querySelector("input[name='card-id']").value;
-        const _isFoil = form.querySelector("input[name='is-foil']").value;
+        const _isFoil = form.querySelector("input[name='isFoil']").value === "true";
         deleteButton.addEventListener("click", async (event) => {
             event.stopImmediatePropagation();
             console.log(`Deleting card ${_cardId} from inventory`);

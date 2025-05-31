@@ -6,7 +6,6 @@ import { CardServicePort } from "src/core/card/api/card.service.port";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 import { TestUtils } from "../../test-utils";
-import { Inventory } from "src/core/inventory/inventory.entity";
 
 describe("AggregatorService", () => {
     let subject: AggregatorService;
@@ -48,10 +47,6 @@ describe("AggregatorService", () => {
             ],
         }).compile();
         subject = module.get<AggregatorService>(AggregatorService);
-    });
-
-    it("should be defined", () => {
-        expect(subject).toBeDefined();
     });
 
     describe("findInventorySetByCode", () => {

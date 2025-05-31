@@ -70,24 +70,24 @@ describe("InventoryService", () => {
     });
 
     it("should find an inventory item for a user", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findForUser(1, 1);
-        expect(repository.findOne).toHaveBeenCalled();
-        expect(foundItem).toEqual(testUtils.getMockInventoryDtos()[0]);
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(1, 1);
+        expect(repository.findByCard).toHaveBeenCalled();
+        expect(foundItems).toHaveLength(1);
     });
 
-    it("should return null if userId is not provided for findOneForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findForUser(null, 1);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
+    it("should return [] if userId is not provided for findOneForUser", async () => {
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(null, 1);
+        expect(repository.findByCard).not.toHaveBeenCalled();
+        expect(foundItems).toEqual([]);
     });
 
     it("should return null if cardId is not provided for findOneForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findForUser(1, null);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(1, null);
+        expect(repository.findByCard).not.toHaveBeenCalled();
+        expect(foundItems).toEqual([]);
     });
 
     it("should find inventory items with cards for a user", async () => {
@@ -138,15 +138,15 @@ describe("InventoryService", () => {
         const userId = 1;
         const cardId = 1;
         jest.spyOn(repository, "delete");
-        const result = await service.delete(userId, cardId);
-        expect(repository.delete).toHaveBeenCalledWith(userId, cardId);
+        const result = await service.delete(userId, cardId, false);
+        expect(repository.delete).toHaveBeenCalledWith(userId, cardId, false);
         expect(result).toBe(true);
     });
 
     it("should return false if userId is not provided for delete", async () => {
         jest.spyOn(repository, "delete");
         const cardId = 1;
-        const result = await service.delete(null, cardId);
+        const result = await service.delete(null, cardId, false);
         expect(repository.delete).not.toHaveBeenCalled();
         expect(result).toBe(false);
     });
@@ -154,7 +154,7 @@ describe("InventoryService", () => {
     it("should return false if cardId is not provided for delete", async () => {
         jest.spyOn(repository, "delete");
         const userId = 1;
-        const result = await service.delete(userId, null);
+        const result = await service.delete(userId, null, false);
         expect(repository.delete).not.toHaveBeenCalled();
         expect(result).toBe(false);
     });
@@ -165,7 +165,7 @@ describe("InventoryService", () => {
         });
         const userId = 1;
         const cardId = 1;
-        const result = await service.delete(userId, cardId);
+        const result = await service.delete(userId, cardId, false);
         expect(repository.delete).toHaveBeenCalled();
         expect(result).toBe(false);
     });

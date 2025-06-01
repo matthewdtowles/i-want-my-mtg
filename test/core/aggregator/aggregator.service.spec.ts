@@ -4,10 +4,10 @@ import { InventoryCardAggregateDto, InventorySetAggregateDto } from "src/core/ag
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
-import { SetServicePort } from "src/core/set/api/set.service.port";
-import { TestUtils } from "../../test-utils";
 import { SetDto } from "src/core/set/api/set.dto";
+import { SetServicePort } from "src/core/set/api/set.service.port";
 import { Set } from "src/core/set/set.entity";
+import { TestUtils } from "../../test-utils";
 
 describe("AggregatorService", () => {
     let subject: AggregatorService;
@@ -17,11 +17,9 @@ describe("AggregatorService", () => {
     const mockCardDtos: CardDto[] = testUtils.mockCardDtos(setCode);
     const mockCardService: CardServicePort = {
         save: jest.fn(),
-        findAllInSet: jest.fn(),
         findAllWithName: jest.fn(),
         findById: jest.fn().mockResolvedValue(mockCardDtos[0]),
         findBySetCodeAndNumber: jest.fn().mockResolvedValue(mockCardDtos[0]),
-        findByUuid: jest.fn(),
     };
     const mockSetWithCards: Set = testUtils.mockSet(setCode);
     mockSetWithCards.cards = testUtils.mockCards(setCode);

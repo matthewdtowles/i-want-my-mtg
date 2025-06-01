@@ -1,4 +1,3 @@
-import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 import { Price } from "src/core/price/price.entity";
 import { Set } from "src/core/set/set.entity";
 import {
@@ -17,7 +16,6 @@ export class Card {
     id: number;
 
     @Column({ nullable: true })
-    @IsString()
     artist?: string;
 
     @Column({ name: "has_foil" })
@@ -27,8 +25,6 @@ export class Card {
     hasNonFoil: boolean;
 
     @Column({ name: "img_src" })
-    @IsString()
-    @IsNotEmpty()
     imgSrc: string;
 
     @Column({ default: false, name: "is_reserved" })
@@ -41,17 +37,12 @@ export class Card {
     manaCost?: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     name: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     number: string;
 
     @Column({ name: "oracle_text", nullable: true, type: "text" })
-    @IsString()
     oracleText?: string;
 
     @OneToMany(() => Price, (price) => price.card, { cascade: true })
@@ -62,7 +53,6 @@ export class Card {
         enum: CardRarity,
         enumName: "card_rarity_enum",
     })
-    @IsNotEmpty()
     rarity: CardRarity;
 
     @ManyToOne(() => Set, (set) => set.cards)
@@ -70,17 +60,11 @@ export class Card {
     set: Set;
 
     @Column({ name: "set_code" })
-    @IsString()
-    @IsNotEmpty()
     setCode: string;
 
     @Column()
-    @IsString()
-    @IsNotEmpty()
     type: string;
 
     @Column({ unique: true })
-    @IsUUID()
-    @IsNotEmpty()
     uuid: string;
 }

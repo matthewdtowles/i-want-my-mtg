@@ -132,17 +132,6 @@ describe("CardService", () => {
         expect(repository.save).toHaveBeenCalledTimes(1);
     });
 
-    it("should find all cards in a set", async () => {
-        const mockCards: Card[] = testUtils.mockCards(mockSetCode);
-        jest.spyOn(repository, "findAllInSet").mockResolvedValue(mockCards);
-
-        const result: CardDto[] = await service.findAllInSet(mockSetCode);
-
-        expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
-        expect(result.length).toBe(mockCards.length);
-        expect(result).toMatchSnapshot();
-    });
-
     it("should throw an error if card lookup fails", async () => {
         jest.spyOn(repository, "findById").mockRejectedValueOnce(new Error("Repository error"));
 
@@ -290,12 +279,5 @@ describe("CardService", () => {
         expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number, relations);
     });
 
-    it("should throw error with message if card lookup error occurs with findByUuid", async () => {
-        const uuid = "INVALID_UUID";
-        jest.spyOn(repository, "findByUuid").mockRejectedValueOnce(new Error("Repository error"));
-
-        await expect(service.findByUuid(uuid)).rejects.toThrow(`Error finding card with uuid ${uuid}: Repository error`);
-        expect(repository.findByUuid).toHaveBeenCalledWith(uuid);
-    });
 });
 

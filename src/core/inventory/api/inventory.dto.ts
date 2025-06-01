@@ -3,7 +3,6 @@ import { CardDto } from "src/core/card/api/card.dto";
 
 /**
  * Inventory item for read/write operations
- * Used when card is not needed or card is in context
  */
 export class InventoryDto {
     @IsInt()

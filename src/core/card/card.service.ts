@@ -30,7 +30,7 @@ export class CardService implements CardServicePort {
             for (const dto of cardDtos) {
                 const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations);
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
-                if (!this.isValidCard(card)) {
+                if (null === card || undefined === card) {
                     continue;
                 }
                 const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
@@ -50,17 +50,6 @@ export class CardService implements CardServicePort {
             this.LOGGER.error(msg);
         }
         return savedDtos;
-    }
-
-    async findAllInSet(setCode: string): Promise<CardDto[]> {
-        this.LOGGER.debug(`findAllInSet ${setCode}`);
-        try {
-            const foundCards: Card[] = await this.repository.findAllInSet(setCode);
-            return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
-        } catch (error) {
-            // Do not confuse caller with empty result if error occurs
-            throw new Error(`Error finding cards in set ${setCode}: ${error.message}`);
-        }
     }
 
     async findAllWithName(name: string): Promise<CardDto[]> {
@@ -96,36 +85,13 @@ export class CardService implements CardServicePort {
         }
     }
 
-    async findByUuid(uuid: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
-        try {
-            const foundCard: Card = await this.repository.findByUuid(uuid);
-            return this.mapper.entityToDtoForView(foundCard, imgType);
-        } catch (error) {
-            // Do not confuse caller with empty result if error occurs
-            throw new Error(`Error finding card with uuid ${uuid}: ${error.message}`);
-        }
-    }
-
-    private isValidCard(card: Card): boolean {
-        return card !== null && card !== undefined;
-    }
-
-    private isValidLegality(legality: Legality): boolean {
-        return legality && this.isValidFormat(legality.format) && this.isValidStatus(legality.status);
-    }
-
-    private isValidFormat(format: string): boolean {
-        return Object.values(Format).includes(format?.toLowerCase() as Format);
-    }
-
-    private isValidStatus(status: string): boolean {
-        return Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
-    }
-
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map(legality => {
             legality.cardId = card.id;
-            if (this.isValidLegality(legality)) {
+            if (legality
+                && Object.values(Format).includes(legality.format?.toLowerCase() as Format)
+                && Object.values(LegalityStatus).includes(legality.status?.toLowerCase() as LegalityStatus)
+            ) {
                 return legality;
             }
         });

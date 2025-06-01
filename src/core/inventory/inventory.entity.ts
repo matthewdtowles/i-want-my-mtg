@@ -1,6 +1,6 @@
+import { Card } from "src/core/card/card.entity";
 import { User } from "src/core/user/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Card } from "../card/card.entity";
 
 @Entity()
 export class Inventory {

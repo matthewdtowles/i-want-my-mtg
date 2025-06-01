@@ -1,4 +1,4 @@
-import { InventoryCardDto, InventoryDto } from "../api/inventory.dto";
+import { InventoryDto } from "../api/inventory.dto";
 
 export const InventoryServicePort = "InventoryServicePort";
 
@@ -41,7 +41,7 @@ export interface InventoryServicePort {
      * @param userId
      * @returns user's inventory with cards
      */
-    findAllCardsForUser(userId: number): Promise<InventoryCardDto[]>;
+    findAllCardsForUser(userId: number): Promise<InventoryDto[]>;
 
     /**
      * Delete user's inventory item

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardMapper } from "src/core/card/card.mapper";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { InventoryMapper } from "src/core/inventory/inventory.mapper";
 import { InventoryService } from "src/core/inventory/inventory.service";
@@ -93,7 +93,7 @@ describe("InventoryService", () => {
     it("should find inventory items with cards for a user", async () => {
         jest.spyOn(repository, "findByUser");
 
-        const result: InventoryCardDto[] = await service.findAllCardsForUser(1);
+        const result: InventoryDto[] = await service.findAllCardsForUser(1);
         expect(repository.findByUser).toHaveBeenCalled();
         expect(repository.findByUser).toHaveBeenCalledWith(1);
         expect(result).toHaveLength(3);
@@ -129,7 +129,7 @@ describe("InventoryService", () => {
 
     it("should return an empty array if userId is not provided for findAllCardsForUser", async () => {
         jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryCardDto[] = await service.findAllCardsForUser(null);
+        const foundItems: InventoryDto[] = await service.findAllCardsForUser(null);
         expect(repository.findByUser).not.toHaveBeenCalled();
         expect(foundItems).toEqual([]);
     });

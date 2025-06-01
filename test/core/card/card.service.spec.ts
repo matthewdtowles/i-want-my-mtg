@@ -10,7 +10,6 @@ import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
 import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
-import { mock } from "node:test";
 
 describe("CardService", () => {
     let service: CardService;
@@ -19,25 +18,25 @@ describe("CardService", () => {
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
     const mockCreateCardDtos: CreateCardDto[] = Array.from({ length: 3 }, (_, i) => ({
-            artist: "artist",
-            hasFoil: false,
-            hasNonFoil: true,
-            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
-            isReserved: false,
-            legalities: Object.values(Format).map((format) => ({
-                cardId: i + 1,
-                format,
-                status: LegalityStatus.Legal
-            })),
-            manaCost: `{${i + 1}}{W}`,
-            name: `Test Card Name ${i + 1}`,
-            number: `${i + 1}`,
-            oracleText: "Test card text.",
-            rarity: i % 2 === 0 ? "common" : "uncommon",
-            setCode: mockSetCode,
-            uuid: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
-            type: "type",
-        }));
+        artist: "artist",
+        hasFoil: false,
+        hasNonFoil: true,
+        imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
+        isReserved: false,
+        legalities: Object.values(Format).map((format) => ({
+            cardId: i + 1,
+            format,
+            status: LegalityStatus.Legal
+        })),
+        manaCost: `{${i + 1}}{W}`,
+        name: `Test Card Name ${i + 1}`,
+        number: `${i + 1}`,
+        oracleText: "Test card text.",
+        rarity: i % 2 === 0 ? "common" : "uncommon",
+        setCode: mockSetCode,
+        uuid: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
+        type: "type",
+    }));
 
 
     beforeEach(async () => {

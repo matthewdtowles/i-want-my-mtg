@@ -3,7 +3,8 @@ import { CardImgType } from "src/core/card/api/card.img.type.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { CardMapper } from "../card/card.mapper";
 import { User } from "../user/user.entity";
-import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
+import { InventoryDto } from "./api/inventory.dto";
+import { CardDto } from "src/core/card/api/card.dto";
 
 @Injectable()
 export class InventoryMapper {
@@ -45,20 +46,21 @@ export class InventoryMapper {
         return inventory;
     }
 
-    toInventoryCardDtos(inventoryEntities: Inventory[]): InventoryCardDto[] {
+    toInventoryCardDtos(inventoryEntities: Inventory[]): InventoryDto[] {
         return inventoryEntities.map((item: Inventory) => this.toInventoryCardDto(item));
     }
 
-    toInventoryCardDto(inventoryEntity: Inventory): InventoryCardDto | null {
+    toInventoryCardDto(inventoryEntity: Inventory): InventoryDto | null {
         if (!inventoryEntity) {
             return null;
         }
-        const inventory: InventoryCardDto = {
-            card: this.cardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL),
+        const cardDto: CardDto = this.cardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL);
+        const inventory: InventoryDto = {
+            cardId: inventoryEntity.cardId,
+            card: cardDto,
             isFoil: inventoryEntity.isFoil,
             quantity: inventoryEntity.quantity,
-            userId: inventoryEntity.user && inventoryEntity.user.id
-                ? inventoryEntity.user.id : inventoryEntity.userId,
+            userId: inventoryEntity.user && inventoryEntity.user.id ? inventoryEntity.user.id : inventoryEntity.userId,
         };
         return inventory;
     }

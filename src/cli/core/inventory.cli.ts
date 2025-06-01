@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 
 @Injectable()
@@ -35,7 +35,7 @@ export class InventoryCli {
         describe: "retrieve user inventory",
     })
     async getUserInventory(@Positional({ name: "user" }) _user: number,): Promise<void> {
-        const inventory: InventoryCardDto[] = await this.service.findAllCardsForUser(_user);
+        const inventory: InventoryDto[] = await this.service.findAllCardsForUser(_user);
         this.LOGGER.log(`${JSON.stringify(inventory, null, 4)}`);
     }
 }

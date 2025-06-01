@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt } from "class-validator";
+import { IsBoolean, IsInt, IsObject, IsOptional } from "class-validator";
 import { CardDto } from "src/core/card/api/card.dto";
 
 /**
@@ -7,25 +7,18 @@ import { CardDto } from "src/core/card/api/card.dto";
  */
 export class InventoryDto {
     @IsInt()
-    readonly cardId: number;
+    cardId: number;
 
     @IsInt()
-    readonly quantity: number;
+    quantity: number;
 
     @IsBoolean()
-    readonly isFoil: boolean;
+    isFoil: boolean;
 
     @IsInt()
-    readonly userId: number;
-}
+    userId: number;
 
-/**
- * Inventory item for read operations with card object
- * Used when cards are not already in context
- */
-export class InventoryCardDto {
-    readonly card: CardDto;
-    readonly quantity: number;
-    readonly isFoil: boolean;
-    readonly userId: number;
+    @IsOptional()
+    @IsObject()
+    card?: CardDto;
 }

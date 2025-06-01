@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardImgType } from "src/core/card/api/card.img.type.enum";
 import { CardServicePort } from "src/core/card/api/card.service.port";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
@@ -27,7 +27,7 @@ export class AggregatorService implements AggregatorServicePort {
     ) { }
     async findByUser(userId: number): Promise<InventoryCardAggregateDto[]> {
         this.LOGGER.debug(`findByUser ${userId}`);
-        const inventoryCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
+        const inventoryCards: InventoryDto[] = await this.inventoryService.findAllCardsForUser(userId);
         const cards: InventoryCardAggregateDto[] = [];
         for (const item of inventoryCards) {
             const card: CardDto = await this.cardService.findById(item.card.id, CardImgType.NORMAL);
@@ -48,10 +48,10 @@ export class AggregatorService implements AggregatorServicePort {
         const set: SetDto = await this.setService.findByCode(setCode);
         if (!set) throw new Error(`Set with code ${setCode} not found`);
         if (!set.cards || set.cards.length === 0) throw new Error(`Set with code ${setCode} has no cards`);
-        const invCards: InventoryCardDto[] = await this.inventoryService.findAllCardsForUser(userId);
-        const setInvCards: InventoryCardDto[] = invCards ? invCards.filter(item => item.card.setCode === setCode) : [];
+        const invCards: InventoryDto[] = await this.inventoryService.findAllCardsForUser(userId);
+        const setInvCards: InventoryDto[] = invCards ? invCards.filter(item => item.card.setCode === setCode) : [];
         const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
-            const invItems: InventoryCardDto[] = setInvCards.filter(inv => inv.card.id === card.id);
+            const invItems: InventoryDto[] = setInvCards.filter(inv => inv.card.id === card.id);
             return this.mapInventoryCardAggregate(card, invItems);
         });
         return {
@@ -82,11 +82,11 @@ export class AggregatorService implements AggregatorServicePort {
 
     private mapInventoryCardAggregate(
         card: CardDto,
-        inventoryItems: InventoryDto[] | InventoryCardDto[]
+        inventoryItems: InventoryDto[] | InventoryDto[]
     ): InventoryCardAggregateDto {
         const variants: InventoryCardVariant[] = [];
         if (card.hasNonFoil) {
-            const inv: InventoryDto | InventoryCardDto = inventoryItems.find(item => !item.isFoil);
+            const inv: InventoryDto | InventoryDto = inventoryItems.find(item => !item.isFoil);
             variants.push({
                 displayValue: toDollar(card.prices[0]?.normal),
                 quantity: inv ? inv.quantity : 0,
@@ -94,7 +94,7 @@ export class AggregatorService implements AggregatorServicePort {
             });
         }
         if (card.hasFoil) {
-            const inv: InventoryDto | InventoryCardDto = inventoryItems.find(item => item.isFoil);
+            const inv: InventoryDto | InventoryDto = inventoryItems.find(item => item.isFoil);
             variants.push({
                 displayValue: toDollar(card.prices[0]?.foil),
                 quantity: inv ? inv.quantity : 0,

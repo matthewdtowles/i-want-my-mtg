@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
+import { InventoryDto } from "./api/inventory.dto";
 import { InventoryRepositoryPort } from "./api/inventory.repository.port";
 import { InventoryServicePort } from "./api/inventory.service.port";
 import { Inventory } from "./inventory.entity";
@@ -38,7 +38,7 @@ export class InventoryService implements InventoryServicePort {
         return this.mapper.toDtos(foundItems);
     }
 
-    async findAllCardsForUser(userId: number): Promise<InventoryCardDto[]> {
+    async findAllCardsForUser(userId: number): Promise<InventoryDto[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
         if (!userId) {
             return [];

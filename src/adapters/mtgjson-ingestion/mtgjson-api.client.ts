@@ -50,6 +50,12 @@ export class MtgJsonApiClient {
         return response.data.data;
     }
 
+    /**
+     * Fetches all cards in a Set as a stream
+     *
+     * @param setCode 
+     * @returns 
+     */
     async fetchSetCardsStream(setCode: string): Promise<Readable> {
         const url: string = `${this.CARD_PROVIDER_URL}/${setCode.toUpperCase()}.json`;
         this.LOGGER.log(`Calling provider API ${url}`);
@@ -81,5 +87,4 @@ export class MtgJsonApiClient {
         ]);
         return pipeline;
     }
-
 }

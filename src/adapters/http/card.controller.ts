@@ -12,7 +12,7 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
-import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, CardHttpDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
@@ -95,10 +95,4 @@ export class CardController {
         this.LOGGER.debug(`Update cards`);
         return await this.cardService.save(updateCardDtos);
     }
-}
-
-// FIXME: InventoryCardAggregateDto has variants array rather than direct attributes
-export class CardHttpDto extends BaseHttpDto {
-    readonly card: InventoryCardAggregateDto;
-    readonly otherPrintings: CardDto[];
 }

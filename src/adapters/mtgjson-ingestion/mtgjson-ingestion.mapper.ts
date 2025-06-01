@@ -29,20 +29,12 @@ export class MtgJsonIngestionMapper {
         };
     }
 
-    toCreateCardDtos(setCards: CardSet[]): CreateCardDto[] {
-        const cards: CreateCardDto[] = [];
-        setCards.forEach((c: CardSet) => {
-            cards.push(this.toCreateCardDto(c));
-        });
-        return cards;
-    }
-
     toCreateCardDto(setCard: CardSet): CreateCardDto {
         return {
             artist: setCard.artist,
             hasFoil: setCard.hasFoil,
             hasNonFoil: setCard.hasNonFoil,
-            imgSrc: this.buildCardImgSrc(setCard),
+            imgSrc: this.buildScryfallImgPath(setCard),
             isReserved: setCard.isReserved,
             legalities: this.toLegalityDtos(setCard.legalities),
             manaCost: setCard.manaCost,
@@ -69,7 +61,9 @@ export class MtgJsonIngestionMapper {
         Object.entries(legalities).forEach(([format, status]) => {
             format = format.toLowerCase();
             status = status.toLowerCase();
-            if (this.isValidFormat(format) && this.isValidStatus(status)) {
+
+            if (Object.values(Format).includes(format as Format)
+                && Object.values(LegalityStatus).includes(status as LegalityStatus)) {
                 legalitiesDto.push(this.createLegalityDto(format, status));
             }
         });
@@ -98,18 +92,6 @@ export class MtgJsonIngestionMapper {
             status: status as LegalityStatus,
             cardId: null,
         };
-    }
-
-    private isValidFormat(format: string): boolean {
-        return Object.values(Format).includes(format as Format);
-    }
-
-    private isValidStatus(status: string): boolean {
-        return Object.values(LegalityStatus).includes(status as LegalityStatus);
-    }
-
-    private buildCardImgSrc(card: CardSet): string {
-        return this.buildScryfallImgPath(card);
     }
 
     private buildScryfallImgPath(card: CardSet): string {

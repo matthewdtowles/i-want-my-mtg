@@ -16,7 +16,7 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, InventoryHttpDto } from "src/adapters/http/http.types";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
@@ -24,11 +24,6 @@ import { InventoryServicePort } from "src/core/inventory/api/inventory.service.p
 import { AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
-export class InventoryHttpDto extends BaseHttpDto {
-    readonly cards: InventoryCardAggregateDto[];
-    readonly username: string;
-    readonly value: number;
-}
 
 @Controller("inventory")
 export class InventoryController {

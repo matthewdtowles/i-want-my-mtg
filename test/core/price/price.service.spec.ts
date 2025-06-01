@@ -7,6 +7,7 @@ import { PriceMapper } from "src/core/price/price.mapper";
 import { PriceService } from "src/core/price/price.service";
 import { TestUtils } from "../../test-utils";
 import { Card } from "src/core/card/card.entity";
+import { Price } from "src/core/price/price.entity";
 
 
 describe("PriceService", () => {
@@ -15,7 +16,13 @@ describe("PriceService", () => {
     let mockCardRepo: jest.Mocked<CardRepositoryPort>;
     let mockPriceMapper: jest.Mocked<PriceMapper>;
     let testUtils: TestUtils = new TestUtils();
-    const mockPrices: PriceDto[] = testUtils.getMockPriceDtos();
+    const mockPrices: PriceDto[] = Array.from({ length: 3 }, (_, i) => ({
+        cardId: i + 1,
+        foil: i + 10,
+        normal: i + 5,
+        date: new Date("2022-01-01"),
+    }));
+    const mockPriceEntities: Price[] = testUtils.mockPriceEntities();
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -24,28 +31,35 @@ describe("PriceService", () => {
                 {
                     provide: PriceRepositoryPort,
                     useValue: {
-                        save: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
-                        saveMany: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
-                        findByCardId: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
-                        findByCardName: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
-                        findByCardNameAndSetCode: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
-                        findByCardSet: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()),
-                        findById: jest.fn().mockResolvedValue(testUtils.getMockPriceEntities()[0]),
+                        save: jest.fn().mockResolvedValue(mockPriceEntities[0]),
+                        saveMany: jest.fn().mockResolvedValue(mockPriceEntities),
+                        findByCardId: jest.fn().mockResolvedValue(mockPriceEntities[0]),
+                        findByCardName: jest.fn().mockResolvedValue(mockPriceEntities),
+                        findByCardNameAndSetCode: jest.fn().mockResolvedValue(mockPriceEntities[0]),
+                        findByCardSet: jest.fn().mockResolvedValue(mockPriceEntities),
+                        findById: jest.fn().mockResolvedValue(mockPriceEntities[0]),
                         delete: jest.fn().mockResolvedValue(undefined),
                     },
                 },
                 {
                     provide: CardRepositoryPort,
                     useValue: {
-                        findByUuid: jest.fn().mockResolvedValue(testUtils.getMockCardEntity()),
-                        findByUuids: jest.fn().mockResolvedValue(testUtils.getMockCardEntities()),
+                        findByUuid: jest.fn(),
+                        findByUuids: jest.fn(),
                     },
                 },
                 {
                     provide: PriceMapper,
                     useValue: {
-                        toEntity: jest.fn().mockImplementation((dto) => testUtils.mapPriceDtoToEntity(dto)),
-                        toDto: jest.fn().mockImplementation((entity) => testUtils.mapPriceEntityToDto(entity)),
+                        toEntity: jest.fn(),
+                        toDto: jest.fn().mockImplementation((entity) => {
+                            return {
+                                cardId: entity.card.id,
+                                foil: entity.foil,
+                                normal: entity.normal,
+                                date: entity.date,
+                            };
+                        }),
                     },
                 },
             ],

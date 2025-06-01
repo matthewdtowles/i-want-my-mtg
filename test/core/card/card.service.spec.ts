@@ -10,6 +10,7 @@ import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
 import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
+import { mock } from "node:test";
 
 describe("CardService", () => {
     let service: CardService;
@@ -17,6 +18,27 @@ describe("CardService", () => {
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
+    const mockCreateCardDtos: CreateCardDto[] = Array.from({ length: 3 }, (_, i) => ({
+            artist: "artist",
+            hasFoil: false,
+            hasNonFoil: true,
+            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
+            isReserved: false,
+            legalities: Object.values(Format).map((format) => ({
+                cardId: i + 1,
+                format,
+                status: LegalityStatus.Legal
+            })),
+            manaCost: `{${i + 1}}{W}`,
+            name: `Test Card Name ${i + 1}`,
+            number: `${i + 1}`,
+            oracleText: "Test card text.",
+            rarity: i % 2 === 0 ? "common" : "uncommon",
+            setCode: mockSetCode,
+            uuid: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
+            type: "type",
+        }));
+
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -36,7 +58,7 @@ describe("CardService", () => {
     })
 
     it("should save new cards and return saved cards", async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
         jest.spyOn(repository, "save");
 
         const result: CardDto[] = await service.save(createCardDtos);
@@ -104,7 +126,7 @@ describe("CardService", () => {
     });
 
     it("should handle repository save failure with empty array", async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
         jest.spyOn(repository, "save").mockRejectedValueOnce(new Error("Repository save failed"));
 
         expect(await service.save(createCardDtos)).toEqual([]);
@@ -112,7 +134,7 @@ describe("CardService", () => {
     });
 
     it("should find all cards in a set", async () => {
-        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
+        const mockCards: Card[] = testUtils.mockCards(mockSetCode);
         jest.spyOn(repository, "findAllInSet").mockResolvedValue(mockCards);
 
         const result: CardDto[] = await service.findAllInSet(mockSetCode);

@@ -80,19 +80,6 @@ export class AggregatorService implements AggregatorServicePort {
         return this.mapInventoryCardAggregate(card, inventoryItems);
     }
 
-    private mapForInventory(card: CardDto, inventoryItem: InventoryCardDto): InventoryCardAggregateDto {
-        return {
-            ...card,
-            variants: [
-                {
-                    displayValue: inventoryItem.isFoil ? toDollar(card.prices[0]?.foil) : toDollar(card.prices[0]?.normal),
-                    quantity: inventoryItem.quantity,
-                    type: inventoryItem.isFoil ? VariantType.FOIL : VariantType.NORMAL,
-                },
-            ]
-        };
-    }
-
     private mapInventoryCardAggregate(
         card: CardDto,
         inventoryItems: InventoryDto[] | InventoryCardDto[]

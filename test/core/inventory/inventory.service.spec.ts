@@ -12,8 +12,8 @@ describe("InventoryService", () => {
     let repository: MockInventoryRepository;
 
     const testUtils: TestUtils = new TestUtils();
-    const mockInventoryDtos: InventoryDto[] = testUtils.getMockCreateInventoryDtos();
-    const mockDeleteInventoryDtos: InventoryDto[] = testUtils.getMockCreateInventoryDtos().map((i: InventoryDto) => {
+    const mockInventoryDtos: InventoryDto[] = testUtils.mockCreateInventoryDtos();
+    const mockDeleteInventoryDtos: InventoryDto[] = testUtils.mockCreateInventoryDtos().map((i: InventoryDto) => {
         return {
             cardId: i.cardId,
             isFoil: i.isFoil,
@@ -36,7 +36,7 @@ describe("InventoryService", () => {
         }).compile();
         service = module.get<InventoryService>(InventoryService);
         repository = module.get<InventoryRepositoryPort>(InventoryRepositoryPort) as MockInventoryRepository;
-        repository.populate(testUtils.getMockInventoryList());
+        repository.populate(testUtils.mockInventoryList());
     });
 
     afterEach(() => {
@@ -48,7 +48,7 @@ describe("InventoryService", () => {
         jest.spyOn(repository, "save");
         const savedItems: InventoryDto[] = await service.create(mockInventoryDtos);
         expect(repository.save).toHaveBeenCalled();
-        expect(savedItems).toEqual(testUtils.getMockInventoryDtos());
+        expect(savedItems).toEqual(testUtils.mockInventoryDtos());
     });
 
     it("should update existing inventory items and return the updated inventory items", async () => {
@@ -56,8 +56,8 @@ describe("InventoryService", () => {
         const savedItems: InventoryDto[] = await service.update(mockInventoryDtos);
         expect(repository.save).toHaveBeenCalled();
         const expectedItems: InventoryDto[] = [
-            testUtils.getMockInventoryDtos()[0],
-            testUtils.getMockInventoryDtos()[2]
+            testUtils.mockInventoryDtos()[0],
+            testUtils.mockInventoryDtos()[2]
         ];
         expect(savedItems).toEqual(expectedItems);
     });

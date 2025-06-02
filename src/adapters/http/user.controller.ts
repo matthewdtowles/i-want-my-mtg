@@ -93,7 +93,6 @@ export class UserController {
         };
     }
 
-
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(

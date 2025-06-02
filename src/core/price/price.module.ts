@@ -5,7 +5,6 @@ import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-i
 import { CardModule } from "src/core/card/card.module";
 import { PriceRepositoryPort } from "./api/price.repository.port";
 import { PriceServicePort } from "./api/price.service.port";
-import { PriceMapper } from "./price.mapper";
 import { PriceService } from "./price.service";
 
 @Module({
@@ -13,9 +12,8 @@ import { PriceService } from "./price.service";
     providers: [
         { provide: PriceServicePort, useClass: PriceService },
         { provide: PriceRepositoryPort, useClass: PriceRepository },
-        PriceMapper,
     ],
-    exports: [PriceServicePort, PriceRepositoryPort, PriceMapper],
+    exports: [PriceServicePort, PriceRepositoryPort],
 })
 export class PriceModule {
     private readonly LOGGER = new Logger(PriceModule.name);

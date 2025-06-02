@@ -13,12 +13,6 @@ export class PriceRepository implements PriceRepositoryPort {
         return await this.priceRepository.save(prices);
     }
 
-    async findByCardId(cardId: number): Promise<Price> {
-        return await this.priceRepository.findOne({
-            where: { card: { id: cardId } }
-        });
-    }
-
     async delete(id: number): Promise<void> {
         await this.priceRepository.delete(id);
     }

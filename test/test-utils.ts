@@ -1,7 +1,6 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
 import { Format } from "src/core/card/api/format.enum";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
@@ -14,51 +13,28 @@ export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
     readonly MOCK_BASE_SIZE = 3;
 
-    mockCreateCardDtos(setCode: string): CreateCardDto[] {
-        return Array.from({ length: 3 }, (_, i) => ({
-            artist: "artist",
-            hasFoil: false,
-            hasNonFoil: true,
-            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
-            isReserved: false,
-            legalities: Object.values(Format).map((format) => ({
-                cardId: i + 1,
-                format,
-                status: LegalityStatus.Legal
-            })),
-            manaCost: `{${i + 1}}{W}`,
-            name: `Test Card Name ${i + 1}`,
-            number: `${i + 1}`,
-            oracleText: "Test card text.",
-            rarity: i % 2 === 0 ? "common" : "uncommon",
-            setCode,
-            uuid: `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`,
-            type: "type",
-        }));
-    }
-
     mockCards(setCode: string): Card[] {
-        return this.mockCreateCardDtos(setCode).map((dto, i) => {
+        return Array.from({ length: 3 }, (_, i) => {
             const card = new Card();
             card.id = i + 1;
-            card.artist = dto.artist;
-            card.imgSrc = dto.imgSrc;
-            card.isReserved = dto.isReserved;
+            card.artist = "artist";
+            card.imgSrc = `${i + 1}/a/${i + 1}abc123def456.jpg`;
+            card.isReserved = false;
             card.legalities = Object.values(Format).map((format) => ({
                 cardId: i + 1,
                 format,
                 status: LegalityStatus.Legal
             }));
-            card.manaCost = dto.manaCost;
-            card.name = dto.name;
-            card.number = dto.number;
-            card.oracleText = dto.oracleText;
-            card.prices = this.mockPriceEntities();
-            card.set = this.mockSet(setCode);
-            card.setCode = setCode;
-            card.rarity = Object.values(CardRarity).includes(dto.rarity.toLowerCase() as CardRarity)
-                ? (dto.rarity.toLowerCase() as CardRarity)
-                : null;
+            card.manaCost = `{${i + 1}}{W}`;
+            card.name = `Test Card Name ${i + 1}`;
+            card.number = `${i + 1}`;
+            card.oracleText = "Test card text.";
+            card.rarity = i % 2 === 0 ? "common" as CardRarity : "uncommon" as CardRarity;
+            card.set = this.mockSet(setCode),
+                card.setCode = setCode;
+            card.uuid = `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`;
+            card.type = "type",
+                card.prices = this.mockPriceEntities();
             return card;
         });
     }

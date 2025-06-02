@@ -86,7 +86,7 @@ export class AggregatorService implements AggregatorServicePort {
     ): InventoryCardAggregateDto {
         const variants: InventoryCardVariant[] = [];
         if (card.hasNonFoil) {
-            const inv: InventoryDto | InventoryDto = inventoryItems.find(item => !item.isFoil);
+            const inv: InventoryDto = inventoryItems.find(item => !item.isFoil);
             variants.push({
                 displayValue: toDollar(card.prices[0]?.normal),
                 quantity: inv ? inv.quantity : 0,
@@ -94,7 +94,7 @@ export class AggregatorService implements AggregatorServicePort {
             });
         }
         if (card.hasFoil) {
-            const inv: InventoryDto | InventoryDto = inventoryItems.find(item => item.isFoil);
+            const inv: InventoryDto = inventoryItems.find(item => item.isFoil);
             variants.push({
                 displayValue: toDollar(card.prices[0]?.foil),
                 quantity: inv ? inv.quantity : 0,

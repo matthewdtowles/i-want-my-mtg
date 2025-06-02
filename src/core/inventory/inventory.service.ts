@@ -44,7 +44,7 @@ export class InventoryService implements InventoryServicePort {
             return [];
         }
         const foundCards: Inventory[] = await this.repository.findByUser(userId);
-        return this.mapper.toInventoryCardDtos(foundCards);
+        return this.mapper.toDtos(foundCards);
     }
 
     async delete(userId: number, cardId: number, isFoil: boolean): Promise<boolean> {

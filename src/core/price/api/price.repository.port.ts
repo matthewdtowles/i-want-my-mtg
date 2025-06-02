@@ -12,14 +12,6 @@ export interface PriceRepositoryPort {
     save(prices: Price[]): Promise<Price[]>;
 
     /**
-     * Finds a price by its cardId
-     * 
-     * @param cardId
-     * @returns {Promise<Price>} The price with the given cardId
-     */
-    findByCardId(cardId: number): Promise<Price>;
-
-    /**
      * Deletes a price by its id
      *
      * @param {number} id The id of the price

@@ -40,9 +40,5 @@ export interface AggregatorServicePort {
      * @see findInventoryCardById
      * @returns card with quantity
      */
-    findInventoryCardBySetNumber(
-        setCode: string,
-        cardnumber: string,
-        userId: number,
-    ): Promise<InventoryCardAggregateDto | null>;
+    findInventoryCardBySetNumber(setCode: string, cardnumber: string, userId: number,): Promise<InventoryCardAggregateDto | null>;
 }

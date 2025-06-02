@@ -9,6 +9,7 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { Price } from "src/core/price/price.entity";
 import { Set } from "src/core/set/set.entity";
 
+
 export class TestUtils {
     readonly MOCK_SET_CODE = "SET";
     readonly MOCK_BASE_SIZE = 3;
@@ -130,6 +131,7 @@ export class TestUtils {
 
     mockInventoryDtos(): InventoryDto[] {
         return this.mockInventoryList().map((inventory) => ({
+            card: null,
             userId: inventory.userId,
             isFoil: inventory.isFoil,
             cardId: inventory.cardId,

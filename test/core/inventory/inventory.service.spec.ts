@@ -59,7 +59,7 @@ describe("InventoryService", () => {
             testUtils.mockInventoryDtos()[0],
             testUtils.mockInventoryDtos()[2]
         ];
-        
+        expect(savedItems).toEqual(expectedItems);
     });
 
     it("should delete inventory items when update is called and item quantity is 0", async () => {

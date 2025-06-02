@@ -2,18 +2,10 @@ import { CardDto } from "src/core/card/api/card.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 
 /**
- * Represents a variant of a card in the inventory.
- */
-export enum VariantType {
-    NORMAL = "normal",
-    FOIL = "foil",
-}
-
-/**
  * Represents a variant of a card in the inventory with its quantity.
  */
 export class InventoryCardVariant {
-    readonly type: VariantType;
+    readonly isFoil: boolean;
     readonly displayValue?: string;
     readonly quantity: number = 0;
 }

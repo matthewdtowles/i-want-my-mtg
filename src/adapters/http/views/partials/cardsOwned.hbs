@@ -13,7 +13,7 @@
         focus:outline-none focus:ring-0" value="{{variant.quantity}}"
         data-id="{{card.id}}" />
 
-    <input type="hidden" name="isFoil" value="{{eq variant.type 'foil'}}" />
+    <input type="hidden" name="isFoil" value="{{variant.isFoil}}" />
     <button type="button"
         class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
 

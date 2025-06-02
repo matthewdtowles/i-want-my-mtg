@@ -10,8 +10,7 @@ import { toDollar } from "src/shared/utils/formatting.util";
 import {
     InventoryCardAggregateDto,
     InventoryCardVariant,
-    InventorySetAggregateDto,
-    VariantType
+    InventorySetAggregateDto
 } from "./api/aggregate.dto";
 import { AggregatorServicePort } from "./api/aggregator.service.port";
 
@@ -36,7 +35,7 @@ export class AggregatorService implements AggregatorServicePort {
                 variants: [{
                     displayValue: item.isFoil ? toDollar(card.prices[0]?.foil) : toDollar(card.prices[0]?.normal),
                     quantity: item.quantity,
-                    type: item.isFoil ? VariantType.FOIL : VariantType.NORMAL,
+                    isFoil: item.isFoil
                 }]
             });
         }
@@ -90,7 +89,7 @@ export class AggregatorService implements AggregatorServicePort {
             variants.push({
                 displayValue: toDollar(card.prices[0]?.normal),
                 quantity: inv ? inv.quantity : 0,
-                type: VariantType.NORMAL,
+                isFoil: false
             });
         }
         if (card.hasFoil) {
@@ -98,7 +97,7 @@ export class AggregatorService implements AggregatorServicePort {
             variants.push({
                 displayValue: toDollar(card.prices[0]?.foil),
                 quantity: inv ? inv.quantity : 0,
-                type: VariantType.FOIL,
+                isFoil: true
             });
         }
         return {

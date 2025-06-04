@@ -1,6 +1,6 @@
+import { Card } from "src/core/card/card.entity";
 import { User } from "src/core/user/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Card } from "../card/card.entity";
 
 @Entity()
 export class Inventory {
@@ -9,6 +9,9 @@ export class Inventory {
 
     @PrimaryColumn({ name: "user_id" })
     userId: number;
+
+    @PrimaryColumn({ name: "foil", type: "boolean" })
+    isFoil: boolean;
 
     @Column({ type: "int", default: 1 })
     quantity: number;

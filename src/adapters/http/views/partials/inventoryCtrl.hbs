@@ -1,0 +1,5 @@
+{{#each card.variants as |variant|}}
+    <span class="{{#if variant.isFoil}}foil{{else}}normal{{/if}}-inventory-controller {{#unless @first}}hidden{{/unless}}">
+        {{>cardsOwned variant=variant card=../card}}
+    </span>
+{{/each}}

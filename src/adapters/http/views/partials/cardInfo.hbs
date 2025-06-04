@@ -11,6 +11,7 @@
                 <span>{{card.name}}</span>
                 <span>{{>manaCost card=card}}</span>
                 {{>reserved card=card}}
+                {{>foil card=card}}
             </div>
             <div class="flex items-center mb-2">
                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
@@ -47,7 +48,7 @@
             <h3 class="section-title">Price</h3>
             {{>price}}
             <section class="inventory-info">
-                {{>cardsOwned}}
+                {{>inventoryCtrl card=card}}
             </section>
         </section>
     </section>

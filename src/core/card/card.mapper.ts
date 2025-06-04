@@ -6,7 +6,6 @@ import { Card } from "src/core/card/card.entity";
 import { Legality } from "src/core/card/legality.entity";
 import { SetDto } from "src/core/set/api/set.dto";
 import { Set } from "src/core/set/set.entity";
-import { toDollar } from "src/shared/utils/formatting.util";
 import { CardDto } from "./api/card.dto";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRarity } from "./api/card.rarity.enum";
@@ -20,6 +19,8 @@ export class CardMapper {
     dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
         const card: Card = new Card();
         card.artist = cardDto.artist;
+        card.hasFoil = cardDto.hasFoil;
+        card.hasNonFoil = cardDto.hasNonFoil;
         card.imgSrc = cardDto.imgSrc;
         card.isReserved = cardDto.isReserved;
         card.legalities = this.toLegalityEntities(cardDto.legalities);
@@ -42,6 +43,8 @@ export class CardMapper {
         const dto: CardDto = {
             id: card.id,
             artist: card.artist,
+            hasFoil: card.hasFoil,
+            hasNonFoil: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, imgType),
             isReserved: card.isReserved,
             legalities: this.toLegalityDtos(card.legalities),
@@ -65,10 +68,6 @@ export class CardMapper {
             url: this.buildCardUrl(card),
         };
         return dto;
-    }
-
-    entitiesToDtosForView(cards: Card[], imgType: CardImgType): CardDto[] {
-        return cards.map((card: Card) => this.entityToDtoForView(card, imgType));
     }
 
     entityToDtoForView(card: Card, imgType: CardImgType): CardDto {

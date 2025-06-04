@@ -2,18 +2,15 @@ import { Inject } from "@nestjs/common";
 import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
 import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceDto } from "src/core/price/api/price.dto";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
 import { PriceServicePort } from "src/core/price/api/price.service.port";
 import { Price } from "src/core/price/price.entity";
-import { PriceMapper } from "src/core/price/price.mapper";
 
 export class PriceService implements PriceServicePort {
 
     constructor(
         @Inject(PriceRepositoryPort) private readonly priceRepository: PriceRepositoryPort,
         @Inject(CardRepositoryPort) private readonly cardRepository: CardRepositoryPort,
-        @Inject(PriceMapper) private readonly mapper: PriceMapper,
     ) { }
 
     async save(priceDtos: CreatePriceDto[]): Promise<void> {
@@ -25,35 +22,19 @@ export class PriceService implements PriceServicePort {
             priceDtos.map((p) => {
                 const cardId: number = cardMap.get(p.cardUuid);
                 if (!cardId) return null;
-                return this.mapper.toEntity(p, cardId);
+                const card = new Card();
+                card.id = cardId;
+                return {
+                    card,
+                    foil: !isNaN(p.foil) ? p.foil : null,
+                    normal: !isNaN(p.normal) ? p.normal : null,
+                    date: p.date,
+                }
             }).filter((p): p is Price => p !== null));
         await this.priceRepository.save(priceEntities)
     }
 
-    async findByCardId(cardId: number): Promise<PriceDto> {
-        return await this.priceRepository.findByCardId(cardId).then((c) => this.mapper.toDto(c));
-    }
-
     async delete(id: number): Promise<void> {
         return await this.priceRepository.delete(id);
-    }
-
-    async fillMissingPrices(date: string): Promise<void> {
-        const allCards: number[] = await this.cardRepository.findAllIds();
-        const existingPriceCardIds: number[] = await this.priceRepository.findAllIds();
-        const missingCardIds: number[] = allCards.filter((cardId) => !existingPriceCardIds.includes(cardId));
-        const missingPrices: Price[] = missingCardIds.map((cardId) => {
-            const price = new Price();
-            const card: Card = new Card();
-            card.id = cardId;
-            price.card = card;
-            price.normal = null;
-            price.foil = null;
-            price.date = new Date(date);
-            return price;
-        });
-        if (missingPrices.length > 0) {
-            await this.priceRepository.save(missingPrices);
-        }
     }
 }

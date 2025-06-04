@@ -17,6 +17,27 @@ describe("CardService", () => {
 
     const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
+    const mockCreateCardDtos: CreateCardDto[] = Array.from({ length: 3 }, (_, i) => ({
+        artist: "artist",
+        hasFoil: false,
+        hasNonFoil: true,
+        imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
+        isReserved: false,
+        legalities: Object.values(Format).map((format) => ({
+            cardId: i + 1,
+            format,
+            status: LegalityStatus.Legal
+        })),
+        manaCost: `{${i + 1}}{W}`,
+        name: `Test Card Name ${i + 1}`,
+        number: `${i + 1}`,
+        oracleText: "Test card text.",
+        rarity: i % 2 === 0 ? "common" : "uncommon",
+        setCode: mockSetCode,
+        uuid: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
+        type: "type",
+    }));
+
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -36,7 +57,7 @@ describe("CardService", () => {
     })
 
     it("should save new cards and return saved cards", async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
         jest.spyOn(repository, "save");
 
         const result: CardDto[] = await service.save(createCardDtos);
@@ -68,6 +89,8 @@ describe("CardService", () => {
                 legalities: [
                     { format: Format.Standard, status: LegalityStatus.Banned, cardId: 1 }
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrcUpdated",
                 isReserved: true,
                 number: "1",
@@ -102,22 +125,11 @@ describe("CardService", () => {
     });
 
     it("should handle repository save failure with empty array", async () => {
-        const createCardDtos: CreateCardDto[] = testUtils.getMockCreateCardDtos(mockSetCode);
+        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
         jest.spyOn(repository, "save").mockRejectedValueOnce(new Error("Repository save failed"));
 
         expect(await service.save(createCardDtos)).toEqual([]);
         expect(repository.save).toHaveBeenCalledTimes(1);
-    });
-
-    it("should find all cards in a set", async () => {
-        const mockCards: Card[] = testUtils.getMockCards(mockSetCode);
-        jest.spyOn(repository, "findAllInSet").mockResolvedValue(mockCards);
-
-        const result: CardDto[] = await service.findAllInSet(mockSetCode);
-
-        expect(repository.findAllInSet).toHaveBeenCalledTimes(1);
-        expect(result.length).toBe(mockCards.length);
-        expect(result).toMatchSnapshot();
     });
 
     it("should throw an error if card lookup fails", async () => {
@@ -138,6 +150,8 @@ describe("CardService", () => {
                         cardId: 1
                     },
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrc",
                 isReserved: false,
                 number: "1",
@@ -203,6 +217,8 @@ describe("CardService", () => {
                         cardId: 1
                     },
                 ],
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: "imgSrc",
                 isReserved: false,
                 number: "1",
@@ -263,12 +279,5 @@ describe("CardService", () => {
         expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number, relations);
     });
 
-    it("should throw error with message if card lookup error occurs with findByUuid", async () => {
-        const uuid = "INVALID_UUID";
-        jest.spyOn(repository, "findByUuid").mockRejectedValueOnce(new Error("Repository error"));
-
-        await expect(service.findByUuid(uuid)).rejects.toThrow(`Error finding card with uuid ${uuid}: Repository error`);
-        expect(repository.findByUuid).toHaveBeenCalledWith(uuid);
-    });
 });
 

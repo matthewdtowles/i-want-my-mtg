@@ -1,31 +1,32 @@
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".quantity-form").forEach((form) => {
         const quantityOwned = form.querySelector("input[name='quantity-owned']");
-        const cardId = quantityOwned.dataset.id;
+        const cardId = form.querySelector("input[name='cardId']").value;
+        const isFoil = form.querySelector("input[name='isFoil']").value === "true";
         const incrementButton = form.querySelector(".increment-quantity");
         const decrementButton = form.querySelector(".decrement-quantity");
 
         incrementButton.addEventListener("click", async (event) => {
             event.stopImmediatePropagation();
             console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
-            const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId);
+            const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
         });
 
         decrementButton.addEventListener("click", async (event) => {
             event.stopImmediatePropagation();
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
-            const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId);
+            const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
         });
 
-        async function addInventoryItem(_quantity, _cardId) {
+        async function addInventoryItem(_quantity, _cardId, isFoil) {
             let updatedQuantity = _quantity;
             try {
                 const qtyInt = parseInt(updatedQuantity);
                 const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
-                const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, method);
+                const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, isFoil, method);
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
             } catch (error) {
                 console.error(`Error in addInventoryItem => ${error}`);
@@ -33,12 +34,12 @@ document.addEventListener("DOMContentLoaded", function () {
             return updatedQuantity;
         }
 
-        async function removeInventoryItem(_quantity, _cardId) {
+        async function removeInventoryItem(_quantity, _cardId, isFoil) {
             let updatedQuantity = _quantity;
             try {
                 const qtyInt = parseInt(updatedQuantity);
                 const cardIdInt = parseInt(_cardId);
-                const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, 'PATCH');
+                const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, isFoil, 'PATCH');
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return updatedQuantity;
         }
 
-        async function updateInventory(_quantity, _cardId, _method) {
+        async function updateInventory(_quantity, _cardId, _isFoil, _method) {
             const response = await fetch('/inventory', {
                 method: _method,
                 headers: {
@@ -54,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify([{
                     cardId: _cardId,
+                    isFoil: _isFoil,
                     quantity: _quantity,
                 }]),
             });
@@ -99,6 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".delete-inventory-form").forEach((form) => {
         const deleteButton = form.querySelector(".delete-inventory-button");
         const _cardId = form.querySelector("input[name='card-id']").value;
+        const _isFoil = form.querySelector("input[name='isFoil']").value === "true";
         deleteButton.addEventListener("click", async (event) => {
             event.stopImmediatePropagation();
             console.log(`Deleting card ${_cardId} from inventory`);
@@ -109,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify({
                     cardId: _cardId,
+                    isFoil: _isFoil,
                 }),
             });
             if (!response.ok) {
@@ -137,5 +141,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
-
 });

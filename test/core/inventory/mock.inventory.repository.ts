@@ -3,6 +3,7 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 
 export class MockInventoryRepository implements InventoryRepositoryPort {
 
+
     private inventory: Inventory[] = [];
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
@@ -25,6 +26,10 @@ export class MockInventoryRepository implements InventoryRepositoryPort {
             }
         });
         return savedItems;
+    }
+
+    async findByCard(userId: number, cardId: number): Promise<Inventory[]> {
+        return this.inventory.filter(i => i.userId === userId && i.cardId === cardId);
     }
 
     async findByUser(userId: number): Promise<Inventory[]> {

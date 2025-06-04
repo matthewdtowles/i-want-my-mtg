@@ -19,12 +19,6 @@ export interface CardServicePort {
     save(cards: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]>;
 
     /**
-     * @param setCode
-     * @returns all cards in set
-     */
-    findAllInSet(setCode: string): Promise<CardDto[]>;
-
-    /**
      * @param name
      * @returns all cards with name
      */
@@ -44,11 +38,4 @@ export interface CardServicePort {
      * @returns card with number in set
      */
     findBySetCodeAndNumber(setCode: string, number: string, imgType?: CardImgType): Promise<CardDto>;
-
-    /**
-     * @param uuid
-     * @param imgType
-     * @returns card with unique uuid
-     */
-    findByUuid(uuid: string, imgType?: CardImgType): Promise<CardDto>;
 }

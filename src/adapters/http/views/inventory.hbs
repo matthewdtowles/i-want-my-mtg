@@ -15,27 +15,28 @@
             </tr>
         </thead>
         <tbody>
-            {{#each cards}}
+            {{#each cards as |card|}}
+            {{#each card.variants as |variant|}}
             <tr class="table-row">
-                <td class="cards-owned-td pl-2">{{>cardsOwned card=this}}</td>
-                <td class="inventory-item" data-id="{{this.id}}" data-img-src="{{this.imgSrc}}">
-                    <a href="{{this.url}}">{{this.name}}</a>
-                    {{>reserved card=this}}
-                    <a href="{{this.url}}" class="card-img-link">
-                        <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" />
+                <td class="cards-owned-td pl-2">{{>cardsOwned card=card variant=variant}}</td>
+                <td class="inventory-item" data-id="{{card.id}}" data-img-src="{{card.imgSrc}}">
+                    <a href="{{card.url}}">{{card.name}}</a>
+                    {{>reserved card=card}}
+                    {{>foil variant=variant}}
+                    <a href="{{card.url}}" class="card-img-link">
+                        <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                     </a>
                 </td>
                 <td>
-                    <a href="/sets/{{this.setCode}}">
-                        <i class="ss ss-{{this.setCode}} ss-{{toLowerCase this.rarity}} ss-fw"></i>
-                        {{toUpperCase this.setCode}}
+                    <a href="/sets/{{card.setCode}}">
+                        <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
+                        {{toUpperCase card.setCode}}
                     </a>
                 </td>
-                <td>{{>price card=this}}</td>
-                <td class="delete-inventory-entry pr-2">
-                    {{>deleteInventoryEntry card=this}}
-                </td>
+                <td>{{variant.displayValue}}</td>
+                <td class="delete-inventory-entry pr-2">{{>deleteInventoryEntry card=card variant=variant}}</td>
             </tr>
+            {{/each}}
             {{/each}}
         </tbody>
     </table>

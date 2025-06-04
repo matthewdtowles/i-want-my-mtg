@@ -1,8 +1,7 @@
 import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
-import { ActionStatus } from "src/adapters/http/http.types";
-import { SetListHttpDto } from "src/adapters/http/set.controller";
+import { ActionStatus, SetListHttpDto } from "src/adapters/http/http.types";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 

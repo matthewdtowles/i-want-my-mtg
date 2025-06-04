@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -7,39 +7,44 @@ import { Repository } from "typeorm";
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
 
-    private readonly LOGGER: Logger = new Logger(InventoryRepository.name);
-
     constructor(@InjectRepository(Inventory) private readonly repository: Repository<Inventory>) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`save ${inventoryItems.length} inventory items`);
         const savedItems: Inventory[] = [];
         for (const item of inventoryItems) {
             if (item.quantity > 0) {
                 const savedItem: Inventory = await this.repository.save(item);
-                this.LOGGER.debug(`Saved inventory item: ${JSON.stringify(savedItem)}`);
                 savedItems.push(savedItem);
             } else {
-                await this.delete(item.userId, item.cardId);
+                await this.delete(item.userId, item.cardId, item.isFoil);
                 savedItems.push(item);
             }
         }
         return savedItems;
     }
 
-    async findOne(_userId: number, _cardId: number): Promise<Inventory | null> {
-        this.LOGGER.debug(`findOne userId: ${_userId}, cardId: ${_cardId}`);
+    async findOne(_userId: number, _cardId: number, _isFoil: boolean): Promise<Inventory | null> {
         return await this.repository.findOne({
             where: {
                 userId: _userId,
                 cardId: _cardId,
+                isFoil: _isFoil,
+            },
+            relations: ["card"],
+        });
+    }
+
+    async findByCard(userId: number, cardId: number): Promise<Inventory[]> {
+        return await this.repository.find({
+            where: {
+                userId: userId,
+                cardId: cardId,
             },
             relations: ["card"],
         });
     }
 
     async findByUser(_userId: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`findByUser userId: ${_userId}`);
         return await this.repository.find({
             where: {
                 userId: _userId,
@@ -48,8 +53,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         });
     }
 
-    async delete(userId: number, cardId: number): Promise<void> {
-        this.LOGGER.debug(`delete userId: ${userId}, cardId: ${cardId}`);
+    async delete(userId: number, cardId: number, foil: boolean): Promise<void> {
         try {
             await this.repository
                 .createQueryBuilder()
@@ -57,6 +61,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
                 .from(Inventory)
                 .where("userId = :userId", { userId })
                 .andWhere("cardId = :cardId", { cardId })
+                .andWhere("foil = :foil", { foil })
                 .execute();
         } catch (error) {
             throw new Error(`Failed to delete inventory: ${error.message}`);

@@ -13,21 +13,6 @@ export class PriceRepository implements PriceRepositoryPort {
         return await this.priceRepository.save(prices);
     }
 
-    async findByCardId(cardId: number): Promise<Price> {
-        return await this.priceRepository.findOne({
-            where: { card: { id: cardId } }
-        });
-    }
-
-    // TODO: probably need to FIX this
-    async findAllIds(): Promise<number[]> {
-        return await this.priceRepository
-            .createQueryBuilder("price")
-            .select("price.card_id", "cardId")
-            .getRawMany()
-            .then((row) => row.map((r) => r.cardId));
-    }
-
     async delete(id: number): Promise<void> {
         await this.priceRepository.delete(id);
     }

@@ -19,6 +19,14 @@ export class CreateCardDto {
     @IsString()
     readonly artist?: string;
 
+    @IsBoolean()
+    @IsNotEmpty()
+    readonly hasFoil: boolean;
+
+    @IsBoolean()
+    @IsNotEmpty()
+    readonly hasNonFoil: boolean;
+
     @IsString()
     @IsNotEmpty()
     readonly imgSrc: string;

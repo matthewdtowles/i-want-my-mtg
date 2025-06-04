@@ -1,2 +1,5 @@
-<span class="normal-price">{{card.displayPrice}}</span>
-<span class="foil-price hidden">{{card.foilDisplayPrice}}</span>
+{{#each card.variants as |variant|}}
+<span class="{{#if variant.isFoil}}foil{{else}}normal{{/if}}-price {{#unless @first}}hidden{{/unless}}">
+    {{variant.displayValue}}
+</span>
+{{/each}}

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { InventoryCardDto, InventoryDto } from "./api/inventory.dto";
+import { InventoryDto } from "./api/inventory.dto";
 import { InventoryRepositoryPort } from "./api/inventory.repository.port";
 import { InventoryServicePort } from "./api/inventory.service.port";
 import { Inventory } from "./inventory.entity";
@@ -29,31 +29,31 @@ export class InventoryService implements InventoryServicePort {
         return this.mapper.toDtos(savedItems);
     }
 
-    async findOneForUser(userId: number, cardId: number): Promise<InventoryDto | null> {
-        this.LOGGER.debug(`findOneForUser ${userId} ${cardId}`);
+    async findForUser(userId: number, cardId: number): Promise<InventoryDto[]> {
+        this.LOGGER.debug(`findOneForUser ${userId}, card: ${cardId}`);
         if (!userId || !cardId) {
-            return null;
+            return [];
         }
-        const foundItem: Inventory = await this.repository.findOne(userId, cardId);
-        return this.mapper.toDto(foundItem);
+        const foundItems: Inventory[] = await this.repository.findByCard(userId, cardId);
+        return this.mapper.toDtos(foundItems);
     }
 
-    async findAllCardsForUser(userId: number): Promise<InventoryCardDto[]> {
+    async findAllCardsForUser(userId: number): Promise<InventoryDto[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
         if (!userId) {
             return [];
         }
         const foundCards: Inventory[] = await this.repository.findByUser(userId);
-        return this.mapper.toInventoryCardDtos(foundCards);
+        return this.mapper.toDtos(foundCards);
     }
 
-    async delete(userId: number, cardId: number): Promise<boolean> {
-        this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}`);
+    async delete(userId: number, cardId: number, isFoil: boolean): Promise<boolean> {
+        this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
         let result = false;
         if (userId && cardId) {
             try {
-                await this.repository.delete(userId, cardId);
-                const foundItem = await this.repository.findOne(userId, cardId);
+                await this.repository.delete(userId, cardId, isFoil);
+                const foundItem = await this.repository.findOne(userId, cardId, isFoil);
                 if (!foundItem) {
                     result = true;
                 }

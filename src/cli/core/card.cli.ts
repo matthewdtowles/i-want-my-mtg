@@ -37,22 +37,6 @@ export class CardCli {
     }
 
     @Command({
-        command: "cards:set-get <code>",
-        describe: "Retrieve all cards in set with given code",
-    })
-    async getSetCards(
-        @Positional({
-            name: "code",
-            describe: "the set code from which all cards are returned",
-            type: "string",
-        })
-        code: string,
-    ): Promise<void> {
-        const cards: CardDto[] = await this.service.findAllInSet(code);
-        this.LOGGER.log(this.formatOutput(cards));
-    }
-
-    @Command({
         command: "cards:name-get <name>",
         describe: "Retrieve all cards with given name",
     })

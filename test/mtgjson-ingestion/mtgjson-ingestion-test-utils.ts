@@ -41,6 +41,8 @@ export class MtgJsonIngestionTestUtils {
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             let card = new CardSet();
             card.artist = "artist";
+            card.hasFoil = false;
+            card.hasNonFoil = true;
             card.identifiers = new Identifiers();
             card.isReserved = false;
             card.legalities = {
@@ -65,8 +67,8 @@ export class MtgJsonIngestionTestUtils {
                 predh: "legal",
                 premodern: "legal",
                 vintage: "legal",
-            },
-                card.manaCost = `{${i}}{W}`;
+            };
+            card.manaCost = `{${i}}{W}`;
             card.name = "Test Card Name" + i;
             card.number = i.toString();
             card.rarity = i % 2 === 1 ? "common" : "uncommon";
@@ -80,6 +82,8 @@ export class MtgJsonIngestionTestUtils {
         }
         let bonusCard = new CardSet();
         bonusCard.artist = "artist";
+        bonusCard.hasFoil = false;
+        bonusCard.hasNonFoil = true;
         bonusCard.identifiers = new Identifiers();
         bonusCard.isReserved = false;
         bonusCard.legalities = {
@@ -104,8 +108,8 @@ export class MtgJsonIngestionTestUtils {
             predh: "legal",
             premodern: "legal",
             vintage: "legal",
-        },
-            bonusCard.manaCost = "{U/G}{B/W}{R/U}";
+        };
+        bonusCard.manaCost = "{U/G}{B/W}{R/U}";
         bonusCard.name = "Test Bonus Card Name";
         bonusCard.number = (this.MOCK_BASE_SET_SIZE + 1).toString();
         bonusCard.originalText = "Bonus card text.";
@@ -140,6 +144,8 @@ export class MtgJsonIngestionTestUtils {
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
             const card: CreateCardDto = {
                 artist: "artist",
+                hasFoil: false,
+                hasNonFoil: true,
                 imgSrc: `${i}/a/${i}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
                 isReserved: false,
                 legalities: this.expectedLegalityDtos(),
@@ -156,6 +162,8 @@ export class MtgJsonIngestionTestUtils {
         }
         const bonusCard: CreateCardDto = {
             artist: "artist",
+            hasFoil: false,
+            hasNonFoil: true,
             imgSrc: `4/a/4${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
             legalities: this.expectedLegalityDtos(),

@@ -8,7 +8,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ActionStatus, BaseHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, SetHttpDto, SetListHttpDto } from "src/adapters/http/http.types";
 import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { SetDto } from "src/core/set/api/set.dto";
@@ -65,12 +65,4 @@ export class SetController {
             status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
-}
-
-export class SetListHttpDto extends BaseHttpDto {
-    readonly setList: SetDto[];
-}
-
-export class SetHttpDto extends BaseHttpDto {
-    readonly set: InventorySetAggregateDto;
 }

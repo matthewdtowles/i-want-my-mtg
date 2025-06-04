@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardMapper } from "src/core/card/card.mapper";
-import { InventoryCardDto, InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
 import { InventoryMapper } from "src/core/inventory/inventory.mapper";
 import { InventoryService } from "src/core/inventory/inventory.service";
@@ -12,10 +12,11 @@ describe("InventoryService", () => {
     let repository: MockInventoryRepository;
 
     const testUtils: TestUtils = new TestUtils();
-    const mockInventoryDtos: InventoryDto[] = testUtils.getMockCreateInventoryDtos();
-    const mockDeleteInventoryDtos: InventoryDto[] = testUtils.getMockCreateInventoryDtos().map((i: InventoryDto) => {
+    const mockInventoryDtos: InventoryDto[] = testUtils.mockCreateInventoryDtos();
+    const mockDeleteInventoryDtos: InventoryDto[] = testUtils.mockCreateInventoryDtos().map((i: InventoryDto) => {
         return {
             cardId: i.cardId,
+            isFoil: i.isFoil,
             quantity: 0,
             userId: i.userId,
         };
@@ -35,15 +36,11 @@ describe("InventoryService", () => {
         }).compile();
         service = module.get<InventoryService>(InventoryService);
         repository = module.get<InventoryRepositoryPort>(InventoryRepositoryPort) as MockInventoryRepository;
-        repository.populate(testUtils.getMockInventoryList());
+        repository.populate(testUtils.mockInventoryList());
     });
 
     afterEach(() => {
         repository.reset();
-    });
-
-    it("should be defined", () => {
-        expect(service).toBeDefined();
     });
 
     it("should create inventory items and return the saved inventory items", async () => {
@@ -51,7 +48,7 @@ describe("InventoryService", () => {
         jest.spyOn(repository, "save");
         const savedItems: InventoryDto[] = await service.create(mockInventoryDtos);
         expect(repository.save).toHaveBeenCalled();
-        expect(savedItems).toEqual(testUtils.getMockInventoryDtos());
+        expect(savedItems).toEqual(testUtils.mockInventoryDtos());
     });
 
     it("should update existing inventory items and return the updated inventory items", async () => {
@@ -59,8 +56,8 @@ describe("InventoryService", () => {
         const savedItems: InventoryDto[] = await service.update(mockInventoryDtos);
         expect(repository.save).toHaveBeenCalled();
         const expectedItems: InventoryDto[] = [
-            testUtils.getMockInventoryDtos()[0],
-            testUtils.getMockInventoryDtos()[2]
+            testUtils.mockInventoryDtos()[0],
+            testUtils.mockInventoryDtos()[2]
         ];
         expect(savedItems).toEqual(expectedItems);
     });
@@ -73,30 +70,30 @@ describe("InventoryService", () => {
     });
 
     it("should find an inventory item for a user", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(1, 1);
-        expect(repository.findOne).toHaveBeenCalled();
-        expect(foundItem).toEqual(testUtils.getMockInventoryDtos()[0]);
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(1, 1);
+        expect(repository.findByCard).toHaveBeenCalled();
+        expect(foundItems).toHaveLength(1);
     });
 
-    it("should return null if userId is not provided for findOneForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(null, 1);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
+    it("should return [] if userId is not provided for findOneForUser", async () => {
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(null, 1);
+        expect(repository.findByCard).not.toHaveBeenCalled();
+        expect(foundItems).toEqual([]);
     });
 
     it("should return null if cardId is not provided for findOneForUser", async () => {
-        jest.spyOn(repository, "findOne");
-        const foundItem: InventoryDto = await service.findOneForUser(1, null);
-        expect(repository.findOne).not.toHaveBeenCalled();
-        expect(foundItem).toBeNull();
+        jest.spyOn(repository, "findByCard");
+        const foundItems: InventoryDto[] = await service.findForUser(1, null);
+        expect(repository.findByCard).not.toHaveBeenCalled();
+        expect(foundItems).toEqual([]);
     });
 
     it("should find inventory items with cards for a user", async () => {
         jest.spyOn(repository, "findByUser");
 
-        const result: InventoryCardDto[] = await service.findAllCardsForUser(1);
+        const result: InventoryDto[] = await service.findAllCardsForUser(1);
         expect(repository.findByUser).toHaveBeenCalled();
         expect(repository.findByUser).toHaveBeenCalledWith(1);
         expect(result).toHaveLength(3);
@@ -132,7 +129,7 @@ describe("InventoryService", () => {
 
     it("should return an empty array if userId is not provided for findAllCardsForUser", async () => {
         jest.spyOn(repository, "findByUser");
-        const foundItems: InventoryCardDto[] = await service.findAllCardsForUser(null);
+        const foundItems: InventoryDto[] = await service.findAllCardsForUser(null);
         expect(repository.findByUser).not.toHaveBeenCalled();
         expect(foundItems).toEqual([]);
     });
@@ -141,15 +138,15 @@ describe("InventoryService", () => {
         const userId = 1;
         const cardId = 1;
         jest.spyOn(repository, "delete");
-        const result = await service.delete(userId, cardId);
-        expect(repository.delete).toHaveBeenCalledWith(userId, cardId);
+        const result = await service.delete(userId, cardId, false);
+        expect(repository.delete).toHaveBeenCalledWith(userId, cardId, false);
         expect(result).toBe(true);
     });
 
     it("should return false if userId is not provided for delete", async () => {
         jest.spyOn(repository, "delete");
         const cardId = 1;
-        const result = await service.delete(null, cardId);
+        const result = await service.delete(null, cardId, false);
         expect(repository.delete).not.toHaveBeenCalled();
         expect(result).toBe(false);
     });
@@ -157,7 +154,7 @@ describe("InventoryService", () => {
     it("should return false if cardId is not provided for delete", async () => {
         jest.spyOn(repository, "delete");
         const userId = 1;
-        const result = await service.delete(userId, null);
+        const result = await service.delete(userId, null, false);
         expect(repository.delete).not.toHaveBeenCalled();
         expect(result).toBe(false);
     });
@@ -168,7 +165,7 @@ describe("InventoryService", () => {
         });
         const userId = 1;
         const cardId = 1;
-        const result = await service.delete(userId, cardId);
+        const result = await service.delete(userId, cardId, false);
         expect(repository.delete).toHaveBeenCalled();
         expect(result).toBe(false);
     });

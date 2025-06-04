@@ -23,7 +23,6 @@ export interface AggregatorServicePort {
 
     /**
      * Returns card with inventory information for logged in user
-     * - if card is not in user's inventory, quantity is 0
      *
      * @param cardId
      * @param userId
@@ -34,7 +33,6 @@ export interface AggregatorServicePort {
 
     /**
      * Returns card with inventory information for logged in user
-     * - if card is not in user's inventory, quantity is 0
      *
      * @param setCode
      * @param cardNumber
@@ -42,9 +40,5 @@ export interface AggregatorServicePort {
      * @see findInventoryCardById
      * @returns card with quantity
      */
-    findInventoryCardBySetNumber(
-        setCode: string,
-        cardnumber: string,
-        userId: number
-    ): Promise<InventoryCardAggregateDto | null>;
+    findInventoryCardBySetNumber(setCode: string, cardnumber: string, userId: number,): Promise<InventoryCardAggregateDto | null>;
 }

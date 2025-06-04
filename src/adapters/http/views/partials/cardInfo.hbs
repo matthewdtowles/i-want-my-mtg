@@ -15,7 +15,7 @@
             </div>
             <div class="flex items-center mb-2">
                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
-                <span class="text-lg font-medium">{{toUpperCase card.setCode}} {{card.set.name}}</span>
+                <span class="text-lg font-medium">{{toUpperCase card.setCode}} {{card.setName}}</span>
             </div>
         </h3>
 
@@ -63,7 +63,7 @@
             <tr class="table-row">
                 <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
                 <td class="other-printing-url py-2">
-                    <a class="table-link" href="{{p.url}}">{{p.set.name}}</a>
+                    <a class="table-link" href="{{p.url}}">{{p.setName}}</a>
                     <span> ({{toUpperCase p.setCode}})</span>
                 </td>
                 <td class="other-printing-price py-2 text-right">{{>price card=p}}</td>

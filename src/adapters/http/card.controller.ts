@@ -12,7 +12,7 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
-import { ActionStatus, CardHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, CardHttpDto, InventoryCardHttpDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
@@ -50,13 +50,15 @@ export class CardController {
 
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
-        const _card: InventoryCardAggregateDto = await this.aggregatorService.findInventoryCardById(Number(id), userId);
+        // const _card: InventoryCardAggregateDto = await this.aggregatorService.findInventoryCardById(Number(id), userId);
+        const normalCard: InventoryCardHttpDto = await this.inventoryService.findInventoryCardById(Number(id), userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
 
+        // TODO: CardHttpDto should have InventoryCardHttpDto[0-2]: for normal and foil
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
-            card: _card,
+            normalCard: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== _card.setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
@@ -81,7 +83,7 @@ export class CardController {
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
-            card: _card,
+            normalCard: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,

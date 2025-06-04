@@ -1,6 +1,5 @@
 import { IsEmail, IsString } from "class-validator";
-import { InventoryCardAggregateDto, InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { CardDto } from "src/core/card/api/card.dto";
+import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 import { UserDto } from "src/core/user/api/user.dto";
 
@@ -25,14 +24,41 @@ export class BaseHttpDto {
 }
 
 export class CardHttpDto extends BaseHttpDto {
-    readonly card: InventoryCardAggregateDto;
-    readonly otherPrintings: CardDto[];
+    readonly normalCard?: InventoryCardHttpDto;
+    readonly foilCard?: InventoryCardHttpDto;
+    readonly otherPrintings: InventoryCardHttpDto[];
+}
+
+export class InventoryCardHttpDto {
+    artist: string;
+    cardId: number;
+    hidden: boolean;
+    imgSrc: string;
+    isFoil: boolean;
+    isReserved: boolean;
+    legalities?: LegalityHttpDto[];
+    manaCost?: string[];
+    name: string;
+    displayValue: string;
+    number: string;
+    oracleText?: string;
+    quantity: number;
+    rarity: string;
+    setCode: string;
+    setName: string;
+    type: string;
+    url: string;
 }
 
 export class InventoryHttpDto extends BaseHttpDto {
-    readonly cards: InventoryCardAggregateDto[];
+    readonly cards: InventoryCardHttpDto[];
     readonly username: string;
-    readonly value: number;
+    readonly totalValue: string;
+}
+
+export class LegalityHttpDto {
+    format: string;
+    status: string;
 }
 
 export class SetListHttpDto extends BaseHttpDto {

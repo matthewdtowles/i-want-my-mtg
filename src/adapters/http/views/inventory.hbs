@@ -1,7 +1,7 @@
 <section class="border border-teal-100 sm:m-0 md:m-4">
     <section class="text-center bg-teal-100 mb-4">
         <h3 class="page-title">{{this.username}}'s Inventory</h3>
-        <p>Value: ${{#if this.value}}{{this.value}}{{else}}0.00{{/if}}</p>
+        <p>Value: ${{#if this.totalValue}}{{this.totalValue}}{{else}}0.00{{/if}}</p>
     </section>
 
     <table class="table-container w-full">
@@ -16,13 +16,12 @@
         </thead>
         <tbody>
             {{#each cards as |card|}}
-            {{#each card.variants as |variant|}}
             <tr class="table-row">
-                <td class="cards-owned-td pl-2">{{>cardsOwned card=card variant=variant}}</td>
-                <td class="inventory-item" data-id="{{card.id}}" data-img-src="{{card.imgSrc}}">
+                <td class="cards-owned-td pl-2">{{>cardsOwned card=card}}</td>
+                <td class="inventory-item" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                     <a href="{{card.url}}">{{card.name}}</a>
                     {{>reserved card=card}}
-                    {{>foil variant=variant}}
+                    {{>foil card=card}}
                     <a href="{{card.url}}" class="card-img-link">
                         <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                     </a>
@@ -33,10 +32,9 @@
                         {{toUpperCase card.setCode}}
                     </a>
                 </td>
-                <td>{{variant.displayValue}}</td>
-                <td class="delete-inventory-entry pr-2">{{>deleteInventoryEntry card=card variant=variant}}</td>
+                <td>{{card.displayValue}}</td>
+                <td class="delete-inventory-entry pr-2">{{>deleteInventoryEntry card=card}}</td>
             </tr>
-            {{/each}}
             {{/each}}
         </tbody>
     </table>

@@ -16,9 +16,8 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { ActionStatus, InventoryHttpDto } from "src/adapters/http/http.types";
-import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { HttpMapper } from "src/adapters/http/http.mapper";
+import { ActionStatus, InventoryCardHttpDto, InventoryHttpDto } from "src/adapters/http/http.types";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/auth.types";
@@ -29,10 +28,7 @@ import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 export class InventoryController {
     private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
-    constructor(
-        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
-        @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort,
-    ) { }
+    constructor(@Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
@@ -40,19 +36,27 @@ export class InventoryController {
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryHttpDto> {
         this.LOGGER.debug(`Find user inventory`);
         this.validateAuthenticatedRequest(req);
-        const _cards: InventoryCardAggregateDto[] = await this.aggregatorService.findByUser(req.user.id);
-        const _username = req.user.name;
+        const inventoryItems: InventoryDto[] = await this.inventoryService.findAllCardsForUser(req.user.id);
+        const cards: InventoryCardHttpDto[] = inventoryItems.map(item =>
+            HttpMapper.toInventoryCardHttpDto(item)
+        );
+        const username = req.user.name;
+        const totalValue: string = "0.00";
+        // const totalValue = cards.reduce((sum, card) => {
+        //     const price = card.displayValue ? parseFloat(card.displayValue.replace(/[^0-9.-]+/g, "")) : 0;
+        //     return sum + (price * card.quantity);
+        // }, 0);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
                 { label: "Home", url: "/" },
                 { label: "Inventory", url: "/inventory" },
             ],
-            cards: _cards,
-            message: _cards ? `Inventory for ${_username} found` : `Inventory not found for ${_username}`,
-            status: _cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-            username: _username,
-            value: 0,// TODO: calculate value as sum of all prices
+            cards,
+            message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,
+            status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+            username,
+            totalValue,
         };
     }
 

@@ -1,3 +1,9 @@
+// TODO WHAT DOES SET VS CARD VS INVENTORY HTTP DTOBLOOK LIKE WHEN FOIL AND NORMAL PRICE SEPARATE VS TOGETHER
+// need new dto to hold cariamts as before butnjust for set and card?????
+
+
+
+
 import {
     Controller,
     Get,

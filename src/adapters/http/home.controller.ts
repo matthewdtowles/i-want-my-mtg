@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
-import { ActionStatus, SetListHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, SetListViewDto } from "src/adapters/http/http.types";
 import { SetDto } from "src/core/set/api/set.dto";
 import { SetServicePort } from "src/core/set/api/set.service.port";
 
@@ -14,7 +14,7 @@ export class HomeController {
     @UseGuards(UserGuard)
     @Get("/")
     @Render("setListpage")
-    async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListHttpDto> {
+    async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
         const setDtos: SetDto[] = await this.setService.findAll();
         const _message: string = req.query.message as string ?? null;

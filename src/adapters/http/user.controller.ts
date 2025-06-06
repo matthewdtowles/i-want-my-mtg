@@ -14,7 +14,7 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { ActionStatus, BaseHttpDto, UpdateUserHttpDto, UserHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
 import { AuthServicePort } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/api/auth.types";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
@@ -66,7 +66,7 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("user")
-    async findById(@Req() req: AuthenticatedRequest): Promise<UserHttpDto> {
+    async findById(@Req() req: AuthenticatedRequest): Promise<UserViewDto> {
         this.LOGGER.debug(`Find user by ID`);
         if (!req) {
             throw new Error("Request undefined, unauthorized to view user");
@@ -96,9 +96,9 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
-        @Body() httpUserDto: UpdateUserHttpDto,
+        @Body() httpUserDto: UpdateUserRequestDto,
         @Req() req: AuthenticatedRequest
-    ): Promise<UserHttpDto | BaseHttpDto> {
+    ): Promise<UserViewDto | BaseViewDto> {
         this.LOGGER.debug(`Update user`);
         try {
             if (!req || !req.user || !req.user.id) {
@@ -142,7 +142,7 @@ export class UserController {
     async updatePassword(
         @Body("password") password: string,
         @Req() req: AuthenticatedRequest
-    ): Promise<BaseHttpDto> {
+    ): Promise<BaseViewDto> {
         this.LOGGER.debug(`Update user password`);
         try {
             if (!req || !req.user || !req.user.id) {
@@ -168,7 +168,7 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Delete()
-    async remove(@Req() req: AuthenticatedRequest): Promise<BaseHttpDto> {
+    async remove(@Req() req: AuthenticatedRequest): Promise<BaseViewDto> {
         this.LOGGER.debug(`Delete user`);
         try {
             if (!req || !req.user || !req.user.id) {

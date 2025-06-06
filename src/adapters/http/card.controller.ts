@@ -12,17 +12,18 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
-import { ActionStatus, CardHttpDto, InventoryCardHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { UpdateCardDto } from "src/core/card/api/create-card.dto";
-import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
+import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 import { RolesGuard } from "./auth/roles.guard";
 import { UserGuard } from "./auth/user.guard";
+import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 
 @Controller("card")
 export class CardController {
@@ -30,35 +31,23 @@ export class CardController {
 
     constructor(
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
-        @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort,
-        @Inject(IngestionOrchestratorPort) private readonly ingestionOrchestrator: IngestionOrchestratorPort
+        @Inject(AggregatorServicePort) private readonly inventoryService: InventoryServicePort,
     ) { }
-
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Role(UserRole.Admin)
-    @Get(":setCode")
-    @Render("ingestCards")
-    async ingestCards(@Param("setCode") setCode: string) {
-        this.LOGGER.debug(`ingestCards for set ${setCode}`);
-        return { cards: await this.ingestionOrchestrator.ingestSetCards(setCode) };
-    }
 
     @UseGuards(UserGuard)
     @Get(":id")
     @Render("card")
-    async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardHttpDto> {
+    async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardViewDto> {
 
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
-        // const _card: InventoryCardAggregateDto = await this.aggregatorService.findInventoryCardById(Number(id), userId);
-        const normalCard: InventoryCardHttpDto = await this.inventoryService.findInventoryCardById(Number(id), userId);
-        const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+        const _card: CardResponseDto = await this.inventoryService.findInventoryCardById(Number(id), userId);
+        const allPrintings: InventoryCardResponseDto[] = await this.cardService.findAllWithName(_card.name);
 
-        // TODO: CardHttpDto should have InventoryCardHttpDto[0-2]: for normal and foil
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
-            normalCard: _card,
+            card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== _card.setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
@@ -72,18 +61,18 @@ export class CardController {
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
         @Req() req: AuthenticatedRequest
-    ): Promise<CardHttpDto> {
+    ): Promise<CardViewDto> {
 
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        const _card: InventoryCardAggregateDto = await this.aggregatorService
+        const _card: InventoryCardAggregateDto = await this.inventoryService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
 
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: breadcrumbsForCard(_card),
-            normalCard: _card,
+            card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,

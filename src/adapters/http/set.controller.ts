@@ -8,7 +8,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ActionStatus, SetHttpDto, SetListHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, SetViewDto, SetListViewDto } from "src/adapters/http/http.types";
 import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { SetDto } from "src/core/set/api/set.dto";
@@ -28,7 +28,7 @@ export class SetController {
     @UseGuards(UserGuard)
     @Get()
     @Render("setListPage")
-    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListHttpDto> {
+    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`get setListing`);
         const _setList: SetDto[] = await this.setService.findAll();
         return {
@@ -49,7 +49,7 @@ export class SetController {
     async findBySetCode(
         @Param("setCode") setCode: string,
         @Req() req: AuthenticatedRequest
-    ): Promise<SetHttpDto> {
+    ): Promise<SetViewDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
         const userId = req.user ? req.user.id : 0;
         const _set: InventorySetAggregateDto = await this.aggregatorService.findInventorySetByCode(setCode, userId);

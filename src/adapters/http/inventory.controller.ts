@@ -17,7 +17,7 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { HttpMapper } from "src/adapters/http/http.mapper";
-import { ActionStatus, InventoryCardHttpDto, InventoryHttpDto } from "src/adapters/http/http.types";
+import { ActionStatus, InventoryCardResponseDto, InventoryViewDto } from "src/adapters/http/http.types";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 import { AuthenticatedRequest } from "./auth/auth.types";
@@ -33,19 +33,14 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryHttpDto> {
+    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
         this.LOGGER.debug(`Find user inventory`);
+        // TODO define HttpMapper function to map entire response
         this.validateAuthenticatedRequest(req);
         const inventoryItems: InventoryDto[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-        const cards: InventoryCardHttpDto[] = inventoryItems.map(item =>
-            HttpMapper.toInventoryCardHttpDto(item)
-        );
+        const cards: InventoryCardResponseDto[] = inventoryItems.map(item => HttpMapper.toInventoryCardHttpDto(item));
         const username = req.user.name;
         const totalValue: string = "0.00";
-        // const totalValue = cards.reduce((sum, card) => {
-        //     const price = card.displayValue ? parseFloat(card.displayValue.replace(/[^0-9.-]+/g, "")) : 0;
-        //     return sum + (price * card.quantity);
-        // }, 0);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

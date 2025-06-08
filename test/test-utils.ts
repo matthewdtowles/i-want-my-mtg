@@ -17,7 +17,7 @@ export class TestUtils {
     mockCards(setCode: string): Card[] {
         return Array.from({ length: 3 }, (_, i) => {
             const card = new Card();
-            card.id = i + 1;
+            card.order = i + 1;
             card.artist = "artist";
             card.imgSrc = `${i + 1}/a/${i + 1}abc123def456.jpg`;
             card.isReserved = false;
@@ -33,7 +33,7 @@ export class TestUtils {
             card.rarity = i % 2 === 0 ? "common" as CardRarity : "uncommon" as CardRarity;
             card.set = this.mockSet(setCode),
                 card.setCode = setCode;
-            card.uuid = `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`;
+            card.id = `abcd-1234-efgh-5678-ijkl-${setCode}${i + 1}`;
             card.type = "type",
                 card.prices = this.mockPriceEntities();
             return card;
@@ -42,7 +42,7 @@ export class TestUtils {
 
     mockCardDtos(setCode: string): CardDto[] {
         return this.mockCards(setCode).map((card) => ({
-            id: card.id,
+            id: card.order,
             artist: card.artist,
             hasFoil: false,
             hasNonFoil: true,
@@ -59,7 +59,7 @@ export class TestUtils {
             oracleText: card.oracleText,
             prices: card.prices.map((e) => {
                 return {
-                    cardId: e.card.id,
+                    cardId: e.card.order,
                     foil: e.foil,
                     normal: e.normal,
                     date: e.date,
@@ -77,7 +77,7 @@ export class TestUtils {
                 cards: [],
                 url: "/set/set",
             },
-            uuid: card.uuid,
+            uuid: card.id,
             type: card.type,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
         }));
@@ -123,7 +123,7 @@ export class TestUtils {
                 password: "password",
                 role: UserRole.User,
             },
-            cardId: mockCards[i].id,
+            cardId: mockCards[i].order,
             card: mockCards[i],
             quantity: dto.quantity,
         }));
@@ -143,7 +143,7 @@ export class TestUtils {
         return Array.from({ length: this.MOCK_BASE_SIZE }, (_, i) => {
             const price = new Price();
             const card: Card = new Card();
-            card.id = i + 1;
+            card.order = i + 1;
             price.card = card;
             price.foil = i + 10;
             price.normal = i + 5;

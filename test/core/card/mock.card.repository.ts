@@ -8,13 +8,13 @@ export class MockCardRepository implements CardRepositoryPort {
 
     async save(_cards: Card[]): Promise<Card[]> {
         _cards.forEach(card => {
-            const existingCardIndex: number = this.cards.findIndex(c => c.id === card.id);
+            const existingCardIndex: number = this.cards.findIndex(c => c.order === card.order);
             if (existingCardIndex >= 0) {
                 this.cards[existingCardIndex] = card;
             } else {
-                card.id = this.cards.length + 1;
+                card.order = this.cards.length + 1;
                 card?.legalities?.forEach(legality => {
-                    legality.cardId = card.id;
+                    legality.cardId = card.order;
                 });
                 this.cards.push(card);
             }
@@ -26,8 +26,8 @@ export class MockCardRepository implements CardRepositoryPort {
         return this.cards.filter(card => card.setCode === setCode);
     }
 
-    async findById(cardId: number): Promise<Card> {
-        const card = this.cards.find(c => c.id === cardId);
+    async findByUuid(cardId: number): Promise<Card> {
+        const card = this.cards.find(c => c.order === cardId);
         if (!card) {
             throw new Error(`Card with id ${cardId} not found`);
         }
@@ -45,7 +45,7 @@ export class MockCardRepository implements CardRepositoryPort {
     }
 
     async findByUuid(uuid: string): Promise<Card> {
-        const card = this.cards.find(card => card.uuid === uuid);
+        const card = this.cards.find(card => card.id === uuid);
         if (!card) {
             throw new Error(`Card with uuid ${uuid} not found`);
         }
@@ -56,7 +56,7 @@ export class MockCardRepository implements CardRepositoryPort {
         if (!uuids || uuids.length === 0) {
             throw new Error("No UUIDs provided");
         }
-        return this.cards.filter(card => uuids.includes(card.uuid));
+        return this.cards.filter(card => uuids.includes(card.id));
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
@@ -64,11 +64,11 @@ export class MockCardRepository implements CardRepositoryPort {
     }
 
     async delete(card: Card): Promise<void> {
-        this.cards = this.cards.filter(c => c.id !== card.id);
+        this.cards = this.cards.filter(c => c.order !== card.order);
     }
 
     async deleteLegality(cardId: number, format: string): Promise<void> {
-        const card = this.cards.find(c => c.id === cardId);
+        const card = this.cards.find(c => c.order === cardId);
         if (card) {
             card.legalities = card.legalities.filter(l => l.format !== format);
         }

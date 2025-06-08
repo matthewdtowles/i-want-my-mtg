@@ -16,7 +16,7 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { HttpMapper } from "src/adapters/http/http.mapper";
+import { HttpPresenter } from "src/adapters/http/http.mapper";
 import { ActionStatus, InventoryCardResponseDto, InventoryViewDto } from "src/adapters/http/http.types";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
@@ -38,7 +38,7 @@ export class InventoryController {
         // TODO define HttpMapper function to map entire response
         this.validateAuthenticatedRequest(req);
         const inventoryItems: InventoryDto[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-        const cards: InventoryCardResponseDto[] = inventoryItems.map(item => HttpMapper.toInventoryCardHttpDto(item));
+        const cards: InventoryCardResponseDto[] = inventoryItems.map(item => HttpPresenter.toInventoryCardHttpDto(item));
         const username = req.user.name;
         const totalValue: string = "0.00";
         return {

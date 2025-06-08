@@ -4,7 +4,6 @@ import { Format } from "src/core/card/api/format.enum";
 import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { CardImgType } from "./api/card.img.type.enum";
 import { CardRepositoryPort } from "./api/card.repository.port";
-import { CardServicePort } from "./api/card.service.port";
 import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
 import { Card } from "./card.entity";
 import { CardMapper } from "./card.mapper";
@@ -12,7 +11,7 @@ import { Legality } from "./legality.entity";
 
 
 @Injectable()
-export class CardService implements CardServicePort {
+export class CardService {
 
     private readonly LOGGER = new Logger(CardService.name);
 
@@ -58,10 +57,10 @@ export class CardService implements CardServicePort {
         return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
     }
 
-    async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
+    async findById(id: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
         this.LOGGER.debug(`findById ${id}`);
         try {
-            const foundCard: Card = await this.repository.findById(id);
+            const foundCard: Card = await this.repository.findByUuid(id);
             return this.mapper.entityToDtoForView(foundCard, imgType);
         } catch (error) {
             // Do not confuse caller with empty result if error occurs
@@ -87,7 +86,7 @@ export class CardService implements CardServicePort {
 
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map(legality => {
-            legality.cardId = card.id;
+            legality.cardId = card.order;
             if (legality
                 && Object.values(Format).includes(legality.format?.toLowerCase() as Format)
                 && Object.values(LegalityStatus).includes(legality.status?.toLowerCase() as LegalityStatus)

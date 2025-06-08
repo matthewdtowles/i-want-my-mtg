@@ -1,24 +1,25 @@
 import { Logger, Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { PriceRepository } from "src/adapters/database/price.repository";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Card } from "src/core/card/card.entity";
-import { Legality } from "src/core/card/legality.entity";
+import { CardRepositoryPort } from "src/core/card";
 import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
-import { Inventory } from "src/core/inventory/inventory.entity";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
-import { Price } from "src/core/price/price.entity";
 import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
-import { Set } from "src/core/set/set.entity";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
-import { User } from "src/core/user/user.entity";
-import { CardRepository } from "./card.repository";
-import { InventoryRepository } from "./inventory.repository";
-import { SetRepository } from "./set.repository";
-import { UserRepository } from "./user.repository";
+import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { CardRepository } from "src/infrastructure/database/card/card.repository";
+import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
+import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
+import { InventoryRepository } from "src/infrastructure/database/inventory/inventory.repository";
+import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
+import { PriceRepository } from "src/infrastructure/database/price/price.repository";
+import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
+import { SetRepository } from "src/infrastructure/database/set/set.repository";
+import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity";
+import { UserRepository } from "src/infrastructure/database/user/user.repository";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Card, Inventory, Legality, Price, Set, User])],
+    imports: [TypeOrmModule.forFeature([CardOrmEntity, InventoryOrmEntity, LegalityOrmEntity, PriceOrmEntity,
+        SetOrmEntity, UserOrmEntity])],
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },

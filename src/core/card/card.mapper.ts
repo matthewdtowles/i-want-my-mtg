@@ -31,7 +31,7 @@ export class CardMapper {
         card.rarity = this.convertToCardRarity(cardDto.rarity);
         card.setCode = cardDto.setCode;
         card.type = cardDto.type;
-        card.uuid = cardDto.uuid;
+        card.id = cardDto.uuid;
         return card;
     }
 
@@ -41,7 +41,7 @@ export class CardMapper {
 
     entityToDto(card: Card, imgType: CardImgType): CardDto {
         const dto: CardDto = {
-            id: card.id,
+            id: card.order,
             artist: card.artist,
             hasFoil: card.hasFoil,
             hasNonFoil: card.hasNonFoil,
@@ -54,7 +54,7 @@ export class CardMapper {
             oracleText: card.oracleText,
             prices: Array.isArray(card?.prices) ? card.prices.map(p => (
                 {
-                    cardId: card.id,
+                    cardId: card.order,
                     normal: p.normal,
                     foil: p.foil,
                     date: p.date,
@@ -64,7 +64,7 @@ export class CardMapper {
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
             type: card.type,
-            uuid: card.uuid,
+            uuid: card.id,
             url: this.buildCardUrl(card),
         };
         return dto;

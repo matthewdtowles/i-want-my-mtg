@@ -8,14 +8,12 @@ import { LegalityStatus } from "src/core/card/api/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";
-import { TestUtils } from "../../test-utils";
 import { MockCardRepository } from "./mock.card.repository";
 
 describe("CardService", () => {
     let service: CardService;
     let repository: MockCardRepository;
 
-    const testUtils: TestUtils = new TestUtils();
     const mockSetCode = "SET";
     const mockCreateCardDtos: CreateCardDto[] = Array.from({ length: 3 }, (_, i) => ({
         artist: "artist",
@@ -68,7 +66,7 @@ describe("CardService", () => {
 
     it("should update existing cards and return saved cards", async () => {
         const existingCard: Card = new Card();
-        existingCard.id = 1;
+        existingCard.order = 1;
         existingCard.name = "Card 1";
         existingCard.setCode = mockSetCode;
         existingCard.legalities = [
@@ -79,7 +77,7 @@ describe("CardService", () => {
         existingCard.number = "1";
         existingCard.rarity = CardRarity.Common;
         existingCard.type = "type";
-        existingCard.uuid = "uuid-123";
+        existingCard.id = "uuid-123";
         repository.populate([existingCard]);
 
         const updateCardDtos: CreateCardDto[] = [
@@ -136,7 +134,7 @@ describe("CardService", () => {
         jest.spyOn(repository, "findById").mockRejectedValueOnce(new Error("Repository error"));
 
         await expect(service.findById(1)).rejects.toThrow("Error finding card with id 1");
-        expect(repository.findById).toHaveBeenCalledTimes(1);
+        expect(repository.findByUuid).toHaveBeenCalledTimes(1);
     });
 
     it("should save legalities and delete previously saved legalities not given", async () => {
@@ -161,7 +159,7 @@ describe("CardService", () => {
             },
         ];
         const existingEntity: Card = new Card();
-        existingEntity.id = 1;
+        existingEntity.order = 1;
         existingEntity.name = "Card 1";
         existingEntity.setCode = mockSetCode;
         existingEntity.legalities = [
@@ -181,12 +179,12 @@ describe("CardService", () => {
         existingEntity.number = "1";
         existingEntity.rarity = CardRarity.Common;
         existingEntity.type = "type";
-        existingEntity.uuid = "uuid-123";
+        existingEntity.id = "uuid-123";
         const existingCards: Card[] = [existingEntity];
         repository.populate(existingCards);
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
-        const cardBeforeSave: Card = await repository.findById(1);
+        const cardBeforeSave: Card = await repository.findByUuid(1);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -195,7 +193,7 @@ describe("CardService", () => {
 
         const result: CardDto[] = await service.save(createCardDtos);
 
-        const cardAfterSave: Card = await repository.findById(1);
+        const cardAfterSave: Card = await repository.findByUuid(1);
         expect(cardAfterSave?.legalities).not.toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -228,7 +226,7 @@ describe("CardService", () => {
             },
         ];
         const existingEntity: Card = new Card();
-        existingEntity.id = 1;
+        existingEntity.order = 1;
         existingEntity.name = "Card 1";
         existingEntity.setCode = mockSetCode;
         existingEntity.legalities = [
@@ -243,13 +241,13 @@ describe("CardService", () => {
         existingEntity.number = "1";
         existingEntity.rarity = CardRarity.Common;
         existingEntity.type = "type";
-        existingEntity.uuid = "uuid-123";
+        existingEntity.id = "uuid-123";
         const existingCards: Card[] = [existingEntity];
         repository.populate(existingCards);
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
 
-        const cardBeforeSave: Card = await repository.findById(1);
+        const cardBeforeSave: Card = await repository.findByUuid(1);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -258,7 +256,7 @@ describe("CardService", () => {
 
         const result: CardDto[] = await service.save(createCardDtos);
 
-        const cardAfterSave: Card = await repository.findById(1);
+        const cardAfterSave: Card = await repository.findByUuid(1);
         expect(cardAfterSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Banned,

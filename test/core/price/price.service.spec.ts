@@ -56,14 +56,14 @@ describe("PriceService", () => {
         const mockCards: Card[] = [];
         dtos.forEach((dto, i) => {
             const card: Card = new Card();
-            card.uuid = dto.cardUuid;
-            card.id = i + 1;
+            card.id = dto.cardUuid;
+            card.order = i + 1;
             mockCards.push(card);
         });
         mockCardRepo.findByUuids.mockResolvedValue(mockCards);
         const _cards: Card[] = [
-            { id: 1 } as Card,
-            { id: 2 } as Card,
+            { order: 1 } as Card,
+            { order: 2 } as Card,
         ];
 
         await subject.save(dtos);

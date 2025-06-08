@@ -14,8 +14,6 @@ import {
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
 import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { InventoryCardAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
 import { CardDto } from "src/core/card/api/card.dto";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { UpdateCardDto } from "src/core/card/api/create-card.dto";
@@ -31,7 +29,7 @@ export class CardController {
 
     constructor(
         @Inject(CardServicePort) private readonly cardService: CardServicePort,
-        @Inject(AggregatorServicePort) private readonly inventoryService: InventoryServicePort,
+        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
     ) { }
 
     @UseGuards(UserGuard)
@@ -41,15 +39,22 @@ export class CardController {
 
         this.LOGGER.debug(`findOne ${id}`);
         const userId = req.user ? req.user.id : 0;
-        const _card: CardResponseDto = await this.inventoryService.findInventoryCardById(Number(id), userId);
-        const allPrintings: InventoryCardResponseDto[] = await this.cardService.findAllWithName(_card.name);
+        let card: CardResponseDto;
+        if (userId > 0) {
+            const inventoryDto: InventoryDto[] = await this.inventoryService.findForUser(userId, Number(id));
+            card = HttpMapper.toCardResponseDto(inventoryDto);
+        } else {
+            const cardDto: CardDto = await this.cardService.findById(Number(id));
+            card = HttpMapper.toCardResponseDto(cardDto);
+        }
+        const allPrintings: InventoryCardResponseDto[] = await this.cardService.findAllWithName(card.name);
 
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(_card),
-            card: _card,
+            breadcrumbs: breadcrumbsForCard(card.setCode, card.name, card.number),
+            card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== _card.setCode),
+            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== card.setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
@@ -65,7 +70,7 @@ export class CardController {
 
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
-        const _card: InventoryCardAggregateDto = await this.inventoryService
+        const _card: InventoryCardResponseDto = await this.inventoryService
             .findInventoryCardBySetNumber(setCode, setNumber, userId);
         const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
 

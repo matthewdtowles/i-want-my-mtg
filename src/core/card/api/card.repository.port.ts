@@ -1,6 +1,5 @@
 import { Format } from "src/core/card/api/format.enum";
-import { Card } from "../card.entity";
-import { Legality } from "../legality.entity";
+import { Card } from "src/core/card/card.entity";
 
 export const CardRepositoryPort = "CardRepositoryPort";
 
@@ -27,12 +26,6 @@ export interface CardRepositoryPort {
      * @returns card entities with name
      */
     findAllWithName(name: string): Promise<Card[]>;
-
-    /**
-     * @param id
-     * @returns card entity with id, null if not found
-     */
-    findById(id: number): Promise<Card | null>;
 
     /**
      * @param code three letter set code

@@ -1,10 +1,10 @@
-import { InventoryCardResponseDto } from "src/adapters/http/http.types";
+import { CardResponseDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { CardDto } from "src/core/card/api/card.dto";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { PriceDto } from "src/core/price/api/price.dto";
 import { toDollar } from "src/shared/utils/formatting.util";
 
-export class HttpMapper {
+export class HttpPresenter {
 
     static toInventoryCardHttpDto(inventoryDto: InventoryDto): InventoryCardResponseDto {
         const cardDto: CardDto | null = inventoryDto.card ? inventoryDto.card : null;
@@ -13,7 +13,7 @@ export class HttpMapper {
         item.quantity = inventoryDto.quantity;
         if (cardDto) {
             item.cardId = cardDto.id;
-            item.displayValue = HttpMapper.extractDisplayValue(inventoryDto);
+            item.displayValue = HttpPresenter.extractDisplayValue(inventoryDto);
             item.imgSrc = cardDto.imgSrc;
             item.isReserved = cardDto.isReserved;
             item.manaCost = cardDto.manaCost;
@@ -23,6 +23,10 @@ export class HttpMapper {
             item.url = cardDto.url;
         }
         return item;
+    }
+
+    static toCardResponseDto(inventoryDtos: InventoryDto[]): CardResponseDto[] {
+
     }
 
     private static extractDisplayValue(inventoryDto: InventoryDto): string {

@@ -20,7 +20,7 @@ export interface InventoryRepositoryPort {
      * @param isFoil
      * @returns user's single inventory entity matching cardId
      */
-    findOne(userId: number, cardId: number, isFoil: boolean): Promise<Inventory | null>;
+    findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null>;
 
     /**
      * This is used to find both foil and non-foil cards
@@ -29,7 +29,7 @@ export interface InventoryRepositoryPort {
      * @param cardId
      * @returns user's inventory entities matching cardId
      */
-    findByCard(userId: number, cardId: number): Promise<Inventory[]>;
+    findByCard(userId: number, cardId: string): Promise<Inventory[]>;
 
     /**
      * @param userId
@@ -42,8 +42,8 @@ export interface InventoryRepositoryPort {
      * Use when quantity is < 1
      *
      * @param userId user ID
-     * @param cardId card ID
+     * @param cardId card ID - UUID
      * @param foil true if foil card, false otherwise
      */
-    delete(userId: number, cardId: number, foil: boolean): Promise<void>;
+    delete(userId: number, cardId: string, foil: boolean): Promise<void>;
 }

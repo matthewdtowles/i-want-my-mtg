@@ -1,5 +1,4 @@
 import { IsEmail, IsString } from "class-validator";
-import { PriceRepository } from "src/adapters/database/price.repository";
 import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
 import { SetDto } from "src/core/set/api/set.dto";
 import { UserDto } from "src/core/user/api/user.dto";
@@ -25,10 +24,9 @@ export class BaseViewDto {
 }
 
 export class CardResponseDto {
-    readonly id: number;
+    readonly cardId: number;
     readonly artist?: string;
-    readonly foilPrice: PriceResponseDto;
-    readonly normalPrice: PriceResponseDto;
+
     readonly imgSrc: string;
     readonly isReserved: boolean;
     readonly legality: LegalityResponseDto[];
@@ -38,9 +36,17 @@ export class CardResponseDto {
     readonly oracleText?: string;
     readonly rarity: string;
     readonly setCode: string;
-    readonly setNumber: string;
+    readonly setName: string;
     readonly type: string;
-    readonly url: string;
+    // TODO HOW ARE WE GOING TO HANDLE PRICES AND FOIL/NORMAL AND INVENTORY on CARD PAGE?11
+    // readonly foilPrice: PriceResponseDto;
+    // readonly normalPrice: PriceResponseDto;
+    // readonly url: string; <<< ONLY USED BY otherPrintings on card page 
+    // not defined but referenced: 
+        // isFoil in foil.hbs, price.hbs, inventoryCtrl.hbs, cardsOwned.hbs
+        // hidden in price.hbs, inventoryCtrl.hbs
+        // displayValue in price.hbs
+        // quantity in cardsOwned.hbs
 }
 
 export class CardViewDto extends BaseViewDto {

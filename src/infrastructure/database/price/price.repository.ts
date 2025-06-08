@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
-import { Price } from "src/core/price/price.entity";
+import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
 import { Repository } from "typeorm";
 
 @Injectable()
 export class PriceRepository implements PriceRepositoryPort {
 
-    constructor(@InjectRepository(Price) private readonly priceRepository: Repository<Price>) { }
+    constructor(@InjectRepository(PriceOrmEntity) private readonly priceRepository: Repository<PriceOrmEntity>) { }
 
-    async save(prices: Price[]): Promise<Price[]> {
+    async save(prices: PriceOrmEntity[]): Promise<PriceOrmEntity[]> {
         return await this.priceRepository.save(prices);
     }
 

@@ -1,19 +1,19 @@
-import { PartialType } from "@nestjs/mapped-types";
 import {
     IsBoolean,
     IsEnum,
-    IsInt,
     IsLowercase,
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsPositive,
     IsString
 } from "class-validator";
-import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { LegalityDto } from "src/core/card/api/legality.dto";
+import { CardRarity, CreateLegalityDto} from "src/core/card";
+
 
 export class CreateCardDto {
+    @IsString()
+    @IsNotEmpty()
+    readonly uuid: string;
 
     @IsOptional()
     @IsString()
@@ -35,7 +35,7 @@ export class CreateCardDto {
     readonly isReserved: boolean;
 
     @IsOptional()
-    readonly legalities?: LegalityDto[];
+    readonly legalities?: CreateLegalityDto[];
 
     @IsOptional()
     @IsString()
@@ -65,14 +65,4 @@ export class CreateCardDto {
     @IsString()
     @IsNotEmpty()
     readonly type: string;
-
-    @IsString()
-    @IsNotEmpty()
-    readonly uuid: string;
-}
-
-export class UpdateCardDto extends PartialType(CreateCardDto) {
-    @IsInt()
-    @IsPositive()
-    id: number;
 }

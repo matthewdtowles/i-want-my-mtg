@@ -1,16 +1,13 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { SetDto } from "src/core/set/api/set.dto";
-import { SetServicePort } from "src/core/set/api/set.service.port";
+import { Set, SetService } from "src/core/set";
 
 @Injectable()
 export class SetCli {
 
     private readonly LOGGER: Logger = new Logger(SetCli.name);
 
-    constructor(
-        @Inject(SetServicePort) private readonly service: SetServicePort
-    ) { }
+    constructor(@Inject(SetService) private readonly service: SetService) { }
 
 
     @Command({
@@ -18,7 +15,7 @@ export class SetCli {
         describe: "Retrieve list of all sets without cards"
     })
     async listSets(): Promise<void> {
-        const sets: SetDto[] = await this.service.findAll();
+        const sets: Set[] = await this.service.findAll();
         this.LOGGER.log(this.formatOutput(sets));
     }
 
@@ -32,12 +29,12 @@ export class SetCli {
         describe: "the official set code",
         type: "string"
     }) code: string): Promise<void> {
-        const sets: SetDto = await this.service.findByCode(code);
+        const sets: Set = await this.service.findByCode(code);
         this.LOGGER.log(this.formatOutput(sets));
     }
 
 
-    private formatOutput(sets: SetDto[] | SetDto): string {
+    private formatOutput(sets: Set[] | Set): string {
         return `\n${JSON.stringify(sets, null, 2)}`;
     }
 }

@@ -1,10 +1,10 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
-import { JwtPayload } from "src/core/auth/api/auth.types";
+import { JwtPayload } from "src/core/auth/auth.types";
 import { JwtStrategy } from "src/core/auth/jwt.strategy";
-import { UserDto } from "src/core/user/api/user.dto";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { UserDto } from "src/core/user/user.dto";
+import { UserService } from "src/core/user/api/user.service.port";
 
 const mockUserDto: UserDto = {
     id: 1,
@@ -21,7 +21,7 @@ const mockJwtPayload: JwtPayload = {
 
 describe("JwtStrategy", () => {
     let jwtStrategy: JwtStrategy;
-    let userServicePort: UserServicePort;
+    let userServicePort: UserService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -43,7 +43,7 @@ describe("JwtStrategy", () => {
         }).compile();
 
         jwtStrategy = module.get<JwtStrategy>(JwtStrategy);
-        userServicePort = module.get<UserServicePort>(UserServicePort);
+        userServicePort = module.get<UserService>(UserServicePort);
     });
 
     describe("validate", () => {

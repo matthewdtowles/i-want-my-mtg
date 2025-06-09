@@ -3,10 +3,10 @@ import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dt
 import { MtgJsonApiClient } from "src/adapters/mtgjson-ingestion/mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { CreatePriceDto } from "src/core/price/create-price.dto";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
 import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
+import { CreateCardDto } from "src/core/card/create-card.dto";
 
 
 // TODO: simplify this test by using mock from the last test

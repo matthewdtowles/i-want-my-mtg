@@ -1,12 +1,8 @@
 import { Inject } from "@nestjs/common";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Card } from "src/core/card/card.entity";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
-import { PriceServicePort } from "src/core/price/api/price.service.port";
-import { Price } from "src/core/price/price.entity";
+import { Card, CardRepositoryPort } from "src/core/card";
+import { CreatePriceDto, Price, PriceRepositoryPort } from "src/core/price";
 
-export class PriceService implements PriceServicePort {
+export class PriceService {
 
     constructor(
         @Inject(PriceRepositoryPort) private readonly priceRepository: PriceRepositoryPort,

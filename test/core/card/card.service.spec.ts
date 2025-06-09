@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardDto } from "src/core/card/api/card.dto";
-import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CardDto } from "src/core/card/card.dto";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { CreateCardDto } from "src/core/card/create-card.dto";
+import { Format } from "src/core/card/format.enum";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { CardMapper } from "src/core/card/card.mapper";
 import { CardService } from "src/core/card/card.service";

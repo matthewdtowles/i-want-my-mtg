@@ -6,7 +6,6 @@ export interface AuthToken {
 }
 
 export interface JwtPayload {
-
     /**
      * User's unique ID
      */

@@ -1,8 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Card } from "src/core/card";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Format } from "src/core/card/api/format.enum";
+import { Card, CardRepositoryPort, Format } from "src/core/card";
 import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
 import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
 import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
@@ -11,6 +9,8 @@ import { In, Repository } from "typeorm";
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
+
+    private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(
         @InjectRepository(CardOrmEntity) private readonly cardRepository: Repository<CardOrmEntity>,
@@ -62,31 +62,27 @@ export class CardRepository implements CardRepositoryPort {
         })) ?? [];
     }
 
-    async findAllWithName(_name: string): Promise<CardOrmEntity[]> {
+    async findAllWithName(name: string): Promise<CardOrmEntity[]> {
         return (await this.cardRepository.find({
-            where: { name: _name, },
-            relations: ["set", "legalities", "prices"],
+            where: { name },
+            relations: this.DEFAULT_RELATIONS
         })) ?? []
     }
 
-    async findBySetCodeAndNumber(
-        code: string,
-        number: string,
-        relations: string[] = ["set", "legalities", "price"]
-    ): Promise<Card | null> {
+    async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {
         return await this.cardRepository.findOne({
             where: {
                 set: { code, },
                 number,
             },
-            relations,
+            relations: _relations ?? this.DEFAULT_RELATIONS,
         });
     }
 
-    async findByUuid(uuid: string): Promise<Card| null> {
+    async findByUuid(uuid: string, _relations: string[]): Promise<Card | null> {
         return await this.cardRepository.findOne({
-            where: { id: uuid, },
-            relations: ["set", "legalities", "prices"],
+            where: { id: uuid },
+            relations: _relations ?? this.DEFAULT_RELATIONS,
         });
     }
 
@@ -97,11 +93,12 @@ export class CardRepository implements CardRepositoryPort {
         });
     }
 
-    async delete(card: CardOrmEntity): Promise<void> {
+    async delete(card: Card): Promise<void> {
+        // TODO MAP TO ORM ENTITY
         await this.cardRepository.delete(card);
     }
 
-    async deleteLegality(_cardId: number, _format: Format): Promise<void> {
-        await this.legalityRepository.delete({ cardId: _cardId, format: _format });
+    async deleteLegality(cardId: string, format: Format): Promise<void> {
+        await this.legalityRepository.delete({ cardId, format });
     }
 }

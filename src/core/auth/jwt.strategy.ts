@@ -2,9 +2,8 @@ import { Inject, Injectable, Logger, UnauthorizedException } from "@nestjs/commo
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { JwtPayload } from "src/core/auth/api/auth.types";
-import { UserDto } from "src/core/user/api/user.dto";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { JwtPayload } from "src/core/auth/auth.types";
+import { UserDto, UserService } from "src/core/user";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,7 +11,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly LOGGER = new Logger(JwtStrategy.name);
 
     constructor(
-        @Inject(UserServicePort) private readonly userService: UserServicePort,
+        @Inject(UserService) private readonly userService: UserService,
         private readonly configService: ConfigService,
     ) {
         super({

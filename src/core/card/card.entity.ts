@@ -1,7 +1,6 @@
-import { Price } from "src/core/price/price.entity";
-import { Set } from "src/core/set/set.entity";
-import { CardRarity } from "./api/card.rarity.enum";
-import { Legality } from "./legality.entity";
+import { CardRarity, Legality } from "src/core/card";
+import { Price } from "src/core/price";
+import { Set } from "src/core/set";
 
 
 export class Card {

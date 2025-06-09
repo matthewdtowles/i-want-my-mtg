@@ -1,7 +1,5 @@
 import { IsEmail, IsString } from "class-validator";
-import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { SetDto } from "src/core/set/api/set.dto";
-import { UserDto } from "src/core/user/api/user.dto";
+import { UserDto } from "src/core/user";
 
 export enum ActionStatus {
     SUCCESS = "success",
@@ -43,10 +41,10 @@ export class CardResponseDto {
     // readonly normalPrice: PriceResponseDto;
     // readonly url: string; <<< ONLY USED BY otherPrintings on card page 
     // not defined but referenced: 
-        // isFoil in foil.hbs, price.hbs, inventoryCtrl.hbs, cardsOwned.hbs
-        // hidden in price.hbs, inventoryCtrl.hbs
-        // displayValue in price.hbs
-        // quantity in cardsOwned.hbs
+    // isFoil in foil.hbs, price.hbs, inventoryCtrl.hbs, cardsOwned.hbs
+    // hidden in price.hbs, inventoryCtrl.hbs
+    // displayValue in price.hbs
+    // quantity in cardsOwned.hbs
 }
 
 export class CardViewDto extends BaseViewDto {
@@ -84,12 +82,31 @@ export class PriceResponseDto {
     displayValue: string;
 }
 
+export class SetMetaResponseDto {
+    readonly code: string;
+    readonly name: string;
+    readonly releaseDate: string;
+    readonly totalCards: number;
+}
+
+export class SetResponseDto {
+    readonly code: string;
+    readonly name: string;
+    readonly releaseDate: string;
+    readonly totalCards: number;
+    readonly cards: CardResponseDto[];
+    readonly isFoilOnly: boolean;
+    readonly isNormalOnly: boolean;
+    readonly isComplete: boolean;
+    readonly isReserved: boolean;
+}
+
 export class SetListViewDto extends BaseViewDto {
-    readonly setList: SetDto[];
+    readonly setList: SetMetaResponseDto[];
 }
 
 export class SetViewDto extends BaseViewDto {
-    readonly set: InventorySetAggregateDto;
+    readonly set: SetResponseDto;
 }
 
 export class UpdateUserRequestDto {

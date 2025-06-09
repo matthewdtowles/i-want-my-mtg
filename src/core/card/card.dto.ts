@@ -1,26 +1,25 @@
-import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { PriceDto } from "src/core/price/api/price.dto";
-import { SetDto } from "src/core/set/api/set.dto";
+import { CardRarity, CreateLegalityDto } from "src/core/card";
+import { PriceDto } from "src/core/price";
+import { SetDto } from "src/core/set";
 
 
 export class CardDto {
-    readonly id: number;
+    readonly id: string;
     readonly artist?: string;
     readonly hasFoil: boolean;
     readonly hasNonFoil: boolean;
     readonly imgSrc: string;
     readonly isReserved: boolean;
-    readonly legalities?: LegalityDto[];
+    readonly legalities?: CreateLegalityDto[];
     readonly manaCost?: string[];
     readonly name: string;
     readonly number: string;
     readonly oracleText?: string;
+    readonly order: number;
     readonly prices: PriceDto[];
     readonly rarity: CardRarity;
     readonly set?: SetDto;
     readonly setCode: string;
     readonly type: string;
     readonly url: string;
-    readonly uuid: string;
 }

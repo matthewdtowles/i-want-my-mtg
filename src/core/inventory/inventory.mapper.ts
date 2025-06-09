@@ -1,10 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CardImgType } from "src/core/card/api/card.img.type.enum";
-import { Card } from "src/core/card/card.entity";
-import { CardMapper } from "src/core/card/card.mapper";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { User } from "src/core/user/user.entity";
-import { InventoryDto } from "./api/inventory.dto";
+import { Card, CardImgType, CardMapper } from "src/core/card";
+import { Inventory, InventoryDto } from "src/core/inventory";
+import { User } from "src/core/user";
 
 @Injectable()
 export class InventoryMapper {

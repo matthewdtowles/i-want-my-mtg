@@ -1,12 +1,11 @@
 import { IsEnum, IsInt, IsPositive } from "class-validator";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { Format, LegalityStatus } from "src/core/card";
 
 
-export class LegalityDto {
+export class CreateLegalityDto {
     @IsInt()
     @IsPositive()
-    cardId: number;
+    cardId: string;
 
     @IsEnum(Format)
     readonly format: string;

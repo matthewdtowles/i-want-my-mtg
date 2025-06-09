@@ -15,10 +15,8 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
-import { AuthServicePort } from "src/core/auth/api/auth.service.port";
-import { AuthToken } from "src/core/auth/api/auth.types";
-import { CreateUserDto, UpdateUserDto, UserDto } from "src/core/user/api/user.dto";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { AuthService, AuthToken } from "src/core/auth";
+import { CreateUserDto, UpdateUserDto, UserDto, UserService } from "src/core/user";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
 import { JwtAuthGuard } from "./auth/jwt.auth.guard";
 
@@ -33,8 +31,8 @@ export class UserController {
     ];
 
     constructor(
-        @Inject(UserServicePort) private readonly userService: UserServicePort,
-        @Inject(AuthServicePort) private readonly authService: AuthServicePort,
+        @Inject(UserService) private readonly userService: UserService,
+        @Inject(AuthService) private readonly authService: AuthService,
     ) { }
 
     @Get("create")

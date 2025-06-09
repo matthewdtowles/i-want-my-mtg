@@ -1,6 +1,7 @@
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { CreateSetDto } from "src/core/set/api/set.dto";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { CreateCardDto } from "src/core/card";
+import { CreatePriceDto } from "src/core/price";
+import { CreateSetDto } from "src/core/set";
+
 
 export const IngestionServicePort = "IngestionServicePort";
 
@@ -27,14 +28,6 @@ export interface IngestionServicePort {
      * @returns set with cards
      */
     fetchSetByCode(code: string): Promise<CreateSetDto | null>;
-
-    // /**
-    //  * Fetch all cards in set with code
-    //  *
-    //  * @param string three letter set code
-    //  * @returns array of cards
-    //  */
-    // fetchSetCards(code: string): Promise<CreateCardDto[]>;
 
     /**
      * Fetch all cards in set with code as a stream

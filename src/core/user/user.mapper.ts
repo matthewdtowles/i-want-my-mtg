@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { CreateUserDto, UpdateUserDto, UserDto } from "./api/user.dto";
+import { CreateUserDto, UpdateUserDto, UserDto } from "./user.dto";
 import { User } from "./user.entity";
 
 @Injectable()

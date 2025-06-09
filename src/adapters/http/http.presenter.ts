@@ -1,7 +1,7 @@
 import { CardResponseDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
-import { CardDto } from "src/core/card/api/card.dto";
-import { InventoryDto } from "src/core/inventory/api/inventory.dto";
-import { PriceDto } from "src/core/price/api/price.dto";
+import { CardDto } from "src/core/card";
+import { InventoryDto } from "src/core/inventory";
+import { PriceDto } from "src/core/price";
 import { toDollar } from "src/shared/utils/formatting.util";
 
 export class HttpPresenter {
@@ -12,7 +12,7 @@ export class HttpPresenter {
         item.isFoil = inventoryDto.isFoil;
         item.quantity = inventoryDto.quantity;
         if (cardDto) {
-            item.cardId = cardDto.id;
+            item.cardId = cardDto.order;
             item.displayValue = HttpPresenter.extractDisplayValue(inventoryDto);
             item.imgSrc = cardDto.imgSrc;
             item.isReserved = cardDto.isReserved;

@@ -1,12 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { InventoryDto } from "./api/inventory.dto";
-import { InventoryRepositoryPort } from "./api/inventory.repository.port";
-import { InventoryServicePort } from "./api/inventory.service.port";
-import { Inventory } from "./inventory.entity";
-import { InventoryMapper } from "./inventory.mapper";
+import { Inventory, InventoryDto, InventoryMapper, InventoryRepositoryPort } from "src/core/inventory";
+
 
 @Injectable()
-export class InventoryService implements InventoryServicePort {
+export class InventoryService {
 
     private readonly LOGGER: Logger = new Logger(InventoryService.name);
 
@@ -15,39 +12,35 @@ export class InventoryService implements InventoryServicePort {
         @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
     ) { }
 
-    async create(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
+    async create(inventoryItems: InventoryDto[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
         const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        const savedItems: Inventory[] = await this.repository.save(entities);
-        return this.mapper.toDtos(savedItems);
+        return await this.repository.save(entities);
     }
 
-    async update(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
+    async update(inventoryItems: InventoryDto[]): Promise<Inventory[]> {
         this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
         const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        const savedItems: Inventory[] = await this.repository.save(entities);
-        return this.mapper.toDtos(savedItems);
+        return await this.repository.save(entities);
     }
 
-    async findForUser(userId: number, cardId: number): Promise<InventoryDto[]> {
-        this.LOGGER.debug(`findOneForUser ${userId}, card: ${cardId}`);
-        if (!userId || !cardId) {
-            return [];
+    async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}`);
+        if (userId && cardId) {
+            return await this.repository.findByCard(userId, cardId);
         }
-        const foundItems: Inventory[] = await this.repository.findByCard(userId, cardId);
-        return this.mapper.toDtos(foundItems);
+        return [];
     }
 
-    async findAllCardsForUser(userId: number): Promise<InventoryDto[]> {
+    async findAllCardsForUser(userId: number): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
-        if (!userId) {
-            return [];
+        if (userId) {
+            return await this.repository.findByUser(userId);
         }
-        const foundCards: Inventory[] = await this.repository.findByUser(userId);
-        return this.mapper.toDtos(foundCards);
+        return [];
     }
 
-    async delete(userId: number, cardId: number, isFoil: boolean): Promise<boolean> {
+    async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {
         this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
         let result = false;
         if (userId && cardId) {

@@ -1,4 +1,4 @@
-import { Inventory } from "../inventory.entity";
+import { Inventory } from "src/core/inventory";
 
 export const InventoryRepositoryPort = "InventoryRepositoryPort";
 

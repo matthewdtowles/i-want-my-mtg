@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { IngestionServicePort } from "src/core/ingestion/api/ingestion.service.port";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { CreateSetDto } from "src/core/set/api/set.dto";
+import { CreateCardDto } from "src/core/card";
+import { IngestionServicePort } from "src/core/ingestion";
+import { CreatePriceDto } from "src/core/price";
+import { CreateSetDto } from "src/core/set";
 import { Readable } from "stream";
 import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";

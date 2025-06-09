@@ -2,12 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { CreateSetDto } from "src/core/set/api/set.dto";
+import { CreateCardDto, CreateLegalityDto, Format, LegalityStatus } from "src/core/card";
+import { CreatePriceDto } from "src/core/price";
+import { CreateSetDto } from "src/core/set";
 import { CardSet } from "./dto/cardSet.dto";
 import { SetDto as SetData } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
@@ -56,8 +53,8 @@ export class MtgJsonIngestionMapper {
         return sets;
     }
 
-    toLegalityDtos(legalities: Legalities): LegalityDto[] {
-        const legalitiesDto: LegalityDto[] = [];
+    toLegalityDtos(legalities: Legalities): CreateLegalityDto[] {
+        const legalitiesDto: CreateLegalityDto[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
             format = format.toLowerCase();
             status = status.toLowerCase();
@@ -86,7 +83,7 @@ export class MtgJsonIngestionMapper {
         return priceDto;
     }
 
-    private createLegalityDto(format: string, status: string): LegalityDto {
+    private createLegalityDto(format: string, status: string): CreateLegalityDto {
         return {
             format: format as Format,
             status: status as LegalityStatus,

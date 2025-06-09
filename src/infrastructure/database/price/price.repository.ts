@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
 import { Repository } from "typeorm";
 

@@ -1,13 +1,12 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { User } from "src/core/user/user.entity";
-import { CreateUserDto, UpdateUserDto, UserDto } from "./api/user.dto";
-import { UserRepositoryPort } from "./api/user.repository.port";
-import { UserServicePort } from "./api/user.service.port";
+import { CreateUserDto, UpdateUserDto } from "./user.dto";
+import { UserRepositoryPort } from "./user.repository.port";
 import { UserMapper } from "./user.mapper";
 
 @Injectable()
-export class UserService implements UserServicePort {
+export class UserService {
 
     private readonly LOGGER = new Logger(UserService.name);
 
@@ -16,25 +15,19 @@ export class UserService implements UserServicePort {
         @Inject(UserMapper) private readonly mapper: UserMapper,
     ) { }
 
-    async create(userDto: CreateUserDto): Promise<UserDto | null> {
+    async create(userDto: CreateUserDto): Promise<User | null> {
         this.LOGGER.debug(`create`);
         const user: User = this.mapper.createDtoToEntity(userDto);
         user.password = await this.encrypt(userDto.password);
-        const savedUser: User = (await this.repository.create(user)) ?? new User();
-        return savedUser ? this.mapper.entityToDto(savedUser) : null;
+        return (await this.repository.create(user)) ?? new User();
     }
 
-    async findById(id: number): Promise<UserDto | null> {
-        this.LOGGER.debug(`findById ${id}`);
-        const user: User = await this.repository.findById(id);
-        this.LOGGER.debug(`findById user ${JSON.stringify(user)}`);
-        return user ? this.mapper.entityToDto(user) : null;
+    async findById(id: number): Promise<User | null> {
+        return await this.repository.findById(id);
     }
 
-    async findByEmail(email: string): Promise<UserDto | null> {
-        this.LOGGER.debug(`findByEmail ${email}`);
-        const user: User = await this.repository.findByEmail(email);
-        return user ? this.mapper.entityToDto(user) : null;
+    async findByEmail(email: string): Promise<User | null> {
+        return await this.repository.findByEmail(email);
     }
 
     async findSavedPassword(email: string): Promise<string | null> {
@@ -43,12 +36,10 @@ export class UserService implements UserServicePort {
         return user ? user.password : null;
     }
 
-    async update(userDto: UpdateUserDto): Promise<UserDto | null> {
+    async update(userDto: UpdateUserDto): Promise<User | null> {
         this.LOGGER.debug(`update`);
         const user: User = this.mapper.updateDtoToEntity(userDto);
-        const savedUser: User = await this.repository.update(user) ?? new User();
-        this.LOGGER.debug(`update savedUser ${JSON.stringify(savedUser)}`);
-        return user ? this.mapper.entityToDto(savedUser) : null;
+        return await this.repository.update(user) ?? new User();
     }
 
     async updatePassword(userId: number, password: string): Promise<boolean> {

@@ -1,22 +1,23 @@
 import { Injectable } from "@nestjs/common";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
-import { Card } from "src/core/card/card.entity";
-import { Legality } from "src/core/card/legality.entity";
-import { SetDto } from "src/core/set/api/set.dto";
-import { Set } from "src/core/set/set.entity";
-import { CardDto } from "./api/card.dto";
-import { CardImgType } from "./api/card.img.type.enum";
-import { CardRarity } from "./api/card.rarity.enum";
-import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
+import {
+    Card,
+    CardDto,
+    CardImgType,
+    CardRarity,
+    CreateCardDto,
+    CreateLegalityDto,
+    Format,
+    Legality,
+    LegalityStatus
+} from "src/core/card";
+import { Set, SetDto } from "src/core/set";
 
 @Injectable()
 export class CardMapper {
 
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
-    dtoToEntity(cardDto: CreateCardDto | UpdateCardDto): Card {
+    dtoToEntity(cardDto: CreateCardDto): Card {
         const card: Card = new Card();
         card.artist = cardDto.artist;
         card.hasFoil = cardDto.hasFoil;
@@ -41,7 +42,7 @@ export class CardMapper {
 
     entityToDto(card: Card, imgType: CardImgType): CardDto {
         const dto: CardDto = {
-            id: card.order,
+            order: card.order,
             artist: card.artist,
             hasFoil: card.hasFoil,
             hasNonFoil: card.hasNonFoil,
@@ -64,7 +65,7 @@ export class CardMapper {
             set: card.set ? this.setEntityToDto(card.set) : null,
             setCode: card.setCode,
             type: card.type,
-            uuid: card.id,
+            id: card.id,
             url: this.buildCardUrl(card),
         };
         return dto;
@@ -78,8 +79,8 @@ export class CardMapper {
         };
     }
 
-    toLegalityEntities(dtos: LegalityDto[]): Legality[] {
-        return dtos?.reduce((entities: Legality[], dto: LegalityDto) => {
+    toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
+        return dtos?.reduce((entities: Legality[], dto: CreateLegalityDto) => {
             if (this.isValidLegalityDto(dto)) {
                 const entity: Legality = this.toLegalityEntity(dto);
                 if (entity) entities.push(entity);
@@ -88,7 +89,7 @@ export class CardMapper {
         }, []);
     }
 
-    toLegalityEntity(dto: LegalityDto): Legality {
+    toLegalityEntity(dto: CreateLegalityDto): Legality {
         const entity: Legality = new Legality();
         entity.cardId = dto.cardId;
         entity.format = this.convertToFormat(dto.format);
@@ -96,18 +97,18 @@ export class CardMapper {
         return entity;
     }
 
-    toLegalityDtos(entities: Legality[]): LegalityDto[] {
-        return entities?.reduce((dtos: LegalityDto[], entity: Legality) => {
+    toLegalityDtos(entities: Legality[]): CreateLegalityDto[] {
+        return entities?.reduce((dtos: CreateLegalityDto[], entity: Legality) => {
             if (this.isValidLegalityEntity(entity)) {
-                const dto: LegalityDto = this.toLegalityDto(entity);
+                const dto: CreateLegalityDto = this.toLegalityDto(entity);
                 if (dto) dtos.push(dto);
             }
             return dtos;
         }, []);
     }
 
-    toLegalityDto(entity: Legality): LegalityDto {
-        const dto: LegalityDto = {
+    toLegalityDto(entity: Legality): CreateLegalityDto {
+        const dto: CreateLegalityDto = {
             cardId: entity?.cardId,
             format: entity?.format,
             status: entity?.status,
@@ -115,15 +116,15 @@ export class CardMapper {
         return dto;
     }
 
-    private fillMissingFormats(card: CardDto): LegalityDto[] {
-        const existingLegalities: LegalityDto[] = card.legalities || [];
+    private fillMissingFormats(card: CardDto): CreateLegalityDto[] {
+        const existingLegalities: CreateLegalityDto[] = card.legalities || [];
         const formats: Format[] = Object.values(Format);
-        const filledLegalities: LegalityDto[] = formats.map(format => {
-            const existingLegality: LegalityDto | undefined = existingLegalities.find(l => l.format === format);
+        const filledLegalities: CreateLegalityDto[] = formats.map(format => {
+            const existingLegality: CreateLegalityDto | undefined = existingLegalities.find(l => l.format === format);
             if (existingLegality) {
                 return existingLegality;
             }
-            const newLegality: LegalityDto = {
+            const newLegality: CreateLegalityDto = {
                 cardId: card.id,
                 format: format,
                 status: "Not Legal"
@@ -164,7 +165,7 @@ export class CardMapper {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
 
-    private isValidLegalityDto(dto: LegalityDto): boolean {
+    private isValidLegalityDto(dto: CreateLegalityDto): boolean {
         return this.isValidlegality(dto?.format, dto?.status);
     }
 

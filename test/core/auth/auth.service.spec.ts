@@ -2,11 +2,11 @@ import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { AuthToken } from "src/core/auth/api/auth.types";
+import { AuthToken } from "src/core/auth/auth.types";
 import { AuthService } from "src/core/auth/auth.service";
-import { UserDto } from "src/core/user/api/user.dto";
+import { UserDto } from "src/core/user/user.dto";
 import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { UserService } from "src/core/user/api/user.service.port";
 import { User } from "src/core/user/user.entity";
 
 // Mock User data
@@ -28,7 +28,7 @@ const mockUserDto: UserDto = {
 
 describe("AuthService", () => {
     let authService: AuthService;
-    let userServicePort: UserServicePort;
+    let userServicePort: UserService;
     let userRepositoryPort: UserRepositoryPort;
     let jwtService: JwtService;
 
@@ -59,7 +59,7 @@ describe("AuthService", () => {
         }).compile();
 
         authService = module.get<AuthService>(AuthService);
-        userServicePort = module.get<UserServicePort>(UserServicePort);
+        userServicePort = module.get<UserService>(UserServicePort);
         userRepositoryPort = module.get<UserRepositoryPort>(UserRepositoryPort);
         jwtService = module.get<JwtService>(JwtService);
     });

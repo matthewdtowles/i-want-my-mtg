@@ -11,9 +11,9 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthServicePort } from "src/core/auth/api/auth.service.port";
-import { AuthToken } from "src/core/auth/api/auth.types";
-import { UserDto } from "src/core/user/api/user.dto";
+import { AuthService } from "src/core/auth/api/auth.service.port";
+import { AuthToken } from "src/core/auth/auth.types";
+import { UserDto } from "src/core/user/user.dto";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 
@@ -21,7 +21,7 @@ import { LocalAuthGuard } from "./local.auth.guard";
 export class AuthController {
     private readonly LOGGER: Logger = new Logger(AuthController.name);
 
-    constructor(@Inject(AuthServicePort) private readonly authService: AuthServicePort) { }
+    constructor(@Inject(AuthService) private readonly authService: AuthService) { }
 
     @Get("login")
     @Render("login")

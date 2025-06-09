@@ -4,12 +4,12 @@ import * as request from "supertest";
 import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
 import { AuthController } from "src/adapters/http/auth/auth.controller";
 import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
-import { AuthToken } from "src/core/auth/api/auth.types";
-import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { AuthToken } from "src/core/auth/auth.types";
+import { AuthService } from "src/core/auth/api/auth.service.port";
 
 describe("AuthController", () => {
     let app: INestApplication;
-    let authService: AuthServicePort;
+    let authService: AuthService;
 
     const mockAuthService = {
         login: jest.fn(),
@@ -40,7 +40,7 @@ describe("AuthController", () => {
             .compile();
         app = moduleFixture.createNestApplication();
         await app.init();
-        authService = moduleFixture.get<AuthServicePort>(AuthServicePort);
+        authService = moduleFixture.get<AuthService>(AuthServicePort);
     });
 
     afterAll(async () => {

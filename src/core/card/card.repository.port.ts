@@ -1,5 +1,4 @@
-import { Format } from "src/core/card/api/format.enum";
-import { Card } from "src/core/card/card.entity";
+import { Card, Format } from "src/core/card";
 
 export const CardRepositoryPort = "CardRepositoryPort";
 
@@ -37,9 +36,10 @@ export interface CardRepositoryPort {
 
     /**
      * @param uuid
+     * @param relations relations to load
      * @returns card entity with uuid, null if not found
      */
-    findByUuid(uuid: string): Promise<Card | null>;
+    findByUuid(uuid: string, relations: string[]): Promise<Card | null>;
 
     /**
      * 
@@ -60,5 +60,5 @@ export interface CardRepositoryPort {
      *
      * @param legality
      */
-    deleteLegality(cardId: number, format: Format): Promise<void>;
+    deleteLegality(cardId: string, format: Format): Promise<void>;
 }

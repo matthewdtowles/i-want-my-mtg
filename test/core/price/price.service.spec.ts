@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Card } from "src/core/card/card.entity";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
+import { CreatePriceDto } from "src/core/price/create-price.dto";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 import { PriceService } from "src/core/price/price.service";
 
 

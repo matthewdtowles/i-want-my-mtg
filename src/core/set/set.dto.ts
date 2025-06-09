@@ -1,7 +1,7 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
-import { IsInt, IsPositive, IsOptional, IsString, IsLowercase, IsDateString, IsEnum } from "class-validator";
-import { CardDto } from "src/core/card/api/card.dto";
+import { IsDateString, IsEnum, IsInt, IsLowercase, IsOptional, IsPositive, IsString } from "class-validator";
+import { CardDto } from "src/core/card";
 
 export enum SetType {
     Alchemy = "alchemy",

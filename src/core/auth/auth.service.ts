@@ -1,17 +1,16 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { UserDto } from "../user/api/user.dto";
-import { UserServicePort } from "../user/api/user.service.port";
-import { AuthServicePort } from "./api/auth.service.port";
-import { AuthToken, JwtPayload } from "./api/auth.types";
+import { AuthToken, JwtPayload } from "src/core/auth";
+import { UserDto, UserService } from "src/core/user";
+
 
 @Injectable()
-export class AuthService implements AuthServicePort {
+export class AuthService implements AuthService {
     private readonly LOGGER: Logger = new Logger(AuthService.name);
 
     constructor(
-        @Inject(UserServicePort) private readonly userService: UserServicePort,
+        @Inject(UserService) private readonly userService: UserService,
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) { }
 

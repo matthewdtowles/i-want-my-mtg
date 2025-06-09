@@ -1,17 +1,9 @@
 import { Logger, Module } from "@nestjs/common";
-import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
-import { CardRepositoryPort } from "./api/card.repository.port";
-import { CardMapper } from "./card.mapper";
-import { CardService } from "./card.service";
-import { CardRepository } from "src/infrastructure/database/card/card.repository";
+import { CardMapper, CardRepositoryPort, CardService } from "src/core/card";
 
 @Module({
-    imports: [MtgJsonIngestionModule],
-    providers: [
-        { provide: CardRepositoryPort, useClass: CardRepository },
-        CardMapper,
-        CardService
-    ],
+    imports: [],
+    providers: [CardMapper, CardService],
     exports: [CardRepositoryPort, CardMapper, CardService]
 })
 export class CardModule {

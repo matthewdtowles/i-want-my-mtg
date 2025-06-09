@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { InventoryController } from "src/adapters/http/inventory.controller";
-import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
+import { AggregatorService } from "src/core/aggregator/api/aggregator.service.port";
 import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
 
 describe("InventoryController", () => {

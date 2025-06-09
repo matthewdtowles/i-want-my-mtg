@@ -1,13 +1,13 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardDto } from "src/core/card/api/card.dto";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
-import { CardImgType } from "./api/card.img.type.enum";
-import { CardRepositoryPort } from "./api/card.repository.port";
-import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
-import { Card } from "./card.entity";
-import { CardMapper } from "./card.mapper";
-import { Legality } from "./legality.entity";
+import {
+    Card,
+    CardMapper,
+    CardRepositoryPort,
+    CreateCardDto,
+    Format,
+    Legality,
+    LegalityStatus,
+} from "src/core/card";
 
 
 @Injectable()
@@ -20,14 +20,13 @@ export class CardService {
         @Inject(CardMapper) private readonly mapper: CardMapper,
     ) { }
 
-
-    async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
-        let savedDtos: CardDto[] = [];
+    async save(cardDtos: CreateCardDto[]): Promise<Card[]> {
+        let savedEntities: Card[] = [];
         try {
             const cardsToSave: Card[] = [];
             const relations: string[] = ["legalities"];
             for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations);
+                const oldCard: Card = await this.repository.findByUuid(dto?.uuid, relations);
                 const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
                 if (null === card || undefined === card) {
                     continue;
@@ -39,54 +38,37 @@ export class CardService {
                 cardsToSave.push(card);
             }
             const savedCards: Card[] = await this.repository.save(cardsToSave);
-            if (Array.isArray(savedCards) && savedCards.length > 0) {
-                this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
-                    savedDtos.push(dto);
-                });
-            }
+            savedEntities.push(...savedCards);
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
         }
-        return savedDtos;
+        return savedEntities;
     }
 
-    async findAllWithName(name: string): Promise<CardDto[]> {
-        this.LOGGER.debug(`findAllWithName ${name}`);
-        const foundCards: Card[] = await this.repository.findAllWithName(name);
-        return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
+    async findAllWithName(name: string): Promise<Card[]> {
+        return await this.repository.findAllWithName(name);
     }
 
-    async findById(id: string, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
-        this.LOGGER.debug(`findById ${id}`);
+    async findById(id: string): Promise<Card | null> {
         try {
-            const foundCard: Card = await this.repository.findByUuid(id);
-            return this.mapper.entityToDtoForView(foundCard, imgType);
+            return await this.repository.findByUuid(id, ["set", "legalities", "prices"]);
         } catch (error) {
-            // Do not confuse caller with empty result if error occurs
             throw new Error(`Error finding card with id ${id}: ${error.message}`);
         }
     }
 
-    async findBySetCodeAndNumber(
-        setCode: string,
-        number: string,
-        imgType: CardImgType = CardImgType.NORMAL
-    ): Promise<CardDto> {
-        this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
-        const relations: string[] = ["set", "legalities", "prices"];
+    async findBySetCodeAndNumber(setCode: string, number: string): Promise<Card> {
         try {
-            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number, relations);
-            return this.mapper.entityToDtoForView(foundCard, imgType);
+            return await this.repository.findBySetCodeAndNumber(setCode, number, ["set", "legalities", "prices"]);
         } catch (error) {
-            // Do not confuse caller with empty result if error occurs
             throw new Error(`Error finding card with setCode ${setCode} and number ${number}: ${error.message}`);
         }
     }
 
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map(legality => {
-            legality.cardId = card.order;
+            legality.cardId = card.id;
             if (legality
                 && Object.values(Format).includes(legality.format?.toLowerCase() as Format)
                 && Object.values(LegalityStatus).includes(legality.status?.toLowerCase() as LegalityStatus)

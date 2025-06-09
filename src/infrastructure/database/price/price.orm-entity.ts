@@ -6,10 +6,10 @@ export class PriceOrmEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'decimal', nullable: true })
+    @Column({ type: "decimal", nullable: true })
     foil: number | null;
 
-    @Column({ type: 'decimal', nullable: true })
+    @Column({ type: "decimal", nullable: true })
     normal: number | null;
 
     @Column({ type: "date" })

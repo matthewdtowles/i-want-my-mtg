@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardMapper } from "src/core/card/card.mapper";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
-import { InventoryRepositoryPort } from "src/core/inventory/api/inventory.repository.port";
+import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { InventoryMapper } from "src/core/inventory/inventory.mapper";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { TestUtils } from "../../test-utils";
@@ -99,7 +99,7 @@ describe("InventoryService", () => {
         expect(result).toHaveLength(3);
 
         const firstItem = result[0];
-        expect(firstItem.card.id).toBe(1);
+        expect(firstItem.card.order).toBe(1);
         expect(firstItem.card.name).toBe("Test Card Name 1");
         expect(firstItem.card.setCode).toBe("SET");
         expect(firstItem.card.legalities).toEqual(
@@ -117,12 +117,12 @@ describe("InventoryService", () => {
         expect(firstItem.userId).toBe(1);
 
         const secondItem = result[1];
-        expect(secondItem.card.id).toBe(2);
+        expect(secondItem.card.order).toBe(2);
         expect(secondItem.card.name).toBe("Test Card Name 2");
         expect(secondItem.quantity).toBe(0);
 
         const thirdItem = result[2];
-        expect(thirdItem.card.id).toBe(3);
+        expect(thirdItem.card.order).toBe(3);
         expect(thirdItem.card.name).toBe("Test Card Name 3");
         expect(thirdItem.quantity).toBe(4);
     });

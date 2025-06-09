@@ -1,23 +1,17 @@
 import { Logger, Module } from "@nestjs/common";
-import { DatabaseModule } from "src/adapters/database/database.module";
-import { InventoryRepository } from "src/adapters/database/inventory.repository";
-import { CardMapper } from "src/core/card/card.mapper";
-import { UserMapper } from "src/core/user/user.mapper";
-import { InventoryRepositoryPort } from "./api/inventory.repository.port";
-import { InventoryServicePort } from "./api/inventory.service.port";
-import { InventoryMapper } from "./inventory.mapper";
-import { InventoryService } from "./inventory.service";
+import { CardMapper } from "src/core/card";
+import { InventoryMapper, InventoryRepositoryPort, InventoryService } from "src/core/inventory";
+import { UserMapper } from "src/core/user";
 
 @Module({
-    imports: [DatabaseModule],
+    imports: [],
     providers: [
-        { provide: InventoryServicePort, useClass: InventoryService },
-        { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         InventoryMapper,
+        InventoryService,
         CardMapper,
         UserMapper,
     ],
-    exports: [InventoryRepositoryPort, InventoryServicePort, InventoryMapper],
+    exports: [InventoryRepositoryPort, InventoryService, InventoryMapper],
 })
 export class InventoryModule {
     private readonly LOGGER: Logger = new Logger(InventoryModule.name);

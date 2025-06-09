@@ -1,8 +1,8 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { CardDto } from "src/core/card/api/card.dto";
-import { CardRarity } from "src/core/card/api/card.rarity.enum";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
+import { CardDto } from "src/core/card/card.dto";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { Format } from "src/core/card/format.enum";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
 import { Card } from "src/core/card/card.entity";
 import { InventoryDto } from "src/core/inventory/api/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -97,7 +97,7 @@ export class TestUtils {
     mockCreateInventoryDtos(): InventoryDto[] {
         const inventoryDtos: InventoryDto[] = [];
         for (let i = 0; i < this.MOCK_BASE_SIZE; i++) {
-            const _cardId = this.mockCardDtos(this.MOCK_SET_CODE)[i].id;
+            const _cardId = this.mockCardDtos(this.MOCK_SET_CODE)[i].order;
             const inventoryDto: InventoryDto = {
                 userId: 1,
                 isFoil: false,

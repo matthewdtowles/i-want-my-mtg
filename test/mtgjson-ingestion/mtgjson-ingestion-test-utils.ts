@@ -6,9 +6,9 @@ import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
+import { CreateCardDto } from "src/core/card/create-card.dto";
+import { CreateLegalityDto } from "src/core/card/api/legality.dto";
+import { CreatePriceDto } from "src/core/price/create-price.dto";
 import { CreateSetDto } from "src/core/set/api/set.dto";
 import { Readable } from "stream";
 
@@ -201,7 +201,7 @@ export class MtgJsonIngestionTestUtils {
         return expectedSets;
     }
 
-    expectedLegalityDtos(): LegalityDto[] {
+    expectedLegalityDtos(): CreateLegalityDto[] {
         return [
             {
                 cardId: null,

@@ -12,24 +12,22 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
+import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
+import { RolesGuard } from "src/adapters/http/auth/roles.guard";
+import { UserGuard } from "src/adapters/http/auth/user.guard";
+import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { CardDto } from "src/core/card/api/card.dto";
-import { CardServicePort } from "src/core/card/api/card.service.port";
-import { UpdateCardDto } from "src/core/card/api/create-card.dto";
-import { InventoryServicePort } from "src/core/inventory/api/inventory.service.port";
-import { JwtAuthGuard } from "./auth/jwt.auth.guard";
-import { RolesGuard } from "./auth/roles.guard";
-import { UserGuard } from "./auth/user.guard";
-import { InventoryDto } from "src/core/inventory/api/inventory.dto";
+import { Card, CardDto, CardService, CreateCardDto } from "src/core/card";
+import { Inventory, InventoryDto, InventoryService } from "src/core/inventory";
 
 @Controller("card")
 export class CardController {
     private readonly LOGGER: Logger = new Logger(CardController.name);
 
     constructor(
-        @Inject(CardServicePort) private readonly cardService: CardServicePort,
-        @Inject(InventoryServicePort) private readonly inventoryService: InventoryServicePort,
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(InventoryService) private readonly inventoryService: InventoryService,
     ) { }
 
     @UseGuards(UserGuard)
@@ -41,11 +39,11 @@ export class CardController {
         const userId = req.user ? req.user.id : 0;
         let card: CardResponseDto;
         if (userId > 0) {
-            const inventoryDto: InventoryDto[] = await this.inventoryService.findForUser(userId, Number(id));
-            card = HttpMapper.toCardResponseDto(inventoryDto);
+            const inventoryDto: Inventory[] = await this.inventoryService.findForUser(userId, id);
+            card = HttpPresenter.toCardResponseDto(inventoryDto);
         } else {
-            const cardDto: CardDto = await this.cardService.findById(Number(id));
-            card = HttpMapper.toCardResponseDto(cardDto);
+            const coreCard: Card = await this.cardService.findById(id);
+            card = HttpPresenter.toCardResponseDto(coreCard);
         }
         const allPrintings: InventoryCardResponseDto[] = await this.cardService.findAllWithName(card.name);
 
@@ -76,7 +74,7 @@ export class CardController {
 
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(_card),
+            breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
             card: _card,
             message: HttpStatus.OK ? "Card found" : "Card not found",
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
@@ -87,7 +85,7 @@ export class CardController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Patch(":id")
     @Role(UserRole.Admin)
-    async update(@Body() updateCardDtos: UpdateCardDto[]) {
+    async update(@Body() updateCardDtos: CreateCardDto[]) {
         this.LOGGER.debug(`Update cards`);
         return await this.cardService.save(updateCardDtos);
     }

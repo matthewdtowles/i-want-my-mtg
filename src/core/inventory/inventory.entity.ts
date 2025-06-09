@@ -1,5 +1,5 @@
-import { Card } from "src/core/card/card.entity";
-import { User } from "src/core/user/user.entity";
+import { Card } from "src/core/card";
+import { User } from "src/core/user";
 
 export class Inventory {
     cardId: string;

@@ -1,9 +1,3 @@
-// TODO WHAT DOES SET VS CARD VS INVENTORY HTTP DTOBLOOK LIKE WHEN FOIL AND NORMAL PRICE SEPARATE VS TOGETHER
-// need new dto to hold cariamts as before butnjust for set and card?????
-
-
-
-
 import {
     Controller,
     Get,
@@ -15,28 +9,22 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { ActionStatus, SetViewDto, SetListViewDto } from "src/adapters/http/http.types";
-import { InventorySetAggregateDto } from "src/core/aggregator/api/aggregate.dto";
-import { AggregatorServicePort } from "src/core/aggregator/api/aggregator.service.port";
-import { SetDto } from "src/core/set/api/set.dto";
-import { SetServicePort } from "src/core/set/api/set.service.port";
 import { AuthenticatedRequest } from "./auth/auth.types";
 import { UserGuard } from "./auth/user.guard";
+import { Set, SetService } from "src/core/set";
 
 @Controller("sets")
 export class SetController {
     private readonly LOGGER: Logger = new Logger(SetController.name);
 
-    constructor(
-        @Inject(SetServicePort) private readonly setService: SetServicePort,
-        @Inject(AggregatorServicePort) private readonly aggregatorService: AggregatorServicePort
-    ) { }
+    constructor(@Inject(SetService) private readonly setService: SetService) { }
 
     @UseGuards(UserGuard)
     @Get()
     @Render("setListPage")
     async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`get setListing`);
-        const _setList: SetDto[] = await this.setService.findAll();
+        const _setList: Set[] = await this.setService.findAll();
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
@@ -58,7 +46,7 @@ export class SetController {
     ): Promise<SetViewDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
         const userId = req.user ? req.user.id : 0;
-        const _set: InventorySetAggregateDto = await this.aggregatorService.findInventorySetByCode(setCode, userId);
+        const _set: SetResponseDto = await this.aggregatorService.findInventorySetByCode(setCode, userId);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

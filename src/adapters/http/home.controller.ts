@@ -3,13 +3,12 @@ import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
 import { ActionStatus, SetListViewDto } from "src/adapters/http/http.types";
 import { SetDto } from "src/core/set/api/set.dto";
-import { SetServicePort } from "src/core/set/api/set.service.port";
 
 @Controller()
 export class HomeController {
     private readonly LOGGER: Logger = new Logger(HomeController.name);
 
-    constructor(@Inject(SetServicePort) private readonly setService: SetServicePort) { }
+    constructor(@Inject(SetService) private readonly setService: SetService) { }
 
     @UseGuards(UserGuard)
     @Get("/")

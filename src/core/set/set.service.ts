@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Set, CreateSetDto, SetMapper, SetRepositoryPort } from "src/core/set";
+import { Set, SetRepositoryPort } from "src/core/set";
 
 @Injectable()
 export class SetService {
@@ -7,17 +7,12 @@ export class SetService {
 
     /**
      * @param repository
-     * @param mapper
      */
-    constructor(
-        @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort,
-        @Inject(SetMapper) private readonly mapper: SetMapper,
-    ) { }
+    constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }
 
-    async save(setDtos: CreateSetDto[]): Promise<Set[]> {
+    async save(sets: Set[]): Promise<Set[]> {
         this.LOGGER.debug(`Calling save`);
-        const setEntities: Set[] = this.mapper.dtosToEntities(setDtos);
-        return await this.repository.save(setEntities);
+        return await this.repository.save(sets);
     }
 
     async findAll(): Promise<Set[]> {

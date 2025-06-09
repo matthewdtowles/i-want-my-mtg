@@ -21,26 +21,17 @@ export interface IngestionServicePort {
     fetchAllSetsMeta(): Promise<Set[]>;
 
     /**
-     * Fetch set with code
-     * Includes cards
-     *
-     * @param code three letter set code
-     * @returns set with cards
-     */
-    fetchSetByCode(code: string): Promise<Set | null>;
-
-    /**
      * Fetch all cards in set with code as a stream
      *
      * @param string three letter set code
-     * @returns AsyncGenerator of writable card DTO
+     * @returns AsyncGenerator of writable card
      */
     fetchSetCards(code: string): AsyncGenerator<Card>;
 
     /**
      * Fetch all prices for today as a stream
      *
-     * @returns AsyncGenerator of writable price DTO
+     * @returns AsyncGenerator of writable price
      */
     fetchTodayPrices(): AsyncGenerator<Price>;
 }

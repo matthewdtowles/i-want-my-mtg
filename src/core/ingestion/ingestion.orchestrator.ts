@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Card, CardService } from "src/core/card";
 import { IngestionServicePort } from "src/core/ingestion";
 import { Price, PriceService } from "src/core/price";
-import { CreateSetDto, Set, SetService } from "src/core/set";
+import { Set, SetService } from "src/core/set";
 import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()
@@ -23,7 +23,7 @@ export class IngestionOrchestrator {
     @Timing()
     async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingest meta data for all sets`);
-        const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
+        const setMeta: Set[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
         const savedSets: Set[] = await this.setService.save(setMeta);
         this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
     }

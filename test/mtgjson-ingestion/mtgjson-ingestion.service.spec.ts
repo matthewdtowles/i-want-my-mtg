@@ -1,15 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dto";
 import { MtgJsonApiClient } from "src/adapters/mtgjson-ingestion/mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
-import { CreatePriceDto } from "src/core/price/create-price.dto";
+import { Card } from "src/core/card";
+import { Price } from "src/core/price";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
-import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
-import { CreateCardDto } from "src/core/card/create-card.dto";
 
-
-// TODO: simplify this test by using mock from the last test
 
 function* syncIterable<T>(items: T[]): Generator<T> {
     for (const item of items) yield item;
@@ -37,30 +35,17 @@ describe("MtgJsonIngestionService", () => {
         testUtils = new MtgJsonIngestionTestUtils();
     });
 
-    it("should be defined", () => {
-        expect(service).toBeDefined();
-    });
 
     it("getAllSets should return array of every set as CreateSetDto", async () => {
         jest.spyOn(apiClient, "fetchSetList").mockResolvedValue(testUtils.mockSetListArray());
         expect(await service.fetchAllSetsMeta()).toEqual(testUtils.expectedCreateSetDtos());
     });
 
-    it("should call external api to find a set by code and map to a CreateSetDto", async () => {
-        jest.spyOn(apiClient, "fetchSet").mockResolvedValue(testUtils.mockSetDto());
-        expect(await service.fetchSetByCode(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateSetDto());
-    });
-
-    // it("fetchSetCards should return array of every card as CreateCardDto in given set", async () => {
-    //     jest.spyOn(apiClient, "fetchSet").mockResolvedValue(testUtils.mockSetDto());
-    //     expect(await service.fetchSetCards(testUtils.MOCK_SET_CODE)).toEqual(testUtils.expectedCreateCardDtos());
-    // });
-
     it("fetchSetCards should stream CreateCardDto objects for given set", async () => {
         const mockSetCards: CardSet[] = testUtils.mockSetDto().cards;
         const mockStream = asyncIterable(mockSetCards);
         jest.spyOn(apiClient, "fetchSetCardsStream").mockResolvedValue(mockStream as any);
-        const results: CreateCardDto[] = [];
+        const results: Card[] = [];
         for await (const dto of service.fetchSetCards(testUtils.MOCK_SET_CODE)) {
             results.push(dto);
         }
@@ -76,7 +61,7 @@ describe("MtgJsonIngestionService", () => {
         ]);
         jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(mockStream as any);
 
-        const results: CreatePriceDto[] = [];
+        const results: Price[] = [];
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }
@@ -177,7 +162,7 @@ describe("MtgJsonIngestionService", () => {
         ]);
         jest.spyOn(apiClient, "fetchTodayPricesStream").mockResolvedValue(mockStream as any);
 
-        const results: CreatePriceDto[] = []
+        const results: Price[] = []
         for await (const dto of service.fetchTodayPrices()) {
             results.push(dto);
         }

@@ -28,7 +28,7 @@ export class MockInventoryRepository implements InventoryRepositoryPort {
         return savedItems;
     }
 
-    async findByCard(userId: number, cardId: number): Promise<Inventory[]> {
+    async findByCard(userId: number, cardId: string): Promise<Inventory[]> {
         return this.inventory.filter(i => i.userId === userId && i.cardId === cardId);
     }
 
@@ -36,11 +36,11 @@ export class MockInventoryRepository implements InventoryRepositoryPort {
         return this.inventory.filter(i => i.userId === userId);
     }
 
-    async findOne(userId: number, cardId: number): Promise<Inventory> {
+    async findOne(userId: number, cardId: string): Promise<Inventory> {
         return this.inventory.find(i => i.userId === userId && i.cardId === cardId);
     }
 
-    async delete(userId: number, cardId: number): Promise<void> {
+    async delete(userId: number, cardId: string): Promise<void> {
         this.inventory = this.inventory.filter(i => i.userId !== userId && i.cardId !== cardId);
     }
 

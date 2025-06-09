@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Inventory, InventoryDto, InventoryMapper, InventoryRepositoryPort } from "src/core/inventory";
+import { Inventory, InventoryRepositoryPort } from "src/core/inventory";
 
 
 @Injectable()
@@ -9,19 +9,11 @@ export class InventoryService {
 
     constructor(
         @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
-        @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
     ) { }
 
-    async create(inventoryItems: InventoryDto[]): Promise<Inventory[]> {
+    async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
-        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        return await this.repository.save(entities);
-    }
-
-    async update(inventoryItems: InventoryDto[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
-        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        return await this.repository.save(entities);
+        return await this.repository.save(inventoryItems);
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {

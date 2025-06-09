@@ -17,6 +17,7 @@ export interface AuthenticatedRequest extends Request {
 
 export const Role = (...role: string[]) => SetMetadata("role", role);
 
+// TODO: MOVE TO CORE ??
 export enum UserRole {
     Admin = "admin",
     User = "user",

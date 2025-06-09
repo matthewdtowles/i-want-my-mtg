@@ -1,24 +1,18 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { User } from "src/core/user/user.entity";
-import { CreateUserDto, UpdateUserDto } from "../../adapters/http/user/user.dto";
 import { UserRepositoryPort } from "./user.repository.port";
-import { UserMapper } from "./user.mapper";
 
 @Injectable()
 export class UserService {
 
     private readonly LOGGER = new Logger(UserService.name);
 
-    constructor(
-        @Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort,
-        @Inject(UserMapper) private readonly mapper: UserMapper,
-    ) { }
+    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) { }
 
-    async create(userDto: CreateUserDto): Promise<User | null> {
+    async create(user: User): Promise<User | null> {
         this.LOGGER.debug(`create`);
-        const user: User = this.mapper.createDtoToEntity(userDto);
-        user.password = await this.encrypt(userDto.password);
+        // user.password = await this.encrypt(user.password);
         return (await this.repository.create(user)) ?? new User();
     }
 
@@ -36,9 +30,8 @@ export class UserService {
         return user ? user.password : null;
     }
 
-    async update(userDto: UpdateUserDto): Promise<User | null> {
+    async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`update`);
-        const user: User = this.mapper.updateDtoToEntity(userDto);
         return await this.repository.update(user) ?? new User();
     }
 

@@ -7,6 +7,9 @@ import { UserRepositoryPort } from "src/core/user";
 @Injectable()
 export class UserRepository implements UserRepositoryPort {
 
+    // TODO: input/output types should be core USER
+    // need mapper to convert between ORM and core USER
+
     constructor(@InjectRepository(UserOrmEntity) private readonly userRepository: Repository<UserOrmEntity>) { }
 
     async create(user: UserOrmEntity): Promise<UserOrmEntity | null> {

@@ -67,7 +67,7 @@ export class InventoryController {
             ...dto,
             userId: req.user.id,
         }));
-        const createdItems: Inventory[] = await this.inventoryService.create(updatedDtos);
+        const createdItems: Inventory[] = await this.inventoryService.save(updatedDtos);
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
             inventory: createdItems,
@@ -87,7 +87,7 @@ export class InventoryController {
             ...dto,
             userId: req.user.id,
         }));
-        const updatedInventory: Inventory[] = await this.inventoryService.update(completeDtos);
+        const updatedInventory: Inventory[] = await this.inventoryService.save(completeDtos);
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,
             inventory: updatedInventory,

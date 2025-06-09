@@ -1,13 +1,8 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
-import { CardDto } from "src/core/card/card.dto";
-import { CardRarity } from "src/core/card/card.rarity.enum";
-import { Format } from "src/core/card/format.enum";
-import { LegalityStatus } from "src/core/card/legality.status.enum";
-import { Card } from "src/core/card/card.entity";
-import { InventoryDto } from "src/core/inventory/api/inventory.dto";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { Price } from "src/core/price/price.entity";
-import { Set } from "src/core/set/set.entity";
+import { Card, CardRarity, Format, LegalityStatus, } from "src/core/card";
+import { Inventory } from "src/core/inventory";
+import { Price } from "src/core/price";
+import { Set } from "src/core/set";
 
 
 export class TestUtils {

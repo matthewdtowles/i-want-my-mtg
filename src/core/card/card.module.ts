@@ -1,10 +1,10 @@
 import { Logger, Module } from "@nestjs/common";
-import { CardMapper, CardRepositoryPort, CardService } from "src/core/card";
+import { CardRepositoryPort, CardService } from "src/core/card";
 
 @Module({
     imports: [],
-    providers: [CardMapper, CardService],
-    exports: [CardRepositoryPort, CardMapper, CardService]
+    providers: [CardService],
+    exports: [CardRepositoryPort, CardService]
 })
 export class CardModule {
     private readonly LOGGER: Logger = new Logger(CardModule.name);

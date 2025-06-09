@@ -3,7 +3,7 @@ import { CardMapper } from "src/core/card/card.mapper";
 import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { Set } from "src/core/set/set.entity";
-import { SetMapper } from "src/core/set/set.mapper";
+import { SetMapper } from "src/adapters/http/set/set.mapper";
 import { SetService } from "src/core/set/set.service";
 import { TestUtils } from "../../test-utils";
 

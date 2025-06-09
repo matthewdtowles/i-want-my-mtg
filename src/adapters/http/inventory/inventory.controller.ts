@@ -18,9 +18,9 @@ import {
 import { Response } from "express";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, InventoryCardResponseDto, InventoryViewDto } from "src/adapters/http/http.types";
-import { Inventory, InventoryDto, InventoryService } from "src/core/inventory";
-import { AuthenticatedRequest, } from "./auth/auth.types";
-import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+import { Inventory, InventoryService } from "src/core/inventory";
+import { AuthenticatedRequest, } from "../auth/auth.types";
+import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 
 
 @Controller("inventory")

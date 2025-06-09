@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { User } from "src/core/user/user.entity";
-import { CreateUserDto, UpdateUserDto } from "./user.dto";
+import { CreateUserDto, UpdateUserDto } from "../../adapters/http/user/user.dto";
 import { UserRepositoryPort } from "./user.repository.port";
 import { UserMapper } from "./user.mapper";
 

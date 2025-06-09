@@ -1,6 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateSetDto, Set, SetDto } from "src/core/set";
-import { CardImgType, CardMapper } from "src/core/card";
+import { CardMapper } from "src/adapters/http/card/card.mapper";
+import { CreateSetDto } from "src/adapters/http/set/set.dto";
+import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
+import { CardImgType } from "src/core/card";
+import { Set } from "src/core/set";
 
 @Injectable()
 export class SetMapper {

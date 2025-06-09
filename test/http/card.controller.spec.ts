@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardController } from "src/adapters/http/card.controller";
+import { CardController } from "src/adapters/http/card/card.controller";
 import { AggregatorService } from "src/core/aggregator/api/aggregator.service.port";
 import { CardServicePort } from "src/core/card/api/card.service.port";
 import { CardMapper } from "src/core/card/card.mapper";

@@ -1,5 +1,5 @@
 import { SetMetadata } from "@nestjs/common";
-import { UserDto } from "src/core/user/user.dto";
+import { UserDto } from "src/adapters/http/user/user.dto";
 import { Request } from "express";
 
 /**

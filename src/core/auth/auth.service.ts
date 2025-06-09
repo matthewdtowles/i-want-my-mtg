@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { AuthToken, JwtPayload } from "src/core/auth";
-import { UserDto, UserService } from "src/core/user";
+import { User, UserService } from "src/core/user";
 
 
 @Injectable()
@@ -14,17 +14,17 @@ export class AuthService implements AuthService {
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) { }
 
-    async validateUser(email: string, password: string): Promise<UserDto | null> {
+    async validateUser(email: string, password: string): Promise<User | null> {
         this.LOGGER.debug(`Attempt to authenticate ${email}`);
         const encPwd: string = await this.userService.findSavedPassword(email);
-        let user: UserDto = null;
+        let user: User = null;
         if (encPwd && (await bcrypt.compare(password, encPwd))) {
             user = await this.userService.findByEmail(email);
         }
         return user;
     }
 
-    async login(user: UserDto): Promise<AuthToken> {
+    async login(user: User): Promise<AuthToken> {
         if (!user) {
             throw new Error(`Login failure: user not found`);
         }

@@ -1,9 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import {
     Card,
-    CardMapper,
     CardRepositoryPort,
-    CreateCardDto,
     Format,
     Legality,
     LegalityStatus,
@@ -15,19 +13,15 @@ export class CardService {
 
     private readonly LOGGER = new Logger(CardService.name);
 
-    constructor(
-        @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
-        @Inject(CardMapper) private readonly mapper: CardMapper,
-    ) { }
+    constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
-    async save(cardDtos: CreateCardDto[]): Promise<Card[]> {
+    async save(inputCards: Card[]): Promise<Card[]> {
         let savedEntities: Card[] = [];
         try {
             const cardsToSave: Card[] = [];
-            const relations: string[] = ["legalities"];
-            for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findByUuid(dto?.uuid, relations);
-                const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+            for (const inCard of inputCards) {
+                const oldCard: Card = await this.repository.findByUuid(inCard.id, ["legalities"]);
+                const card: Card = oldCard ? { ...oldCard, ...inCard } : inCard;
                 if (null === card || undefined === card) {
                     continue;
                 }
@@ -55,14 +49,6 @@ export class CardService {
             return await this.repository.findByUuid(id, ["set", "legalities", "prices"]);
         } catch (error) {
             throw new Error(`Error finding card with id ${id}: ${error.message}`);
-        }
-    }
-
-    async findBySetCodeAndNumber(setCode: string, number: string): Promise<Card> {
-        try {
-            return await this.repository.findBySetCodeAndNumber(setCode, number, ["set", "legalities", "prices"]);
-        } catch (error) {
-            throw new Error(`Error finding card with setCode ${setCode} and number ${number}: ${error.message}`);
         }
     }
 

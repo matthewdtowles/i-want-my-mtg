@@ -22,20 +22,20 @@ export class BaseViewDto {
 }
 
 export class CardResponseDto {
-    readonly cardId: number;
-    readonly artist?: string;
+    cardId: string;
+    artist?: string;
 
-    readonly imgSrc: string;
-    readonly isReserved: boolean;
-    readonly legality: LegalityResponseDto[];
-    readonly manaCost: string[];
-    readonly name: string;
-    readonly number: string;
-    readonly oracleText?: string;
-    readonly rarity: string;
-    readonly setCode: string;
-    readonly setName: string;
-    readonly type: string;
+    imgSrc: string;
+    isReserved: boolean;
+    legality: LegalityResponseDto[];
+    manaCost: string[];
+    name: string;
+    number: string;
+    oracleText?: string;
+    rarity: string;
+    setCode: string;
+    setName: string;
+    type: string;
     // TODO HOW ARE WE GOING TO HANDLE PRICES AND FOIL/NORMAL AND INVENTORY on CARD PAGE?11
     // readonly foilPrice: PriceResponseDto;
     // readonly normalPrice: PriceResponseDto;

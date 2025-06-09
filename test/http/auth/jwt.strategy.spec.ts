@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { JwtPayload } from "src/core/auth/auth.types";
 import { JwtStrategy } from "src/core/auth/jwt.strategy";
-import { UserDto } from "src/core/user/user.dto";
+import { UserDto } from "src/adapters/http/user/user.dto";
 import { UserService } from "src/core/user/api/user.service.port";
 
 const mockUserDto: UserDto = {

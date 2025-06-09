@@ -13,7 +13,7 @@ import {
 import { Response } from "express";
 import { AuthService } from "src/core/auth/api/auth.service.port";
 import { AuthToken } from "src/core/auth/auth.types";
-import { UserDto } from "src/core/user/user.dto";
+import { UserDto } from "src/adapters/http/user/user.dto";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 

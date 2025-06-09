@@ -29,7 +29,6 @@
     "ingest:today-prices": "npx ts-node src/cli.ts ingest:today-prices",
     "ingest:file:cards": "npx ts-node src/cli.ts ingest:file:cards",
     "ingest:test": "npx ts-node src/cli.ts ingest:test",
-    "card:get": "npx ts-node src/cli.ts card:get",
     "cards:set-get": "npx ts-node src/cli.ts cards:set-get",
     "cards:name-get": "npx ts-node src/cli.ts cards:name-get",
     "card:test": "npx ts-node src/cli.ts card:test",

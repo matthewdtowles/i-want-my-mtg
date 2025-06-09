@@ -1,21 +1,23 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardDto } from "src/core/card/card.dto";
-import { CardRarity } from "src/core/card/card.rarity.enum";
-import { CardRepositoryPort } from "src/core/card/card.repository.port";
-import { CreateCardDto } from "src/core/card/create-card.dto";
-import { Format } from "src/core/card/format.enum";
-import { LegalityStatus } from "src/core/card/legality.status.enum";
-import { Card } from "src/core/card/card.entity";
-import { CardMapper } from "src/core/card/card.mapper";
-import { CardService } from "src/core/card/card.service";
-import { MockCardRepository } from "./mock.card.repository";
+import {
+    Card,
+    CardMapper,
+    CardRarity,
+    CardRepositoryPort,
+    CardService,
+    CreateCardDto,
+    Format,
+    LegalityStatus
+} from "src/core/card";
+import { MockCardRepository } from "test/core/card/mock.card.repository";
+
 
 describe("CardService", () => {
     let service: CardService;
     let repository: MockCardRepository;
 
     const mockSetCode = "SET";
-    const mockCreateCardDtos: CreateCardDto[] = Array.from({ length: 3 }, (_, i) => ({
+    const mockInputCards: Card[] = Array.from({ length: 3 }, (_, i) => ({
         artist: "artist",
         hasFoil: false,
         hasNonFoil: true,
@@ -55,10 +57,10 @@ describe("CardService", () => {
     })
 
     it("should save new cards and return saved cards", async () => {
-        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
+        const createCardDtos: Card[] = mockInputCards;
         jest.spyOn(repository, "save");
 
-        const result: CardDto[] = await service.save(createCardDtos);
+        const result: Card[] = await service.save(createCardDtos);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(result).toMatchSnapshot();
@@ -123,7 +125,7 @@ describe("CardService", () => {
     });
 
     it("should handle repository save failure with empty array", async () => {
-        const createCardDtos: CreateCardDto[] = mockCreateCardDtos;
+        const createCardDtos: CreateCardDto[] = mockInputCards;
         jest.spyOn(repository, "save").mockRejectedValueOnce(new Error("Repository save failed"));
 
         expect(await service.save(createCardDtos)).toEqual([]);
@@ -264,17 +266,6 @@ describe("CardService", () => {
         });
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(repository.deleteLegality).not.toHaveBeenCalled();
-    });
-
-    it("should throw error with message if card lookup error occurs with findBySetCodeAndNumber", async () => {
-        const setCode = "INVALID_SET";
-        const number = "999";
-        const relations: string[] = ["set", "legalities", "prices"];
-        jest.spyOn(repository, "findBySetCodeAndNumber").mockRejectedValueOnce(new Error("Repository error"));
-
-        await expect(service.findBySetCodeAndNumber(setCode, number))
-            .rejects.toThrow(`Error finding card with setCode ${setCode} and number ${number}: Repository error`);
-        expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith(setCode, number, relations);
     });
 
 });

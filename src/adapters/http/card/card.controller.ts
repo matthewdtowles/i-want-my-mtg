@@ -10,16 +10,17 @@ import {
     Render,
     Req,
     UseGuards
-} from "@nestjs/common";
+} from "@nestjs/common";this.mapper
 import { AuthenticatedRequest, Role, UserRole } from "src/adapters/http/auth/auth.types";
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { RolesGuard } from "src/adapters/http/auth/roles.guard";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
+import { CardMapper } from "src/adapters/http/card/card.mapper";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { Card, CardDto, CardService, CreateCardDto } from "src/core/card";
-import { Inventory, InventoryDto, InventoryService } from "src/core/inventory";
+import { Card, CardService, CreateCardDto } from "src/core/card";
+import { Inventory, InventoryService } from "src/core/inventory";
 
 @Controller("card")
 export class CardController {
@@ -28,6 +29,7 @@ export class CardController {
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
+        @Inject(CardMapper) private readonly mapper: CardMapper
     ) { }
 
     @UseGuards(UserGuard)
@@ -40,12 +42,12 @@ export class CardController {
         let card: CardResponseDto;
         if (userId > 0) {
             const inventoryDto: Inventory[] = await this.inventoryService.findForUser(userId, id);
-            card = HttpPresenter.toCardResponseDto(inventoryDto);
+            card = HttpPresenter.toCardResponseDto([coreCard]);
         } else {
             const coreCard: Card = await this.cardService.findById(id);
             card = HttpPresenter.toCardResponseDto(coreCard);
         }
-        const allPrintings: InventoryCardResponseDto[] = await this.cardService.findAllWithName(card.name);
+        const allPrintings: CardResponseDto[] =this.mapper.entitiesToDtos(await this.cardService.findAllWithName(card.name));
 
         return {
             authenticated: req.isAuthenticated(),

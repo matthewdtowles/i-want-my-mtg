@@ -1,6 +1,6 @@
 import { Inject } from "@nestjs/common";
 import { Card, CardRepositoryPort } from "src/core/card";
-import { CreatePriceDto, Price, PriceRepositoryPort } from "src/core/price";
+import { Price, PriceRepositoryPort } from "src/core/price";
 
 export class PriceService {
 
@@ -9,14 +9,14 @@ export class PriceService {
         @Inject(CardRepositoryPort) private readonly cardRepository: CardRepositoryPort,
     ) { }
 
-    async save(priceDtos: CreatePriceDto[]): Promise<void> {
-        if (0 === priceDtos.length) return;
-        const uuids: string[] = [...new Set(priceDtos.map((p) => p.cardUuid))];
+    async save(prices: Price[]): Promise<void> {
+        if (0 === prices.length) return;
+        const uuids: string[] = [...new Set(prices.map((p) => p.card.id))];
         const cards: Card[] = await this.cardRepository.findByUuids(uuids);
         const cardMap: Map<string, number> = new Map(cards.map((c) => [c.id, c.order]));
         const priceEntities: Price[] = await Promise.all(
-            priceDtos.map((p) => {
-                const cardId: number = cardMap.get(p.cardUuid);
+            prices.map((p) => {
+                const cardId: number = cardMap.get(p.card.id);
                 if (!cardId) return null;
                 const card = new Card();
                 card.order = cardId;

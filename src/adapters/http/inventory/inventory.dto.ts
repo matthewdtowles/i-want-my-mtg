@@ -1,5 +1,5 @@
 import { IsBoolean, IsInt, IsObject, IsOptional } from "class-validator";
-import { CardDto } from "src/core/card";
+import { CardDto } from "src/adapters/http/card/card.dto";
 
 /**
  * Inventory item for read/write operations

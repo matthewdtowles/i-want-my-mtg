@@ -1,6 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Card, CardImgType, CardMapper } from "src/core/card";
-import { Inventory, InventoryDto } from "src/core/inventory";
+import { CardMapper } from "src/adapters/http/card/card.mapper";
+import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
+import { Card, CardImgType } from "src/core/card";
+import { Inventory } from "src/core/inventory";
 import { User } from "src/core/user";
 
 @Injectable()

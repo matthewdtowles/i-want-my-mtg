@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardService, CreateCardDto } from "src/core/card";
+import { Card, CardService } from "src/core/card";
 import { IngestionServicePort } from "src/core/ingestion";
-import { CreatePriceDto, PriceService } from "src/core/price";
+import { Price, PriceService } from "src/core/price";
 import { CreateSetDto, Set, SetService } from "src/core/set";
 import { Timing } from "src/shared/decorators/timing.decorator";
 
@@ -48,9 +48,9 @@ export class IngestionOrchestrator {
     async ingestSetCards(code: string): Promise<void> {
         this.LOGGER.debug(`ingest set cards for set code: ${code}`);
         let totalSaved: number = 0;
-        const buffer: CreateCardDto[] = [];
-        for await (const cardDto of this.ingestionService.fetchSetCards(code)) {
-            buffer.push(cardDto);
+        const buffer: Card[] = [];
+        for await (const card of this.ingestionService.fetchSetCards(code)) {
+            buffer.push(card);
             if (buffer.length >= this.CARD_BUF_SIZE) {
                 totalSaved += buffer.length;
                 await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
@@ -66,9 +66,9 @@ export class IngestionOrchestrator {
     @Timing()
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`Ingest prices for today.`);
-        const buffer: CreatePriceDto[] = [];
-        for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
-            buffer.push(priceDto);
+        const buffer: Price[] = [];
+        for await (const price of this.ingestionService.fetchTodayPrices()) {
+            buffer.push(price);
             if (buffer.length >= this.PRICE_BUF_SIZE) {
                 await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
             }

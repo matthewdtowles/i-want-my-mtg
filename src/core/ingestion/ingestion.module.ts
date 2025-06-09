@@ -8,7 +8,6 @@ import { SetModule } from "src/core/set";
 @Module({
     imports: [MtgJsonIngestionModule, CardModule, PriceModule, SetModule],
     providers: [
-        // TODO: MOVE binding to Ingestion Adapter and/or AppModule
         IngestionOrchestrator,
         PriceService,
     ],

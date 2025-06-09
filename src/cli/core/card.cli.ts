@@ -8,30 +8,6 @@ export class CardCli {
 
     constructor(@Inject(CardService) private readonly service: CardService,) { }
 
-    @Command({
-        command: "card:get <code> <setNumber>",
-        describe: "Retrieve card with set number from set with given code",
-    })
-    async getCardByNameAndSet(
-        @Positional({
-            name: "code",
-            describe: "the set code of the card",
-            type: "string",
-        })
-        code: string,
-        @Positional({
-            name: "setNumber",
-            describe: "the set number of the card",
-            type: "number",
-        })
-        setNumber: string,
-    ): Promise<void> {
-        const card: Card = await this.service.findBySetCodeAndNumber(
-            code,
-            setNumber,
-        );
-        this.LOGGER.log(this.formatOutput(card));
-    }
 
     @Command({
         command: "cards:name-get <name>",

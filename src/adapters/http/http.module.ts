@@ -1,11 +1,11 @@
 import { Logger, Module } from "@nestjs/common";
 import { CoreModule } from "src/core/core.module";
 import { AuthController } from "./auth/auth.controller";
-import { CardController } from "./card.controller";
+import { CardController } from "./card/card.controller";
 import { HomeController } from "./home.controller";
-import { InventoryController } from "./inventory.controller";
-import { SetController } from "./set.controller";
-import { UserController } from "./user.controller";
+import { InventoryController } from "./inventory/inventory.controller";
+import { SetController } from "./set/set.controller";
+import { UserController } from "./user/user.controller";
 
 @Module({
     controllers: [

@@ -7,7 +7,8 @@ import {
     IsOptional,
     IsString
 } from "class-validator";
-import { CardRarity, CreateLegalityDto} from "src/core/card";
+import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
+import { CardRarity } from "src/core/card";
 
 
 export class CreateCardDto {

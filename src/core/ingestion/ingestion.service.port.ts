@@ -1,6 +1,6 @@
-import { CreateCardDto } from "src/core/card";
-import { CreatePriceDto } from "src/core/price";
-import { CreateSetDto } from "src/core/set";
+import { Card } from "src/core/card";
+import { Price } from "src/core/price";
+import { Set } from "src/core/set";
 
 
 export const IngestionServicePort = "IngestionServicePort";
@@ -18,7 +18,7 @@ export interface IngestionServicePort {
      * 
      * @returns array of sets without cards
      */
-    fetchAllSetsMeta(): Promise<CreateSetDto[]>;
+    fetchAllSetsMeta(): Promise<Set[]>;
 
     /**
      * Fetch set with code
@@ -27,7 +27,7 @@ export interface IngestionServicePort {
      * @param code three letter set code
      * @returns set with cards
      */
-    fetchSetByCode(code: string): Promise<CreateSetDto | null>;
+    fetchSetByCode(code: string): Promise<Set | null>;
 
     /**
      * Fetch all cards in set with code as a stream
@@ -35,12 +35,12 @@ export interface IngestionServicePort {
      * @param string three letter set code
      * @returns AsyncGenerator of writable card DTO
      */
-    fetchSetCards(code: string): AsyncGenerator<CreateCardDto>;
+    fetchSetCards(code: string): AsyncGenerator<Card>;
 
     /**
      * Fetch all prices for today as a stream
      *
      * @returns AsyncGenerator of writable price DTO
      */
-    fetchTodayPrices(): AsyncGenerator<CreatePriceDto>;
+    fetchTodayPrices(): AsyncGenerator<Price>;
 }

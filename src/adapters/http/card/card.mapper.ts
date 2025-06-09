@@ -1,22 +1,24 @@
 import { Injectable } from "@nestjs/common";
+import { CardDto } from "src/adapters/http/card/card.dto";
+import { CreateCardDto } from "src/adapters/http/card/create-card.dto";
+import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
+import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import {
     Card,
-    CardDto,
     CardImgType,
     CardRarity,
-    CreateCardDto,
-    CreateLegalityDto,
     Format,
     Legality,
     LegalityStatus
 } from "src/core/card";
-import { Set, SetDto } from "src/core/set";
+import { Set } from "src/core/set";
 
 @Injectable()
 export class CardMapper {
 
     private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
+    // TODO: update - should reflect ingestion input
     dtoToEntity(cardDto: CreateCardDto): Card {
         const card: Card = new Card();
         card.artist = cardDto.artist;

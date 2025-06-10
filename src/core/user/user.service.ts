@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { User } from "src/core/user/user.entity";
-import { UserRepositoryPort } from "./user.repository.port";
+import { User, UserRepositoryPort } from "src/core/user";
+
 
 @Injectable()
 export class UserService {

@@ -1,4 +1,4 @@
-import { CardRarity } from "src/core/card/card.rarity.enum";
+import { CardRarity } from "src/core/card";
 import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
 import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
 import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";

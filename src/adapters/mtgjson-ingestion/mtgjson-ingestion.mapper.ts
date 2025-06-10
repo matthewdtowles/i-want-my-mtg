@@ -1,19 +1,19 @@
 import { Injectable } from "@nestjs/common";
+import { CardSet } from "src/adapters/mtgjson-ingestion/dto/cardSet.dto";
 import { Legalities } from "src/adapters/mtgjson-ingestion/dto/legalities.dto";
 import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
-import { CreateCardDto, CreateLegalityDto, Format, LegalityStatus } from "src/core/card";
-import { CreatePriceDto } from "src/core/price";
-import { CreateSetDto } from "src/core/set";
-import { CardSet } from "./dto/cardSet.dto";
-import { SetDto as SetData } from "./dto/set.dto";
-import { SetList } from "./dto/setList.dto";
+import { SetDto as SetData } from "src/adapters/mtgjson-ingestion/dto/set.dto";
+import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
+import { Card, Format, Legality, LegalityStatus } from "src/core/card";
+import { Price } from "src/core/price";
+import { Set } from "src/core/set";
 
 
 @Injectable()
 export class MtgJsonIngestionMapper {
 
-    toCreateSetDto(setMeta: SetData | SetList): CreateSetDto {
+    toSet(setMeta: SetData | SetList): Set {
         return {
             code: setMeta.code.toLowerCase(),
             baseSize: setMeta.baseSetSize,
@@ -26,14 +26,14 @@ export class MtgJsonIngestionMapper {
         };
     }
 
-    toCreateCardDto(setCard: CardSet): CreateCardDto {
+    toCard(setCard: CardSet): Card {
         return {
             artist: setCard.artist,
             hasFoil: setCard.hasFoil,
             hasNonFoil: setCard.hasNonFoil,
             imgSrc: this.buildScryfallImgPath(setCard),
             isReserved: setCard.isReserved,
-            legalities: this.toLegalityDtos(setCard.legalities),
+            legalities: this.toLegalities(setCard.legalities),
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
@@ -45,45 +45,46 @@ export class MtgJsonIngestionMapper {
         };
     }
 
-    toCreateSetDtos(setLists: SetList[]): CreateSetDto[] {
-        const sets: CreateSetDto[] = [];
-        setLists.forEach((s: SetList) => {
-            sets.push(this.toCreateSetDto(s));
-        });
+    toSets(setLists: SetList[]): Set[] {
+        const sets: Set[] = [];
+        setLists.forEach((s: SetList) => sets.push(this.toSet(s)));
         return sets;
     }
 
-    toLegalityDtos(legalities: Legalities): CreateLegalityDto[] {
-        const legalitiesDto: CreateLegalityDto[] = [];
+    toLegalities(legalities: Legalities): Legality[] {
+        const legalitiesDto: Legality[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
             format = format.toLowerCase();
             status = status.toLowerCase();
-
             if (Object.values(Format).includes(format as Format)
                 && Object.values(LegalityStatus).includes(status as LegalityStatus)) {
-                legalitiesDto.push(this.createLegalityDto(format, status));
+                legalitiesDto.push(this.createLegality(format, status));
             }
         });
         return legalitiesDto;
     }
 
-    toCreatePriceDto(cardUuid: string, paperPrices: Record<string, PriceList>): CreatePriceDto {
-        const extractedPrices: ExtractedPricesDto = this.extractPrices(paperPrices);
+    toPrice(cardUuid: string, paperPrices: Record<string, PriceList>): Price | null {
+        const extractedPrices: ExtractedPrices = this.extractPrices(paperPrices);
         const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
         const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
-        let priceDto: CreatePriceDto;
+        let price: Price;
         if (foilPrice || normalPrice) {
-            priceDto = {
-                cardUuid,
+            price = {
+                // TODO: FIX after we figure out how to go from Core <--> ORM Entities 
+                // as this will help determine what Core Entity will look like and how to map to it
+                card: {
+                    id: cardUuid,
+                },
                 date: new Date(this.extractDate(paperPrices)),
                 foil: foilPrice,
                 normal: normalPrice,
             };
         }
-        return priceDto;
+        return price;
     }
 
-    private createLegalityDto(format: string, status: string): CreateLegalityDto {
+    private createLegality(format: string, status: string): Legality {
         return {
             format: format as Format,
             status: status as LegalityStatus,
@@ -117,7 +118,7 @@ export class MtgJsonIngestionMapper {
         throw new Error("No date found in paper prices");
     }
 
-    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPricesDto {
+    private extractPrices(paperPrices: Record<string, PriceList>): ExtractedPrices {
         const foilPrices: number[] = [];
         const normalPrices: number[] = [];
         for (const [_, priceList] of Object.entries(paperPrices)) {
@@ -135,7 +136,7 @@ export class MtgJsonIngestionMapper {
                 }
             }
         }
-        return new ExtractedPricesDto(foilPrices, normalPrices);
+        return new ExtractedPrices(foilPrices, normalPrices);
     }
 
     private determinePrice(prices: number[]): number | null {
@@ -148,7 +149,7 @@ export class MtgJsonIngestionMapper {
     }
 }
 
-class ExtractedPricesDto {
+class ExtractedPrices {
     foil: number[];
     normal: number[];
 

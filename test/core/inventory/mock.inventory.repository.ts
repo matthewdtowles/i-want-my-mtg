@@ -1,8 +1,6 @@
-import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
-import { Inventory } from "src/core/inventory/inventory.entity";
+import { Inventory, InventoryRepositoryPort } from "src/core/inventory";
 
 export class MockInventoryRepository implements InventoryRepositoryPort {
-
 
     private inventory: Inventory[] = [];
 

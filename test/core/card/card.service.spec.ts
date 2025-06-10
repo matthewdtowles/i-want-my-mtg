@@ -229,7 +229,7 @@ describe("CardService", () => {
                 number: "1",
                 rarity: CardRarity.Common,
                 type: "type",
-                uuid: "uuid-123"
+                set: new Set(),
             },
         ];
         const existingEntity: Card = new Card();
@@ -272,6 +272,4 @@ describe("CardService", () => {
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(repository.deleteLegality).not.toHaveBeenCalled();
     });
-
 });
-

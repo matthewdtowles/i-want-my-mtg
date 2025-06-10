@@ -1,6 +1,5 @@
-import { CardRepositoryPort } from "src/core/card/card.repository.port";
-import { Card } from "src/core/card/card.entity";
-import { Legality } from "src/core/card/legality.entity";
+import { Card, CardRepositoryPort } from "src/core/card";
+
 
 export class MockCardRepository implements CardRepositoryPort {
 

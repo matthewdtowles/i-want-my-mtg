@@ -2,7 +2,7 @@ import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
 import { ActionStatus, SetListViewDto } from "src/adapters/http/http.types";
-import { SetDto } from "src/core/set/api/set.dto";
+import { Set, SetService } from "src/core/set";
 
 @Controller()
 export class HomeController {
@@ -15,14 +15,14 @@ export class HomeController {
     @Render("setListpage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
-        const setDtos: SetDto[] = await this.setService.findAll();
+        const sets: Set[] = await this.setService.findAll();
         const _message: string = req.query.message as string ?? null;
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [],
             message: _message,
-            setList: setDtos,
-            status: setDtos ? ActionStatus.SUCCESS : ActionStatus.ERROR
+            setList: sets,
+            status: sets ? ActionStatus.SUCCESS : ActionStatus.ERROR
         };
     }
 }

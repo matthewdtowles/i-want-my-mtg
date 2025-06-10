@@ -1,9 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
-import { InventoryService } from "src/core/inventory/inventory.service";
+import { Inventory, InventoryRepositoryPort, InventoryService } from "src/core/inventory";
 import { TestUtils } from "../../test-utils";
 import { MockInventoryRepository } from "./mock.inventory.repository";
-import { Inventory } from "src/core/inventory";
 
 describe("InventoryService", () => {
     let service: InventoryService;

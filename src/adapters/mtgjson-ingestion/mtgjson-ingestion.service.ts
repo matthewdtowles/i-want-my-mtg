@@ -21,14 +21,14 @@ export class MtgJsonIngestionService implements IngestionServicePort {
 
     async fetchAllSetsMeta(): Promise<Set[]> {
         const setList: SetList[] = await this.apiClient.fetchSetList();
-        return this.dataMapper.toCreateSetDtos(setList);
+        return this.dataMapper.toSets(setList);
     }
 
     async *fetchSetCards(code: string): AsyncGenerator<Card> {
         this.LOGGER.debug(`Fetching cards for set ${code}`);
         const cardStream: Readable = await this.apiClient.fetchSetCardsStream(code);
         for await (const setCard of cardStream) {
-            const card: Card = this.dataMapper.toCreateCardDto(setCard);
+            const card: Card = this.dataMapper.toCard(setCard);
             if (card) yield card;
         }
     }
@@ -39,7 +39,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         for await (const { key: cardUuid, value: priceFormats } of priceStream) {
             const paperPrices: Record<string, PriceList> = priceFormats.paper;
             if (!paperPrices) continue;
-            const priceDto: Price = this.dataMapper.toCreatePriceDto(cardUuid, paperPrices);
+            const priceDto: Price = this.dataMapper.toPrice(cardUuid, paperPrices);
             if (priceDto) yield priceDto;
         }
     }

@@ -1,9 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardController } from "src/adapters/http/card/card.controller";
-import { AggregatorService } from "src/core/aggregator/api/aggregator.service.port";
-import { CardServicePort } from "src/core/card/api/card.service.port";
-import { CardMapper } from "src/core/card/card.mapper";
-import { IngestionOrchestrator } from "src/core/ingestion/api/ingestion.orchestrator.port";
+import { CardService } from "src/core/card";
+import { IngestionOrchestrator } from "src/core/ingestion";
 
 describe("CardController", () => {
     let controller: CardController;
@@ -11,19 +9,11 @@ describe("CardController", () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CardController],
             providers: [
-                CardMapper,
+                CardService,
                 {
-                    provide: CardServicePort,
+                    provide: IngestionOrchestrator,
                     useValue: {},
                 },
-                {
-                    provide: IngestionOrchestratorPort,
-                    useValue: {},
-                },
-                {
-                    provide: AggregatorServicePort,
-                    useValue: {},
-                }
             ],
         }).compile();
         controller = module.get<CardController>(CardController);

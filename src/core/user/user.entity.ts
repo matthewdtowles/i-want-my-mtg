@@ -1,10 +1,10 @@
 import { UserRole } from "src/adapters/http/auth/auth.types";
 
 export class User {
-    id: number;
-    email: string;
-    name: string;
+    readonly id: number;
+    readonly email: string;
+    readonly name: string;
     // TODO: remove and keep inside of db module
-    password: string;
-    role: UserRole;
+    readonly password: string;
+    readonly role: UserRole;
 }

@@ -20,7 +20,7 @@ export class CardService {
         try {
             const cardsToSave: Card[] = [];
             for (const inCard of inputCards) {
-                const oldCard: Card = await this.repository.findByUuid(inCard.id, ["legalities"]);
+                const oldCard: Card = await this.repository.findById(inCard.id, ["legalities"]);
                 const card: Card = oldCard ? { ...oldCard, ...inCard } : inCard;
                 if (null === card || undefined === card) {
                     continue;
@@ -46,7 +46,7 @@ export class CardService {
 
     async findById(id: string): Promise<Card | null> {
         try {
-            return await this.repository.findByUuid(id, ["set", "legalities", "prices"]);
+            return await this.repository.findById(id, ["set", "legalities", "prices"]);
         } catch (error) {
             throw new Error(`Error finding card with id ${id}: ${error.message}`);
         }

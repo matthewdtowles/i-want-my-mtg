@@ -141,7 +141,7 @@ describe("CardService", () => {
         jest.spyOn(repository, "findById").mockRejectedValueOnce(new Error("Repository error"));
 
         await expect(service.findById("1")).rejects.toThrow("Error finding card with id 1");
-        expect(repository.findByUuid).toHaveBeenCalledTimes(1);
+        expect(repository.findById).toHaveBeenCalledTimes(1);
     });
 
     it("should save legalities and delete previously saved legalities not given", async () => {
@@ -191,7 +191,7 @@ describe("CardService", () => {
         repository.populate(existingCards);
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
-        const cardBeforeSave: Card = await repository.findByUuid(1);
+        const cardBeforeSave: Card = await repository.findById(1);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -200,7 +200,7 @@ describe("CardService", () => {
 
         const result: Card[] = await service.save(createCards);
 
-        const cardAfterSave: Card = await repository.findByUuid(1);
+        const cardAfterSave: Card = await repository.findById(1);
         expect(cardAfterSave?.legalities).not.toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -254,7 +254,7 @@ describe("CardService", () => {
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
 
-        const cardBeforeSave: Card = await repository.findByUuid(1);
+        const cardBeforeSave: Card = await repository.findById(1);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -263,7 +263,7 @@ describe("CardService", () => {
 
         const result: Card[] = await service.save(createCards);
 
-        const cardAfterSave: Card = await repository.findByUuid(1);
+        const cardAfterSave: Card = await repository.findById(1);
         expect(cardAfterSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Banned,

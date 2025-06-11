@@ -6,6 +6,7 @@ export const CardRepositoryPort = "CardRepositoryPort";
  * Persistence layer for Card entity
  */
 export interface CardRepositoryPort {
+
     /**
      * Create card entities, update if they exist
      *
@@ -14,6 +15,19 @@ export interface CardRepositoryPort {
      */
     save(cards: Card[]): Promise<Card[]>;
 
+    /**
+     * @param id
+     * @param relations relations to load
+     * @returns card entity with id, null if not found
+     */
+    findById(id: string, relations: string[]): Promise<Card | null>;
+
+    /**
+     * 
+     * @param ids
+     * @returns card entities with id in ids, empty array if not found
+     */
+    findByIds(ids: string[]): Promise<Card[]>;
     /**
      * @param code three letter set code
      * @returns card entities in set with code
@@ -35,25 +49,11 @@ export interface CardRepositoryPort {
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * @param uuid
-     * @param relations relations to load
-     * @returns card entity with uuid, null if not found
-     */
-    findByUuid(uuid: string, relations: string[]): Promise<Card | null>;
-
-    /**
-     * 
-     * @param uuids
-     * @returns card entities with uuids
-     */
-    findByUuids(uuids: string[]): Promise<Card[]>;
-
-    /**
      * Remove card entity
      *
-     * @param card
+     * @param id 
      */
-    delete(card: Card): Promise<void>;
+    delete(id: string): Promise<void>;
 
     /**
      * Remove legality entity

@@ -12,7 +12,7 @@ export class PriceService {
     async save(prices: Price[]): Promise<void> {
         if (0 === prices.length) return;
         const uuids: string[] = [...new Set(prices.map((p) => p.card.id))];
-        const cards: Card[] = await this.cardRepository.findByUuids(uuids);
+        const cards: Card[] = await this.cardRepository.findByIds(uuids);
         const cardMap: Map<string, number> = new Map(cards.map((c) => [c.id, c.order]));
         const priceEntities: Price[] = await Promise.all(
             prices.map((p) => {

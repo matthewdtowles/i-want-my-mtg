@@ -5,7 +5,6 @@ import { IngestionServicePort } from "src/core/ingestion";
 import { Price } from "src/core/price";
 import { Set } from "src/core/set";
 import { Readable } from "stream";
-import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 import { MtgJsonApiClient } from "./mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "./mtgjson-ingestion.mapper";
@@ -21,14 +20,14 @@ export class MtgJsonIngestionService implements IngestionServicePort {
 
     async fetchAllSetsMeta(): Promise<Set[]> {
         const setList: SetList[] = await this.apiClient.fetchSetList();
-        return this.dataMapper.toSets(setList);
+        return this.dataMapper.mapCoreSets(setList);
     }
 
     async *fetchSetCards(code: string): AsyncGenerator<Card> {
         this.LOGGER.debug(`Fetching cards for set ${code}`);
         const cardStream: Readable = await this.apiClient.fetchSetCardsStream(code);
         for await (const setCard of cardStream) {
-            const card: Card = this.dataMapper.toCard(setCard);
+            const card: Card = this.dataMapper.mapCoreCard(setCard);
             if (card) yield card;
         }
     }
@@ -39,7 +38,7 @@ export class MtgJsonIngestionService implements IngestionServicePort {
         for await (const { key: cardUuid, value: priceFormats } of priceStream) {
             const paperPrices: Record<string, PriceList> = priceFormats.paper;
             if (!paperPrices) continue;
-            const priceDto: Price = this.dataMapper.toPrice(cardUuid, paperPrices);
+            const priceDto: Price = this.dataMapper.mapCorePrice(cardUuid, paperPrices);
             if (priceDto) yield priceDto;
         }
     }

@@ -1,4 +1,5 @@
-import { UserRole } from "src/adapters/http/auth/auth.types";
+import { UserRole } from "src/core/user/user.role.enum";
+import { validateInit } from "src/shared/utils";
 
 export class User {
     readonly id: number;
@@ -7,4 +8,13 @@ export class User {
     // TODO: remove and keep inside of db module
     readonly password: string;
     readonly role: UserRole;
+
+    constructor(init: Partial<User>) {
+        validateInit(init, ["email", "name", "role"]);
+        this.id = init.id;
+        this.email = init.email;
+        this.name = init.name;
+        this.password = init.password;
+        this.role = init.role;
+    }
 }

@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Card, CardRepositoryPort, Format } from "src/core/card";
+import { CardMapper } from "src/infrastructure/database/card/card.mapper";
 import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
 import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
-import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
 import { In, Repository } from "typeorm";
 
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
-
+// TODO: DEFINE MAPPINGS CORE < -- > ORM ENTITY
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(
@@ -17,85 +17,63 @@ export class CardRepository implements CardRepositoryPort {
         @InjectRepository(LegalityOrmEntity) private readonly legalityRepository: Repository<LegalityOrmEntity>,
     ) { }
 
-    async save(cards: CardOrmEntity[]): Promise<Card[]> {
-        const saved = await this.cardRepository.save(cards);
+    async save(cards: Card[]): Promise<Card[]> {
+        const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
+        const saved: CardOrmEntity[] = await this.cardRepository.save(ormCards);
+        // TODO: return boolean or number of saved cards instead??
         return saved.map((card: CardOrmEntity) => {
-            return {
-                id: card.id,
-                artist: card.artist,
-                hasFoil: card.hasFoil,
-                hasNonFoil: card.hasNonFoil,
-                imgSrc: card.imgSrc,
-                isReserved: card.isReserved,
-                legalities: card.legalities.map((legality: LegalityOrmEntity) => ({
-                    cardId: legality.cardId,
-                    format: legality.format,
-                    status: legality.status,
-                })),
-                manaCost: card.manaCost,
-                name: card.name,
-                number: card.number,
-                oracleText: card.oracleText,
-                order: card.order,
-                prices: card.prices.map((price: PriceOrmEntity) => ({
-                    id: price.id,
-                    normal: price.normal,
-                    foil: price.foil,
-                    date: price.date,
-                    card: price.card ?? null,
-                })),
-                rarity: card.rarity,
-                set: card.set,
-                setCode: card.set.code,
-                type: card.type,
-            };
+            return CardMapper.toCore(card);
         });
     }
 
-    async findAllInSet(code: string): Promise<CardOrmEntity[]> {
-        return (await this.cardRepository.find({
+    async findById(uuid: string, _relations: string[]): Promise<Card | null> {
+        const ormCard: CardOrmEntity = await this.cardRepository.findOne({
+            where: { id: uuid },
+            relations: _relations ?? this.DEFAULT_RELATIONS,
+        });
+        return ormCard ? CardMapper.toCore(ormCard) : null;
+    }
+
+    async findByIds(uuids: string[]): Promise<Card[]> {
+        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
+            where: { id: In(uuids), },
+            select: ["order", "id"],
+        });
+        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
+    }
+
+    async findAllInSet(code: string): Promise<Card[]> {
+        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: {
                 set: { code: code, },
             },
             order: { number: "ASC", },
             relations: ["legalities", "prices"],
-        })) ?? [];
+        }) ?? [];
+        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
     }
 
-    async findAllWithName(name: string): Promise<CardOrmEntity[]> {
-        return (await this.cardRepository.find({
+    async findAllWithName(name: string): Promise<Card[]> {
+        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: { name },
             relations: this.DEFAULT_RELATIONS
-        })) ?? []
+        }) ?? []
+        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
     }
 
     async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {
-        return await this.cardRepository.findOne({
+        const ormCard: CardOrmEntity = await this.cardRepository.findOne({
             where: {
                 set: { code, },
                 number,
             },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
+        return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findByUuid(uuid: string, _relations: string[]): Promise<Card | null> {
-        return await this.cardRepository.findOne({
-            where: { id: uuid },
-            relations: _relations ?? this.DEFAULT_RELATIONS,
-        });
-    }
-
-    async findByUuids(uuids: string[]): Promise<Card[]> {
-        return await this.cardRepository.find({
-            where: { id: In(uuids), },
-            select: ["order", "id"],
-        });
-    }
-
-    async delete(card: Card): Promise<void> {
-        // TODO MAP TO ORM ENTITY
-        await this.cardRepository.delete(card);
+    async delete(id: string): Promise<void> {
+        await this.cardRepository.delete(id);
     }
 
     async deleteLegality(cardId: string, format: Format): Promise<void> {

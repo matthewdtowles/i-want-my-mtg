@@ -13,7 +13,7 @@ export class UserService {
     async create(user: User): Promise<User | null> {
         this.LOGGER.debug(`create`);
         // user.password = await this.encrypt(user.password);
-        return (await this.repository.create(user)) ?? new User();
+        return await this.repository.create(user);
     }
 
     async findById(id: number): Promise<User | null> {

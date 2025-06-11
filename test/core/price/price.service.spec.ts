@@ -57,7 +57,7 @@ describe("PriceService", () => {
             card.order = i + 1;
             mockCards.push(card);
         });
-        mockCardRepo.findByUuids.mockResolvedValue(mockCards);
+        mockCardRepo.findByIds.mockResolvedValue(mockCards);
         const _cards: Card[] = [
             { order: 1 } as Card,
             { order: 2 } as Card,
@@ -74,7 +74,7 @@ describe("PriceService", () => {
         const dtos: CreatePriceDto[] = [
             { cardUuid: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 },
         ];
-        mockCardRepo.findByUuids.mockResolvedValue([]);
+        mockCardRepo.findByIds.mockResolvedValue([]);
 
         await subject.save(dtos);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([]);

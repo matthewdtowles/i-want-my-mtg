@@ -1,4 +1,5 @@
 import { Card } from "src/core/card";
+import { validateInit } from "src/shared/utils";
 
 
 export class Inventory {
@@ -6,21 +7,16 @@ export class Inventory {
     readonly userId: number;
     readonly isFoil: boolean;
     readonly quantity: number;
+    // For read operations only
     readonly card?: Card;
 
     constructor(init: Partial<Inventory>) {
-        this.validateInit(init);
+        validateInit(init, ["cardId", "userId", "isFoil", "quantity"]);
         this.cardId = init.cardId;
         this.userId = init.userId;
         this.isFoil = init.isFoil;
         this.quantity = init.quantity;
+        // Optional field
         this.card = init.card;
-    }
-
-    private validateInit(init: Partial<Inventory>) {
-        const requiredFields: string[] = ["cardId", "userId", "isFoil", "quantity"];
-        for (const field of requiredFields) {
-            if (!init[field]) throw new Error(`Invalid Inventory initialization: ${field} is required.`);
-        }
     }
 }

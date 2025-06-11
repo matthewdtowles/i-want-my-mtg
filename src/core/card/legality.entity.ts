@@ -1,4 +1,5 @@
 import { Format, LegalityStatus } from "src/core/card";
+import { validateInit } from "src/shared/utils";
 
 export class Legality {
     readonly cardId: string;
@@ -6,18 +7,9 @@ export class Legality {
     readonly status: LegalityStatus;
 
     constructor(init: Partial<Legality>) {
-        this.validateInit(init);
+        validateInit(init, ["cardId", "format", "status"]);
         this.cardId = init.cardId;
-        // TODO: validate/convert format ??
         this.format = init.format;
-        // TODO: validate/convert status??
         this.status = init.status;
-    }
-
-    private validateInit(init: Partial<Legality>) {
-        const requiredFields: string[] = ["cardId", "format", "status"];
-        for (const field of requiredFields) {
-            if (!init[field]) throw new Error(`Invalid Legality initialization: ${field} is required.`);
-        }
     }
 }

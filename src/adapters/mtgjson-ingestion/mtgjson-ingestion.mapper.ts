@@ -5,7 +5,7 @@ import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto as SetData } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
-import { Card, Format, Legality, LegalityStatus } from "src/core/card";
+import { Card, CardRarity, Format, Legality, LegalityStatus } from "src/core/card";
 import { Price } from "src/core/price";
 import { Set } from "src/core/set";
 
@@ -13,8 +13,8 @@ import { Set } from "src/core/set";
 @Injectable()
 export class MtgJsonIngestionMapper {
 
-    toSet(setMeta: SetData | SetList): Set {
-        return {
+    mapCoreSet(setMeta: SetData | SetList): Set {
+        return new Set({
             code: setMeta.code.toLowerCase(),
             baseSize: setMeta.baseSetSize,
             block: setMeta.block,
@@ -23,62 +23,58 @@ export class MtgJsonIngestionMapper {
             parentCode: setMeta.parentCode ? setMeta.parentCode.toLowerCase() : null,
             releaseDate: setMeta.releaseDate,
             type: setMeta.type,
-        };
+        });
     }
 
-    toCard(setCard: CardSet): Card {
+    mapCoreCard(setCard: CardSet): Card {
         return {
+            id: setCard.uuid,
             artist: setCard.artist,
             hasFoil: setCard.hasFoil,
             hasNonFoil: setCard.hasNonFoil,
             imgSrc: this.buildScryfallImgPath(setCard),
             isReserved: setCard.isReserved,
-            legalities: this.toLegalities(setCard.legalities),
+            legalities: this.mapCoreLegalities(setCard.legalities),
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
             oracleText: setCard.text,
-            rarity: setCard.rarity.toLowerCase(),
+            rarity: setCard.rarity ? CardRarity[setCard.rarity.toUpperCase() as keyof typeof CardRarity] : undefined,
             setCode: setCard.setCode.toLowerCase(),
-            uuid: setCard.uuid,
             type: setCard.type,
         };
     }
 
-    toSets(setLists: SetList[]): Set[] {
+    mapCoreSets(setLists: SetList[]): Set[] {
         const sets: Set[] = [];
-        setLists.forEach((s: SetList) => sets.push(this.toSet(s)));
+        setLists.forEach((s: SetList) => sets.push(this.mapCoreSet(s)));
         return sets;
     }
 
-    toLegalities(legalities: Legalities): Legality[] {
-        const legalitiesDto: Legality[] = [];
+    mapCoreLegalities(legalities: Legalities): Legality[] {
+        const coreLegalities: Legality[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
             format = format.toLowerCase();
             status = status.toLowerCase();
             if (Object.values(Format).includes(format as Format)
                 && Object.values(LegalityStatus).includes(status as LegalityStatus)) {
-                legalitiesDto.push(this.createLegality(format, status));
+                coreLegalities.push(this.createLegality(format, status));
             }
         });
-        return legalitiesDto;
+        return coreLegalities;
     }
 
-    toPrice(cardUuid: string, paperPrices: Record<string, PriceList>): Price | null {
+    mapCorePrice(cardUuid: string, paperPrices: Record<string, PriceList>): Price | null {
         const extractedPrices: ExtractedPrices = this.extractPrices(paperPrices);
         const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
         const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
         let price: Price;
         if (foilPrice || normalPrice) {
             price = {
-                // TODO: FIX after we figure out how to go from Core <--> ORM Entities 
-                // as this will help determine what Core Entity will look like and how to map to it
-                card: {
-                    id: cardUuid,
-                },
-                date: new Date(this.extractDate(paperPrices)),
+                cardId: cardUuid,
                 foil: foilPrice,
                 normal: normalPrice,
+                date: new Date(this.extractDate(paperPrices)),
             };
         }
         return price;

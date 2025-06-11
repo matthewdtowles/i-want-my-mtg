@@ -25,7 +25,7 @@ export class MockCardRepository implements CardRepositoryPort {
         return this.cards.filter(card => card.setCode === setCode);
     }
 
-    async findByUuid(cardId: number): Promise<Card> {
+    async findById(cardId: number): Promise<Card> {
         const card = this.cards.find(c => c.order === cardId);
         if (!card) {
             throw new Error(`Card with id ${cardId} not found`);
@@ -43,7 +43,7 @@ export class MockCardRepository implements CardRepositoryPort {
         return this.cards.find(card => card.setCode === setCode && card.number === number);
     }
 
-    async findByUuid(uuid: string): Promise<Card> {
+    async findById(uuid: string): Promise<Card> {
         const card = this.cards.find(card => card.id === uuid);
         if (!card) {
             throw new Error(`Card with uuid ${uuid} not found`);
@@ -51,7 +51,7 @@ export class MockCardRepository implements CardRepositoryPort {
         return card;
     }
 
-    async findByUuids(uuids: string[]): Promise<Card[]> {
+    async findByIds(uuids: string[]): Promise<Card[]> {
         if (!uuids || uuids.length === 0) {
             throw new Error("No UUIDs provided");
         }

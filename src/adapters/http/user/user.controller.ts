@@ -14,11 +14,12 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
+import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
+import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
+import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
 import { AuthService, AuthToken } from "src/core/auth";
-import { CreateUserDto, UpdateUserDto, UserDto, UserService } from "src/core/user";
-import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth/auth.types";
-import { JwtAuthGuard } from "./auth/jwt.auth.guard";
+import { UserService } from "src/core/user";
 
 
 @Controller("user")

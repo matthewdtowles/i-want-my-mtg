@@ -8,9 +8,9 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ActionStatus, SetViewDto, SetListViewDto } from "src/adapters/http/http.types";
-import { AuthenticatedRequest } from "./auth/auth.types";
-import { UserGuard } from "./auth/user.guard";
+import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
+import { UserGuard } from "src/adapters/http/auth/user.guard";
+import { ActionStatus, SetListViewDto, SetResponseDto, SetViewDto } from "src/adapters/http/http.types";
 import { Set, SetService } from "src/core/set";
 
 @Controller("sets")

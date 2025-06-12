@@ -11,11 +11,11 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthService } from "src/core/auth/api/auth.service.port";
-import { AuthToken } from "src/core/auth/auth.types";
 import { UserDto } from "src/adapters/http/user/user.dto";
+import { AuthService, AuthToken } from "src/core/auth";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
+import { User } from "src/core/user";
 
 @Controller("auth")
 export class AuthController {
@@ -39,7 +39,12 @@ export class AuthController {
             this.LOGGER.error(`User not found`);
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
         }
-        const authToken: AuthToken = await this.authService.login(req.user);
+        const coreUser: User = new User({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+        });
+        const authToken: AuthToken = await this.authService.login(coreUser);
         if (!authToken || !authToken.access_token) {
             this.LOGGER.error(`Login failed`);
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);

@@ -8,8 +8,8 @@ describe("InventoryService", () => {
     let repository: MockInventoryRepository;
 
     const testUtils: TestUtils = new TestUtils();
-    const mockInventoryList: Inventory[] = testUtils.mockCreateInventoryDtos();
-    const mockDeleteInventoryList: Inventory[] = testUtils.mockCreateInventoryDtos().map((i: Inventory) => {
+    const mockInventoryList: Inventory[] = testUtils.mockWriteInventoryList();
+    const mockDeleteInventoryList: Inventory[] = testUtils.mockWriteInventoryList().map((i: Inventory) => {
         return {
             cardId: i.cardId,
             isFoil: i.isFoil,
@@ -30,7 +30,7 @@ describe("InventoryService", () => {
         }).compile();
         service = module.get<InventoryService>(InventoryService);
         repository = module.get<InventoryRepositoryPort>(InventoryRepositoryPort) as MockInventoryRepository;
-        repository.populate(testUtils.mockInventoryList());
+        repository.populate(testUtils.mockReadInventoryList());
     });
 
     afterEach(() => {
@@ -42,7 +42,7 @@ describe("InventoryService", () => {
         jest.spyOn(repository, "save");
         const savedItems: Inventory[] = await service.save(mockInventoryList);
         expect(repository.save).toHaveBeenCalled();
-        expect(savedItems).toEqual(testUtils.mockInventoryList());
+        expect(savedItems).toEqual(testUtils.mockReadInventoryList());
     });
 
     it("should update existing inventory items and return the updated inventory items", async () => {
@@ -50,8 +50,8 @@ describe("InventoryService", () => {
         const savedItems: Inventory[] = await service.save(mockInventoryList);
         expect(repository.save).toHaveBeenCalled();
         const expectedItems: Inventory[] = [
-            testUtils.mockInventoryList()[0],
-            testUtils.mockInventoryList()[2]
+            testUtils.mockReadInventoryList()[0],
+            testUtils.mockReadInventoryList()[2]
         ];
         expect(savedItems).toEqual(expectedItems);
     });
@@ -65,7 +65,7 @@ describe("InventoryService", () => {
 
     it("should find an inventory item for a user", async () => {
         jest.spyOn(repository, "findByCard");
-        const foundItems: Inventory[] = await service.findForUser(1, 1);
+        const foundItems: Inventory[] = await service.findForUser(1, "1");
         expect(repository.findByCard).toHaveBeenCalled();
         expect(foundItems).toHaveLength(1);
     });

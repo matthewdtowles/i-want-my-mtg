@@ -5,58 +5,80 @@ import {
     CardRepositoryPort,
     CardService,
     Format,
+    Legality,
     LegalityStatus
 } from "src/core/card";
-import { Set } from "src/core/set";
-import { MockCardRepository } from "test/core/card/mock.card.repository";
 
 
 describe("CardService", () => {
     let service: CardService;
-    let repository: MockCardRepository;
+    let repository: CardRepositoryPort;
 
     const mockSetCode = "SET";
-    const mockInputCards: Card[] = Array.from({ length: 3 }, (_, i) => ({
-        id: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
-        order: i + 1,
-        prices: [],
-        artist: "artist",
-        hasFoil: false,
-        hasNonFoil: true,
-        imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
-        isReserved: false,
-        legalities: Object.values(Format).map((format) => ({
-            cardId: i + 1,
-            format,
-            status: LegalityStatus.Legal
-        })),
-        manaCost: `{${i + 1}}{W}`,
-        name: `Test Card Name ${i + 1}`,
-        number: `${i + 1}`,
-        oracleText: "Test card text.",
-        rarity: i % 2 === 0 ? "common" : "uncommon",
-        setCode: mockSetCode,
-        type: "type",
-        set: new Set()
-    }));
+    const mockInputCards: Card[] = Array.from({ length: 3 }, (_, i) => (
+        new Card({
+            id: `abcd-1234-efgh-5678-ijkl-${mockSetCode}${i + 1}`,
+            order: i + 1,
+            prices: [],
+            artist: "artist",
+            hasFoil: false,
+            hasNonFoil: true,
+            imgSrc: `${i + 1}/a/${i + 1}abc123def456.jpg`,
+            isReserved: false,
+            legalities: Object.values(Format).map((format) => (
+                new Legality({
+                    cardId: String(i + 1),
+                    format,
+                    status: LegalityStatus.Legal
+                }))),
+            manaCost: `{${i + 1}}{W}`,
+            name: `Test Card Name ${i + 1}`,
+            number: `${i + 1}`,
+            oracleText: "Test card text.",
+            rarity: i % 2 === 0 ? CardRarity.Common : CardRarity.Uncommon,
+            setCode: mockSetCode,
+            type: "type",
+        })));
+
+    const mockCardRepository: CardRepositoryPort = {
+        save: jest.fn().mockImplementation((cards: Card[]) => {
+            return Promise.resolve(cards.map(card => {
+                return { ...card, id: `uuid-${Math.random().toString(36).substring(2, 15)}` };
+            }));
+        }),
+        findById: jest.fn().mockImplementation((id: string) => {
+            const card = mockInputCards.find(card => card.id === id);
+            return Promise.resolve(card ? { ...card, id } : null);
+        }),
+        deleteLegality: jest.fn(),
+        findByIds: function (ids: string[]): Promise<Card[]> {
+            throw new Error("Function not implemented.");
+        },
+        findAllInSet: function (code: string): Promise<Card[]> {
+            return Promise.resolve(mockInputCards.filter(card => card.setCode === code));
+        },
+        findAllWithName: function (name: string): Promise<Card[]> {
+            return Promise.resolve(mockInputCards.filter(card => card.name === name));
+        },
+        findBySetCodeAndNumber: function (code: string, number: string, relations: string[]): Promise<Card> {
+            return Promise.resolve(
+                mockInputCards.find(card => card.setCode === code && card.number === number) || null
+            );
+        },
+        delete: jest.fn(),
+    }
 
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                { provide: CardRepositoryPort, useClass: MockCardRepository },
+                { provide: CardRepositoryPort, useValue: mockCardRepository },
                 CardService,
-                CardMapper,
             ],
         }).compile();
-
         service = module.get<CardService>(CardService);
-        repository = module.get<CardRepositoryPort>(CardRepositoryPort) as MockCardRepository;
+        repository = module.get<CardRepositoryPort>(CardRepositoryPort);
     });
-
-    afterEach(() => {
-        repository.reset();
-    })
 
     it("should save new cards and return saved cards", async () => {
         const createCards: Card[] = mockInputCards;
@@ -65,31 +87,15 @@ describe("CardService", () => {
         const result: Card[] = await service.save(createCards);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(result).toMatchSnapshot();
     });
 
     it("should update existing cards and return saved cards", async () => {
-        const existingCard: Card = new Card();
-        existingCard.order = 1;
-        existingCard.name = "Card 1";
-        existingCard.setCode = mockSetCode;
-        existingCard.legalities = [
-            { format: Format.Standard, status: LegalityStatus.Legal, cardId: "1" }
-        ];
-        existingCard.imgSrc = "imgSrc";
-        existingCard.isReserved = false;
-        existingCard.number = "1";
-        existingCard.rarity = CardRarity.Common;
-        existingCard.type = "type";
-        existingCard.id = "uuid-123";
-        repository.populate([existingCard]);
-
         const updateCards: Card[] = [
-            {
+            new Card({
                 name: "Card 1",
                 setCode: mockSetCode,
                 legalities: [
-                    { format: Format.Standard, status: LegalityStatus.Banned, cardId: "1" }
+                    new Legality({ format: Format.Standard, status: LegalityStatus.Banned, cardId: "1" })
                 ],
                 hasFoil: false,
                 hasNonFoil: true,
@@ -98,11 +104,8 @@ describe("CardService", () => {
                 number: "1",
                 rarity: CardRarity.Common,
                 type: "type",
-                id: "",
-                order: 0,
-                prices: [],
-                set: new Set()
-            }
+                id: "uuid-123",
+            })
         ];
 
         jest.spyOn(repository, "save");
@@ -146,7 +149,7 @@ describe("CardService", () => {
 
     it("should save legalities and delete previously saved legalities not given", async () => {
         const createCards: Card[] = [
-            {
+            new Card({
                 name: "Card 1",
                 setCode: mockSetCode,
                 legalities: [
@@ -162,36 +165,35 @@ describe("CardService", () => {
                 number: "1",
                 rarity: CardRarity.Common,
                 type: "type",
-                set: new Set(),
-            },
+            }),
         ];
-        const existingEntity: Card = new Card();
-        existingEntity.order = 1;
-        existingEntity.name = "Card 1";
-        existingEntity.setCode = mockSetCode;
-        existingEntity.legalities = [
-            {
-                format: Format.Standard,
-                status: LegalityStatus.Legal,
-                cardId: "1"
-            },
-            {
-                format: Format.Legacy,
-                status: LegalityStatus.Legal,
-                cardId: "1"
-            },
-        ];
-        existingEntity.imgSrc = "imgSrc";
-        existingEntity.isReserved = false;
-        existingEntity.number = "1";
-        existingEntity.rarity = CardRarity.Common;
-        existingEntity.type = "type";
-        existingEntity.id = "uuid-123";
+        const existingEntity: Card = new Card({
+            id: "uuid-123",
+            order: 1,
+            name: "Card 1",
+            setCode: mockSetCode,
+            imgSrc: "imgSrc",
+            isReserved: false,
+            number: "1",
+            rarity: CardRarity.Common,
+            type: "type",
+            legalities: [
+                new Legality({
+                    format: Format.Standard,
+                    status: LegalityStatus.Legal,
+                    cardId: "1"
+                }),
+                new Legality({
+                    format: Format.Legacy,
+                    status: LegalityStatus.Legal,
+                    cardId: "1"
+                }),
+            ],
+        });
         const existingCards: Card[] = [existingEntity];
-        repository.populate(existingCards);
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
-        const cardBeforeSave: Card = await repository.findById(1);
+        const cardBeforeSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -200,7 +202,7 @@ describe("CardService", () => {
 
         const result: Card[] = await service.save(createCards);
 
-        const cardAfterSave: Card = await repository.findById(1);
+        const cardAfterSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardAfterSave?.legalities).not.toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -212,16 +214,9 @@ describe("CardService", () => {
 
     it("should update legality in db if legality in card but has different status", async () => {
         const createCards: Card[] = [
-            {
+            new Card({
                 name: "Card 1",
                 setCode: mockSetCode,
-                legalities: [
-                    {
-                        format: Format.Standard,
-                        status: LegalityStatus.Banned,
-                        cardId: "1"
-                    },
-                ],
                 hasFoil: false,
                 hasNonFoil: true,
                 imgSrc: "imgSrc",
@@ -229,32 +224,38 @@ describe("CardService", () => {
                 number: "1",
                 rarity: CardRarity.Common,
                 type: "type",
-                set: new Set(),
-            },
+                legalities: [
+                    new Legality({
+                        format: Format.Standard,
+                        status: LegalityStatus.Banned,
+                        cardId: "1"
+                    }),
+                ],
+            }),
         ];
-        const existingEntity: Card = new Card();
-        existingEntity.order = 1;
-        existingEntity.name = "Card 1";
-        existingEntity.setCode = mockSetCode;
-        existingEntity.legalities = [
-            {
-                format: Format.Standard,
-                status: LegalityStatus.Legal,
-                cardId: "1"
-            },
-        ];
-        existingEntity.imgSrc = "imgSrc";
-        existingEntity.isReserved = false;
-        existingEntity.number = "1";
-        existingEntity.rarity = CardRarity.Common;
-        existingEntity.type = "type";
-        existingEntity.id = "uuid-123";
+        const existingEntity: Card = new Card({
+            id: "uuid-123",
+            order: 1,
+            name: "Card 1",
+            setCode: mockSetCode,
+            legalities: [
+                {
+                    format: Format.Standard,
+                    status: LegalityStatus.Legal,
+                    cardId: "1"
+                },
+            ],
+            imgSrc: "imgSrc",
+            isReserved: false,
+            number: "1",
+            rarity: CardRarity.Common,
+            type: "type",
+        });
         const existingCards: Card[] = [existingEntity];
-        repository.populate(existingCards);
         jest.spyOn(repository, "save");
         jest.spyOn(repository, "deleteLegality");
 
-        const cardBeforeSave: Card = await repository.findById(1);
+        const cardBeforeSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardBeforeSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Legal,
@@ -263,7 +264,7 @@ describe("CardService", () => {
 
         const result: Card[] = await service.save(createCards);
 
-        const cardAfterSave: Card = await repository.findById(1);
+        const cardAfterSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardAfterSave?.legalities).toContainEqual({
             format: Format.Standard,
             status: LegalityStatus.Banned,

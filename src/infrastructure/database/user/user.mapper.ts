@@ -8,6 +8,7 @@ export class UserMapper {
             name: ormUser.name,
             email: ormUser.email,
             role: ormUser.role,
+            // TODO: ??
             password: ormUser.password,
         };
     }
@@ -18,6 +19,8 @@ export class UserMapper {
         ormEntity.name = coreUser.name;
         ormEntity.email = coreUser.email;
         ormEntity.role = coreUser.role;
+        // TODO: ???
+        ormEntity.password = coreUser.password;
         return ormEntity;
     }
 }

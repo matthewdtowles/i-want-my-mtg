@@ -32,14 +32,15 @@ export class UserService {
 
     async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`update`);
-        return await this.repository.update(user) ?? new User();
+        return await this.repository.update(user) ?? null;
     }
 
     async updatePassword(userId: number, password: string): Promise<boolean> {
         this.LOGGER.debug(`updatePassword userId:${userId}, pwd:${password}`);
-        const user: User = new User();
-        user.id = userId;
-        user.password = await this.encrypt(password);
+        const user: User = new User({
+            id: userId,
+            password: await this.encrypt(password),
+        });
         this.LOGGER.debug(`Input user ${JSON.stringify(user)}`);
         return !!await this.repository.update(user);
     }

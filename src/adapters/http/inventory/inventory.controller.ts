@@ -21,6 +21,7 @@ import { ActionStatus, InventoryCardResponseDto, InventoryViewDto } from "src/ad
 import { Inventory, InventoryService } from "src/core/inventory";
 import { AuthenticatedRequest, } from "../auth/auth.types";
 import { JwtAuthGuard } from "../auth/jwt.auth.guard";
+import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
 
 
 @Controller("inventory")

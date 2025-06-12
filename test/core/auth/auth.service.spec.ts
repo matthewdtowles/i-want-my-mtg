@@ -1,7 +1,7 @@
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
-import { UserRole } from "src/adapters/http/auth/auth.types";
+import { UserRole } from "src/core/auth";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User, UserRepositoryPort, UserService } from "src/core/user";
@@ -15,17 +15,9 @@ const mockUser: User = {
     role: UserRole.User,
 };
 
-// Mock User data
-const mockUser: User = {
-    id: 1,
-    email: "test@test.com",
-    name: "Test User",
-    role: UserRole.User,
-};
-
 describe("AuthService", () => {
     let authService: AuthService;
-    let userServicePort: UserService;
+    let userService: UserService;
     let userRepositoryPort: UserRepositoryPort;
     let jwtService: JwtService;
 
@@ -34,7 +26,7 @@ describe("AuthService", () => {
             providers: [
                 AuthService,
                 {
-                    provide: UserServicePort,
+                    provide: UserService,
                     useValue: {
                         findByEmail: jest.fn().mockResolvedValue(mockUser),
                         findSavedPassword: jest.fn().mockResolvedValue(mockUser.email),
@@ -56,7 +48,7 @@ describe("AuthService", () => {
         }).compile();
 
         authService = module.get<AuthService>(AuthService);
-        userServicePort = module.get<UserService>(UserServicePort);
+        userService = module.get<UserService>(UserService);
         userRepositoryPort = module.get<UserRepositoryPort>(UserRepositoryPort);
         jwtService = module.get<JwtService>(JwtService);
     });
@@ -68,7 +60,7 @@ describe("AuthService", () => {
                 .mockImplementation(() => Promise.resolve(true));
             const result = await authService.validateUser(mockUser.email, "password");
             expect(bcrypt.compare).toHaveBeenCalledWith("password", mockUser.email);
-            expect(userServicePort.findByEmail).toHaveBeenCalledWith(mockUser.email);
+            expect(userService.findByEmail).toHaveBeenCalledWith(mockUser.email);
             expect(result).toEqual(mockUser);
         });
 

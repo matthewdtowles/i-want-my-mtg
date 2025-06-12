@@ -9,7 +9,7 @@ import { In, Repository } from "typeorm";
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
-// TODO: DEFINE MAPPINGS CORE < -- > ORM ENTITY
+
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(

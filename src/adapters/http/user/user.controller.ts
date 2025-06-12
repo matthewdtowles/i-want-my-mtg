@@ -19,7 +19,7 @@ import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
 import { AuthService, AuthToken } from "src/core/auth";
-import { UserService } from "src/core/user";
+import { User, UserService } from "src/core/user";
 
 
 @Controller("user")
@@ -46,7 +46,12 @@ export class UserController {
     @Post("create")
     async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Create user called`);
-        const createdUser: UserDto = await this.userService.create(createUserDto);
+        const user: User = new User({
+            email: createUserDto.email,
+            name: createUserDto.name,
+            password: createUserDto.password,
+        });
+        const createdUser: User = await this.userService.create(user);
         if (!createdUser) {
             throw new Error(`Could not create user`);
         }
@@ -112,12 +117,12 @@ export class UserController {
                     user: null,
                 };
             }
-            const updateUserDto: UpdateUserDto = {
+            const updateUser: User = new User ({
                 id: req.user.id,
                 name: httpUserDto.name,
                 email: httpUserDto.email,
-            };
-            const updatedUser: UserDto = await this.userService.update(updateUserDto);
+            });
+            const updatedUser: UserDto = await this.userService.update(updateUser);
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,

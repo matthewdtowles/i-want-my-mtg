@@ -7,29 +7,30 @@ export class InventoryService {
 
     private readonly LOGGER: Logger = new Logger(InventoryService.name);
 
-    constructor(
-        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
-    ) { }
+    constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
-        return await this.repository.save(inventoryItems);
+        const toSave: Inventory[] = [];
+        for (const item of inventoryItems) {
+            if (item.quantity > 0) {
+                toSave.push(item);
+            } else {
+                // await omitted intentionally
+                this.repository.delete(item.userId, item.cardId, item.isFoil);
+            }
+        }
+        return await this.repository.save(toSave);
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}`);
-        if (userId && cardId) {
-            return await this.repository.findByCard(userId, cardId);
-        }
-        return [];
+        return userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
     }
 
     async findAllCardsForUser(userId: number): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
-        if (userId) {
-            return await this.repository.findByUser(userId);
-        }
-        return [];
+        return userId ? await this.repository.findByUser(userId) : [];
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {

@@ -6,6 +6,9 @@ import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
+import { Card, Format, Legality, LegalityStatus, CardRarity } from "src/core/card";
+import { Price } from "src/core/price";
+import { Set } from "src/core/set";
 import { Readable } from "stream";
 
 export class MtgJsonIngestionTestUtils {
@@ -135,10 +138,11 @@ export class MtgJsonIngestionTestUtils {
         return setList;
     }
 
-    expectedCreateCardDtos(): CreateCardDto[] {
-        const cards: CreateCardDto[] = [];
+    expectedCreateCardDtos(): Card[] {
+        const cards: Card[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
-            const card: CreateCardDto = {
+            const card: Card = new Card({
+                id: `abcd-1234-efgh-5678-ijkl-901${i}`,
                 artist: "artist",
                 hasFoil: false,
                 hasNonFoil: true,
@@ -149,14 +153,14 @@ export class MtgJsonIngestionTestUtils {
                 name: `Test Card Name${i}`,
                 number: `${i}`,
                 oracleText: "Test card text.",
-                rarity: i % 2 === 1 ? "common" : "uncommon",
+                rarity: i % 2 === 1 ? CardRarity.Common : CardRarity.Uncommon,
                 setCode: this.MOCK_SET_CODE,
-                uuid: `abcd-1234-efgh-5678-ijkl-901${i}`,
                 type: "type",
-            };
+            });
             cards.push(card);
         }
-        const bonusCard: CreateCardDto = {
+        const bonusCard: Card = {
+            id: "zyxw-0987-vutsr-6543-qponm-21098",
             artist: "artist",
             hasFoil: false,
             hasNonFoil: true,
@@ -167,17 +171,16 @@ export class MtgJsonIngestionTestUtils {
             name: "Test Bonus Card Name",
             number: `${this.MOCK_BASE_SET_SIZE + 1}`,
             oracleText: "Bonus card text.",
-            rarity: "mythic",
+            rarity: CardRarity.Mythic,
             setCode: this.MOCK_SET_CODE,
-            uuid: "zyxw-0987-vutsr-6543-qponm-21098",
             type: "type",
         };
         cards.push(bonusCard);
         return cards;
     }
 
-    expectedCreateSetDto(): CreateSetDto {
-        const expectedSet: CreateSetDto = {
+    expectedCreateSetDto(): Set {
+        const expectedSet: Set = {
             baseSize: this.MOCK_BASE_SET_SIZE,
             block: this.MOCK_SET_NAME,
             keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
@@ -191,53 +194,53 @@ export class MtgJsonIngestionTestUtils {
     }
 
     // single item array for testing purposes
-    expectedCreateSetDtos(): CreateSetDto[] {
-        const expectedSets: CreateSetDto[] = [];
+    expectedCreateSetDtos(): Set[] {
+        const expectedSets: Set[] = [];
         expectedSets.push(this.expectedCreateSetDto());
         return expectedSets;
     }
 
-    expectedLegalityDtos(): CreateLegalityDto[] {
+    expectedLegalityDtos(): Legality[] {
         return [
             {
                 cardId: null,
-                format: "commander",
-                status: "legal",
+                format: Format.Commander,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "explorer",
-                status: "legal",
+                format: Format.Explorer,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "historic",
-                status: "legal",
+                format: Format.Historic,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "legacy",
-                status: "legal",
+                format: Format.Legacy,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "modern",
-                status: "banned",
+                format: Format.Modern,
+                status: LegalityStatus.Banned,
             },
             {
                 cardId: null,
-                format: "oathbreaker",
-                status: "legal",
+                format: Format.Oathbreaker,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "pioneer",
-                status: "legal",
+                format: Format.Pioneer,
+                status: LegalityStatus.Legal,
             },
             {
                 cardId: null,
-                format: "vintage",
-                status: "legal",
+                format: Format.Vintage,
+                status: LegalityStatus.Legal,
             },
         ];
     }
@@ -309,40 +312,40 @@ export class MtgJsonIngestionTestUtils {
         };
     }
 
-    expectedCreatePriceDtos(): CreatePriceDto[] {
+    expectedCreatePriceDtos(): Price[] {
         return [
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),

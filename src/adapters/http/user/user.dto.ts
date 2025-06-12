@@ -7,7 +7,7 @@ import {
     IsStrongPassword,
     MinLength
 } from "class-validator";
-import { UserRole } from "src/adapters/http/auth/auth.types";
+import { UserRole } from "src/core/auth";
 
 export class UserDto {
     readonly id: number;

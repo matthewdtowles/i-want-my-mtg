@@ -1,5 +1,6 @@
 import { IsEmail, IsString } from "class-validator";
-import { UserDto } from "src/core/user";
+import { UserDto } from "src/adapters/http/user/user.dto";
+
 
 export enum ActionStatus {
     SUCCESS = "success",

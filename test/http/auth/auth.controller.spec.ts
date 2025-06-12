@@ -5,7 +5,7 @@ import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
 import { AuthController } from "src/adapters/http/auth/auth.controller";
 import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
 import { AuthToken } from "src/core/auth/auth.types";
-import { AuthService } from "src/core/auth/api/auth.service.port";
+import { AuthService } from "src/core/auth";
 
 describe("AuthController", () => {
     let app: INestApplication;
@@ -19,10 +19,7 @@ describe("AuthController", () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
             providers: [
-                {
-                    provide: AuthServicePort,
-                    useValue: mockAuthService,
-                },
+                AuthService,
             ],
         })
             .overrideGuard(LocalAuthGuard)
@@ -40,7 +37,7 @@ describe("AuthController", () => {
             .compile();
         app = moduleFixture.createNestApplication();
         await app.init();
-        authService = moduleFixture.get<AuthService>(AuthServicePort);
+        authService = moduleFixture.get<AuthService>(AuthService);
     });
 
     afterAll(async () => {

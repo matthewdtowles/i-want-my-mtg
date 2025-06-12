@@ -1,4 +1,4 @@
-import { UserRole } from "src/core/user/user.role.enum";
+import { UserRole } from "src/core/auth/user.role.enum";
 import { validateInit } from "src/shared/utils";
 
 export class User {

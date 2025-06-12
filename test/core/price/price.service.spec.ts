@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Card, CardRepositoryPort } from "src/core/card";
-import { PriceRepositoryPort, PriceService } from "src/core/price";
+import { Price, PriceRepositoryPort, PriceService } from "src/core/price";
 
 
 describe("PriceService", () => {
@@ -46,15 +46,16 @@ describe("PriceService", () => {
 
     it("should save averaged prices with normal and/or foil", async () => {
         const _date: Date = new Date("2024-05-05");
-        const dtos: CreatePriceDto[] = [
-            { cardUuid: 'uuid-1', date: _date, normal: 1.1 },
-            { cardUuid: 'uuid-2', date: _date, foil: 2.2 },
+        const dtos: Price[] = [
+            new Price({ cardId: 'uuid-1', date: _date, normal: 1.1 }),
+            new Price({ cardId: 'uuid-2', date: _date, foil: 2.2 }),
         ];
         const mockCards: Card[] = [];
         dtos.forEach((dto, i) => {
-            const card: Card = new Card();
-            card.id = dto.cardUuid;
-            card.order = i + 1;
+            const card: Card = new Card({
+                id: dto.cardId,
+                order: i + 1,
+            });
             mockCards.push(card);
         });
         mockCardRepo.findByIds.mockResolvedValue(mockCards);
@@ -71,8 +72,8 @@ describe("PriceService", () => {
     });
 
     it("should skip unknown card UUIDs", async () => {
-        const dtos: CreatePriceDto[] = [
-            { cardUuid: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 },
+        const dtos: Price[] = [
+            new Price({ cardId: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 }),
         ];
         mockCardRepo.findByIds.mockResolvedValue([]);
 

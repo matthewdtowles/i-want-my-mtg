@@ -11,7 +11,7 @@ export class Card {
     readonly hasNonFoil: boolean;
     readonly imgSrc: string;
     readonly isReserved: boolean;
-    readonly legalities: Legality[];
+    legalities: Legality[];
     readonly manaCost?: string;
     readonly name: string;
     readonly number: string;

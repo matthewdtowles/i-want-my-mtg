@@ -2,7 +2,7 @@ import { Format, LegalityStatus } from "src/core/card";
 import { validateInit } from "src/shared/utils";
 
 export class Legality {
-    readonly cardId: string;
+    cardId: string;
     readonly format: Format;
     readonly status: LegalityStatus;
 

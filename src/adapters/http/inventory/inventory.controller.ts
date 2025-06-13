@@ -22,6 +22,7 @@ import { Inventory, InventoryService } from "src/core/inventory";
 import { AuthenticatedRequest, } from "../auth/auth.types";
 import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
+import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
 
 
 @Controller("inventory")
@@ -64,11 +65,8 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Create inventory`);
         this.validateAuthenticatedRequest(req);
-        const updatedDtos: InventoryDto[] = createInventoryDtos.map(dto => ({
-            ...dto,
-            userId: req.user.id,
-        }));
-        const createdItems: Inventory[] = await this.inventoryService.save(updatedDtos);
+        const inputInvItems: Inventory[] = InventoryMapper.toEntities(createInventoryDtos);
+        const createdItems: Inventory[] = await this.inventoryService.save(inputInvItems);
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
             inventory: createdItems,
@@ -84,11 +82,8 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Update inventory`);
         this.validateAuthenticatedRequest(req);
-        const completeDtos: Inventory[] = updateInventoryDtos.map(dto => ({
-            ...dto,
-            userId: req.user.id,
-        }));
-        const updatedInventory: Inventory[] = await this.inventoryService.save(completeDtos);
+        const inputInvItems: Inventory[] = InventoryMapper.toEntities(updateInventoryDtos);
+        const updatedInventory: Inventory[] = await this.inventoryService.save(inputInvItems);
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,
             inventory: updatedInventory,

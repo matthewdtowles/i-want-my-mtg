@@ -1,8 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CardDto } from "src/adapters/http/card/card.dto";
-import { CreateCardDto } from "src/adapters/http/card/create-card.dto";
 import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
-import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
+import { SetDto } from "src/adapters/http/set/set.dto";
 import {
     Card,
     CardImgType,
@@ -16,33 +15,35 @@ import { Set } from "src/core/set";
 @Injectable()
 export class CardMapper {
 
-    private readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
+    private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
     // TODO: update - should reflect ingestion input
-    dtoToEntity(cardDto: CreateCardDto): Card {
-        const card: Card = new Card();
-        card.artist = cardDto.artist;
-        card.hasFoil = cardDto.hasFoil;
-        card.hasNonFoil = cardDto.hasNonFoil;
-        card.imgSrc = cardDto.imgSrc;
-        card.isReserved = cardDto.isReserved;
-        card.legalities = this.toLegalityEntities(cardDto.legalities);
-        card.manaCost = cardDto.manaCost;
-        card.name = cardDto.name;
-        card.number = cardDto.number;
-        card.oracleText = cardDto.oracleText;
-        card.rarity = this.convertToCardRarity(cardDto.rarity);
-        card.setCode = cardDto.setCode;
-        card.type = cardDto.type;
-        card.id = cardDto.uuid;
-        return card;
-    }
+    // TODO MOVE TO INGESTION
+    // dtoToEntity(cardDto: CreateCardDto): Card {
+    //     const card: Card = new Card({
+    //         id: cardDto.uuid,
+    //         artist: cardDto.artist,
+    //         hasFoil: cardDto.hasFoil,
+    //         hasNonFoil: cardDto.hasNonFoil,
+    //         imgSrc: this.buildImgSrc(cardDto, CardImgType.SMALL),
+    //         isReserved: cardDto.isReserved,
+    //         manaCost: cardDto.manaCost,
+    //         name: cardDto.name,
+    //         number: cardDto.number,
+    //         oracleText: cardDto.oracleText,
+    //         // order: cardDto.order,
+    //         rarity: this.convertToCardRarity(cardDto.rarity),
+    //         setCode: cardDto.setCode,
+    //         type: cardDto.type,
+    //     });
+    //     return card;
+    // }
 
-    entitiesToDtos(cards: Card[], imgType: CardImgType): CardDto[] {
+    static entitiesToDtos(cards: Card[], imgType: CardImgType): CardDto[] {
         return cards.map((card: Card) => this.entityToDto(card, imgType));
     }
 
-    entityToDto(card: Card, imgType: CardImgType): CardDto {
+    static entityToDto(card: Card, imgType: CardImgType): CardDto {
         const dto: CardDto = {
             order: card.order,
             artist: card.artist,
@@ -73,7 +74,7 @@ export class CardMapper {
         return dto;
     }
 
-    entityToDtoForView(card: Card, imgType: CardImgType): CardDto {
+    static entityToDtoForView(card: Card, imgType: CardImgType): CardDto {
         const dto: CardDto = this.entityToDto(card, imgType);
         return {
             ...dto,
@@ -81,7 +82,7 @@ export class CardMapper {
         };
     }
 
-    toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
+    static toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
         return dtos?.reduce((entities: Legality[], dto: CreateLegalityDto) => {
             if (this.isValidLegalityDto(dto)) {
                 const entity: Legality = this.toLegalityEntity(dto);
@@ -91,15 +92,15 @@ export class CardMapper {
         }, []);
     }
 
-    toLegalityEntity(dto: CreateLegalityDto): Legality {
-        const entity: Legality = new Legality();
-        entity.cardId = dto.cardId;
-        entity.format = this.convertToFormat(dto.format);
-        entity.status = this.convertToLegalityStatus(dto.status);
-        return entity;
+    static toLegalityEntity(dto: CreateLegalityDto): Legality {
+        return new Legality({
+            cardId: dto.cardId,
+            format: this.convertToFormat(dto.format),
+            status: this.convertToLegalityStatus(dto.status),
+        });
     }
 
-    toLegalityDtos(entities: Legality[]): CreateLegalityDto[] {
+    static toLegalityDtos(entities: Legality[]): CreateLegalityDto[] {
         return entities?.reduce((dtos: CreateLegalityDto[], entity: Legality) => {
             if (this.isValidLegalityEntity(entity)) {
                 const dto: CreateLegalityDto = this.toLegalityDto(entity);
@@ -109,7 +110,7 @@ export class CardMapper {
         }, []);
     }
 
-    toLegalityDto(entity: Legality): CreateLegalityDto {
+    static toLegalityDto(entity: Legality): CreateLegalityDto {
         const dto: CreateLegalityDto = {
             cardId: entity?.cardId,
             format: entity?.format,
@@ -118,7 +119,7 @@ export class CardMapper {
         return dto;
     }
 
-    private fillMissingFormats(card: CardDto): CreateLegalityDto[] {
+    private static fillMissingFormats(card: CardDto): CreateLegalityDto[] {
         const existingLegalities: CreateLegalityDto[] = card.legalities || [];
         const formats: Format[] = Object.values(Format);
         const filledLegalities: CreateLegalityDto[] = formats.map(format => {
@@ -136,7 +137,7 @@ export class CardMapper {
         return filledLegalities;
     }
 
-    private setEntityToDto(set: Set): SetDto {
+    private static setEntityToDto(set: Set): SetDto {
         return {
             ...set,
             cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
@@ -144,7 +145,7 @@ export class CardMapper {
         };
     }
 
-    private manaForView(manaCost: string): string[] | null {
+    private static manaForView(manaCost: string): string[] | null {
         return typeof manaCost === "string" ? manaCost
             .toLowerCase()
             .trim()
@@ -155,47 +156,47 @@ export class CardMapper {
             : null;
     }
 
-    private buildCardUrl(card: Card): string {
+    private static buildCardUrl(card: Card): string {
         return `/card/${card.setCode.toLowerCase()}/${card.number}`;
     }
 
-    private buildSetUrl(set: Set): string {
+    private static buildSetUrl(set: Set): string {
         return `/set/${set.code.toLowerCase()}`;
     }
 
-    private buildImgSrc(card: Card, size: CardImgType): string {
+    private static buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
 
-    private isValidLegalityDto(dto: CreateLegalityDto): boolean {
+    private static isValidLegalityDto(dto: CreateLegalityDto): boolean {
         return this.isValidlegality(dto?.format, dto?.status);
     }
 
-    private isValidLegalityEntity(entity: Legality): boolean {
+    private static isValidLegalityEntity(entity: Legality): boolean {
         return this.isValidlegality(entity?.format, entity?.status);
     }
 
-    private isValidlegality(format: string, status: string): boolean {
+    private static isValidlegality(format: string, status: string): boolean {
         const validFormat: boolean = Object.values(Format).includes(format?.toLowerCase() as Format);
         const validStatus: boolean = Object.values(LegalityStatus).includes(status?.toLowerCase() as LegalityStatus);
         return validFormat && validStatus
     }
 
-    private convertToCardRarity(rarity: string): CardRarity {
+    private static convertToCardRarity(rarity: string): CardRarity {
         if (Object.values(CardRarity).includes(rarity as CardRarity)) {
             return rarity as CardRarity;
         }
         throw new Error(`Invalid rarity value: ${rarity}`);
     }
 
-    private convertToFormat(format: string): Format {
+    private static convertToFormat(format: string): Format {
         if (Object.values(Format).includes(format as Format)) {
             return format as Format;
         }
         throw new Error(`Invalid format value: ${format}`);
     }
 
-    private convertToLegalityStatus(status: string): LegalityStatus {
+    private static convertToLegalityStatus(status: string): LegalityStatus {
         if (Object.values(LegalityStatus).includes(status as LegalityStatus)) {
             return status as LegalityStatus;
         }

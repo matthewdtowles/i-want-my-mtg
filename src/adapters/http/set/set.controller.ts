@@ -25,6 +25,19 @@ export class SetController {
     async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`get setListing`);
         const _setList: Set[] = await this.setService.findAll();
+        const setListResponse: SetResponseDto[] = _setList.map(set => ({
+            code: set.code,
+            baseSize: set.baseSize,
+            block: set.block,
+            cards: set.cards ? set.cards : [],
+            keyruneCode: set.keyruneCode,
+            name: set.name,
+            parentCode: set.parentCode,
+            releaseDate: set.releaseDate,
+            totalCards: set.cards ? set.cards.length : 0,
+            type: set.type,
+            url: `/sets/${set.code.toLowerCase()}`,
+        }));
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [
@@ -32,7 +45,7 @@ export class SetController {
                 { label: "Sets", url: "/sets" },
             ],
             message: _setList ? `${_setList.length} sets found` : "No sets found",
-            setList: _setList,
+            setList: setListResponse,
             status: _setList ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }

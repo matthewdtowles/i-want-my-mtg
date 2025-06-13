@@ -1,26 +1,23 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CardMapper } from "src/adapters/http/card/card.mapper";
-import { CreateSetDto } from "src/adapters/http/set/set.dto";
-import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
+import { CreateSetDto, SetDto } from "src/adapters/http/set/set.dto";
 import { CardImgType } from "src/core/card";
 import { Set } from "src/core/set";
 
 @Injectable()
 export class SetMapper {
-    constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
 
     dtoToEntity(createSetDto: CreateSetDto): Set {
-        const set: Set = new Set();
-        set.baseSize = createSetDto.baseSize;
-        set.block = createSetDto.block;
-        set.cards = [];
-        set.keyruneCode = createSetDto.keyruneCode;
-        set.name = createSetDto.name;
-        set.parentCode = createSetDto.parentCode;
-        set.releaseDate = createSetDto.releaseDate;
-        set.code = createSetDto.code;
-        set.type = createSetDto.type;
-        return set;
+        return new Set({
+            code: createSetDto.code,
+            baseSize: createSetDto.baseSize,
+            block: createSetDto.block,
+            keyruneCode: createSetDto.keyruneCode,
+            name: createSetDto.name,
+            parentCode: createSetDto.parentCode,
+            releaseDate: createSetDto.releaseDate,
+            type: createSetDto.type,
+        });
     }
 
     dtosToEntities(setDtos: CreateSetDto[]): Set[] {
@@ -31,7 +28,7 @@ export class SetMapper {
         return {
             baseSize: set.baseSize,
             block: set.block,
-            cards: set.cards ? this.cardMapper.entitiesToDtos(set.cards, CardImgType.SMALL) : [],
+            cards: set.cards ? CardMapper.entitiesToDtos(set.cards, CardImgType.SMALL) : [],
             code: set.code,
             keyruneCode: set.keyruneCode.toLowerCase(),
             name: set.name,

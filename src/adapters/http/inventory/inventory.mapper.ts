@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CardMapper } from "src/adapters/http/card/card.mapper";
 import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
 import { Card, CardImgType } from "src/core/card";
@@ -8,31 +8,27 @@ import { Inventory } from "src/core/inventory";
 @Injectable()
 export class InventoryMapper {
 
-    constructor(@Inject(CardMapper) private readonly cardMapper: CardMapper) { }
+    static toEntities(inventoryItems: InventoryDto[]): Inventory[] {
+        return inventoryItems.map((item: InventoryDto) => this.toEntity(item));
+    }
 
-    // toEntities(inventoryItems: InventoryDto[]): Inventory[] {
-    //     return inventoryItems.map((item: InventoryDto) => this.toEntity(item));
-    // }
+    static toEntity(dto: InventoryDto): Inventory {
+        return new Inventory({
+            cardId: dto.cardId,
+            isFoil: dto.isFoil ?? false,
+            quantity: dto.quantity ?? 0,
+            userId: dto.userId,
+        });
+    }
 
-    // toEntity(dto: InventoryDto): Inventory {
-    //     const init: Partial<Inventory> = {
-    //         cardId: dto.cardId,
-    //         isFoil: dto.isFoil ?? false,
-    //         quantity: dto.quantity ?? 0,
-    //         userId: dto.userId,
-    //         card: dto.card ? this.cardMapper.dtoToEntity(dto.card) : undefined,
-    //     };
-    //     return new Inventory(init);
-    // }
-
-    toDtos(entities: Inventory[]): InventoryDto[] {
+    static toDtos(entities: Inventory[]): InventoryDto[] {
         return entities.map((entity: Inventory) => this.toDto(entity));
     }
 
-    toDto(inventoryEntity: Inventory): InventoryDto {
+    static toDto(inventoryEntity: Inventory): InventoryDto {
         const cardEntity: Card | null = inventoryEntity.card || null;
         const inventory: InventoryDto = {
-            card: cardEntity ? this.cardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL) : null,
+            card: cardEntity ? CardMapper.entityToDto(inventoryEntity.card, CardImgType.SMALL) : null,
             cardId: inventoryEntity.cardId,
             isFoil: inventoryEntity.isFoil,
             quantity: inventoryEntity.quantity,

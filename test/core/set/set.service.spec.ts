@@ -52,13 +52,9 @@ describe("SetService", () => {
     });
 
     it("should save sets and return saved sets", async () => {
-        const savedSets: Set[] = await service.save(mockCreateSetDtos);
+        const savedSets: number = await service.save(mockCreateSetDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedSets).toHaveLength(mockCreateSetDtos.length);
-        savedSets.forEach((set, idx) => {
-            expect(set.code).toBe(mockCreateSetDtos[idx].code);
-            expect(set.name).toBe(mockCreateSetDtos[idx].name);
-        });
+        expect(savedSets).toBe(mockCreateSetDtos.length);
     });
 
     it("should find all sets - cards not included", async () => {

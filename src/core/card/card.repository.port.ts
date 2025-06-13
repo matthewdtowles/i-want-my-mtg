@@ -11,9 +11,9 @@ export interface CardRepositoryPort {
      * Create card entities, update if they exist
      *
      * @param cards
-     * @returns saved card(s)
+     * @returns number of saved cards
      */
-    save(cards: Card[]): Promise<Card[]>;
+    save(cards: Card[]): Promise<number>;
 
     /**
      * @param id

@@ -1,5 +1,5 @@
 import { Format, LegalityStatus } from "src/core/card";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { CardOrmEntity } from "src/infrastructure/database/card";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity("legality")

@@ -1,47 +1,43 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { UserRole } from "src/adapters/http/auth/auth.types";
+import { Injectable } from "@nestjs/common";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
+import { UserRole } from "src/core/auth";
 import { User } from "src/core/user";
 
 @Injectable()
 export class UserMapper {
-    private readonly LOGGER = new Logger(UserMapper.name);
 
     entityToDto(user: User): UserDto {
-        const userDto: UserDto = {
+        return new User({
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
-        };
-        this.LOGGER.debug(`entityToDto userDto ${JSON.stringify(userDto)}`);
-        return userDto;
+        });
     }
 
     dtoToEntity(userDto: UserDto): User {
-        const user: User = new User();
-        user.id = userDto.id;
-        user.email = userDto.email;
-        user.name = userDto.name;
-        user.role = UserRole[userDto.role as keyof typeof UserRole];
-        return user;
+        return new User({
+            id: userDto.id,
+            email: userDto.email,
+            name: userDto.name,
+            role: UserRole[userDto.role as keyof typeof UserRole],
+        });
     }
 
     createDtoToEntity(userDto: CreateUserDto): User {
-        const user: User = new User();
-        user.email = userDto.email;
-        user.name = userDto.name;
-        user.password = userDto.password;
-        return user;
+        return new User({
+            email: userDto.email,
+            name: userDto.name,
+            password: userDto.password,
+            role: UserRole.User,
+        });
     }
 
     updateDtoToEntity(userDto: UpdateUserDto): User {
-        this.LOGGER.debug(`updateDtoToEntity`);
-        const user: User = new User();
-        user.id = userDto.id;
-        user.email = userDto.email;
-        user.name = userDto.name;
-        this.LOGGER.debug(`updateDtoToEntity user ${JSON.stringify(user)}`);
-        return user;
+        return new User({
+            id: userDto.id,
+            email: userDto.email,
+            name: userDto.name,
+        });
     }
 }

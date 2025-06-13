@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { CreateUserDto, User, UserService } from "src/core/user";
+import { User, UserService } from "src/core/user";
 
 @Injectable()
 export class UserCli {
@@ -32,13 +32,13 @@ export class UserCli {
         })
         password: string,
     ): Promise<boolean> {
-        const createDto: CreateUserDto = {
+        const inputUser: User = new User({
             name: name,
             email: email,
             password: password,
-        };
-        const user: User = await this.service.create(createDto);
-        this.LOGGER.log(`Created user: ${JSON.stringify(user)}`);
+        });
+        const createdUser: User = await this.service.create(inputUser);
+        this.LOGGER.log(`Created user: ${JSON.stringify(createdUser)}`);
         return true;
     }
 

@@ -5,16 +5,16 @@ import { InventoryRepositoryPort } from "src/core/inventory";
 import { PriceRepositoryPort } from "src/core/price";
 import { SetRepositoryPort } from "src/core/set";
 import { UserRepositoryPort } from "src/core/user";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { CardOrmEntity } from "src/infrastructure/database/card";
 import { CardRepository } from "src/infrastructure/database/card/card.repository";
 import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
-import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
+import { InventoryOrmEntity } from "src/infrastructure/database/inventory";
 import { InventoryRepository } from "src/infrastructure/database/inventory/inventory.repository";
-import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
+import { PriceOrmEntity } from "src/infrastructure/database/price";
 import { PriceRepository } from "src/infrastructure/database/price/price.repository";
-import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
+import { SetOrmEntity } from "src/infrastructure/database/set";
 import { SetRepository } from "src/infrastructure/database/set/set.repository";
-import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity";
+import { UserOrmEntity } from "src/infrastructure/database/user";
 import { UserRepository } from "src/infrastructure/database/user/user.repository";
 
 @Module({

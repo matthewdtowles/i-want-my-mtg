@@ -15,8 +15,8 @@ export class CardService {
 
     constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
-    async save(inputCards: Card[]): Promise<Card[]> {
-        let savedEntities: Card[] = [];
+    async save(inputCards: Card[]): Promise<number> {
+        let savedEntities: number = 0;
         try {
             const cardsToSave: Card[] = [];
             for (const inCard of inputCards) {
@@ -31,8 +31,7 @@ export class CardService {
                 card.legalities = legalitiesToSave;
                 cardsToSave.push(card);
             }
-            const savedCards: Card[] = await this.repository.save(cardsToSave);
-            savedEntities.push(...savedCards);
+            savedEntities += await this.repository.save(cardsToSave);
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
@@ -41,7 +40,11 @@ export class CardService {
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
-        return await this.repository.findAllWithName(name);
+        try {
+            return await this.repository.findAllWithName(name);
+        } catch (error) {
+            throw new Error(`Error finding cards with name ${name}: ${error.message}`);
+        }
     }
 
     async findById(id: string): Promise<Card | null> {

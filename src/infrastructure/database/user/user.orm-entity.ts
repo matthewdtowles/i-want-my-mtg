@@ -1,5 +1,5 @@
 import { Exclude } from "class-transformer";
-import { UserRole } from "src/adapters/http/auth/auth.types";
+import { UserRole } from "src/core/auth";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("users")

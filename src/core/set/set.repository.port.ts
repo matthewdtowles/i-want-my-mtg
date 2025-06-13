@@ -11,9 +11,9 @@ export interface SetRepositoryPort {
      * Creates or updates Set entities.
      *
      * @param {Set[]} set - The array of Set entities to save.
-     * @returns {Promise<Set[]>} A promise that resolves to the saved Set entities.
+     * @returns {Promise<number>} A promise that resolves to the number of saved Set entities.
      */
-    save(set: Set[]): Promise<Set[]>;
+    save(set: Set[]): Promise<number>;
 
     /**
      * Retrieves metadata for all Set entities without including cards.

@@ -1,27 +1,20 @@
 import {
-    Body,
     Controller,
     Get,
     HttpStatus,
     Inject,
     Logger,
-    Param,
-    Patch,
-    Render,
+    Param, Render,
     Req,
     UseGuards
 } from "@nestjs/common";
-import { AuthenticatedRequest, Role } from "src/adapters/http/auth/auth.types";
-import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
-import { RolesGuard } from "src/adapters/http/auth/roles.guard";
+import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
 import { CardDto } from "src/adapters/http/card/card.dto";
 import { CardMapper } from "src/adapters/http/card/card.mapper";
-import { CreateCardDto } from "src/adapters/http/card/create-card.dto";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { UserRole } from "src/core/auth";
 import { Card, CardService } from "src/core/card";
 import { Inventory, InventoryService } from "src/core/inventory";
 
@@ -85,13 +78,5 @@ export class CardController {
             otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
-    }
-
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Patch(":id")
-    @Role(UserRole.Admin)
-    async update(@Body() updateCardDtos: CreateCardDto[]) {
-        this.LOGGER.debug(`Update cards`);
-        return await this.cardService.save(updateCardDtos);
     }
 }

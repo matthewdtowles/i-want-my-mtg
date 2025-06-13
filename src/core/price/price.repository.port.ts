@@ -3,13 +3,13 @@ import { Price } from "src/core/price";
 export const PriceRepositoryPort = "PriceRepositoryPort";
 
 export interface PriceRepositoryPort {
+
     /**
      * Saves multiple price entities, updates if they exist
      * 
      * @param {Price[]} prices
-     * @returns {Promise<Price[]>} saved prices
      */
-    save(prices: Price[]): Promise<Price[]>;
+    save(prices: Price[]): Promise<void>;
 
     /**
      * Deletes a price by its id

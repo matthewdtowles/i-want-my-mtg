@@ -9,6 +9,10 @@ export class PriceService {
         @Inject(CardRepositoryPort) private readonly cardRepository: CardRepositoryPort,
     ) { }
 
+    /**
+     * Saves given prices
+     * @param prices 
+     */
     async save(prices: Price[]): Promise<void> {
         if (0 === prices.length) return;
         const uuids: string[] = [...new Set(prices.map((p) => p.cardId))];
@@ -25,6 +29,10 @@ export class PriceService {
         await this.priceRepository.save(priceEntities)
     }
 
+    /**
+     * Deletes a price by its ID.
+     * @param id
+     */
     async delete(id: number): Promise<void> {
         return await this.priceRepository.delete(id);
     }

@@ -10,7 +10,12 @@ export class SetService {
      */
     constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }
 
-    async save(sets: Set[]): Promise<Set[]> {
+    /**
+     * Saves the given sets to the repository.
+     * @param sets - The sets to save.
+     * @returns The total number of sets saved.
+     */
+    async save(sets: Set[]): Promise<number> {
         this.LOGGER.debug(`Calling save`);
         return await this.repository.save(sets);
     }

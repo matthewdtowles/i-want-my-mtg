@@ -1,4 +1,4 @@
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { CardOrmEntity } from "src/infrastructure/database/card";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("price")

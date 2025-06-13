@@ -84,9 +84,10 @@ describe("CardService", () => {
         const createCards: Card[] = mockInputCards;
         jest.spyOn(repository, "save");
 
-        const result: Card[] = await service.save(createCards);
+        const result: number = await service.save(createCards);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(result).toBe(createCards.length);
     });
 
     it("should update existing cards and return saved cards", async () => {
@@ -110,10 +111,10 @@ describe("CardService", () => {
 
         jest.spyOn(repository, "save");
 
-        const result: Card[] = await service.save(updateCards);
+        const result: number = await service.save(updateCards);
 
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(result.length).toBe(1);
+        expect(result).toBe(1);
         expect(result[0].name).toBe("Card 1");
         expect(result[0].isReserved).toBe(true);
         expect(result[0].rarity).toBe(CardRarity.Common);
@@ -125,11 +126,11 @@ describe("CardService", () => {
     });
 
     it("should handle empty card dto array", async () => {
-        const savedCards: Card[] = await service.save([]);
+        const savedCards: number = await service.save([]);
         jest.spyOn(repository, "save");
 
         expect(repository.save).not.toHaveBeenCalled();
-        expect(savedCards).toEqual([]);
+        expect(savedCards).toEqual(0);
     });
 
     it("should handle repository save failure with empty array", async () => {
@@ -200,7 +201,7 @@ describe("CardService", () => {
             cardId: "1",
         });
 
-        const result: Card[] = await service.save(createCards);
+        const result: number = await service.save(createCards);
 
         const cardAfterSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardAfterSave?.legalities).not.toContainEqual({
@@ -210,6 +211,7 @@ describe("CardService", () => {
         });
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(repository.deleteLegality).toHaveBeenCalledTimes(1);
+        expect(result).toBe(1);
     });
 
     it("should update legality in db if legality in card but has different status", async () => {
@@ -262,7 +264,7 @@ describe("CardService", () => {
             cardId: "1",
         });
 
-        const result: Card[] = await service.save(createCards);
+        const result: number = await service.save(createCards);
 
         const cardAfterSave: Card = await repository.findById("1", ["legalities"]);
         expect(cardAfterSave?.legalities).toContainEqual({
@@ -272,5 +274,6 @@ describe("CardService", () => {
         });
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(repository.deleteLegality).not.toHaveBeenCalled();
+        expect(result).toBe(1);
     });
 });

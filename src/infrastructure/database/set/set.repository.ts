@@ -1,28 +1,29 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Set, SetRepositoryPort } from "src/core/set";
-import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
+import { SetMapper, SetOrmEntity } from "src/infrastructure/database/set";
 import { MoreThan, Repository } from "typeorm";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
 
-    constructor(
-        @InjectRepository(SetOrmEntity) private readonly setRepository: Repository<SetOrmEntity>,
-        private readonly mapper: { mapToSets: (sets: SetOrmEntity[]) => Set[] },
-    ) { }
+    constructor(@InjectRepository(SetOrmEntity) private readonly setRepository: Repository<SetOrmEntity>) { }
 
-    async save(sets: Set[]): Promise<Set[]> {
-        //TODO MAP
-        const savedSets: SetOrmEntity[] = await this.setRepository.save(sets);
-        return this.mapper.mapToSets(savedSets);
+    async save(sets: Set[]): Promise<number> {
+        const savedSets: SetOrmEntity[] = await this.setRepository.save(sets) ?? [];
+        return savedSets.length ?? 0;
     }
 
     async findAllSetsMeta(): Promise<Set[]> {
-        // TODO IMPL -- was this accidentally deleted? Check history
-        throw new Error("Method not implemented.");
+        const setMetaList: SetOrmEntity[] = await this.setRepository.find({
+            where: { baseSize: MoreThan(0), },
+            order: {
+                releaseDate: "DESC",
+                name: "ASC",
+            },
+        }) ?? [];
+        return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
-
 
     async findByCode(code: string): Promise<Set | null> {
         const set: SetOrmEntity = await this.setRepository.findOne({
@@ -34,18 +35,7 @@ export class SetRepository implements SetRepositoryPort {
             },
             relations: ["cards", "cards.prices"],
         });
-        // TODO MAP
-        return set ?? null;
-    }
-
-    async findAllSetOrmEntitysMeta(): Promise<Set[]> {
-        return (await this.setRepository.find({
-            where: { baseSize: MoreThan(0), },
-            order: {
-                releaseDate: "DESC",
-                name: "ASC",
-            },
-        })) ?? [];
+        return set ? SetMapper.toCore(set) : null;
     }
 
     async delete(set: Set): Promise<void> {

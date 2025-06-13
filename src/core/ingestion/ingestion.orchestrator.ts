@@ -24,8 +24,8 @@ export class IngestionOrchestrator {
     async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingest meta data for all sets`);
         const setMeta: Set[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
-        const savedSets: Set[] = await this.setService.save(setMeta);
-        this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
+        const totalSaved: number = await this.setService.save(setMeta);
+        this.LOGGER.log(`Saved Sets size: ${totalSaved}`);
     }
 
     @Timing()
@@ -70,7 +70,7 @@ export class IngestionOrchestrator {
         for await (const price of this.ingestionService.fetchTodayPrices()) {
             buffer.push(price);
             if (buffer.length >= this.PRICE_BUF_SIZE) {
-                await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
+                 await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
             }
         }
         if (buffer.length > 0) {

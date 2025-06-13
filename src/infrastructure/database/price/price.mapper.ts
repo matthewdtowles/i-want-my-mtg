@@ -1,5 +1,5 @@
 import { Price } from "src/core/price";
-import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
+import { PriceOrmEntity } from "src/infrastructure/database/price";
 
 export class PriceMapper {
     static toCore(ormPrice: PriceOrmEntity): Price {

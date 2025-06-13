@@ -1,14 +1,15 @@
 import { CardRarity } from "src/core/card";
-import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
-import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
-import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
+import { PriceOrmEntity } from "src/infrastructure/database/price";
+import { SetOrmEntity } from "src/infrastructure/database/set";
 import {
     Column,
     Entity,
     JoinColumn,
     ManyToOne,
-    OneToMany, PrimaryColumn
+    OneToMany,
+    PrimaryColumn
 } from "typeorm";
+import { LegalityOrmEntity } from "./legality.orm-entity";
 
 @Entity("card")
 export class CardOrmEntity {

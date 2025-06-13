@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Card, CardRepositoryPort, Format } from "src/core/card";
-import { CardMapper } from "src/infrastructure/database/card/card.mapper";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
-import { LegalityOrmEntity } from "src/infrastructure/database/card/legality.orm-entity";
+import { CardMapper, CardOrmEntity } from "src/infrastructure/database/card";
 import { In, Repository } from "typeorm";
+import { LegalityOrmEntity } from "./legality.orm-entity";
 
 
 @Injectable()
@@ -17,13 +16,10 @@ export class CardRepository implements CardRepositoryPort {
         @InjectRepository(LegalityOrmEntity) private readonly legalityRepository: Repository<LegalityOrmEntity>,
     ) { }
 
-    async save(cards: Card[]): Promise<Card[]> {
+    async save(cards: Card[]): Promise<number> {
         const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
         const saved: CardOrmEntity[] = await this.cardRepository.save(ormCards);
-        // TODO: return boolean or number of saved cards instead??
-        return saved.map((card: CardOrmEntity) => {
-            return CardMapper.toCore(card);
-        });
+        return saved.length ?? 0;
     }
 
     async findById(uuid: string, _relations: string[]): Promise<Card | null> {

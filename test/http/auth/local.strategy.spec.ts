@@ -1,6 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AuthService } from "src/core/auth/api/auth.service.port";
+import { AuthService } from "src/core/auth/auth.service";
 import { LocalStrategy } from "src/core/auth/local.strategy";
 import { UserDto } from "src/adapters/http/user/user.dto";
 
@@ -24,14 +24,14 @@ describe("LocalStrategy", () => {
             providers: [
                 LocalStrategy,
                 {
-                    provide: AuthServicePort,
+                    provide: AuthService,
                     useValue: mockAuthService,
                 },
             ],
         }).compile();
 
         localStrategy = module.get<LocalStrategy>(LocalStrategy);
-        authService = module.get<AuthService>(AuthServicePort);
+        authService = module.get<AuthService>(AuthService);
     });
 
     it("should be defined", () => {

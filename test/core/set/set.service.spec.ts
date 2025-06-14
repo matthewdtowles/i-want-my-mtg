@@ -1,5 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { Set, SetService, SetRepositoryPort } from "src/core/set";
+import { SetRepositoryPort } from "src/core/set/set.repository.port";
+import { SetService } from "src/core/set/set.service";
+import { Set } from "src/core/set/set.entity";
 
 describe("SetService", () => {
     let service: SetService;

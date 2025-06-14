@@ -1,8 +1,12 @@
-import { UserRole } from "src/core/auth";
-import { Card, CardRarity, Format, Legality, LegalityStatus, } from "src/core/card";
-import { Inventory } from "src/core/inventory";
-import { Price } from "src/core/price";
-import { Set } from "src/core/set";
+import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { Price } from "src/core/price/price.entity";
+import { UserRole } from "src/shared/constants/user.role.enum";
+import { Set } from "src/core/set/set.entity";
 
 
 export class TestUtils {

@@ -1,13 +1,12 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import {
-    Card,
-    CardRarity,
-    CardRepositoryPort,
-    CardService,
-    Format,
-    Legality,
-    LegalityStatus
-} from "src/core/card";
+import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { CardService } from "src/core/card/card.service";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+
 
 
 describe("CardService", () => {

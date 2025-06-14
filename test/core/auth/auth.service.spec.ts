@@ -1,10 +1,12 @@
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
-import { UserRole } from "src/core/auth";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
-import { User, UserRepositoryPort, UserService } from "src/core/user";
+import { User } from "src/core/user/user.entity";
+import { UserRepositoryPort } from "src/core/user/user.repository.port";
+import { UserService } from "src/core/user/user.service";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 // Mock User data
 const mockUser: User = {

@@ -1,7 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { Card, CardRepositoryPort } from "src/core/card";
-import { Price, PriceRepositoryPort, PriceService } from "src/core/price";
-
+import { Card } from "src/core/card/card.entity";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Price } from "src/core/price/price.entity";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
+import { PriceService } from "src/core/price/price.service";
 
 describe("PriceService", () => {
     let subject: PriceService;

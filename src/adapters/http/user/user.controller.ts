@@ -17,9 +17,11 @@ import { Response } from "express";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
-import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
-import { AuthService, AuthToken } from "src/core/auth";
-import { User, UserService } from "src/core/user";
+import { CreateUserDto, UserDto } from "src/adapters/http/user/user.dto";
+import { AuthService } from "src/core/auth/auth.service";
+import { AuthToken } from "src/core/auth/auth.types";
+import { User } from "src/core/user/user.entity";
+import { UserService } from "src/core/user/user.service";
 
 
 @Controller("user")
@@ -117,7 +119,7 @@ export class UserController {
                     user: null,
                 };
             }
-            const updateUser: User = new User ({
+            const updateUser: User = new User({
                 id: req.user.id,
                 name: httpUserDto.name,
                 email: httpUserDto.email,

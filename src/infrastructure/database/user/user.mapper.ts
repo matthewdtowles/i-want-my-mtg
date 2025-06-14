@@ -1,5 +1,5 @@
-import { User } from "src/core/user";
-import { UserOrmEntity } from "src/infrastructure/database/user";
+import { User } from "src/core/user/user.entity";
+import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity";
 
 export class UserMapper {
     static toCore(ormUser: UserOrmEntity): User {

@@ -1,6 +1,8 @@
 import { Inject } from "@nestjs/common";
-import { Card, CardRepositoryPort } from "src/core/card";
-import { Price, PriceRepositoryPort } from "src/core/price";
+import { Card } from "src/core/card/card.entity";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Price } from "src/core/price/price.entity";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 
 export class PriceService {
 

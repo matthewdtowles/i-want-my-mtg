@@ -1,9 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Card, CardRepositoryPort, Format } from "src/core/card";
-import { CardMapper, CardOrmEntity } from "src/infrastructure/database/card";
 import { In, Repository } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
+import { CardMapper } from "src/infrastructure/database/card/card.mapper";
+import { Card } from "src/core/card/card.entity";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Format } from "src/core/card/format.enum";
+import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
 
 
 @Injectable()

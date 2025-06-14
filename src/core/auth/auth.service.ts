@@ -1,12 +1,13 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { AuthToken, JwtPayload } from "src/core/auth";
-import { User, UserService } from "src/core/user";
+import { AuthToken, JwtPayload } from "src/core/auth/auth.types";
+import { User } from "src/core/user/user.entity";
+import { UserService } from "src/core/user/user.service";
 
 
 @Injectable()
-export class AuthService implements AuthService {
+export class AuthService {
     private readonly LOGGER: Logger = new Logger(AuthService.name);
 
     constructor(

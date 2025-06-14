@@ -1,4 +1,5 @@
-import { Card, Format } from "src/core/card";
+import { Card } from "src/core/card/card.entity";
+import { Format } from "src/core/card/format.enum";
 
 export const CardRepositoryPort = "CardRepositoryPort";
 

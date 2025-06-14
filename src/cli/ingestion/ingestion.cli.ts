@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { Command, Positional } from "nestjs-command";
 import * as path from "path";
-import { IngestionOrchestrator } from "src/core/ingestion";
+import { IngestionOrchestrator } from "src/core/ingestion/ingestion.orchestrator";
 
 @Injectable()
 export class IngestionCli {

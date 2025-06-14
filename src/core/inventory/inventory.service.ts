@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Inventory, InventoryRepositoryPort } from "src/core/inventory";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 
 
 @Injectable()

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { Inventory, InventoryService } from "src/core/inventory";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryService } from "src/core/inventory/inventory.service";
 
 @Injectable()
 export class InventoryCli {

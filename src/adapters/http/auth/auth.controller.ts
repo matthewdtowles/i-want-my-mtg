@@ -12,10 +12,11 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { UserDto } from "src/adapters/http/user/user.dto";
-import { AuthService, AuthToken } from "src/core/auth";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
-import { User } from "src/core/user";
+import { AuthService } from "src/core/auth/auth.service";
+import { AuthToken } from "src/core/auth/auth.types";
+import { User } from "src/core/user/user.entity";
 
 @Controller("auth")
 export class AuthController {

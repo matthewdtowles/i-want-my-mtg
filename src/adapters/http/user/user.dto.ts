@@ -7,7 +7,7 @@ import {
     IsStrongPassword,
     MinLength
 } from "class-validator";
-import { UserRole } from "src/core/auth";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 export class UserDto {
     readonly id: number;

@@ -1,4 +1,4 @@
-import { validateInit } from "src/shared/utils";
+import { validateInit } from "src/shared/utils/validation.util";
 
 export class Price {
     readonly id?: number;

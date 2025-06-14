@@ -1,7 +1,7 @@
 import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
 import { PriceDto } from "src/adapters/http/price/price.dto";
-import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
-import { CardRarity } from "src/core/card";
+import { SetDto } from "src/adapters/http/set/set.dto";
+import { CardRarity } from "src/core/card/card.rarity.enum";
 
 
 export class CardDto {

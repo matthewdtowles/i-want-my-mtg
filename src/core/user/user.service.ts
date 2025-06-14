@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { User, UserRepositoryPort } from "src/core/user";
+import { User } from "src/core/user/user.entity";
+import { UserRepositoryPort } from "src/core/user/user.repository.port";
 
 
 @Injectable()

@@ -1,4 +1,4 @@
-export class AggregatorService implements AggregatorService {
+export class AggregatorService {
     // async findInventorySetByCode(setCode: string, userId: number): Promise<InventorySetAggregateDto> {
     //     this.LOGGER.debug(`findInventorySetByCode for set: ${setCode}, user: ${userId}`);
     //     const set: SetDto = await this.setService.findByCode(setCode);

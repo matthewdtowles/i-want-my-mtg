@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { CardMapper } from "src/adapters/http/card/card.mapper";
 import { CreateSetDto, SetDto } from "src/adapters/http/set/set.dto";
-import { CardImgType } from "src/core/card";
-import { Set } from "src/core/set";
+import { CardImgType } from "src/core/card/card.img.type.enum";
+import { Set } from "src/core/set/set.entity";
 
 @Injectable()
 export class SetMapper {

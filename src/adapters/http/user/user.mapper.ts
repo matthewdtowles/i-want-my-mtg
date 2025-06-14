@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
-import { UserRole } from "src/core/auth";
-import { User } from "src/core/user";
+import { User } from "src/core/user/user.entity";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 @Injectable()
 export class UserMapper {

@@ -15,8 +15,10 @@ import { CardMapper } from "src/adapters/http/card/card.mapper";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, CardResponseDto, CardViewDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { Card, CardService } from "src/core/card";
-import { Inventory, InventoryService } from "src/core/inventory";
+import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryService } from "src/core/inventory/inventory.service";
 
 @Controller("card")
 export class CardController {
@@ -25,7 +27,6 @@ export class CardController {
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
-        @Inject(CardMapper) private readonly mapper: CardMapper
     ) { }
 
     @UseGuards(UserGuard)
@@ -33,26 +34,27 @@ export class CardController {
     @Render("card")
     async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardViewDto> {
 
-        this.LOGGER.debug(`findOne ${id}`);
-        const userId = req.user ? req.user.id : 0;
-        let card: CardResponseDto;
-        if (userId > 0) {
-            const inventoryDto: Inventory[] = await this.inventoryService.findForUser(userId, id);
-            card = HttpPresenter.toCardResponseDto([coreCard]);
-        } else {
-            const coreCard: Card = await this.cardService.findById(id);
-            card = HttpPresenter.toCardResponseDto(coreCard);
-        }
-        const allPrintings: CardResponseDto[] = this.mapper.entitiesToDtos(await this.cardService.findAllWithName(card.name));
+        // this.LOGGER.debug(`findOne ${id}`);
+        // const userId = req.user ? req.user.id : 0;
+        // let card: CardResponseDto;
+        // if (userId > 0) {
+        //     const inventoryDto: Inventory[] = await this.inventoryService.findForUser(userId, id);
+        //     card = HttpPresenter.toCardResponseDto([coreCard]);
+        // } else {
+        //     const coreCard: Card = await this.cardService.findById(id);
+        //     card = HttpPresenter.toCardResponseDto(coreCard);
+        // }
+        // const allPrintings: CardResponseDto[] = this.mapper.entitiesToDtos(await this.cardService.findAllWithName(card.name));
 
-        return {
-            authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(card.setCode, card.name, card.number),
-            card,
-            message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== card.setCode),
-            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        };
+        // return {
+        //     authenticated: req.isAuthenticated(),
+        //     breadcrumbs: breadcrumbsForCard(card.setCode, card.name, card.number),
+        //     card,
+        //     message: HttpStatus.OK ? "Card found" : "Card not found",
+        //     otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== card.setCode),
+        //     status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+        // };
+        throw new Error("Card by ID not implemented yet");
     }
 
     @UseGuards(UserGuard)
@@ -65,18 +67,19 @@ export class CardController {
     ): Promise<CardViewDto> {
 
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
-        const userId = req.user ? req.user.id : 0;
-        const _card: InventoryCardResponseDto = await this.inventoryService
-            .findInventoryCardBySetNumber(setCode, setNumber, userId);
-        const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+        // const userId = req.user ? req.user.id : 0;
+        // const _card: InventoryCardResponseDto = await this.inventoryService
+        //     .findInventoryCardBySetNumber(setCode, setNumber, userId);
+        // const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
 
-        return {
-            authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
-            card: _card,
-            message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
-            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        };
+        // return {
+        //     authenticated: req.isAuthenticated(),
+        //     breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
+        //     card: _card,
+        //     message: HttpStatus.OK ? "Card found" : "Card not found",
+        //     otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
+        //     status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+        // };
+        throw new Error("Card by set code and number not implemented yet");
     }
 }

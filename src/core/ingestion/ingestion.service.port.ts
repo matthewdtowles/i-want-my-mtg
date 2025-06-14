@@ -1,6 +1,6 @@
-import { Card } from "src/core/card";
-import { Price } from "src/core/price";
-import { Set } from "src/core/set";
+import { Card } from "src/core/card/card.entity";
+import { Price } from "src/core/price/price.entity";
+import { Set } from "src/core/set/set.entity";
 
 
 export const IngestionServicePort = "IngestionServicePort";

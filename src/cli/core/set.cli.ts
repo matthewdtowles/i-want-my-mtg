@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { Set, SetService } from "src/core/set";
+import { Set } from "src/core/set/set.entity";
+import { SetService } from "src/core/set/set.service";
 
 @Injectable()
 export class SetCli {

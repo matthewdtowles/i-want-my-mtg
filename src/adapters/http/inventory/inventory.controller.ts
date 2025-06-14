@@ -18,11 +18,12 @@ import {
 import { Response } from "express";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
 import { ActionStatus, InventoryCardResponseDto, InventoryViewDto } from "src/adapters/http/http.types";
-import { Inventory, InventoryService } from "src/core/inventory";
-import { AuthenticatedRequest, } from "../auth/auth.types";
-import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
 import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryService } from "src/core/inventory/inventory.service";
+import { AuthenticatedRequest, } from "../auth/auth.types";
+import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 
 
 @Controller("inventory")

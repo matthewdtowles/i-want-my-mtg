@@ -1,10 +1,11 @@
 import { Logger, Module } from "@nestjs/common";
-import { SetRepositoryPort, SetService } from "src/core/set";
+import { SetService } from "src/core/set/set.service";
+import { DatabaseModule } from "src/infrastructure/database/database.module";
 
 @Module({
-    imports: [],
+    imports: [DatabaseModule],
     providers: [SetService],
-    exports: [SetService, SetRepositoryPort]
+    exports: [SetService]
 })
 export class SetModule {
     private readonly LOGGER: Logger = new Logger(SetModule.name);

@@ -1,8 +1,11 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Card, CardService } from "src/core/card";
-import { IngestionServicePort } from "src/core/ingestion";
-import { Price, PriceService } from "src/core/price";
-import { Set, SetService } from "src/core/set";
+import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
+import { IngestionServicePort } from "src/core/ingestion/ingestion.service.port";
+import { Price } from "src/core/price/price.entity";
+import { PriceService } from "src/core/price/price.service";
+import { Set } from "src/core/set/set.entity";
+import { SetService } from "src/core/set/set.service";
 import { Timing } from "src/shared/decorators/timing.decorator";
 
 @Injectable()

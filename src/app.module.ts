@@ -4,11 +4,11 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommandModule } from "nestjs-command";
 import { join } from "path";
+import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
+import { DatabaseModule } from "src/infrastructure/database/database.module";
 import { DataSource } from "typeorm";
 import { AdapterModule } from "./adapters/adapter.module";
 import { CoreModule } from "./core/core.module";
-import { DatabaseModule } from "src/infrastructure/database/database.module";
-import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
 
 @Module({
     imports: [
@@ -47,11 +47,11 @@ import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-i
                 }
             },
         }),
+        DatabaseModule,
+        CoreModule,
         AdapterModule,
         CommandModule,
-        CoreModule,
-        DatabaseModule,
-        MtgJsonIngestionModule, // TODO: Should this be here? - I think it should be here to bind the IngestionServicePort to the MtgJsonIngestionService
+        // MtgJsonIngestionModule, // TODO: Should this be here? - I think it should be here to bind the IngestionServicePort to the MtgJsonIngestionService
     ],
 })
 export class AppModule {

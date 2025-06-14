@@ -1,5 +1,5 @@
-import { Card } from "src/core/card";
-import { validateInit } from "src/shared/utils";
+import { Card } from "src/core/card/card.entity";
+import { validateInit } from "src/shared/utils/validation.util";
 
 
 export class Inventory {

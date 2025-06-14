@@ -1,5 +1,5 @@
 import { Exclude } from "class-transformer";
-import { UserRole } from "src/core/auth";
+import { UserRole } from "src/shared/constants/user.role.enum";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("users")

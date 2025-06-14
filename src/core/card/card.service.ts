@@ -1,12 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import {
-    Card,
-    CardRepositoryPort,
-    Format,
-    Legality,
-    LegalityStatus,
-} from "src/core/card";
-
+import { Card } from "src/core/card/card.entity";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
 
 @Injectable()
 export class CardService {

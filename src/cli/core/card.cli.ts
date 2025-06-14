@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { Card, CardService } from "src/core/card";
+import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
 
 @Injectable()
 export class CardCli {

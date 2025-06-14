@@ -1,18 +1,14 @@
-import { Injectable } from "@nestjs/common";
 import { CardDto } from "src/adapters/http/card/card.dto";
 import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
 import { SetDto } from "src/adapters/http/set/set.dto";
-import {
-    Card,
-    CardImgType,
-    CardRarity,
-    Format,
-    Legality,
-    LegalityStatus
-} from "src/core/card";
-import { Set } from "src/core/set";
+import { Card } from "src/core/card/card.entity";
+import { CardImgType } from "src/core/card/card.img.type.enum";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Set } from "src/core/set/set.entity";
 
-@Injectable()
 export class CardMapper {
 
     private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";

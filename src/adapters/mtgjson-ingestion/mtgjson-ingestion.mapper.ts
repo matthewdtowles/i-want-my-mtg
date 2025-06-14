@@ -5,9 +5,13 @@ import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto as SetData } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
-import { Card, CardRarity, Format, Legality, LegalityStatus } from "src/core/card";
-import { Price } from "src/core/price";
-import { Set } from "src/core/set";
+import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Price } from "src/core/price/price.entity";
+import { Set } from "src/core/set/set.entity";
 
 
 @Injectable()

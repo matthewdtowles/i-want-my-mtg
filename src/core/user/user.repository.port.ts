@@ -1,4 +1,4 @@
-import { User } from "src/core/user";
+import { User } from "src/core/user/user.entity";
 
 export const UserRepositoryPort = "UserRepositoryPort";
 

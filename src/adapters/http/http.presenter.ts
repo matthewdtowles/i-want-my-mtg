@@ -2,9 +2,9 @@ import { CardDto } from "src/adapters/http/card/card.dto";
 import { CardResponseDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
 import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
 import { PriceDto } from "src/adapters/http/price/price.dto";
-import { Card } from "src/core/card";
-import { Inventory } from "src/core/inventory";
-import { Price } from "src/core/price";
+import { Card } from "src/core/card/card.entity";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { Price } from "src/core/price/price.entity";
 import { toDollar } from "src/shared/utils/formatting.util";
 
 export class HttpPresenter {

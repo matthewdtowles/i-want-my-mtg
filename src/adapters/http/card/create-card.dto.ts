@@ -8,7 +8,7 @@ import {
     IsString
 } from "class-validator";
 import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
-import { CardRarity } from "src/core/card";
+import { CardRarity } from "src/core/card/card.rarity.enum";
 
 
 export class CreateCardDto {

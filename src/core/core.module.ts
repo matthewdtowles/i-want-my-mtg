@@ -1,13 +1,15 @@
 import { Logger, Module } from "@nestjs/common";
-import { AuthModule } from "src/core/auth";
-import { CardModule } from "src/core/card";
-import { IngestionModule } from "src/core/ingestion";
-import { InventoryModule } from "src/core/inventory";
-import { SetModule } from "src/core/set";
-import { UserModule } from "src/core/user";
+import { AuthModule } from "src/core/auth/auth.module";
+import { CardModule } from "src/core/card/card.module";
+import { IngestionModule } from "src/core/ingestion/ingestion.module";
+import { InventoryModule } from "src/core/inventory/inventory.module";
+import { SetModule } from "src/core/set/set.module";
+import { UserModule } from "src/core/user/user.module";
+import { DatabaseModule } from "src/infrastructure/database/database.module";
 
 @Module({
     imports: [
+        DatabaseModule,
         AuthModule,
         CardModule,
         IngestionModule,

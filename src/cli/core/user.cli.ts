@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { User, UserService } from "src/core/user";
+import { User } from "src/core/user/user.entity";
+import { UserService } from "src/core/user/user.service";
 
 @Injectable()
 export class UserCli {

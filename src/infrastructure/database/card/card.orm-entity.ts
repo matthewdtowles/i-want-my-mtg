@@ -1,6 +1,4 @@
-import { CardRarity } from "src/core/card";
-import { PriceOrmEntity } from "src/infrastructure/database/price";
-import { SetOrmEntity } from "src/infrastructure/database/set";
+
 import {
     Column,
     Entity,
@@ -10,6 +8,9 @@ import {
     PrimaryColumn
 } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
+import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
 
 @Entity("card")
 export class CardOrmEntity {

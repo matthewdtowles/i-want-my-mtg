@@ -1,4 +1,4 @@
-import { Legality } from "src/core/card";
+import { Legality } from "src/core/card/legality.entity";
 import { LegalityOrmEntity } from "./legality.orm-entity";
 
 export class LegalityMapper {

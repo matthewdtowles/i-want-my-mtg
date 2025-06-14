@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Set, SetRepositoryPort } from "src/core/set";
+import { Set } from "src/core/set/set.entity";
+import { SetRepositoryPort } from "src/core/set/set.repository.port";
 
 @Injectable()
 export class SetService {

@@ -17,6 +17,7 @@ import { LocalAuthGuard } from "./local.auth.guard";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 @Controller("auth")
 export class AuthController {
@@ -44,6 +45,7 @@ export class AuthController {
             id: user.id,
             email: user.email,
             name: user.name,
+            role: UserRole[user.role as keyof typeof UserRole] || UserRole.User
         });
         const authToken: AuthToken = await this.authService.login(coreUser);
         if (!authToken || !authToken.access_token) {

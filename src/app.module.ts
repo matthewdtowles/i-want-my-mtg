@@ -4,7 +4,6 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommandModule } from "nestjs-command";
 import { join } from "path";
-import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
 import { DatabaseModule } from "src/infrastructure/database/database.module";
 import { DataSource } from "typeorm";
 import { AdapterModule } from "./adapters/adapter.module";
@@ -29,7 +28,7 @@ import { CoreModule } from "./core/core.module";
                 database: configService.get<string>("DB_NAME"),
                 autoLoadEntities: true,
                 synchronize: configService.get("NODE_ENV") !== "production",
-                dropSchema: true, // TODO: set to false
+                dropSchema: false,
                 // logging: configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
                 logging: false,
                 extra: {
@@ -51,7 +50,6 @@ import { CoreModule } from "./core/core.module";
         CoreModule,
         AdapterModule,
         CommandModule,
-        // MtgJsonIngestionModule, // TODO: Should this be here? - I think it should be here to bind the IngestionServicePort to the MtgJsonIngestionService
     ],
 })
 export class AppModule {

@@ -5,11 +5,10 @@ import { IngestionModule } from "src/core/ingestion/ingestion.module";
 import { InventoryModule } from "src/core/inventory/inventory.module";
 import { SetModule } from "src/core/set/set.module";
 import { UserModule } from "src/core/user/user.module";
-import { DatabaseModule } from "src/infrastructure/database/database.module";
+
 
 @Module({
     imports: [
-        DatabaseModule,
         AuthModule,
         CardModule,
         IngestionModule,

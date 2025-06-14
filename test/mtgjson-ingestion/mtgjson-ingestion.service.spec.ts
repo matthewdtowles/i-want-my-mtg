@@ -4,9 +4,9 @@ import { PriceFormats } from "src/adapters/mtgjson-ingestion/dto/priceFormats.dt
 import { MtgJsonApiClient } from "src/adapters/mtgjson-ingestion/mtgjson-api.client";
 import { MtgJsonIngestionMapper } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.mapper";
 import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
-import { Card } from "src/core/card";
-import { Price } from "src/core/price";
 import { MtgJsonIngestionTestUtils } from "./mtgjson-ingestion-test-utils";
+import { Card } from "src/core/card/card.entity";
+import { Price } from "src/core/price/price.entity";
 
 
 function* syncIterable<T>(items: T[]): Generator<T> {

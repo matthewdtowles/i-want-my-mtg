@@ -1,19 +1,13 @@
 import { Logger, Module } from "@nestjs/common";
 import { MtgJsonIngestionModule } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.module";
-import { MtgJsonIngestionService } from "src/adapters/mtgjson-ingestion/mtgjson-ingestion.service";
 import { CardModule } from "src/core/card/card.module";
 import { IngestionOrchestrator } from "src/core/ingestion/ingestion.orchestrator";
-import { IngestionServicePort } from "src/core/ingestion/ingestion.service.port";
 import { PriceModule } from "src/core/price/price.module";
-import { PriceService } from "src/core/price/price.service";
 import { SetModule } from "src/core/set/set.module";
 
 @Module({
     imports: [CardModule, PriceModule, SetModule, MtgJsonIngestionModule],
-    providers: [
-        IngestionOrchestrator,
-        // PriceService,
-    ],
+    providers: [IngestionOrchestrator],
     exports: [IngestionOrchestrator],
 })
 export class IngestionModule {

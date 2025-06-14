@@ -4,7 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { JwtPayload } from "src/core/auth/auth.types";
 import { JwtStrategy } from "src/core/auth/jwt.strategy";
 import { UserDto } from "src/adapters/http/user/user.dto";
-import { UserService } from "src/core/user";
+import { UserService } from "src/core/user/user.service";
 
 const mockUserDto: UserDto = {
     id: 1,

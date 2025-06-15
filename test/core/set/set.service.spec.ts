@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { SetService } from "src/core/set/set.service";
-import { Set } from "src/core/set/set.entity";
 
 describe("SetService", () => {
     let service: SetService;
@@ -25,11 +25,11 @@ describe("SetService", () => {
         ...dto,
         id: i + 1,
         setCode: dto.code,
-        cards: undefined,
+        cards: [],
     }));
 
     const mockSetRepository: SetRepositoryPort = {
-        save: jest.fn().mockResolvedValue(mockSets),
+        save: jest.fn().mockResolvedValue(mockSets.length),
         findAllSetsMeta: jest.fn().mockResolvedValue(mockSets),
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
         delete: jest.fn(),
@@ -70,7 +70,7 @@ describe("SetService", () => {
     });
 
     it("should find set with cards by given set code", async () => {
-        const foundSetWithCards: Set= await service.findByCode(mockSetCode);
+        const foundSetWithCards: Set = await service.findByCode(mockSetCode);
         expect(repository.findByCode).toHaveBeenCalledTimes(1);
         expect(foundSetWithCards.code).toBe(mockSetCode);
         expect(foundSetWithCards.cards).toBeDefined();

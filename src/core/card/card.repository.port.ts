@@ -29,6 +29,7 @@ export interface CardRepositoryPort {
      * @returns card entities with id in ids, empty array if not found
      */
     findByIds(ids: string[]): Promise<Card[]>;
+
     /**
      * @param code three letter set code
      * @returns card entities in set with code

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Price } from "src/core/price/price.entity";
 import { PriceRepositoryPort } from "src/core/price/price.repository.port";
@@ -30,8 +31,8 @@ describe("PriceService", () => {
                 {
                     provide: CardRepositoryPort,
                     useValue: {
-                        findByUuid: jest.fn(),
-                        findByUuids: jest.fn(),
+                        findById: jest.fn(),
+                        findByIds: jest.fn(),
                     },
                 },
             ],
@@ -49,7 +50,7 @@ describe("PriceService", () => {
     it("should save averaged prices with normal and/or foil", async () => {
         const _date: Date = new Date("2024-05-05");
         const dtos: Price[] = [
-            new Price({ cardId: 'uuid-1', date: _date, normal: 1.1 }),
+            new Price({ cardId: 'uuid-1', date: _date, normal: 1.1, }),
             new Price({ cardId: 'uuid-2', date: _date, foil: 2.2 }),
         ];
         const mockCards: Card[] = [];
@@ -57,19 +58,25 @@ describe("PriceService", () => {
             const card: Card = new Card({
                 id: dto.cardId,
                 order: i + 1,
+                hasFoil: !!dto.foil,
+                hasNonFoil: !!dto.normal,
+                imgSrc: "imgsrc",
+                isReserved: false,
+                legalities: [],
+                name: "Card Name " + (i + 1),
+                number: String(i + 1),
+                rarity: CardRarity.Common,
+                setCode: "SET", 
+                type: "type",
             });
             mockCards.push(card);
         });
         mockCardRepo.findByIds.mockResolvedValue(mockCards);
-        const _cards: Card[] = [
-            { order: 1 } as Card,
-            { order: 2 } as Card,
-        ];
 
         await subject.save(dtos);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { card: _cards[0], date: dtos[0].date, normal: 1.1, foil: null },
-            { card: _cards[1], date: dtos[1].date, normal: null, foil: 2.2 },
+            { cardId: mockCards[0].id, date: dtos[0].date, normal: 1.1, foil: null },
+            { cardId: mockCards[1].id, date: dtos[1].date, normal: null, foil: 2.2 },
         ]);
     });
 

@@ -11,19 +11,18 @@ export class UserRepository implements UserRepositoryPort {
 
     constructor(@InjectRepository(UserOrmEntity) private readonly userRepository: Repository<UserOrmEntity>) { }
 
-    async create(user: UserOrmEntity): Promise<User | null> {
-        const userResult: InsertResult = await this.userRepository.insert(user);
-        if (!userResult || !userResult.raw || userResult.raw.affectedRows < 1) {
-            return null;
+    async create(user: User): Promise<User | null> {
+        const ormUser: UserOrmEntity = UserMapper.toOrmEntity(user);
+        const existingUser: UserOrmEntity = await this.userRepository.findOneBy({ email: ormUser.email });
+        if (existingUser) {
+            throw new Error(`User with email ${ormUser.email} already exists.`);
         }
-        const savedUserOrmEntity: UserOrmEntity = {
-            id: userResult.identifiers[0].id,
-            email: userResult.generatedMaps[0].email,
-            name: userResult.generatedMaps[0].name,
-            password: userResult.generatedMaps[0].password,
-            role: userResult.generatedMaps[0].role,
-        };
-        return UserMapper.toCore(savedUserOrmEntity);
+        const userResult: InsertResult = await this.userRepository.insert(ormUser);
+        if (!userResult || !userResult.identifiers || userResult.identifiers.length < 1) {
+            throw new Error(`Failed to create user: ${ormUser.email}`);
+        }
+        ormUser.id = userResult.identifiers[0].id;
+        return UserMapper.toCore(ormUser);
     }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -36,8 +35,8 @@ export class UserRepository implements UserRepositoryPort {
         return foundUser ? UserMapper.toCore(foundUser) : null;
     }
 
-    async update(user: UserOrmEntity): Promise<User | null> {
-        const savedUser: UserOrmEntity = await this.userRepository.save(user);
+    async update(user: User): Promise<User | null> {
+        const savedUser: UserOrmEntity = await this.userRepository.save(UserMapper.toOrmEntity(user));
         return savedUser ? UserMapper.toCore(savedUser) : null;
     }
 

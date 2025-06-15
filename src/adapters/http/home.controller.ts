@@ -16,28 +16,34 @@ export class HomeController {
     @Render("setListpage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
-        throw new Error("Home page not implemented yet");
-    //     const sets: Set[] = await this.setService.findAll();
-    //     const setListResponse: SetResponseDto[] = sets.map(set => ({
-    //         code: set.code,
-    //         baseSize: set.baseSize,
-    //         block: set.block,
-    //         cards: set.cards ? set.cards : [],
-    //         keyruneCode: set.keyruneCode,
-    //         name: set.name,
-    //         parentCode: set.parentCode,
-    //         releaseDate: set.releaseDate,
-    //         totalCards: set.cards ? set.cards.length : 0,
-    //         type: set.type,
-    //         url: `/sets/${set.code.toLowerCase()}`,
-    //     }));
-    //     const _message: string = req.query.message as string ?? null;
-    //     return {
-    //         authenticated: req.isAuthenticated(),
-    //         breadcrumbs: [],
-    //         message: _message,
-    //         setList: setListResponse,
-    //         status: sets ? ActionStatus.SUCCESS : ActionStatus.ERROR
-    //     };
+        //     const sets: Set[] = await this.setService.findAll();
+        //     const setListResponse: SetResponseDto[] = sets.map(set => ({
+        //         code: set.code,
+        //         baseSize: set.baseSize,
+        //         block: set.block,
+        //         cards: set.cards ? set.cards : [],
+        //         keyruneCode: set.keyruneCode,
+        //         name: set.name,
+        //         parentCode: set.parentCode,
+        //         releaseDate: set.releaseDate,
+        //         totalCards: set.cards ? set.cards.length : 0,
+        //         type: set.type,
+        //         url: `/sets/${set.code.toLowerCase()}`,
+        //     }));
+        //     const _message: string = req.query.message as string ?? null;
+        // return {
+        //     authenticated: req.isAuthenticated(),
+        //     breadcrumbs: [],
+        //     message: _message,
+        //     setList: setListResponse,
+        //     status: sets ? ActionStatus.SUCCESS : ActionStatus.ERROR
+        // }
+        return {
+            authenticated: req.isAuthenticated(),
+            breadcrumbs: [],
+            message: "",
+            setList: [],
+            status: ActionStatus.SUCCESS
+        };
     }
 }

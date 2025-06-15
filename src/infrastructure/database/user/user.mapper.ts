@@ -1,16 +1,18 @@
 import { User } from "src/core/user/user.entity";
 import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 export class UserMapper {
+
     static toCore(ormUser: UserOrmEntity): User {
-        return new User({
+        const user: User = new User({
             id: ormUser.id,
             name: ormUser.name,
             email: ormUser.email,
-            role: ormUser.role,
-            // TODO: ??
-            // password: ormUser.password,
+            role: ormUser.role ?? UserRole.User,
+            password: ormUser.password,
         });
+        return user;
     }
 
     static toOrmEntity(coreUser: User): UserOrmEntity {
@@ -18,8 +20,7 @@ export class UserMapper {
         ormEntity.id = coreUser.id;
         ormEntity.name = coreUser.name;
         ormEntity.email = coreUser.email;
-        ormEntity.role = coreUser.role;
-        // TODO: ???
+        ormEntity.role = coreUser.role  ?? UserRole.User;
         ormEntity.password = coreUser.password;
         return ormEntity;
     }

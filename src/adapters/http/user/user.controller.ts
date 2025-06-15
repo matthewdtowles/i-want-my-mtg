@@ -23,6 +23,7 @@ import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 
 @Controller("user")
@@ -53,6 +54,7 @@ export class UserController {
             email: createUserDto.email,
             name: createUserDto.name,
             password: createUserDto.password,
+            role: UserRole.User,
         });
         const createdUser: User = await this.userService.create(user);
         if (!createdUser) {

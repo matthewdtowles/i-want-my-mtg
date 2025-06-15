@@ -31,11 +31,14 @@ export class LocalAuthGuard extends AuthGuard("local") {
     handleRequest(err, user, info) {
         this.LOGGER.debug(`LocalAuthGuard handleRequest called`);
         if (err) {
+            this.LOGGER.error(`Error during authentication: ${err.message}`);
             throw err;
         }
         if (!user) {
+            this.LOGGER.error(`Unauthorized user in request`);
             throw new UnauthorizedException(`Unauthorized user in request`);
         }
+        this.LOGGER.debug(`User authenticated successfully: ${user.email}`);
         return user;
     }
 }

@@ -10,11 +10,11 @@ export class User {
     readonly role: UserRole;
 
     constructor(init: Partial<User>) {
-        validateInit(init, ["email", "name", "role"]);
+        validateInit(init, ["email", "name"]);
         this.id = init.id;
         this.email = init.email;
         this.name = init.name;
         this.password = init.password;
-        this.role = init.role;
+        this.role = init.role  ?? UserRole.User;
     }
 }

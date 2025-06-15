@@ -55,13 +55,10 @@ export class CardService {
     }
 
     private extractLegalitiesToSave(card: Card): Legality[] {
-        return card?.legalities?.map(legality => {
-            legality.cardId = card.id;
-            if (legality
-                && Object.values(Format).includes(legality.format?.toLowerCase() as Format)
-                && Object.values(LegalityStatus).includes(legality.status?.toLowerCase() as LegalityStatus)
-            ) {
-                return legality;
+        return card?.legalities?.map((leg: Legality) => {
+            if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)
+                && Object.values(LegalityStatus).includes(leg.status?.toLowerCase() as LegalityStatus)) {
+                return new Legality({ ...leg, cardId: card.id });
             }
         });
     }

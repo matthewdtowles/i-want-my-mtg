@@ -74,7 +74,7 @@ export class MtgJsonIngestionTestUtils {
             card.manaCost = `{${i}}{W}`;
             card.name = "Test Card Name" + i;
             card.number = i.toString();
-            card.rarity = i % 2 === 1 ? "common" : "uncommon";
+            card.rarity = "uncommon";
             card.identifiers.scryfallId = i + this.MOCK_ROOT_SCRYFALL_ID;
             card.originalText = "Test card text.";
             card.setCode = this.MOCK_SET_CODE;
@@ -145,32 +145,34 @@ export class MtgJsonIngestionTestUtils {
     expectedCreateCardDtos(): Card[] {
         const cards: Card[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
+            const uuid: string = `abcd-1234-efgh-5678-ijkl-901${i}`;
             const card: Card = new Card({
-                id: `abcd-1234-efgh-5678-ijkl-901${i}`,
+                id: uuid,
                 artist: "artist",
                 hasFoil: false,
                 hasNonFoil: true,
                 imgSrc: `${i}/a/${i}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
                 isReserved: false,
-                legalities: this.expectedLegalityDtos(),
+                legalities: this.expectedLegalityDtos(uuid),
                 manaCost: `{${i}}{W}`,
                 name: `Test Card Name${i}`,
                 number: `${i}`,
                 oracleText: "Test card text.",
-                rarity: i % 2 === 1 ? CardRarity.Common : CardRarity.Uncommon,
+                rarity: CardRarity.Uncommon,
                 setCode: this.MOCK_SET_CODE,
                 type: "type",
             });
             cards.push(card);
         }
+        const bonusUuid: string = "zyxw-0987-vutsr-6543-qponm-21098";
         const bonusCard: Card = {
-            id: "zyxw-0987-vutsr-6543-qponm-21098",
+            id: bonusUuid,
             artist: "artist",
             hasFoil: false,
             hasNonFoil: true,
             imgSrc: `4/a/4${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
-            legalities: this.expectedLegalityDtos(),
+            legalities: this.expectedLegalityDtos(bonusUuid),
             manaCost: "{U/G}{B/W}{R/U}",
             name: "Test Bonus Card Name",
             number: `${this.MOCK_BASE_SET_SIZE + 1}`,
@@ -204,45 +206,45 @@ export class MtgJsonIngestionTestUtils {
         return expectedSets;
     }
 
-    expectedLegalityDtos(): Legality[] {
+    expectedLegalityDtos(cardId: string): Legality[] {
         return [
             {
-                cardId: null,
+                cardId,
                 format: Format.Commander,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Explorer,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Historic,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Legacy,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Modern,
                 status: LegalityStatus.Banned,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Oathbreaker,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Pioneer,
                 status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
+                cardId,
                 format: Format.Vintage,
                 status: LegalityStatus.Legal,
             },

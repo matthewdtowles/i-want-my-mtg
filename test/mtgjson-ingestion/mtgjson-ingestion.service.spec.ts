@@ -10,7 +10,9 @@ import { Price } from "src/core/price/price.entity";
 
 
 function* syncIterable<T>(items: T[]): Generator<T> {
-    for (const item of items) yield item;
+    for (const item of items) {
+        yield item;
+    }
 }
 
 async function* asyncIterable<T>(items: T[]): AsyncGenerator<T> {
@@ -67,7 +69,7 @@ describe("MtgJsonIngestionService", () => {
         }
         expect(results).toHaveLength(1);
         expect(results[0]).toEqual({
-            cardUuid,
+            cardId: cardUuid,
             date: new Date("2024-01-01"),
             foil: 2,
             normal: 1,
@@ -168,7 +170,7 @@ describe("MtgJsonIngestionService", () => {
         }
         expect(results).toHaveLength(1);
         expect(results[0]).toEqual({
-            cardUuid,
+            cardId: cardUuid,
             date: new Date(dateStr),
             foil: 7,
             normal: 4.14,

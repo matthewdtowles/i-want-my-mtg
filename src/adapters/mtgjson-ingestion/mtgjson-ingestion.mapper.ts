@@ -31,22 +31,22 @@ export class MtgJsonIngestionMapper {
     }
 
     mapCoreCard(setCard: CardSet): Card {
-        return {
+        return new Card({
             id: setCard.uuid,
             artist: setCard.artist,
             hasFoil: setCard.hasFoil,
             hasNonFoil: setCard.hasNonFoil,
             imgSrc: this.buildScryfallImgPath(setCard),
             isReserved: setCard.isReserved,
-            legalities: this.mapCoreLegalities(setCard.legalities),
+            legalities: this.mapCoreLegalities(setCard.legalities, setCard.uuid),
             manaCost: setCard.manaCost,
             name: setCard.name,
             number: setCard.number,
             oracleText: setCard.text,
-            rarity: setCard.rarity ? CardRarity[setCard.rarity.toUpperCase() as keyof typeof CardRarity] : undefined,
+            rarity: setCard.rarity.toLowerCase() as CardRarity,
             setCode: setCard.setCode.toLowerCase(),
             type: setCard.type,
-        };
+        });
     }
 
     mapCoreSets(setLists: SetList[]): Set[] {
@@ -55,14 +55,14 @@ export class MtgJsonIngestionMapper {
         return sets;
     }
 
-    mapCoreLegalities(legalities: Legalities): Legality[] {
+    mapCoreLegalities(legalities: Legalities, cardId: string): Legality[] {
         const coreLegalities: Legality[] = [];
         Object.entries(legalities).forEach(([format, status]) => {
             format = format.toLowerCase();
             status = status.toLowerCase();
             if (Object.values(Format).includes(format as Format)
                 && Object.values(LegalityStatus).includes(status as LegalityStatus)) {
-                coreLegalities.push(this.createLegality(format, status));
+                coreLegalities.push(this.createLegality(format, status, cardId));
             }
         });
         return coreLegalities;
@@ -72,24 +72,23 @@ export class MtgJsonIngestionMapper {
         const extractedPrices: ExtractedPrices = this.extractPrices(paperPrices);
         const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
         const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
-        let price: Price;
-        if (foilPrice || normalPrice) {
-            price = {
-                cardId: cardUuid,
-                foil: foilPrice,
-                normal: normalPrice,
-                date: new Date(this.extractDate(paperPrices)),
-            };
+        if (!foilPrice && !normalPrice) {
+            return null;
         }
-        return price;
+        return new Price({
+            cardId: cardUuid,
+            foil: foilPrice,
+            normal: normalPrice,
+            date: new Date(this.extractDate(paperPrices)),
+        });
     }
 
-    private createLegality(format: string, status: string): Legality {
-        return {
+    private createLegality(format: string, status: string, cardId: string): Legality {
+        return new Legality({
             format: format as Format,
             status: status as LegalityStatus,
-            cardId: null,
-        };
+            cardId,
+        });
     }
 
     private buildScryfallImgPath(card: CardSet): string {

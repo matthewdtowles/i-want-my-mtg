@@ -11,9 +11,12 @@ export class UserService {
 
     constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) { }
 
-    async create(user: User): Promise<User | null> {
+    async create(userIn: User): Promise<User | null> {
         this.LOGGER.debug(`create`);
-        // user.password = await this.encrypt(user.password);
+        const user: User = new User({
+            ...userIn,
+            password: await this.encrypt(userIn.password),
+        });
         return await this.repository.create(user);
     }
 
@@ -33,16 +36,18 @@ export class UserService {
 
     async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`update`);
+        if (user.password) {
+            throw new Error("Password must be updated separately."); 
+        }
         return await this.repository.update(user) ?? null;
     }
 
-    async updatePassword(userId: number, password: string): Promise<boolean> {
-        this.LOGGER.debug(`updatePassword userId:${userId}, pwd:${password}`);
+    async updatePassword(userIn: User, newPassword: string): Promise<boolean> {
+        this.LOGGER.debug(`updatePassword userId:${userIn.id}, pwd:${newPassword}`);
         const user: User = new User({
-            id: userId,
-            password: await this.encrypt(password),
+            ...userIn,
+            password: await this.encrypt(newPassword),
         });
-        this.LOGGER.debug(`Input user ${JSON.stringify(user)}`);
         return !!await this.repository.update(user);
     }
 

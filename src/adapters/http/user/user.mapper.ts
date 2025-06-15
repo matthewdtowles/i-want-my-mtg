@@ -1,12 +1,11 @@
-import { Injectable } from "@nestjs/common";
 import { CreateUserDto, UpdateUserDto, UserDto } from "src/adapters/http/user/user.dto";
 import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
 
-@Injectable()
+
 export class UserMapper {
 
-    entityToDto(user: User): UserDto {
+    static entityToDto(user: User): UserDto {
         return new User({
             id: user.id,
             email: user.email,
@@ -15,7 +14,7 @@ export class UserMapper {
         });
     }
 
-    dtoToEntity(userDto: UserDto): User {
+    static dtoToEntity(userDto: UserDto): User {
         return new User({
             id: userDto.id,
             email: userDto.email,
@@ -24,7 +23,7 @@ export class UserMapper {
         });
     }
 
-    createDtoToEntity(userDto: CreateUserDto): User {
+    static createDtoToEntity(userDto: CreateUserDto): User {
         return new User({
             email: userDto.email,
             name: userDto.name,
@@ -33,7 +32,7 @@ export class UserMapper {
         });
     }
 
-    updateDtoToEntity(userDto: UpdateUserDto): User {
+    static updateDtoToEntity(userDto: UpdateUserDto): User {
         return new User({
             id: userDto.id,
             email: userDto.email,

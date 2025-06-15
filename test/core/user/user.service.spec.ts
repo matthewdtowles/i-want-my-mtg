@@ -12,6 +12,7 @@ describe("UserService", () => {
         name: "test-username1",
         email: "test-email1@iwantmymtg.com",
         password: "abCD12#$",
+        role: UserRole.User,
     });
 
     const existingUser: User = new User({
@@ -30,20 +31,11 @@ describe("UserService", () => {
     });
 
     const mockUserRepository: UserRepositoryPort = {
-        create: jest.fn().mockResolvedValue(mockUser),
-        findByEmail: jest.fn().mockResolvedValue(mockUser),
-        findById: jest.fn().mockResolvedValue(mockUser),
+        create: jest.fn().mockResolvedValue(existingUser),
+        findByEmail: jest.fn().mockResolvedValue(existingUser),
+        findById: jest.fn().mockResolvedValue(existingUser),
         delete: jest.fn(),
-        update: jest.fn().mockImplementation((user: User): Promise<User> => {
-            const inputUser: User = new User({
-                id: user.id ?? mockUser.id,
-                name: user.name ?? mockUser.name,
-                email: user.email ?? mockUser.email,
-                role: user.role ?? mockUser.role,
-                password: user.password ?? mockUser.password,
-            });
-            return Promise.resolve(inputUser);
-        })
+        update: jest.fn().mockImplementation(async (user: User) => user),
     };
 
     beforeEach(async () => {
@@ -81,27 +73,23 @@ describe("UserService", () => {
     });
 
     it("update should save given user and return result after update", async () => {
-        const updateUserDto: User = new User({
+        const updateUser: User = new User({
             id: mockUser.id,
             name: mockUser.name,
             email: "updated-email1@iwantmymtg.com",
+            role: mockUser.role,
         });
-        const expectedUserDto: User = { ...existingUser, email: updateUserDto.email };
+        const expectedUser: User = { ...existingUser, email: updateUser.email };
 
-        await expect(service.update(updateUserDto)).resolves.toEqual(expectedUserDto);
+        await expect(service.update(updateUser)).resolves.toEqual(expectedUser);
 
         const repoSpy = jest.spyOn(repository, "update");
-        const repoInputUser: User = new User({
-            id: updateUserDto.id,
-            name: updateUserDto.name,
-            email: updateUserDto.email,
-        });
-        expect(repoSpy).toHaveBeenCalledWith(repoInputUser);
+        expect(repoSpy).toHaveBeenCalledWith(updateUser);
     });
 
     it("updatePassword should update password for given user", async () => {
         const repoSpy = jest.spyOn(repository, "update");
-        await expect(service.updatePassword(mockUser.id, "newPassword")).resolves.toBe(true);
+        await expect(service.updatePassword(mockUser, "newPassword")).resolves.toBe(true);
         expect(repoSpy).toHaveBeenCalled();
     });
 

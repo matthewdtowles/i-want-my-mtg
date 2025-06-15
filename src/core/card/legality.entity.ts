@@ -4,7 +4,7 @@ import { validateInit } from "src/shared/utils/validation.util";
 
 export class Legality {
     // TODO: review if should be readonly
-    cardId: string;
+    readonly cardId: string;
     readonly format: Format;
     readonly status: LegalityStatus;
 

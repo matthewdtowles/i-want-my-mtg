@@ -3,14 +3,14 @@ import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity"
 
 export class UserMapper {
     static toCore(ormUser: UserOrmEntity): User {
-        return {
+        return new User({
             id: ormUser.id,
             name: ormUser.name,
             email: ormUser.email,
             role: ormUser.role,
             // TODO: ??
-            password: ormUser.password,
-        };
+            // password: ormUser.password,
+        });
     }
 
     static toOrmEntity(coreUser: User): UserOrmEntity {

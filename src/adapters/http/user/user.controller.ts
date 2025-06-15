@@ -18,6 +18,7 @@ import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/au
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
 import { CreateUserDto, UserDto } from "src/adapters/http/user/user.dto";
+import { UserMapper } from "src/adapters/http/user/user.mapper";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
@@ -154,7 +155,7 @@ export class UserController {
             if (!req || !req.user || !req.user.id) {
                 throw new Error("Unauthorized to update user password");
             }
-            const pwdUpdated: boolean = await this.userService.updatePassword(req.user.id, password);
+            const pwdUpdated: boolean = await this.userService.updatePassword(UserMapper.dtoToEntity(req.user), password);
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,

@@ -3,6 +3,7 @@ import { AuthController } from "src/adapters/http/auth/auth.controller";
 import { AuthService } from "src/core/auth/auth.service";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { Response } from "express";
+import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
 
 describe("AuthController", () => {
     let controller: AuthController;
@@ -38,7 +39,7 @@ describe("AuthController", () => {
 
             const mockReq = { user: userDto } as any;
             const mockRes = {
-                cookie: jest.fn(),
+                cookie: jest.fn().mockReturnThis(),
                 redirect: jest.fn(),
             } as unknown as Response;
 
@@ -57,28 +58,25 @@ describe("AuthController", () => {
                 })
             );
             expect(mockRes.cookie).toHaveBeenCalledWith(
-                "authorization",
+                AUTH_TOKEN_NAME,
                 "mock-jwt-token",
                 expect.any(Object),
             );
-            expect(mockRes.redirect).toHaveBeenCalledWith("/");
+            expect(mockRes.redirect).toHaveBeenCalledWith("/user?action=login&status=200");
         });
     });
 
     describe("logout", () => {
         it("should clear the auth cookie and redirect", () => {
-            // Arrange
             const mockRes = {
                 clearCookie: jest.fn(),
                 redirect: jest.fn(),
             } as unknown as Response;
 
-            // Act
             controller.logout(mockRes);
 
-            // Assert
-            expect(mockRes.clearCookie).toHaveBeenCalledWith("authorization");
-            expect(mockRes.redirect).toHaveBeenCalled();
+            expect(mockRes.clearCookie).toHaveBeenCalledWith(AUTH_TOKEN_NAME);
+            expect(mockRes.redirect).toHaveBeenCalledWith("/?action=logout&status=200&message=Logged%20out");
         });
     });
 });

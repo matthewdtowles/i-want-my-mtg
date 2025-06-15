@@ -28,7 +28,9 @@ export class CardService {
                 card.legalities = legalitiesToSave;
                 cardsToSave.push(card);
             }
-            savedEntities += await this.repository.save(cardsToSave);
+            if (cardsToSave.length > 0) {
+                savedEntities += await this.repository.save(cardsToSave);
+            }
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);

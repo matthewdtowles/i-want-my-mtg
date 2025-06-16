@@ -27,10 +27,7 @@ export class Card {
     constructor(init: Partial<Card>) {
         const requiredFields: (keyof Card)[] = [
             "id",
-            "hasFoil",
-            "hasNonFoil",
             "imgSrc",
-            "isReserved",
             "legalities",
             "name",
             "number",
@@ -40,10 +37,10 @@ export class Card {
         ];
         validateInit(init, requiredFields);
         this.id = init.id;
-        this.hasFoil = init.hasFoil;
-        this.hasNonFoil = init.hasNonFoil;
+        this.hasFoil = init.hasFoil ?? false;
+        this.hasNonFoil = init.hasNonFoil ?? false;
         this.imgSrc = init.imgSrc;
-        this.isReserved = init.isReserved;
+        this.isReserved = init.isReserved ?? false;
         this.legalities = init.legalities;
         this.name = init.name;
         this.number = init.number;

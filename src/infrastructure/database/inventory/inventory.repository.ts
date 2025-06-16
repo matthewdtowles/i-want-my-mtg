@@ -47,12 +47,12 @@ export class InventoryRepository implements InventoryRepositoryPort {
         // get owned percentage by dividing ownedCards by totalCards in set
 
         // iterate cards in set ? Or find all in inventory in set of set.card.id[] 
-    //     const totalCards = await this.repository.count({ where: { card.setCode: code, userId } });
-    //     if (totalCards === 0) return 0; 
-    //     const ownedCards = await this.repository.count({
-    //         where: { setCode: code, userId, quantity: MoreThan(0) },
-    //     });
-    //     return (ownedCards / totalCards) * 100;
+        //     const totalCards = await this.repository.count({ where: { card.setCode: code, userId } });
+        //     if (totalCards === 0) return 0; 
+        //     const ownedCards = await this.repository.count({
+        //         where: { setCode: code, userId, quantity: MoreThan(0) },
+        //     });
+        //     return (ownedCards / totalCards) * 100;
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {

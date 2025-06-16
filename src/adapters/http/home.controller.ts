@@ -1,9 +1,13 @@
 import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
-import { ActionStatus, SetListViewDto, SetResponseDto } from "src/adapters/http/http.types";
+import { ActionStatus } from "src/adapters/http/http.types";
+import { SetListViewDto } from "src/adapters/http/set/set-list.view.dto";
+import { SetMetaDto } from "src/adapters/http/set/set-meta.dto";
+import { SetPresenter } from "src/adapters/http/set/set.presenter";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
+
 
 @Controller()
 export class HomeController {
@@ -16,34 +20,19 @@ export class HomeController {
     @Render("setListpage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`Home page - fetch list of all sets`);
-        //     const sets: Set[] = await this.setService.findAll();
-        //     const setListResponse: SetResponseDto[] = sets.map(set => ({
-        //         code: set.code,
-        //         baseSize: set.baseSize,
-        //         block: set.block,
-        //         cards: set.cards ? set.cards : [],
-        //         keyruneCode: set.keyruneCode,
-        //         name: set.name,
-        //         parentCode: set.parentCode,
-        //         releaseDate: set.releaseDate,
-        //         totalCards: set.cards ? set.cards.length : 0,
-        //         type: set.type,
-        //         url: `/sets/${set.code.toLowerCase()}`,
-        //     }));
-        //     const _message: string = req.query.message as string ?? null;
-        // return {
-        //     authenticated: req.isAuthenticated(),
-        //     breadcrumbs: [],
-        //     message: _message,
-        //     setList: setListResponse,
-        //     status: sets ? ActionStatus.SUCCESS : ActionStatus.ERROR
-        // }
+        const allSets: Set[] = await this.setService.findAll();
+        // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
+        const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
+        const setMetaList: SetMetaDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: [],
-            message: "",
-            setList: [],
-            status: ActionStatus.SUCCESS
+            breadcrumbs: [
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+            ],
+            message: allSets ? `${allSets.length} sets found` : "No sets found",
+            setList: setMetaList,
+            status: allSets ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }
 }

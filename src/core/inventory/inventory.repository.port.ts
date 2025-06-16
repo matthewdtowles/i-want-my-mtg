@@ -42,10 +42,10 @@ export interface InventoryRepositoryPort {
      * Get percentage of owned cards for logged in user in a set
      *
      * @param code set code
-     *  @param user user entity
+     *  @param userId user ID
      * @returns percentage of owned cards in a set
      */
-    getOwnedPercentageBySetCode(code: string, user: User):Promise<number>;
+    getOwnedPercentageBySetCode(code: string, userId: number): Promise<number>;
 
     /**
      * Delete inventory entity

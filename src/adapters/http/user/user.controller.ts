@@ -16,7 +16,8 @@ import {
 import { Response } from "express";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
-import { ActionStatus, BaseViewDto, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
+import { BaseViewDto } from "src/adapters/http/base.view.dto";
+import { ActionStatus, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
 import { CreateUserDto } from "src/adapters/http/user/create-user.dto";
 import { UserDto } from "src/adapters/http/user/user.dto";
 import { AuthService } from "src/core/auth/auth.service";

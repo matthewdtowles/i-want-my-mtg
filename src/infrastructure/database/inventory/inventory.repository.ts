@@ -41,6 +41,20 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
+    async getOwnedPercentageBySetCode(code: string, userId: number): Promise<number> {
+        // for each card in set, if user has it in their inventory, +1 ownedCards
+        // get owned percentage by dividing ownedCards by totalCards in set
+
+        // iterate cards in set ? Or find all in inventory in set of set.card.id[] 
+        
+        const totalCards = await this.repository.count({ where: { card.setCode: code, userId } });
+        if (totalCards === 0) return 0; 
+        const ownedCards = await this.repository.count({
+            where: { setCode: code, userId, quantity: MoreThan(0) },
+        });
+        return (ownedCards / totalCards) * 100;
+    }
+
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
         try {
             await this.repository

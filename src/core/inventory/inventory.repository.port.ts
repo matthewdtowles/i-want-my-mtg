@@ -1,4 +1,5 @@
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { User } from "src/core/user/user.entity";
 
 export const InventoryRepositoryPort = "InventoryRepositoryPort";
 
@@ -36,6 +37,15 @@ export interface InventoryRepositoryPort {
      * @returns user's inventory entities
      */
     findByUser(userId: number): Promise<Inventory[]>;
+
+    /**
+     * Get percentage of owned cards for logged in user in a set
+     *
+     * @param code set code
+     *  @param user user entity
+     * @returns percentage of owned cards in a set
+     */
+    getOwnedPercentageBySetCode(code: string, user: User):Promise<number>;
 
     /**
      * Delete inventory entity

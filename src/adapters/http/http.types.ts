@@ -1,4 +1,5 @@
 import { IsEmail, IsString } from "class-validator";
+import { BaseViewDto } from "src/adapters/http/base.view.dto";
 import { UserDto } from "src/adapters/http/user/user.dto";
 
 
@@ -13,13 +14,6 @@ export enum ActionStatus {
 export class Breadcrumb {
     readonly label: string;
     readonly url: string;
-}
-
-export class BaseViewDto {
-    readonly authenticated: boolean = false;
-    readonly breadcrumbs: Breadcrumb[] = [];
-    readonly message: string | null;
-    readonly status: ActionStatus = ActionStatus.NONE;
 }
 
 export class CardResponseDto {
@@ -83,13 +77,6 @@ export class PriceResponseDto {
     displayValue: string;
 }
 
-export class SetMetaResponseDto {
-    readonly code: string;
-    readonly name: string;
-    readonly releaseDate: string;
-    readonly totalCards: number;
-}
-
 export class SetResponseDto {
     readonly code: string;
     readonly name: string;
@@ -100,10 +87,6 @@ export class SetResponseDto {
     readonly isNormalOnly: boolean;
     readonly isComplete: boolean;
     readonly isReserved: boolean;
-}
-
-export class SetListViewDto extends BaseViewDto {
-    readonly setList: SetMetaResponseDto[];
 }
 
 export class SetViewDto extends BaseViewDto {

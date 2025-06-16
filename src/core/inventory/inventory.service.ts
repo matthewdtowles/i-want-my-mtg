@@ -6,6 +6,7 @@ import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository
 @Injectable()
 export class InventoryService {
 
+
     private readonly LOGGER: Logger = new Logger(InventoryService.name);
 
     constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
@@ -32,6 +33,10 @@ export class InventoryService {
     async findAllCardsForUser(userId: number): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
         return userId ? await this.repository.findByUser(userId) : [];
+    }
+
+    async getOwnedPercentageBySetCode(code: string, arg1: number): Promise<number> {
+        return this.repository.getOwnedPercentageBySetCode(code, arg1);
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {

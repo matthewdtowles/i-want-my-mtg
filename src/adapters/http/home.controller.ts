@@ -24,6 +24,8 @@ export class HomeController {
         // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
         const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
         const setMetaList: SetMetaDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
+        this.LOGGER.debug(`Found ${JSON.stringify(setMetaList.length)} sets`);
+        this.LOGGER.debug(`First set: ${JSON.stringify(setMetaList[0])} sets`);
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

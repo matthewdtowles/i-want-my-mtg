@@ -17,7 +17,7 @@ import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
-import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
+import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 
 @Controller("auth")
 export class AuthController {

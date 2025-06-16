@@ -18,15 +18,15 @@ import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
-import { CreateUserRequestDto } from "src/adapters/http/user/create-user.request.dto";
-import { UpdateUserRequestDto } from "src/adapters/http/user/update-user.request.dto";
-import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
-import { UserViewDto } from "src/adapters/http/user/user.view.dto";
+import { UpdateUserRequestDto } from "src/adapters/http/user/dto/update-user.request.dto";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
 import { UserRole } from "src/shared/constants/user.role.enum";
+import { CreateUserRequestDto } from "./dto/create-user.request.dto";
+import { UserResponseDto } from "./dto/user.response.dto";
+import { UserViewDto } from "./dto/user.view.dto";
 
 
 @Controller("user")

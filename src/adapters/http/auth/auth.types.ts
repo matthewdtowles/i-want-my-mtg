@@ -1,6 +1,6 @@
 import { SetMetadata } from "@nestjs/common";
 import { Request } from "express";
-import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
+import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 
 /**
  * Name of cookie with auth bearer token

@@ -1,9 +1,7 @@
-import { Injectable } from "@nestjs/common";
 import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 
 
-@Injectable()
 export class InventoryMapper {
 
     static toEntities(inventoryItems: InventoryDto[]): Inventory[] {

@@ -11,13 +11,13 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
-import { UserDto } from "src/adapters/http/user/user.dto";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
+import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -36,7 +36,7 @@ export class AuthController {
     @Post("login")
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Attempt to authenticate ${JSON.stringify(req.user)}`);
-        const user: UserDto = req.user;
+        const user: UserResponseDto = req.user;
         if (!user || !user.id) {
             this.LOGGER.error(`User not found`);
             res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);

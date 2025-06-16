@@ -8,11 +8,12 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
+import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
-import { ActionStatus, SetResponseDto, SetViewDto } from "src/adapters/http/http.types";
-import { SetListViewDto } from "src/adapters/http/set/set-list.view.dto";
-import { SetMetaDto } from "src/adapters/http/set/set-meta.dto";
+import { SetListViewDto } from "src/adapters/http/set/dto/set-list.view.dto";
+import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
+import { SetViewDto } from "src/adapters/http/set/dto/set.view.dto";
 import { SetPresenter } from "src/adapters/http/set/set.presenter";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
@@ -35,7 +36,7 @@ export class SetController {
         const allSets: Set[] = await this.setService.findAll();
         // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
         const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
-        const setMetaList: SetMetaDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
+        const setMetaList: SetMetaResponseDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
         return {
             authenticated: req.isAuthenticated(),
             breadcrumbs: [

@@ -1,5 +1,4 @@
-// For setListPage.hbs
-export class SetMetaDto {
+export class BaseSetResponseDto {
     readonly block?: string;
     readonly code: string;
     readonly keyruneCode: string;
@@ -10,7 +9,7 @@ export class SetMetaDto {
     readonly totalValue: string;
     readonly url: string;
 
-    constructor(init: Partial<SetMetaDto>) {
+    constructor(init: Partial<BaseSetResponseDto>) {
         this.block = init.block || "";
         this.code = init.code || "";
         this.keyruneCode = init.keyruneCode || "";

@@ -7,7 +7,7 @@ import {
     IsOptional,
     IsString
 } from "class-validator";
-import { CreateLegalityDto } from "src/adapters/http/card/create-legality.dto";
+import { LegalityResponseDto } from "src/adapters/http/card/dto/legality.response.dto";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 
 
@@ -36,7 +36,7 @@ export class CreateCardDto {
     readonly isReserved: boolean;
 
     @IsOptional()
-    readonly legalities?: CreateLegalityDto[];
+    readonly legalities?: LegalityResponseDto[];
 
     @IsOptional()
     @IsString()

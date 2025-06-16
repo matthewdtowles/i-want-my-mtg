@@ -1,6 +1,6 @@
 import { IsEmail, IsString, IsStrongPassword, MinLength } from "class-validator";
 
-export class CreateUserDto {
+export class CreateUserRequestDto {
     @IsEmail()
     readonly email: string;
 

@@ -1,8 +1,8 @@
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
-import { SetMetaDto } from "src/adapters/http/set/set-meta.dto";
+import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
 
 export class SetListViewDto extends BaseViewDto {
-    readonly setList: SetMetaDto[];
+    readonly setList: SetMetaResponseDto[];
 
     constructor(init: Partial<SetListViewDto>) {
         super(init);

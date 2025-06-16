@@ -1,10 +1,10 @@
-import { SetMetaDto } from "src/adapters/http/set/set-meta.dto";
+import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
 import { Set } from "src/core/set/set.entity";
 
 export class SetPresenter {
 
-    static toSetMetaDto(set: Set, uniqueOwned: number): SetMetaDto {
-        return new SetMetaDto({
+    static toSetMetaDto(set: Set, uniqueOwned: number): SetMetaResponseDto {
+        return new SetMetaResponseDto({
             block: set.block,
             code: set.code,
             keyruneCode: set.keyruneCode,

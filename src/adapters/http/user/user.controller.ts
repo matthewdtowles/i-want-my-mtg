@@ -14,12 +14,14 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
+import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { JwtAuthGuard } from "src/adapters/http/auth/jwt.auth.guard";
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
-import { ActionStatus, UpdateUserRequestDto, UserViewDto } from "src/adapters/http/http.types";
-import { CreateUserDto } from "src/adapters/http/user/create-user.dto";
-import { UserDto } from "src/adapters/http/user/user.dto";
+import { CreateUserRequestDto } from "src/adapters/http/user/create-user.request.dto";
+import { UpdateUserRequestDto } from "src/adapters/http/user/update-user.request.dto";
+import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
+import { UserViewDto } from "src/adapters/http/user/user.view.dto";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
@@ -49,7 +51,7 @@ export class UserController {
     }
 
     @Post("create")
-    async create(@Body() createUserDto: CreateUserDto, @Res() res: Response): Promise<void> {
+    async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
         this.LOGGER.debug(`Create user called`);
         const user: User = new User({
             email: createUserDto.email,
@@ -88,7 +90,7 @@ export class UserController {
             throw new Error("Request user ID undefined, unauthorized to view user");
         }
         const id: number = req.user.id;
-        const foundUser: UserDto = await this.userService.findById(id);
+        const foundUser: UserResponseDto = await this.userService.findById(id);
         const login: boolean =
             foundUser &&
             req.query &&
@@ -128,7 +130,7 @@ export class UserController {
                 name: httpUserDto.name,
                 email: httpUserDto.email,
             });
-            const updatedUser: UserDto = await this.userService.update(updateUser);
+            const updatedUser: UserResponseDto = await this.userService.update(updateUser);
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
@@ -192,7 +194,7 @@ export class UserController {
             }
             const id: number = req.user.id;
             await this.userService.remove(id);
-            const user: UserDto = await this.userService.findById(id);
+            const user: UserResponseDto = await this.userService.findById(id);
             if (user && user.name) {
                 throw new Error("Could not delete user");
             }

@@ -1,7 +1,5 @@
-import { CardDto } from "src/adapters/http/card/card.dto";
-import { CardResponseDto, InventoryCardResponseDto } from "src/adapters/http/http.types";
-import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
-import { PriceDto } from "src/adapters/http/price/price.dto";
+import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
+import { InventoryCardResponseDto } from "src/adapters/http/inventory/inventory.response.dto";
 import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Price } from "src/core/price/price.entity";

@@ -1,6 +1,6 @@
 import { SetMetadata } from "@nestjs/common";
-import { UserDto } from "src/adapters/http/user/user.dto";
 import { Request } from "express";
+import { UserResponseDto } from "src/adapters/http/user/user.response.dto";
 
 /**
  * Name of cookie with auth bearer token
@@ -12,7 +12,7 @@ export const AUTH_TOKEN_NAME = "authorization";
  * Use when user info is needed in the request
  */
 export interface AuthenticatedRequest extends Request {
-    user: UserDto;
+    user: UserResponseDto;
 }
 
 export const Role = (...role: string[]) => SetMetadata("role", role);

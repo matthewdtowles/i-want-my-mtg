@@ -1,4 +1,4 @@
-import { Breadcrumb } from "src/adapters/http/http.types";
+import { Breadcrumb } from "src/adapters/http/breadcrumb";
 
 export function breadcrumbsForCard(setCode: string, cardName: string, cardNumber: string): Breadcrumb[] {
     return [

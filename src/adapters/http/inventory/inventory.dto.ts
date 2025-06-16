@@ -1,5 +1,5 @@
 import { IsBoolean, IsInt, IsObject, IsOptional } from "class-validator";
-import { CardDto } from "src/adapters/http/card/card.dto";
+import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 
 /**
  * Inventory item for read/write operations
@@ -19,5 +19,5 @@ export class InventoryDto {
 
     @IsOptional()
     @IsObject()
-    card?: CardDto;
+    card?: CardResponseDto;
 }

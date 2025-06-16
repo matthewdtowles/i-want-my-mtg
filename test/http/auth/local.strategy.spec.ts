@@ -2,13 +2,13 @@ import { UnauthorizedException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AuthService } from "src/core/auth/auth.service";
 import { LocalStrategy } from "src/core/auth/local.strategy";
-import { UserDto } from "src/adapters/http/user/user.dto";
+import { UserResponseDto } from "src/adapters/http/user/user.dto";
 
 describe("LocalStrategy", () => {
     let localStrategy: LocalStrategy;
     let authService: Partial<AuthService>;
 
-    const mockUserDto: UserDto = {
+    const mockUserDto: UserResponseDto = {
         id: 1,
         email: "test@example.com",
         name: "Test User",

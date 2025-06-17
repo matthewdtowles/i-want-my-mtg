@@ -17,11 +17,10 @@
         <tbody>
             {{#each cards as |card|}}
             <tr class="table-row">
-                <td class="cards-owned-td pl-2">{{>cardsOwned card=card}}</td>
+                <td class="cards-owned-td pl-2">{{>inventoryCtrl card=card}}</td>
                 <td class="inventory-item" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                     <a href="{{card.url}}">{{card.name}}</a>
                     {{>reserved card=card}}
-                    {{>foil card=card}}
                     <a href="{{card.url}}" class="card-img-link">
                         <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                     </a>

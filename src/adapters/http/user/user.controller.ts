@@ -44,7 +44,7 @@ export class UserController {
     ) { }
 
     @Get("create")
-    @Render("create-user")
+    @Render("createUser")
     createForm() {
         this.LOGGER.debug(`Create user form called`);
         return {};

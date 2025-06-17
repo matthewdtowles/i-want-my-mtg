@@ -18,7 +18,7 @@ import {
 import { Response } from "express";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
-import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
+import { InventoryRequestDto } from "src/adapters/http/inventory/inventory.dto";
 import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
 import { InventoryCardResponseDto } from "src/adapters/http/inventory/inventory.response.dto";
 import { InventoryViewDto } from "src/adapters/http/inventory/inventory.view.dto";
@@ -62,7 +62,7 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Post()
     async create(
-        @Body() createInventoryDtos: InventoryDto[],
+        @Body() createInventoryDtos: InventoryRequestDto[],
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
@@ -79,7 +79,7 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
-        @Body() updateInventoryDtos: InventoryDto[],
+        @Body() updateInventoryDtos: InventoryRequestDto[],
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {

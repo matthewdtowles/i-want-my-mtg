@@ -49,6 +49,7 @@ export class MtgJsonIngestionMapper {
         });
     }
 
+
     mapCoreSets(setLists: SetList[]): Set[] {
         const sets: Set[] = [];
         setLists.forEach((s: SetList) => sets.push(this.mapCoreSet(s)));

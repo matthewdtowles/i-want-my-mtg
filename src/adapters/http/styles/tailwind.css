@@ -155,12 +155,3 @@
 .table-row {
     @apply bg-white even:bg-teal-100 border-b border-teal-300;
 }
-
-.foil-mode .normal-price,
-.foil-mode .owned-normal {
-    display: none ;
-}
-.foil-mode .foil-price,
-.foil-mode .owned-foil {
-    display: inline ;
-}

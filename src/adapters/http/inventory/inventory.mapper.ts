@@ -1,14 +1,14 @@
-import { InventoryDto } from "src/adapters/http/inventory/inventory.dto";
+import { InventoryRequestDto } from "src/adapters/http/inventory/inventory.request.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 
 
 export class InventoryMapper {
 
-    static toEntities(inventoryItems: InventoryDto[]): Inventory[] {
-        return inventoryItems.map((item: InventoryDto) => this.toEntity(item));
+    static toEntities(inventoryItems: InventoryRequestDto[]): Inventory[] {
+        return inventoryItems.map((item: InventoryRequestDto) => this.toEntity(item));
     }
 
-    static toEntity(dto: InventoryDto): Inventory {
+    static toEntity(dto: InventoryRequestDto): Inventory {
         return new Inventory({
             cardId: dto.cardId,
             isFoil: dto.isFoil ?? false,

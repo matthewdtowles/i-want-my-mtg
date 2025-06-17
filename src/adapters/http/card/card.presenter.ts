@@ -6,31 +6,10 @@ import { Format } from "src/core/card/format.enum";
 import { Legality } from "src/core/card/legality.entity";
 import { LegalityStatus } from "src/core/card/legality.status.enum";
 
-export class CardMapper {
+export class CardPresenter {
 
     private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
-    // TODO: update - should reflect ingestion input
-    // TODO MOVE TO INGESTION
-    // dtoToEntity(cardDto: CreateCardDto): Card {
-    //     const card: Card = new Card({
-    //         id: cardDto.uuid,
-    //         artist: cardDto.artist,
-    //         hasFoil: cardDto.hasFoil,
-    //         hasNonFoil: cardDto.hasNonFoil,
-    //         imgSrc: this.buildImgSrc(cardDto, CardImgType.SMALL),
-    //         isReserved: cardDto.isReserved,
-    //         manaCost: cardDto.manaCost,
-    //         name: cardDto.name,
-    //         number: cardDto.number,
-    //         oracleText: cardDto.oracleText,
-    //         // order: cardDto.order,
-    //         rarity: this.convertToCardRarity(cardDto.rarity),
-    //         setCode: cardDto.setCode,
-    //         type: cardDto.type,
-    //     });
-    //     return card;
-    // }
     // static toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
     //     return dtos?.reduce((entities: Legality[], dto: CreateLegalityDto) => {
     //         if (this.isValidLegalityDto(dto)) {

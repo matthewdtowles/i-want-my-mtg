@@ -1,27 +1,32 @@
-import { LegalityResponseDto } from "src/adapters/http/card/dto/legality.response.dto";
+import { CardInventoryInfo } from "src/adapters/http/card/dto/card.inventory.info";
+import { PriceResponseDto } from "src/adapters/http/price/price.response.dto";
 
+// Base card response DTO for HBS views
 export class CardResponseDto {
-    cardId: string;
-    artist?: string;
+    readonly cardId: string;
+    readonly imgSrc: string;
+    readonly inventoryInfo?: CardInventoryInfo;
+    readonly isReserved: boolean;
+    readonly manaCost: string[];
+    readonly name: string;
+    readonly number: string;
+    readonly price?: PriceResponseDto;
+    readonly rarity: string;
+    readonly setCode: string;
+    readonly type: string;
+    readonly url: string;
 
-    imgSrc: string;
-    isReserved: boolean;
-    legality: LegalityResponseDto[];
-    manaCost: string[];
-    name: string;
-    number: string;
-    oracleText?: string;
-    rarity: string;
-    setCode: string;
-    setName: string;
-    type: string;
-    // TODO HOW ARE WE GOING TO HANDLE PRICES AND FOIL/NORMAL AND INVENTORY on CARD PAGE?11
-    // readonly foilPrice: PriceResponseDto;
-    // readonly normalPrice: PriceResponseDto;
-    // readonly url: string; <<< ONLY USED BY otherPrintings on card page 
-    // not defined but referenced: 
-    // isFoil in foil.hbs, price.hbs, inventoryCtrl.hbs, cardsOwned.hbs
-    // hidden in price.hbs, inventoryCtrl.hbs
-    // displayValue in price.hbs
-    // quantity in cardsOwned.hbs
+    constructor(init: Partial<CardResponseDto>) {
+        this.cardId = init.cardId || "";
+        this.imgSrc = init.imgSrc || "";
+        this.isReserved = init.isReserved || false;
+        this.manaCost = init.manaCost || [];
+        this.name = init.name || "";
+        this.number = init.number || "";
+        this.price = init.price ? new PriceResponseDto(init.price) : undefined;
+        this.rarity = init.rarity || "";
+        this.setCode = init.setCode || "";
+        this.type = init.type || "";
+        this.url = init.url || "";
+    }
 }

@@ -6,7 +6,6 @@ import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository
 @Injectable()
 export class InventoryService {
 
-
     private readonly LOGGER: Logger = new Logger(InventoryService.name);
 
     constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }

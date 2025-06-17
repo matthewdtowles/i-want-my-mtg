@@ -8,9 +8,15 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
+import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
+import { CardPresenter } from "src/adapters/http/card/card.presenter";
+import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 import { CardViewDto } from "src/adapters/http/card/dto/card.view.dto";
+import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";
+import { breadcrumbsForCard } from "src/adapters/http/view.util";
+import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
 
@@ -23,33 +29,6 @@ export class CardController {
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
     ) { }
 
-    @UseGuards(UserGuard)
-    @Get(":id")
-    @Render("card")
-    async findOne(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<CardViewDto> {
-
-        // this.LOGGER.debug(`findOne ${id}`);
-        // const userId = req.user ? req.user.id : 0;
-        // let card: CardResponseDto;
-        // if (userId > 0) {
-        //     const inventoryDto: Inventory[] = await this.inventoryService.findForUser(userId, id);
-        //     card = HttpPresenter.toCardResponseDto([coreCard]);
-        // } else {
-        //     const coreCard: Card = await this.cardService.findById(id);
-        //     card = HttpPresenter.toCardResponseDto(coreCard);
-        // }
-        // const allPrintings: CardResponseDto[] = this.mapper.entitiesToDtos(await this.cardService.findAllWithName(card.name));
-
-        // return {
-        //     authenticated: req.isAuthenticated(),
-        //     breadcrumbs: breadcrumbsForCard(card.setCode, card.name, card.number),
-        //     card,
-        //     message: HttpStatus.OK ? "Card found" : "Card not found",
-        //     otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== card.setCode),
-        //     status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        // };
-        throw new Error("Card by ID not implemented yet");
-    }
 
     @UseGuards(UserGuard)
     @Get(":setCode/:setNumber")
@@ -61,19 +40,24 @@ export class CardController {
     ): Promise<CardViewDto> {
 
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
-        // const userId = req.user ? req.user.id : 0;
-        // const _card: InventoryCardResponseDto = await this.inventoryService
-        //     .findInventoryCardBySetNumber(setCode, setNumber, userId);
-        // const allPrintings: CardDto[] = await this.cardService.findAllWithName(_card.name);
+        const userId = req.user ? req.user.id : 0;
+        // TODO fix whatever we are supposed to call here
+        const _card: SingleCardResponseDto = await this.inventoryService
+            .findInventoryCardBySetNumber(setCode, setNumber, userId);
+        // TODO: impl toCardResponse in CardPresenter!!!!
+        const allPrintings: Card[] = await this.cardService.findAllWithName(_card.name);
+        const otherPrinings: CardResponseDto[] = allPrintings
+            .filter((card: Card) => card.setCode !== setCode)
+            .map((card: Card) => CardPresenter.toCardResponse(card).fromCard(card, userId));
 
-        // return {
-        //     authenticated: req.isAuthenticated(),
-        //     breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
-        //     card: _card,
-        //     message: HttpStatus.OK ? "Card found" : "Card not found",
-        //     otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
-        //     status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        // };
+        return {
+            authenticated: req.isAuthenticated(),
+            breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
+            card: _card,
+            message: HttpStatus.OK ? "Card found" : "Card not found",
+            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
+            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+        };
         throw new Error("Card by set code and number not implemented yet");
     }
 }

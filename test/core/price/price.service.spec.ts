@@ -32,7 +32,7 @@ describe("PriceService", () => {
                     provide: CardRepositoryPort,
                     useValue: {
                         findById: jest.fn(),
-                        findByIds: jest.fn(),
+                        verifyCardsExist: jest.fn(),
                     },
                 },
             ],
@@ -50,41 +50,26 @@ describe("PriceService", () => {
     it("should save averaged prices with normal and/or foil", async () => {
         const _date: Date = new Date("2024-05-05");
         const dtos: Price[] = [
-            new Price({ cardId: 'uuid-1', date: _date, normal: 1.1, }),
-            new Price({ cardId: 'uuid-2', date: _date, foil: 2.2 }),
+            new Price({ cardId: "uuid-1", date: _date, normal: 1.1, }),
+            new Price({ cardId: "uuid-2", date: _date, foil: 2.2 }),
         ];
-        const mockCards: Card[] = [];
-        dtos.forEach((dto, i) => {
-            const card: Card = new Card({
-                id: dto.cardId,
-                order: i + 1,
-                hasFoil: !!dto.foil,
-                hasNonFoil: !!dto.normal,
-                imgSrc: "imgsrc",
-                isReserved: false,
-                legalities: [],
-                name: "Card Name " + (i + 1),
-                number: String(i + 1),
-                rarity: CardRarity.Common,
-                setCode: "SET", 
-                type: "type",
-            });
-            mockCards.push(card);
-        });
-        mockCardRepo.findByIds.mockResolvedValue(mockCards);
+        const existingCardIds: Set<string> = new Set(dtos.map(dto => dto.cardId));
+        mockCardRepo.verifyCardsExist.mockResolvedValue(existingCardIds);
 
         await subject.save(dtos);
+
+        expect(mockCardRepo.verifyCardsExist).toHaveBeenCalledWith(["uuid-1", "uuid-2"]);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { cardId: mockCards[0].id, date: dtos[0].date, normal: 1.1, foil: null },
-            { cardId: mockCards[1].id, date: dtos[1].date, normal: null, foil: 2.2 },
+            { cardId: "uuid-1", date: dtos[0].date, normal: 1.1, foil: null },
+            { cardId: "uuid-2", date: dtos[1].date, normal: null, foil: 2.2 },
         ]);
     });
 
     it("should skip unknown card UUIDs", async () => {
         const dtos: Price[] = [
-            new Price({ cardId: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 }),
+            new Price({ cardId: "uuid-x", date: new Date("2024-01-01"), normal: 1.1 }),
         ];
-        mockCardRepo.findByIds.mockResolvedValue([]);
+        mockCardRepo.verifyCardsExist.mockResolvedValue(new Set());
 
         await subject.save(dtos);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([]);

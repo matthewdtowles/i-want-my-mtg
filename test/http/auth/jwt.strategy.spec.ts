@@ -1,9 +1,9 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
+import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 import { JwtPayload } from "src/core/auth/auth.types";
 import { JwtStrategy } from "src/core/auth/jwt.strategy";
-import { UserResponseDto } from "src/adapters/http/user/user.dto";
 import { UserService } from "src/core/user/user.service";
 
 const mockUserDto: UserResponseDto = {

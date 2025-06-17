@@ -1,10 +1,12 @@
-import { Inject } from "@nestjs/common";
+import { Inject, Logger } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Price } from "src/core/price/price.entity";
 import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 
 export class PriceService {
+
+    private readonly LOGGER = new Logger(PriceService.name);
 
     constructor(
         @Inject(PriceRepositoryPort) private readonly priceRepository: PriceRepositoryPort,
@@ -17,11 +19,10 @@ export class PriceService {
      */
     async save(prices: Price[]): Promise<void> {
         if (0 === prices.length) return;
-        const uuids: string[] = [...new Set(prices.map((p) => p.cardId))];
-        const cards: Card[] = await this.cardRepository.findByIds(uuids);
-        const cardMap: Map<string, number> = new Map(cards.map((c) => [c.id, c.order]));
+        const cardIds: string[] = [...new Set(prices.map((p) => p.cardId))];
+        const existingCardIds: Set<string> = await this.cardRepository.verifyCardsExist(cardIds);
         const priceEntities: Price[] = prices
-            .filter((p) => cardMap.has(p.cardId))
+            .filter((p) => existingCardIds.has(p.cardId))
             .map((p) => ({
                 cardId: p.cardId,
                 foil: !isNaN(p.foil) ? p.foil : null,

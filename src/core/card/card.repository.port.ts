@@ -24,13 +24,6 @@ export interface CardRepositoryPort {
     findById(id: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * 
-     * @param ids
-     * @returns card entities with id in ids, empty array if not found
-     */
-    findByIds(ids: string[]): Promise<Card[]>;
-
-    /**
      * @param code three letter set code
      * @returns card entities in set with code
      */
@@ -49,6 +42,12 @@ export interface CardRepositoryPort {
      * @returns card entity in set with code and card number in set
      */
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
+
+    /**
+     * @param ids of cards to verify existence
+     * @returns Set of card IDs with ID in IDs
+     */
+    verifyCardsExist(ids: string[]): Promise<Set<string>>;
 
     /**
      * Remove card entity

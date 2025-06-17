@@ -33,14 +33,6 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findByIds(uuids: string[]): Promise<Card[]> {
-        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
-            where: { id: In(uuids), },
-            select: ["order", "id"],
-        });
-        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
-    }
-
     async findAllInSet(code: string): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: {
@@ -69,6 +61,16 @@ export class CardRepository implements CardRepositoryPort {
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
         return ormCard ? CardMapper.toCore(ormCard) : null;
+    }
+
+    async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
+        if (0 === cardIds.length) return new Set();
+        const ormCards: CardOrmEntity[] = await this.cardRepository
+            .createQueryBuilder("card")
+            .select("card.id")
+            .where("card.id IN (:...ids)", { ids: cardIds })
+            .getMany();
+        return new Set(ormCards.map((c: CardOrmEntity) => c.id));
     }
 
     async delete(id: string): Promise<void> {

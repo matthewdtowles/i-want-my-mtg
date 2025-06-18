@@ -35,7 +35,7 @@ export class CardRepository implements CardRepositoryPort {
 
     async findAllInSet(code: string): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
-            where: {
+        where: {
                 set: { code: code, },
             },
             order: { number: "ASC", },

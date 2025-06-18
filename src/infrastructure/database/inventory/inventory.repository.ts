@@ -4,7 +4,7 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { InventoryMapper } from "src/infrastructure/database/inventory/inventory.mapper";
 import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
@@ -33,26 +33,20 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
+    async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
+        const items = await this.repository.find({
+            where: { userId, cardId: In(cardIds) },
+            relations: ["card"],
+        });
+        return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
+    }
+
     async findByUser(userId: number): Promise<Inventory[]> {
         const items = await this.repository.find({
             where: { userId },
             relations: ["card"],
         });
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
-    }
-
-    async getOwnedPercentageBySetCode(code: string, userId: number): Promise<number> {
-        throw new Error("Method not implemented.");
-        // for each card in set, if user has it in their inventory, +1 ownedCards
-        // get owned percentage by dividing ownedCards by totalCards in set
-
-        // iterate cards in set ? Or find all in inventory in set of set.card.id[] 
-        //     const totalCards = await this.repository.count({ where: { card.setCode: code, userId } });
-        //     if (totalCards === 0) return 0; 
-        //     const ownedCards = await this.repository.count({
-        //         where: { setCode: code, userId, quantity: MoreThan(0) },
-        //     });
-        //     return (ownedCards / totalCards) * 100;
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {

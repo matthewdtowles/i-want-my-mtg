@@ -1,5 +1,5 @@
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { User } from "src/core/user/user.entity";
+
 
 export const InventoryRepositoryPort = "InventoryRepositoryPort";
 
@@ -7,6 +7,7 @@ export const InventoryRepositoryPort = "InventoryRepositoryPort";
  * Persistence layer for inventory entity
  */
 export interface InventoryRepositoryPort {
+
     /**
      * Create inventory entities, update if they exist
      *
@@ -33,19 +34,19 @@ export interface InventoryRepositoryPort {
     findByCard(userId: number, cardId: string): Promise<Inventory[]>;
 
     /**
+     * Find user inventory items in given set of card IDs
+     *
+     * @param userId
+     * @param cardIds
+     * @returns user's inventory entities matching card IDs
+     */
+    findByCards(userId: number, cardIds: string[]): Promise<Inventory[]>;
+
+    /**
      * @param userId
      * @returns user's inventory entities
      */
     findByUser(userId: number): Promise<Inventory[]>;
-
-    /**
-     * Get percentage of owned cards for logged in user in a set
-     *
-     * @param code set code
-     *  @param userId user ID
-     * @returns percentage of owned cards in a set
-     */
-    getOwnedPercentageBySetCode(code: string, userId: number): Promise<number>;
 
     /**
      * Delete inventory entity

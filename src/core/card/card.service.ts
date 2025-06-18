@@ -54,6 +54,22 @@ export class CardService {
         }
     }
 
+    async findAllInSet(code: string): Promise<Card[]> {
+        try {
+            return await this.repository.findAllInSet(code);
+        } catch (error) {
+            throw new Error(`Error finding cards in set ${code}: ${error.message}`);
+        }
+    }
+
+    async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
+        try {
+            return await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
+        } catch (error) {
+            throw new Error(`Error finding card with set code ${code} and number ${number}: ${error.message}`);
+        }
+    }
+
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map((leg: Legality) => {
             if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)

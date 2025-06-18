@@ -24,4 +24,15 @@ export class SetPresenter {
         return 0;
     }
 
+    // private static setEntityToDto(set: Set): SetDto {
+    //     return {
+    //         ...set,
+    //         cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
+    //         url: this.buildSetUrl(set),
+    //     };
+    // }
+
+    // private static buildSetUrl(set: Set): string {
+    //     return `/set/${set.code.toLowerCase()}`;
+    // }
 }

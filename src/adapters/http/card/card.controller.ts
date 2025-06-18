@@ -42,20 +42,19 @@ export class CardController {
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
         const userId = req.user ? req.user.id : 0;
         // TODO fix whatever we are supposed to call here
-        const _card: SingleCardResponseDto = await this.inventoryService
-            .findInventoryCardBySetNumber(setCode, setNumber, userId);
-        // TODO: impl toCardResponse in CardPresenter!!!!
-        const allPrintings: Card[] = await this.cardService.findAllWithName(_card.name);
-        const otherPrinings: CardResponseDto[] = allPrintings
+        const coreCard: Card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(coreCard).fromCard(coreCard, userId);
+        const allPrintings: Card[] = await this.cardService.findAllWithName(singleCard.name);
+        const _otherPrintings: CardResponseDto[] = allPrintings
             .filter((card: Card) => card.setCode !== setCode)
             .map((card: Card) => CardPresenter.toCardResponse(card).fromCard(card, userId));
 
         return {
             authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(_card.setCode, _card.name, _card.number),
-            card: _card,
+            breadcrumbs: breadcrumbsForCard(singleCard.setCode, singleCard.name, singleCard.number),
+            card: singleCard,
             message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings: allPrintings.filter((card: CardDto) => card.setCode !== setCode),
+            otherPrintings: _otherPrintings,
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
         throw new Error("Card by set code and number not implemented yet");

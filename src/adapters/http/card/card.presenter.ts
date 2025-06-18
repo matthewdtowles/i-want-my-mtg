@@ -1,4 +1,6 @@
+import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 import { LegalityResponseDto } from "src/adapters/http/card/dto/legality.response.dto";
+import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";
 import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardRarity } from "src/core/card/card.rarity.enum";
@@ -9,6 +11,39 @@ import { LegalityStatus } from "src/core/card/legality.status.enum";
 export class CardPresenter {
 
     private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
+
+    static toCardResponse(card: Card): CardResponseDto {
+        const response: CardResponseDto = new CardResponseDto({
+            cardId: card.id,
+            imgSrc: this.buildImgSrc(card, CardImgType.SMALL),
+            inventoryInfo: card.inventoryInfo,
+            isReserved: card.isReserved,
+            manaCost: card.manaCost ? this.manaForView(card.manaCost) : [],
+            name: card.name,
+            number: card.number,
+            price: card.prices?.[0],
+            rarity: card.rarity ? this.convertToCardRarity(card.rarity).toLowerCase() : "",
+            setCode: card.setCode,
+            type: card.type,
+            url: this.buildCardUrl(card),
+        });
+        return response;
+    }
+
+    static toSingleCardResponse(card: Card): SingleCardResponseDto {
+        const response: SingleCardResponseDto = new SingleCardResponseDto({
+            ...this.toCardResponse(card),
+            legalities: card.legalities?.map(legality => new LegalityResponseDto({
+                cardId: legality.cardId,
+                format: legality.format ? this.convertToFormat(legality.format).toLowerCase() : "",
+                status: legality.status ? this.convertToLegalityStatus(legality.status).toLowerCase() : "",
+            })) || [],
+            artist: card.artist,
+            oracleText: card.oracleText || "",
+            setName: card.set?.name || "",
+        });
+        return response;
+    }
 
     // static toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
     //     return dtos?.reduce((entities: Legality[], dto: CreateLegalityDto) => {
@@ -65,32 +100,24 @@ export class CardPresenter {
     //     return filledLegalities;
     // }
 
-    // private static setEntityToDto(set: Set): SetDto {
-    //     return {
-    //         ...set,
-    //         cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
-    //         url: this.buildSetUrl(set),
-    //     };
-    // }
 
-    // private static manaForView(manaCost: string): string[] | null {
-    //     return typeof manaCost === "string" ? manaCost
-    //         .toLowerCase()
-    //         .trim()
-    //         .replaceAll("/", "")
-    //         .replace("{", "")
-    //         .replaceAll("}", "")
-    //         .split("{")
-    //         : null;
-    // }
 
-    // private static buildCardUrl(card: Card): string {
-    //     return `/card/${card.setCode.toLowerCase()}/${card.number}`;
-    // }
+    private static manaForView(manaCost: string): string[] | null {
+        return typeof manaCost === "string" ? manaCost
+            .toLowerCase()
+            .trim()
+            .replaceAll("/", "")
+            .replace("{", "")
+            .replaceAll("}", "")
+            .split("{")
+            : null;
+    }
 
-    // private static buildSetUrl(set: Set): string {
-    //     return `/set/${set.code.toLowerCase()}`;
-    // }
+    private static buildCardUrl(card: Card): string {
+        return `/card/${card.setCode.toLowerCase()}/${card.number}`;
+    }
+
+
 
     private static buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;

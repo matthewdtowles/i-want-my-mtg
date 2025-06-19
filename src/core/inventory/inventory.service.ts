@@ -70,7 +70,7 @@ export class InventoryService {
         if (completionRate >= 100) {
             return 99;
         }
-        return completionRate; 
+        return completionRate;
     }
 
     /**
@@ -109,7 +109,7 @@ export class InventoryService {
         if (userId && cardId) {
             try {
                 await this.repository.delete(userId, cardId, isFoil);
-                const foundItem = await this.repository.findOne(userId, cardId, isFoil);
+                const foundItem: Inventory | null = await this.repository.findOne(userId, cardId, isFoil);
                 if (!foundItem) {
                     result = true;
                 }

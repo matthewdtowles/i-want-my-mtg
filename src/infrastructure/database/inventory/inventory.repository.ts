@@ -20,7 +20,6 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null> {
         const item: InventoryOrmEntity = await this.repository.findOne({
             where: { userId, cardId, isFoil },
-            relations: ["card"],
         });
         return item ? InventoryMapper.toCore(item) : null;
     }
@@ -28,7 +27,6 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async findByCard(userId: number, cardId: string): Promise<Inventory[]> {
         const items = await this.repository.find({
             where: { userId, cardId },
-            relations: ["card"],
         });
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
@@ -36,7 +34,6 @@ export class InventoryRepository implements InventoryRepositoryPort {
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
         const items = await this.repository.find({
             where: { userId, cardId: In(cardIds) },
-            relations: ["card"],
         });
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }

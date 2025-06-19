@@ -7,100 +7,79 @@ import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Format } from "src/core/card/format.enum";
 import { Legality } from "src/core/card/legality.entity";
 import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { Price } from "src/core/price/price.entity";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 export class CardPresenter {
 
     private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
 
-    static toCardResponse(card: Card): CardResponseDto {
-        const response: CardResponseDto = new CardResponseDto({
+    static toCardResponse(card: Card, inventory: Inventory[]): CardResponseDto {
+        if (!card) {
+            throw new Error("Card is required to create CardResponseDto");
+        }
+        const price: Price | undefined = card.prices ? card.prices[0] : undefined;
+        return new CardResponseDto({
             cardId: card.id,
             imgSrc: this.buildImgSrc(card, CardImgType.SMALL),
-            inventoryInfo: card.inventoryInfo,
             isReserved: card.isReserved,
             manaCost: card.manaCost ? this.manaForView(card.manaCost) : [],
             name: card.name,
             number: card.number,
-            price: card.prices?.[0],
             rarity: card.rarity ? this.convertToCardRarity(card.rarity).toLowerCase() : "",
             setCode: card.setCode,
             type: card.type,
             url: this.buildCardUrl(card),
+            foilPrice: toDollar(price?.foil),
+            foilQuantity: card.hasFoil && inventory ? inventory.find(item => item.isFoil)?.quantity || 0 : 0,
+            normalPrice: toDollar(price?.normal),
+            normalQuantity: card.hasNonFoil && inventory ? inventory.find(item => !item.isFoil)?.quantity || 0 : 0,
         });
-        return response;
     }
 
-    static toSingleCardResponse(card: Card): SingleCardResponseDto {
-        const response: SingleCardResponseDto = new SingleCardResponseDto({
-            ...this.toCardResponse(card),
-            legalities: card.legalities?.map(legality => new LegalityResponseDto({
-                cardId: legality.cardId,
-                format: legality.format ? this.convertToFormat(legality.format).toLowerCase() : "",
-                status: legality.status ? this.convertToLegalityStatus(legality.status).toLowerCase() : "",
-            })) || [],
+    static toSingleCardResponse(card: Card, inventory: Inventory[]): SingleCardResponseDto {
+        return new SingleCardResponseDto({
+            ...this.toCardResponse(card, inventory),
+            legalities: this.fillMissingFormats(card),
             artist: card.artist,
             oracleText: card.oracleText || "",
             setName: card.set?.name || "",
         });
-        return response;
     }
 
-    // static toLegalityEntities(dtos: CreateLegalityDto[]): Legality[] {
-    //     return dtos?.reduce((entities: Legality[], dto: CreateLegalityDto) => {
-    //         if (this.isValidLegalityDto(dto)) {
-    //             const entity: Legality = this.toLegalityEntity(dto);
-    //             if (entity) entities.push(entity);
-    //         }
-    //         return entities;
-    //     }, []);
-    // }
+    static toLegalityDtos(entities: Legality[]): LegalityResponseDto[] {
+        return entities?.reduce((dtos: LegalityResponseDto[], entity: Legality) => {
+            if (this.isValidLegalityEntity(entity)) {
+                const dto: LegalityResponseDto = this.toLegalityDto(entity);
+                if (dto) dtos.push(dto);
+            }
+            return dtos;
+        }, []);
+    }
 
-    // static toLegalityEntity(dto: CreateLegalityDto): Legality {
-    //     return new Legality({
-    //         cardId: dto.cardId,
-    //         format: this.convertToFormat(dto.format),
-    //         status: this.convertToLegalityStatus(dto.status),
-    //     });
-    // }
+    static toLegalityDto(entity: Legality): LegalityResponseDto {
+        const dto: LegalityResponseDto = {
+            cardId: entity?.cardId,
+            format: entity?.format,
+            status: entity?.status,
+        };
+        return dto;
+    }
 
-    // static toLegalityDtos(entities: Legality[]): CreateLegalityDto[] {
-    //     return entities?.reduce((dtos: CreateLegalityDto[], entity: Legality) => {
-    //         if (this.isValidLegalityEntity(entity)) {
-    //             const dto: CreateLegalityDto = this.toLegalityDto(entity);
-    //             if (dto) dtos.push(dto);
-    //         }
-    //         return dtos;
-    //     }, []);
-    // }
-
-    // static toLegalityDto(entity: Legality): CreateLegalityDto {
-    //     const dto: CreateLegalityDto = {
-    //         cardId: entity?.cardId,
-    //         format: entity?.format,
-    //         status: entity?.status,
-    //     };
-    //     return dto;
-    // }
-
-    // private static fillMissingFormats(card: CardDto): CreateLegalityDto[] {
-    //     const existingLegalities: CreateLegalityDto[] = card.legalities || [];
-    //     const formats: Format[] = Object.values(Format);
-    //     const filledLegalities: CreateLegalityDto[] = formats.map(format => {
-    //         const existingLegality: CreateLegalityDto | undefined = existingLegalities.find(l => l.format === format);
-    //         if (existingLegality) {
-    //             return existingLegality;
-    //         }
-    //         const newLegality: CreateLegalityDto = {
-    //             cardId: card.id,
-    //             format: format,
-    //             status: "Not Legal"
-    //         }
-    //         return newLegality;
-    //     });
-    //     return filledLegalities;
-    // }
-
-
+    private static fillMissingFormats(card: Card): LegalityResponseDto[] {
+        const existingLegalities: LegalityResponseDto[] = card.legalities || [];
+        const formats: Format[] = Object.values(Format);
+        const filledLegalities: LegalityResponseDto[] = formats.map(format => {
+            const existingLegality: LegalityResponseDto | undefined = existingLegalities.find(l => l.format === format);
+            return existingLegality ? existingLegality : new LegalityResponseDto({
+                cardId: card.id,
+                format: format,
+                status: "Not Legal"
+            });
+        });
+        return filledLegalities;
+    }
 
     private static manaForView(manaCost: string): string[] | null {
         return typeof manaCost === "string" ? manaCost
@@ -116,8 +95,6 @@ export class CardPresenter {
     private static buildCardUrl(card: Card): string {
         return `/card/${card.setCode.toLowerCase()}/${card.number}`;
     }
-
-
 
     private static buildImgSrc(card: Card, size: CardImgType): string {
         return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;

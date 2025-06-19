@@ -16,4 +16,5 @@ export class InventoryMapper {
             userId: dto.userId,
         });
     }
+
 }

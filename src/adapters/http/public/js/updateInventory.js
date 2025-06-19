@@ -24,9 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
             let updatedQuantity = _quantity;
             try {
                 const qtyInt = parseInt(updatedQuantity);
-                const cardIdInt = parseInt(_cardId);
                 const method = qtyInt === 0 ? 'POST' : 'PATCH';
-                const updatedInventory = await updateInventory(qtyInt + 1, cardIdInt, isFoil, method);
+                const updatedInventory = await updateInventory(qtyInt + 1, _cardId, isFoil, method);
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
             } catch (error) {
                 console.error(`Error in addInventoryItem => ${error}`);
@@ -38,8 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let updatedQuantity = _quantity;
             try {
                 const qtyInt = parseInt(updatedQuantity);
-                const cardIdInt = parseInt(_cardId);
-                const updatedInventory = await updateInventory(qtyInt - 1, cardIdInt, isFoil, 'PATCH');
+                const updatedInventory = await updateInventory(qtyInt - 1, _cardId, isFoil, 'PATCH');
                 updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);

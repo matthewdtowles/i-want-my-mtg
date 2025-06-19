@@ -3,6 +3,8 @@ import { PriceResponseDto } from "src/adapters/http/price/price.response.dto";
 // Base card response DTO for HBS views
 export class CardResponseDto {
     readonly cardId: string;
+    readonly hasFoil: boolean;
+    readonly hasNormal: boolean;
     readonly imgSrc: string;
     readonly isReserved: boolean;
     readonly manaCost: string[];
@@ -13,12 +15,14 @@ export class CardResponseDto {
     readonly type: string;
     readonly url: string;
     readonly foilPrice?: string;
-    readonly foilQuantity?: number = 0;
+    readonly foilQuantity?: number;
     readonly normalPrice?: string;
-    readonly normalQuantity?: number = 0;
+    readonly normalQuantity?: number;
 
     constructor(init: Partial<CardResponseDto>) {
         this.cardId = init.cardId || "";
+        this.hasFoil = init.hasFoil || false;
+        this.hasNormal = init.hasNormal || false;
         this.imgSrc = init.imgSrc || "";
         this.isReserved = init.isReserved || false;
         this.manaCost = init.manaCost || [];

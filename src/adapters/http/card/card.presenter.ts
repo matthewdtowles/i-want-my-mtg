@@ -13,7 +13,7 @@ import { toDollar } from "src/shared/utils/formatting.util";
 
 export class CardPresenter {
 
-    private static readonly SCRYFALL_CARD_IMAGE_URL: string = "https://cards.scryfall.io";
+    private static readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 
     static toCardResponse(card: Card, inventory: Inventory[]): CardResponseDto {
         if (!card) {
@@ -22,6 +22,8 @@ export class CardPresenter {
         const price: Price | undefined = card.prices ? card.prices[0] : undefined;
         return new CardResponseDto({
             cardId: card.id,
+            hasFoil: card.hasFoil,
+            hasNormal: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, CardImgType.SMALL),
             isReserved: card.isReserved,
             manaCost: card.manaCost ? this.manaForView(card.manaCost) : [],
@@ -97,11 +99,7 @@ export class CardPresenter {
     }
 
     private static buildImgSrc(card: Card, size: CardImgType): string {
-        return `${this.SCRYFALL_CARD_IMAGE_URL}/${size}/front/${card.imgSrc}`;
-    }
-
-    private static isValidLegalityDto(dto: LegalityResponseDto): boolean {
-        return this.isValidlegality(dto?.format, dto?.status);
+        return `${this.BASE_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
 
     private static isValidLegalityEntity(entity: Legality): boolean {
@@ -119,19 +117,5 @@ export class CardPresenter {
             return rarity as CardRarity;
         }
         throw new Error(`Invalid rarity value: ${rarity}`);
-    }
-
-    private static convertToFormat(format: string): Format {
-        if (Object.values(Format).includes(format as Format)) {
-            return format as Format;
-        }
-        throw new Error(`Invalid format value: ${format}`);
-    }
-
-    private static convertToLegalityStatus(status: string): LegalityStatus {
-        if (Object.values(LegalityStatus).includes(status as LegalityStatus)) {
-            return status as LegalityStatus;
-        }
-        throw new Error(`Invalid status value: ${status}`);
     }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
@@ -9,15 +9,20 @@ import { In, Repository } from "typeorm";
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
 
+    private readonly LOGGER = new Logger(InventoryRepository.name);
+
     constructor(@InjectRepository(InventoryOrmEntity) private readonly repository: Repository<InventoryOrmEntity>) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
+        this.LOGGER.debug(`Saving ${inventoryItems.length} inventory items`);
+        this.LOGGER.debug(`Items: ${JSON.stringify(inventoryItems)}`);
         const ormItems: InventoryOrmEntity[] = inventoryItems.map((item: Inventory) => InventoryMapper.toOrmEntity(item));
         const savedItems: InventoryOrmEntity[] = await this.repository.save(ormItems);
         return savedItems.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null> {
+        this.LOGGER.debug(`Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}`);
         const item: InventoryOrmEntity = await this.repository.findOne({
             where: { userId, cardId, isFoil },
         });
@@ -25,6 +30,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     }
 
     async findByCard(userId: number, cardId: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardId: ${cardId}`);
         const items = await this.repository.find({
             where: { userId, cardId },
         });
@@ -32,6 +38,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardIds: ${cardIds}`);
         const items = await this.repository.find({
             where: { userId, cardId: In(cardIds) },
         });
@@ -39,6 +46,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     }
 
     async findByUser(userId: number): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding all inventory items for userId: ${userId}`);
         const items = await this.repository.find({
             where: { userId },
             relations: ["card"],
@@ -47,6 +55,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
+        this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`);
         try {
             await this.repository
                 .createQueryBuilder()
@@ -57,8 +66,9 @@ export class InventoryRepository implements InventoryRepositoryPort {
                 .andWhere("foil = :foil", { foil })
                 .execute();
         } catch (error) {
+            this.LOGGER.error(`Failed to delete inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`, error);
             throw new Error(`Failed to delete inventory: ${error.message}`);
         }
+        this.LOGGER.debug(`Deleted inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`);
     }
-
 }

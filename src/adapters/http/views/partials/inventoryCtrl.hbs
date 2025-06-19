@@ -1,3 +1,4 @@
+{{#if card.hasFoil}}
 <form class="quantity-form inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8"
     data-item-id="{{card.cardId}}">
 
@@ -10,11 +11,35 @@
         border-none bg-teal-300 text-white px-0
         text-sm sm:text-xs md:text-base lg:text-base
         w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16
-        focus:outline-none focus:ring-0" value="{{card.quantity}}"
+        focus:outline-none focus:ring-0" value="{{card.foilQuantity}}"
         data-id="{{card.cardId}}" />
 
-    <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
+    <input type="hidden" name="isFoil" value="true" />
     <button type="button"
         class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
 
 </form>
+{{/if}}
+
+{{#if card.hasNormal}}
+<form class="quantity-form inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8"
+    data-item-id="{{card.cardId}}">
+
+    <input type="hidden" name="cardId" value="{{card.cardId}}" />
+
+    <button type="button"
+        class="increment-quantity inventory-controller-button hover:text-purple-400 active:text-purple-600">+</button>
+
+    <input type="number" name="quantity-owned" class="quantity-owned text-center 
+        border-none bg-teal-300 text-white px-0
+        text-sm sm:text-xs md:text-base lg:text-base
+        w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16
+        focus:outline-none focus:ring-0" value="{{card.normalQuantity}}"
+        data-id="{{card.cardId}}" />
+
+    <input type="hidden" name="isFoil" value="false" />
+    <button type="button"
+        class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
+
+</form>
+{{/if}}

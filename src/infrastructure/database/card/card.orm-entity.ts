@@ -15,7 +15,7 @@ import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
 @Entity("card")
 export class CardOrmEntity {
 
-    @PrimaryColumn({ name: "uuid", unique: true })
+    @PrimaryColumn({ name: "id", unique: true })
     id: string;
 
     @Column({ nullable: true })

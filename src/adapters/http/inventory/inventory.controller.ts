@@ -67,11 +67,8 @@ export class InventoryController {
         @Req() req: AuthenticatedRequest,
     ) {
         this.LOGGER.debug(`Create inventory`);
-        this.LOGGER.debug(`Request body: ${JSON.stringify(createInventoryDtos)}`);
         this.validateAuthenticatedRequest(req);
-        this.LOGGER.debug(`User ID: ${req.user.id}`);
         const inputInvItems: Inventory[] = InventoryMapper.toEntities(createInventoryDtos, req.user.id);
-        this.LOGGER.debug(`Mapped inputInvItems: ${JSON.stringify(inputInvItems)}`);
         const createdItems: Inventory[] = await this.inventoryService.save(inputInvItems);
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
@@ -87,7 +84,6 @@ export class InventoryController {
         @Req() req: AuthenticatedRequest,
     ) {
         this.LOGGER.debug(`Update inventory`);
-        this.LOGGER.debug(`Update inventory items: ${JSON.stringify(updateInventoryDtos)}`);
         this.validateAuthenticatedRequest(req);
         const inputInvItems: Inventory[] = InventoryMapper.toEntities(updateInventoryDtos, req.user.id);
         const updatedInventory: Inventory[] = await this.inventoryService.save(inputInvItems);

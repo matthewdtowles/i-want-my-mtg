@@ -13,7 +13,6 @@ export class InventoryMapper {
 
     static toEntity(dto: InventoryRequestDto, userId: number): Inventory {
         this.LOGGER.debug(`Mapping InventoryRequestDto to Inventory entity for userId: ${userId}`);
-        this.LOGGER.debug(`Card ID: ${dto.cardId}, Is Foil: ${dto.isFoil}, Quantity: ${dto.quantity}`);
         return new Inventory({
             cardId: dto.cardId,
             isFoil: dto.isFoil ?? false,

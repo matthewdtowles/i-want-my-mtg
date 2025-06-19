@@ -15,17 +15,13 @@ export class InventoryService {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
         const toSave: Inventory[] = [];
         for (const item of inventoryItems) {
-            this.LOGGER.debug(`Processing item: ${JSON.stringify(item)}`);
             if (item.quantity > 0) {
-                this.LOGGER.debug(`Item has quantity > 0, preparing to save: ${JSON.stringify(item)}`);
                 toSave.push(item);
             } else {
-                this.LOGGER.debug(`Item has quantity <= 0, preparing to delete: ${JSON.stringify(item)}`);
                 // await omitted intentionally
                 this.repository.delete(item.userId, item.cardId, item.isFoil);
             }
         }
-        this.LOGGER.debug(`Saving ${toSave.length} inventory items`);
         return await this.repository.save(toSave);
     }
 

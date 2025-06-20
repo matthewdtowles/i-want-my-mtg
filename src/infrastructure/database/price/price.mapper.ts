@@ -3,14 +3,14 @@ import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-enti
 
 export class PriceMapper {
     static toCore(ormPrice: PriceOrmEntity): Price {
-        return {
+        return new Price({
             id: ormPrice.id,
             cardId: ormPrice.card.id,
             foil: ormPrice.foil,
             normal: ormPrice.normal,
             date: ormPrice.date,
 
-        };
+        });
     }
     static toOrmEntity(corePrice: Price): PriceOrmEntity {
         const ormEntity = new PriceOrmEntity();

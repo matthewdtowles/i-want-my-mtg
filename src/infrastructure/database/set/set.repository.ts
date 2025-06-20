@@ -32,7 +32,7 @@ export class SetRepository implements SetRepositoryPort {
             where: { code: code, },
             order: {
                 cards: {
-                    id: "ASC",
+                    order: "ASC",
                 },
             },
             relations: ["cards", "cards.prices"],

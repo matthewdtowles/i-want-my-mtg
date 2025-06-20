@@ -13,8 +13,11 @@ import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
 import { SetListViewDto } from "src/adapters/http/set/dto/set-list.view.dto";
 import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
+import { SetResponseDto } from "src/adapters/http/set/dto/set.response.dto";
 import { SetViewDto } from "src/adapters/http/set/dto/set.view.dto";
 import { SetPresenter } from "src/adapters/http/set/set.presenter";
+import { Card } from "src/core/card/card.entity";
+import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
@@ -57,19 +60,25 @@ export class SetController {
         @Req() req: AuthenticatedRequest
     ): Promise<SetViewDto> {
         this.LOGGER.debug(`findBySetCode ${setCode}`);
-        throw new Error("findBySetCode - Not implemented yet");
-        // const userId = req.user ? req.user.id : 0;
-        // const _set: SetResponseDto = await this.aggregatorService.findInventorySetByCode(setCode, userId);
-        // return {
-        //     authenticated: req.isAuthenticated(),
-        //     breadcrumbs: [
-        //         { label: "Home", url: "/" },
-        //         { label: "Sets", url: "/sets" },
-        //         { label: _set.name, url: `/sets/${setCode}` },
-        //     ],
-        //     message: _set ? `Found set: ${_set.name}` : "Set not found",
-        //     set: _set,
-        //     status: _set ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        // };
+        const userId: number = req.user ? req.user.id : 0;
+        const set: Set | null = await this.setService.findByCode(setCode);
+        if (!set) {
+            this.LOGGER.error(`Set with code ${setCode} not found`);
+            throw new Error(`Set with code ${setCode} not found`);
+        }
+        const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
+        const inventory: Inventory[] = await this.inventoryService.findByCards(userId, cardIds);
+        const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
+        return {
+            authenticated: req.isAuthenticated(),
+            breadcrumbs: [
+                { label: "Home", url: "/" },
+                { label: "Sets", url: "/sets" },
+                { label: setResonse.name, url: `/sets/${setCode}` },
+            ],
+            message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
+            set: setResonse,
+            status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+        };
     }
 }

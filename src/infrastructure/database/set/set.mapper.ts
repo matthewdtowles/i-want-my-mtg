@@ -2,11 +2,12 @@ import { Card } from "src/core/card/card.entity";
 import { Set } from "src/core/set/set.entity";
 import { CardMapper } from "src/infrastructure/database/card/card.mapper";
 import { SetOrmEntity } from "./set.orm-entity";
+import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
 
 
 export class SetMapper {
     static toCore(ormSet: SetOrmEntity): Set {
-        return {
+        return new Set({
             code: ormSet.code,
             name: ormSet.name,
             releaseDate: ormSet.releaseDate,
@@ -14,7 +15,9 @@ export class SetMapper {
             block: ormSet.block,
             baseSize: ormSet.baseSize,
             keyruneCode: ormSet.keyruneCode,
-        };
+            cards: ormSet.cards && Array.isArray(ormSet.cards) ?
+                ormSet.cards.map((c: CardOrmEntity) => CardMapper.toCore(c)) : [],
+        });
     }
 
     static toOrmEntity(coreSet: Set): SetOrmEntity {

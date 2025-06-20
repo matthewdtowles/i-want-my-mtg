@@ -1,8 +1,31 @@
+import { CardPresenter } from "src/adapters/http/card/card.presenter";
 import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
+import { SetResponseDto } from "src/adapters/http/set/dto/set.response.dto";
+import { Card } from "src/core/card/card.entity";
+import { Inventory } from "src/core/inventory/inventory.entity";
 import { Set } from "src/core/set/set.entity";
 
 export class SetPresenter {
 
+    static toSetResponseDto(set: Set, inventory: Inventory[]): SetResponseDto {
+        if (!set) {
+            throw new Error("Set is required to create SetResponseDto");
+        }
+        return new SetResponseDto({
+            block: set.block,
+            code: set.code,
+            keyruneCode: set.keyruneCode,
+            name: set.name,
+            ownedPercentage: SetPresenter.ownedPercentage(set.baseSize, inventory.length),
+            ownedValue: this.calculateOwnedValue(set.cards, inventory),
+            releaseDate: set.releaseDate,
+            totalValue: this.calculateTotalValue(set.cards),
+            url: `sets/${set.code.toLowerCase()}`,
+            cards: set.cards ? set.cards.map(card => CardPresenter.toCardResponse(card, inventory)) : [],
+        });
+    }
+
+    // TODO: get unique owned count for all sets
     static toSetMetaDto(set: Set, uniqueOwned: number): SetMetaResponseDto {
         return new SetMetaResponseDto({
             block: set.block,
@@ -24,15 +47,11 @@ export class SetPresenter {
         return 0;
     }
 
-    // private static setEntityToDto(set: Set): SetDto {
-    //     return {
-    //         ...set,
-    //         cards: set.cards ? set.cards.map(c => this.entityToDto(c, CardImgType.SMALL)) : [],
-    //         url: this.buildSetUrl(set),
-    //     };
-    // }
+    static calculateOwnedValue(cards: Card[], inventory: Inventory[]): string {
+        return "0.00"; // TODO: implement logic to calculate owned value based on cards and inventory
+    }
 
-    // private static buildSetUrl(set: Set): string {
-    //     return `/set/${set.code.toLowerCase()}`;
-    // }
+    static calculateTotalValue(cards: Card[]): string {
+        return "0.00"; // TODO: implement logic to calculate total value based on cards
+    }
 }

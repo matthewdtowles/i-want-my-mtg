@@ -7,14 +7,14 @@ import { SetMapper } from "src/infrastructure/database/set/set.mapper";
 export class CardMapper {
 
     static toCore(ormCard: CardOrmEntity): Card {
-        return {
+        return new Card({
             id: ormCard.id,
             artist: ormCard.artist,
             hasFoil: ormCard.hasFoil,
             hasNonFoil: ormCard.hasNonFoil,
             imgSrc: ormCard.imgSrc,
             isReserved: ormCard.isReserved,
-            legalities: ormCard.legalities.map(legality => (LegalityMapper.toCore(legality))),
+            legalities: ormCard.legalities ? ormCard.legalities.map(legality => (LegalityMapper.toCore(legality))) : [],
             manaCost: ormCard.manaCost,
             name: ormCard.name,
             number: ormCard.number,
@@ -24,9 +24,9 @@ export class CardMapper {
             type: ormCard.type,
             // For read operations
             order: ormCard.order,
-            prices: ormCard.prices ? ormCard.prices.map(price => (PriceMapper.toCore(price))) : undefined,
+            prices: ormCard.prices ? ormCard.prices.map(p => (PriceMapper.toCore(p))) : undefined,
             set: ormCard.set ? SetMapper.toCore(ormCard.set) : undefined,
-        };
+        });
     }
 
     static toOrmEntity(coreCard: Card): CardOrmEntity {

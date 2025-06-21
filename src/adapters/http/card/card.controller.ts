@@ -15,8 +15,11 @@ import { CardPresenter } from "src/adapters/http/card/card.presenter";
 import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 import { CardViewDto } from "src/adapters/http/card/dto/card.view.dto";
 import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";
+import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
+import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { Card } from "src/core/card/card.entity";
+import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
@@ -47,12 +50,12 @@ export class CardController {
             throw new Error(`Card with set code ${setCode} and number ${setNumber} not found`);
         }
         const inventory: Inventory[] = userId > 0 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
-        const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(coreCard, inventory);
-
+        const inventoryQuantities: InventoryQuantities = InventoryMapper.toQuantityMap(inventory)?.get(coreCard.id);
+        const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
         const allPrintings: Card[] = await this.cardService.findAllWithName(singleCard.name);
         const _otherPrintings: CardResponseDto[] = allPrintings
             .filter((card: Card) => card.setCode !== setCode)
-            .map((card: Card) => CardPresenter.toCardResponse(card, []));
+            .map((card: Card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
 
         return {
             authenticated: req.isAuthenticated(),

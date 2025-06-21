@@ -66,8 +66,11 @@ export class SetController {
             this.LOGGER.error(`Set with code ${setCode} not found`);
             throw new Error(`Set with code ${setCode} not found`);
         }
-        const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
-        const inventory: Inventory[] = await this.inventoryService.findByCards(userId, cardIds);
+        let inventory: Inventory[] = [];
+        if (userId && set.cards?.length) {
+            const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
+            inventory = await this.inventoryService.findByCards(userId, cardIds);
+        }
         const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
         return {
             authenticated: req.isAuthenticated(),

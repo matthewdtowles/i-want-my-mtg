@@ -1,7 +1,10 @@
 import { CardPresenter } from "src/adapters/http/card/card.presenter";
+import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
+import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
 import { SetResponseDto } from "src/adapters/http/set/dto/set.response.dto";
 import { Card } from "src/core/card/card.entity";
+import { CardImgType } from "src/core/card/card.img.type.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Set } from "src/core/set/set.entity";
 
@@ -11,6 +14,7 @@ export class SetPresenter {
         if (!set) {
             throw new Error("Set is required to create SetResponseDto");
         }
+        const inventoryQuantities: Map<string, InventoryQuantities> = InventoryMapper.toQuantityMap(inventory);
         return new SetResponseDto({
             block: set.block,
             code: set.code,
@@ -21,7 +25,9 @@ export class SetPresenter {
             releaseDate: set.releaseDate,
             totalValue: this.calculateTotalValue(set.cards),
             url: `sets/${set.code.toLowerCase()}`,
-            cards: set.cards ? set.cards.map(card => CardPresenter.toCardResponse(card, inventory)) : [],
+            cards: set.cards ? set.cards.map(card => {
+                return CardPresenter.toCardResponse(card, inventoryQuantities.get(card.id), CardImgType.SMALL)
+            }) : [],
         });
     }
 

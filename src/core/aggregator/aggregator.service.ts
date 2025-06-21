@@ -15,7 +15,10 @@ export class AggregatorService {
     //         cards: updatedSetCards,
     //     };
     // }
-
+    //     const updatedSetCards: InventoryCardAggregateDto[] = set.cards.map(card => {
+    //         const invItems: InventoryDto[] = setInvCards.filter(inv => inv.card.order === card.order);
+    //         return this.mapInventoryCardAggregate(card, invItems);
+    //     });
     // private mapInventoryCardAggregate(
     //     card: CardDto,
     //     inventoryItems: InventoryDto[] | InventoryDto[]

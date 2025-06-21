@@ -15,7 +15,6 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`Saving ${inventoryItems.length} inventory items`);
-        this.LOGGER.debug(`Items: ${JSON.stringify(inventoryItems)}`);
         const ormItems: InventoryOrmEntity[] = inventoryItems.map((item: Inventory) => InventoryMapper.toOrmEntity(item));
         const savedItems: InventoryOrmEntity[] = await this.repository.save(ormItems);
         return savedItems.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
@@ -38,7 +37,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardIds: ${cardIds}`);
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, ${cardIds.length} cardIds`);
         const items = await this.repository.find({
             where: { userId, cardId: In(cardIds) },
         });

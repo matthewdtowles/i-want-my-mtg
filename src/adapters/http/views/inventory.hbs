@@ -11,6 +11,7 @@
                 <th class="table-header">Name</th>
                 <th class="table-header">Set</th>
                 <th class="table-header">Price</th>
+                <th class="table-header">Foil Price</th>
                 <th class="table-header pr-2">Delete</th>
             </tr>
         </thead>
@@ -31,7 +32,8 @@
                         {{toUpperCase card.setCode}}
                     </a>
                 </td>
-                <td>{{card.displayValue}}</td>
+                <td>{{card.normalPrice}}</td>
+                <td>{{card.foilPrice}}</td>
                 <td class="delete-inventory-entry pr-2">{{>deleteInventoryEntry card=card}}</td>
             </tr>
             {{/each}}

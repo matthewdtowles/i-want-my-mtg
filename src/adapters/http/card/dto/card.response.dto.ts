@@ -2,6 +2,9 @@ import { PriceResponseDto } from "src/adapters/http/price/price.response.dto";
 
 // Base card response DTO for HBS views
 export class CardResponseDto {
+
+    private readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";
+
     readonly cardId: string;
     readonly hasFoil: boolean;
     readonly hasNormal: boolean;

@@ -17,15 +17,14 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
-import { HttpPresenter } from "src/adapters/http/http.presenter";
+import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
+import { InventoryResponseDto } from "src/adapters/http/inventory/dto/inventory.response.dto";
+import { InventoryViewDto } from "src/adapters/http/inventory/dto/inventory.view.dto";
 import { InventoryPresenter } from "src/adapters/http/inventory/inventory.presenter";
-import { InventoryCardResponseDto } from "src/adapters/http/inventory/inventory.response.dto";
-import { InventoryViewDto } from "src/adapters/http/inventory/inventory.view.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { AuthenticatedRequest, } from "../auth/auth.types";
 import { JwtAuthGuard } from "../auth/jwt.auth.guard";
-import { InventoryRequestDto } from "src/adapters/http/inventory/inventory.request.dto";
 
 
 @Controller("inventory")
@@ -42,7 +41,7 @@ export class InventoryController {
         // TODO define HttpMapper function to map entire response
         this.validateAuthenticatedRequest(req);
         const inventoryItems: Inventory[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-        const cards: InventoryCardResponseDto[] = inventoryItems.map(item => HttpPresenter.toInventoryCardHttpDto(item));
+        const cards: InventoryResponseDto[] = inventoryItems.map(item => InventoryPresenter.toInventoryResponseDto(item));
         const username = req.user.name;
         const totalValue: string = "0.00";
         return {

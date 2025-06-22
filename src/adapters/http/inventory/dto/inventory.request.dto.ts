@@ -6,14 +6,14 @@ import { IsBoolean, IsInt, IsUUID } from "class-validator";
  */
 export class InventoryRequestDto {
     @IsUUID()
-    cardId: string;
+    readonly cardId: string;
 
     @IsInt()
-    quantity: number;
+    readonly quantity: number;
 
     @IsBoolean()
-    isFoil: boolean;
+    readonly isFoil: boolean;
 
     @IsInt()
-    userId: number;
+    readonly userId: number;
 }

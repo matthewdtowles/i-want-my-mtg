@@ -48,7 +48,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         this.LOGGER.debug(`Finding all inventory items for userId: ${userId}`);
         const items = await this.repository.find({
             where: { userId },
-            relations: ["card"],
+            relations: ["card", "card.prices"],
         });
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }

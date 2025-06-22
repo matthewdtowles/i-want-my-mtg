@@ -1,9 +1,15 @@
+import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
+import { InventoryResponseDto } from "src/adapters/http/inventory/dto/inventory.response.dto";
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
-import { InventoryRequestDto } from "src/adapters/http/inventory/inventory.request.dto";
+import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
+import { Price } from "src/core/price/price.entity";
+import { toDollar } from "src/shared/utils/formatting.util";
 
 
 export class InventoryPresenter {
+    // TODO: this needs to be moved to config or constants - redefined in multiple places
+    private static readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 
     /**
      * @param inventoryItems
@@ -29,6 +35,33 @@ export class InventoryPresenter {
             isFoil: dto.isFoil ?? false,
             quantity: dto.quantity ?? 0,
             userId: userId,
+        });
+    }
+
+    static toInventoryResponseDto(inventory: Inventory): InventoryResponseDto {
+        if (!inventory) {
+            throw new Error("Inventory is required to create InventoryResponseDto");
+        }
+        if (!inventory.card) {
+            throw new Error("Inventory must have a card to create InventoryResponseDto");
+        }
+        // extract the price value from card prices where price is for foil if isFoil is true, otherwise normal price
+        const card: Card = inventory.card;
+        const priceObj: Price = card?.prices[0]
+        const priceValueRaw: number = inventory.isFoil ? priceObj?.foil : priceObj?.normal;
+        const priceValue: string = toDollar(priceValueRaw);
+        return new InventoryResponseDto({
+            cardId: inventory.cardId,
+            isFoil: inventory.isFoil,
+            quantity: inventory.quantity,
+            // extract price from card 
+            priceValue,
+            imgSrc: `${this.BASE_IMAGE_URL}/normal/front/${card.imgSrc}`,
+            isReserved: card.isReserved,
+            name: card.name,
+            rarity: card.rarity,
+            setCode: card.setCode,
+            url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
         });
     }
 

@@ -1,5 +1,3 @@
-import { validateInit } from "src/shared/utils/validation.util";
-
 export class Price {
     readonly id?: number;
     readonly cardId: string;
@@ -8,7 +6,6 @@ export class Price {
     readonly date: Date;
 
     constructor(init: Partial<Price>) {
-        validateInit(init, ["cardId"]);
         this.id = init.id;
         this.cardId = init.cardId;
         this.foil = init.foil ?? null;

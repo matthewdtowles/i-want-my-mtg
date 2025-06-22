@@ -34,15 +34,53 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         async function removeInventoryItem(_quantity, _cardId, isFoil) {
-            let updatedQuantity = _quantity;
             try {
-                const qtyInt = parseInt(updatedQuantity);
-                const updatedInventory = await updateInventory(qtyInt - 1, _cardId, isFoil, 'PATCH');
-                updatedQuantity = updatedInventory ? updatedInventory.quantity : _quantity;
+                const currentQty = parseInt(_quantity);
+                // Don't process negative quantities
+                if (isNaN(currentQty) || currentQty <= 0) {
+                    return "0";
+                }
+
+                const qtyInt = currentQty - 1;
+                console.log(`Updating quantity to ${qtyInt} for card ${_cardId}`);
+                
+                // If going to zero, use DELETE method instead
+                if (qtyInt === 0) {
+                    const response = await fetch('/inventory', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            cardId: _cardId,
+                            isFoil: isFoil,
+                        }),
+                    });
+                    
+                    if (!response.ok) {
+                        console.error(`Error in deleteInventory: ${response.statusText}`);
+                        return _quantity; // Return original on error
+                    }
+                    
+                    console.log("Item successfully deleted from inventory");
+                    return "0"; // Successfully deleted, so return 0
+                } else {
+                    // For non-zero quantities, use PATCH
+                    const updatedInventory = await updateInventory(qtyInt, _cardId, isFoil, 'PATCH');
+                    console.log("Response from update:", updatedInventory);
+                    
+                    // Handle various response scenarios
+                    if (updatedInventory && typeof updatedInventory.quantity !== 'undefined') {
+                        return updatedInventory.quantity.toString();
+                    } else {
+                        // If we got a response but no quantity, assume success with requested quantity
+                        return qtyInt.toString();
+                    }
+                }
             } catch (error) {
                 console.error(`Error in removeInventoryItem => ${error}`);
+                return _quantity; // Return original on error
             }
-            return updatedQuantity;
         }
 
         async function updateInventory(_quantity, _cardId, _isFoil, _method) {
@@ -57,11 +95,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     quantity: _quantity,
                 }]),
             });
-            if (!response.ok) {
-                console.error(`Error in updateInventory: ${response.statusText}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             try {
+                if (!response.ok) {
+                    console.error(`Error in updateInventory: ${response.statusText}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                if (!response.json) {
+                    console.error(`Error in updateInventory: response.json is not a function`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 return data && data.inventory && data.inventory[0] ? data.inventory[0] : null;
             } catch (error) {

@@ -36,7 +36,7 @@ export class InventoryService {
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`findByCards for user: ${userId}, cards: ${cardIds}`);
+        this.LOGGER.debug(`findByCards for user: ${userId}`);
         if (!userId || !cardIds || cardIds.length === 0) {
             return [];
         }

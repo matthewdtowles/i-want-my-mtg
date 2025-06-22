@@ -1,5 +1,5 @@
 import { CardPresenter } from "src/adapters/http/card/card.presenter";
-import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
+import { InventoryPresenter } from "src/adapters/http/inventory/inventory.presenter";
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
 import { SetResponseDto } from "src/adapters/http/set/dto/set.response.dto";
@@ -14,7 +14,7 @@ export class SetPresenter {
         if (!set) {
             throw new Error("Set is required to create SetResponseDto");
         }
-        const inventoryQuantities: Map<string, InventoryQuantities> = InventoryMapper.toQuantityMap(inventory);
+        const inventoryQuantities: Map<string, InventoryQuantities> = InventoryPresenter.toQuantityMap(inventory);
         return new SetResponseDto({
             block: set.block,
             code: set.code,

@@ -18,7 +18,7 @@ import {
 import { Response } from "express";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { HttpPresenter } from "src/adapters/http/http.presenter";
-import { InventoryMapper } from "src/adapters/http/inventory/inventory.mapper";
+import { InventoryPresenter } from "src/adapters/http/inventory/inventory.presenter";
 import { InventoryCardResponseDto } from "src/adapters/http/inventory/inventory.response.dto";
 import { InventoryViewDto } from "src/adapters/http/inventory/inventory.view.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -68,7 +68,7 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Create inventory`);
         this.validateAuthenticatedRequest(req);
-        const inputInvItems: Inventory[] = InventoryMapper.toEntities(createInventoryDtos, req.user.id);
+        const inputInvItems: Inventory[] = InventoryPresenter.toEntities(createInventoryDtos, req.user.id);
         const createdItems: Inventory[] = await this.inventoryService.save(inputInvItems);
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
@@ -85,7 +85,7 @@ export class InventoryController {
     ) {
         this.LOGGER.debug(`Update inventory`);
         this.validateAuthenticatedRequest(req);
-        const inputInvItems: Inventory[] = InventoryMapper.toEntities(updateInventoryDtos, req.user.id);
+        const inputInvItems: Inventory[] = InventoryPresenter.toEntities(updateInventoryDtos, req.user.id);
         const updatedInventory: Inventory[] = await this.inventoryService.save(inputInvItems);
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,

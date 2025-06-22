@@ -1,15 +1,28 @@
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { InventoryRequestDto } from "src/adapters/http/inventory/inventory.request.dto";
-import { InventoryCardResponseDto } from "src/adapters/http/inventory/inventory.response.dto";
 import { Inventory } from "src/core/inventory/inventory.entity";
 
 
-export class InventoryMapper {
+export class InventoryPresenter {
 
+    /**
+     * @param inventoryItems
+     * @param userId 
+     * @returns a list of Inventory entities based on the provided DTOs and userId.
+     * This is used for creating or updating inventory items in the database.
+     */
     static toEntities(inventoryItems: InventoryRequestDto[], userId: number): Inventory[] {
         return inventoryItems.map((item: InventoryRequestDto) => this.toEntity(item, userId));
     }
 
+    /**
+     * Converts a single InventoryRequestDto to an Inventory entity.
+     *
+     * @param dto - The InventoryRequestDto to convert.
+     * @param userId - The ID of the user who owns the inventory item.
+     * @returns An Inventory entity.
+     * This is used for creating or updating a single inventory item in the database.
+     */
     static toEntity(dto: InventoryRequestDto, userId: number): Inventory {
         return new Inventory({
             cardId: dto.cardId,
@@ -20,9 +33,7 @@ export class InventoryMapper {
     }
 
     /**
-     * Returns a 
-     *
-     * @param inventory 
+     * @param inventory
      * @returns map of cardId to foil and normal quantities owned by the user.
      */
     static toQuantityMap(inventory: Inventory[]): Map<string, InventoryQuantities> {
@@ -39,5 +50,4 @@ export class InventoryMapper {
         }
         return quantityMap;
     }
-
 }

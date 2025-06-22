@@ -69,7 +69,7 @@ export class MtgJsonIngestionMapper {
         return coreLegalities;
     }
 
-    mapCorePrice(cardUuid: string, paperPrices: Record<string, PriceList>): Price | null {
+    mapCorePrice(cardId: string, paperPrices: Record<string, PriceList>): Price | null {
         const extractedPrices: ExtractedPrices = this.extractPrices(paperPrices);
         const foilPrice: number | null = this.determinePrice(extractedPrices.foil);
         const normalPrice: number | null = this.determinePrice(extractedPrices.normal);
@@ -77,7 +77,7 @@ export class MtgJsonIngestionMapper {
             return null;
         }
         return new Price({
-            cardId: cardUuid,
+            cardId: cardId,
             foil: foilPrice,
             normal: normalPrice,
             date: new Date(this.extractDate(paperPrices)),

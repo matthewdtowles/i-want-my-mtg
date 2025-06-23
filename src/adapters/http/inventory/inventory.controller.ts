@@ -38,7 +38,6 @@ export class InventoryController {
     @Render("inventory")
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
         this.LOGGER.debug(`Find user inventory`);
-        // TODO define HttpMapper function to map entire response
         this.validateAuthenticatedRequest(req);
         const inventoryItems: Inventory[] = await this.inventoryService.findAllCardsForUser(req.user.id);
         const cards: InventoryResponseDto[] = inventoryItems.map(item => InventoryPresenter.toInventoryResponseDto(item));

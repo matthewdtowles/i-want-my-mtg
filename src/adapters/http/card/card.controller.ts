@@ -53,7 +53,7 @@ export class CardController {
         const inventoryQuantities: InventoryQuantities = InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id);
         const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
         const allPrintings: Card[] = await this.cardService.findAllWithName(singleCard.name);
-        const _otherPrintings: CardResponseDto[] = allPrintings
+        const otherPrintings: CardResponseDto[] = allPrintings
             .filter((card: Card) => card.setCode !== setCode)
             .map((card: Card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
 
@@ -62,7 +62,7 @@ export class CardController {
             breadcrumbs: breadcrumbsForCard(singleCard.setCode, singleCard.name, singleCard.number),
             card: singleCard,
             message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings: _otherPrintings,
+            otherPrintings,
             status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
         };
     }

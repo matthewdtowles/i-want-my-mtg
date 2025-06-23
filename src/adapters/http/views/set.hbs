@@ -37,8 +37,8 @@
                 </td>
                 <td class="py-2">{{>manaCost card=this}}</td>
                 <td class="py-2">{{this.rarity}}</td>
-                <td class="py-2">{{#if this.normalPrice}}${{this.normalPrice}}{{/if}}</td>
-                <td class="py-2 pr-2">{{#if this.foilPrice}}${{this.foilPrice}}{{/if}}</td>
+                <td class="py-2">{{#if this.hasNormal}}{{this.normalPrice}}{{/if}}</td>
+                <td class="py-2 pr-2">{{#if this.hasFoil}}{{this.foilPrice}}{{/if}}</td>
             </tr>
             {{/each}}
         </tbody>

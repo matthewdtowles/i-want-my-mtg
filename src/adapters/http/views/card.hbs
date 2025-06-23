@@ -46,8 +46,13 @@
         <section class="price-info md:w-1/3 md:pl-6 mb-4 md:mb-0 border-none">
             <section class="subjsection-container">
                 <h3 class="section-title">Price</h3>
-                <span>{{#if card.normalPrice}}${{card.normalPrice}}{{/if}}</span>
-                <span>{{#if card.foilPrice}}${{card.foilPrice}}{{/if}}</span>
+                <span>{{#if card.hasNormal}}{{card.normalPrice}}{{/if}}</span>
+                <span>
+                    {{#if card.hasFoil}}
+                    {{card.foilPrice}}
+                    <span class="text-xs text-white bg-purple-500 px-1 mx-1">Foil</span>
+                    {{/if}}
+                </span>
                 <section class="inventory-info">
                     {{>inventoryCtrl card=card}}
                 </section>
@@ -64,10 +69,16 @@
                 <tr class="table-row">
                     <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
                     <td class="other-printing-url py-2">
-                        <a class="table-link" href="{{p.url}}">{{p.setName}}</a>
-                        <span> ({{toUpperCase p.setCode}})</span>
+                        <a class="table-link" href="{{p.url}}">{{p.name}}</a>
+                        <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
                     </td>
-                    <td class="other-printing-price py-2 text-right">{{>price card=p}}</td>
+                    <td class="py-2">{{#if p.hasNormal}}{{p.normalPrice}}{{/if}}</td>
+                    <td class="py-2 text-right">
+                        {{#if p.hasFoil}}
+                        {{p.foilPrice}}
+                        <span class="text-xs text-white bg-purple-500 px-1 mx-1">Foil</span>
+                        {{/if}}
+                    </td>
                 </tr>
                 {{/each}}
             </tbody>

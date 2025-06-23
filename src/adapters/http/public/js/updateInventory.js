@@ -160,21 +160,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             try {
-                console.log(`10: Deleted card ${_cardId} from inventory`);
                 const data = await response.json();
-                console.log(`12: deleteInventory`);
-                console.log(`13: data => ${JSON.stringify(data)}`);
-                console.log(`14: data.cardId => ${JSON.stringify(data.cardId)}`);
-                if (data && data.cardId) {
-                    console.log(`15: data.cardId => ${JSON.stringify(data.cardId)}`);
-                    const cardId = data.cardId;
-                    console.log(`30: Deleted card ${cardId} from inventory`);
-                    const cardEl = document.querySelector(`.inventory-item[data-id='${cardId}']`);
-                    if (cardEl) {
-                        console.log(`40: Deleted card ${cardId} from inventory`);
-                        cardEl.closest('tr').remove();
-                        console.log(`50: Deleted card ${cardId} from inventory`);
-                    }
+                console.log(`Response from deleteInventory: ${JSON.stringify(data)}`);
+                const tableRow = form.closest("tr");
+                if (tableRow) {
+                    tableRow.remove();
+                    console.log(`Card ${_cardId} successfully deleted from inventory`);
+                } else {
+                    console.warn(`Could not find table row for card ${_cardId}`);
                 }
             } catch (error) {
                 console.error(`Error in deleteInventory => ${error}`);

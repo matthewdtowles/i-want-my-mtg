@@ -61,18 +61,19 @@
     </section>
     </section>
 
-    <section class="other-printings section-container">
-        <h3 class="section-title other-printings-title">Other Printings</h3>
+    <section class="section-container">
+        <h3 class="section-title">Other Printings</h3>
         <table class="table-container">
             <tbody>
                 {{#each otherPrintings as |p|}}
-{{!-- <a href="{{card.url}}" class="card-img-link">
-                        <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
-                    </a> --}}
                 <tr class="table-row">
                     <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
-                    <td class="other-printing-url py-2">
-                        <a class="table-link" href="{{p.url}}">{{p.name}}</a>
+                    <td class="card-name-link py-2" data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}">
+                        <a href="{{p.url}}">{{p.name}}</a>
+                        {{>reserved card=p}}
+                        <a href="{{p.url}}" class="card-img-link">
+                            <img src="{{p.imgSrc}}" alt="{{p.name}}" class="card-img-preview" />
+                        </a>
                         <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
                     </td>
                     <td class="py-2">{{#if p.hasNormal}}{{p.normalPrice}}{{/if}}</td>

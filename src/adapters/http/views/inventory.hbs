@@ -19,7 +19,7 @@
             {{#each cards as |card|}}
             <tr class="table-row">
                 <td class="cards-owned-td pl-2">{{>inventoryCtrl card=card}}</td>
-                <td class="inventory-item" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
+                <td class="card-name-link" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                     <a href="{{card.url}}">{{card.name}}</a>
                     {{>reserved card=card}}
                     <a href="{{card.url}}" class="card-img-link">

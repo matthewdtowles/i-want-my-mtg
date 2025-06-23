@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentImgLink = null;
 
-    document.querySelectorAll(".inventory-item").forEach(item => {
+    document.querySelectorAll(".card-name-link").forEach(item => {
         const imgLink = item.querySelector(".card-img-link");
         const imgPreview = imgLink.querySelector(".card-img-preview");
 

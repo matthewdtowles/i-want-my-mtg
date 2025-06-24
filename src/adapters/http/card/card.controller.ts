@@ -1,37 +1,21 @@
 import {
     Controller,
-    Get,
-    HttpStatus,
-    Inject,
+    Get, Inject,
     Logger,
     Param, Render,
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
 import { UserGuard } from "src/adapters/http/auth/user.guard";
-import { CardPresenter } from "src/adapters/http/card/card.presenter";
-import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
+import { CardOrchestrator } from "src/adapters/http/card/card.orchestrator";
 import { CardViewDto } from "src/adapters/http/card/dto/card.view.dto";
-import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";
-import { InventoryPresenter } from "src/adapters/http/inventory/inventory.presenter";
-import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
-import { breadcrumbsForCard } from "src/adapters/http/view.util";
-import { Card } from "src/core/card/card.entity";
-import { CardImgType } from "src/core/card/card.img.type.enum";
-import { CardService } from "src/core/card/card.service";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { InventoryService } from "src/core/inventory/inventory.service";
 
 @Controller("card")
 export class CardController {
     private readonly LOGGER: Logger = new Logger(CardController.name);
 
-    constructor(
-        @Inject(CardService) private readonly cardService: CardService,
-        @Inject(InventoryService) private readonly inventoryService: InventoryService,
-    ) { }
+    constructor(@Inject(CardOrchestrator) private readonly cardService: CardOrchestrator) { }
 
 
     @UseGuards(UserGuard)
@@ -42,28 +26,7 @@ export class CardController {
         @Param("setNumber") setNumber: string,
         @Req() req: AuthenticatedRequest
     ): Promise<CardViewDto> {
-
         this.LOGGER.debug(`findSetCard in set ${setCode}, and # ${setNumber}`);
-        const userId = req.user ? req.user.id : 0;
-        const coreCard: Card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
-        if (!coreCard) {
-            throw new Error(`Card with set code ${setCode} and number ${setNumber} not found`);
-        }
-        const inventory: Inventory[] = userId > 0 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
-        const inventoryQuantities: InventoryQuantities = InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id);
-        const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
-        const allPrintings: Card[] = await this.cardService.findAllWithName(singleCard.name);
-        const otherPrintings: CardResponseDto[] = allPrintings
-            .filter((card: Card) => card.setCode !== setCode)
-            .map((card: Card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
-
-        return {
-            authenticated: req.isAuthenticated(),
-            breadcrumbs: breadcrumbsForCard(singleCard.setCode, singleCard.name, singleCard.number),
-            card: singleCard,
-            message: HttpStatus.OK ? "Card found" : "Card not found",
-            otherPrintings,
-            status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-        };
+        return this.cardService.findSetCard(setCode, setNumber, req);
     }
 }

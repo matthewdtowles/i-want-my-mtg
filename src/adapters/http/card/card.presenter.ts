@@ -13,8 +13,6 @@ import { Price } from "src/core/price/price.entity";
 import { toDollar } from "src/shared/utils/formatting.util";
 
 export class CardPresenter {
-    private static readonly LOGGER: Logger = new Logger(CardPresenter.name);
-
     private static readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 
     static toCardResponse(
@@ -23,7 +21,6 @@ export class CardPresenter {
         imageType: CardImgType = CardImgType.SMALL
     ): CardResponseDto {
         if (!card) {
-            this.LOGGER.error("Card is required to create CardResponseDto");
             throw new Error("Card is required to create CardResponseDto");
         }
         const price: Price | undefined = card.prices ? card.prices[0] : undefined;
@@ -127,7 +124,6 @@ export class CardPresenter {
         if (Object.values(CardRarity).includes(rarity as CardRarity)) {
             return rarity as CardRarity;
         }
-        this.LOGGER.error(`Invalid rarity value: ${rarity}`);
         throw new Error(`Invalid rarity value: ${rarity}`);
     }
 }

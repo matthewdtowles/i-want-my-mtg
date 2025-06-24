@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
+import { Breadcrumb } from "src/adapters/http/breadcrumb";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 import { SetListViewDto } from "src/adapters/http/set/dto/set-list.view.dto";
 import { SetMetaResponseDto } from "src/adapters/http/set/dto/set-meta.response.dto";
@@ -21,7 +22,7 @@ export class SetOrchestrator {
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
     ) { }
 
-    async findSetList(req: AuthenticatedRequest): Promise<SetListViewDto> {
+    async findSetList(req: AuthenticatedRequest, _breadcrumbs?: Breadcrumb[]): Promise<SetListViewDto> {
         try {
             const allSets: Set[] = await this.setService.findAll();
             // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
@@ -29,9 +30,9 @@ export class SetOrchestrator {
             const setMetaList: SetMetaResponseDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
             return {
                 authenticated: req.isAuthenticated(),
-                breadcrumbs: [
+                breadcrumbs: _breadcrumbs ? _breadcrumbs : [
                     { label: "Home", url: "/" },
-                    { label: "Sets", url: "/sets" },
+                    { label: "Sets", url: "/sets" }
                 ],
                 message: allSets ? `${allSets.length} sets found` : "No sets found",
                 setList: setMetaList,
@@ -40,7 +41,7 @@ export class SetOrchestrator {
         } catch (error) {
             return HttpErrorHandler.typedErrorView(SetListViewDto, error, {
                 setList: [],
-            });
+            }, _breadcrumbs);
         }
     }
 

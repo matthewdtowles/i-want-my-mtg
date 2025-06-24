@@ -13,6 +13,6 @@ export class HomeController {
     @Get("/")
     @Render("setListpage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return await this.setOrchestrator.findSetList(req);
+        return await this.setOrchestrator.findSetList(req, []); // no breadcrumbs needed for home page
     }
 }

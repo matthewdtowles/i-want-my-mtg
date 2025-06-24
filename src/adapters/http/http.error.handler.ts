@@ -8,6 +8,7 @@ import {
 import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
+import { Breadcrumb } from "src/adapters/http/breadcrumb";
 
 
 export class HttpErrorHandler {
@@ -16,12 +17,13 @@ export class HttpErrorHandler {
     static typedErrorView<T extends BaseViewDto>(
         ViewClass: new (data: any) => T,
         error: Error,
-        data: Record<string, any> = {}
+        data: Record<string, any> = {},
+        breadcrumbs?: Breadcrumb[]
     ): T {
         this.LOGGER.error(`Error in ${ViewClass.name}: ${error.message}`, error.stack);
         return new ViewClass({
             authenticated: false,
-            breadcrumbs: [{ label: "Home", url: "/" }],
+            breadcrumbs: breadcrumbs || [{ label: "Home", url: "/" }],
             message: `Error: ${error.message}`,
             status: ActionStatus.ERROR,
             ...data,

@@ -100,12 +100,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.error(`Error in updateInventory: ${response.statusText}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                if (!response.json) {
-                    console.error(`Error in updateInventory: response.json is not a function`);
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                const responseData = await response.json();
+                console.log("Response data:", responseData);
+                // Handle the new ApiResult format
+                if (responseData.success && responseData.data && responseData.data.length > 0) {
+                    // Return the first inventory item from data array
+                    return responseData.data[0];
                 }
-                const data = await response.json();
-                return data && data.inventory && data.inventory[0] ? data.inventory[0] : null;
+                return null;
             } catch (error) {
                 console.error(`Error in updateInventory => ${error}`);
             }
@@ -161,13 +163,17 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             try {
                 const data = await response.json();
-                console.log(`Response from deleteInventory: ${JSON.stringify(data)}`);
-                const tableRow = form.closest("tr");
-                if (tableRow) {
-                    tableRow.remove();
-                    console.log(`Card ${_cardId} successfully deleted from inventory`);
+                console.log(`Response from deleteInventory:`, data);
+                if (data.success) {
+                    const tableRow = form.closest("tr");
+                    if (tableRow) {
+                        tableRow.remove();
+                        console.log(`Card ${_cardId} successfully deleted from inventory`);
+                    } else {
+                        console.warn(`Could not find table row for card ${_cardId}`);
+                    }
                 } else {
-                    console.warn(`Could not find table row for card ${_cardId}`);
+                    console.error(`Error in deleteInventory: ${data.error || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error(`Error in deleteInventory => ${error}`);

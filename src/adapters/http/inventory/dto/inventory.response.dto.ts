@@ -1,14 +1,14 @@
 export class InventoryResponseDto {
-    cardId: string;
-    isFoil: boolean;
-    quantity: number;
-    priceValue: string;
-    imgSrc: string;
-    isReserved: boolean;
-    name: string;
-    rarity: string;
-    setCode: string;
-    url: string;
+    readonly cardId: string;
+    readonly isFoil: boolean;
+    readonly quantity: number;
+    readonly priceValue: string;
+    readonly imgSrc: string;
+    readonly isReserved: boolean;
+    readonly name: string;
+    readonly rarity: string;
+    readonly setCode: string;
+    readonly url: string;
 
     constructor(init: Partial<InventoryResponseDto>) {
         this.cardId = init.cardId || "";

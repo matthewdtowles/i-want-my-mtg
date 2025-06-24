@@ -1,6 +1,5 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
-import { validateAuthenticatedRequest } from "src/adapters/http/auth.validation";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
@@ -12,14 +11,16 @@ import { InventoryService } from "src/core/inventory/inventory.service";
 
 @Injectable()
 export class InventoryOrchestrator {
+    private readonly LOGGER: Logger = new Logger(InventoryOrchestrator.name);
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
 
     async findByUser(req: AuthenticatedRequest): Promise<InventoryViewDto> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             const inventoryItems: Inventory[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-            const cards: InventoryResponseDto[] = inventoryItems.map(item => InventoryPresenter.toInventoryResponseDto(item));
+            const cards: InventoryResponseDto[] = inventoryItems.map(item =>
+                InventoryPresenter.toInventoryResponseDto(item));
             const username = req.user.name;
             const totalValue: string = "0.00";
             return new InventoryViewDto({
@@ -35,15 +36,20 @@ export class InventoryOrchestrator {
                 totalValue,
             });
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "findByUser");
+            return HttpErrorHandler.typedErrorView(InventoryViewDto, error, {
+                cards: [],
+                username: "",
+                totalValue: "0.00",
+            });
         }
     }
 
     async save(updateInventoryDtos: InventoryRequestDto[], req: AuthenticatedRequest): Promise<Inventory[]> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             const inputInvItems: Inventory[] = InventoryPresenter.toEntities(updateInventoryDtos, req.user.id);
             const updatedItems: Inventory[] = await this.inventoryService.save(inputInvItems);
+            this.LOGGER.debug(`Saved ${updatedItems.length} inventory items for user ${req.user.id}`);
             return updatedItems;
         } catch (error) {
             return HttpErrorHandler.handleError(error, "save");
@@ -52,9 +58,10 @@ export class InventoryOrchestrator {
 
     async delete(req: AuthenticatedRequest, cardId: string, isFoil: boolean): Promise<boolean> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             if (!cardId) throw new BadRequestException("Card ID is required for deletion");
             await this.inventoryService.delete(req.user.id, cardId, isFoil);
+            this.LOGGER.debug(`Deleted inventory item for user ${req.user.id}, cardId: ${cardId}, isFoil: ${isFoil}`);
             return true;
         } catch (error) {
             return HttpErrorHandler.handleError(error, "delete");

@@ -3,7 +3,8 @@ import { AuthController } from "src/adapters/http/auth/auth.controller";
 import { AuthService } from "src/core/auth/auth.service";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { Response } from "express";
-import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
+import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/dto/auth.types";
+
 
 describe("AuthController", () => {
     let controller: AuthController;

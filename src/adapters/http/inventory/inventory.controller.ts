@@ -2,16 +2,12 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
-    HttpStatus,
-    Inject, Patch,
+    Get, Inject, Patch,
     Post,
     Render,
-    Req,
-    Res,
-    UseGuards
+    Req, UseGuards
 } from "@nestjs/common";
-import { Response } from "express";
+import { ApiResult } from "src/adapters/http/api.result";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
 import { InventoryViewDto } from "src/adapters/http/inventory/dto/inventory.view.dto";
@@ -36,28 +32,28 @@ export class InventoryController {
     @Post()
     async create(
         @Body() createInventoryDtos: InventoryRequestDto[],
-        @Res() res: Response,
         @Req() req: AuthenticatedRequest,
-    ) {
+    ): Promise<ApiResult<Inventory[]>> {
         const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
-        return res.status(HttpStatus.CREATED).json({
+        return {
+            success: true,
+            data: createdItems,
             message: `Added inventory items`,
-            inventory: createdItems,
-        });
+        };
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch()
     async update(
         @Body() updateInventoryDtos: InventoryRequestDto[],
-        @Res() res: Response,
         @Req() req: AuthenticatedRequest,
-    ) {
+    ): Promise<ApiResult<Inventory[]>> {
         const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
-        return res.status(HttpStatus.OK).json({
-            message: `Updated inventory`,
-            inventory: updatedInventory,
-        });
+        return {
+            success: true,
+            data: updatedInventory,
+            message: `Updated inventory`
+        };
     }
 
     @UseGuards(JwtAuthGuard)
@@ -65,13 +61,14 @@ export class InventoryController {
     async delete(
         @Body('cardId') cardId: string,
         @Body('isFoil') isFoil: boolean,
-        @Res() res: Response,
         @Req() req: AuthenticatedRequest,
-    ) {
+        // TODO: define type?
+    ): Promise<ApiResult<{ cardId: string, isFoil: boolean }>> {
         await this.inventoryOrchestrator.delete(req, cardId, isFoil);
-        return res.status(HttpStatus.OK).json({
+        return {
+            success: true,
             message: `Deleted inventory item`,
-            cardId,
-        });
+            data: { cardId, isFoil },
+        };
     }
 }

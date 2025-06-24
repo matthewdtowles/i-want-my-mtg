@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
-import { AuthResult } from "src/adapters/http/auth/dto/auth.result.dto";
+import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { LoginFormResponseDto } from "src/adapters/http/auth/dto/login-form.response.dto";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
@@ -16,6 +16,7 @@ import { LocalAuthGuard } from "./local.auth.guard";
 
 @Controller("auth")
 export class AuthController {
+
     constructor(@Inject(AuthOrchestrator) private readonly authOrchestrator: AuthOrchestrator) { }
 
     @Get("login")

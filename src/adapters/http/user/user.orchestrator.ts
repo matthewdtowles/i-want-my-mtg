@@ -1,6 +1,5 @@
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
-import { validateAuthenticatedRequest } from "src/adapters/http/auth.validation";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
@@ -56,7 +55,7 @@ export class UserOrchestrator {
 
     async findUser(req: AuthenticatedRequest): Promise<UserViewDto> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             const id: number = req.user.id;
             const foundUser: UserResponseDto = await this.userService.findById(id);
             const login: boolean =
@@ -72,13 +71,15 @@ export class UserOrchestrator {
                 user: foundUser,
             };
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "findUser");
+            return HttpErrorHandler.typedErrorView(UserViewDto, error, {
+                user: null,
+            });
         }
     }
 
     async updateUser(userRequestDto: UpdateUserRequestDto, req: AuthenticatedRequest): Promise<UserViewDto> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             if (req.user.email === userRequestDto.email && req.user.name === userRequestDto.name) {
                 return new UserViewDto({
                     authenticated: req.isAuthenticated(),
@@ -102,11 +103,7 @@ export class UserOrchestrator {
                 user: updatedUser,
             });
         } catch (error) {
-            return new UserViewDto({
-                authenticated: false,
-                breadcrumbs: this.breadCrumbs,
-                message: `Error updating user: ${error.message}`,
-                status: ActionStatus.ERROR,
+            return HttpErrorHandler.typedErrorView(UserViewDto, error, {
                 user: null,
             });
         }
@@ -114,7 +111,7 @@ export class UserOrchestrator {
 
     async updatePassword(password: string, req: AuthenticatedRequest): Promise<BaseViewDto> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             const coreUser: User = new User({
                 id: req.user.id,
                 email: req.user.email,
@@ -129,36 +126,26 @@ export class UserOrchestrator {
                 status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             });
         } catch (error) {
-            return new BaseViewDto({
-                authenticated: false,
-                breadcrumbs: this.breadCrumbs,
-                message: `Error updating user: ${error.message}`,
-                status: ActionStatus.ERROR,
-            });
+            return HttpErrorHandler.typedErrorView(BaseViewDto, error, {});
         }
     }
 
     async deleteUser(req: AuthenticatedRequest): Promise<BaseViewDto> {
         try {
-            validateAuthenticatedRequest(req);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
             await this.userService.remove(req.user.id);
             const user: UserResponseDto = await this.userService.findById(req.user.id);
             if (user && user.name) {
                 throw new Error("Could not delete user");
             }
-            return {
+            return new BaseViewDto({
                 authenticated: false,
                 breadcrumbs: this.breadCrumbs,
                 message: "User deleted successfully",
                 status: ActionStatus.SUCCESS,
-            };
+            });
         } catch (error) {
-            return {
-                authenticated: false,
-                breadcrumbs: this.breadCrumbs,
-                message: error.message,
-                status: ActionStatus.ERROR,
-            };
+            return HttpErrorHandler.typedErrorView(BaseViewDto, error, {});
         }
     }
 }

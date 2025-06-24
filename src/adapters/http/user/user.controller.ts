@@ -21,6 +21,8 @@ import { UserOrchestrator } from "src/adapters/http/user/user.orchestrator";
 import { AuthToken } from "src/core/auth/auth.types";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { UserViewDto } from "./dto/user.view.dto";
+import { CreateUserFormDto } from "src/adapters/http/user/dto/create-user-form.dto";
+import { ApiResult } from "src/adapters/http/api.result";
 
 
 @Controller("user")
@@ -29,7 +31,7 @@ export class UserController {
 
     @Get("create")
     @Render("createUser")
-    createForm() {
+    createForm(): CreateUserFormDto {
         return this.userOrchestrator.getCreateUserForm();
     }
 
@@ -53,25 +55,31 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Patch()
-    async update(
-        @Body() httpUserDto: UpdateUserRequestDto,
-        @Req() req: AuthenticatedRequest
-    ): Promise<UserViewDto | BaseViewDto> {
-        return this.userOrchestrator.updateUser(httpUserDto, req);
+    async update(@Body() httpUserDto: UpdateUserRequestDto, @Req() req: AuthenticatedRequest): Promise<ApiResult<UserViewDto>> {
+        return {
+            success: true,
+            data: await this.userOrchestrator.updateUser(httpUserDto, req),
+            message: `User updated`,
+        };
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch("password")
-    async updatePassword(
-        @Body("password") password: string,
-        @Req() req: AuthenticatedRequest
-    ): Promise<BaseViewDto> {
-        return this.userOrchestrator.updatePassword(password, req);
+    async updatePassword(@Body("password") password: string, @Req() req: AuthenticatedRequest): Promise<ApiResult<BaseViewDto>> {
+        return {
+            success: true,
+            data: await this.userOrchestrator.updatePassword(password, req),
+            message: `Password updated`,
+        };
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete()
-    async remove(@Req() req: AuthenticatedRequest): Promise<BaseViewDto> {
-        return this.userOrchestrator.deleteUser(req);
+    async remove(@Req() req: AuthenticatedRequest): Promise<ApiResult<BaseViewDto>> {
+        return {
+            success: true,
+            data: await this.userOrchestrator.deleteUser(req),
+            message: `User deleted`,
+        };
     }
 }

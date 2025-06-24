@@ -4,7 +4,7 @@ import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { UserResponseDto } from "../user/dto/user.response.dto";
-import { AuthResult } from "src/adapters/http/auth/dto/auth.result.dto";
+import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
 import { LoginFormResponseDto } from "src/adapters/http/auth/dto/login-form.response.dto";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 
@@ -16,30 +16,20 @@ export class AuthOrchestrator {
     constructor(@Inject(AuthService) private readonly authService: AuthService) { }
 
     async login(user: UserResponseDto): Promise<AuthResult> {
-        this.LOGGER.debug(`Processing login for user ${user?.name}`);
-        if (!user || !user.id) {
-            this.LOGGER.error(`User not found or invalid`);
-            return new AuthResult({
-                success: false,
-                redirectTo: `/login?action=login&status=${HttpStatus.UNAUTHORIZED}`,
-                statusCode: HttpStatus.UNAUTHORIZED
-            });
-        }
-        const coreUser: User = new User({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: UserRole[user.role as keyof typeof UserRole] || UserRole.User
-        });
         try {
+            this.LOGGER.debug(`Processing login for user ${user?.name}`);
+            if (!user || !user.id) {
+                this.LOGGER.error(`User not found or invalid`);
+            }
+            const coreUser: User = new User({
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: UserRole[user.role as keyof typeof UserRole] || UserRole.User
+            });
             const authToken: AuthToken = await this.authService.login(coreUser);
             if (!authToken || !authToken.access_token) {
                 this.LOGGER.error(`Authentication token generation failed`);
-                return new AuthResult({
-                    success: false,
-                    redirectTo: `/login?action=login&status=${HttpStatus.UNAUTHORIZED}`,
-                    statusCode: HttpStatus.UNAUTHORIZED
-                });
             }
             this.LOGGER.log(`${user.name} logged in successfully`);
             return new AuthResult({

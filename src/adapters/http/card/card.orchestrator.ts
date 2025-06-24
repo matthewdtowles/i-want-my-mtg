@@ -46,7 +46,10 @@ export class CardOrchestrator {
                 status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             });
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "findSetCard");
+            return HttpErrorHandler.typedErrorView(CardViewDto, error, {
+                card: null,
+                otherPrintings: [],
+            });
         }
     }
 }

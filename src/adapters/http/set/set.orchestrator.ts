@@ -38,7 +38,9 @@ export class SetOrchestrator {
                 status: allSets ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             };
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "findSetList");
+            return HttpErrorHandler.typedErrorView(SetListViewDto, error, {
+                setList: [],
+            });
         }
     }
 
@@ -67,7 +69,9 @@ export class SetOrchestrator {
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             };
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "findBySetCode");
+            return HttpErrorHandler.typedErrorView(SetViewDto, error, {
+                set: null,
+            });
         }
     }
 }

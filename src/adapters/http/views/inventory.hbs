@@ -17,7 +17,7 @@
         <tbody>
             {{#each cards as |card|}}
             <tr class="table-row">
-                <td class="cards-owned-td pl-2">{{>cardsOwned card=card}}</td>
+                <td class="pl-2">{{>cardsOwned card=card}}</td>
                 <td class="card-name-link" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                     <a href="{{card.url}}">{{card.name}}</a>
                     {{>reserved card=card}}
@@ -31,8 +31,11 @@
                         {{toUpperCase card.setCode}}
                     </a>
                 </td>
-                <td>{{card.priceValue}}{{#if card.isFoil}}<span
-                        class="text-ts text-white bg-purple-500 px-1 mx-1">Foil</span>{{/if}}</td>
+                <td>
+                    <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
+                        {{card.priceValue}}
+                    </span>
+                </td>
                 <td class="delete-inventory-entry pr-2">
                     <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
                         <input type="hidden" name="card-id" value="{{card.cardId}}" />

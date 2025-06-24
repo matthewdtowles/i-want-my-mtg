@@ -46,11 +46,18 @@
         <section class="price-info md:w-1/3 md:pl-6 mb-4 md:mb-0 border-none">
             <section class="subjsection-container">
                 <h3 class="section-title">Price</h3>
-                <span>{{#if card.hasNormal}}{{card.normalPrice}}{{/if}}</span>
+                <span>
+                    {{#if card.hasNormal}}
+                    <div class="mb-2">
+                        <span class="price-normal">{{card.normalPrice}}</span>
+                    </div>
+                    {{/if}}
+                </span>
                 <span>
                     {{#if card.hasFoil}}
-                    {{card.foilPrice}}
-                    <span class="text-xs text-white bg-purple-500 px-1 mx-1">Foil</span>
+                    <div class="mb-2">
+                        <span class="price-foil">{{card.foilPrice}}</span>
+                    </div>
                     {{/if}}
                 </span>
                 <section class="inventory-info">
@@ -76,11 +83,15 @@
                         </a>
                         <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
                     </td>
-                    <td class="py-2">{{#if p.hasNormal}}{{p.normalPrice}}{{/if}}</td>
+                    <td class="py-2">
+                        {{#if p.hasNormal}}
+                        <span class="price-normal">{{p.normalPrice}}</span>
+                        {{/if}}
+                    </td>
                     <td class="py-2 text-right">
                         {{#if p.hasFoil}}
-                        {{p.foilPrice}}
-                        <span class="text-xs text-white bg-purple-500 px-1 mx-1">Foil</span>
+                        <span class="price-foil">{{p.foilPrice}}</span>
+                        <span class="foil-badge">Foil</span>
                         {{/if}}
                     </td>
                 </tr>

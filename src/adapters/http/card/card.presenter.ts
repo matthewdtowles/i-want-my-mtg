@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 import { LegalityResponseDto } from "src/adapters/http/card/dto/legality.response.dto";
 import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";

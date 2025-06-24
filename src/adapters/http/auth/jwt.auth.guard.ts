@@ -2,7 +2,7 @@ import { ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { lastValueFrom, Observable } from "rxjs";
-import { AUTH_TOKEN_NAME } from "./auth.types";
+import { AUTH_TOKEN_NAME } from "./dto/auth.types";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {

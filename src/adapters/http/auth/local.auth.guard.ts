@@ -7,7 +7,7 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { Observable } from "rxjs";
-import { AUTH_TOKEN_NAME } from "./auth.types";
+import { AUTH_TOKEN_NAME } from "./dto/auth.types";
 
 /**
  * Trigger local auth strategy to validate email and password during login

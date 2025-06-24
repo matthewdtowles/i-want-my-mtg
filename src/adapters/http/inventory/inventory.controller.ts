@@ -4,8 +4,7 @@ import {
     Delete,
     Get,
     HttpStatus,
-    Inject,
-    Logger, Patch,
+    Inject, Patch,
     Post,
     Render,
     Req,
@@ -13,28 +12,24 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { Response } from "express";
+import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
 import { InventoryViewDto } from "src/adapters/http/inventory/dto/inventory.view.dto";
 import { InventoryOrchestrator } from "src/adapters/http/inventory/inventory.orchestrator";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { AuthenticatedRequest, } from "../auth/auth.types";
 import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 
 
 @Controller("inventory")
 export class InventoryController {
-    private readonly LOGGER: Logger = new Logger(InventoryController.name);
 
-    constructor(@Inject(InventoryOrchestrator) private readonly inventoryService: InventoryOrchestrator) {
-        this.LOGGER.debug(`Initialized`);
-    }
+    constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
-        this.LOGGER.debug(`Find user inventory`);
-        return this.inventoryService.findByUser(req);
+        return this.inventoryOrchestrator.findByUser(req);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -44,8 +39,7 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
-        this.LOGGER.debug(`Create inventory`);
-        const createdItems: Inventory[] = await this.inventoryService.save(createInventoryDtos, req);
+        const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
         return res.status(HttpStatus.CREATED).json({
             message: `Added inventory items`,
             inventory: createdItems,
@@ -59,8 +53,7 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
-        this.LOGGER.debug(`Update inventory`);
-        const updatedInventory: Inventory[] = await this.inventoryService.save(updateInventoryDtos, req);
+        const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
         return res.status(HttpStatus.OK).json({
             message: `Updated inventory`,
             inventory: updatedInventory,
@@ -75,8 +68,7 @@ export class InventoryController {
         @Res() res: Response,
         @Req() req: AuthenticatedRequest,
     ) {
-        this.LOGGER.debug(`Delete inventory item`);
-        await this.inventoryService.delete(req, cardId, isFoil);
+        await this.inventoryOrchestrator.delete(req, cardId, isFoil);
         return res.status(HttpStatus.OK).json({
             message: `Deleted inventory item`,
             cardId,

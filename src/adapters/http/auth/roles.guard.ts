@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { AuthenticatedRequest } from "src/adapters/http/auth/auth.types";
+import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 import { UserRole } from "src/shared/constants/user.role.enum";
 

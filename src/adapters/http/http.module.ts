@@ -9,6 +9,8 @@ import { UserController } from "./user/user.controller";
 import { CardOrchestrator } from "src/adapters/http/card/card.orchestrator";
 import { InventoryOrchestrator } from "src/adapters/http/inventory/inventory.orchestrator";
 import { SetOrchestrator } from "src/adapters/http/set/set.orchestrator";
+import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
+import { UserOrchestrator } from "src/adapters/http/user/user.orchestrator";
 
 @Module({
     controllers: [
@@ -20,8 +22,20 @@ import { SetOrchestrator } from "src/adapters/http/set/set.orchestrator";
         UserController,
     ],
     imports: [CoreModule],
-    providers: [CardOrchestrator, InventoryOrchestrator, SetOrchestrator],
-    exports: [CardOrchestrator, InventoryOrchestrator, SetOrchestrator],
+    providers: [
+        AuthOrchestrator,
+        CardOrchestrator,
+        InventoryOrchestrator,
+        SetOrchestrator,
+        UserOrchestrator
+    ],
+    exports: [
+        AuthOrchestrator,
+        CardOrchestrator,
+        InventoryOrchestrator,
+        SetOrchestrator,
+        UserOrchestrator
+    ],
 })
 export class HttpModule {
     private readonly LOGGER: Logger = new Logger(HttpModule.name);

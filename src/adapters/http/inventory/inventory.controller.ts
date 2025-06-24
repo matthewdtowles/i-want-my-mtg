@@ -7,7 +7,7 @@ import {
     Render,
     Req, UseGuards
 } from "@nestjs/common";
-import { ApiResult } from "src/adapters/http/api.result";
+import { ApiResult, createErrorResult, createSuccessResult } from "src/adapters/http/api.result";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
 import { InventoryViewDto } from "src/adapters/http/inventory/dto/inventory.view.dto";
@@ -34,12 +34,12 @@ export class InventoryController {
         @Body() createInventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest,
     ): Promise<ApiResult<Inventory[]>> {
-        const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
-        return {
-            success: true,
-            data: createdItems,
-            message: `Added inventory items`,
-        };
+        try {
+            const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
+            return createSuccessResult(createdItems, `Added inventory items`);
+        } catch (error) {
+            return createErrorResult(`Error adding inventory items: ${error}`);
+        }
     }
 
     @UseGuards(JwtAuthGuard)
@@ -48,12 +48,12 @@ export class InventoryController {
         @Body() updateInventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest,
     ): Promise<ApiResult<Inventory[]>> {
-        const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
-        return {
-            success: true,
-            data: updatedInventory,
-            message: `Updated inventory`
-        };
+        try {
+            const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
+            return createSuccessResult(updatedInventory, `Updated inventory items`);
+        } catch (error) {
+            return createErrorResult(`Error updating inventory items: ${error}`);
+        }
     }
 
     @UseGuards(JwtAuthGuard)
@@ -64,11 +64,14 @@ export class InventoryController {
         @Req() req: AuthenticatedRequest,
         // TODO: define type?
     ): Promise<ApiResult<{ cardId: string, isFoil: boolean }>> {
-        await this.inventoryOrchestrator.delete(req, cardId, isFoil);
-        return {
-            success: true,
-            message: `Deleted inventory item`,
-            data: { cardId, isFoil },
-        };
+        try {
+            await this.inventoryOrchestrator.delete(req, cardId, isFoil);
+            return createSuccessResult(
+                { cardId, isFoil },
+                `Deleted inventory item`
+            );
+        } catch (error) {
+            return createErrorResult(`Error deleting inventory item: ${error}`);
+        }
     }
 }

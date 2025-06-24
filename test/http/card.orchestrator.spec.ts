@@ -1,8 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { Card } from "src/core/card/card.entity";
-import { Inventory } from "src/core/inventory/inventory.entity";
 import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { CardOrchestrator } from "src/adapters/http/card/card.orchestrator";
@@ -36,7 +34,7 @@ describe("CardOrchestrator", () => {
         setCode: "TST",
         setNumber: "001",
         setName: "Test Set",
-    } as Card;
+    };
 
     const mockOtherPrintings = [
         {
@@ -45,14 +43,14 @@ describe("CardOrchestrator", () => {
             setCode: "M10",
             setNumber: "149",
             setName: "Magic 2010",
-        } as Card,
+        },
         {
             id: "card3",
             name: "Lightning Bolt",
             setCode: "LRW",
             setNumber: "278",
             setName: "Lorwyn",
-        } as Card,
+        },
     ];
 
     const mockInventory = [
@@ -62,7 +60,7 @@ describe("CardOrchestrator", () => {
             cardId: "card1",
             quantity: 3,
             isFoil: false,
-        } as Inventory,
+        },
     ];
 
     beforeEach(async () => {

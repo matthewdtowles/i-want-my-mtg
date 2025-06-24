@@ -22,7 +22,7 @@ import { AuthToken } from "src/core/auth/auth.types";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { UserViewDto } from "./dto/user.view.dto";
 import { CreateUserFormDto } from "src/adapters/http/user/dto/create-user-form.dto";
-import { ApiResult } from "src/adapters/http/api.result";
+import { ApiResult, createErrorResult, createSuccessResult } from "src/adapters/http/api.result";
 
 
 @Controller("user")
@@ -55,31 +55,40 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Patch()
-    async update(@Body() httpUserDto: UpdateUserRequestDto, @Req() req: AuthenticatedRequest): Promise<ApiResult<UserViewDto>> {
-        return {
-            success: true,
-            data: await this.userOrchestrator.updateUser(httpUserDto, req),
-            message: `User updated`,
-        };
+    async update(
+        @Body() httpUserDto: UpdateUserRequestDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResult<UserViewDto>> {
+        try {
+            const updatedUser: UserViewDto = await this.userOrchestrator.updateUser(httpUserDto, req);
+            return createSuccessResult<UserViewDto>(updatedUser, "User udpated");
+        } catch (error) {
+            return createErrorResult(`Failed to update user: ${error.message}`);
+        }
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch("password")
-    async updatePassword(@Body("password") password: string, @Req() req: AuthenticatedRequest): Promise<ApiResult<BaseViewDto>> {
-        return {
-            success: true,
-            data: await this.userOrchestrator.updatePassword(password, req),
-            message: `Password updated`,
-        };
+    async updatePassword(
+        @Body("password") password: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResult<BaseViewDto>> {
+        try {
+            const responseData: BaseViewDto = await this.userOrchestrator.updatePassword(password, req);
+            return createSuccessResult<BaseViewDto>(responseData, "Password updated");
+        } catch (error) {
+            return createErrorResult(`Failed to update password: ${error.message}`);
+        }
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete()
     async remove(@Req() req: AuthenticatedRequest): Promise<ApiResult<BaseViewDto>> {
-        return {
-            success: true,
-            data: await this.userOrchestrator.deleteUser(req),
-            message: `User deleted`,
-        };
+        try {
+            const response: BaseViewDto = await this.userOrchestrator.deleteUser(req);
+            return createSuccessResult<BaseViewDto>(response, "User deleted");
+        } catch (error) {
+            return createErrorResult(`Failed to delete user: ${error.message}`);
+        }
     }
 }

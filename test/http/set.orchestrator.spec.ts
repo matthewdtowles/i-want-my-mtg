@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.r
 import { SetListViewDto } from "src/adapters/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/adapters/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/adapters/http/set/set.orchestrator";
+import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
@@ -36,29 +37,56 @@ describe("SetOrchestrator", () => {
         id: "card1",
         name: "Test Card 1",
         setCode: "TST",
-        setNumber: "001",
+        number: "1",
+        setName: "Test Set",
+        hasFoil: true,
+        hasNonFoil: true,
+        imgSrc: "https://example.com/card1.png",
+        isReserved: false,
+        rarity: CardRarity.Common,
+        typeLine: "Creature",
+        manaCost: "{1}{G}",
+        oracleText: "Test oracle text 1",
+        type: "Test",
+        legalities: []
     };
 
     const mockCard2 = {
         id: "card2",
         name: "Test Card 2",
         setCode: "TST",
-        setNumber: "002",
+        number: "2",
+        setName: "Test Set",
+        hasFoil: false,
+        hasNonFoil: true,
+        imgSrc: "https://example.com/card2.png",
+        isReserved: false,
+        rarity: CardRarity.Common,
+        typeLine: "Instant",
+        manaCost: "{U}",
+        oracleText: "Test oracle text 2",
+        type: "Test",
+        legalities: []
     };
 
     const mockSets: Set[] = [
         {
             code: "TST",
+            baseSize: 2,
+            keyruneCode: "TST",
             name: "Test Set",
             releaseDate: String(new Date()),
             cards: [mockCard1, mockCard2],
-            cardCount: 2,
+            type: "test",
         },
         {
             code: "XYZ",
+            baseSize: 2,
+            keyruneCode: "XYZ",
             name: "Another Set",
             releaseDate: String(new Date()),
             cards: [],
+            type: "test",
         },
     ];
 

@@ -1,4 +1,4 @@
-import { toDollar } from "../../../src/shared/utils/formatting.util";
+import { toDollar } from "src/adapters/http/formatting.util";
 
 describe("toDollar", () => {
     it("should handle numbers less than 1 correctly", () => {

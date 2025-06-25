@@ -1,7 +1,6 @@
-import { RedirectResult } from "src/adapters/http/redirect.result";
 import { User } from "src/core/user/user.entity";
 
-export class AuthResult implements RedirectResult {
+export class AuthResult {
     readonly success: boolean;
     readonly redirectTo: string;
     readonly statusCode: number;

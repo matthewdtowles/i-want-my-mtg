@@ -1,6 +1,7 @@
 import { CardResponseDto } from "src/adapters/http/card/dto/card.response.dto";
 import { LegalityResponseDto } from "src/adapters/http/card/dto/legality.response.dto";
 import { SingleCardResponseDto } from "src/adapters/http/card/dto/single-card.response.dto";
+import { toDollar } from "src/adapters/http/formatting.util";
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
@@ -9,7 +10,6 @@ import { Format } from "src/core/card/format.enum";
 import { Legality } from "src/core/card/legality.entity";
 import { LegalityStatus } from "src/core/card/legality.status.enum";
 import { Price } from "src/core/price/price.entity";
-import { toDollar } from "src/shared/utils/formatting.util";
 
 export class CardPresenter {
     private static readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";

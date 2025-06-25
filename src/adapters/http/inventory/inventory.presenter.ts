@@ -1,10 +1,10 @@
+import { toDollar } from "src/adapters/http/formatting.util";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
 import { InventoryResponseDto } from "src/adapters/http/inventory/dto/inventory.response.dto";
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
 import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Price } from "src/core/price/price.entity";
-import { toDollar } from "src/shared/utils/formatting.util";
 
 
 export class InventoryPresenter {

@@ -10,7 +10,7 @@ import { Response } from "express";
 import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
 import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
-import { LoginFormResponseDto } from "src/adapters/http/auth/dto/login-form.response.dto";
+import { LoginFormViewDto } from "src/adapters/http/auth/dto/login-form.view.dto";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 
@@ -21,7 +21,7 @@ export class AuthController {
 
     @Get("login")
     @Render("login")
-    async loginForm(): Promise<LoginFormResponseDto> {
+    async loginForm(): Promise<LoginFormViewDto> {
         return this.authOrchestrator.getLoginFormData();
     }
 

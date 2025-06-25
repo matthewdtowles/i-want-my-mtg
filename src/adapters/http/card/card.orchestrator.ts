@@ -5,7 +5,6 @@ import { CardPresenter } from "src/adapters/http/card/card.presenter";
 import { CardViewDto } from "src/adapters/http/card/dto/card.view.dto";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 import { InventoryPresenter } from "src/adapters/http/inventory/inventory.presenter";
-import { breadcrumbsForCard } from "src/adapters/http/view.util";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
@@ -39,7 +38,12 @@ export class CardOrchestrator {
 
             return new CardViewDto({
                 authenticated: req.isAuthenticated(),
-                breadcrumbs: breadcrumbsForCard(singleCard),
+                breadcrumbs: [
+                    { label: "Home", url: "/" },
+                    { label: "Sets", url: "/sets" },
+                    { label: singleCard.setCode.toUpperCase(), url: `/sets/${singleCard.setCode}` },
+                    { label: singleCard.name, url: `/cards/${singleCard.setCode}/${singleCard.number}` },
+                ],
                 card: singleCard,
                 otherPrintings,
                 message: HttpStatus.OK === 200 ? "Card found" : "Card not found",

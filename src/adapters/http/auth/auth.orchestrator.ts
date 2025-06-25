@@ -5,7 +5,7 @@ import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { UserResponseDto } from "../user/dto/user.response.dto";
 import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
-import { LoginFormResponseDto } from "src/adapters/http/auth/dto/login-form.response.dto";
+import { LoginFormViewDto } from "src/adapters/http/auth/dto/login-form.view.dto";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 
 
@@ -69,9 +69,9 @@ export class AuthOrchestrator {
         }
     }
 
-    getLoginFormData(): LoginFormResponseDto {
+    getLoginFormData(): LoginFormViewDto {
         try {
-            return new LoginFormResponseDto();
+            return new LoginFormViewDto();
         } catch (error) {
             return HttpErrorHandler.handleError(error, "getLoginFormData");
         }

@@ -1,5 +1,5 @@
 import { Card } from "src/core/card/card.entity";
-import { validateInit } from "src/shared/utils/validation.util";
+import { validateInit } from "src/core/validation.util";
 
 export class Set {
     readonly code: string;

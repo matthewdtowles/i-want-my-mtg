@@ -1,6 +1,6 @@
 import { Format } from "src/core/card/format.enum";
 import { LegalityStatus } from "src/core/card/legality.status.enum";
-import { validateInit } from "src/shared/utils/validation.util";
+import { validateInit } from "src/core/validation.util";
 
 export class Legality {
     // TODO: review if should be readonly

@@ -2,7 +2,7 @@ import { Logger, HttpStatus } from "@nestjs/common";
 import { TestingModule, Test } from "@nestjs/testing";
 import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
 import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
-import { LoginFormResponseDto } from "src/adapters/http/auth/dto/login-form.response.dto";
+import { LoginFormViewDto } from "src/adapters/http/auth/dto/login-form.view.dto";
 import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 import { AuthService } from "src/core/auth/auth.service";
 
@@ -124,9 +124,9 @@ describe("AuthOrchestrator", () => {
 
     describe("getLoginFormData", () => {
         it("should return LoginFormResponseDto", () => {
-            const result: LoginFormResponseDto = orchestrator.getLoginFormData();
+            const result: LoginFormViewDto = orchestrator.getLoginFormData();
 
-            expect(result).toBeInstanceOf(LoginFormResponseDto);
+            expect(result).toBeInstanceOf(LoginFormViewDto);
         });
     });
 });

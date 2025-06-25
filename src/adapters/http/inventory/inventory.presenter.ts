@@ -1,16 +1,13 @@
-import { toDollar } from "src/adapters/http/formatting.util";
 import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
 import { InventoryResponseDto } from "src/adapters/http/inventory/dto/inventory.response.dto";
 import { InventoryQuantities } from "src/adapters/http/inventory/inventory.quantities";
+import { BASE_IMAGE_URL, toDollar } from "src/adapters/http/view.util";
 import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Price } from "src/core/price/price.entity";
 
 
 export class InventoryPresenter {
-    // TODO: this needs to be moved to config or constants - redefined in multiple places
-    private static readonly BASE_IMAGE_URL: string = "https://cards.scryfall.io";
-
     /**
      * @param inventoryItems
      * @param userId 
@@ -23,11 +20,11 @@ export class InventoryPresenter {
 
     /**
      * Converts a single InventoryRequestDto to an Inventory entity.
+     * This is used for creating or updating a single inventory item in the database.
      *
      * @param dto - The InventoryRequestDto to convert.
      * @param userId - The ID of the user who owns the inventory item.
      * @returns An Inventory entity.
-     * This is used for creating or updating a single inventory item in the database.
      */
     static toEntity(dto: InventoryRequestDto, userId: number): Inventory {
         return new Inventory({
@@ -49,14 +46,12 @@ export class InventoryPresenter {
         const card: Card = inventory.card;
         const priceObj: Price = card?.prices[0]
         const priceValueRaw: number = inventory.isFoil ? priceObj?.foil : priceObj?.normal;
-        const priceValue: string = toDollar(priceValueRaw);
         return new InventoryResponseDto({
             cardId: inventory.cardId,
             isFoil: inventory.isFoil,
             quantity: inventory.quantity,
-            // extract price from card 
-            priceValue,
-            imgSrc: `${this.BASE_IMAGE_URL}/normal/front/${card.imgSrc}`,
+            priceValue: toDollar(priceValueRaw),
+            imgSrc: `${BASE_IMAGE_URL}/normal/front/${card.imgSrc}`,
             isReserved: card.isReserved,
             name: card.name,
             rarity: card.rarity,

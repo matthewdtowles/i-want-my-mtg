@@ -3,8 +3,8 @@ import { ActionStatus } from "src/adapters/http/action-status.enum";
 import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
 import { BaseViewDto } from "src/adapters/http/base.view.dto";
 import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
-import { CreateUserFormDto } from "src/adapters/http/user/dto/create-user-form.dto";
 import { CreateUserRequestDto } from "src/adapters/http/user/dto/create-user.request.dto";
+import { CreateUserViewDto } from "src/adapters/http/user/dto/create-user.view.dto";
 import { UpdateUserRequestDto } from "src/adapters/http/user/dto/update-user.request.dto";
 import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
 import { UserViewDto } from "src/adapters/http/user/dto/user.view.dto";
@@ -27,8 +27,8 @@ export class UserOrchestrator {
         @Inject(AuthService) private readonly authService: AuthService,
     ) { }
 
-    getCreateUserForm(): CreateUserFormDto {
-        return new CreateUserFormDto();
+    getCreateUserForm(): CreateUserViewDto {
+        return new CreateUserViewDto();
     }
 
     async create(createUserDto: CreateUserRequestDto): Promise<AuthToken> {

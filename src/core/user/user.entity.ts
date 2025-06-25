@@ -1,5 +1,5 @@
 import { UserRole } from "src/shared/constants/user.role.enum";
-import { validateInit } from "src/shared/utils/validation.util";
+import { validateInit } from "src/core/validation.util";
 
 export class User {
     readonly id: number;

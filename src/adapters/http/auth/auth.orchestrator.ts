@@ -73,7 +73,7 @@ export class AuthOrchestrator {
         try {
             return new LoginFormViewDto();
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "getLoginFormData");
+            return HttpErrorHandler.toHttpException(error, "getLoginFormData");
         }
     }
 }

@@ -49,7 +49,7 @@ export class UserOrchestrator {
             }
             return authToken;
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "create");
+            return HttpErrorHandler.toHttpException(error, "create");
         }
     }
 
@@ -71,7 +71,7 @@ export class UserOrchestrator {
                 user: foundUser,
             };
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(UserViewDto, error, {
+            return HttpErrorHandler.toErrorView(UserViewDto, error, {
                 user: null,
             });
         }
@@ -103,7 +103,7 @@ export class UserOrchestrator {
                 user: updatedUser,
             });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(UserViewDto, error, {
+            return HttpErrorHandler.toErrorView(UserViewDto, error, {
                 user: null,
             });
         }
@@ -126,7 +126,7 @@ export class UserOrchestrator {
                 status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(BaseViewDto, error, {});
+            return HttpErrorHandler.toErrorView(BaseViewDto, error, {});
         }
     }
 
@@ -145,7 +145,7 @@ export class UserOrchestrator {
                 status: ActionStatus.SUCCESS,
             });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(BaseViewDto, error, {});
+            return HttpErrorHandler.toErrorView(BaseViewDto, error, {});
         }
     }
 }

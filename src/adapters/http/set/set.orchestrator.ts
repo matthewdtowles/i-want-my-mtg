@@ -28,7 +28,7 @@ export class SetOrchestrator {
             // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
             const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
             const setMetaList: SetMetaResponseDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
-            return {
+            return new SetListViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: _breadcrumbs ? _breadcrumbs : [
                     { label: "Home", url: "/" },
@@ -37,9 +37,9 @@ export class SetOrchestrator {
                 message: allSets ? `${allSets.length} sets found` : "No sets found",
                 setList: setMetaList,
                 status: allSets ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-            };
+            });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(SetListViewDto, error, {
+            return HttpErrorHandler.toErrorView(SetListViewDto, error, {
                 setList: [],
             }, _breadcrumbs);
         }
@@ -58,7 +58,7 @@ export class SetOrchestrator {
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            return {
+            return new SetViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
                     { label: "Home", url: "/" },
@@ -68,9 +68,9 @@ export class SetOrchestrator {
                 message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-            };
+            });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(SetViewDto, error, {
+            return HttpErrorHandler.toErrorView(SetViewDto, error, {
                 set: null,
             });
         }

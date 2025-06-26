@@ -14,7 +14,16 @@ import { Breadcrumb } from "src/adapters/http/breadcrumb";
 export class HttpErrorHandler {
     private static readonly LOGGER: Logger = new Logger(HttpErrorHandler.name);
 
-    static typedErrorView<T extends BaseViewDto>(
+    /**
+     * For operations that return a view, this method formats the error into a view DTO.
+     * It logs the error and returns a view with the error message and status.
+     * @param ViewClass the class of type T of the view DTO to return
+     * @param error the error that occurred
+     * @param data the data injected into the view DTO
+     * @param breadcrumbs breadcrumbs to include in the view
+     * @returns an instance of the view DTO with error information
+     */
+    static toErrorView<T extends BaseViewDto>(
         ViewClass: new (data: any) => T,
         error: Error,
         data: Record<string, any> = {},
@@ -30,7 +39,13 @@ export class HttpErrorHandler {
         });
     }
 
-    static handleError(error: Error, context: string): never {
+    /**
+     * Handles errors by logging them and throwing standardized HTTP exceptions.
+     * @param error the error that occurred
+     * @param context the context in which the error occurred, used for logging
+     * @returns never, throws an appropriate HTTP exception based on the error message
+     */
+    static toHttpException(error: Error, context: string): never {
         this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
         if (error.message.includes("not found")) {
             throw new NotFoundException(error.message);
@@ -47,6 +62,11 @@ export class HttpErrorHandler {
         throw new InternalServerErrorException("An unexpected error occurred");
     }
 
+    /**
+     * Validates that the request is authenticated and contains a valid user.
+     * @param req the authenticated request to validate
+     * @throws UnauthorizedException if the request is not authenticated or does not contain a valid user
+     */
     static validateAuthenticatedRequest(req: AuthenticatedRequest): void {
         if (!req) {
             throw new UnauthorizedException("Request not found");

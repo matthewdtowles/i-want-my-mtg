@@ -36,7 +36,7 @@ export class InventoryOrchestrator {
                 totalValue,
             });
         } catch (error) {
-            return HttpErrorHandler.typedErrorView(InventoryViewDto, error, {
+            return HttpErrorHandler.toErrorView(InventoryViewDto, error, {
                 cards: [],
                 username: "",
                 totalValue: "0.00",
@@ -52,7 +52,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Saved ${updatedItems.length} inventory items for user ${req.user.id}`);
             return updatedItems;
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "save");
+            return HttpErrorHandler.toHttpException(error, "save");
         }
     }
 
@@ -64,7 +64,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Deleted inventory item for user ${req.user.id}, cardId: ${cardId}, isFoil: ${isFoil}`);
             return true;
         } catch (error) {
-            return HttpErrorHandler.handleError(error, "delete");
+            return HttpErrorHandler.toHttpException(error, "delete");
         }
     }
 }

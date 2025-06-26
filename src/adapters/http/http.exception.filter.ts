@@ -2,8 +2,10 @@ import {
     ArgumentsHost,
     Catch,
     ExceptionFilter,
+    ForbiddenException,
     HttpException,
     HttpStatus,
+    InternalServerErrorException,
     Logger,
     NotFoundException,
     UnauthorizedException,
@@ -36,7 +38,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 status: ActionStatus.ERROR,
                 message: exception.message || "Internal Server Error",
                 statusCode: _status,
-                breadcrumbs: [],
                 authenticated: false,
             });
         }
@@ -51,7 +52,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         if (exception instanceof NotFoundException) {
             return "errors/404";
         }
-        if (exception instanceof UnauthorizedException) {
+        if (exception instanceof UnauthorizedException || exception instanceof ForbiddenException) {
             return "errors/401";
         }
         return "errors/500";

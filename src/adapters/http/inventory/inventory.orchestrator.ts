@@ -21,7 +21,7 @@ export class InventoryOrchestrator {
             const inventoryItems: Inventory[] = await this.inventoryService.findAllCardsForUser(req.user.id);
             const cards: InventoryResponseDto[] = inventoryItems.map(item =>
                 InventoryPresenter.toInventoryResponseDto(item));
-            const username = req.user.name;
+            const username: string = req.user.name;
             const totalValue: string = "0.00";
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -36,11 +36,7 @@ export class InventoryOrchestrator {
                 totalValue,
             });
         } catch (error) {
-            return HttpErrorHandler.toErrorView(InventoryViewDto, error, {
-                cards: [],
-                username: "",
-                totalValue: "0.00",
-            });
+            return HttpErrorHandler.toHttpException(error, "findByUser");
         }
     }
 

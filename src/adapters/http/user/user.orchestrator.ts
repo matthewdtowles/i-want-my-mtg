@@ -71,9 +71,7 @@ export class UserOrchestrator {
                 user: foundUser,
             };
         } catch (error) {
-            return HttpErrorHandler.toErrorView(UserViewDto, error, {
-                user: null,
-            });
+            return HttpErrorHandler.toHttpException(error, "findUser");
         }
     }
 
@@ -103,9 +101,7 @@ export class UserOrchestrator {
                 user: updatedUser,
             });
         } catch (error) {
-            return HttpErrorHandler.toErrorView(UserViewDto, error, {
-                user: null,
-            });
+            return HttpErrorHandler.toHttpException(error, "findUser");
         }
     }
 
@@ -126,7 +122,7 @@ export class UserOrchestrator {
                 status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             });
         } catch (error) {
-            return HttpErrorHandler.toErrorView(BaseViewDto, error, {});
+            return HttpErrorHandler.toHttpException(error, "updatePassword");
         }
     }
 
@@ -145,7 +141,7 @@ export class UserOrchestrator {
                 status: ActionStatus.SUCCESS,
             });
         } catch (error) {
-            return HttpErrorHandler.toErrorView(BaseViewDto, error, {});
+            return HttpErrorHandler.toHttpException(error, "deleteUser");
         }
     }
 }

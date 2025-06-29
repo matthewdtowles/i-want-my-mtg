@@ -15,7 +15,6 @@ export function createSuccessResult<T>(data: T, message?: string): ApiResult<T> 
 
 export function createErrorResult(error: Error | string): ApiResult<null> {
     const errorMessage = error instanceof Error ? error.message : error;
-    
     return {
         success: false,
         data: null,

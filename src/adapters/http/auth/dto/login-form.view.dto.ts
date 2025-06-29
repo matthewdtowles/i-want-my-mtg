@@ -1,3 +1,10 @@
-// TODO: this and other form dto should extend BaseViewDto and use breadcrumbs
-export class LoginFormViewDto {
+import { BaseViewDto } from "src/adapters/http/base.view.dto";
+
+export class LoginFormViewDto extends BaseViewDto {
+    readonly email: string;
+
+    constructor(init: Partial<LoginFormViewDto> = {}) {
+        super(init);
+        this.email = init.email || "";
+    }
 }

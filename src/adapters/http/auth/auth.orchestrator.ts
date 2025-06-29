@@ -1,12 +1,10 @@
-import { Injectable, Inject, Logger, HttpStatus, UnauthorizedException } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { UserResponseDto } from "../user/dto/user.response.dto";
-import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
-import { LoginFormViewDto } from "src/adapters/http/auth/dto/login-form.view.dto";
-import { HttpErrorHandler } from "src/adapters/http/http.error.handler";
 
 
 @Injectable()
@@ -19,7 +17,7 @@ export class AuthOrchestrator {
         try {
             this.LOGGER.debug(`Processing login for user ${user?.name}`);
             if (!user || !user.id) {
-                this.LOGGER.error(`User not found or invalid`);
+                throw new Error("User not found or invalid");
             }
             const coreUser: User = new User({
                 id: user.id,
@@ -29,7 +27,7 @@ export class AuthOrchestrator {
             });
             const authToken: AuthToken = await this.authService.login(coreUser);
             if (!authToken || !authToken.access_token) {
-                this.LOGGER.error(`Authentication token generation failed`);
+                throw new Error("Authentication token generation failed");
             }
             this.LOGGER.log(`${user.name} logged in successfully`);
             return new AuthResult({
@@ -66,14 +64,6 @@ export class AuthOrchestrator {
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 error: error.message
             });
-        }
-    }
-
-    getLoginFormData(): LoginFormViewDto {
-        try {
-            return new LoginFormViewDto();
-        } catch (error) {
-            return HttpErrorHandler.toHttpException(error, "getLoginFormData");
         }
     }
 }

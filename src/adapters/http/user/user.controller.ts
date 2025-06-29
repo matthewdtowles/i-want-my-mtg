@@ -32,10 +32,18 @@ export class UserController {
     @Get("create")
     @Render("createUser")
     createForm(): CreateUserViewDto {
-        return this.userOrchestrator.getCreateUserForm();
+        return new CreateUserViewDto();
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get()
+    @Render("user")
+    async profile(@Req() req: AuthenticatedRequest): Promise<UserViewDto> {
+        return this.userOrchestrator.findUser(req);
     }
 
     @Post("create")
+    @Render("createUser")
     async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
         const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
         res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
@@ -44,13 +52,6 @@ export class UserController {
             secure: process.env.NODE_ENV === "production",
             maxAge: 3600000,
         }).redirect(`/?action=create&status=${HttpStatus.CREATED}&message=User%20created`);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get()
-    @Render("user")
-    async findById(@Req() req: AuthenticatedRequest): Promise<UserViewDto> {
-        return this.userOrchestrator.findUser(req);
     }
 
     @UseGuards(JwtAuthGuard)

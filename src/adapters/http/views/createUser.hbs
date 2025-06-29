@@ -3,11 +3,13 @@
     <form id="create-user-form" class="mt-6" action="/user/create" method="post">
         <div class="mb-4">
             <label class="input-label" for="user-name">User Name</label>
-            <input id="user-name" class="input-field" type="text" name="name" required>
+            <input id="user-name" class="input-field" type="text" name="name"
+                value="{{this.name}}" required>
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-email">Email</label>
-            <input id="user-email" class="input-field" type="email" name="email" required>
+            <input id="user-email" class="input-field" type="email" name="email" required
+                value"{{this.email}}">
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-password">Password</label>

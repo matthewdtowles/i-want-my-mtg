@@ -121,12 +121,4 @@ describe("AuthOrchestrator", () => {
             expect(result.redirectTo).toContain("logout%20failed");
         });
     });
-
-    describe("getLoginFormData", () => {
-        it("should return LoginFormResponseDto", () => {
-            const result: LoginFormViewDto = orchestrator.getLoginFormData();
-
-            expect(result).toBeInstanceOf(LoginFormViewDto);
-        });
-    });
 });

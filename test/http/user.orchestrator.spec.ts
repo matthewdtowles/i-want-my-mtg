@@ -83,14 +83,6 @@ describe("UserOrchestrator", () => {
         jest.clearAllMocks();
     });
 
-    describe("getCreateUserForm", () => {
-        it("should return a CreateUserFormDto", () => {
-            const result = orchestrator.getCreateUserForm();
-
-            expect(result).toBeDefined();
-        });
-    });
-
     describe("create", () => {
         it("should create user and return auth token", async () => {
             const mockUser = new User({ id: 1, name: "New User", email: "new@example.com" });

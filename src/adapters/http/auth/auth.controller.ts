@@ -22,7 +22,7 @@ export class AuthController {
     @Get("login")
     @Render("login")
     async loginForm(): Promise<LoginFormViewDto> {
-        return this.authOrchestrator.getLoginFormData();
+        return new LoginFormViewDto();
     }
 
     @UseGuards(LocalAuthGuard)

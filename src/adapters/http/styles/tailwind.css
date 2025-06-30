@@ -35,10 +35,6 @@
     @apply w-64 h-auto;
 }
 
-.cards-owned-td {
-    @apply w-0;
-}
-
 .create-user-container {
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
 }
@@ -56,6 +52,11 @@
     color: darkred;
 }
 
+.foil-badge {
+    @apply inline-flex items-center text-xs font-medium ml-1 bg-purple-600 text-white px-1.5 py-0.5 
+        rounded shadow-inner;
+}
+
 .input-field {
     @apply mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
 }
@@ -64,8 +65,12 @@
     @apply block font-medium text-teal-500;
 }
 
-.inventory-controller-button {
-    @apply flex items-center justify-center px-3 bg-teal-300 text-white hover:bg-teal-400 active:bg-teal-300;
+.inventory-controller-button-normal {
+    @apply flex items-center justify-center px-3 bg-teal-300 text-white hover:bg-teal-400/30 active:bg-teal-500/30;
+}
+
+.inventory-controller-button-foil {
+    @apply flex items-center justify-center px-3 text-white hover:bg-white/20 active:bg-white/30;
 }
 
 .link {
@@ -96,8 +101,30 @@
     @apply text-teal-700 text-lg md:text-base lg:text-xl mb-6;
 }
 
+.price-foil {
+    @apply inline-block py-1 px-2 text-white font-medium bg-gradient-to-r from-purple-500 to-teal-400 
+        rounded-md shadow-sm;
+}
+
+.price-normal {
+    @apply inline-block py-1 px-2 text-gray-800 font-medium;
+}
+
 .quantity-form {
     @apply text-sm md:text-base lg:text-lg;
+}
+
+.quantity-form-foil {
+    @apply inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8 bg-gradient-to-r from-purple-400 to-teal-300;
+}
+
+.quantity-form-normal {
+    @apply inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8 bg-teal-300;
+}
+
+.quantity-owned {
+    @apply text-center border-none bg-transparent text-white px-0 text-sm sm:text-xs md:text-base lg:text-base w-12 sm:w-12 
+        md:w-12 lg:w-12 xl:w-16 focus:outline-none focus:ring-0; 
 }
 
 .response-message {
@@ -154,13 +181,4 @@
 
 .table-row {
     @apply bg-white even:bg-teal-100 border-b border-teal-300;
-}
-
-.foil-mode .normal-price,
-.foil-mode .owned-normal {
-    display: none ;
-}
-.foil-mode .foil-price,
-.foil-mode .owned-foil {
-    display: inline ;
 }

@@ -1,29 +1,17 @@
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
-import { Card } from "src/core/card/card.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Format } from "src/core/card/format.enum";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { validateInit } from "src/core/validation.util";
 
-@Entity()
 export class Legality {
+    // TODO: review if should be readonly
+    readonly cardId: string;
+    readonly format: Format;
+    readonly status: LegalityStatus;
 
-    @PrimaryColumn()
-    cardId: number;
-
-    @PrimaryColumn({
-        type: "enum",
-        enum: Format,
-        enumName: "format_enum",
-    })
-    format: Format;
-
-    @Column({
-        type: "enum",
-        enum: LegalityStatus,
-        enumName: "legality_status_enum",
-    })
-    status: LegalityStatus;
-
-    @ManyToOne(() => Card, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "cardId", referencedColumnName: "id" })
-    card?: Card;
+    constructor(init: Partial<Legality>) {
+        validateInit(init, ["cardId", "format", "status"]);
+        this.cardId = init.cardId;
+        this.format = init.format;
+        this.status = init.status;
+    }
 }

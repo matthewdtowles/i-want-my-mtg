@@ -2,9 +2,9 @@ import { Inject, Injectable, Logger, UnauthorizedException } from "@nestjs/commo
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { JwtPayload } from "src/core/auth/api/auth.types";
-import { UserDto } from "src/core/user/api/user.dto";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { JwtPayload } from "src/core/auth/auth.types";
+import { User } from "src/core/user/user.entity";
+import { UserService } from "src/core/user/user.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,7 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly LOGGER = new Logger(JwtStrategy.name);
 
     constructor(
-        @Inject(UserServicePort) private readonly userService: UserServicePort,
+        @Inject(UserService) private readonly userService: UserService,
         private readonly configService: ConfigService,
     ) {
         super({
@@ -23,9 +23,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         this.LOGGER.debug(`Initialized`);
     }
 
-    async validate(payload: JwtPayload): Promise<UserDto> {
+    async validate(payload: JwtPayload): Promise<User> {
         this.LOGGER.debug(`Validate`);
-        const user: UserDto = await this.userService.findById(parseInt(payload.sub));
+        const user: User = await this.userService.findById(parseInt(payload.sub));
         if (!user) {
             throw new UnauthorizedException();
         }

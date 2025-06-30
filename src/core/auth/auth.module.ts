@@ -2,11 +2,10 @@ import { Logger, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
+import { AuthService } from "src/core/auth/auth.service";
 import { JwtStrategy } from "src/core/auth/jwt.strategy";
 import { LocalStrategy } from "src/core/auth/local.strategy";
 import { UserModule } from "src/core/user/user.module";
-import { AuthServicePort } from "./api/auth.service.port";
-import { AuthService } from "./auth.service";
 
 @Module({
     imports: [
@@ -23,11 +22,14 @@ import { AuthService } from "./auth.service";
         }),
     ],
     providers: [
-        { provide: AuthServicePort, useClass: AuthService },
+        AuthService,
         JwtStrategy,
         LocalStrategy,
     ],
-    exports: [AuthServicePort, JwtStrategy],
+    exports: [
+        AuthService,
+        JwtStrategy
+    ],
 })
 export class AuthModule {
     private readonly LOGGER: Logger = new Logger(AuthModule.name);

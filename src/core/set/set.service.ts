@@ -1,39 +1,33 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CreateSetDto, SetDto } from "./api/set.dto";
-import { SetRepositoryPort } from "./api/set.repository.port";
-import { SetServicePort } from "./api/set.service.port";
-import { Set } from "./set.entity";
-import { SetMapper } from "./set.mapper";
+import { Set } from "src/core/set/set.entity";
+import { SetRepositoryPort } from "src/core/set/set.repository.port";
 
 @Injectable()
-export class SetService implements SetServicePort {
+export class SetService {
     private readonly LOGGER: Logger = new Logger(SetService.name);
 
     /**
      * @param repository
-     * @param mapper
      */
-    constructor(
-        @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort,
-        @Inject(SetMapper) private readonly mapper: SetMapper,
-    ) { }
+    constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }
 
-    async save(setDtos: CreateSetDto[]): Promise<SetDto[]> {
+    /**
+     * Saves the given sets to the repository.
+     * @param sets - The sets to save.
+     * @returns The total number of sets saved.
+     */
+    async save(sets: Set[]): Promise<number> {
         this.LOGGER.debug(`Calling save`);
-        const setEntities: Set[] = this.mapper.dtosToEntities(setDtos);
-        const savedSetEntities: Set[] = await this.repository.save(setEntities);
-        return this.mapper.entitiesToDtos(savedSetEntities);
+        return await this.repository.save(sets);
     }
 
-    async findAll(): Promise<SetDto[]> {
+    async findAll(): Promise<Set[]> {
         this.LOGGER.debug(`Calling findAll()`);
-        const setEntities: Set[] = await this.repository.findAllSetsMeta();
-        return this.mapper.entitiesToDtos(setEntities);
+        return await this.repository.findAllSetsMeta();
     }
 
-    async findByCode(setCode: string): Promise<SetDto | null> {
+    async findByCode(setCode: string): Promise<Set | null> {
         this.LOGGER.debug(`Calling findByCode(${setCode})`);
-        const setEntity: Set = await this.repository.findByCode(setCode);
-        return this.mapper.entityToDto(setEntity);
+        return await this.repository.findByCode(setCode);
     }
 }

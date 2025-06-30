@@ -1,25 +1,24 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceServicePort } from "src/core/price/api/price.service.port";
+import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
+import { IngestionServicePort } from "src/core/ingestion/ingestion.service.port";
+import { Price } from "src/core/price/price.entity";
+import { PriceService } from "src/core/price/price.service";
+import { Set } from "src/core/set/set.entity";
+import { SetService } from "src/core/set/set.service";
 import { Timing } from "src/shared/decorators/timing.decorator";
-import { CardServicePort } from "../card/api/card.service.port";
-import { CreateCardDto } from "../card/api/create-card.dto";
-import { CreateSetDto, SetDto } from "../set/api/set.dto";
-import { SetServicePort } from "../set/api/set.service.port";
-import { IngestionOrchestratorPort } from "./api/ingestion.orchestrator.port";
-import { IngestionServicePort } from "./api/ingestion.service.port";
 
 @Injectable()
-export class IngestionOrchestrator implements IngestionOrchestratorPort {
+export class IngestionOrchestrator {
     private readonly LOGGER: Logger = new Logger(IngestionOrchestrator.name);
     private readonly PRICE_BUF_SIZE: number = 1000;
     private readonly CARD_BUF_SIZE: number = 10;
 
     constructor(
         @Inject(IngestionServicePort) private readonly ingestionService: IngestionServicePort,
-        @Inject(CardServicePort) private readonly cardService: CardServicePort,
-        @Inject(SetServicePort) private readonly setService: SetServicePort,
-        @Inject(PriceServicePort) private readonly priceService: PriceServicePort,
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(SetService) private readonly setService: SetService,
+        @Inject(PriceService) private readonly priceService: PriceService,
     ) {
         this.LOGGER.debug("Initialized");
     }
@@ -27,16 +26,16 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     @Timing()
     async ingestAllSetMeta(): Promise<void> {
         this.LOGGER.debug(`ingest meta data for all sets`);
-        const setMeta: CreateSetDto[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
-        const savedSets: SetDto[] = await this.setService.save(setMeta);
-        this.LOGGER.log(`Saved Sets size: ${savedSets.length}`);
+        const setMeta: Set[] = await this.ingestionService.fetchAllSetsMeta() ?? [];
+        const totalSaved: number = await this.setService.save(setMeta);
+        this.LOGGER.log(`Saved Sets size: ${totalSaved}`);
     }
 
     @Timing()
     async ingestAllSetCards(): Promise<void> {
         this.LOGGER.debug(`ingest all cards for all sets`);
         const missedSets: string[] = [];
-        const sets: SetDto[] = await this.setService.findAll();
+        const sets: Set[] = await this.setService.findAll();
         for (let i = 0; i < sets.length; i++) {
             try {
                 await this.ingestSetCards(sets[i].code);
@@ -52,9 +51,9 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     async ingestSetCards(code: string): Promise<void> {
         this.LOGGER.debug(`ingest set cards for set code: ${code}`);
         let totalSaved: number = 0;
-        const buffer: CreateCardDto[] = [];
-        for await (const cardDto of this.ingestionService.fetchSetCards(code)) {
-            buffer.push(cardDto);
+        const buffer: Card[] = [];
+        for await (const card of this.ingestionService.fetchSetCards(code)) {
+            buffer.push(card);
             if (buffer.length >= this.CARD_BUF_SIZE) {
                 totalSaved += buffer.length;
                 await this.flushBuffer(buffer, this.cardService.save.bind(this.cardService));
@@ -70,11 +69,11 @@ export class IngestionOrchestrator implements IngestionOrchestratorPort {
     @Timing()
     async ingestTodayPrices(): Promise<void> {
         this.LOGGER.debug(`Ingest prices for today.`);
-        const buffer: CreatePriceDto[] = [];
-        for await (const priceDto of this.ingestionService.fetchTodayPrices()) {
-            buffer.push(priceDto);
+        const buffer: Price[] = [];
+        for await (const price of this.ingestionService.fetchTodayPrices()) {
+            buffer.push(price);
             if (buffer.length >= this.PRICE_BUF_SIZE) {
-                await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
+                 await this.flushBuffer(buffer, this.priceService.save.bind(this.priceService));
             }
         }
         if (buffer.length > 0) {

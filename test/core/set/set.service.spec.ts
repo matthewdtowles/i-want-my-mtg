@@ -1,20 +1,15 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardMapper } from "src/core/card/card.mapper";
-import { CreateSetDto, SetDto } from "src/core/set/api/set.dto";
-import { SetRepositoryPort } from "src/core/set/api/set.repository.port";
 import { Set } from "src/core/set/set.entity";
-import { SetMapper } from "src/core/set/set.mapper";
+import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { SetService } from "src/core/set/set.service";
-import { TestUtils } from "../../test-utils";
 
 describe("SetService", () => {
     let service: SetService;
     let repository: SetRepositoryPort;
 
-    const testUtils: TestUtils = new TestUtils();
     const mockSetCode: string = "SET";
     const setCodes: string[] = ["SET", "ETS", "TES"];
-    const mockCreateSetDtos: CreateSetDto[] = Array.from({ length: 3 }, (_, i) => ({
+    const mockCreateSetDtos: Set[] = Array.from({ length: 3 }, (_, i) => ({
         baseSize: 3,
         block: "Test Set",
         code: setCodes[i],
@@ -30,11 +25,11 @@ describe("SetService", () => {
         ...dto,
         id: i + 1,
         setCode: dto.code,
-        cards: undefined,
+        cards: [],
     }));
 
     const mockSetRepository: SetRepositoryPort = {
-        save: jest.fn().mockResolvedValue(mockSets),
+        save: jest.fn().mockResolvedValue(mockSets.length),
         findAllSetsMeta: jest.fn().mockResolvedValue(mockSets),
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
         delete: jest.fn(),
@@ -48,8 +43,6 @@ describe("SetService", () => {
                     provide: SetRepositoryPort,
                     useValue: mockSetRepository,
                 },
-                SetMapper,
-                CardMapper,
             ],
         }).compile();
         service = module.get<SetService>(SetService);
@@ -61,17 +54,13 @@ describe("SetService", () => {
     });
 
     it("should save sets and return saved sets", async () => {
-        const savedSets: SetDto[] = await service.save(mockCreateSetDtos);
+        const savedSets: number = await service.save(mockCreateSetDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedSets).toHaveLength(mockCreateSetDtos.length);
-        savedSets.forEach((set, idx) => {
-            expect(set.code).toBe(mockCreateSetDtos[idx].code);
-            expect(set.name).toBe(mockCreateSetDtos[idx].name);
-        });
+        expect(savedSets).toBe(mockCreateSetDtos.length);
     });
 
     it("should find all sets - cards not included", async () => {
-        const foundSets: SetDto[] = await service.findAll();
+        const foundSets: Set[] = await service.findAll();
         expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
         expect(foundSets).toHaveLength(mockSets.length);
         foundSets.forEach((set) => {
@@ -81,7 +70,7 @@ describe("SetService", () => {
     });
 
     it("should find set with cards by given set code", async () => {
-        const foundSetWithCards: SetDto = await service.findByCode(mockSetCode);
+        const foundSetWithCards: Set = await service.findByCode(mockSetCode);
         expect(repository.findByCode).toHaveBeenCalledTimes(1);
         expect(foundSetWithCards.code).toBe(mockSetCode);
         expect(foundSetWithCards.cards).toBeDefined();

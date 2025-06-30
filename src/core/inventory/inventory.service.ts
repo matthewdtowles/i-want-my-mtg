@@ -1,59 +1,115 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { InventoryDto } from "./api/inventory.dto";
-import { InventoryRepositoryPort } from "./api/inventory.repository.port";
-import { InventoryServicePort } from "./api/inventory.service.port";
-import { Inventory } from "./inventory.entity";
-import { InventoryMapper } from "./inventory.mapper";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
+import { Set } from "src/core/set/set.entity";
+
 
 @Injectable()
-export class InventoryService implements InventoryServicePort {
+export class InventoryService {
 
     private readonly LOGGER: Logger = new Logger(InventoryService.name);
 
-    constructor(
-        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
-        @Inject(InventoryMapper) private readonly mapper: InventoryMapper,
-    ) { }
+    constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
 
-    async create(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
+    async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
-        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        const savedItems: Inventory[] = await this.repository.save(entities);
-        return this.mapper.toDtos(savedItems);
-    }
-
-    async update(inventoryItems: InventoryDto[]): Promise<InventoryDto[]> {
-        this.LOGGER.debug(`update ${inventoryItems.length} inventory items`);
-        const entities: Inventory[] = this.mapper.toEntities(inventoryItems);
-        const savedItems: Inventory[] = await this.repository.save(entities);
-        return this.mapper.toDtos(savedItems);
-    }
-
-    async findForUser(userId: number, cardId: number): Promise<InventoryDto[]> {
-        this.LOGGER.debug(`findOneForUser ${userId}, card: ${cardId}`);
-        if (!userId || !cardId) {
-            return [];
+        const toSave: Inventory[] = [];
+        for (const item of inventoryItems) {
+            if (item.quantity > 0) {
+                toSave.push(item);
+            } else {
+                // await omitted intentionally
+                this.repository.delete(item.userId, item.cardId, item.isFoil);
+            }
         }
-        const foundItems: Inventory[] = await this.repository.findByCard(userId, cardId);
-        return this.mapper.toDtos(foundItems);
+        return await this.repository.save(toSave);
     }
 
-    async findAllCardsForUser(userId: number): Promise<InventoryDto[]> {
+    async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}`);
+        return userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
+    }
+
+    async findAllCardsForUser(userId: number): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllCardsForUser ${userId}`);
-        if (!userId) {
-            return [];
-        }
-        const foundCards: Inventory[] = await this.repository.findByUser(userId);
-        return this.mapper.toDtos(foundCards);
+        return userId ? await this.repository.findByUser(userId) : [];
     }
 
-    async delete(userId: number, cardId: number, isFoil: boolean): Promise<boolean> {
+    async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
+        this.LOGGER.debug(`findByCards for user: ${userId}`);
+        if (!userId || !cardIds || cardIds.length === 0) {
+            return [];
+        }
+        return await this.repository.findByCards(userId, cardIds);
+    }
+
+    /**
+     * Calculate the completion rate of a set based on the user's inventory.
+     * Normal cards are counted, foils are not.
+     * For foil completion rate, @see calcSetFoilCompletionRate.
+     * 
+     * @param set 
+     * @param inventoryItems 
+     * @returns 
+     */
+    async calcSetCompletionRate(set: Set, inventoryItems: Inventory[]): Promise<number> {
+        this.LOGGER.debug(`calcSetCompletionRate for set: ${set.code}`);
+        if (!set || !set.cards || set.cards.length === 0 || !inventoryItems || inventoryItems.length === 0) {
+            return 0;
+        }
+        const totalCards: number = set.cards.filter(card => card.hasNonFoil).length;
+        const totalOwned: number = inventoryItems.filter(item => item.isFoil === false
+            && set.cards.some(card => card.id === item.cardId)).length;
+        if (totalCards === 0 || totalOwned === 0) {
+            return 0;
+        }
+        if (totalOwned === totalCards) {
+            return 100;
+        }
+        const completionRate: number = Math.round((totalOwned / totalCards) * 100);
+        if (completionRate >= 100) {
+            return 99;
+        }
+        return completionRate;
+    }
+
+    /**
+     * Calculate the foil completion rate of a set based on the user's inventory.
+     * Normal cards are not counted, foils are.
+     * For normal completion rate, @see calcSetCompletionRate.
+     *
+     * @param set
+     * @param inventoryItems
+     * @returns
+     */
+    async calcSetFoilCompletionRate(set: Set, inventoryItems: Inventory[]): Promise<number> {
+        this.LOGGER.debug(`calcSetFoilCompletionRate for set: ${set.code}`);
+        if (!set || !set.cards || set.cards.length === 0 || !inventoryItems || inventoryItems.length === 0) {
+            return 0;
+        }
+        const totalFoilCards: number = set.cards.filter(card => card.hasFoil).length;
+        const totalFoilOwned: number = inventoryItems.filter(item => item.isFoil === true
+            && set.cards.some(card => card.id === item.cardId)).length;
+        if (totalFoilCards === 0 || totalFoilOwned === 0) {
+            return 0;
+        }
+        if (totalFoilOwned === totalFoilCards) {
+            return 100;
+        }
+        const completionRate: number = Math.round((totalFoilOwned / totalFoilCards) * 100);
+        if (completionRate >= 100) {
+            return 99;
+        }
+        return completionRate;
+    }
+
+    async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {
         this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
         let result = false;
         if (userId && cardId) {
             try {
                 await this.repository.delete(userId, cardId, isFoil);
-                const foundItem = await this.repository.findOne(userId, cardId, isFoil);
+                const foundItem: Inventory | null = await this.repository.findOne(userId, cardId, isFoil);
                 if (!foundItem) {
                     result = true;
                 }

@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
 import { Card } from "src/core/card/card.entity";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Price } from "src/core/price/price.entity";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 import { PriceService } from "src/core/price/price.service";
-
 
 describe("PriceService", () => {
     let subject: PriceService;
@@ -31,8 +31,8 @@ describe("PriceService", () => {
                 {
                     provide: CardRepositoryPort,
                     useValue: {
-                        findByUuid: jest.fn(),
-                        findByUuids: jest.fn(),
+                        findById: jest.fn(),
+                        verifyCardsExist: jest.fn(),
                     },
                 },
             ],
@@ -49,35 +49,27 @@ describe("PriceService", () => {
 
     it("should save averaged prices with normal and/or foil", async () => {
         const _date: Date = new Date("2024-05-05");
-        const dtos: CreatePriceDto[] = [
-            { cardUuid: 'uuid-1', date: _date, normal: 1.1 },
-            { cardUuid: 'uuid-2', date: _date, foil: 2.2 },
+        const dtos: Price[] = [
+            new Price({ cardId: "uuid-1", date: _date, normal: 1.1, }),
+            new Price({ cardId: "uuid-2", date: _date, foil: 2.2 }),
         ];
-        const mockCards: Card[] = [];
-        dtos.forEach((dto, i) => {
-            const card: Card = new Card();
-            card.uuid = dto.cardUuid;
-            card.id = i + 1;
-            mockCards.push(card);
-        });
-        mockCardRepo.findByUuids.mockResolvedValue(mockCards);
-        const _cards: Card[] = [
-            { id: 1 } as Card,
-            { id: 2 } as Card,
-        ];
+        const existingCardIds: Set<string> = new Set(dtos.map(dto => dto.cardId));
+        mockCardRepo.verifyCardsExist.mockResolvedValue(existingCardIds);
 
         await subject.save(dtos);
+
+        expect(mockCardRepo.verifyCardsExist).toHaveBeenCalledWith(["uuid-1", "uuid-2"]);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([
-            { card: _cards[0], date: dtos[0].date, normal: 1.1, foil: null },
-            { card: _cards[1], date: dtos[1].date, normal: null, foil: 2.2 },
+            { cardId: "uuid-1", date: dtos[0].date, normal: 1.1, foil: null },
+            { cardId: "uuid-2", date: dtos[1].date, normal: null, foil: 2.2 },
         ]);
     });
 
     it("should skip unknown card UUIDs", async () => {
-        const dtos: CreatePriceDto[] = [
-            { cardUuid: 'uuid-x', date: new Date("2024-01-01"), normal: 1.1 },
+        const dtos: Price[] = [
+            new Price({ cardId: "uuid-x", date: new Date("2024-01-01"), normal: 1.1 }),
         ];
-        mockCardRepo.findByUuids.mockResolvedValue([]);
+        mockCardRepo.verifyCardsExist.mockResolvedValue(new Set());
 
         await subject.save(dtos);
         expect(mockPriceRepo.save).toHaveBeenCalledWith([]);

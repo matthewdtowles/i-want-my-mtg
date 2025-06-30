@@ -1,32 +1,30 @@
 import { Card } from "src/core/card/card.entity";
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { validateInit } from "src/core/validation.util";
 
-@Entity()
 export class Set {
-    @PrimaryColumn()
-    code: string;
+    readonly code: string;
+    readonly baseSize: number;
+    readonly keyruneCode: string;
+    readonly name: string;
+    readonly releaseDate: string;
+    readonly type: string;
+    // Optional fields
+    readonly block?: string;
+    readonly cards?: Card[];
+    readonly parentCode?: string;
 
-    @Column({ name: "base_size" })
-    baseSize: number;
-
-    @Column({ nullable: true })
-    block?: string;
-
-    @OneToMany(() => Card, (card) => card.set)
-    cards: Card[];
-
-    @Column({ name: "keyrune_code" })
-    keyruneCode: string;
-
-    @Column()
-    name: string;
-
-    @Column({ name: "parent_code", nullable: true })
-    parentCode?: string;
-
-    @Column({ name: "release_date", type: "date" })
-    releaseDate: string;
-
-    @Column()
-    type: string;
+    constructor(init: Partial<Set>) {
+        const requiredFields: (keyof Set)[] = ["code", "baseSize", "keyruneCode", "name", "releaseDate", "type"];
+        validateInit(init, requiredFields);
+        this.code = init.code;
+        this.baseSize = init.baseSize;
+        this.keyruneCode = init.keyruneCode;
+        this.name = init.name;
+        this.releaseDate = init.releaseDate;
+        this.type = init.type;
+        // Optional fields
+        this.block = init.block;
+        this.cards = init.cards;
+        this.parentCode = init.parentCode;
+    }
 }

@@ -1,113 +1,120 @@
-import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import * as request from "supertest";
-import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/auth.types";
+import { Response } from "express";
 import { AuthController } from "src/adapters/http/auth/auth.controller";
-import { LocalAuthGuard } from "src/adapters/http/auth/local.auth.guard";
-import { AuthToken } from "src/core/auth/api/auth.types";
-import { AuthServicePort } from "src/core/auth/api/auth.service.port";
+import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
+import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/dto/auth.types";
+import { UserRole } from "src/shared/constants/user.role.enum";
+
 
 describe("AuthController", () => {
-    let app: INestApplication;
-    let authService: AuthServicePort;
+    let controller: AuthController;
+    let authOrchestrator: AuthOrchestrator;
 
-    const mockAuthService = {
+    const mockAuthOrchestrator = {
         login: jest.fn(),
+        logout: jest.fn(),
     };
 
-    beforeAll(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
             providers: [
                 {
-                    provide: AuthServicePort,
-                    useValue: mockAuthService,
+                    provide: AuthOrchestrator,
+                    useValue: mockAuthOrchestrator,
                 },
             ],
-        })
-            .overrideGuard(LocalAuthGuard)
-            .useValue({
-                canActivate: jest.fn().mockImplementation((context) => {
-                    const request = context.switchToHttp().getRequest();
-                    request.user = {
-                        id: 1,
-                        username: "testuser",
-                        email: "testemail@iwmm.com",
-                    };
-                    return true;
-                }),
-            })
-            .compile();
-        app = moduleFixture.createNestApplication();
-        await app.init();
-        authService = moduleFixture.get<AuthServicePort>(AuthServicePort);
+        }).compile();
+
+        controller = module.get<AuthController>(AuthController);
+        authOrchestrator = module.get<AuthOrchestrator>(AuthOrchestrator);
     });
 
-    afterAll(async () => {
-        await app.close();
-    });
-
-    describe("/POST login", () => {
-        it("should return a JWT token in the AuthToken header and redirect if login succeeds", async () => {
-            const mockAuthToken: AuthToken = {
-                access_token: "jwt-token",
+    describe("login", () => {
+        it("should return a JWT token in a cookie and redirect on success", async () => {
+            const userDto = {
+                id: 1,
+                name: "Test User",
+                email: "testuser@example.com",
+                role: UserRole.User,
             };
-            mockAuthService.login.mockResolvedValueOnce(mockAuthToken);
 
-            const response = await request(app.getHttpServer())
-                .post("/auth/login")
-                .send({ username: "testuser", password: "testpass" })
-                .expect(302);
+            const mockReq = { user: userDto } as any;
+            const mockRes = {
+                cookie: jest.fn().mockReturnThis(),
+                redirect: jest.fn(),
+            } as unknown as Response;
 
-            expect(response.headers["set-cookie"]).toBeDefined();
-            expect(response.headers["set-cookie"][0]).toContain(
-                `${AUTH_TOKEN_NAME}=jwt-token`,
+            mockAuthOrchestrator.login.mockResolvedValue({
+                success: true,
+                token: "mock-jwt-token",
+                redirectTo: "/user?action=login&status=200",
+                statusCode: 200,
+            });
+
+            await controller.login(mockReq, mockRes);
+
+            expect(authOrchestrator.login).toHaveBeenCalledWith(userDto);
+            expect(mockRes.cookie).toHaveBeenCalledWith(
+                AUTH_TOKEN_NAME,
+                "mock-jwt-token",
+                expect.objectContaining({
+                    httpOnly: true,
+                    sameSite: "strict",
+                    secure: false,
+                    maxAge: 3600000,
+                })
             );
-            expect(response.headers["set-cookie"][0]).toContain("HttpOnly");
-            expect(response.headers["set-cookie"][0]).toContain("Max-Age=");
-            expect(response.headers["set-cookie"][0]).toContain("SameSite=Strict");
-            expect(response.headers["location"]).toEqual(
-                "/user?action=login&status=200",
-            );
+            expect(mockRes.redirect).toHaveBeenCalledWith("/user?action=login&status=200");
         });
 
-        it("should return 401 Unauthorized and error message if login fails", async () => {
-            mockAuthService.login.mockResolvedValueOnce(null);
+        it("should redirect to login page on authentication failure", async () => {
+            const userDto = {
+                id: 1,
+                name: "Test User",
+                email: "testuser@example.com",
+                role: UserRole.User,
+            };
 
-            const response = await request(app.getHttpServer())
-                .post("/auth/login")
-                .send({ username: "invaliduser", password: "invalidpass" })
-                .expect(302);
+            const mockReq = { user: userDto } as any;
+            const mockRes = {
+                cookie: jest.fn().mockReturnThis(),
+                redirect: jest.fn(),
+            } as unknown as Response;
 
-            expect(response.headers["location"]).toBe(
-                "/login?action=login&status=401",
-            );
-            expect(response.body).toEqual({});
+            mockAuthOrchestrator.login.mockResolvedValue({
+                success: false,
+                redirectTo: "/login?action=login&status=401&message=Authentication%20failed",
+                statusCode: 401,
+                error: "Authentication failed",
+            });
+
+            await controller.login(mockReq, mockRes);
+
+            expect(authOrchestrator.login).toHaveBeenCalledWith(userDto);
+            expect(mockRes.cookie).not.toHaveBeenCalled();
+            expect(mockRes.redirect).toHaveBeenCalledWith("/login?action=login&status=401&message=Authentication%20failed");
         });
     });
 
-    it("should logout user by clearing auth token cookie", async () => {
-        const mockAuthToken: AuthToken = {
-            access_token: "jwt-token",
-        };
-        mockAuthService.login.mockResolvedValueOnce(mockAuthToken);
+    describe("logout", () => {
+        it("should clear the auth cookie and redirect", async () => {
+            const mockRes = {
+                clearCookie: jest.fn(),
+                redirect: jest.fn(),
+            } as unknown as Response;
 
-        let response = await request(app.getHttpServer())
-            .post("/auth/login")
-            .send({ username: "testuser", password: "testpass" })
-            .expect(302);
+            mockAuthOrchestrator.logout.mockResolvedValue({
+                success: true,
+                redirectTo: "/?action=logout&status=200&message=Logged%20out",
+                statusCode: 200,
+            });
 
-        expect(response.headers["set-cookie"]).toBeDefined();
-        expect(response.headers["set-cookie"][0]).toContain(
-            `${AUTH_TOKEN_NAME}=jwt-token`,
-        );
+            await controller.logout(mockRes);
 
-        // logged in - now logout:
-        response = await request(app.getHttpServer())
-            .get("/auth/logout")
-            .expect(302);
-
-        expect(response.headers["set-cookie"]).toBeDefined();
-        expect(response.headers["set-cookie"][0]).toContain(`${AUTH_TOKEN_NAME}=`);
+            expect(authOrchestrator.logout).toHaveBeenCalled();
+            expect(mockRes.clearCookie).toHaveBeenCalledWith(AUTH_TOKEN_NAME);
+            expect(mockRes.redirect).toHaveBeenCalledWith("/?action=logout&status=200&message=Logged%20out");
+        });
     });
 });

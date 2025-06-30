@@ -1,39 +1,38 @@
 import { Inject } from "@nestjs/common";
-import { CardRepositoryPort } from "src/core/card/api/card.repository.port";
-import { Card } from "src/core/card/card.entity";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { PriceRepositoryPort } from "src/core/price/api/price.repository.port";
-import { PriceServicePort } from "src/core/price/api/price.service.port";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Price } from "src/core/price/price.entity";
+import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 
-export class PriceService implements PriceServicePort {
+export class PriceService {
 
     constructor(
         @Inject(PriceRepositoryPort) private readonly priceRepository: PriceRepositoryPort,
         @Inject(CardRepositoryPort) private readonly cardRepository: CardRepositoryPort,
     ) { }
 
-    async save(priceDtos: CreatePriceDto[]): Promise<void> {
-        if (0 === priceDtos.length) return;
-        const uuids: string[] = [...new Set(priceDtos.map((p) => p.cardUuid))];
-        const cards: Card[] = await this.cardRepository.findByUuids(uuids);
-        const cardMap: Map<string, number> = new Map(cards.map((c) => [c.uuid, c.id]));
-        const priceEntities: Price[] = await Promise.all(
-            priceDtos.map((p) => {
-                const cardId: number = cardMap.get(p.cardUuid);
-                if (!cardId) return null;
-                const card = new Card();
-                card.id = cardId;
-                return {
-                    card,
-                    foil: !isNaN(p.foil) ? p.foil : null,
-                    normal: !isNaN(p.normal) ? p.normal : null,
-                    date: p.date,
-                }
-            }).filter((p): p is Price => p !== null));
+    /**
+     * Saves given prices
+     * @param prices 
+     */
+    async save(prices: Price[]): Promise<void> {
+        if (0 === prices.length) return;
+        const cardIds: string[] = [...new Set(prices.map((p) => p.cardId))];
+        const existingCardIds: Set<string> = await this.cardRepository.verifyCardsExist(cardIds);
+        const priceEntities: Price[] = prices
+            .filter((p) => existingCardIds.has(p.cardId))
+            .map((p) => (new Price({
+                cardId: p.cardId,
+                foil: !isNaN(p.foil) ? p.foil : null,
+                normal: !isNaN(p.normal) ? p.normal : null,
+                date: p.date,
+            })));
         await this.priceRepository.save(priceEntities)
     }
 
+    /**
+     * Deletes a price by its ID.
+     * @param id
+     */
     async delete(id: number): Promise<void> {
         return await this.priceRepository.delete(id);
     }

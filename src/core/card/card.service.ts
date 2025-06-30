@@ -1,35 +1,24 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CardDto } from "src/core/card/api/card.dto";
-import { Format } from "src/core/card/api/format.enum";
-import { LegalityStatus } from "src/core/card/api/legality.status.enum";
-import { CardImgType } from "./api/card.img.type.enum";
-import { CardRepositoryPort } from "./api/card.repository.port";
-import { CardServicePort } from "./api/card.service.port";
-import { CreateCardDto, UpdateCardDto } from "./api/create-card.dto";
-import { Card } from "./card.entity";
-import { CardMapper } from "./card.mapper";
-import { Legality } from "./legality.entity";
-
+import { Card } from "src/core/card/card.entity";
+import { CardRepositoryPort } from "src/core/card/card.repository.port";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
 
 @Injectable()
-export class CardService implements CardServicePort {
+export class CardService {
 
     private readonly LOGGER = new Logger(CardService.name);
 
-    constructor(
-        @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
-        @Inject(CardMapper) private readonly mapper: CardMapper,
-    ) { }
+    constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
-
-    async save(cardDtos: CreateCardDto[] | UpdateCardDto[]): Promise<CardDto[]> {
-        let savedDtos: CardDto[] = [];
+    async save(inputCards: Card[]): Promise<number> {
+        let savedEntities: number = 0;
         try {
             const cardsToSave: Card[] = [];
-            const relations: string[] = ["legalities"];
-            for (const dto of cardDtos) {
-                const oldCard: Card = await this.repository.findBySetCodeAndNumber(dto?.setCode, dto?.number, relations);
-                const card: Card = oldCard ? { ...oldCard, ...this.mapper.dtoToEntity(dto) } : this.mapper.dtoToEntity(dto);
+            for (const inCard of inputCards) {
+                const oldCard: Card = await this.repository.findById(inCard.id, ["legalities"]);
+                const card: Card = oldCard ? { ...oldCard, ...inCard } : inCard;
                 if (null === card || undefined === card) {
                     continue;
                 }
@@ -39,60 +28,53 @@ export class CardService implements CardServicePort {
                 card.legalities = legalitiesToSave;
                 cardsToSave.push(card);
             }
-            const savedCards: Card[] = await this.repository.save(cardsToSave);
-            if (Array.isArray(savedCards) && savedCards.length > 0) {
-                this.mapper.entitiesToDtos(savedCards, CardImgType.SMALL).forEach(dto => {
-                    savedDtos.push(dto);
-                });
+            if (cardsToSave.length > 0) {
+                savedEntities += await this.repository.save(cardsToSave);
             }
         } catch (error) {
             const msg = `Error saving cards: ${error.message}`;
             this.LOGGER.error(msg);
         }
-        return savedDtos;
+        return savedEntities;
     }
 
-    async findAllWithName(name: string): Promise<CardDto[]> {
-        this.LOGGER.debug(`findAllWithName ${name}`);
-        const foundCards: Card[] = await this.repository.findAllWithName(name);
-        return this.mapper.entitiesToDtos(foundCards, CardImgType.SMALL);
-    }
-
-    async findById(id: number, imgType: CardImgType = CardImgType.NORMAL): Promise<CardDto> {
-        this.LOGGER.debug(`findById ${id}`);
+    async findAllWithName(name: string): Promise<Card[]> {
         try {
-            const foundCard: Card = await this.repository.findById(id);
-            return this.mapper.entityToDtoForView(foundCard, imgType);
+            return await this.repository.findAllWithName(name);
         } catch (error) {
-            // Do not confuse caller with empty result if error occurs
+            throw new Error(`Error finding cards with name ${name}: ${error.message}`);
+        }
+    }
+
+    async findById(id: string): Promise<Card | null> {
+        try {
+            return await this.repository.findById(id, ["set", "legalities", "prices"]);
+        } catch (error) {
             throw new Error(`Error finding card with id ${id}: ${error.message}`);
         }
     }
 
-    async findBySetCodeAndNumber(
-        setCode: string,
-        number: string,
-        imgType: CardImgType = CardImgType.NORMAL
-    ): Promise<CardDto> {
-        this.LOGGER.debug(`findBySetCodeAndNumber ${setCode} #${number}`);
-        const relations: string[] = ["set", "legalities", "prices"];
+    async findAllInSet(code: string): Promise<Card[]> {
         try {
-            const foundCard: Card = await this.repository.findBySetCodeAndNumber(setCode, number, relations);
-            return this.mapper.entityToDtoForView(foundCard, imgType);
+            return await this.repository.findAllInSet(code);
         } catch (error) {
-            // Do not confuse caller with empty result if error occurs
-            throw new Error(`Error finding card with setCode ${setCode} and number ${number}: ${error.message}`);
+            throw new Error(`Error finding cards in set ${code}: ${error.message}`);
+        }
+    }
+
+    async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
+        try {
+            return await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
+        } catch (error) {
+            throw new Error(`Error finding card with set code ${code} and number ${number}: ${error.message}`);
         }
     }
 
     private extractLegalitiesToSave(card: Card): Legality[] {
-        return card?.legalities?.map(legality => {
-            legality.cardId = card.id;
-            if (legality
-                && Object.values(Format).includes(legality.format?.toLowerCase() as Format)
-                && Object.values(LegalityStatus).includes(legality.status?.toLowerCase() as LegalityStatus)
-            ) {
-                return legality;
+        return card?.legalities?.map((leg: Legality) => {
+            if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)
+                && Object.values(LegalityStatus).includes(leg.status?.toLowerCase() as LegalityStatus)) {
+                return new Legality({ ...leg, cardId: card.id });
             }
         });
     }

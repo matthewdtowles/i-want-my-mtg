@@ -6,10 +6,13 @@ import { PriceList } from "src/adapters/mtgjson-ingestion/dto/priceList.dto";
 import { PricePoints } from "src/adapters/mtgjson-ingestion/dto/pricePoints.dto";
 import { SetDto } from "src/adapters/mtgjson-ingestion/dto/set.dto";
 import { SetList } from "src/adapters/mtgjson-ingestion/dto/setList.dto";
-import { CreateCardDto } from "src/core/card/api/create-card.dto";
-import { LegalityDto } from "src/core/card/api/legality.dto";
-import { CreatePriceDto } from "src/core/price/api/create-price.dto";
-import { CreateSetDto } from "src/core/set/api/set.dto";
+import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
+import { Format } from "src/core/card/format.enum";
+import { Legality } from "src/core/card/legality.entity";
+import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Price } from "src/core/price/price.entity";
+import { Set } from "src/core/set/set.entity";
 import { Readable } from "stream";
 
 export class MtgJsonIngestionTestUtils {
@@ -71,7 +74,7 @@ export class MtgJsonIngestionTestUtils {
             card.manaCost = `{${i}}{W}`;
             card.name = "Test Card Name" + i;
             card.number = i.toString();
-            card.rarity = i % 2 === 1 ? "common" : "uncommon";
+            card.rarity = "uncommon";
             card.identifiers.scryfallId = i + this.MOCK_ROOT_SCRYFALL_ID;
             card.originalText = "Test card text.";
             card.setCode = this.MOCK_SET_CODE;
@@ -139,49 +142,51 @@ export class MtgJsonIngestionTestUtils {
         return setList;
     }
 
-    expectedCreateCardDtos(): CreateCardDto[] {
-        const cards: CreateCardDto[] = [];
+    expectedCreateCardDtos(): Card[] {
+        const cards: Card[] = [];
         for (let i = 1; i <= this.MOCK_BASE_SET_SIZE; i++) {
-            const card: CreateCardDto = {
+            const uuid: string = `abcd-1234-efgh-5678-ijkl-901${i}`;
+            const card: Card = new Card({
+                id: uuid,
                 artist: "artist",
                 hasFoil: false,
                 hasNonFoil: true,
                 imgSrc: `${i}/a/${i}${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
                 isReserved: false,
-                legalities: this.expectedLegalityDtos(),
+                legalities: this.expectedLegalityDtos(uuid),
                 manaCost: `{${i}}{W}`,
                 name: `Test Card Name${i}`,
                 number: `${i}`,
                 oracleText: "Test card text.",
-                rarity: i % 2 === 1 ? "common" : "uncommon",
+                rarity: CardRarity.Uncommon,
                 setCode: this.MOCK_SET_CODE,
-                uuid: `abcd-1234-efgh-5678-ijkl-901${i}`,
                 type: "type",
-            };
+            });
             cards.push(card);
         }
-        const bonusCard: CreateCardDto = {
+        const bonusUuid: string = "zyxw-0987-vutsr-6543-qponm-21098";
+        const bonusCard: Card = {
+            id: bonusUuid,
             artist: "artist",
             hasFoil: false,
             hasNonFoil: true,
             imgSrc: `4/a/4${this.MOCK_ROOT_SCRYFALL_ID}.jpg`,
             isReserved: false,
-            legalities: this.expectedLegalityDtos(),
+            legalities: this.expectedLegalityDtos(bonusUuid),
             manaCost: "{U/G}{B/W}{R/U}",
             name: "Test Bonus Card Name",
             number: `${this.MOCK_BASE_SET_SIZE + 1}`,
             oracleText: "Bonus card text.",
-            rarity: "mythic",
+            rarity: CardRarity.Mythic,
             setCode: this.MOCK_SET_CODE,
-            uuid: "zyxw-0987-vutsr-6543-qponm-21098",
             type: "type",
         };
         cards.push(bonusCard);
         return cards;
     }
 
-    expectedCreateSetDto(): CreateSetDto {
-        const expectedSet: CreateSetDto = {
+    expectedCreateSetDto(): Set {
+        const expectedSet: Set = {
             baseSize: this.MOCK_BASE_SET_SIZE,
             block: this.MOCK_SET_NAME,
             keyruneCode: this.MOCK_SET_CODE.toLowerCase(),
@@ -195,53 +200,53 @@ export class MtgJsonIngestionTestUtils {
     }
 
     // single item array for testing purposes
-    expectedCreateSetDtos(): CreateSetDto[] {
-        const expectedSets: CreateSetDto[] = [];
+    expectedCreateSetDtos(): Set[] {
+        const expectedSets: Set[] = [];
         expectedSets.push(this.expectedCreateSetDto());
         return expectedSets;
     }
 
-    expectedLegalityDtos(): LegalityDto[] {
+    expectedLegalityDtos(cardId: string): Legality[] {
         return [
             {
-                cardId: null,
-                format: "commander",
-                status: "legal",
+                cardId,
+                format: Format.Commander,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "explorer",
-                status: "legal",
+                cardId,
+                format: Format.Explorer,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "historic",
-                status: "legal",
+                cardId,
+                format: Format.Historic,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "legacy",
-                status: "legal",
+                cardId,
+                format: Format.Legacy,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "modern",
-                status: "banned",
+                cardId,
+                format: Format.Modern,
+                status: LegalityStatus.Banned,
             },
             {
-                cardId: null,
-                format: "oathbreaker",
-                status: "legal",
+                cardId,
+                format: Format.Oathbreaker,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "pioneer",
-                status: "legal",
+                cardId,
+                format: Format.Pioneer,
+                status: LegalityStatus.Legal,
             },
             {
-                cardId: null,
-                format: "vintage",
-                status: "legal",
+                cardId,
+                format: Format.Vintage,
+                status: LegalityStatus.Legal,
             },
         ];
     }
@@ -313,40 +318,40 @@ export class MtgJsonIngestionTestUtils {
         };
     }
 
-    expectedCreatePriceDtos(): CreatePriceDto[] {
+    expectedCreatePriceDtos(): Price[] {
         return [
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "abcd-1234-efgh-5678-ijkl-9011",
+                cardId: "abcd-1234-efgh-5678-ijkl-9011",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),
             },
             {
-                cardUuid: "zyxw-0987-vutsr-6543-qponm-2109",
+                cardId: "zyxw-0987-vutsr-6543-qponm-2109",
                 foil: 2.00,
                 normal: 1.00,
                 date: new Date("2023-10-01"),

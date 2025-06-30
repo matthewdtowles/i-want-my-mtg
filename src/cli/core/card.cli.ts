@@ -1,40 +1,14 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { CardDto } from "src/core/card/api/card.dto";
-import { CardServicePort } from "src/core/card/api/card.service.port";
+import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
 
 @Injectable()
 export class CardCli {
     private readonly LOGGER: Logger = new Logger(CardCli.name);
 
-    constructor(
-        @Inject(CardServicePort) private readonly service: CardServicePort,
-    ) { }
+    constructor(@Inject(CardService) private readonly service: CardService,) { }
 
-    @Command({
-        command: "card:get <code> <setNumber>",
-        describe: "Retrieve card with set number from set with given code",
-    })
-    async getCardByNameAndSet(
-        @Positional({
-            name: "code",
-            describe: "the set code of the card",
-            type: "string",
-        })
-        code: string,
-        @Positional({
-            name: "setNumber",
-            describe: "the set number of the card",
-            type: "number",
-        })
-        setNumber: string,
-    ): Promise<void> {
-        const card: CardDto = await this.service.findBySetCodeAndNumber(
-            code,
-            setNumber,
-        );
-        this.LOGGER.log(this.formatOutput(card));
-    }
 
     @Command({
         command: "cards:name-get <name>",
@@ -48,7 +22,7 @@ export class CardCli {
         })
         name: string,
     ): Promise<void> {
-        const cards: CardDto[] = await this.service.findAllWithName(name);
+        const cards: Card[] = await this.service.findAllWithName(name);
         this.LOGGER.log(this.formatOutput(cards));
     }
 
@@ -60,7 +34,7 @@ export class CardCli {
         this.LOGGER.log(`Card CLI invoked`);
     }
 
-    private formatOutput(cards: CardDto[] | CardDto): string {
+    private formatOutput(cards: Card[] | Card): string {
         return `\n${JSON.stringify(cards, null, 2)}`;
     }
 }

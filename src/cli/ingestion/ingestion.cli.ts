@@ -2,16 +2,13 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { Command, Positional } from "nestjs-command";
 import * as path from "path";
-import { IngestionOrchestratorPort } from "src/core/ingestion/api/ingestion.orchestrator.port";
+import { IngestionOrchestrator } from "src/core/ingestion/ingestion.orchestrator";
 
 @Injectable()
 export class IngestionCli {
     private readonly LOGGER: Logger = new Logger(IngestionCli.name);
 
-    constructor(
-        @Inject(IngestionOrchestratorPort)
-        private readonly orchestrator: IngestionOrchestratorPort,
-    ) { }
+    constructor(@Inject(IngestionOrchestrator) private readonly orchestrator: IngestionOrchestrator) { }
 
     @Command({
         command: "ingest:all-sets",

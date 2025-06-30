@@ -1,20 +1,12 @@
 import { Logger, Module } from "@nestjs/common";
-import { DatabaseModule } from "src/adapters/database/database.module";
-import { UserRepository } from "src/adapters/database/user.repository";
-import { InventoryModule } from "../inventory/inventory.module";
-import { UserRepositoryPort } from "./api/user.repository.port";
-import { UserServicePort } from "./api/user.service.port";
-import { UserMapper } from "./user.mapper";
-import { UserService } from "./user.service";
+import { InventoryModule } from "src/core/inventory/inventory.module";
+import { UserService } from "src/core/user/user.service";
+import { DatabaseModule } from "src/infrastructure/database/database.module";
 
 @Module({
     imports: [DatabaseModule, InventoryModule],
-    providers: [
-        { provide: UserServicePort, useClass: UserService },
-        { provide: UserRepositoryPort, useClass: UserRepository },
-        UserMapper,
-    ],
-    exports: [UserRepositoryPort, UserServicePort, UserMapper]
+    providers: [UserService],
+    exports: [UserService]
 })
 export class UserModule {
     private readonly LOGGER: Logger = new Logger(UserModule.name);

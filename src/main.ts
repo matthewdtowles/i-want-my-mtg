@@ -21,20 +21,36 @@ async function bootstrap() {
             toUpperCase: (str: string) => str.toUpperCase(),
             toLowerCase: (str: string) => str.toLowerCase(),
             capitalize: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
-            eq: (a: string, b: string) => a === b,
         },
     });
     app.engine("hbs", hbs.engine);
     app.setViewEngine("hbs");
     app.use(cookieParser());
     app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(
+        app.useGlobalPipes(
         new ValidationPipe({
-            whitelist: true, // Strip unknown properties
-            forbidNonWhitelisted: true, // Throw errors for unknown properties
-            transform: true, // Automatically transform payloads to DTO
+            whitelist: true,
+            forbidNonWhitelisted: false,
+            transform: true,
+            exceptionFactory: (errors) => {
+                const firstError = errors[0];
+                const firstConstraint = Object.values(firstError.constraints || {})[0];
+                return new Error(makeUserFriendly(firstConstraint || "Validation failed"));
+            }
         }),
     );
     await app.listen(3000);
 }
+
+function makeUserFriendly(message: string): string {
+    console.error(`Validation error: ${message}`);
+    message = message?.toLowerCase();
+    if (message.includes("email")) return "Please provide a valid email address";
+    if (message.includes("empty")) return "This field is required";
+    if (message.includes("length")) return "Name must be at least 6 characters";
+    if (message.includes("password")) return "Password must contain uppercase, lowercase, number and special character";
+    if (message.includes("string")) return "Please provide valid text";
+    return message?.charAt(0).toUpperCase() + message?.slice(1) || "An error occurred";
+}
+
 bootstrap();

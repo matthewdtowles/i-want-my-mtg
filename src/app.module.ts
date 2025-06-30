@@ -4,6 +4,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommandModule } from "nestjs-command";
 import { join } from "path";
+import { DatabaseModule } from "src/infrastructure/database/database.module";
 import { DataSource } from "typeorm";
 import { AdapterModule } from "./adapters/adapter.module";
 import { CoreModule } from "./core/core.module";
@@ -45,6 +46,7 @@ import { CoreModule } from "./core/core.module";
                 }
             },
         }),
+        DatabaseModule,
         CoreModule,
         AdapterModule,
         CommandModule,

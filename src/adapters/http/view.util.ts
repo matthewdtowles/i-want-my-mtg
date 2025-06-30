@@ -1,11 +1,11 @@
-import { Breadcrumb } from "src/adapters/http/http.types";
-import { CardDto } from "src/core/card/api/card.dto";
+export const BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 
-export function breadcrumbsForCard(card: CardDto): Breadcrumb[] {
-    return [
-        { label: "Home", url: "/" },
-        { label: "Sets", url: "/sets" },
-        { label: card.setCode.toUpperCase(), url: `/sets/${card.setCode}` },
-        { label: card.name, url: `/cards/${card.setCode}/${card.number}` },
-    ];
+export function toDollar(amount: number): string {
+    let dollarAmount: string = "-";
+    if (amount) {
+        const roundedNumber = Math.ceil(amount * 100) / 100;
+        dollarAmount = roundedNumber.toFixed(2);
+        dollarAmount = "$" + dollarAmount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    return dollarAmount;
 }

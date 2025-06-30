@@ -1,31 +1,31 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { UserDto } from "../user/api/user.dto";
-import { UserServicePort } from "../user/api/user.service.port";
-import { AuthServicePort } from "./api/auth.service.port";
-import { AuthToken, JwtPayload } from "./api/auth.types";
+import { AuthToken, JwtPayload } from "src/core/auth/auth.types";
+import { User } from "src/core/user/user.entity";
+import { UserService } from "src/core/user/user.service";
+
 
 @Injectable()
-export class AuthService implements AuthServicePort {
+export class AuthService {
     private readonly LOGGER: Logger = new Logger(AuthService.name);
 
     constructor(
-        @Inject(UserServicePort) private readonly userService: UserServicePort,
+        @Inject(UserService) private readonly userService: UserService,
         @Inject(JwtService) private readonly jwtService: JwtService,
     ) { }
 
-    async validateUser(email: string, password: string): Promise<UserDto | null> {
+    async validateUser(email: string, password: string): Promise<User | null> {
         this.LOGGER.debug(`Attempt to authenticate ${email}`);
         const encPwd: string = await this.userService.findSavedPassword(email);
-        let user: UserDto = null;
+        let user: User = null;
         if (encPwd && (await bcrypt.compare(password, encPwd))) {
             user = await this.userService.findByEmail(email);
         }
         return user;
     }
 
-    async login(user: UserDto): Promise<AuthToken> {
+    async login(user: User): Promise<AuthToken> {
         if (!user) {
             throw new Error(`Login failure: user not found`);
         }

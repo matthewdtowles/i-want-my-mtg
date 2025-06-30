@@ -1,27 +1,20 @@
-import { Exclude } from "class-transformer";
-import { UserRole } from "src/adapters/http/auth/auth.types";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserRole } from "src/shared/constants/user.role.enum";
+import { validateInit } from "src/core/validation.util";
 
-@Entity({ name: "users" })
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+    readonly id: number;
+    readonly email: string;
+    readonly name: string;
+    // TODO: remove and keep inside of db module
+    readonly password: string;
+    readonly role: UserRole;
 
-    @Column({ unique: true })
-    email: string;
-
-    @Column()
-    name: string;
-
-    @Column()
-    @Exclude()
-    password: string;
-
-    @Column({
-        type: "enum",
-        enum: UserRole,
-        enumName: "user_role_enum",
-        default: UserRole.User,
-    })
-    role: UserRole;
+    constructor(init: Partial<User>) {
+        validateInit(init, ["email", "name"]);
+        this.id = init.id;
+        this.email = init.email;
+        this.name = init.name;
+        this.password = init.password;
+        this.role = init.role  ?? UserRole.User;
+    }
 }

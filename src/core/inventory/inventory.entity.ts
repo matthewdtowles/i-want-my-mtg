@@ -1,34 +1,22 @@
 import { Card } from "src/core/card/card.entity";
-import { User } from "src/core/user/user.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { validateInit } from "src/core/validation.util";
 
-@Entity()
+
 export class Inventory {
-    @PrimaryColumn({ name: "card_id" })
-    cardId: number;
+    readonly cardId: string;
+    readonly userId: number;
+    readonly isFoil: boolean;
+    readonly quantity: number;
+    // For read operations only
+    readonly card?: Card;
 
-    @PrimaryColumn({ name: "user_id" })
-    userId: number;
-
-    @PrimaryColumn({ name: "foil", type: "boolean" })
-    isFoil: boolean;
-
-    @Column({ type: "int", default: 1 })
-    quantity: number;
-
-    @ManyToOne(() => Card, { onDelete: "CASCADE" })
-    @JoinColumn({
-        name: "card_id",
-        referencedColumnName: "id",
-        foreignKeyConstraintName: "FK_Inventory_Card",
-    })
-    card: Card;
-
-    @ManyToOne(() => User, { onDelete: "CASCADE" })
-    @JoinColumn({
-        name: "user_id",
-        referencedColumnName: "id",
-        foreignKeyConstraintName: "FK_Inventory_User",
-    })
-    user: User;
+    constructor(init: Partial<Inventory>) {
+        validateInit(init, ["cardId", "userId", "isFoil", "quantity"]);
+        this.cardId = init.cardId;
+        this.userId = init.userId;
+        this.isFoil = init.isFoil;
+        this.quantity = init.quantity;
+        // Optional field
+        this.card = init.card;
+    }
 }

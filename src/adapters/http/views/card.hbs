@@ -1,3 +1,103 @@
-<button id="toggle-price-mode" class="btn btn-secondary mb-4" type="button">Foil</button>
-<article>{{>cardInfo}}</article>
-<script src="/public/js/priceToggle.js" defer></script>
+<article>
+    <section class="card-info flex flex-col md:flex-row section-container">
+
+        <section class="md:w-1/3 mb-4 md:mb-6">
+            <img class="card-image" src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" />
+        </section>
+
+        <section class="play-info md:w-2/3 md:pl-6">
+
+            <h3 class="card-title text-2xl font-bold mb-4">
+                <div class="text-xl">
+                    <span>{{card.name}}</span>
+                    <span>{{>manaCost card=card}}</span>
+                    {{>reserved card=card}}
+                </div>
+                <div class="flex items-center mb-2">
+                    <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
+                    <span class="text-lg font-medium">{{toUpperCase card.setCode}} {{card.setName}}</span>
+                </div>
+            </h3>
+
+            <section class="subsection-container">
+                <section class="subsection-container">
+                    <h3 class="section-title">Oracle Text</h3>
+                    <p class="card-type section-content">{{card.type}}</p>
+                    <p class="card-oracle-text section-content">{{card.oracleText}}</p>
+                </section>
+                <p class="card-rarity section-content">{{capitalize card.rarity}}</p>
+                <p class="card-number section-content">#{{card.number}}</p>
+                <p class="card-artist section-content">Illustrated by {{card.artist}}</p>
+            </section>
+
+            <section class="card-legalities subsection-container">
+                <h3 class="section-title">Legalities</h3>
+                <table class="list-disc list-inside section-content w-full">
+                    {{#each card.legalities as |legality|}}
+                    <tr>
+                        <td class="w-1/2">{{capitalize legality.format}}</td>
+                        <td class="w-1/2">{{capitalize legality.status}}</td>
+                    </tr>
+                    {{/each}}
+                </table>
+            </section>
+        </section>
+
+        <section class="price-info md:w-1/3 md:pl-6 mb-4 md:mb-0 border-none">
+            <section class="subjsection-container">
+                <h3 class="section-title">Price</h3>
+                <span>
+                    {{#if card.hasNormal}}
+                    <div class="mb-2">
+                        <span class="price-normal">{{card.normalPrice}}</span>
+                    </div>
+                    {{/if}}
+                </span>
+                <span>
+                    {{#if card.hasFoil}}
+                    <div class="mb-2">
+                        <span class="price-foil">{{card.foilPrice}}</span>
+                    </div>
+                    {{/if}}
+                </span>
+                <section class="inventory-info">
+                    {{>inventoryCtrl card=card}}
+                </section>
+            </section>
+        </section>
+    </section>
+    </section>
+
+    <section class="section-container">
+        <h3 class="section-title">Other Printings</h3>
+        <table class="table-container">
+            <tbody>
+                {{#each otherPrintings as |p|}}
+                <tr class="table-row">
+                    <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
+                    <td class="card-name-link py-2" data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}">
+                        <a href="{{p.url}}">{{p.name}}</a>
+                        {{>reserved card=p}}
+                        <a href="{{p.url}}" class="card-img-link">
+                            <img src="{{p.imgSrc}}" alt="{{p.name}}" class="card-img-preview" />
+                        </a>
+                        <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
+                    </td>
+                    <td class="py-2">
+                        {{#if p.hasNormal}}
+                        <span class="price-normal">{{p.normalPrice}}</span>
+                        {{/if}}
+                    </td>
+                    <td class="py-2 text-right">
+                        {{#if p.hasFoil}}
+                        <span class="price-foil">{{p.foilPrice}}</span>
+                        <span class="foil-badge">Foil</span>
+                        {{/if}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </section>
+</article>
+<script src="/public/js/updateInventory.js" defer></script>

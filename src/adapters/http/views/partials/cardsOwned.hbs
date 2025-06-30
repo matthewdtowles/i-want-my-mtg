@@ -1,20 +1,15 @@
-<form class="quantity-form inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8"
-    data-item-id="{{card.id}}">
+<form class="quantity-form quantity-form-{{#if card.isFoil}}foil{{else}}normal{{/if}}"
+    data-item-id="{{card.cardId}}" data-foil="{{card.isFoil}}">
 
-    <input type="hidden" name="cardId" value="{{card.id}}" />
+    <input type="hidden" name="cardId" value="{{card.cardId}}" />
 
-    <button type="button"
-        class="increment-quantity inventory-controller-button hover:text-purple-400 active:text-purple-600">+</button>
+    <button type="button" class="increment-quantity  inventory-controller-button-{{#if card.isFoil}}foil{{else}}normal{{/if}} 
+        hover:text-purple-400 active:text-purple-600">+</button>
 
-    <input type="number" name="quantity-owned" class="quantity-owned text-center 
-        border-none bg-teal-300 text-white px-0
-        text-sm sm:text-xs md:text-base lg:text-base
-        w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16
-        focus:outline-none focus:ring-0" value="{{variant.quantity}}"
-        data-id="{{card.id}}" />
+    <input type="number" name="quantity-owned" class="quantity-owned" value="{{card.quantity}}" data-id="{{card.cardId}}" />
 
-    <input type="hidden" name="isFoil" value="{{variant.isFoil}}" />
-    <button type="button"
-        class="decrement-quantity inventory-controller-button hover:text-red-400 active:text-red-600">-</button>
+    <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
+    <button type="button" class="decrement-quantity inventory-controller-button-{{#if card.isFoil}}foil{{else}}normal{{/if}} 
+            hover:text-red-400 active:text-red-600">-</button>
 
 </form>

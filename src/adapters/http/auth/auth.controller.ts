@@ -1,64 +1,49 @@
 import {
     Controller,
-    Get,
-    HttpStatus,
-    Inject,
-    Logger,
-    Post,
+    Get, Inject, Post,
     Render,
     Req,
     Res,
-    UseGuards,
+    UseGuards
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthServicePort } from "src/core/auth/api/auth.service.port";
-import { AuthToken } from "src/core/auth/api/auth.types";
-import { UserDto } from "src/core/user/api/user.dto";
-import { AUTH_TOKEN_NAME, AuthenticatedRequest } from "./auth.types";
+import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
+import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
+import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
+import { LoginFormViewDto } from "src/adapters/http/auth/dto/login-form.view.dto";
+import { AUTH_TOKEN_NAME } from "./dto/auth.types";
 import { LocalAuthGuard } from "./local.auth.guard";
 
 @Controller("auth")
 export class AuthController {
-    private readonly LOGGER: Logger = new Logger(AuthController.name);
 
-    constructor(@Inject(AuthServicePort) private readonly authService: AuthServicePort) { }
+    constructor(@Inject(AuthOrchestrator) private readonly authOrchestrator: AuthOrchestrator) { }
 
     @Get("login")
     @Render("login")
-    async loginForm() {
-        this.LOGGER.debug(`login form called`);
-        return {};
+    async loginForm(): Promise<LoginFormViewDto> {
+        return new LoginFormViewDto();
     }
 
     @UseGuards(LocalAuthGuard)
     @Post("login")
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
-        this.LOGGER.debug(`Attempt to authenticate ${JSON.stringify(req.user)}`);
-        const user: UserDto = req.user;
-        if (!user || !user.id) {
-            this.LOGGER.error(`User not found`);
-            res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
-        }
-        const authToken: AuthToken = await this.authService.login(req.user);
-        if (!authToken || !authToken.access_token) {
-            this.LOGGER.error(`Login failed`);
-            res.redirect(`/login?action=login&status=${HttpStatus.UNAUTHORIZED}`);
-        }
-        this.LOGGER.log(`${user.name} logged in`);
-        res
-            .cookie(AUTH_TOKEN_NAME, authToken.access_token, {
+        const result: AuthResult = await this.authOrchestrator.login(req.user);
+        if (result.success && result.token) {
+            res.cookie(AUTH_TOKEN_NAME, result.token, {
                 httpOnly: true,
                 sameSite: "strict",
                 secure: process.env.NODE_ENV === "production",
-                maxAge: 3600000,
-            })
-            .redirect(`/user?action=login&status=${HttpStatus.OK}`);
+                maxAge: 3600000, // 1 hour
+            });
+        }
+        res.redirect(result.redirectTo);
     }
 
     @Get("logout")
     async logout(@Res() res: Response): Promise<void> {
-        this.LOGGER.debug(`Logging out user`);
+        const result = await this.authOrchestrator.logout();
         res.clearCookie(AUTH_TOKEN_NAME);
-        res.redirect(`/?action=logout&status=${HttpStatus.OK}&message=Logged%20out`);
+        res.redirect(result.redirectTo);
     }
 }

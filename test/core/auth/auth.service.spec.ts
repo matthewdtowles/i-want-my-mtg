@@ -1,13 +1,12 @@
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
-import { UserRole } from "src/adapters/http/auth/auth.types";
-import { AuthToken } from "src/core/auth/api/auth.types";
 import { AuthService } from "src/core/auth/auth.service";
-import { UserDto } from "src/core/user/api/user.dto";
-import { UserRepositoryPort } from "src/core/user/api/user.repository.port";
-import { UserServicePort } from "src/core/user/api/user.service.port";
+import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
+import { UserRepositoryPort } from "src/core/user/user.repository.port";
+import { UserService } from "src/core/user/user.service";
+import { UserRole } from "src/shared/constants/user.role.enum";
 
 // Mock User data
 const mockUser: User = {
@@ -18,17 +17,9 @@ const mockUser: User = {
     role: UserRole.User,
 };
 
-// Mock UserDto data
-const mockUserDto: UserDto = {
-    id: 1,
-    email: "test@test.com",
-    name: "Test User",
-    role: UserRole.User,
-};
-
 describe("AuthService", () => {
     let authService: AuthService;
-    let userServicePort: UserServicePort;
+    let userService: UserService;
     let userRepositoryPort: UserRepositoryPort;
     let jwtService: JwtService;
 
@@ -37,10 +28,10 @@ describe("AuthService", () => {
             providers: [
                 AuthService,
                 {
-                    provide: UserServicePort,
+                    provide: UserService,
                     useValue: {
-                        findByEmail: jest.fn().mockResolvedValue(mockUserDto),
-                        findSavedPassword: jest.fn().mockResolvedValue(mockUserDto.email),
+                        findByEmail: jest.fn().mockResolvedValue(mockUser),
+                        findSavedPassword: jest.fn().mockResolvedValue(mockUser.email),
                     },
                 },
                 {
@@ -59,20 +50,20 @@ describe("AuthService", () => {
         }).compile();
 
         authService = module.get<AuthService>(AuthService);
-        userServicePort = module.get<UserServicePort>(UserServicePort);
+        userService = module.get<UserService>(UserService);
         userRepositoryPort = module.get<UserRepositoryPort>(UserRepositoryPort);
         jwtService = module.get<JwtService>(JwtService);
     });
 
     describe("validateUser", () => {
-        it("should return UserDto if the email and password are valid", async () => {
+        it("should return User if the email and password are valid", async () => {
             jest
                 .spyOn(bcrypt, "compare")
                 .mockImplementation(() => Promise.resolve(true));
             const result = await authService.validateUser(mockUser.email, "password");
             expect(bcrypt.compare).toHaveBeenCalledWith("password", mockUser.email);
-            expect(userServicePort.findByEmail).toHaveBeenCalledWith(mockUser.email);
-            expect(result).toEqual(mockUserDto);
+            expect(userService.findByEmail).toHaveBeenCalledWith(mockUser.email);
+            expect(result).toEqual(mockUser);
         });
 
         it("should return null if the email or password is invalid", async () => {
@@ -92,11 +83,11 @@ describe("AuthService", () => {
         it("should return an access token", async () => {
             const expectedToken: AuthToken = { access_token: "jwtToken" };
 
-            const result = await authService.login(mockUserDto);
+            const result = await authService.login(mockUser);
             expect(jwtService.signAsync).toHaveBeenCalledWith({
-                email: mockUserDto.email,
-                sub: mockUserDto.id.toString(),
-                role: mockUserDto.role,
+                email: mockUser.email,
+                sub: mockUser.id.toString(),
+                role: mockUser.role,
             });
             expect(result).toEqual(expectedToken);
         });

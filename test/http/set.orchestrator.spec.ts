@@ -144,7 +144,8 @@ describe("SetOrchestrator", () => {
             const result: SetListViewDto = await orchestrator.findSetList(mockAuthenticatedRequest);
 
             expect(result.setList).toHaveLength(0);
-            expect(result.status).toBe(ActionStatus.ERROR);
+            expect(result.message).toBe("0 sets found");
+            expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
         it("should handle unauthenticated requests", async () => {

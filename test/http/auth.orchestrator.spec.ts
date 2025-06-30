@@ -110,15 +110,18 @@ describe("AuthOrchestrator", () => {
         });
 
         it("should return failed AuthResult if logout throws an error", async () => {
-            jest.spyOn(AuthOrchestrator.prototype as any, "logout").mockImplementationOnce(() => {
+            const loggerSpy = jest.spyOn((orchestrator as any).LOGGER, 'debug').mockImplementationOnce(() => {
                 throw new Error("Logout failed");
             });
-
             const result: AuthResult = await orchestrator.logout();
 
             expect(result).toBeDefined();
             expect(result.success).toBe(false);
-            expect(result.redirectTo).toContain("logout%20failed");
+            expect(result.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+            expect(result.redirectTo).toBe(`/?action=logout&status=${HttpStatus.INTERNAL_SERVER_ERROR}&message=Logout%20failed`);
+            expect(result.error).toBe("Logout failed");
+
+            loggerSpy.mockRestore();
         });
     });
 });

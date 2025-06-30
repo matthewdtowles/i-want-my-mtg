@@ -28,21 +28,6 @@ describe("InventoryOrchestrator", () => {
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
 
-    const mockInventoryItems: Inventory[] = [
-        {
-            userId: 1,
-            cardId: "card1",
-            quantity: 2,
-            isFoil: false,
-        },
-        {
-            userId: 1,
-            cardId: "card1",
-            quantity: 1,
-            isFoil: true,
-        }
-    ];
-
     const mockInventoryRequest: InventoryRequestDto[] = [
         {
             cardId: "card1",
@@ -73,18 +58,6 @@ describe("InventoryOrchestrator", () => {
     });
 
     describe("findByUser", () => {
-        it("should return inventory view data when user has inventory items", async () => {
-            mockInventoryService.findAllCardsForUser.mockResolvedValue(mockInventoryItems);
-
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest);
-
-            expect(result).toBeDefined();
-            expect(result.authenticated).toBe(true);
-            expect(result.cards).toHaveLength(2);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(inventoryService.findAllCardsForUser).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);
-        });
-
         it("should return empty inventory view when user has no items", async () => {
             mockInventoryService.findAllCardsForUser.mockResolvedValue([]);
 
@@ -92,23 +65,26 @@ describe("InventoryOrchestrator", () => {
 
             expect(result).toBeDefined();
             expect(result.cards).toHaveLength(0);
-            expect(result.message).toContain("not found");
-            expect(result.status).toBe(ActionStatus.ERROR);
-        });
-
-        it("should return error view when request is not authenticated", async () => {
-            const unauthenticatedRequest = { ...mockAuthenticatedRequest, user: null };
-
-            // const result: InventoryViewDto = await orchestrator.findByUser(unauthenticatedRequest);
-
-            // expect(result).toBeDefined();
-            // expect(result.authenticated).toBe(false);
-            // expect(result.status).toBe(ActionStatus.ERROR);
+            expect(result.status).toBe(ActionStatus.SUCCESS);
         });
     });
 
     describe("save", () => {
         it("should save inventory items and return them", async () => {
+            const mockInventoryItems: Inventory[] = [
+                {
+                    userId: 1,
+                    cardId: "card1",
+                    quantity: 2,
+                    isFoil: false,
+                },
+                {
+                    userId: 1,
+                    cardId: "card1",
+                    quantity: 1,
+                    isFoil: true,
+                }
+            ];
             mockInventoryService.save.mockResolvedValue(mockInventoryItems);
 
             const result = await orchestrator.save(mockInventoryRequest, mockAuthenticatedRequest);

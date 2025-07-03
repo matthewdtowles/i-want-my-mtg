@@ -40,3 +40,12 @@ yarn.lock
 .DS_Store
 
 .notes*
+
+# Ignore Rust build and tool files
+**/target/
+**/*.rs.bk
+**Cargo.lock
+Cargo.toml.orig
+/.cargo/
+rustfmt.toml
+.clippy.toml

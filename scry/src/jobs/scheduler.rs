@@ -26,8 +26,9 @@ impl Scheduler {
     pub async fn start_watching(&self) -> Result<()> {
         info!("Setting up watchers for data sources...");
 
-        // Archive old price visions daily at 2 AM
+        /// Archive old price visions daily at 2 AM
         let price_archiver = self.price_archiver.clone();
+        /// TODO: parameterize the cron expression via config
         let archive_job = Job::new_async("0 2 * * *", move |_uuid, _l| {
             let archiver = price_archiver.clone();
             Box::pin(async move {

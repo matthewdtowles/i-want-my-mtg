@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
+use crate::models::CardRarity;
+
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct Card {
     pub id: String,
@@ -12,7 +14,7 @@ pub struct Card {
     pub mana_cost: Option<String>,
     pub name: String,
     pub oracle_text: Option<String>,
-    pub rarity: String,
+    pub rarity: CardRarity,
     pub set_code: String,
     pub card_type: String,
     pub order: Option<i32>,

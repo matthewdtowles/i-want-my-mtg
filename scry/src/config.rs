@@ -28,6 +28,10 @@ impl Config {
     }
 
     fn get_database_url() -> Result<String> {
+        if let Ok(url) = env::var("DATABASE_URL") {
+            return Ok(url);
+        }
+
         env::var("DATABASE_URL").or_else(|_| {
             let host = env::var("DB_HOST")?;
             let port = env::var("DB_PORT")?;
@@ -36,7 +40,7 @@ impl Config {
             let database = env::var("DB_NAME")?;
             Ok(format!("postgresql://{}:{}@{}:{}/{}", 
                 username, password, host, port, database))
-        }).context("Failed to get database URL")
+        })
     }
 
     fn parse_env<T: std::str::FromStr>(key: &str, default: &str) -> Result<T>

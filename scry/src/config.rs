@@ -1,12 +1,12 @@
-use anyhow::{Result, Context};
+use anyhow::Result;
 use std::env;
 
 #[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
     pub max_pool_size: u32,
-    pub price_retention_days: i64,
-    pub archive_batch_size: i64,
+    pub price_retention_days: i16,
+    pub archive_batch_size: i16,
     pub mtgjson_api_url: String,
     pub scryfall_api_url: String,
     pub request_delay_ms: u64,

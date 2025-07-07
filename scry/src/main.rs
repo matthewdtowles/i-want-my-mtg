@@ -1,14 +1,17 @@
+use anyhow::Result;
 use clap::{Parser, Subcommand};
+use tokio_cron_scheduler::JobScheduler;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod api;
 mod config;
 mod database;
-mod jobs;
 mod models;
+mod services;
 
 use config::Config;
-use jobs::scheduler::Scheduler;
+use services::scheduler::Scheduler;
 
 #[derive(Parser)]
 #[command(name = "scry")]
@@ -40,8 +43,8 @@ enum Commands {
 
     /// Archive old prices to history tables
     Archive {
-        #[arg(short, long, default_value = "7", help = "Days to keep in main tables")]
-        days: u32,
+        #[arg(short, long, help = "Batch size for archiving")]
+        batch_size: Option<i16>,
     },
 
     /// Ingest set data
@@ -52,7 +55,7 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "scry=info".into()),
@@ -64,39 +67,58 @@ async fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
     let config = Config::from_env()?;
-
     info!("Scry awakens...");
+
+    // Create database service (single connection pool)
+    let db = database::DatabaseService::new(&config).await?;
+
+    // Create repositories with borrowed DatabaseService
+    let price_repo = database::repositories::PriceRepository::new(&db);
+    let card_repo = database::repositories::CardRepository::new(&db);
+
+    // Create ScryApi (was ApiClient)
+    let scry_api = api::ScryApi::new(&config);
+
+    // Create services with borrowed repositories
+    let ingestion_service = services::IngestionService::new(scry_api, price_repo, card_repo);
+    let price_archiver = services::PriceArchiver::new(price_repo);
+
+    // Create main API controller
+    let api_controller =
+        api::ScryApi::new(ingestion_service, price_archiver, price_repo, card_repo);
+
+    // Create scheduler
+    let job_scheduler = JobScheduler::new().await?;
+    let scheduler = Scheduler::new(job_scheduler, api_controller, config);
 
     match cli.command {
         Commands::Watch => {
             info!("Starting to watch data sources...");
-            let scheduler = Scheduler::new(config).await?;
             scheduler.start_watching().await?;
         }
         Commands::Cards { set_code, force } => {
             info!("Scrying card data...");
-            let scheduler = Scheduler::new(config).await?;
-            scheduler.scry_cards(set_code, force).await?;
+            let count = scheduler.ingest_cards(set_code, force).await?;
+            info!("Ingested {} cards", count);
         }
         Commands::Prices { source } => {
             info!("Scrying price data...");
-            let scheduler = Scheduler::new(config).await?;
-            scheduler.scry_prices(source).await?;
+            let count = scheduler.ingest_prices(source).await?;
+            info!("Ingested {} prices", count);
         }
-        Commands::Archive { days } => {
-            info!("Archiving old visions ({} day retention)...", days);
-            let scheduler = Scheduler::new(config).await?;
-            scheduler.archive_old_visions(days).await?;
+        Commands::Archive { batch_size } => {
+            info!("Archiving old visions...");
+            let count = scheduler.archive_prices(batch_size).await?;
+            info!("Archived {} price records", count);
         }
         Commands::Sets => {
             info!("Scrying for new set releases...");
-            let scheduler = Scheduler::new(config).await?;
-            scheduler.scry_sets().await?;
+            // TODO: Add sets functionality
+            info!("Sets functionality not implemented yet");
         }
         Commands::Clarity => {
             info!("Checking data clarity...");
-            let scheduler = Scheduler::new(config).await?;
-            scheduler.check_clarity().await?;
+            scheduler.check_health().await?;
         }
     }
 

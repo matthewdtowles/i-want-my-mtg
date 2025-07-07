@@ -16,6 +16,6 @@ pub struct Card {
     pub oracle_text: Option<String>,
     pub rarity: CardRarity,
     pub set_code: String,
-    pub card_type: String,
+    pub type_line: String,
     pub order: Option<i32>,
 }

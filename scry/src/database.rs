@@ -1,3 +1,14 @@
-pub mod connection;
+mod service;
+pub mod repositories;
 
-pub use connection::*;
+pub use service::DatabaseService;
+pub use repositories::{
+    card::CardRepository,
+    legality::LegalityRepository,
+    price::PriceRepository,
+    set::SetRepository,
+};
+
+pub async fn create_database_service(config: &crate::config::Config) -> anyhow::Result<DatabaseService> {
+    DatabaseService::new(config).await
+}

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 // src/database/repositories/card.rs
 use anyhow::Result;
 use sqlx::QueryBuilder;
@@ -5,12 +7,13 @@ use sqlx::QueryBuilder;
 use crate::database::DatabaseService;
 use crate::models::Card;
 
-pub struct CardRepository<'db> {
-    db: &'db DatabaseService,
+#[derive(Clone)]
+pub struct CardRepository {
+    db: Arc<DatabaseService>,
 }
 
-impl<'db> CardRepository<'db> {
-    pub fn new(db: &'db DatabaseService) -> Self {
+impl CardRepository {
+    pub fn new(db: Arc<DatabaseService>) -> Self {
         Self { db }
     }
 

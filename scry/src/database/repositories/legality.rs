@@ -1,4 +1,4 @@
-// src/database/repositories/card.rs
+// src/database/repositories/legality.rs
 use crate::database::DatabaseService;
 use crate::models::Legality;
 use anyhow::Result;
@@ -8,7 +8,7 @@ pub struct LegalityRepository {
     db: DatabaseService,
 }
 
-impl LegalityRepository{
+impl LegalityRepository {
     pub fn new(db: DatabaseService) -> Self {
         Self { db }
     }
@@ -18,17 +18,16 @@ impl LegalityRepository{
             return Ok(0);
         }
 
-        let mut query_builder = QueryBuilder::new(
-            "INSERT INTO legality (card_id, format, status) ",
-        );
+        let mut query_builder =
+            QueryBuilder::new("INSERT INTO legality (legality_id, format, status) ");
 
-        query_builder.push_values(cards, |mut b, card| {
-            b.push_bind(&card.scryfall_id)
-                .push_bind(&card.name)
-                .push_bind(&card.mana_cost)
-                .push_bind(&card.type_line)
-                .push_bind(&card.oracle_text)
-                .push_bind(&card.set_code);
+        query_builder.push_values(legalities, |mut b, legality| {
+            b.push_bind(&legality.scryfall_id)
+                .push_bind(&legality.name)
+                .push_bind(&legality.mana_cost)
+                .push_bind(&legality.type_line)
+                .push_bind(&legality.oracle_text)
+                .push_bind(&legality.set_code);
         });
 
         query_builder.push(
@@ -45,32 +44,36 @@ impl LegalityRepository{
     }
 
     pub async fn count(&self) -> Result<i64> {
-        let query = "SELECT COUNT(*) FROM cards";
+        let query = "SELECT COUNT(*) FROM legality";
         self.db.count(query, &[]).await
     }
 
-    pub async fn find_by_set(&self, set_code: &str) -> Result<Vec<Card>> {
+    pub async fn find_by_set(&self, set_code: &str) -> Result<Vec<Legality>> {
         let query = "SELECT id, scryfall_id, name, mana_cost, type_line, oracle_text, set_code, created_at, updated_at 
-                     FROM cards 
+                     FROM legality 
                      WHERE set_code = $1";
 
-        self.db.fetch_all::<Card>(query, &[&set_code]).await
+        self.db.fetch_all::<Legality>(query, &[&set_code]).await
     }
 
-    pub async fn find_by_scryfall_id(&self, scryfall_id: &str) -> Result<Option<Card>> {
+    pub async fn find_by_scryfall_id(&self, scryfall_id: &str) -> Result<Option<Legality>> {
         let query = "SELECT id, scryfall_id, name, mana_cost, type_line, oracle_text, set_code, created_at, updated_at 
-                     FROM cards 
+                     FROM legality 
                      WHERE scryfall_id = $1";
 
-        self.db.fetch_optional::<Card>(query, &[&scryfall_id]).await
+        self.db
+            .fetch_optional::<Legality>(query, &[&scryfall_id])
+            .await
     }
 
-    pub async fn search_by_name(&self, name: &str) -> Result<Vec<Card>> {
+    pub async fn search_by_name(&self, name: &str) -> Result<Vec<Legality>> {
         let query = "SELECT id, scryfall_id, name, mana_cost, type_line, oracle_text, set_code, created_at, updated_at 
-                     FROM cards 
+                     FROM legality 
                      WHERE name ILIKE $1";
 
         let search_pattern = format!("%{}%", name);
-        self.db.fetch_all::<Card>(query, &[&search_pattern]).await
+        self.db
+            .fetch_all::<Legality>(query, &[&search_pattern])
+            .await
     }
 }

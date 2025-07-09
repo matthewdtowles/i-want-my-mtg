@@ -3,8 +3,9 @@ use clap::{Parser, Subcommand};
 use tokio_cron_scheduler::JobScheduler;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use std::sync::Arc;
 
-mod api;
+mod clients;
 mod config;
 mod database;
 mod models;
@@ -31,15 +32,10 @@ enum Commands {
     Cards {
         #[arg(short, long, help = "Specific set code to scry")]
         set_code: Option<String>,
-        #[arg(long, help = "Force full resync")]
-        force: bool,
     },
 
     /// Ingest pricing data
-    Prices {
-        #[arg(short, long, help = "Specific source: scryfall, tcgplayer")]
-        source: Option<String>,
-    },
+    Prices,
 
     /// Archive old prices to history tables
     Archive {
@@ -67,25 +63,28 @@ async fn main() -> Result<()> {
 
     let cli = Cli::parse();
     let config = Config::from_env()?;
-    info!("Scry awakens...");
+    info!("Scry: MTG Data Management Tool");
 
-    // Create database service (single connection pool)
-    let db = database::DatabaseService::new(&config).await?;
+    // Create database service wrapped in Arc (single connection pool)
+    let db = Arc::new(database::DatabaseService::new(&config).await?);
 
-    // Create repositories with borrowed DatabaseService
-    let price_repo = database::repositories::PriceRepository::new(&db);
-    let card_repo = database::repositories::CardRepository::new(&db);
+    // Create repositories with Arc<DatabaseService>
+    let price_repo = database::repositories::PriceRepository::new(Arc::clone(&db));
+    let card_repo = database::repositories::CardRepository::new(Arc::clone(&db));
 
-    // Create ScryApi (was ApiClient)
-    let scry_api = api::ScryApi::new(&config);
+    // Create MtgJsonClient client for external API calls
+    let scry_api_client = clients::MtgJsonClient::new(&config);
 
-    // Create services with borrowed repositories
-    let ingestion_service = services::IngestionService::new(scry_api, price_repo, card_repo);
-    let price_archiver = services::PriceArchiver::new(price_repo);
+    // Create services
+    let ingestion_service = services::IngestionService::new(
+        scry_api_client, 
+        price_repo.clone(), 
+        card_repo.clone()
+    );
+    let price_archiver = services::PriceArchiver::new(price_repo.clone());
 
     // Create main API controller
-    let api_controller =
-        api::ScryApi::new(ingestion_service, price_archiver, price_repo, card_repo);
+    let api_controller = clients::MtgJsonClient::new(&config);
 
     // Create scheduler
     let job_scheduler = JobScheduler::new().await?;
@@ -96,14 +95,14 @@ async fn main() -> Result<()> {
             info!("Starting to watch data sources...");
             scheduler.start_watching().await?;
         }
-        Commands::Cards { set_code, force } => {
+        Commands::Cards { set_code} => {
             info!("Scrying card data...");
-            let count = scheduler.ingest_cards(set_code, force).await?;
+            let count = scheduler.ingest_cards(set_code).await?;
             info!("Ingested {} cards", count);
         }
-        Commands::Prices { source } => {
+        Commands::Prices => {
             info!("Scrying price data...");
-            let count = scheduler.ingest_prices(source).await?;
+            let count = scheduler.ingest_prices().await?;
             info!("Ingested {} prices", count);
         }
         Commands::Archive { batch_size } => {

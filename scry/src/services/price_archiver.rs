@@ -1,14 +1,15 @@
 use anyhow::Result;
 use tracing::info;
 
-use crate::database::repositories::price::PriceRepository;
+use crate::database::repositories::PriceRepository;
 
-pub struct PriceArchiver<'a> {
-    price_repo: PriceRepository<'a>,
+#[derive(Clone)]
+pub struct PriceArchiver {
+    price_repo: PriceRepository,
 }
 
-impl<'a> PriceArchiver<'a> {
-    pub fn new(price_repo: PriceRepository<'a>) -> Self {
+impl PriceArchiver {
+    pub fn new(price_repo: PriceRepository) -> Self {
         Self { price_repo }
     }
 

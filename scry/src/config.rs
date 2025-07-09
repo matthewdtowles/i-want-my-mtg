@@ -10,6 +10,7 @@ pub struct Config {
     pub mtgjson_api_url: String,
     pub scryfall_api_url: String,
     pub request_delay_ms: u64,
+    pub mtg_json_base_url: String,
 }
 
 impl Config {
@@ -24,6 +25,8 @@ impl Config {
             scryfall_api_url: env::var("SCRYFALL_API_URL")
                 .unwrap_or_else(|_| "https://api.scryfall.com".to_string()),
             request_delay_ms: Self::parse_env("REQUEST_DELAY_MS", "100")?,
+            mtg_json_base_url: env::var("MTG_JSON_BASE_URL")
+                .unwrap_or_else(|_| "https://mtgjson.com/api/v5".to_string()),
         })
     }
 

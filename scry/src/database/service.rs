@@ -1,7 +1,7 @@
-use anyhow::Result;
-use sqlx::{postgres::PgPoolOptions, PgPool, Row, FromRow, QueryBuilder};
-use std::sync::Arc;
 use crate::config::Config;
+use anyhow::Result;
+use sqlx::{postgres::PgPoolOptions, FromRow, PgPool, QueryBuilder, Row};
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct DatabaseService {
@@ -14,7 +14,7 @@ impl DatabaseService {
             .max_connections(config.max_pool_size)
             .connect(&config.database_url)
             .await?;
-        
+
         Ok(Self {
             pool: Arc::new(pool),
         })
@@ -55,7 +55,10 @@ impl DatabaseService {
         T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin,
         P: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
-        let result = sqlx::query_as::<_, T>(query).bind(param).fetch_one(&*self.pool).await?;
+        let result = sqlx::query_as::<_, T>(query)
+            .bind(param)
+            .fetch_one(&*self.pool)
+            .await?;
         Ok(result)
     }
 
@@ -74,7 +77,10 @@ impl DatabaseService {
         T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin,
         P: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
-        let result = sqlx::query_as::<_, T>(query).bind(param).fetch_all(&*self.pool).await?;
+        let result = sqlx::query_as::<_, T>(query)
+            .bind(param)
+            .fetch_all(&*self.pool)
+            .await?;
         Ok(result)
     }
 
@@ -83,7 +89,9 @@ impl DatabaseService {
     where
         T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin,
     {
-        let result = sqlx::query_as::<_, T>(query).fetch_optional(&*self.pool).await?;
+        let result = sqlx::query_as::<_, T>(query)
+            .fetch_optional(&*self.pool)
+            .await?;
         Ok(result)
     }
 
@@ -93,12 +101,18 @@ impl DatabaseService {
         T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin,
         P: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
-        let result = sqlx::query_as::<_, T>(query).bind(param).fetch_optional(&*self.pool).await?;
+        let result = sqlx::query_as::<_, T>(query)
+            .bind(param)
+            .fetch_optional(&*self.pool)
+            .await?;
         Ok(result)
     }
 
     // For complex queries that need QueryBuilder
-    pub async fn execute_query_builder(&self, mut builder: QueryBuilder<'_, sqlx::Postgres>) -> Result<u64> {
+    pub async fn execute_query_builder(
+        &self,
+        mut builder: QueryBuilder<'_, sqlx::Postgres>,
+    ) -> Result<u64> {
         let result = builder.build().execute(&*self.pool).await?;
         Ok(result.rows_affected())
     }
@@ -115,8 +129,57 @@ impl DatabaseService {
     where
         P: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
-        let row = sqlx::query(query).bind(param).fetch_one(&*self.pool).await?;
+        let row = sqlx::query(query)
+            .bind(param)
+            .fetch_one(&*self.pool)
+            .await?;
         let count: i64 = row.get(0);
         Ok(count)
+    }
+
+    // Additional helper methods for common patterns
+
+    // Execute multiple queries in a transaction
+    pub async fn execute_transaction<F, R>(&self, transaction_fn: F) -> Result<R>
+    where
+        F: for<'c> FnOnce(&'c mut sqlx::Transaction<'_, sqlx::Postgres>) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<R>> + Send + 'c>>,
+        R: Send,
+    {
+        let mut tx = self.pool.begin().await?;
+        let result = transaction_fn(&mut tx).await?;
+        tx.commit().await?;
+        Ok(result)
+    }
+
+    // Get a direct reference to the pool for advanced usage
+    pub fn pool(&self) -> &PgPool {
+        &self.pool
+    }
+
+    // Execute multiple statements (useful for migrations/setup)
+    pub async fn execute_batch(&self, queries: &[&str]) -> Result<Vec<u64>> {
+        let mut results = Vec::new();
+        
+        for query in queries {
+            let result = sqlx::query(query).execute(&*self.pool).await?;
+            results.push(result.rows_affected());
+        }
+        
+        Ok(results)
+    }
+
+    // Bulk execute with parameters (useful for batch inserts with different data)
+    pub async fn execute_batch_with_params<T>(&self, query: &str, params: Vec<T>) -> Result<u64>
+    where
+        T: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
+    {
+        let mut total_affected = 0;
+        
+        for param in params {
+            let result = sqlx::query(query).bind(param).execute(&*self.pool).await?;
+            total_affected += result.rows_affected();
+        }
+        
+        Ok(total_affected)
     }
 }

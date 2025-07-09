@@ -1,53 +1,19 @@
 // src/services/ingestion.rs
+use crate::clients::MtgJsonClient;
+use crate::database::repositories::{CardRepository, PriceRepository};
+use crate::models::{Card, Price};
 use anyhow::Result;
 use tracing::{info, warn};
-use crate::api::ApiClient; // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// // TODO!!!!!!!!!!! this should be the mtg json rest api client!!!!!! NEED TO IMPL!!!!
-// use crate::database::repositories::{PriceRepository, CardRepository};
-use crate::models::{Price, Card};
 
-pub struct IngestionService<'db> {
-    api_client: ApiClient,
+pub struct IngestionService {
+    api_client: MtgJsonClient,
     price_repo: PriceRepository,
     card_repo: CardRepository,
 }
 
-impl<'db> IngestionService<'db> {
+impl<'db> IngestionService {
     pub fn new(
-        api_client: ApiClient,
+        api_client: MtgJsonClient,
         price_repo: PriceRepository,
         card_repo: CardRepository,
     ) -> Self {
@@ -59,10 +25,16 @@ impl<'db> IngestionService<'db> {
     }
 
     pub async fn ingest_prices(&self, source: Option<String>) -> Result<u64> {
-        info!("Starting price ingestion from source: {:?}", source.as_deref().unwrap_or("scryfall"));
-        
-        let prices_data = self.api_client.fetch_scryfall::<Vec<serde_json::Value>>("cards").await?;
-        
+        info!(
+            "Starting price ingestion from source: {:?}",
+            source.as_deref().unwrap_or("scryfall")
+        );
+
+        let prices_data = self
+            .api_client
+            .fetch_scryfall::<Vec<serde_json::Value>>("cards")
+            .await?;
+
         let prices: Vec<Price> = prices_data
             .into_iter()
             .filter_map(|data| self.transform_to_price(data).ok())
@@ -75,20 +47,26 @@ impl<'db> IngestionService<'db> {
 
         let inserted_count = self.price_repo.bulk_insert(&prices).await?;
         info!("Successfully ingested {} prices", inserted_count);
-        
+
         Ok(inserted_count)
     }
 
     pub async fn ingest_cards(&self, set_code: Option<String>, force: bool) -> Result<u64> {
-        info!("Starting card ingestion for set: {:?}, force: {}", set_code, force);
-        
+        info!(
+            "Starting card ingestion for set: {:?}, force: {}",
+            set_code, force
+        );
+
         let endpoint = match set_code {
             Some(set) => format!("cards/search?q=set:{}", set),
             None => "cards".to_string(),
         };
 
-        let cards_data = self.api_client.fetch_scryfall::<Vec<serde_json::Value>>(&endpoint).await?;
-        
+        let cards_data = self
+            .api_client
+            .fetch_scryfall::<Vec<serde_json::Value>>(&endpoint)
+            .await?;
+
         let cards: Vec<Card> = cards_data
             .into_iter()
             .filter_map(|data| self.transform_to_card(data).ok())
@@ -101,7 +79,7 @@ impl<'db> IngestionService<'db> {
 
         let inserted_count = self.card_repo.bulk_insert(&cards).await?;
         info!("Successfully ingested {} cards", inserted_count);
-        
+
         Ok(inserted_count)
     }
 

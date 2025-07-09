@@ -4,19 +4,19 @@ use tracing::{error, info};
 use std::sync::Arc;
 
 use crate::config::Config;
-use crate::api::ScryApi;
+use crate::clients::MtgJsonClient;
 
 pub struct Scheduler {
     scheduler: JobScheduler,
-    scry_api: Arc<ScryApi>,
+    request_client: Arc<MtgJsonClient>,
     config: Arc<Config>,
 }
 
 impl Scheduler {
-    pub fn new(scheduler: JobScheduler, scry_api: ScryApi, config: Config) -> Self {
+    pub fn new(scheduler: JobScheduler, mtgjson_client: MtgJsonClient, config: Config) -> Self {
         Self {
             scheduler,
-            scry_api: Arc::new(scry_api),
+            request_client: Arc::new(mtgjson_client),
             config: Arc::new(config),
         }
     }
@@ -25,15 +25,15 @@ impl Scheduler {
         info!("Setting up watchers for data sources...");
         
         // Clone what we need for the async closure
-        let scry_api = Arc::clone(&self.scry_api);
+        let mtgjson_client = Arc::clone(&self.request_client);
         let batch_size = self.config.archive_batch_size;
         
         // Archive old price visions daily at 2 AM
         let archive_job = Job::new_async("0 2 * * *", move |_uuid, _l| {
-            let scry_api = Arc::clone(&scry_api);
+            let mtgjson_client = Arc::clone(&mtgjson_client);
             Box::pin(async move {
                 info!("Starting nightly price archiving...");
-                match scry_api.archive_prices(batch_size).await {
+                match mtgjson_client.archive_prices(batch_size).await {
                     Ok(count) => info!("Nightly archive complete: {} records processed", count),
                     Err(e) => error!("Archive failed: {}", e),
                 }
@@ -49,26 +49,26 @@ impl Scheduler {
         }
     }
 
-    pub async fn ingest_cards(&self, set_code: Option<String>, force: bool) -> Result<u64> {
-        info!("Starting card ingestion for set: {:?}, force: {}", set_code, force);
-        self.scry_api.ingest_cards(set_code, force).await
+    pub async fn ingest_cards(&self, set_code: Option<String>) -> Result<u64> {
+        info!("Starting card ingestion for set: {:?}", set_code);
+        self.request_client.ingest_cards(set_code).await
     }
 
-    pub async fn ingest_prices(&self, source: Option<String>) -> Result<u64> {
-        info!("Starting price ingestion from source: {:?}", source.as_deref().unwrap_or("default"));
-        self.scry_api.ingest_prices(source).await
+    pub async fn ingest_prices(&self) -> Result<u64> {
+        info!("Starting price ingestion");
+        self.request_client.ingest_prices().await
     }
 
     pub async fn archive_prices(&self, custom_batch_size: Option<i16>) -> Result<u64> {
         info!("Starting manual price archiving...");
         let batch_size = custom_batch_size.unwrap_or(self.config.archive_batch_size);
-        self.scry_api.archive_prices(batch_size).await
+        self.request_client.archive_prices(batch_size).await
     }
 
     pub async fn check_health(&self) -> Result<()> {
         info!("Checking system health...");
 
-        let health_status = self.scry_api.get_health_status().await?;
+        let health_status = self.request_client.get_health_status().await?;
 
         info!("System health report:");
         info!("    Cards in database: {}", health_status.card_count);
@@ -79,14 +79,14 @@ impl Scheduler {
 
     // Future: Add other scheduled jobs
     pub async fn add_price_ingestion_job(&self, cron_expression: &str) -> Result<()> {
-        let scry_api = Arc::clone(&self.scry_api);
+        let mtgjson_client = Arc::clone(&self.request_client);
         let cron_expr = cron_expression.to_string();
         
         let price_job = Job::new_async(&cron_expr, move |_uuid, _l| {
-            let scry_api = Arc::clone(&scry_api);
+            let mtgjson_client = Arc::clone(&mtgjson_client);
             Box::pin(async move {
                 info!("Starting scheduled price ingestion...");
-                match scry_api.ingest_prices(None).await {
+                match mtgjson_client.ingest_prices(None).await {
                     Ok(count) => info!("Price ingestion complete: {} records", count),
                     Err(e) => error!("Price ingestion failed: {}", e),
                 }
@@ -98,14 +98,14 @@ impl Scheduler {
     }
 
     pub async fn add_card_ingestion_job(&self, cron_expression: &str) -> Result<()> {
-        let scry_api = Arc::clone(&self.scry_api);
+        let mtgjson_client = Arc::clone(&self.request_client);
         let cron_expr = cron_expression.to_string();
         
         let card_job = Job::new_async(&cron_expr, move |_uuid, _l| {
-            let scry_api = Arc::clone(&scry_api);
+            let mtgjson_client = Arc::clone(&mtgjson_client);
             Box::pin(async move {
                 info!("Starting scheduled card ingestion...");
-                match scry_api.ingest_cards(None, false).await {
+                match mtgjson_client.ingest_cards(None, false).await {
                     Ok(count) => info!("Card ingestion complete: {} records", count),
                     Err(e) => error!("Card ingestion failed: {}", e),
                 }

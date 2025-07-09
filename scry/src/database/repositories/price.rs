@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Result;
 use chrono::Utc;
 use sqlx::QueryBuilder;
@@ -5,17 +7,18 @@ use sqlx::QueryBuilder;
 use crate::database::DatabaseService;
 use crate::models::Price;
 
-pub struct PriceRepository<'db> {
-    db: &'db DatabaseService,
+#[derive(Clone)]
+pub struct PriceRepository {
+    db:  Arc<DatabaseService>,
 }
 
-impl<'db> PriceRepository<'db> {
-    pub fn new(db: &'db DatabaseService) -> Self {
+impl PriceRepository {
+    pub fn new(db:  Arc<DatabaseService>) -> Self {
         Self { db }
     }
 
     pub async fn fetch_batch(&self, batch_size: i16) -> Result<Vec<Price>> {
-        let query = "SELECT id, card_id, foil, normal, date, created_at, updated_at 
+        let query = "SELECT id, card_id, foil, normal, date
                      FROM price 
                      ORDER BY id ASC 
                      LIMIT $1";

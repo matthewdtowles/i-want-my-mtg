@@ -1,9 +1,5 @@
-// src/api/scry_api.rs
-use crate::database::repositories::{CardRepository, PriceRepository};
-use crate::services::{IngestionService, PriceArchiver};
 use anyhow::Result;
 
-// This is the API client for external calls
 #[derive(Clone)]
 pub struct MtgJsonClient {
     client: reqwest::Client,
@@ -30,11 +26,11 @@ impl MtgJsonClient {
 
     pub async fn fetch_prices(&self) -> Result<Vec<serde_json::Value>> {
         // MTG JSON doesn't have prices, this might be for Scryfall or TCGPlayer
-        self.fetch_json("/v5/AllPrices.json").await
+        self.fetch_json("/AllPricesToday.json").await
     }
 
     pub async fn fetch_sets(&self) -> Result<Vec<serde_json::Value>> {
-        self.fetch_json("/v5/SetList.json").await
+        self.fetch_json("/SetList.json").await
     }
 
     pub async fn fetch_json<T>(&self, endpoint: &str) -> Result<T>
@@ -50,7 +46,10 @@ impl MtgJsonClient {
 
         if !response.status().is_success() {
             tracing::error!("HTTP request failed: {} - {}", response.status(), url);
-            return Err(anyhow::anyhow!("HTTP request failed: {}", response.status()));
+            return Err(anyhow::anyhow!(
+                "HTTP request failed: {}",
+                response.status()
+            ));
         }
 
         let data = response.json::<T>().await?;
@@ -59,5 +58,3 @@ impl MtgJsonClient {
         Ok(data)
     }
 }
-
-

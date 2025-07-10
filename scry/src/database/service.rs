@@ -142,7 +142,11 @@ impl DatabaseService {
     // Execute multiple queries in a transaction
     pub async fn execute_transaction<F, R>(&self, transaction_fn: F) -> Result<R>
     where
-        F: for<'c> FnOnce(&'c mut sqlx::Transaction<'_, sqlx::Postgres>) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<R>> + Send + 'c>>,
+        F: for<'c> FnOnce(
+            &'c mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<R>> + Send + 'c>,
+        >,
         R: Send,
     {
         let mut tx = self.pool.begin().await?;
@@ -159,12 +163,12 @@ impl DatabaseService {
     // Execute multiple statements (useful for migrations/setup)
     pub async fn execute_batch(&self, queries: &[&str]) -> Result<Vec<u64>> {
         let mut results = Vec::new();
-        
+
         for query in queries {
             let result = sqlx::query(query).execute(&*self.pool).await?;
             results.push(result.rows_affected());
         }
-        
+
         Ok(results)
     }
 
@@ -174,12 +178,12 @@ impl DatabaseService {
         T: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
         let mut total_affected = 0;
-        
+
         for param in params {
             let result = sqlx::query(query).bind(param).execute(&*self.pool).await?;
             total_affected += result.rows_affected();
         }
-        
+
         Ok(total_affected)
     }
 }

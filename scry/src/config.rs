@@ -5,11 +5,8 @@ use std::env;
 pub struct Config {
     pub database_url: String,
     pub max_pool_size: u32,
-    pub price_retention_days: i16,
-    pub archive_batch_size: i16,
-    pub mtgjson_api_url: String,
-    pub scryfall_api_url: String,
-    pub request_delay_ms: u64,
+    pub price_retention_days: u8,
+    pub archive_batch_size: u16,
     pub mtg_json_base_url: String,
 }
 
@@ -20,11 +17,6 @@ impl Config {
             max_pool_size: Self::parse_env("DB_MAX_POOL_SIZE", "10")?,
             price_retention_days: Self::parse_env("PRICE_RETENTION_DAYS", "7")?,
             archive_batch_size: Self::parse_env("ARCHIVE_BATCH_SIZE", "1000")?,
-            mtgjson_api_url: env::var("MTGJSON_API_URL")
-                .unwrap_or_else(|_| "https://mtgjson.com/api/v5".to_string()),
-            scryfall_api_url: env::var("SCRYFALL_API_URL")
-                .unwrap_or_else(|_| "https://api.scryfall.com".to_string()),
-            request_delay_ms: Self::parse_env("REQUEST_DELAY_MS", "100")?,
             mtg_json_base_url: env::var("MTG_JSON_BASE_URL")
                 .unwrap_or_else(|_| "https://mtgjson.com/api/v5".to_string()),
         })
@@ -41,8 +33,10 @@ impl Config {
             let username = env::var("DB_USERNAME")?;
             let password = env::var("DB_PASSWORD")?;
             let database = env::var("DB_NAME")?;
-            Ok(format!("postgresql://{}:{}@{}:{}/{}", 
-                username, password, host, port, database))
+            Ok(format!(
+                "postgresql://{}:{}@{}:{}/{}",
+                username, password, host, port, database
+            ))
         })
     }
 

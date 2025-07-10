@@ -1,57 +1,21 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
-use tokio_cron_scheduler::JobScheduler;
+use clap::Parser;
+use cli::{commands::Cli, CliController};
+use config::Config;
+use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use std::sync::Arc;
 
+mod cli;
 mod clients;
 mod config;
 mod database;
 mod models;
 mod services;
 
-use config::Config;
-use services::scheduler::Scheduler;
-
-#[derive(Parser)]
-#[command(name = "scry")]
-#[command(about = "Scry data sources for MTG collection insights")]
-#[command(version)]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Start watching data sources (scheduled operations)
-    Watch,
-
-    /// Ingest card data
-    Cards {
-        #[arg(short, long, help = "Specific set code to scry")]
-        set_code: Option<String>,
-    },
-
-    /// Ingest pricing data
-    Prices,
-
-    /// Archive old prices to history tables
-    Archive {
-        #[arg(short, long, help = "Batch size for archiving")]
-        batch_size: Option<i16>,
-    },
-
-    /// Ingest set data
-    Sets,
-
-    /// Check the clarity of our data (health check)
-    Clarity,
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialize logging
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "scry=info".into()),
@@ -59,68 +23,62 @@ async fn main() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    // Load environment and config
     dotenvy::dotenv().ok();
-
     let cli = Cli::parse();
     let config = Config::from_env()?;
-    info!("Scry: MTG Data Management Tool");
 
-    // Create database service wrapped in Arc (single connection pool)
-    let db = Arc::new(database::DatabaseService::new(&config).await?);
+    info!("🔮 Scry: MTG Data Management Tool");
 
-    // Create repositories with Arc<DatabaseService>
+    // Initialize dependencies
+    let dependencies = initialize_dependencies(&config).await?;
+
+    // Create CLI controller and handle command
+    let cli_controller = CliController::new(
+        dependencies.ingestion_service,
+        dependencies.price_archiver,
+        dependencies.price_repo,
+        dependencies.card_repo,
+    );
+
+    // Execute the command
+    cli_controller.handle_command(cli.command).await?;
+
+    info!("✅ Scry completed successfully");
+    Ok(())
+}
+
+async fn initialize_dependencies(config: &Config) -> Result<Dependencies> {
+    info!("Initializing system dependencies...");
+
+    // Create database service
+    let db = Arc::new(database::DatabaseService::new(config).await?);
+
+    // Create repositories
     let price_repo = database::repositories::PriceRepository::new(Arc::clone(&db));
     let card_repo = database::repositories::CardRepository::new(Arc::clone(&db));
 
-    // Create MtgJsonClient client for external API calls
-    let scry_api_client = clients::MtgJsonClient::new(&config);
+    // Create external API client
+    let mtg_client = clients::MtgJsonClient::new(config);
 
     // Create services
-    let ingestion_service = services::IngestionService::new(
-        scry_api_client, 
-        price_repo.clone(), 
-        card_repo.clone()
-    );
+    let ingestion_service =
+        services::IngestionService::new(mtg_client, price_repo.clone(), card_repo.clone());
     let price_archiver = services::PriceArchiver::new(price_repo.clone());
 
-    // Create main API controller
-    let api_controller = clients::MtgJsonClient::new(&config);
+    info!("System dependencies initialized successfully");
 
-    // Create scheduler
-    let job_scheduler = JobScheduler::new().await?;
-    let scheduler = Scheduler::new(job_scheduler, api_controller, config);
+    Ok(Dependencies {
+        ingestion_service,
+        price_archiver,
+        price_repo,
+        card_repo,
+    })
+}
 
-    match cli.command {
-        Commands::Watch => {
-            info!("Starting to watch data sources...");
-            scheduler.start_watching().await?;
-        }
-        Commands::Cards { set_code} => {
-            info!("Scrying card data...");
-            let count = scheduler.ingest_cards(set_code).await?;
-            info!("Ingested {} cards", count);
-        }
-        Commands::Prices => {
-            info!("Scrying price data...");
-            let count = scheduler.ingest_prices().await?;
-            info!("Ingested {} prices", count);
-        }
-        Commands::Archive { batch_size } => {
-            info!("Archiving old visions...");
-            let count = scheduler.archive_prices(batch_size).await?;
-            info!("Archived {} price records", count);
-        }
-        Commands::Sets => {
-            info!("Scrying for new set releases...");
-            // TODO: Add sets functionality
-            info!("Sets functionality not implemented yet");
-        }
-        Commands::Clarity => {
-            info!("Checking data clarity...");
-            scheduler.check_health().await?;
-        }
-    }
-
-    info!("Scry's vision is complete");
-    Ok(())
+struct Dependencies {
+    ingestion_service: services::IngestionService,
+    price_archiver: services::PriceArchiver,
+    price_repo: database::repositories::PriceRepository,
+    card_repo: database::repositories::CardRepository,
 }

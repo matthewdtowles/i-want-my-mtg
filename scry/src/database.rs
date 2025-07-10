@@ -4,7 +4,6 @@ pub mod repositories;
 pub use service::DatabaseService;
 pub use repositories::{
     card::CardRepository,
-    legality::LegalityRepository,
     price::PriceRepository,
     set::SetRepository,
 };

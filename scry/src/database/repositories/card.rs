@@ -1,11 +1,8 @@
-use std::sync::Arc;
-
-// src/database/repositories/card.rs
-use anyhow::Result;
-use sqlx::QueryBuilder;
-
 use crate::database::DatabaseService;
 use crate::models::Card;
+use anyhow::Result;
+use sqlx::QueryBuilder;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct CardRepository {
@@ -58,7 +55,9 @@ impl CardRepository {
                      FROM card 
                      WHERE set_code = $1";
 
-        self.db.fetch_all_with_param::<Card, &str>(query, set_code).await
+        self.db
+            .fetch_all_with_param::<Card, &str>(query, set_code)
+            .await
     }
 
     pub async fn find_by_scryfall_id(&self, scryfall_id: &str) -> Result<Option<Card>> {
@@ -66,7 +65,9 @@ impl CardRepository {
                      FROM card 
                      WHERE scryfall_id = $1";
 
-        self.db.fetch_optional_with_param::<Card, &str>(query, scryfall_id).await
+        self.db
+            .fetch_optional_with_param::<Card, &str>(query, scryfall_id)
+            .await
     }
 
     pub async fn search_by_name(&self, name: &str) -> Result<Vec<Card>> {
@@ -75,6 +76,8 @@ impl CardRepository {
                      WHERE name ILIKE $1";
 
         let search_pattern = format!("%{}%", name);
-        self.db.fetch_all_with_param::<Card, String>(query, search_pattern).await
+        self.db
+            .fetch_all_with_param::<Card, String>(query, search_pattern)
+            .await
     }
 }

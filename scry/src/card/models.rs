@@ -1,7 +1,6 @@
+use crate::card::card_rarity::CardRarity;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-
-use crate::models::CardRarity;
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct Card {

@@ -1,11 +1,3 @@
-use std::sync::Arc;
-
-use anyhow::Result;
-use chrono::Utc;
-use sqlx::QueryBuilder;
-
-use crate::database::DatabaseService;
-use crate::models::Price;
 
 #[derive(Clone)]
 pub struct PriceRepository {

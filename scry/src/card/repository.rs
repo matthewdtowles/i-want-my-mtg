@@ -1,4 +1,3 @@
-// src/card_ingestion/repository.rs
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
@@ -22,7 +21,7 @@ impl CardRepository {
         }
 
         let mut query_builder = QueryBuilder::new(
-            "INSERT INTO card (uuid, name, set_code, mana_cost, type_line, oracle_text, rarity) "
+            "INSERT INTO card (id, name, set_code, mana_cost, type, oracle_text, rarity) "
         );
 
         query_builder.push_values(cards, |mut b, card| {
@@ -35,6 +34,7 @@ impl CardRepository {
                 .push_bind(&card.rarity);
         });
 
+        // TODO: what is this?
         query_builder.push(" ON CONFLICT (uuid) DO UPDATE SET name = EXCLUDED.name");
 
         self.connection_pool.execute_query_builder(query_builder).await

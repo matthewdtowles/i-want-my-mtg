@@ -4,14 +4,14 @@ use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod card;
 mod cli;
 mod config;
 mod database;
-mod shared;
-mod card_ingestion;
-mod set_ingestion;
-mod price_management;
 mod health_check;
+mod price;
+mod set;
+mod shared;
 
 use cli::{commands::Cli, controller::CliController};
 use config::Config;
@@ -38,10 +38,22 @@ async fn main() -> Result<()> {
 
     // Create CLI controller with feature services
     let cli_controller = CliController::new(
-        card_ingestion::service::CardIngestionService::new(connection_pool.clone(), http_client.clone(), &config),
-        set_ingestion::service::SetIngestionService::new(connection_pool.clone(), http_client.clone(), &config),
-        price_management::ingestion_service::PriceIngestionService::new(connection_pool.clone(), http_client.clone(), &config),
-        price_management::archival_service::PriceArchivalService::new(connection_pool.clone()),
+        card::service::CardIngestionService::new(
+            connection_pool.clone(),
+            http_client.clone(),
+            &config,
+        ),
+        set::service::SetIngestionService::new(
+            connection_pool.clone(),
+            http_client.clone(),
+            &config,
+        ),
+        price::ingestion_service::PriceIngestionService::new(
+            connection_pool.clone(),
+            http_client.clone(),
+            &config,
+        ),
+        price::archival_service::PriceArchivalService::new(connection_pool.clone()),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 

@@ -1,4 +1,3 @@
-// src/card_ingestion/client.rs
 use anyhow::Result;
 use serde_json::Value;
 use tracing::info;
@@ -31,4 +30,3 @@ impl CardClient {
         self.http_client.get_json(&url).await
     }
 }
-

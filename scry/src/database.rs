@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::Result;
-use sqlx::{postgres::PgPoolOptions, FromRow, PgPool, QueryBuilder, Row};
+use sqlx::{postgres::PgPoolOptions, PgPool, QueryBuilder, Row};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -20,7 +20,10 @@ impl ConnectionPool {
         })
     }
 
-    pub async fn execute_query_builder(&self, mut builder: QueryBuilder<'_, sqlx::Postgres>) -> Result<u64> {
+    pub async fn execute_query_builder(
+        &self,
+        mut builder: QueryBuilder<'_, sqlx::Postgres>,
+    ) -> Result<u64> {
         let result = builder.build().execute(&*self.pool).await?;
         Ok(result.rows_affected())
     }
@@ -35,7 +38,10 @@ impl ConnectionPool {
     where
         T: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     {
-        let row = sqlx::query(query).bind(param).fetch_one(&*self.pool).await?;
+        let row = sqlx::query(query)
+            .bind(param)
+            .fetch_one(&*self.pool)
+            .await?;
         let count: i64 = row.get(0);
         Ok(count)
     }

@@ -1,26 +1,26 @@
 use anyhow::Result;
 use tracing::info;
 
+use crate::card;
 use crate::cli::commands::Commands;
-use crate::card_ingestion;
-use crate::set_ingestion;
-use crate::price_management;
 use crate::health_check;
+use crate::price;
+use crate::set;
 
 pub struct CliController {
-    card_service: card_ingestion::service::CardIngestionService,
-    set_service: set_ingestion::service::SetIngestionService,
-    price_ingestion_service: price_management::ingestion_service::PriceIngestionService,
-    price_archival_service: price_management::archival_service::PriceArchivalService,
+    card_service: card::service::CardIngestionService,
+    set_service: set::service::SetIngestionService,
+    price_ingestion_service: price::ingestion_service::PriceIngestionService,
+    price_archival_service: price::archival_service::PriceArchivalService,
     health_service: health_check::service::HealthCheckService,
 }
 
 impl CliController {
     pub fn new(
-        card_service: card_ingestion::service::CardIngestionService,
-        set_service: set_ingestion::service::SetIngestionService,
-        price_ingestion_service: price_management::ingestion_service::PriceIngestionService,
-        price_archival_service: price_management::archival_service::PriceArchivalService,
+        card_service: card::service::CardIngestionService,
+        set_service: set::service::SetIngestionService,
+        price_ingestion_service: price::ingestion_service::PriceIngestionService,
+        price_archival_service: price::archival_service::PriceArchivalService,
         health_service: health_check::service::HealthCheckService,
     ) -> Self {
         Self {
@@ -55,20 +55,17 @@ impl CliController {
                 info!("Successfully ingested {} sets", count);
                 Ok(())
             }
-            Commands::Prices { source, archive_batch_size } => {
-                let source = source.unwrap_or_else(|| "mtgjson".to_string());
-                let batch_size = archive_batch_size.unwrap_or(1000);
-
+            Commands::Prices => {
                 info!("Starting price workflow");
 
                 // Archive old prices first
-                let archived_count = self.price_archival_service.archive(batch_size).await?;
+                let archived_count = self.price_archival_service.archive().await?;
                 if archived_count > 0 {
                     info!("Archived {} old price records", archived_count);
                 }
 
                 // Ingest new prices
-                let ingested_count = self.price_ingestion_service.ingest_from_source(&source).await?;
+                let ingested_count = self.price_ingestion_service.ingest_from_source().await?;
                 info!("Successfully ingested {} price records", ingested_count);
 
                 Ok(())

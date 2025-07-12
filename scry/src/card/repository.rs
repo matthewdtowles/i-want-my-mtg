@@ -25,7 +25,7 @@ impl CardRepository {
         );
 
         query_builder.push_values(cards, |mut b, card| {
-            b.push_bind(&card.uuid)
+            b.push_bind(&card.id)
                 .push_bind(&card.name)
                 .push_bind(&card.set_code)
                 .push_bind(&card.mana_cost)
@@ -34,7 +34,7 @@ impl CardRepository {
                 .push_bind(&card.rarity);
         });
 
-        // TODO: what is this?
+        // TODO: keep or remove this? Do we need any others?
         query_builder.push(" ON CONFLICT (uuid) DO UPDATE SET name = EXCLUDED.name");
 
         self.connection_pool.execute_query_builder(query_builder).await

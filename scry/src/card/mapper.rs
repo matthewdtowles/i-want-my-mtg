@@ -1,4 +1,3 @@
-// src/card_ingestion/mapper.rs
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
@@ -72,16 +71,19 @@ impl CardMapper {
             .ok_or_else(|| anyhow::anyhow!("Missing set code"))?;
 
         Ok(Card {
-            id: None,
-            uuid: uuid.to_string(),
+            id: uuid.to_string(),
             name: name.to_string(),
             set_code: set_code.to_string(),
-            mana_cost: card_data.get("manaCost").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            type_line: card_data.get("type").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            oracle_text: card_data.get("text").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            rarity: card_data.get("rarity").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            created_at: None,
-            updated_at: None,
+            mana_cost: todo!(),
+            type_line: todo!(),
+            oracle_text: todo!(),
+            rarity: todo!(),
+            artist: todo!(),
+            has_foil: todo!(),
+            has_non_foil: todo!(),
+            img_src: todo!(),
+            is_reserved: todo!(),
+            order: todo!(),
         })
     }
 }

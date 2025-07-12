@@ -1,11 +1,19 @@
+use std::sync::Arc;
+use anyhow::Result;
+use chrono::Utc;
+use sqlx::QueryBuilder;
+
+use crate::database::ConnectionPool;
+
+use super::models::Price;
 
 #[derive(Clone)]
 pub struct PriceRepository {
-    db:  Arc<DatabaseService>,
+    db:  Arc<ConnectionPool>,
 }
 
 impl PriceRepository {
-    pub fn new(db:  Arc<DatabaseService>) -> Self {
+    pub fn new(db:  Arc<ConnectionPool>) -> Self {
         Self { db }
     }
 

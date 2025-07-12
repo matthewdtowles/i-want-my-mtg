@@ -7,7 +7,9 @@ use crate::config::Config;
 use crate::database::ConnectionPool;
 use crate::shared::http_client::HttpClient;
 
-use super::{client::PriceClient, mapper::PriceMapper, repository::PriceRepository};
+use crate::price::client::PriceClient;
+use crate::price::mapper::PriceMapper;
+use crate::price::repository::PriceRepository;
 
 pub struct PriceIngestionService {
     client: PriceClient,

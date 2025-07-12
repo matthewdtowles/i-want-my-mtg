@@ -1,6 +1,9 @@
 use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
+use super::client::SetClient;
+use super::mapper::SetMapper;
+use super::repository::SetRepository;
 
 pub struct SetIngestionService {
     client: SetClient,

@@ -8,20 +8,20 @@ use crate::price;
 use crate::set;
 
 pub struct CliController {
-    card_service: card::service::CardIngestionService,
-    set_service: set::service::SetIngestionService,
-    price_ingestion_service: price::ingestion_service::PriceIngestionService,
-    price_archival_service: price::archival_service::PriceArchivalService,
-    health_service: health_check::service::HealthCheckService,
+    card_service: card::CardIngestionService,
+    set_service: set::SetIngestionService,
+    price_ingestion_service: price::PriceIngestionService,
+    price_archival_service: price::PriceArchivalService,
+    health_service: health_check::HealthCheckService,
 }
 
 impl CliController {
     pub fn new(
-        card_service: card::service::CardIngestionService,
-        set_service: set::service::SetIngestionService,
-        price_ingestion_service: price::ingestion_service::PriceIngestionService,
-        price_archival_service: price::archival_service::PriceArchivalService,
-        health_service: health_check::service::HealthCheckService,
+        card_service: card::CardIngestionService,
+        set_service: set::SetIngestionService,
+        price_ingestion_service: price::PriceIngestionService,
+        price_archival_service: price::PriceArchivalService,
+        health_service: health_check::HealthCheckService,
     ) -> Self {
         Self {
             card_service,

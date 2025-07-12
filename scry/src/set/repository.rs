@@ -1,10 +1,16 @@
+use anyhow::Result;
+use sqlx::QueryBuilder;
+use std::sync::Arc;
+
+use crate::{database::ConnectionPool, set::models::Set};
+
 #[derive(Clone)]
 pub struct SetRepository {
-    db: Arc<DatabaseService>,
+    db: Arc<ConnectionPool>,
 }
 
 impl SetRepository {
-    pub fn new(db: Arc<DatabaseService>) -> Self {
+    pub fn new(db: Arc<ConnectionPool>) -> Self {
         Self { db }
     }
 

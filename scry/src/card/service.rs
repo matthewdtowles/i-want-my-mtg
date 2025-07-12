@@ -1,13 +1,10 @@
-// src/card_ingestion/service.rs
-use anyhow::Result;
-use std::sync::Arc;
-use tracing::{info, warn};
-
+use super::{client::CardClient, mapper::CardMapper, repository::CardRepository};
 use crate::config::Config;
 use crate::database::ConnectionPool;
 use crate::shared::http_client::HttpClient;
-
-use super::{client::CardClient, mapper::CardMapper, repository::CardRepository};
+use anyhow::Result;
+use std::sync::Arc;
+use tracing::{info, warn};
 
 pub struct CardIngestionService {
     client: CardClient,
@@ -16,7 +13,11 @@ pub struct CardIngestionService {
 }
 
 impl CardIngestionService {
-    pub fn new(connection_pool: Arc<ConnectionPool>, http_client: HttpClient, config: &Config) -> Self {
+    pub fn new(
+        connection_pool: Arc<ConnectionPool>,
+        http_client: HttpClient,
+        config: &Config,
+    ) -> Self {
         Self {
             client: CardClient::new(http_client, config),
             mapper: CardMapper::new(),
@@ -30,14 +31,17 @@ impl CardIngestionService {
         // Check if already exists
         let existing_count = self.repository.count_for_set(set_code).await?;
         if existing_count > 0 {
-            info!("Set {} already has {} cards. Skipping...", set_code, existing_count);
+            info!(
+                "Set {} already has {} cards. Skipping...",
+                set_code, existing_count
+            );
             return Ok(0);
         }
 
         // Fetch -> Map -> Store (single responsibility chain)
         let raw_data = self.client.fetch_set_cards(set_code).await?;
         let cards = self.mapper.map_mtg_json_to_cards(raw_data)?;
-        
+
         if cards.is_empty() {
             warn!("No cards found for set: {}", set_code);
             return Ok(0);
@@ -59,7 +63,7 @@ impl CardIngestionService {
 
         let raw_data = self.client.fetch_all_cards().await?;
         let cards = self.mapper.map_mtg_json_all_to_cards(raw_data)?;
-        
+
         if cards.is_empty() {
             warn!("No cards found");
             return Ok(0);

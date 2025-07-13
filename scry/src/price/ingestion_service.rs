@@ -1,15 +1,8 @@
-// src/price_management/ingestion_service.rs
+use crate::price::{client::PriceClient, mapper::PriceMapper, repository::PriceRepository};
+use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::{info, warn};
-
-use crate::config::Config;
-use crate::database::ConnectionPool;
-use crate::shared::http_client::HttpClient;
-
-use crate::price::client::PriceClient;
-use crate::price::mapper::PriceMapper;
-use crate::price::repository::PriceRepository;
 
 pub struct PriceIngestionService {
     client: PriceClient,
@@ -18,9 +11,13 @@ pub struct PriceIngestionService {
 }
 
 impl PriceIngestionService {
-    pub fn new(connection_pool: Arc<ConnectionPool>, http_client: HttpClient, config: &Config) -> Self {
+    pub fn new(
+        connection_pool: Arc<ConnectionPool>,
+        http_client: HttpClient,
+        config: &Config,
+    ) -> Self {
         Self {
-            client: PriceClient::new(http_client, config),
+            client: PriceClient::new(http_client, config.mtg_json_base_url.clone()),
             mapper: PriceMapper::new(),
             repository: PriceRepository::new(connection_pool),
         }

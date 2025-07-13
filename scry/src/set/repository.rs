@@ -1,8 +1,7 @@
+use crate::{database::ConnectionPool, set::models::Set};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-
-use crate::{database::ConnectionPool, set::models::Set};
 
 #[derive(Clone)]
 pub struct SetRepository {

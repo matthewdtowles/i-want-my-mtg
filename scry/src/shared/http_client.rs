@@ -1,10 +1,7 @@
-// src/shared/http_client.rs
 use anyhow::Result;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 use std::time::Duration;
-
-use crate::config::Config;
 
 #[derive(Clone)]
 pub struct HttpClient {
@@ -12,7 +9,7 @@ pub struct HttpClient {
 }
 
 impl HttpClient {
-    pub fn new(config: &Config) -> Self {
+    pub fn new() -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
             .user_agent("scry-mtg-tool/1.0")

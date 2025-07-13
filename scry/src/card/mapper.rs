@@ -1,8 +1,7 @@
+use crate::card::card::Card;
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
-
-use super::models::Card;
 
 pub struct CardMapper;
 
@@ -13,7 +12,7 @@ impl CardMapper {
 
     pub fn map_mtg_json_to_cards(&self, set_data: Value) -> Result<Vec<Card>> {
         debug!("Mapping MTG JSON set data to cards");
-        
+
         let cards_array = set_data
             .get("data")
             .and_then(|d| d.get("cards"))
@@ -28,7 +27,7 @@ impl CardMapper {
 
     pub fn map_mtg_json_all_to_cards(&self, all_data: Value) -> Result<Vec<Card>> {
         debug!("Mapping all MTG JSON data to cards");
-        
+
         let data = all_data
             .get("data")
             .ok_or_else(|| anyhow::anyhow!("Invalid MTG JSON structure"))?;

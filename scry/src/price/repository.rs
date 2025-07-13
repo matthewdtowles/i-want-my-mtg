@@ -1,19 +1,17 @@
-use std::sync::Arc;
+use crate::database::ConnectionPool;
+use crate::price::models::Price;
 use anyhow::Result;
 use chrono::Utc;
 use sqlx::QueryBuilder;
-
-use crate::database::ConnectionPool;
-
-use super::models::Price;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct PriceRepository {
-    db:  Arc<ConnectionPool>,
+    db: Arc<ConnectionPool>,
 }
 
 impl PriceRepository {
-    pub fn new(db:  Arc<ConnectionPool>) -> Self {
+    pub fn new(db: Arc<ConnectionPool>) -> Self {
         Self { db }
     }
 
@@ -23,7 +21,9 @@ impl PriceRepository {
                      ORDER BY id ASC 
                      LIMIT $1";
 
-        self.db.fetch_all_with_param::<Price, i16>(query, batch_size).await
+        self.db
+            .fetch_all_with_param::<Price, i16>(query, batch_size)
+            .await
     }
 
     pub async fn bulk_insert(&self, prices: &[Price]) -> Result<u64> {
@@ -31,9 +31,8 @@ impl PriceRepository {
             return Ok(0);
         }
 
-        let mut query_builder = QueryBuilder::new(
-            "INSERT INTO price (card_id, foil, normal, date) ",
-        );
+        let mut query_builder =
+            QueryBuilder::new("INSERT INTO price (card_id, foil, normal, date) ");
 
         query_builder.push_values(prices, |mut b, price| {
             b.push_bind(&price.card_id)
@@ -90,7 +89,9 @@ impl PriceRepository {
                      WHERE card_id = $1 
                      ORDER BY date DESC";
 
-        self.db.fetch_all_with_param::<Price, i64>(query, card_id).await
+        self.db
+            .fetch_all_with_param::<Price, i64>(query, card_id)
+            .await
     }
 
     pub async fn find_latest_for_card(&self, card_id: i64) -> Result<Option<Price>> {
@@ -100,6 +101,8 @@ impl PriceRepository {
                      ORDER BY date DESC 
                      LIMIT 1";
 
-        self.db.fetch_optional_with_param::<Price, i64>(query, card_id).await
+        self.db
+            .fetch_optional_with_param::<Price, i64>(query, card_id)
+            .await
     }
 }

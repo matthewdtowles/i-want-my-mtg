@@ -1,4 +1,3 @@
-// src/health_check/models.rs
 use tracing::info;
 
 #[derive(Debug)]

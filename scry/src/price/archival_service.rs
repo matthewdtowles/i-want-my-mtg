@@ -1,9 +1,8 @@
+use crate::database::ConnectionPool;
+use crate::price::repository::PriceRepository;
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::info;
-
-use super::repository::PriceRepository;
-use crate::database::ConnectionPool;
 
 pub struct PriceArchivalService {
     repository: PriceRepository,

@@ -1,7 +1,5 @@
-use super::{client::CardClient, mapper::CardMapper, repository::CardRepository};
-use crate::config::Config;
-use crate::database::ConnectionPool;
-use crate::shared::http_client::HttpClient;
+use crate::card::{client::CardClient, mapper::CardMapper, repository::CardRepository};
+use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::{info, warn};
@@ -19,7 +17,7 @@ impl CardIngestionService {
         config: &Config,
     ) -> Self {
         Self {
-            client: CardClient::new(http_client, config),
+            client: CardClient::new(http_client, config.mtg_json_base_url.clone()),
             mapper: CardMapper::new(),
             repository: CardRepository::new(connection_pool),
         }

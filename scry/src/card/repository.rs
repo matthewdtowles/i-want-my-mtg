@@ -1,9 +1,7 @@
+use crate::{card::card::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-
-use crate::database::ConnectionPool;
-use super::models::Card;
 
 #[derive(Clone)]
 pub struct CardRepository {
@@ -21,7 +19,7 @@ impl CardRepository {
         }
 
         let mut query_builder = QueryBuilder::new(
-            "INSERT INTO card (id, name, set_code, mana_cost, type, oracle_text, rarity) "
+            "INSERT INTO card (id, name, set_code, mana_cost, type, oracle_text, rarity) ",
         );
 
         query_builder.push_values(cards, |mut b, card| {
@@ -37,7 +35,9 @@ impl CardRepository {
         // TODO: keep or remove this? Do we need any others?
         query_builder.push(" ON CONFLICT (uuid) DO UPDATE SET name = EXCLUDED.name");
 
-        self.connection_pool.execute_query_builder(query_builder).await
+        self.connection_pool
+            .execute_query_builder(query_builder)
+            .await
     }
 
     pub async fn count(&self) -> Result<i64> {

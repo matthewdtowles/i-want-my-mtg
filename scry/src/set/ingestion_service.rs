@@ -1,9 +1,8 @@
+use crate::set::{client::SetClient, mapper::SetMapper, repository::SetRepository};
 use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
-use super::client::SetClient;
-use super::mapper::SetMapper;
-use super::repository::SetRepository;
+use tracing::{info, warn};
 
 pub struct SetIngestionService {
     client: SetClient,
@@ -18,7 +17,7 @@ impl SetIngestionService {
         config: &Config,
     ) -> Self {
         Self {
-            client: SetClient::new(http_client, config),
+            client: SetClient::new(http_client, config.mtg_json_base_url.clone()),
             mapper: SetMapper::new(),
             repository: SetRepository::new(connection_pool),
         }

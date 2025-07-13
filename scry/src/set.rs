@@ -1,7 +1,7 @@
-pub mod service;
+pub mod ingestion_service;
 mod client;
 mod mapper;
 mod models;
 mod repository;
 
-pub use service::SetIngestionService;
+pub use ingestion_service::SetIngestionService;

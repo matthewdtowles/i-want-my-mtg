@@ -1,10 +1,8 @@
-// src/health_check/service.rs
+use crate::database::ConnectionPool;
+use crate::health_check::models::{BasicHealthStatus, DetailedHealthStatus};
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::info;
-
-use crate::database::ConnectionPool;
-use super::models::{BasicHealthStatus, DetailedHealthStatus};
 
 pub struct HealthCheckService {
     connection_pool: Arc<ConnectionPool>,
@@ -44,11 +42,15 @@ impl HealthCheckService {
     }
 
     async fn count_cards(&self) -> Result<i64> {
-        self.connection_pool.count("SELECT COUNT(*) FROM card").await
+        self.connection_pool
+            .count("SELECT COUNT(*) FROM card")
+            .await
     }
 
     async fn count_prices(&self) -> Result<i64> {
-        self.connection_pool.count("SELECT COUNT(*) FROM price").await
+        self.connection_pool
+            .count("SELECT COUNT(*) FROM price")
+            .await
     }
 
     async fn count_sets(&self) -> Result<i64> {
@@ -56,6 +58,8 @@ impl HealthCheckService {
     }
 
     async fn count_cards_with_prices(&self) -> Result<i64> {
-        self.connection_pool.count("SELECT COUNT(DISTINCT card_id) FROM price").await
+        self.connection_pool
+            .count("SELECT COUNT(DISTINCT card_id) FROM price")
+            .await
     }
 }

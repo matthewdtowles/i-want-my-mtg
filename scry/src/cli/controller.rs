@@ -1,11 +1,10 @@
-use anyhow::Result;
-use tracing::info;
-
 use crate::card;
 use crate::cli::commands::Commands;
 use crate::health_check;
 use crate::price;
 use crate::set;
+use anyhow::Result;
+use tracing::info;
 
 pub struct CliController {
     card_service: card::CardIngestionService,

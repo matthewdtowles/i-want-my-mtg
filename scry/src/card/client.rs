@@ -1,20 +1,19 @@
+use crate::shared::http_client::HttpClient;
 use anyhow::Result;
 use serde_json::Value;
+use std::sync::Arc;
 use tracing::info;
-
-use crate::config::Config;
-use crate::shared::http_client::HttpClient;
 
 pub struct CardClient {
     http_client: HttpClient,
-    base_url: String,
+    base_url: Arc<str>,
 }
 
 impl CardClient {
-    pub fn new(http_client: HttpClient, config: &Config) -> Self {
+    pub fn new(http_client: HttpClient, base_url: Arc<str>) -> Self {
         Self {
             http_client,
-            base_url: config.mtg_json_base_url.clone(),
+            base_url,
         }
     }
 

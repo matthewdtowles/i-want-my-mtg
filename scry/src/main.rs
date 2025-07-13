@@ -1,5 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
+use cli::{commands::Cli, controller::CliController};
+use config::Config;
+use shared::HttpClient;
 use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -12,9 +15,6 @@ mod health_check;
 mod price;
 mod set;
 mod shared;
-
-use cli::{commands::Cli, controller::CliController};
-use config::Config;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -34,16 +34,17 @@ async fn main() -> Result<()> {
 
     // Initialize minimal shared dependencies
     let connection_pool = Arc::new(database::ConnectionPool::new(&config).await?);
-    let http_client = shared::http_client::HttpClient::new(&config);
+    // TODO: make Arc clone of HttpClient for each service?
+    let http_client = HttpClient::new();
 
     // Create CLI controller with feature services
     let cli_controller = CliController::new(
-        card::service::CardIngestionService::new(
+        card::ingestion_service::CardIngestionService::new(
             connection_pool.clone(),
             http_client.clone(),
             &config,
         ),
-        set::service::SetIngestionService::new(
+        set::ingestion_service::SetIngestionService::new(
             connection_pool.clone(),
             http_client.clone(),
             &config,

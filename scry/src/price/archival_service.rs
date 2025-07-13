@@ -1,8 +1,6 @@
 use crate::database::ConnectionPool;
-use crate::price::models::Price;
 use crate::price::repository::PriceRepository;
 use anyhow::Result;
-use sqlx::QueryBuilder;
 use std::sync::Arc;
 use tracing::{info, warn};
 
@@ -29,18 +27,21 @@ impl PriceArchivalService {
                 break;
             }
             // insert into price_history table, return inserted ids
-            let saved_ids= self.repository.save_to_history(&prices).await?;
+            let saved_ids = self.repository.save_to_history(&prices).await?;
             // check if any prices were missed in saved_ids
             // TODO: above
             // delete from price table
             archived_count += self.repository.delete_by_ids(&saved_ids).await?;
             archived_count += saved_ids.len() as u64;
             if archived_count != prices.len() as u64 {
-                warn!("Some prices were not archived, expected: {}, archived: {}", prices.len(), archived_count);
+                warn!(
+                    "Some prices were not archived, expected: {}, archived: {}",
+                    prices.len(),
+                    archived_count
+                );
             }
-       }
+        }
         info!("Archived {} total prices", archived_count);
         Ok(archived_count)
     }
-
 }

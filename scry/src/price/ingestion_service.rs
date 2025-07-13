@@ -27,7 +27,7 @@ impl PriceIngestionService {
         info!("Starting price ingestion from source: {}", source);
 
         let raw_data = self.client.fetch_prices().await?;
-        let prices = self.mapper.map_mtg_json_to_prices(raw_data)?;
+        let prices = self.mapper.map_price_data(raw_data)?;
 
         if prices.is_empty() {
             warn!("No prices found from source: {}", source);

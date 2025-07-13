@@ -16,9 +16,9 @@ impl PriceClient {
         }
     }
 
-    pub async fn fetch_prices(&self, set_code: &str) -> Result<Value> {
-        let url = format!("{}/prices/{}.json", self.base_url, set_code);
-        tracing::info!("Fetching prices for set: {}", set_code);
+    pub async fn fetch_prices(&self) -> Result<Value> {
+        let url = format!("{}/AllPricesToday.json", self.base_url);
+        tracing::info!("Fetching all prices for today.");
         self.http_client.get_json(&url).await
     }
 }

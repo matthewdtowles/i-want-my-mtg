@@ -12,6 +12,7 @@ impl PriceMapper {
     pub fn map_price_data(&self, price_data: Value) -> Result<Vec<Price>> {
         // Implement mapping logic here
         // This is a placeholder implementation
-        Ok(vec![])
+        todo!("Implement the mapping logic for price data");
+        // Ok(vec![])
     }
 }

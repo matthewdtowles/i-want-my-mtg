@@ -54,7 +54,7 @@ async fn main() -> Result<()> {
             http_client.clone(),
             &config,
         ),
-        price::archival_service::PriceArchivalService::new(connection_pool.clone()),
+        price::archival_service::PriceArchivalService::new(connection_pool.clone(), config.archive_batch_size as i16),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 

@@ -23,19 +23,17 @@ impl PriceIngestionService {
         }
     }
 
-    pub async fn ingest_from_source(&self, source: &str) -> Result<u64> {
-        info!("Starting price ingestion from source: {}", source);
-
+    pub async fn ingest_from_source(&self) -> Result<u64> {
+        info!("Starting price ingestion from web source");
         let raw_data = self.client.fetch_prices().await?;
         let prices = self.mapper.map_price_data(raw_data)?;
-
         if prices.is_empty() {
-            warn!("No prices found from source: {}", source);
+            warn!("No prices found from source");
             return Ok(0);
         }
 
         let count = self.repository.save(&prices).await?;
-        info!("Successfully ingested {} prices from {}", count, source);
+        info!("Successfully ingested {} prices", count);
         Ok(count)
     }
 }

@@ -6,21 +6,23 @@ use tracing::{info, warn};
 
 pub struct PriceArchivalService {
     repository: PriceRepository,
+    batch_size: i16,
 }
 
 impl PriceArchivalService {
-    pub fn new(connection_pool: Arc<ConnectionPool>) -> Self {
+    pub fn new(connection_pool: Arc<ConnectionPool>, batch_size: i16) -> Self {
         Self {
             repository: PriceRepository::new(connection_pool),
+            batch_size,
         }
     }
 
-    pub async fn archive(&self, batch_size: i16) -> Result<u64> {
-        info!("Starting price archival with batch size: {}", batch_size);
+    pub async fn archive(&self) -> Result<u64> {
+        info!("Starting price archival");
         let mut archived_count = 0;
         loop {
             // read prices from price table
-            let prices = self.repository.fetch_batch(batch_size).await?;
+            let prices = self.repository.fetch_batch(self.batch_size).await?;
             if prices.is_empty() {
                 // while prices is not empty
                 info!("No prices to archive");

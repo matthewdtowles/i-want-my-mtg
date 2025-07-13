@@ -1,26 +1,25 @@
-use crate::card;
-use crate::cli::commands::Commands;
-use crate::health_check;
-use crate::price;
-use crate::set;
+use crate::{
+    card::CardIngestionService, cli::Commands, health_check::HealthCheckService,
+    price::PriceArchivalService, price::PriceIngestionService, set::SetIngestionService,
+};
 use anyhow::Result;
 use tracing::info;
 
 pub struct CliController {
-    card_service: card::CardIngestionService,
-    set_service: set::SetIngestionService,
-    price_ingestion_service: price::PriceIngestionService,
-    price_archival_service: price::PriceArchivalService,
-    health_service: health_check::HealthCheckService,
+    card_service: CardIngestionService,
+    set_service: SetIngestionService,
+    price_ingestion_service: PriceIngestionService,
+    price_archival_service: PriceArchivalService,
+    health_service: HealthCheckService,
 }
 
 impl CliController {
     pub fn new(
-        card_service: card::CardIngestionService,
-        set_service: set::SetIngestionService,
-        price_ingestion_service: price::PriceIngestionService,
-        price_archival_service: price::PriceArchivalService,
-        health_service: health_check::HealthCheckService,
+        card_service: CardIngestionService,
+        set_service: SetIngestionService,
+        price_ingestion_service: PriceIngestionService,
+        price_archival_service: PriceArchivalService,
+        health_service: HealthCheckService,
     ) -> Self {
         Self {
             card_service,

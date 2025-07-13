@@ -1,8 +1,10 @@
 use crate::database::ConnectionPool;
+use crate::price::models::Price;
 use crate::price::repository::PriceRepository;
 use anyhow::Result;
+use sqlx::QueryBuilder;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{info, warn};
 
 pub struct PriceArchivalService {
     repository: PriceRepository,
@@ -15,24 +17,30 @@ impl PriceArchivalService {
         }
     }
 
-    pub async fn archive(&self, batch_size: u16) -> Result<u64> {
+    pub async fn archive(&self, batch_size: i16) -> Result<u64> {
         info!("Starting price archival with batch size: {}", batch_size);
-
-        let prices = self.repository.fetch_for_archival(batch_size).await?;
-
-        if prices.is_empty() {
-            info!("No prices to archive");
-            return Ok(0);
-        }
-
-        let archived_count = self.repository.archive_to_history(&prices).await?;
-        let price_ids: Vec<i64> = prices.iter().filter_map(|p| p.id).collect();
-        let deleted_count = self.repository.delete_by_ids(&price_ids).await?;
-
-        info!(
-            "Archived {} prices, deleted {} records",
-            archived_count, deleted_count
-        );
-        Ok(deleted_count)
+        let mut archived_count = 0;
+        loop {
+            // read prices from price table
+            let prices = self.repository.fetch_batch(batch_size).await?;
+            if prices.is_empty() {
+                // while prices is not empty
+                info!("No prices to archive");
+                break;
+            }
+            // insert into price_history table, return inserted ids
+            let saved_ids= self.repository.save_to_history(&prices).await?;
+            // check if any prices were missed in saved_ids
+            // TODO: above
+            // delete from price table
+            archived_count += self.repository.delete_by_ids(&saved_ids).await?;
+            archived_count += saved_ids.len() as u64;
+            if archived_count != prices.len() as u64 {
+                warn!("Some prices were not archived, expected: {}, archived: {}", prices.len(), archived_count);
+            }
+       }
+        info!("Archived {} total prices", archived_count);
+        Ok(archived_count)
     }
+
 }

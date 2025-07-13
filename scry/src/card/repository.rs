@@ -1,16 +1,16 @@
-use crate::{card::card::Card, database::ConnectionPool};
+use crate::{card::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct CardRepository {
-    connection_pool: Arc<ConnectionPool>,
+    db: Arc<ConnectionPool>,
 }
 
 impl CardRepository {
     pub fn new(connection_pool: Arc<ConnectionPool>) -> Self {
-        Self { connection_pool }
+        Self { db: connection_pool }
     }
 
     pub async fn bulk_insert(&self, cards: &[Card]) -> Result<u64> {
@@ -35,18 +35,18 @@ impl CardRepository {
         // TODO: keep or remove this? Do we need any others?
         query_builder.push(" ON CONFLICT (uuid) DO UPDATE SET name = EXCLUDED.name");
 
-        self.connection_pool
+        self.db
             .execute_query_builder(query_builder)
             .await
     }
 
     pub async fn count(&self) -> Result<i64> {
         let query = "SELECT COUNT(*) FROM card";
-        self.connection_pool.count(query).await
+        self.db.count(query).await
     }
 
     pub async fn count_for_set(&self, set_code: &str) -> Result<i64> {
         let query = "SELECT COUNT(*) FROM card WHERE set_code = $1";
-        self.connection_pool.count_with_param(query, set_code).await
+        self.db.count_with_param(query, set_code).await
     }
 }

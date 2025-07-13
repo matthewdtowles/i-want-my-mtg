@@ -34,7 +34,7 @@ impl PriceIngestionService {
             return Ok(0);
         }
 
-        let count = self.repository.bulk_insert(&prices).await?;
+        let count = self.repository.save(&prices).await?;
         info!("Successfully ingested {} prices from {}", count, source);
         Ok(count)
     }

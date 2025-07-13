@@ -1,4 +1,4 @@
-use crate::card::card_rarity::CardRarity;
+use crate::card::models::CardRarity;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 

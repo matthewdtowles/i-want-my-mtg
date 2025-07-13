@@ -1,4 +1,4 @@
-use crate::card::card::Card;
+use crate::card::models::Card;
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;

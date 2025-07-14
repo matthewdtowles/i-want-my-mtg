@@ -17,19 +17,19 @@ impl SetRepository {
         if sets.is_empty() {
             return Ok(0);
         }
-
         let mut query_builder = QueryBuilder::new("INSERT INTO set (code, name) ");
-
         query_builder.push_values(sets, |mut b, set| {
             b.push_bind(&set.code).push_bind(&set.name);
         });
-
-        // TODO:
+        // TODO:impl conflict handling
         query_builder.push(
             " ON CONFLICT (code) DO UPDATE SET 
             name = EXCLUDED.name",
         );
-
         self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn find_all(&self) -> Result<Vec<Set>> {
+        self.db.fetch_all_query_builder(QueryBuilder::new("SELECT * FROM set")).await
     }
 }

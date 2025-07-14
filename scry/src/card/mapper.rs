@@ -1,5 +1,4 @@
 use crate::card::models::Card;
-use crate::card::models::CardRarity;
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
@@ -24,33 +23,6 @@ impl CardMapper {
             .iter()
             .map(|card_data| self.map_single_card(card_data))
             .collect()
-    }
-
-    pub fn map_mtg_json_all_to_cards(&self, all_data: Value) -> Result<Vec<Card>> {
-        debug!("Mapping all MTG JSON data to cards");
-
-        let data = all_data
-            .get("data")
-            .ok_or_else(|| anyhow::anyhow!("Invalid MTG JSON structure"))?;
-
-        let mut all_cards = Vec::new();
-
-        if let Value::Object(sets) = data {
-            for (set_code, set_data) in sets {
-                if let Some(cards_array) = set_data.get("cards").and_then(|c| c.as_array()) {
-                    for card_data in cards_array {
-                        match self.map_single_card(card_data) {
-                            Ok(card) => all_cards.push(card),
-                            Err(e) => {
-                                debug!("Failed to map card in set {}: {}", set_code, e);
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Ok(all_cards)
     }
 
     fn map_single_card(&self, card_data: &Value) -> Result<Card> {

@@ -1,3 +1,4 @@
+use crate::set::models::Set;
 use crate::set::{client::SetClient, mapper::SetMapper, repository::SetRepository};
 use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
@@ -25,18 +26,20 @@ impl SetIngestionService {
 
     pub async fn ingest_all(&self) -> Result<u64> {
         info!("Starting MTG set ingestion");
-
-        // Fetch -> Map -> Store (single responsibility chain)
         let raw_data = self.client.fetch_all_sets().await?;
         let sets = self.mapper.map_mtg_json_to_sets(raw_data)?;
-
         if sets.is_empty() {
             warn!("No sets found");
             return Ok(0);
         }
-
         let count = self.repository.bulk_insert(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)
+    }
+
+
+    pub async fn fetch_all(&self) -> Result<Vec<Set>> {
+        info!("Fetching all saved sets");
+        self.repository.find_all().await
     }
 }

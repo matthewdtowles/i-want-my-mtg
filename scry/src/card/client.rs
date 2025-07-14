@@ -22,10 +22,4 @@ impl CardClient {
         info!("Fetching card data for set: {}", set_code);
         self.http_client.get_json(&url).await
     }
-
-    pub async fn fetch_all_cards(&self) -> Result<Value> {
-        let url = format!("{}/AllPrintings.json", self.base_url);
-        info!("Fetching all card data");
-        self.http_client.get_json(&url).await
-    }
 }

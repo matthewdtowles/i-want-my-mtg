@@ -24,14 +24,12 @@ impl HttpClient {
         T: DeserializeOwned,
     {
         let response = self.client.get(url).send().await?;
-
         if !response.status().is_success() {
             return Err(anyhow::anyhow!(
                 "HTTP request failed: {}",
                 response.status()
             ));
         }
-
         Ok(response.json::<T>().await?)
     }
 }

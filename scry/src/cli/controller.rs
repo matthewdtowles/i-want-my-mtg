@@ -36,13 +36,17 @@ impl CliController {
                 match set_code {
                     Some(set) => {
                         info!("Ingesting cards for set: {}", set);
-                        let count = self.card_ingestion_service.ingest_set(&set).await?;
+                        let count = self.card_ingestion_service.ingest_set_cards(&set).await?;
                         info!("Successfully ingested {} cards for set {}", count, set);
                     }
                     None => {
                         info!("Ingesting all cards");
-                        let count = self.card_ingestion_service.ingest_all().await?;
-                        info!("Successfully ingested {} total cards", count);
+                        let sets = self.set_ingestion_service.fetch_all().await?;
+                        let mut total_count = 0;
+                        for s in sets {
+                            total_count += self.card_ingestion_service.ingest_set_cards(&s.code).await?;
+                        }
+                        info!("Successfully ingested {} total cards", total_count);
                     }
                 }
                 Ok(())

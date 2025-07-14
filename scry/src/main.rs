@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     let config = Config::from_env()?;
 
-    info!("🔮 Scry: MTG Data Management Tool");
+    info!("🔮 Scry - MTG Data Management Tool");
 
     // Initialize minimal shared dependencies
     let connection_pool = Arc::new(database::ConnectionPool::new(&config).await?);
@@ -54,11 +54,14 @@ async fn main() -> Result<()> {
             http_client.clone(),
             &config,
         ),
-        price::archival_service::PriceArchivalService::new(connection_pool.clone(), config.archive_batch_size as i16),
+        price::archival_service::PriceArchivalService::new(
+            connection_pool.clone(),
+            config.archive_batch_size as i16,
+        ),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 
     cli_controller.handle_command(cli.command).await?;
-    info!("✨ Scry's vision is complete");
+    info!("✨ Scry complete.");
     Ok(())
 }

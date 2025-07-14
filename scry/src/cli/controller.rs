@@ -6,8 +6,8 @@ use anyhow::Result;
 use tracing::info;
 
 pub struct CliController {
-    card_service: CardIngestionService,
-    set_service: SetIngestionService,
+    card_ingestion_service: CardIngestionService,
+    set_ingestion_service: SetIngestionService,
     price_ingestion_service: PriceIngestionService,
     price_archival_service: PriceArchivalService,
     health_service: HealthCheckService,
@@ -15,15 +15,15 @@ pub struct CliController {
 
 impl CliController {
     pub fn new(
-        card_service: CardIngestionService,
-        set_service: SetIngestionService,
+        card_ingestion_service: CardIngestionService,
+        set_ingestion_service: SetIngestionService,
         price_ingestion_service: PriceIngestionService,
         price_archival_service: PriceArchivalService,
         health_service: HealthCheckService,
     ) -> Self {
         Self {
-            card_service,
-            set_service,
+            card_ingestion_service,
+            set_ingestion_service,
             price_ingestion_service,
             price_archival_service,
             health_service,
@@ -36,12 +36,12 @@ impl CliController {
                 match set_code {
                     Some(set) => {
                         info!("Ingesting cards for set: {}", set);
-                        let count = self.card_service.ingest_set(&set).await?;
+                        let count = self.card_ingestion_service.ingest_set(&set).await?;
                         info!("Successfully ingested {} cards for set {}", count, set);
                     }
                     None => {
                         info!("Ingesting all cards");
-                        let count = self.card_service.ingest_all().await?;
+                        let count = self.card_ingestion_service.ingest_all().await?;
                         info!("Successfully ingested {} total cards", count);
                     }
                 }
@@ -49,7 +49,7 @@ impl CliController {
             }
             Commands::Sets => {
                 info!("Ingesting MTG set list");
-                let count = self.set_service.ingest_all().await?;
+                let count = self.set_ingestion_service.ingest_all().await?;
                 info!("Successfully ingested {} sets", count);
                 Ok(())
             }

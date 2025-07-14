@@ -12,9 +12,9 @@ pub struct Card {
     pub is_reserved: bool,
     pub mana_cost: Option<String>,
     pub name: String,
+    pub number: String,
     pub oracle_text: Option<String>,
     pub rarity: CardRarity,
     pub set_code: String,
     pub type_line: String,
-    pub order: Option<i32>,
 }

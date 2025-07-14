@@ -7,6 +7,6 @@ mod legality_status;
 pub use card::Card;
 pub use legality::Legality;
 
-use card_rarity::CardRarity;
-use format::Format;
-use legality_status::LegalityStatus;
+pub (super) use card_rarity::CardRarity;
+pub (super) use format::Format;
+pub (super) use legality_status::LegalityStatus;

@@ -1,4 +1,6 @@
 use anyhow::Result;
+use bytes::Bytes;
+use futures::StreamExt;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 use std::time::Duration;
@@ -11,7 +13,7 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new() -> Self {
         let client = Client::builder()
-            .timeout(Duration::from_secs(30))
+            .timeout(Duration::from_secs(120))
             .user_agent("scry-mtg-tool/1.0")
             .build()
             .expect("Failed to create HTTP client");
@@ -31,5 +33,22 @@ impl HttpClient {
             ));
         }
         Ok(response.json::<T>().await?)
+    }
+
+    pub async fn get_bytes_stream(
+        &self,
+        url: &str,
+    ) -> Result<impl futures::Stream<Item = Result<Bytes>>> {
+        let response = self.client.get(url).send().await?;
+        if !response.status().is_success() {
+            return Err(anyhow::anyhow!(
+                "HTTP request failed: {}",
+                response.status()
+            ));
+        }
+        // Stream chunks as they arrive:
+        Ok(response
+            .bytes_stream()
+            .map(|result| result.map_err(anyhow::Error::from)))
     }
 }

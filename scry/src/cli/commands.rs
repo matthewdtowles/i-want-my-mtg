@@ -13,7 +13,7 @@ pub struct Cli {
 pub enum Commands {
     /// Ingest card data for a specific set or all sets
     Cards {
-        #[arg(short, long, help = "Specific set code to ingest (e.g., 'BRO', 'DMU')")]
+        #[arg(short, long, help = "Specific set code to ingest (e.g., 'BRO', 'DMU'). Return all if blank.")]
         set_code: Option<String>,
     },
 

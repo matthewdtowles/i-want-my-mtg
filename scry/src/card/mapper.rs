@@ -25,7 +25,7 @@ impl CardMapper {
             .collect()
     }
 
-    fn map_single_card(&self, card_data: &Value) -> Result<Card> {
+    pub fn map_single_card(&self, card_data: &Value) -> Result<Card> {
         let rarity_str = self.extract_string(card_data, "rarity")?;
         let rarity = rarity_str.parse()
             .map_err(|e| anyhow::anyhow!("Invalid rarity '{}': {}", rarity_str, e))?;
@@ -48,7 +48,6 @@ impl CardMapper {
     }
 
     // TODO: move to shared mapper???
-
     /// Returns `None` if the field is missing or not a string since it is optional.
     fn extract_optional_string(&self, data: &Value, field: &str) -> Option<String> {
         data.get(field)
@@ -56,6 +55,7 @@ impl CardMapper {
             .map(|s| s.to_string())
     }
 
+    // TODO: move to shared mapper???
     fn extract_string(&self, data: &Value, field: &str) -> Result<String> {
         data.get(field)
             .and_then(|v| v.as_str())
@@ -63,6 +63,7 @@ impl CardMapper {
             .ok_or_else(|| anyhow::anyhow!("Missing or invalid field: {}", field))
     }
 
+    // TODO: move to shared mapper???
     fn extract_bool(&self, data: &Value, field: &str) -> bool {
         data.get(field)
             .and_then(|v| v.as_str())

@@ -25,7 +25,6 @@ impl Config {
         if let Ok(url) = env::var("DATABASE_URL") {
             return Ok(url);
         }
-
         env::var("DATABASE_URL").or_else(|_| {
             let host = env::var("DB_HOST")?;
             let port = env::var("DB_PORT")?;

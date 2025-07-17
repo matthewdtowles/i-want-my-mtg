@@ -28,8 +28,4 @@ impl SetRepository {
         );
         self.db.execute_query_builder(query_builder).await
     }
-
-    pub async fn find_all(&self) -> Result<Vec<Set>> {
-        self.db.fetch_all_query_builder(QueryBuilder::new("SELECT * FROM set")).await
-    }
 }

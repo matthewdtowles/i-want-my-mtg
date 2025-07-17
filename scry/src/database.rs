@@ -45,18 +45,6 @@ impl ConnectionPool {
         Ok(count)
     }
 
-    pub async fn count_with_param<T>(&self, query: &str, param: T) -> Result<i64>
-    where
-        T: Send + for<'q> sqlx::Encode<'q, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
-    {
-        let row = sqlx::query(query)
-            .bind(param)
-            .fetch_one(&*self.pool)
-            .await?;
-        let count: i64 = row.get(0);
-        Ok(count)
-    }
-
     pub async fn fetch_all_query_builder<T>(
         &self,
         mut query_builder: QueryBuilder<'_, Postgres>,
@@ -65,6 +53,9 @@ impl ConnectionPool {
         T: for<'r> FromRow<'r, PgRow> + Send + Unpin,
     {
         let query = query_builder.build_query_as::<T>();
-        query.fetch_all(self.pool.as_ref()).await.map_err(Into::into)
+        query
+            .fetch_all(self.pool.as_ref())
+            .await
+            .map_err(Into::into)
     }
 }

@@ -1,4 +1,3 @@
-use crate::set::models::Set;
 use crate::set::{client::SetClient, mapper::SetMapper, repository::SetRepository};
 use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
 use anyhow::Result;
@@ -35,11 +34,5 @@ impl SetIngestionService {
         let count = self.repository.bulk_insert(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)
-    }
-
-
-    pub async fn fetch_all(&self) -> Result<Vec<Set>> {
-        info!("Fetching all saved sets");
-        self.repository.find_all().await
     }
 }

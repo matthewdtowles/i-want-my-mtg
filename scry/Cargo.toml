@@ -2,7 +2,7 @@
 name = "scry"
 version = "0.1.0"
 edition = "2021"
-description = "MTG data ingestion pipeline management"
+description = "MTG data ETL management tool"
 
 [[bin]]
 name = "scry"

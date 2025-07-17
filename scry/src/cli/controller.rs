@@ -41,12 +41,8 @@ impl CliController {
                     }
                     None => {
                         info!("Ingesting all cards");
-                        let sets = self.set_ingestion_service.fetch_all().await?;
-                        let mut total_count = 0;
-                        for s in sets {
-                            total_count += self.card_ingestion_service.ingest_set_cards(&s.code).await?;
-                        }
-                        info!("Successfully ingested {} total cards", total_count);
+                        let count = self.card_ingestion_service.ingest_all_cards_streaming().await?;
+                        info!("Successfully ingested {} total cards", count);
                     }
                 }
                 Ok(())

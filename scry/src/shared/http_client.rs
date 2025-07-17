@@ -13,7 +13,8 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new() -> Self {
         let client = Client::builder()
-            .timeout(Duration::from_secs(120))
+            .timeout(Duration::from_secs(1800)) // 30 minutes for large downloads
+            .connect_timeout(Duration::from_secs(30))
             .user_agent("scry-mtg-tool/1.0")
             .build()
             .expect("Failed to create HTTP client");
@@ -46,7 +47,6 @@ impl HttpClient {
                 response.status()
             ));
         }
-        // Stream chunks as they arrive:
         Ok(response
             .bytes_stream()
             .map(|result| result.map_err(anyhow::Error::from)))

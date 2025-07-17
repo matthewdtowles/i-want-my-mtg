@@ -77,9 +77,4 @@ impl PriceRepository {
         query_builder.push_bind(price_ids);
         self.db.execute_query_builder(query_builder).await
     }
-
-    pub async fn count(&self) -> Result<i64> {
-        let query = "SELECT COUNT(*) FROM price";
-        self.db.count(query).await
-    }
 }

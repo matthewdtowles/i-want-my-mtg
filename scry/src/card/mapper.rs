@@ -1,4 +1,4 @@
-use crate::card::models::Card;
+use crate::card::models::{Card, CardRarity};
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
@@ -26,64 +26,52 @@ impl CardMapper {
     }
 
     pub fn map_single_card(&self, card_data: &Value) -> Result<Card> {
-        let rarity_str = self.extract_string(card_data, "rarity")?;
-        let rarity = rarity_str.parse()
-            .map_err(|e| anyhow::anyhow!("Invalid rarity '{}': {}", rarity_str, e))?;
+        let id = self.extract_string(card_data, "uuid")?;
+        let name = self.extract_string(card_data, "name")?;
+        let set_code = self.extract_string(card_data, "setCode")?;
+        let number = self.extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
+        let type_line = self.extract_optional_string(card_data, "type").unwrap_or_default();
+        
+        let rarity_str = self.extract_optional_string(card_data, "rarity").unwrap_or_else(|| "common".to_string());
+        let rarity = rarity_str.parse::<CardRarity>().unwrap_or(CardRarity::Common);
+        
+        let mana_cost = self.extract_optional_string(card_data, "manaCost");
+        let oracle_text = self.extract_optional_string(card_data, "text");
+        let artist = self.extract_optional_string(card_data, "artist");
+        
+        let has_foil = card_data.get("hasFoil").and_then(|v| v.as_bool()).unwrap_or(false);
+        let has_non_foil = card_data.get("hasNonFoil").and_then(|v| v.as_bool()).unwrap_or(true);
+        let is_reserved = card_data.get("isReserved").and_then(|v| v.as_bool()).unwrap_or(false);
+        
+        // Generate image URL (adjust based on your requirements)
+        let img_src = format!("https://cards.scryfall.io/normal/front/{}.jpg", id);
 
         Ok(Card {
-            id: self.extract_string(card_data, "uuid")?,
-            artist: self.extract_optional_string(card_data, "artist"),
-            has_foil: self.extract_bool(card_data, "hasFoil"),
-            has_non_foil: self.extract_bool(card_data, "hasNonFoil"),
-            img_src: self.build_scryfall_img_path(card_data),
-            is_reserved: self.extract_bool(card_data, "isReserved"),
-            mana_cost: self.extract_optional_string(card_data, "manaCost"),
-            name: self.extract_string(card_data, "name")?,
-            number: self.extract_string(card_data, "number")?,
-            oracle_text: self.extract_optional_string(card_data, "text"),
+            id,
+            artist,
+            has_foil,
+            has_non_foil,
+            img_src,
+            is_reserved,
+            mana_cost,
+            name,
+            number,
+            oracle_text,
             rarity,
-            set_code: self.extract_string(card_data, "setCode")?,
-            type_line: self.extract_string(card_data, "type")?,
+            set_code,
+            type_line,
         })
     }
 
-    // TODO: move to shared mapper???
-    /// Returns `None` if the field is missing or not a string since it is optional.
-    fn extract_optional_string(&self, data: &Value, field: &str) -> Option<String> {
-        data.get(field)
+    fn extract_string(&self, value: &Value, key: &str) -> Result<String> {
+        value
+            .get(key)
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
+            .ok_or_else(|| anyhow::anyhow!("Missing or invalid '{}' field", key))
     }
 
-    // TODO: move to shared mapper???
-    fn extract_string(&self, data: &Value, field: &str) -> Result<String> {
-        data.get(field)
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .ok_or_else(|| anyhow::anyhow!("Missing or invalid field: {}", field))
-    }
-
-    // TODO: move to shared mapper???
-    fn extract_bool(&self, data: &Value, field: &str) -> bool {
-        data.get(field)
-            .and_then(|v| v.as_str())
-            .map(|s| s.eq_ignore_ascii_case("true"))
-            .unwrap_or(false)
-    }
-
-    fn build_scryfall_img_path(&self, card_data: &Value) -> String {
-        card_data
-            .get("identifiers")
-            .and_then(|identifiers| identifiers.get("scryfallId"))
-            .and_then(|id| id.as_str())
-            .map(|scryfall_id| {
-                let chars: Vec<char> = scryfall_id.chars().collect();
-                if chars.len() >= 2 {
-                    format!("{}/{}/{}.jpg", chars[0], chars[1], scryfall_id)
-                } else {
-                    String::new()
-                }
-            })
-            .unwrap_or_default()
+    fn extract_optional_string(&self, value: &Value, key: &str) -> Option<String> {
+        value.get(key).and_then(|v| v.as_str()).map(|s| s.to_string())
     }
 }

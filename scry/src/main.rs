@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     // Initialize logging
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "scry=info".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "scry=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -41,8 +41,7 @@ async fn main() -> Result<()> {
     let cli_controller = CliController::new(
         card::ingestion_service::CardIngestionService::new(
             connection_pool.clone(),
-            http_client.clone(),
-            &config,
+            http_client.clone()
         ),
         set::ingestion_service::SetIngestionService::new(
             connection_pool.clone(),

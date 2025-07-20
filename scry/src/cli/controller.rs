@@ -40,7 +40,7 @@ impl CliController {
                         info!("Successfully ingested {} cards for set {}", count, set);
                     }
                     None => {
-                        info!("Ingesting all cards");
+                        info!("Ingesting all cards using streaming approach");
                         let count = self.card_ingestion_service.ingest_all_cards_streaming().await?;
                         info!("Successfully ingested {} total cards", count);
                     }

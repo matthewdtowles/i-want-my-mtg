@@ -6,10 +6,6 @@ use tracing::debug;
 pub struct CardMapper;
 
 impl CardMapper {
-    pub fn new() -> Self {
-        Self
-    }
-
     pub fn map_mtg_json_to_cards(set_data: Value) -> Result<Vec<Card>> {
         debug!("Mapping MTG JSON set data to cards");
 

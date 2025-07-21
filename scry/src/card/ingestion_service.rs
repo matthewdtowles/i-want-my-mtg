@@ -4,11 +4,14 @@ use crate::{
     shared::HttpClient,
 };
 use actson::feeder::PushJsonFeeder;
+use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
 use futures::StreamExt;
 use std::sync::Arc;
-use tracing::{debug, error, info, trace, warn};
+use tokio::io::BufReader;
+use tokio_util::io::StreamReader;
+use tracing::{debug, error, info, warn};
 
 const BASE_INGESTION_URL: &str = "https://mtgjson.com/api/v5/";
 const BATCH_SIZE: usize = 500;
@@ -47,59 +50,76 @@ impl CardIngestionService {
         info!("Starting streaming ingestion of all cards from AllPrintings.json");
         let url = format!("{BASE_INGESTION_URL}AllPrintings.json");
 
-        let mut byte_stream = self.client.get_bytes_stream(&url).await?;
+        let byte_stream = self.client.get_bytes_stream(&url).await?;
         info!("Received byte stream for AllPrintings.json");
-        let mut feeder = PushJsonFeeder::new();
+
+        // Convert the byte stream to AsyncRead using StreamReader
+        let stream_reader = StreamReader::new(
+            byte_stream.map(|result| result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)))
+        );
+        
+        // Wrap in BufReader for efficient reading
+        let mut buf_reader = BufReader::new(stream_reader);
+        
+        // Use the proper Tokio feeder from actson
+        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
         let mut card_processor = StreamingCardProcessor::new(BATCH_SIZE);
         let mut total_processed = 0u64;
+        let mut error_count = 0;
 
         loop {
-            trace!("Get next event...");
             let mut event = parser.next_event();
-            trace!("Parser event: {:?}", event);
-            while event == JsonEvent::NeedMoreInput {
-                debug!("Need more input...");
-                match byte_stream.next().await {
-                    Some(chunk_result) => {
-                        let chunk = chunk_result?;
-                        debug!("Processing chunk of {} bytes", chunk.len());
-                        parser.feeder.push_bytes(&chunk);
+            
+            // Handle NeedMoreInput using the async feeder
+            if event == JsonEvent::NeedMoreInput {
+                match parser.feeder.fill_buf().await {
+                    Ok(_) => {
+                        event = parser.next_event();
                     }
-                    None => {
-                        debug!("No more bytes. Marking feeder as done.");
-                        parser.feeder.done();
-                    }
-                }
-                event = parser.next_event();
-                debug!("Parser event: {:?}", event);
-            }
-            match event {
-                JsonEvent::Eof => {
-                    info!("Found EOF.");
-                    break;
-                }
-                JsonEvent::Error => {
-                    if card_processor.in_card_object {
-                        error!("JSON parser encountered an error while processing a card. Aborting stream ingestion.");
+                    Err(e) => {
+                        error!("Failed to fill buffer: {}", e);
                         break;
                     }
-                    warn!("JSON parser encountered an error outside card processing. Skipping and continuing...");
+                }
+            }
+            
+            match event {
+                JsonEvent::Eof => {
+                    info!("Reached end of JSON stream");
+                    let remaining_cards = card_processor.take_remaining();
+                    if !remaining_cards.is_empty() {
+                        let final_count = self.repository.save(&remaining_cards).await?;
+                        total_processed += final_count;
+                    }
+                    info!("Completed streaming ingestion. Total cards processed: {}", total_processed);
+                    return Ok(total_processed);
+                }
+                JsonEvent::Error => {
+                    warn!("JSON parser error at depth {} on path {}", 
+                        card_processor.json_depth, 
+                        card_processor.json_path.join("/"));
+                    error_count += 1;
+                    if error_count > 10 {
+                        error!("Too many parser errors ({}). Aborting stream.", error_count);
+                        return Err(anyhow::anyhow!("Streaming parse failed due to parser errors"));
+                    }
+                    continue;
+                }
+                JsonEvent::NeedMoreInput => {
+                    // This should have been handled above, but just in case
                     continue;
                 }
                 _ => {
+                    error_count = 0; // Reset error count on successful event
                     let processed_count = card_processor.process_event(event, &parser).await?;
                     if processed_count > 0 {
                         let cards = card_processor.take_batch();
                         if !cards.is_empty() {
-                            debug!("Cards vector has contents.");
                             let saved_count = self.repository.save(&cards).await?;
-                            debug!("Saved count = {:?}", saved_count);
                             total_processed += saved_count;
-                            debug!("Total Processed so far: {:?}", total_processed);
-
                             if total_processed % LOG_INTERVAL as u64 == 0 {
-                                debug!("Processed {:?} cards so far...", total_processed);
+                                info!("Processed {} cards so far...", total_processed);
                             }
                         }
                     }
@@ -109,15 +129,11 @@ impl CardIngestionService {
 
         let remaining_cards = card_processor.take_remaining();
         if !remaining_cards.is_empty() {
-            info!("Remaining cards is not empty.");
             let final_count = self.repository.save(&remaining_cards).await?;
             total_processed += final_count;
         }
 
-        info!(
-            "Completed streaming ingestion. Total cards processed: {:?}",
-            total_processed
-        );
+        info!("Completed streaming ingestion. Total cards processed: {}", total_processed);
         Ok(total_processed)
     }
 }
@@ -133,15 +149,17 @@ struct StreamingCardProcessor {
     in_card_object: bool,
     card_object_depth: usize,
     json_path: Vec<String>,
+    // skip_depth: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum ParsingState {
     Root,
-    InData,
+    // InData,
     InSetObject,
     InCardsArray,
     InCardObject,
+    SkippingValue(usize), // usize = skip_depth
 }
 
 impl StreamingCardProcessor {
@@ -159,11 +177,47 @@ impl StreamingCardProcessor {
         }
     }
 
-    async fn process_event(
+    async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
-        parser: &JsonParser<'_, PushJsonFeeder>,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
     ) -> Result<usize> {
+        // SkippingValue state: track nesting to know when to exit
+        if let ParsingState::SkippingValue(skip_depth) = self.state {
+            match event {
+                JsonEvent::StartObject | JsonEvent::StartArray => {
+                    self.json_depth += 1;
+                }
+                JsonEvent::EndObject | JsonEvent::EndArray => {
+                    self.json_depth -= 1;
+                    // Exit skip mode when we return to or below the original skip depth
+                    if self.json_depth <= skip_depth {
+                        self.state = ParsingState::Root;
+                        // Also pop the field name we were skipping from the path
+                        if !self.json_path.is_empty() {
+                            self.json_path.pop();
+                        }
+                        debug!(
+                            "Exited SkippingValue state at depth {}, returning to Root",
+                            self.json_depth
+                        );
+                    }
+                }
+                JsonEvent::Error => {
+                    // Parser is corrupted, we need to reset everything
+                    warn!("Parser error while skipping - this indicates chunk boundary corruption");
+                    return Err(anyhow::anyhow!(
+                        "Parser corrupted during skip - streaming failed"
+                    ));
+                }
+                _ => {
+                    // Continue skipping all other events
+                }
+            }
+            return Ok(0);
+        }
+
+        // Handle depth tracking for all events
         match event {
             JsonEvent::StartObject => {
                 self.json_depth += 1;
@@ -174,8 +228,15 @@ impl StreamingCardProcessor {
                 self.json_depth -= 1;
                 result
             }
-            JsonEvent::StartArray => self.handle_start_array(),
-            JsonEvent::EndArray => self.handle_end_array(),
+            JsonEvent::StartArray => {
+                self.json_depth += 1;
+                self.handle_start_array()
+            }
+            JsonEvent::EndArray => {
+                let result = self.handle_end_array();
+                self.json_depth -= 1;
+                result
+            }
             JsonEvent::FieldName => self.handle_field_name(parser),
             JsonEvent::ValueString => {
                 let value = parser.current_string().unwrap_or_default();
@@ -198,12 +259,19 @@ impl StreamingCardProcessor {
             JsonEvent::ValueTrue => self.handle_boolean_value(true),
             JsonEvent::ValueFalse => self.handle_boolean_value(false),
             JsonEvent::ValueNull => self.handle_null_value(),
+            JsonEvent::Error => {
+                // Parser is fundamentally broken - likely due to chunk boundary issue
+                Err(anyhow::anyhow!(
+                    "JSON parser error - streaming parse failed at chunk boundary"
+                ))
+            }
             _ => Ok(0),
         }
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
-        if self.in_cards_array && self.json_depth > 0 {
+        // Only start building card JSON if we're inside the cards array
+        if self.in_cards_array {
             debug!("Starting card object at depth {}", self.json_depth);
             self.in_card_object = true;
             self.card_object_depth = self.json_depth;
@@ -211,23 +279,12 @@ impl StreamingCardProcessor {
             self.current_card_json.push('{');
             self.state = ParsingState::InCardObject;
         }
-
-        match self.state {
-            ParsingState::Root if self.json_depth == 1 => {
-                self.state = ParsingState::Root;
-            }
-            ParsingState::InData if self.json_depth > 2 => {
-                self.state = ParsingState::InSetObject;
-            }
-            _ => {}
-        }
         Ok(0)
     }
 
     async fn handle_end_object(&mut self) -> Result<usize> {
         if self.in_card_object {
             self.current_card_json.push('}');
-
             if self.json_depth == self.card_object_depth {
                 self.in_card_object = false;
                 let card_result = self.parse_card_from_json(&self.current_card_json);
@@ -246,28 +303,33 @@ impl StreamingCardProcessor {
                 self.current_card_json.clear();
             }
         }
-
-        if !self.json_path.is_empty() {
+        // Only pop if the last thing is a field name
+        if let Some(_) = self.json_path.last() {
             self.json_path.pop();
         }
-
-        match self.state {
-            ParsingState::InSetObject if self.json_depth <= 3 => {
-                self.state = ParsingState::InData;
-            }
-            _ => {}
-        }
-
         Ok(0)
     }
 
-    fn handle_field_name(&mut self, parser: &JsonParser<PushJsonFeeder>) -> Result<usize> {
+    fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
+        &mut self, 
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>
+    ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
         debug!("FieldName: {}", field_name);
 
+        // Always track the path!
         self.json_path.push(field_name.clone());
 
-        // Only build up card JSON if in_card_object
+        // If not in cards array and not on a path to "cards", skip this value aggressively
+        if !self.in_cards_array
+            && !(self.json_path.len() >= 3
+                && self.json_path[self.json_path.len() - 3] == "data"
+                && self.json_path[self.json_path.len() - 1] == "cards")
+        {
+            debug!("Skipping value for field: {}", field_name);
+            self.state = ParsingState::SkippingValue(self.json_depth);
+        }
+
         if self.in_card_object {
             if !self.current_card_json.ends_with('{') && !self.current_card_json.ends_with(',') {
                 self.current_card_json.push(',');
@@ -291,8 +353,6 @@ impl StreamingCardProcessor {
                 "Entering cards array for set: {}",
                 self.json_path[self.json_path.len() - 2]
             );
-        } else {
-            debug!("StartArray at path: {:?}", self.json_path);
         }
         Ok(0)
     }
@@ -303,7 +363,8 @@ impl StreamingCardProcessor {
             self.state = ParsingState::InSetObject;
             debug!("Exiting cards array");
         }
-        if !self.json_path.is_empty() {
+        // Only pop if the last thing is a field name
+        if let Some(_) = self.json_path.last() {
             self.json_path.pop();
         }
         Ok(0)

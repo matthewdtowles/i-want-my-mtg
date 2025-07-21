@@ -3,7 +3,6 @@ use crate::{
     database::ConnectionPool,
     shared::HttpClient,
 };
-use actson::feeder::PushJsonFeeder;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;

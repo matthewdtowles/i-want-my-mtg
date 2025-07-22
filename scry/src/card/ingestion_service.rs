@@ -53,13 +53,14 @@ impl CardIngestionService {
         info!("Received byte stream for AllPrintings.json");
 
         // Convert the byte stream to AsyncRead using StreamReader
-        let stream_reader = StreamReader::new(
-            byte_stream.map(|result| result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)))
-        );
-        
+        let stream_reader =
+            StreamReader::new(byte_stream.map(|result| {
+                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+            }));
+
         // Wrap in BufReader for efficient reading
         let mut buf_reader = BufReader::new(stream_reader);
-        
+
         // Use the proper Tokio feeder from actson
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
@@ -69,7 +70,7 @@ impl CardIngestionService {
 
         loop {
             let mut event = parser.next_event();
-            
+
             // Handle NeedMoreInput using the async feeder
             if event == JsonEvent::NeedMoreInput {
                 match parser.feeder.fill_buf().await {
@@ -82,7 +83,7 @@ impl CardIngestionService {
                     }
                 }
             }
-            
+
             match event {
                 JsonEvent::Eof => {
                     info!("Reached end of JSON stream");
@@ -91,17 +92,24 @@ impl CardIngestionService {
                         let final_count = self.repository.save(&remaining_cards).await?;
                         total_processed += final_count;
                     }
-                    info!("Completed streaming ingestion. Total cards processed: {}", total_processed);
+                    info!(
+                        "Completed streaming ingestion. Total cards processed: {}",
+                        total_processed
+                    );
                     return Ok(total_processed);
                 }
                 JsonEvent::Error => {
-                    warn!("JSON parser error at depth {} on path {}", 
-                        card_processor.json_depth, 
-                        card_processor.json_path.join("/"));
+                    warn!(
+                        "JSON parser error at depth {} on path {}",
+                        card_processor.json_depth,
+                        card_processor.json_path.join("/")
+                    );
                     error_count += 1;
                     if error_count > 10 {
                         error!("Too many parser errors ({}). Aborting stream.", error_count);
-                        return Err(anyhow::anyhow!("Streaming parse failed due to parser errors"));
+                        return Err(anyhow::anyhow!(
+                            "Streaming parse failed due to parser errors"
+                        ));
                     }
                     continue;
                 }
@@ -132,7 +140,10 @@ impl CardIngestionService {
             total_processed += final_count;
         }
 
-        info!("Completed streaming ingestion. Total cards processed: {}", total_processed);
+        info!(
+            "Completed streaming ingestion. Total cards processed: {}",
+            total_processed
+        );
         Ok(total_processed)
     }
 }
@@ -310,8 +321,8 @@ impl StreamingCardProcessor {
     }
 
     fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
-        &mut self, 
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>
+        &mut self,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
     ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
         debug!("FieldName: {}", field_name);

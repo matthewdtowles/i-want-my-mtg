@@ -321,8 +321,8 @@ impl StreamingCardProcessor {
     }
 
     fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
-        &mut self,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        &mut self, 
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>
     ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
         debug!("FieldName: {}", field_name);
@@ -330,13 +330,30 @@ impl StreamingCardProcessor {
         // Always track the path!
         self.json_path.push(field_name.clone());
 
-        // If not in cards array and not on a path to "cards", skip this value aggressively
-        if !self.in_cards_array
-            && !(self.json_path.len() >= 3
-                && self.json_path[self.json_path.len() - 3] == "data"
-                && self.json_path[self.json_path.len() - 1] == "cards")
-        {
-            debug!("Skipping value for field: {}", field_name);
+        // Only skip fields we know we don't need
+        // Don't skip "data" or any field that could lead to "cards"
+        if !self.in_cards_array && field_name == "meta" {
+            debug!("Skipping meta field");
+            self.state = ParsingState::SkippingValue(self.json_depth);
+        }
+        // For "data" field, we want to traverse into it, not skip it
+        else if field_name == "data" {
+            debug!("Entering data object");
+            // Don't skip - we need to traverse into data
+        }
+        // For set objects within data, we want to traverse into them
+        else if self.json_path.len() == 2 && self.json_path[0] == "data" {
+            debug!("Entering set object: {}", field_name);
+            self.state = ParsingState::InSetObject;
+        }
+        // For "cards" field within a set, we want to traverse into it
+        else if field_name == "cards" && self.json_path.len() == 3 && self.json_path[0] == "data" {
+            debug!("Found cards field for set: {}", self.json_path[1]);
+            // Don't skip - handle_start_array will set in_cards_array = true
+        }
+        // Skip other fields within sets that aren't "cards"
+        else if self.json_path.len() >= 3 && self.json_path[0] == "data" && !self.in_cards_array && field_name != "cards" {
+            debug!("Skipping non-cards field in set: {}", field_name);
             self.state = ParsingState::SkippingValue(self.json_depth);
         }
 
@@ -353,15 +370,17 @@ impl StreamingCardProcessor {
     }
 
     fn handle_start_array(&mut self) -> Result<usize> {
-        if self.json_path.len() >= 3
-            && self.json_path[self.json_path.len() - 3] == "data"
+        // Check if this is a "cards" array within a set
+        if self.json_path.len() >= 1 
             && self.json_path[self.json_path.len() - 1] == "cards"
+            && self.json_path.len() == 3  // data/SETCODE/cards
+            && self.json_path[0] == "data" 
         {
             self.in_cards_array = true;
             self.state = ParsingState::InCardsArray;
             debug!(
                 "Entering cards array for set: {}",
-                self.json_path[self.json_path.len() - 2]
+                self.json_path[1] // The set code
             );
         }
         Ok(0)

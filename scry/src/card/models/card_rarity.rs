@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "card_rarity_enum")]
 #[sqlx(rename_all = "lowercase")]
 pub enum CardRarity {
     Common,
@@ -19,7 +19,7 @@ impl CardRarity {
             CardRarity::Common => "common",
             CardRarity::Uncommon => "uncommon",
             CardRarity::Rare => "rare",
-            CardRarity::MythicRare => "mythic_rare",
+            CardRarity::MythicRare => "mythic",
             CardRarity::Bonus => "bonus",
             CardRarity::Special => "special",
         }
@@ -40,7 +40,7 @@ impl std::str::FromStr for CardRarity {
             "common" => Ok(CardRarity::Common),
             "uncommon" => Ok(CardRarity::Uncommon),
             "rare" => Ok(CardRarity::Rare),
-            "mythic_rare" => Ok(CardRarity::MythicRare),
+            "mythic" => Ok(CardRarity::MythicRare),
             "bonus" => Ok(CardRarity::Bonus),
             "special" => Ok(CardRarity::Special),
             _ => Err(format!("Unknown card rarity: {}", s)),

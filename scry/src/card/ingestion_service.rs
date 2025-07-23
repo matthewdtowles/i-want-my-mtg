@@ -58,8 +58,8 @@ impl CardIngestionService {
                 result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
             }));
 
-        // Wrap in BufReader for efficient reading
-        let mut buf_reader = BufReader::new(stream_reader);
+        // Use a much larger buffer to handle long strings without splitting
+        let mut buf_reader = BufReader::with_capacity(64 * 1024, stream_reader); // 512KB buffer
 
         // Use the proper Tokio feeder from actson
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
@@ -73,15 +73,28 @@ impl CardIngestionService {
 
             // Handle NeedMoreInput using the async feeder
             if event == JsonEvent::NeedMoreInput {
-                match parser.feeder.fill_buf().await {
-                    Ok(_) => {
-                        event = parser.next_event();
-                    }
-                    Err(e) => {
-                        error!("Failed to fill buffer: {}", e);
-                        break;
+                // Try to fill buffer multiple times to ensure we get complete strings
+                let mut fill_attempts = 0;
+                loop {
+                    match parser.feeder.fill_buf().await {
+                        Ok(()) => {
+                            // Check if we got more data
+                            fill_attempts += 1;
+                            if fill_attempts >= 3 {
+                                break; // Stop after 3 attempts
+                            }
+                            // Try one more time to get additional data
+                            continue;
+                        }
+                        Err(e) => {
+                            if fill_attempts == 0 {
+                                error!("Failed to fill buffer: {}", e);
+                            }
+                            break;
+                        }
                     }
                 }
+                event = parser.next_event();
             }
 
             match event {
@@ -205,11 +218,15 @@ impl StreamingCardProcessor {
                         self.state = ParsingState::Root;
                         if !self.json_path.is_empty() {
                             let popped = self.json_path.pop();
-                            debug!("Exited skip mode, popped: {:?}, new path: {:?}", popped, self.json_path);
+                            debug!(
+                                "Exited skip mode, popped: {:?}, new path len: {:?}",
+                                popped,
+                                self.json_path.len()
+                            );
                         }
                     }
                 }
-                _ => {}
+                _ => {} // TODO: why do we do this?
             }
             return Ok(0);
         }
@@ -267,55 +284,117 @@ impl StreamingCardProcessor {
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
-        // Only start building card JSON if we're inside the cards array
-        if self.in_cards_array {
+        if self.in_cards_array && self.json_depth == 5 && !self.in_card_object {
+            // Starting a new card object
             info!("✅ STARTING card object at depth {}", self.json_depth);
             self.in_card_object = true;
             self.card_object_depth = self.json_depth;
             self.current_card_json.clear();
             self.current_card_json.push('{');
             self.state = ParsingState::InCardObject;
+        } else if self.in_card_object {
+            // Starting a nested object within a card
+            // Check if we need a comma (for array elements)
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
+            self.current_card_json.push('{');
         }
         Ok(0)
     }
 
     async fn handle_end_object(&mut self) -> Result<usize> {
-        // debug!(
-        //     "EndObject at path: {:?}, depth: {}",
-        //     self.json_path, self.json_depth
-        // );
-
         if self.in_card_object {
             self.current_card_json.push('}');
+
+            // Only process when we're ending the top-level card object
             if self.json_depth == self.card_object_depth {
                 self.in_card_object = false;
-                let card_result = self.parse_card_from_json(&self.current_card_json);
 
+                // Debug: Validate JSON before parsing
+                let json_valid =
+                    serde_json::from_str::<serde_json::Value>(&self.current_card_json).is_ok();
+
+                if !json_valid {
+                    // Try to parse the JSON and get the exact error location
+                    match serde_json::from_str::<serde_json::Value>(&self.current_card_json) {
+                        Err(e) => {
+                            warn!("JSON parse error: {}", e);
+
+                            // Show the context around where the error occurs
+                            let error_msg = e.to_string();
+                            if let Some(line_col) = error_msg
+                                .split("line ")
+                                .nth(1)
+                                .and_then(|s| s.split(" column ").next())
+                            {
+                                if let Ok(line_num) = line_col.parse::<usize>() {
+                                    // Since it's all one line, show context around the error column
+                                    if let Some(col_part) = error_msg.split("column ").nth(1) {
+                                        if let Ok(col_num) = col_part
+                                            .split_whitespace()
+                                            .next()
+                                            .unwrap_or("0")
+                                            .parse::<usize>()
+                                        {
+                                            let start = col_num.saturating_sub(50);
+                                            let end = std::cmp::min(
+                                                col_num + 50,
+                                                self.current_card_json.len(),
+                                            );
+                                            
+                                            // Ensure we don't slice on a UTF-8 boundary
+                                            let mut safe_start = start;
+                                            let mut safe_end = end;
+                                            
+                                            while safe_start > 0 && !self.current_card_json.is_char_boundary(safe_start) {
+                                                safe_start -= 1;
+                                            }
+                                            while safe_end < self.current_card_json.len() && !self.current_card_json.is_char_boundary(safe_end) {
+                                                safe_end += 1;
+                                            }
+                                            
+                                            warn!(
+                                                "Error context around column {}: '{}'",
+                                                col_num,
+                                                &self.current_card_json[safe_start..safe_end]
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Ok(_) => {} // Shouldn't happen since json_valid is false
+                    }
+                }
+
+                let card_result = self.parse_card_from_json(&self.current_card_json);
                 match card_result {
                     Ok(card) => {
-                        debug!("✅ Successfully parsed card");
+                        info!("✅ Successfully parsed card: {}", card.name.as_str());
                         self.batch.push(card);
                         if self.batch.len() >= self.batch_size {
                             return Ok(self.batch.len());
                         }
                     }
                     Err(e) => {
-                        warn!("Failed to parse card: {}", e);
+                        warn!("Failed to parse card JSON: {}", e);
+                        // Log a substantial portion to see the pattern
+                        let safe_json = if self.current_card_json.len() > 1000 {
+                            let mut end = 1000;
+                            while end > 0 && !self.current_card_json.is_char_boundary(end) {
+                                end -= 1;
+                            }
+                            &self.current_card_json[..end]
+                        } else {
+                            &self.current_card_json
+                        };
+                        warn!("JSON: {}", safe_json);
                     }
                 }
                 self.current_card_json.clear();
             }
-        }
-
-        // ALWAYS pop the last path element when exiting an object
-        // because objects are always preceded by a field name
-        if !self.json_path.is_empty() {
-            let popped = self.json_path.pop();
-            // debug!(
-            //     "Popped '{}' from path, new path: {:?}",
-            //     popped.unwrap_or_default(),
-            //     self.json_path
-            // );
         }
 
         Ok(0)
@@ -327,104 +406,114 @@ impl StreamingCardProcessor {
     ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
 
-        // Always track the path!
-        self.json_path.push(field_name.clone());
-
-        // Only log the significant path changes
-        if field_name == "data" || field_name == "cards" || (self.json_path.len() == 2 && self.json_path[0] == "data") {
-            debug!("Key field: {} -> path: {:?}", field_name, self.json_path);
-        }
-
-        // Only skip fields we explicitly know we don't need
-        match self.json_path.iter().map(|s| s.as_str()).collect::<Vec<_>>().as_slice() {
-            ["meta"] => {
+        match field_name.as_str() {
+            "meta" if self.json_depth == 1 => {
                 debug!("Skipping meta field");
                 self.state = ParsingState::SkippingValue(self.json_depth);
             }
-            ["data"] => {
+            "data" if self.json_depth == 1 => {
                 debug!("Entering data object");
+                self.state = ParsingState::Root;
             }
-            ["data", set_code] => {
-                debug!("Entering set object: {}", set_code);
-                self.state = ParsingState::InSetObject;
-            }
-            ["data", set_code, "cards"] => {
-                debug!("Found cards field for set: {}", set_code);
-            }
-            path if path.len() >= 3
-                && path[0] == "data"
-                && !self.in_cards_array
-                && field_name != "cards" =>
-            {
-                self.state = ParsingState::SkippingValue(self.json_depth);
+            "cards" if self.json_depth == 3 => {
+                debug!("Found cards field at depth 3");
+                // The next StartArray will set in_cards_array = true
             }
             _ if self.in_card_object => {
-                // Don't skip - we're building card JSON
+                // Build card JSON - ensure proper comma placement
+                if !self.current_card_json.ends_with('{') {
+                    self.current_card_json.push(',');
+                }
+                self.current_card_json.push('"');
+                self.current_card_json.push_str(&field_name);
+                self.current_card_json.push('"');
+                self.current_card_json.push(':');
             }
             _ => {
-                // Don't skip by default
+                // Skip non-essential fields outside cards array
+                if !self.in_cards_array && field_name != "cards" && self.json_depth >= 3 {
+                    self.state = ParsingState::SkippingValue(self.json_depth);
+                }
             }
         }
 
-        // Build card JSON if we're inside a card object
-        if self.in_card_object {
-            if !self.current_card_json.ends_with('{') && !self.current_card_json.ends_with(',') {
-                self.current_card_json.push(',');
-            }
-            self.current_card_json.push('"');
-            self.current_card_json.push_str(&field_name);
-            self.current_card_json.push('"');
-            self.current_card_json.push(':');
-        }
         Ok(0)
     }
 
     fn handle_start_array(&mut self) -> Result<usize> {
-        // Check if this is a "cards" array within a set
-        if self.json_path.len() == 3 && self.json_path[0] == "data" && self.json_path[2] == "cards"
-        {
+        // Detect cards array at depth 4
+        if self.json_depth == 4 {
             self.in_cards_array = true;
             self.state = ParsingState::InCardsArray;
-            info!("✅ ENTERING cards array for set: {}", self.json_path[1]);
-        } else if self.json_path.len() == 3 && self.json_path[2] == "cards" {
-            // This should help us debug why we're not matching
-            warn!("Found 'cards' array but path[0] is '{}', not 'data'. Full path: {:?}", 
-                  self.json_path[0], self.json_path);
+            info!("✅ ENTERING cards array at depth {}", self.json_depth);
+        }
+        // Handle arrays within card objects
+        else if self.in_card_object {
+            // Check if we need a comma before the array
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
+            self.current_card_json.push('[');
         }
         Ok(0)
     }
 
     fn handle_end_array(&mut self) -> Result<usize> {
-        // debug!(
-        //     "EndArray at path: {:?}, depth: {}",
-        //     self.json_path, self.json_depth
-        // );
-
-        if self.in_cards_array {
+        // Exit cards array at depth 4
+        if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
             self.state = ParsingState::InSetObject;
-            debug!("✅ Exiting cards array");
+            info!("✅ EXITING cards array at depth {}", self.json_depth);
         }
-
-        // ALWAYS pop the last path element when exiting an array
-        // because arrays are always preceded by a field name
-        if !self.json_path.is_empty() {
-            let popped = self.json_path.pop();
-            // debug!(
-            //     "Popped '{}' from path, new path: {:?}",
-            //     popped.unwrap_or_default(),
-            //     self.json_path
-            // );
+        // Handle arrays within card objects
+        else if self.in_card_object {
+            self.current_card_json.push(']');
         }
-
         Ok(0)
     }
 
     fn handle_string_value(&mut self, value: &str) -> Result<usize> {
         if self.in_card_object {
+            // Debug: MTG JSON uses 16-char hashes, so URLs should be exactly 42 chars
+            // Only warn if it's a URL that's clearly incomplete (ends mid-domain or no hash)
+            if value.starts_with("https://")
+                && (value.len() < 30 || // Very short URLs are definitely truncated
+                (value.contains("mtgjson.com") && value.len() < 42) || // MTG JSON URLs should be 42+ chars
+                (!value.contains("mtgjson.com") && value.len() < 50))
+            {
+                // Other URLs should be longer
+                warn!(
+                    "🔍 Actually truncated URL: '{}' (length: {})",
+                    value,
+                    value.len()
+                );
+            }
+
+            // Check if we need a comma (not after { [ : ,)
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
+
             self.current_card_json.push('"');
-            let escaped = value.replace('"', "\\\"");
-            self.current_card_json.push_str(&escaped);
+            // Proper JSON string escaping
+            for ch in value.chars() {
+                match ch {
+                    '"' => self.current_card_json.push_str("\\\""),
+                    '\\' => self.current_card_json.push_str("\\\\"),
+                    '\n' => self.current_card_json.push_str("\\n"),
+                    '\r' => self.current_card_json.push_str("\\r"),
+                    '\t' => self.current_card_json.push_str("\\t"),
+                    '\u{08}' => self.current_card_json.push_str("\\b"),
+                    '\u{0C}' => self.current_card_json.push_str("\\f"),
+                    c if c.is_control() => {
+                        self.current_card_json
+                            .push_str(&format!("\\u{:04x}", c as u32));
+                    }
+                    c => self.current_card_json.push(c),
+                }
+            }
             self.current_card_json.push('"');
         }
         Ok(0)
@@ -432,6 +521,11 @@ impl StreamingCardProcessor {
 
     fn handle_number_value(&mut self, value: &str) -> Result<usize> {
         if self.in_card_object {
+            // Check if we need a comma
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
             self.current_card_json.push_str(value);
         }
         Ok(0)
@@ -439,6 +533,11 @@ impl StreamingCardProcessor {
 
     fn handle_boolean_value(&mut self, value: bool) -> Result<usize> {
         if self.in_card_object {
+            // Check if we need a comma
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
             self.current_card_json
                 .push_str(if value { "true" } else { "false" });
         }
@@ -447,6 +546,11 @@ impl StreamingCardProcessor {
 
     fn handle_null_value(&mut self) -> Result<usize> {
         if self.in_card_object {
+            // Check if we need a comma
+            let last_char = self.current_card_json.chars().last();
+            if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
+                self.current_card_json.push(',');
+            }
             self.current_card_json.push_str("null");
         }
         Ok(0)

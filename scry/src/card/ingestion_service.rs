@@ -10,7 +10,7 @@ use futures::StreamExt;
 use std::sync::Arc;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, info, warn};
 
 const BASE_INGESTION_URL: &str = "https://mtgjson.com/api/v5/";
 const BATCH_SIZE: usize = 500;
@@ -201,29 +201,15 @@ impl StreamingCardProcessor {
                 }
                 JsonEvent::EndObject | JsonEvent::EndArray => {
                     self.json_depth -= 1;
-                    // Exit skip mode when we return to or below the original skip depth
                     if self.json_depth <= skip_depth {
                         self.state = ParsingState::Root;
-                        // Also pop the field name we were skipping from the path
                         if !self.json_path.is_empty() {
-                            self.json_path.pop();
+                            let popped = self.json_path.pop();
+                            debug!("Exited skip mode, popped: {:?}, new path: {:?}", popped, self.json_path);
                         }
-                        debug!(
-                            "Exited SkippingValue state at depth {}, returning to Root",
-                            self.json_depth
-                        );
                     }
                 }
-                JsonEvent::Error => {
-                    // Parser is corrupted, we need to reset everything
-                    warn!("Parser error while skipping - this indicates chunk boundary corruption");
-                    return Err(anyhow::anyhow!(
-                        "Parser corrupted during skip - streaming failed"
-                    ));
-                }
-                _ => {
-                    // Continue skipping all other events
-                }
+                _ => {}
             }
             return Ok(0);
         }
@@ -281,30 +267,23 @@ impl StreamingCardProcessor {
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
-        debug!(
-            "StartObject at path: {:?}, in_cards_array: {}",
-            self.json_path, self.in_cards_array
-        );
-
         // Only start building card JSON if we're inside the cards array
         if self.in_cards_array {
-            debug!("✅ STARTING card object at depth {}", self.json_depth);
+            info!("✅ STARTING card object at depth {}", self.json_depth);
             self.in_card_object = true;
             self.card_object_depth = self.json_depth;
             self.current_card_json.clear();
             self.current_card_json.push('{');
             self.state = ParsingState::InCardObject;
-        } else {
-            debug!("Not starting card object - not in cards array");
         }
         Ok(0)
     }
 
     async fn handle_end_object(&mut self) -> Result<usize> {
-        debug!(
-            "EndObject at path: {:?}, depth: {}",
-            self.json_path, self.json_depth
-        );
+        // debug!(
+        //     "EndObject at path: {:?}, depth: {}",
+        //     self.json_path, self.json_depth
+        // );
 
         if self.in_card_object {
             self.current_card_json.push('}');
@@ -332,11 +311,11 @@ impl StreamingCardProcessor {
         // because objects are always preceded by a field name
         if !self.json_path.is_empty() {
             let popped = self.json_path.pop();
-            debug!(
-                "Popped '{}' from path, new path: {:?}",
-                popped.unwrap_or_default(),
-                self.json_path
-            );
+            // debug!(
+            //     "Popped '{}' from path, new path: {:?}",
+            //     popped.unwrap_or_default(),
+            //     self.json_path
+            // );
         }
 
         Ok(0)
@@ -348,85 +327,47 @@ impl StreamingCardProcessor {
     ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
 
-        // Protect against path corruption
-        if self.json_path.len() > 50 {
-            warn!(
-                "JSON path corrupted (length: {}), resetting: {:?}",
-                self.json_path.len(),
-                self.json_path
-            );
-            self.json_path.clear();
-            self.state = ParsingState::Root;
-            self.in_cards_array = false;
-            self.in_card_object = false;
-        }
-
-        debug!(
-            "FieldName: {} (current path: {:?})",
-            field_name, self.json_path
-        );
-
         // Always track the path!
         self.json_path.push(field_name.clone());
-        debug!(
-            "New path: {:?} (length: {})",
-            self.json_path,
-            self.json_path.len()
-        );
+
+        // Only log the significant path changes
+        if field_name == "data" || field_name == "cards" || (self.json_path.len() == 2 && self.json_path[0] == "data") {
+            debug!("Key field: {} -> path: {:?}", field_name, self.json_path);
+        }
 
         // Only skip fields we explicitly know we don't need
         match self.json_path.iter().map(|s| s.as_str()).collect::<Vec<_>>().as_slice() {
-            // Skip the meta field at root level
             ["meta"] => {
                 debug!("Skipping meta field");
                 self.state = ParsingState::SkippingValue(self.json_depth);
             }
-            // Don't skip "data" - we need to traverse into it
             ["data"] => {
                 debug!("Entering data object");
-                // Don't skip, just continue
             }
-            // Don't skip set objects within data - we need to traverse into them
             ["data", set_code] => {
                 debug!("Entering set object: {}", set_code);
                 self.state = ParsingState::InSetObject;
             }
-            // Don't skip "cards" field - we need to traverse into it!
             ["data", set_code, "cards"] => {
                 debug!("Found cards field for set: {}", set_code);
-                // This is exactly what we want - don't skip!
             }
-            // Skip non-essential fields within sets (but not "cards")
             path if path.len() >= 3
                 && path[0] == "data"
                 && !self.in_cards_array
                 && field_name != "cards" =>
             {
-                debug!(
-                    "Skipping non-cards field in set: {} (path: {:?})",
-                    field_name, path
-                );
                 self.state = ParsingState::SkippingValue(self.json_depth);
             }
-            // For fields inside card objects, don't skip anything
             _ if self.in_card_object => {
-                debug!("Processing field inside card object: {}", field_name);
                 // Don't skip - we're building card JSON
             }
-            // For other fields, continue without skipping unless we know we should
             _ => {
-                debug!(
-                    "Continuing with field: {} (path length: {})",
-                    field_name,
-                    self.json_path.len()
-                );
                 // Don't skip by default
             }
         }
 
         // Build card JSON if we're inside a card object
         if self.in_card_object {
-            debug!("Adding field to card JSON: {}", field_name);
             if !self.current_card_json.ends_with('{') && !self.current_card_json.ends_with(',') {
                 self.current_card_json.push(',');
             }
@@ -439,28 +380,25 @@ impl StreamingCardProcessor {
     }
 
     fn handle_start_array(&mut self) -> Result<usize> {
-        debug!("StartArray at path: {:?}", self.json_path);
-
         // Check if this is a "cards" array within a set
         if self.json_path.len() == 3 && self.json_path[0] == "data" && self.json_path[2] == "cards"
         {
             self.in_cards_array = true;
             self.state = ParsingState::InCardsArray;
-            debug!(
-                "✅ ENTERING cards array for set: {}",
-                self.json_path[1] // The set code
-            );
-        } else {
-            debug!("Not a cards array - path: {:?}", self.json_path);
+            info!("✅ ENTERING cards array for set: {}", self.json_path[1]);
+        } else if self.json_path.len() == 3 && self.json_path[2] == "cards" {
+            // This should help us debug why we're not matching
+            warn!("Found 'cards' array but path[0] is '{}', not 'data'. Full path: {:?}", 
+                  self.json_path[0], self.json_path);
         }
         Ok(0)
     }
 
     fn handle_end_array(&mut self) -> Result<usize> {
-        debug!(
-            "EndArray at path: {:?}, depth: {}",
-            self.json_path, self.json_depth
-        );
+        // debug!(
+        //     "EndArray at path: {:?}, depth: {}",
+        //     self.json_path, self.json_depth
+        // );
 
         if self.in_cards_array {
             self.in_cards_array = false;
@@ -472,11 +410,11 @@ impl StreamingCardProcessor {
         // because arrays are always preceded by a field name
         if !self.json_path.is_empty() {
             let popped = self.json_path.pop();
-            debug!(
-                "Popped '{}' from path, new path: {:?}",
-                popped.unwrap_or_default(),
-                self.json_path
-            );
+            // debug!(
+            //     "Popped '{}' from path, new path: {:?}",
+            //     popped.unwrap_or_default(),
+            //     self.json_path
+            // );
         }
 
         Ok(0)

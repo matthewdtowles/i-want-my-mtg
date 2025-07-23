@@ -1,6 +1,7 @@
 use crate::{card::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
+use tracing::{debug, warn};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -17,8 +18,10 @@ impl CardRepository {
 
     pub async fn save(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
+            warn!("0 cards given, 0 cards saved.");
             return Ok(0);
         }
+        debug!("Saving {} cards", cards.len());
         // TODO: evaluate: can we encapsulate INSERT INTO <table> (<model attrs.key>) (<model attrs.value>)
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (

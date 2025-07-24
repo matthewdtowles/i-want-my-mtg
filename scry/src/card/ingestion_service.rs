@@ -52,16 +52,12 @@ impl CardIngestionService {
         let byte_stream = self.client.get_bytes_stream(&url).await?;
         info!("Received byte stream for AllPrintings.json");
 
-        // Convert the byte stream to AsyncRead using StreamReader
         let stream_reader =
             StreamReader::new(byte_stream.map(|result| {
                 result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
             }));
 
-        // Use a much larger buffer to handle long strings without splitting
-        let mut buf_reader = BufReader::with_capacity(64 * 1024, stream_reader); // 512KB buffer
-
-        // Use the proper Tokio feeder from actson
+        let mut buf_reader = BufReader::with_capacity(64 * 1024, stream_reader);
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
         let mut card_processor = StreamingCardProcessor::new(BATCH_SIZE);
@@ -71,19 +67,15 @@ impl CardIngestionService {
         loop {
             let mut event = parser.next_event();
 
-            // Handle NeedMoreInput using the async feeder
             if event == JsonEvent::NeedMoreInput {
-                // Try to fill buffer multiple times to ensure we get complete strings
                 let mut fill_attempts = 0;
                 loop {
                     match parser.feeder.fill_buf().await {
                         Ok(()) => {
-                            // Check if we got more data
                             fill_attempts += 1;
                             if fill_attempts >= 3 {
-                                break; // Stop after 3 attempts
+                                break;
                             }
-                            // Try one more time to get additional data
                             continue;
                         }
                         Err(e) => {
@@ -99,17 +91,24 @@ impl CardIngestionService {
 
             match event {
                 JsonEvent::Eof => {
-                    info!("Reached end of JSON stream");
+                    info!("🏁 Completed JSON stream processing");
+                    
+                    let total_sets = card_processor.sets_with_cards + card_processor.sets_without_cards;
+                    info!(
+                        "📊 Final Results: {} total sets processed ({} with cards, {} without cards)",
+                        total_sets,
+                        card_processor.sets_with_cards, 
+                        card_processor.sets_without_cards
+                    );
+                    
                     let remaining_cards = card_processor.take_remaining();
                     if !remaining_cards.is_empty() {
-                        debug!("Saving remaining cards");
+                        info!("💾 Saving final batch of {} cards", remaining_cards.len());
                         let final_count = self.repository.save(&remaining_cards).await?;
                         total_processed += final_count;
                     }
-                    info!(
-                        "Completed streaming ingestion. Total cards processed: {}",
-                        total_processed
-                    );
+                    
+                    info!("✅ Total cards saved: {}", total_processed);
                     return Ok(total_processed);
                 }
                 JsonEvent::Error => {
@@ -128,38 +127,25 @@ impl CardIngestionService {
                     continue;
                 }
                 JsonEvent::NeedMoreInput => {
-                    // This should have been handled above, but just in case
                     continue;
                 }
                 _ => {
-                    error_count = 0; // Reset error count on successful event
+                    error_count = 0;
                     let processed_count = card_processor.process_event(event, &parser).await?;
                     if processed_count > 0 {
                         let cards = card_processor.take_batch();
                         if !cards.is_empty() {
                             let saved_count = self.repository.save(&cards).await?;
                             total_processed += saved_count;
-                            if total_processed % LOG_INTERVAL as u64 == 0 {
-                                info!("Processed {} cards so far...", total_processed);
+                            // Only log every 5000 cards instead of 1000
+                            if total_processed % 5000 == 0 {
+                                info!("📈 Processed {} cards so far...", total_processed);
                             }
                         }
                     }
                 }
             }
         }
-
-        let remaining_cards = card_processor.take_remaining();
-        if !remaining_cards.is_empty() {
-            debug!("Saving remaining cards (2).");
-            let final_count = self.repository.save(&remaining_cards).await?;
-            total_processed += final_count;
-        }
-
-        info!(
-            "Completed streaming ingestion. Total cards processed: {}",
-            total_processed
-        );
-        Ok(total_processed)
     }
 }
 
@@ -174,6 +160,16 @@ struct StreamingCardProcessor {
     in_card_object: bool,
     card_object_depth: usize,
     json_path: Vec<String>,
+    sets_processed: usize,
+    sets_entered: usize,
+    sets_with_cards: usize,
+    sets_without_cards: usize,
+    current_set_name: Option<String>,
+    current_set_code: Option<String>,
+    expecting_set_name: bool,
+    expecting_set_code: bool,
+    expecting_cards_array: bool,
+    current_set_has_cards: bool,  // Add this field
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -197,6 +193,16 @@ impl StreamingCardProcessor {
             in_card_object: false,
             card_object_depth: 0,
             json_path: Vec::new(),
+            sets_processed: 0,
+            sets_entered: 0,
+            sets_with_cards: 0,
+            sets_without_cards: 0,
+            current_set_name: None,
+            current_set_code: None,
+            expecting_set_name: false,
+            expecting_set_code: false,
+            expecting_cards_array: false,
+            current_set_has_cards: false,  // Initialize
         }
     }
 
@@ -250,7 +256,7 @@ impl StreamingCardProcessor {
                 self.json_depth -= 1;
                 result
             }
-            JsonEvent::FieldName => self.handle_field_name(parser),
+            JsonEvent::FieldName => self.handle_field_name(parser), // ADD THIS BACK!
             JsonEvent::ValueString => {
                 let value = parser.current_string().unwrap_or_default();
                 self.handle_string_value(&value)
@@ -273,7 +279,6 @@ impl StreamingCardProcessor {
             JsonEvent::ValueFalse => self.handle_boolean_value(false),
             JsonEvent::ValueNull => self.handle_null_value(),
             JsonEvent::Error => {
-                // Parser is fundamentally broken - likely due to chunk boundary issue
                 Err(anyhow::anyhow!(
                     "JSON parser error - streaming parse failed at chunk boundary"
                 ))
@@ -283,8 +288,16 @@ impl StreamingCardProcessor {
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
+        if self.json_depth == 2 {
+            // Reset set tracking when entering a new set:
+            self.current_set_name = None;
+            self.current_set_code = None;
+            self.expecting_set_name = false;
+            self.expecting_set_code = false;
+            self.expecting_cards_array = false;
+            self.current_set_has_cards = false;  // Reset flag
+        }
         if self.in_cards_array && self.json_depth == 5 && !self.in_card_object {
-            // debug!("✅ STARTING card object at depth {}", self.json_depth);
             self.in_card_object = true;
             self.card_object_depth = self.json_depth;
             self.current_card_json.clear();
@@ -292,7 +305,6 @@ impl StreamingCardProcessor {
             self.state = ParsingState::InCardObject;
         } else if self.in_card_object {
             // Starting a nested object within a card
-            // Check if we need a comma (for array elements)
             let last_char = self.current_card_json.chars().last();
             if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
                 self.current_card_json.push(',');
@@ -303,6 +315,28 @@ impl StreamingCardProcessor {
     }
 
     async fn handle_end_object(&mut self) -> Result<usize> {
+        // Track when we exit a set object at depth 2
+        if self.json_depth == 2 {
+            // Only count sets that have both name and code (complete sets)
+            if self.current_set_name.is_some() && self.current_set_code.is_some() {
+                if self.current_set_has_cards {
+                    self.sets_with_cards += 1;
+                } else {
+                    self.sets_without_cards += 1;
+                }
+                
+                // Only log every 200 sets to keep logs lean
+                if (self.sets_with_cards + self.sets_without_cards) % 200 == 0 {
+                    info!(
+                        "📊 Progress: {} sets total ({} with cards, {} without)",
+                        self.sets_with_cards + self.sets_without_cards,
+                        self.sets_with_cards, 
+                        self.sets_without_cards
+                    );
+                }
+            }
+        }
+        
         if self.in_card_object {
             self.current_card_json.push('}');
 
@@ -310,94 +344,20 @@ impl StreamingCardProcessor {
             if self.json_depth == self.card_object_depth {
                 self.in_card_object = false;
 
-                // Debug: Validate JSON before parsing
-                let json_valid =
-                    serde_json::from_str::<serde_json::Value>(&self.current_card_json).is_ok();
-
-                if !json_valid {
-                    // Try to parse the JSON and get the exact error location
-                    match serde_json::from_str::<serde_json::Value>(&self.current_card_json) {
-                        Err(e) => {
-                            warn!("JSON parse error: {}", e);
-
-                            // Show the context around where the error occurs
-                            let error_msg = e.to_string();
-                            if let Some(line_col) = error_msg
-                                .split("line ")
-                                .nth(1)
-                                .and_then(|s| s.split(" column ").next())
-                            {
-                                if let Ok(line_num) = line_col.parse::<usize>() {
-                                    // Since it's all one line, show context around the error column
-                                    if let Some(col_part) = error_msg.split("column ").nth(1) {
-                                        if let Ok(col_num) = col_part
-                                            .split_whitespace()
-                                            .next()
-                                            .unwrap_or("0")
-                                            .parse::<usize>()
-                                        {
-                                            let start = col_num.saturating_sub(50);
-                                            let end = std::cmp::min(
-                                                col_num + 50,
-                                                self.current_card_json.len(),
-                                            );
-
-                                            // Ensure we don't slice on a UTF-8 boundary
-                                            let mut safe_start = start;
-                                            let mut safe_end = end;
-
-                                            while safe_start > 0
-                                                && !self
-                                                    .current_card_json
-                                                    .is_char_boundary(safe_start)
-                                            {
-                                                safe_start -= 1;
-                                            }
-                                            while safe_end < self.current_card_json.len()
-                                                && !self
-                                                    .current_card_json
-                                                    .is_char_boundary(safe_end)
-                                            {
-                                                safe_end += 1;
-                                            }
-
-                                            warn!(
-                                                "Error context around column {}: '{}'",
-                                                col_num,
-                                                &self.current_card_json[safe_start..safe_end]
-                                            );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Ok(_) => {} // Shouldn't happen since json_valid is false
-                    }
-                }
-
                 let card_result = self.parse_card_from_json(&self.current_card_json);
                 match card_result {
                     Ok(card) => {
-                        trace!("✅ Successfully parsed card: {}", card.name.as_str());
                         self.batch.push(card);
                         if self.batch.len() >= self.batch_size {
-                            debug!("Current batch size: {}", self.batch.len());
                             return Ok(self.batch.len());
                         }
                     }
                     Err(e) => {
-                        warn!("Failed to parse card JSON: {}", e);
-                        // Log a substantial portion to see the pattern
-                        let safe_json = if self.current_card_json.len() > 1000 {
-                            let mut end = 1000;
-                            while end > 0 && !self.current_card_json.is_char_boundary(end) {
-                                end -= 1;
-                            }
-                            &self.current_card_json[..end]
-                        } else {
-                            &self.current_card_json
-                        };
-                        warn!("JSON: {}", safe_json);
+                        // Only warn on critical JSON parsing errors
+                        if e.to_string().contains("JSON") || e.to_string().contains("parse") {
+                            warn!("Failed to parse card in set {}: {}", 
+                                  self.current_set_code.as_deref().unwrap_or("Unknown"), e);
+                        }
                     }
                 }
                 self.current_card_json.clear();
@@ -407,56 +367,26 @@ impl StreamingCardProcessor {
         Ok(0)
     }
 
-    fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
-        &mut self,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
-    ) -> Result<usize> {
-        let field_name = parser.current_string().unwrap_or_default();
-
-        match field_name.as_str() {
-            "meta" if self.json_depth == 1 => {
-                debug!("Skipping meta field");
-                self.state = ParsingState::SkippingValue(self.json_depth);
-            }
-            "data" if self.json_depth == 1 => {
-                debug!("Entering data object");
-                self.state = ParsingState::Root;
-            }
-            "cards" if self.json_depth == 3 => {
-                debug!("Found cards field at depth 3");
-                // The next StartArray will set in_cards_array = true
-            }
-            _ if self.in_card_object => {
-                // Build card JSON - ensure proper comma placement
-                if !self.current_card_json.ends_with('{') {
-                    self.current_card_json.push(',');
-                }
-                self.current_card_json.push('"');
-                self.current_card_json.push_str(&field_name);
-                self.current_card_json.push('"');
-                self.current_card_json.push(':');
-            }
-            _ => {
-                // Skip non-essential fields outside cards array
-                if !self.in_cards_array && field_name != "cards" && self.json_depth >= 3 {
-                    self.state = ParsingState::SkippingValue(self.json_depth);
-                }
-            }
-        }
-
-        Ok(0)
-    }
-
     fn handle_start_array(&mut self) -> Result<usize> {
-        // Detect cards array at depth 4
-        if self.json_depth == 4 {
+        // Only detect cards array when we're expecting it
+        if self.json_depth == 4 && self.expecting_cards_array {
             self.in_cards_array = true;
             self.state = ParsingState::InCardsArray;
-            info!("✅ ENTERING cards array at depth {}", self.json_depth);
+            self.current_set_has_cards = true;  // Mark this set as having cards
+            self.expecting_cards_array = false;
+            
+            // Only log for every 100th set with cards to reduce noise
+            if (self.sets_with_cards + 1) % 100 == 0 {
+                info!(
+                    "✅ Processing set #{}: {} ({})",
+                    self.sets_with_cards + 1,
+                    self.current_set_code.as_deref().unwrap_or("Unknown"),
+                    self.current_set_name.as_deref().unwrap_or("Unknown")
+                );
+            }
         }
         // Handle arrays within card objects
         else if self.in_card_object {
-            // Check if we need a comma before the array
             let last_char = self.current_card_json.chars().last();
             if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
                 self.current_card_json.push(',');
@@ -471,7 +401,7 @@ impl StreamingCardProcessor {
         if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
             self.state = ParsingState::InSetObject;
-            info!("✅ EXITING cards array at depth {}", self.json_depth);
+            self.sets_processed += 1;
         }
         // Handle arrays within card objects
         else if self.in_card_object {
@@ -480,31 +410,71 @@ impl StreamingCardProcessor {
         Ok(0)
     }
 
-    fn handle_string_value(&mut self, value: &str) -> Result<usize> {
-        if self.in_card_object {
-            // Debug: MTG JSON uses 16-char hashes, so URLs should be exactly 42 chars
-            // Only warn if it's a URL that's clearly incomplete (ends mid-domain or no hash)
-            if value.starts_with("https://")
-                && (value.len() < 30 || // Very short URLs are definitely truncated
-                (value.contains("mtgjson.com") && value.len() < 42) || // MTG JSON URLs should be 42+ chars
-                (!value.contains("mtgjson.com") && value.len() < 50))
-            {
-                // Other URLs should be longer
-                warn!(
-                    "🔍 Actually truncated URL: '{}' (length: {})",
-                    value,
-                    value.len()
-                );
-            }
+    fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
+        &mut self,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+    ) -> Result<usize> {
+        let field_name = parser.current_string().unwrap_or_default();
 
-            // Check if we need a comma (not after { [ : ,)
+        match field_name.as_str() {
+            "meta" if self.json_depth == 1 => {
+                self.state = ParsingState::SkippingValue(self.json_depth);
+            }
+            "data" if self.json_depth == 1 => {
+                self.state = ParsingState::Root;
+            }
+            "code" if self.json_depth == 3 => {
+                self.expecting_set_code = true;
+            }
+            "name" if self.json_depth == 3 => {
+                self.expecting_set_name = true;
+            }
+            "cards" if self.json_depth == 3 => {
+                self.expecting_cards_array = true;
+            }
+            _ if self.in_card_object => {
+                // Build card JSON - ensure proper comma placement
+                if !self.current_card_json.ends_with('{') {
+                    self.current_card_json.push(',');
+                }
+                self.current_card_json.push('"');
+                self.current_card_json.push_str(&field_name);
+                self.current_card_json.push('"');
+                self.current_card_json.push(':');
+            }
+            _ => {
+                // Skip non-essential fields outside cards array
+                if !self.in_cards_array && !["code", "name", "cards"].contains(&field_name.as_str()) && self.json_depth >= 3 {
+                    self.state = ParsingState::SkippingValue(self.json_depth);
+                }
+            }
+        }
+
+        Ok(0)
+    }
+
+    fn handle_string_value(&mut self, value: &str) -> Result<usize> {
+        // Capture set code
+        if self.expecting_set_code && self.json_depth == 3 {
+            self.current_set_code = Some(value.to_string());
+            self.expecting_set_code = false;
+        }
+        // Capture set name - DON'T increment sets_entered here
+        else if self.expecting_set_name && self.json_depth == 3 {
+            self.current_set_name = Some(value.to_string());
+            self.expecting_set_name = false;
+            // Remove this line: self.sets_entered += 1;
+        }
+        
+        if self.in_card_object {
+            // Check if we need a comma
             let last_char = self.current_card_json.chars().last();
             if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
                 self.current_card_json.push(',');
             }
 
             self.current_card_json.push('"');
-            // Proper JSON string escaping
+            // Proper JSON string escaping (keep existing logic)
             for ch in value.chars() {
                 match ch {
                     '"' => self.current_card_json.push_str("\\\""),
@@ -575,4 +545,5 @@ impl StreamingCardProcessor {
     fn take_remaining(&mut self) -> Vec<Card> {
         std::mem::take(&mut self.batch)
     }
+
 }

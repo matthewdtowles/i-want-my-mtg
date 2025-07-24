@@ -72,7 +72,7 @@ impl CardRepository {
             card.oracle_text IS DISTINCT FROM EXCLUDED.oracle_text OR
             card.rarity IS DISTINCT FROM EXCLUDED.rarity OR
             card.set_code IS DISTINCT FROM EXCLUDED.set_code OR
-            card.type IS DISTINCT FROM EXCLUDED.type",
+            card.type IS DISTINCT FROM EXCLUDED.type"
         );
         self.db.execute_query_builder(query_builder).await
     }

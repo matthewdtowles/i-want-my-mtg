@@ -1,8 +1,8 @@
 use crate::{card::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
-use tracing::{debug, warn};
 use std::sync::Arc;
+use tracing::{debug, error, warn};
 
 #[derive(Clone)]
 pub struct CardRepository {
@@ -22,6 +22,14 @@ impl CardRepository {
             return Ok(0);
         }
         debug!("Saving {} cards", cards.len());
+        if let Some(first_card) = cards.first() {
+            if first_card.set_code == "40k" {
+                debug!(
+                    "SAVING 40K CARD: id={}, name={:?}, set_code={:?}",
+                    first_card.id, first_card.name, first_card.set_code
+                );
+            }
+        }
         // TODO: evaluate: can we encapsulate INSERT INTO <table> (<model attrs.key>) (<model attrs.value>)
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
@@ -72,8 +80,25 @@ impl CardRepository {
             card.oracle_text IS DISTINCT FROM EXCLUDED.oracle_text OR
             card.rarity IS DISTINCT FROM EXCLUDED.rarity OR
             card.set_code IS DISTINCT FROM EXCLUDED.set_code OR
-            card.type IS DISTINCT FROM EXCLUDED.type"
+            card.type IS DISTINCT FROM EXCLUDED.type",
         );
-        self.db.execute_query_builder(query_builder).await
+        match self.db.execute_query_builder(query_builder).await {
+            Ok(rows_affected) => {
+                // Check for 40K specifically
+                let has_40k = cards.iter().any(|c| c.set_code == "40k");
+                if has_40k {
+                    debug!(
+                        "🔍 40K save result: {} cards attempted, {} rows affected",
+                        cards.len(),
+                        rows_affected
+                    );
+                }
+                Ok(rows_affected)
+            }
+            Err(e) => {
+                error!("Failed to save {} cards: {}", cards.len(), e);
+                Err(e)
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ use futures::StreamExt;
 use std::sync::Arc;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info, trace, warn};
 
 const BASE_INGESTION_URL: &str = "https://mtgjson.com/api/v5/";
 const BATCH_SIZE: usize = 500;
@@ -174,7 +174,6 @@ struct StreamingCardProcessor {
     in_card_object: bool,
     card_object_depth: usize,
     json_path: Vec<String>,
-    // skip_depth: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -285,8 +284,7 @@ impl StreamingCardProcessor {
 
     fn handle_start_object(&mut self) -> Result<usize> {
         if self.in_cards_array && self.json_depth == 5 && !self.in_card_object {
-            // Starting a new card object
-            info!("✅ STARTING card object at depth {}", self.json_depth);
+            // debug!("✅ STARTING card object at depth {}", self.json_depth);
             self.in_card_object = true;
             self.card_object_depth = self.json_depth;
             self.current_card_json.clear();
@@ -343,18 +341,26 @@ impl StreamingCardProcessor {
                                                 col_num + 50,
                                                 self.current_card_json.len(),
                                             );
-                                            
+
                                             // Ensure we don't slice on a UTF-8 boundary
                                             let mut safe_start = start;
                                             let mut safe_end = end;
-                                            
-                                            while safe_start > 0 && !self.current_card_json.is_char_boundary(safe_start) {
+
+                                            while safe_start > 0
+                                                && !self
+                                                    .current_card_json
+                                                    .is_char_boundary(safe_start)
+                                            {
                                                 safe_start -= 1;
                                             }
-                                            while safe_end < self.current_card_json.len() && !self.current_card_json.is_char_boundary(safe_end) {
+                                            while safe_end < self.current_card_json.len()
+                                                && !self
+                                                    .current_card_json
+                                                    .is_char_boundary(safe_end)
+                                            {
                                                 safe_end += 1;
                                             }
-                                            
+
                                             warn!(
                                                 "Error context around column {}: '{}'",
                                                 col_num,
@@ -372,9 +378,10 @@ impl StreamingCardProcessor {
                 let card_result = self.parse_card_from_json(&self.current_card_json);
                 match card_result {
                     Ok(card) => {
-                        info!("✅ Successfully parsed card: {}", card.name.as_str());
+                        trace!("✅ Successfully parsed card: {}", card.name.as_str());
                         self.batch.push(card);
                         if self.batch.len() >= self.batch_size {
+                            debug!("Current batch size: {}", self.batch.len());
                             return Ok(self.batch.len());
                         }
                     }

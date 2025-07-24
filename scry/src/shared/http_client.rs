@@ -1,6 +1,6 @@
 use anyhow::Result;
 use bytes::Bytes;
-use futures::{Stream, StreamExt};
+use futures::Stream;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 
@@ -30,14 +30,12 @@ impl HttpClient {
         Ok(response.json::<T>().await?)
     }
 
-    pub async fn get_bytes_stream(&self, url: &str) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
+    pub async fn get_bytes_stream(
+        &self,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
         let response = self.client.get(url).send().await?.error_for_status()?;
         let byte_stream = response.bytes_stream();
         Ok(byte_stream)
-    }
-
-    pub async fn get_readable_stream(&self, url: &str) -> Result<impl Stream<Item = crate::Result<Bytes>>> {
-        let response = self.client.get(url).send().await?.error_for_status()?;
-        Ok(response.bytes_stream().map(|result| result.map_err(Into::into)))
     }
 }

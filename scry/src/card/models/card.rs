@@ -1,4 +1,4 @@
-use crate::card::models::CardRarity;
+use crate::card::models::{CardRarity, Legality};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -17,4 +17,7 @@ pub struct Card {
     pub rarity: CardRarity,
     pub set_code: String,
     pub type_line: String,
+
+    #[sqlx(skip)]
+    pub legalities: Vec<Legality>,
 }

@@ -3,13 +3,29 @@ use sqlx::Type;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[sqlx(type_name = "card_rarity_enum")]
-#[sqlx(rename_all = "lowercase")]
 pub enum CardRarity {
+    #[serde(rename = "common")]
+    #[sqlx(rename = "common")]
     Common,
+
+    #[serde(rename = "uncommon")]
+    #[sqlx(rename = "uncommon")]
     Uncommon,
+
+    #[serde(rename = "rare")]
+    #[sqlx(rename = "rare")]
     Rare,
+
+    #[serde(rename = "mythic")]
+    #[sqlx(rename = "mythic")]
     MythicRare,
+
+    #[serde(rename = "bonus")]
+    #[sqlx(rename = "bonus")]
     Bonus,
+
+    #[serde(rename = "special")]
+    #[sqlx(rename = "special")]
     Special,
 }
 

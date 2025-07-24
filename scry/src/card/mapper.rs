@@ -1,4 +1,4 @@
-use crate::card::models::{Card, CardRarity, RawCard};
+use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus, RawCard};
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
@@ -38,15 +38,16 @@ impl CardMapper {
                 .rarity
                 .parse::<CardRarity>()
                 .unwrap_or(CardRarity::Common),
-            set_code: raw_card.set_code.clone(),
+            set_code: raw_card.set_code.to_lowercase(),
             type_line: raw_card.type_line.clone(),
+            legalities: Vec::new(),
         })
     }
 
     pub fn map_raw_json(card_data: &Value) -> Result<Card> {
         let id = Self::extract_string(card_data, "uuid")?;
         let name = Self::extract_string(card_data, "name")?;
-        let set_code = Self::extract_string(card_data, "setCode")?;
+        let set_code = Self::extract_string(card_data, "setCode")?.to_lowercase();
         let number =
             Self::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
         let type_line = Self::extract_optional_string(card_data, "type").unwrap_or_default();
@@ -75,6 +76,12 @@ impl CardMapper {
             .unwrap_or(false);
         let img_src = format!("https://cards.scryfall.io/normal/front/{}.jpg", id);
 
+        let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
+            Self::extract_legalities(legalities_dto, &id)?
+        } else {
+            Vec::new()
+        };
+
         Ok(Card {
             id,
             artist,
@@ -89,6 +96,7 @@ impl CardMapper {
             rarity,
             set_code,
             type_line,
+            legalities,
         })
     }
 
@@ -105,5 +113,27 @@ impl CardMapper {
             .get(key)
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
+    }
+
+    fn extract_legalities(
+        legalities_dto: &serde_json::Value,
+        card_id: &str,
+    ) -> Result<Vec<Legality>> {
+        let mut legalities = Vec::new();
+        if let Some(obj) = legalities_dto.as_object() {
+            for (format_str, status_str) in obj {
+                if let (Ok(format), Ok(status)) = (
+                    format_str.parse::<Format>(),
+                    status_str.as_str().unwrap_or("").parse::<LegalityStatus>(),
+                ) {
+                    if let Some(legality) =
+                        Legality::new_if_relevant(card_id.to_string(), format, status)
+                    {
+                        legalities.push(legality);
+                    }
+                }
+            }
+        }
+        Ok(legalities)
     }
 }

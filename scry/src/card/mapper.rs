@@ -1,4 +1,4 @@
-use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus, RawCard};
+use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
 use anyhow::Result;
 use serde_json::Value;
 use tracing::debug;
@@ -19,29 +19,6 @@ impl CardMapper {
             .iter()
             .map(|card_data| CardMapper::map_raw_json(card_data))
             .collect()
-    }
-
-    pub fn map_single_card(raw_card: RawCard) -> Result<Card> {
-        let img_src = format!("https://cards.scryfall.io/normal/front/{}.jpg", raw_card.id);
-        Ok(Card {
-            id: raw_card.id.clone(),
-            artist: raw_card.artist.clone(),
-            has_foil: raw_card.has_foil,
-            has_non_foil: raw_card.has_non_foil,
-            img_src,
-            is_reserved: raw_card.is_reserved,
-            mana_cost: raw_card.mana_cost.clone(),
-            name: raw_card.name.clone(),
-            number: raw_card.number.clone(),
-            oracle_text: raw_card.oracle_text.clone(),
-            rarity: raw_card
-                .rarity
-                .parse::<CardRarity>()
-                .unwrap_or(CardRarity::Common),
-            set_code: raw_card.set_code.to_lowercase(),
-            type_line: raw_card.type_line.clone(),
-            legalities: Vec::new(),
-        })
     }
 
     pub fn map_raw_json(card_data: &Value) -> Result<Card> {

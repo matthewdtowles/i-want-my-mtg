@@ -148,15 +148,6 @@ impl CardIngestionService {
     }
 }
 
-#[derive(Debug, Clone)]
-struct JsonPosition {
-    depth: usize,
-    path: Vec<String>,
-    in_set: Option<String>,
-    in_cards_array: bool,
-    in_card_object: bool,
-}
-
 /// Handles streaming JSON parsing state and card processing
 struct StreamingCardProcessor {
     state: ParsingState,

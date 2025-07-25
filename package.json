@@ -39,7 +39,15 @@
     "inventory:save": "npx ts-node src/cli.ts inventory:save",
     "inventory:remove": "npx ts-node src/cli.ts inventory:remove",
     "inventory:get": "npx ts-node src/cli.ts inventory:get",
-    "test:inventory:save": "npx ts-node src/cli.ts test:inventory:save"
+    "test:inventory:save": "npx ts-node src/cli.ts test:inventory:save",
+    "scry:watch": "cd scry && cargo run -- watch",
+    "scry:cards": "cd scry && cargo run -- cards",
+    "scry:prices": "cd scry && cargo run -- prices",
+    "scry:archive": "cd scry && cargo run -- archive",
+    "scry:sets": "cd scry && cargo run -- sets",
+    "scry:clarity": "cd scry && cargo run -- clarity",
+    "scry:build": "cd scry && cargo build --release",
+    "scry:test": "cd scry && cargo test"
   },
   "dependencies": {
     "@lifeart/ember-language-server": "^2.18.0",

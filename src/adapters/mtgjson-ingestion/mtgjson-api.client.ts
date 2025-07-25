@@ -6,7 +6,6 @@ import { parser } from "stream-json";
 import { pick } from "stream-json/filters/Pick";
 import { streamArray } from "stream-json/streamers/StreamArray";
 import { streamObject } from "stream-json/streamers/StreamObject";
-import { SetDto } from "./dto/set.dto";
 import { SetList } from "./dto/setList.dto";
 
 @Injectable()
@@ -30,23 +29,6 @@ export class MtgJsonApiClient {
         if (!response.data) throw new Error("No data in response from provider");
         if (!response.data.data) throw new Error("No data.data in response from provider");
         if (!Array.isArray(response.data.data)) throw new Error("Response.data.data is not an array");
-        return response.data.data;
-    }
-
-    /**
-     * Returns Set object for given code
-     * Includes all CardSet objects in the Set
-     *
-     * @param setCode
-     * @returns a SetDto from MTG JSON
-     */
-    async fetchSet(setCode: string): Promise<SetDto> {
-        const url: string = `${this.CARD_PROVIDER_URL}/${setCode.toUpperCase()}.json`;
-        this.LOGGER.log(`Calling provider API ${url}`);
-        const response: AxiosResponse = await axios.get(url);
-        if (!response) throw new Error("No response from provider");
-        if (!response.data) throw new Error("No data in response from provider");
-        if (!response.data.data) throw new Error("No data.data in response from provider");
         return response.data.data;
     }
 

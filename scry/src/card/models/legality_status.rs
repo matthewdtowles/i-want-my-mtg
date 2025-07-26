@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "legality_status_enum")]
 #[sqlx(rename_all = "lowercase")]
 pub enum LegalityStatus {
     Legal,

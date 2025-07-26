@@ -99,14 +99,12 @@ impl CardIngestionService {
                         card_processor.sets_with_cards,
                         card_processor.sets_without_cards
                     );
-
                     let remaining_cards = card_processor.take_remaining();
                     if !remaining_cards.is_empty() {
                         info!("Saving final batch of {} cards", remaining_cards.len());
                         let final_count = self.repository.save(&remaining_cards).await?;
                         total_processed += final_count;
                     }
-
                     info!("Total cards saved: {}", total_processed);
                     return Ok(total_processed);
                 }
@@ -232,7 +230,8 @@ impl StreamingCardProcessor {
                         }
                     }
                 }
-                _ => {} // TODO: why do we do this?
+                // For all other events (FieldName, ValueString, etc.): do nothing and continue
+                _ => {}
             }
             return Ok(0);
         }
@@ -302,7 +301,7 @@ impl StreamingCardProcessor {
             self.current_set_has_cards = false;
             self.set_info_logged = false;
 
-            // Also reset parsing state to ensure clean start
+            // Reset parsing state to ensure clean start
             self.state = ParsingState::InSetObject;
         }
 
@@ -331,13 +330,6 @@ impl StreamingCardProcessor {
             if self.current_set_name.is_some() && self.current_set_code.is_some() {
                 if self.current_set_has_cards {
                     self.sets_with_cards += 1;
-                    // Log completion for every 10th set to track progress
-                    if self.sets_with_cards % 10 == 0 {
-                        info!(
-                            "Progress: {} sets with cards processed so far",
-                            self.sets_with_cards
-                        );
-                    }
                 }
             }
         }
@@ -412,7 +404,6 @@ impl StreamingCardProcessor {
 
         if self.json_depth == 2 {
             debug!("ENTERING SET: '{}'", field_name);
-
             // Reset all state for new set
             self.current_set_name = None;
             self.current_set_code = Some(field_name.clone());
@@ -421,7 +412,6 @@ impl StreamingCardProcessor {
             self.expecting_cards_array = false;
             self.current_set_has_cards = false;
             self.set_info_logged = false;
-
             return Ok(0);
         }
 
@@ -439,7 +429,7 @@ impl StreamingCardProcessor {
                 self.expecting_cards_array = true;
             }
             _ if self.in_card_object => {
-                // Build card JSON - ensure proper comma placement
+                // Build card JSON
                 if !self.current_card_json.ends_with('{') {
                     self.current_card_json.push(',');
                 }
@@ -449,11 +439,11 @@ impl StreamingCardProcessor {
                 self.current_card_json.push(':');
             }
             _ => {
-                // Don't skip fields within the current set - we might need them
-                if !self.in_cards_array 
-                    && !["name", "cards"].contains(&field_name.as_str()) 
+                // Don't skip fields within the current set
+                if !self.in_cards_array
+                    && !["name", "cards"].contains(&field_name.as_str())
                     && self.json_depth >= 3
-                    && self.current_set_code.is_none()  // ← Only skip if we're not in a set
+                    && self.current_set_code.is_none()
                 {
                     self.state = ParsingState::SkippingValue(self.json_depth);
                 }
@@ -478,7 +468,7 @@ impl StreamingCardProcessor {
             }
 
             self.current_card_json.push('"');
-            // Proper JSON string escaping (keep existing logic)
+            // Proper JSON string escaping
             for ch in value.chars() {
                 match ch {
                     '"' => self.current_card_json.push_str("\\\""),
@@ -510,7 +500,7 @@ impl StreamingCardProcessor {
             let code = self.current_set_code.as_deref().unwrap();
             let name = self.current_set_name.as_deref().unwrap();
 
-            info!("🎯 Processing cards for set: {} ({})", code, name);
+            info!("Processing cards for set: {} ({})", code, name);
             self.set_info_logged = true;
         }
     }

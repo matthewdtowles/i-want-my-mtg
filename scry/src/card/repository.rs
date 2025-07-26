@@ -89,18 +89,7 @@ impl CardRepository {
             card.type IS DISTINCT FROM EXCLUDED.type",
         );
         match self.db.execute_query_builder(query_builder).await {
-            Ok(rows_affected) => {
-                // Check for 40K specifically
-                let has_40k = cards.iter().any(|c| c.set_code == "40k");
-                if has_40k {
-                    debug!(
-                        "🔍 40K save result: {} cards attempted, {} rows affected",
-                        cards.len(),
-                        rows_affected
-                    );
-                }
-                Ok(rows_affected)
-            }
+            Ok(rows_affected) => Ok(rows_affected),
             Err(e) => {
                 error!("Failed to save {} cards: {}", cards.len(), e);
                 Err(e)
@@ -110,12 +99,13 @@ impl CardRepository {
 
     async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
         let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
-        
+
         if all_legalities.is_empty() {
             // Delete all legalities for these cards since they have none
             let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
             if !card_ids.is_empty() {
-                let mut delete_query = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
+                let mut delete_query =
+                    QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
                 delete_query.push_bind(card_ids);
                 delete_query.push(")");
                 self.db.execute_query_builder(delete_query).await?;

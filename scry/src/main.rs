@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use cli::{commands::Cli, controller::CliController};
 use config::Config;
-use shared::HttpClient;
+use utils::HttpClient;
 use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -14,7 +14,7 @@ mod database;
 mod health_check;
 mod price;
 mod set;
-mod shared;
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {

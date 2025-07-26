@@ -1,8 +1,8 @@
-use crate::shared::http_client::HttpClient;
+use crate::utils::http_client::HttpClient;
 use anyhow::Result;
 use serde_json::Value;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{error, info};
 
 pub struct SetClient {
     http_client: HttpClient,
@@ -18,8 +18,13 @@ impl SetClient {
     }
 
     pub async fn fetch_all_sets(&self) -> Result<Value> {
-        let url = format!("{}/AllSets.json", self.base_url);
-        info!("Fetching all sets data");
-        self.http_client.get_json(&url).await
+        let url = format!("{}/SetList.json", self.base_url);
+        info!("Fetching all sets data from url: {}", url);
+        let result = self.http_client.get_json(&url).await;
+        match &result {
+            Ok(_) => info!("SetClient: Successfully fetched all sets data"),
+            Err(e) => error!("SetClient: Error fetching all sets data: {}", e),
+        }
+        result
     }
 }

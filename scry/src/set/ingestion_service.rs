@@ -32,7 +32,7 @@ impl SetIngestionService {
             return Ok(0);
         }
         debug!("Bulk insert into repository.");
-        let count = self.repository.bulk_insert(&sets).await?;
+        let count = self.repository.save_sets(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)
     }

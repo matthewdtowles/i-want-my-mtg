@@ -8,8 +8,7 @@ impl SetMapper {
     pub fn map_mtg_json_to_sets(set_data: Value) -> Result<Vec<Set>> {
         let sets_array = set_data
             .get("data")
-            .and_then(|d| d.get("sets"))
-            .and_then(|s| s.as_array())
+            .and_then(|d| d.as_array())
             .ok_or_else(|| anyhow::anyhow!("Invalid MTG JSON set structure"))?;
 
         sets_array
@@ -20,7 +19,7 @@ impl SetMapper {
 
     fn map_mtg_json_to_set(set_data: &Value) -> Result<Set> {
         let code = json::extract_string(set_data, "code")?.to_lowercase();
-        let base_size: i32 = json::extract_int(set_data, "baseSize")?;
+        let base_size: i32 = json::extract_int(set_data, "baseSetSize")?;
         let block = json::extract_optional_string(set_data, "block");
         let keyrune_code = json::extract_string(set_data, "keyruneCode")?;
         let name = json::extract_string(set_data, "name")?;
@@ -29,7 +28,7 @@ impl SetMapper {
             None => None,
         };
         let release_date = json::extract_date(set_data, "releaseDate")?;
-        let set_type = json::extract_string(set_data, "setType")?;
+        let set_type = json::extract_string(set_data, "type")?;
 
         Ok(Set {
             code,

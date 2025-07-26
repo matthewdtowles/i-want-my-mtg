@@ -1,7 +1,7 @@
 use crate::{
     card::{mapper::CardMapper, repository::CardRepository, Card},
     database::ConnectionPool,
-    shared::HttpClient,
+    utils::HttpClient,
 };
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};

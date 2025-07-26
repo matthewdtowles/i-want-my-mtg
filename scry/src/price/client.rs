@@ -1,4 +1,4 @@
-use crate::shared::http_client::HttpClient;
+use crate::utils::http_client::HttpClient;
 use anyhow::Result;
 use serde_json::Value;
 use std::sync::Arc;

@@ -1,5 +1,5 @@
 use crate::price::{client::PriceClient, mapper::PriceMapper, repository::PriceRepository};
-use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
+use crate::{config::Config, database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::{info, warn};

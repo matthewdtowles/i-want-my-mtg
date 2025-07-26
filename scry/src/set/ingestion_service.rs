@@ -1,8 +1,8 @@
 use crate::set::{client::SetClient, mapper::SetMapper, repository::SetRepository};
-use crate::{config::Config, database::ConnectionPool, shared::http_client::HttpClient};
+use crate::{config::Config, database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 pub struct SetIngestionService {
     client: SetClient,
@@ -24,11 +24,14 @@ impl SetIngestionService {
     pub async fn ingest_all(&self) -> Result<u64> {
         info!("Starting MTG set ingestion");
         let raw_data = self.client.fetch_all_sets().await?;
+        debug!("Raw data fetched.");
         let sets = SetMapper::map_mtg_json_to_sets(raw_data)?;
+        debug!("Mapping complete. {} sets found.", sets.len());
         if sets.is_empty() {
             warn!("No sets found");
             return Ok(0);
         }
+        debug!("Bulk insert into repository.");
         let count = self.repository.bulk_insert(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)

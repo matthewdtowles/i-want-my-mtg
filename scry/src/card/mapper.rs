@@ -1,6 +1,7 @@
 use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
 use anyhow::Result;
 use serde_json::Value;
+use crate::utils::json;
 
 pub struct CardMapper;
 
@@ -19,22 +20,22 @@ impl CardMapper {
     }
 
     pub fn map_raw_json(card_data: &Value) -> Result<Card> {
-        let id = Self::extract_string(card_data, "uuid")?;
-        let name = Self::extract_string(card_data, "name")?;
-        let set_code = Self::extract_string(card_data, "setCode")?.to_lowercase();
+        let id = json::extract_string(card_data, "uuid")?;
+        let name = json::extract_string(card_data, "name")?;
+        let set_code = json::extract_string(card_data, "setCode")?.to_lowercase();
         let number =
-            Self::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
-        let type_line = Self::extract_optional_string(card_data, "type").unwrap_or_default();
+            json::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
+        let type_line = json::extract_optional_string(card_data, "type").unwrap_or_default();
 
-        let rarity_str = Self::extract_optional_string(card_data, "rarity")
+        let rarity_str = json::extract_optional_string(card_data, "rarity")
             .unwrap_or_else(|| "common".to_string());
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
 
-        let mana_cost = Self::extract_optional_string(card_data, "manaCost");
-        let oracle_text = Self::extract_optional_string(card_data, "text");
-        let artist = Self::extract_optional_string(card_data, "artist");
+        let mana_cost = json::extract_optional_string(card_data, "manaCost");
+        let oracle_text = json::extract_optional_string(card_data, "text");
+        let artist = json::extract_optional_string(card_data, "artist");
 
         let has_foil = card_data
             .get("hasFoil")
@@ -72,21 +73,6 @@ impl CardMapper {
             type_line,
             legalities,
         })
-    }
-
-    fn extract_string(value: &Value, key: &str) -> Result<String> {
-        value
-            .get(key)
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .ok_or_else(|| anyhow::anyhow!("Missing or invalid '{}' field", key))
-    }
-
-    fn extract_optional_string(value: &Value, key: &str) -> Option<String> {
-        value
-            .get(key)
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
     }
 
     fn extract_legalities(

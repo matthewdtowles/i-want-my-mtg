@@ -28,8 +28,6 @@ impl Legality {
             LegalityStatus::Legal | LegalityStatus::Banned | LegalityStatus::Restricted => {
                 Some(Self::new(card_id, format, status))
             }
-            // Skip "not legal" - inferred by absence
-            _ => None,
         }
     }
 }

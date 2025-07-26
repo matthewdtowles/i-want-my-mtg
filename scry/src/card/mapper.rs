@@ -1,14 +1,11 @@
 use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
 use anyhow::Result;
 use serde_json::Value;
-use tracing::debug;
 
 pub struct CardMapper;
 
 impl CardMapper {
     pub fn map_mtg_json_to_cards(set_data: Value) -> Result<Vec<Card>> {
-        debug!("Mapping MTG JSON set data to cards");
-
         let cards_array = set_data
             .get("data")
             .and_then(|d| d.get("cards"))
@@ -51,7 +48,7 @@ impl CardMapper {
             .get("isReserved")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
-        let img_src = format!("https://cards.scryfall.io/normal/front/{}.jpg", id);
+        let img_src = Self::build_img_src(card_data)?;
 
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
@@ -112,5 +109,21 @@ impl CardMapper {
             }
         }
         Ok(legalities)
+    }
+
+    fn build_img_src(card_data: &Value) -> Result<String> {
+        let scryfall_id = card_data
+            .get("identifiers")
+            .and_then(|identifiers| identifiers.get("scryfallId"))
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow::anyhow!("Missing or invalid scryfallId"))?;
+        if scryfall_id.len() >= 2 {
+            let mut chars = scryfall_id.chars();
+            let first = chars.next().unwrap();
+            let second = chars.next().unwrap();
+            Ok(format!("{}/{}/{}.jpg", first, second, scryfall_id))
+        } else {
+            Err(anyhow::anyhow!("ScryfallId too short: {}", scryfall_id))
+        }
     }
 }

@@ -2,7 +2,7 @@ use crate::{card::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-use tracing::{debug, error, warn};
+use tracing::{debug, error, info, warn};
 
 #[derive(Clone)]
 pub struct CardRepository {
@@ -21,15 +21,21 @@ impl CardRepository {
             warn!("0 cards given, 0 cards saved.");
             return Ok(0);
         }
-        debug!("Saving {} cards", cards.len());
-        if let Some(first_card) = cards.first() {
-            if first_card.set_code == "40k" {
-                debug!(
-                    "SAVING 40K CARD: id={}, name={:?}, set_code={:?}",
-                    first_card.id, first_card.name, first_card.set_code
-                );
-            }
+        let card_count = self.save_cards(cards).await?;
+        let legality_count = self.save_legalities(cards).await?;
+        info!(
+            "Saved {} cards and {} legalities",
+            card_count, legality_count
+        );
+        Ok(card_count)
+    }
+
+    async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
+        if cards.is_empty() {
+            warn!("0 cards given, 0 cards saved.");
+            return Ok(0);
         }
+        debug!("Saving {} cards", cards.len());
         // TODO: evaluate: can we encapsulate INSERT INTO <table> (<model attrs.key>) (<model attrs.value>)
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
@@ -100,5 +106,38 @@ impl CardRepository {
                 Err(e)
             }
         }
+    }
+
+    async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
+        let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
+        
+        if all_legalities.is_empty() {
+            // Delete all legalities for these cards since they have none
+            let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
+            if !card_ids.is_empty() {
+                let mut delete_query = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
+                delete_query.push_bind(card_ids);
+                delete_query.push(")");
+                self.db.execute_query_builder(delete_query).await?;
+            }
+            return Ok(0);
+        }
+
+        // Delete all existing legalities for these cards
+        let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
+        let mut delete_query = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
+        delete_query.push_bind(card_ids);
+        delete_query.push(")");
+        self.db.execute_query_builder(delete_query).await?;
+
+        // Insert all new legalities
+        let mut query_builder = QueryBuilder::new("INSERT INTO legality (card_id, format, status)");
+        query_builder.push_values(&all_legalities, |mut b, legality| {
+            b.push_bind(&legality.card_id)
+                .push_bind(&legality.format)
+                .push_bind(&legality.status);
+        });
+
+        self.db.execute_query_builder(query_builder).await
     }
 }

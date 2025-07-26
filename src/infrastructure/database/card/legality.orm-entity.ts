@@ -6,7 +6,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 @Entity("legality")
 export class LegalityOrmEntity {
 
-    @PrimaryColumn()
+    @PrimaryColumn({ name: "card_id" })
     cardId: string;
 
     @PrimaryColumn({

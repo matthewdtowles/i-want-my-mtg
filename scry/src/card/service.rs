@@ -15,12 +15,12 @@ use tracing::{debug, error, info, warn};
 const BASE_INGESTION_URL: &str = "https://mtgjson.com/api/v5/";
 const BATCH_SIZE: usize = 500;
 
-pub struct CardIngestionService {
+pub struct CardService {
     client: HttpClient,
     repository: CardRepository,
 }
 
-impl CardIngestionService {
+impl CardService {
     pub fn new(db: Arc<ConnectionPool>, http_client: HttpClient) -> Self {
         Self {
             client: http_client,
@@ -44,7 +44,7 @@ impl CardIngestionService {
     }
 
     /// Ingests all available cards using a streaming approach.
-    pub async fn ingest_all_cards_streaming(&self) -> Result<u64> {
+    pub async fn ingest_all(&self) -> Result<u64> {
         info!("Starting streaming ingestion of all cards from AllPrintings.json");
         let url = format!("{BASE_INGESTION_URL}AllPrintings.json");
 
@@ -143,6 +143,11 @@ impl CardIngestionService {
                 }
             }
         }
+    }
+
+    pub async fn delete_all(&self) -> Result<u64>{
+        info!("Deleting all prices.");
+        self.repository.delete_all().await
     }
 }
 

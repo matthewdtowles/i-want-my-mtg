@@ -11,17 +11,59 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Ingest card data for a specific set or all sets
-    Cards {
-        #[arg(short, long, help = "Specific set code to ingest (e.g., 'BRO', 'DMU'). Return all if blank.")]
-        set_code: Option<String>,
+    /// Ingest MTG Data - default: all
+    Ingest {
+        #[arg(
+            short,
+            long,
+            help = "Ingest all sets."
+        )]
+        sets: bool,
+
+        #[arg(
+            short,
+            long,
+            help = "Ingest all cards."
+        )]
+        cards: bool,
+
+        #[arg(
+            short,
+            long,
+            help = "Archive previous prices and ingest all prices for today."
+        )]
+        prices: bool,
+
+        #[arg(
+            short = 'k', 
+            long,
+            help = "Ingest all cards for given set. E.g.: `ingest -c -k abc` for cards in set `abc`."
+        )]
+        set_cards: Option<String>,
+
+        #[arg(
+            short,
+            long,
+            help = "Reset all data prior to ingestion."
+        )]
+        reset: bool,
     },
 
-    /// Ingest the complete list of MTG sets
-    Sets,
+    // /// Ingest card data for a specific set or all sets
+    // Cards {
+    //     #[arg(
+    //         short,
+    //         long,
+    //         help = "Specific set code to ingest (e.g., 'BRO', 'DMU'). Return all if blank."
+    //     )]
+    //     set_code: Option<String>,
+    // },
 
-    /// Ingest today's pricing data (automatically archives old prices first)
-    Prices,
+    // /// Ingest the complete list of MTG sets
+    // Sets,
+
+    // /// Ingest today's pricing data (automatically archives old prices first)
+    // Prices,
 
     /// Check system health and data integrity
     Health {

@@ -39,23 +39,19 @@ async fn main() -> Result<()> {
 
     // Create CLI controller with feature services
     let cli_controller = CliController::new(
-        card::ingestion_service::CardIngestionService::new(
+        card::service::CardService::new(
             connection_pool.clone(),
             http_client.clone()
         ),
-        set::ingestion_service::SetIngestionService::new(
+        set::service::SetService::new(
             connection_pool.clone(),
             http_client.clone(),
             &config,
         ),
-        price::ingestion_service::PriceIngestionService::new(
+        price::service::PriceService::new(
             connection_pool.clone(),
             http_client.clone(),
             &config,
-        ),
-        price::archival_service::PriceArchivalService::new(
-            connection_pool.clone(),
-            config.archive_batch_size as i16,
         ),
         health_check::service::HealthCheckService::new(connection_pool),
     );

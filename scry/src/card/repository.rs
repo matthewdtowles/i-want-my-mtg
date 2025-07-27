@@ -30,6 +30,20 @@ impl CardRepository {
         Ok(card_count)
     }
 
+    pub async fn delete_all(&self) -> Result<u64> {
+        self.delete_table(String::from("legality")).await?;
+        let cards_deleted = self.delete_table(String::from("card")).await?;
+        info!("{} cards deleted.", cards_deleted);
+        Ok(cards_deleted)
+    }
+
+    async fn delete_table(&self, table: String) -> Result<u64> {
+        let qb = QueryBuilder::new(format!("DELETE FROM {} CASCADE", table));
+        let total_deleted = self.db.execute_query_builder(qb).await?;
+        info!("{} {} entities deleted.", total_deleted, table);
+        Ok(total_deleted)
+    }
+
     async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");

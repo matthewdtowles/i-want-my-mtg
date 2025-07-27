@@ -1,7 +1,7 @@
 use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
-use sqlx::QueryBuilder;
+use sqlx::{QueryBuilder};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -71,10 +71,15 @@ impl PriceRepository {
         if price_ids.is_empty() {
             return Ok(0);
         }
-
         let query = "DELETE FROM price WHERE id = ANY($1)";
         let mut query_builder = QueryBuilder::new(query);
         query_builder.push_bind(price_ids);
+        self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn delete_all(&self) -> Result<u64> {
+        let query = "DELETE FROM price";
+        let query_builder = QueryBuilder::new(query);
         self.db.execute_query_builder(query_builder).await
     }
 }

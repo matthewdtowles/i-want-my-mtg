@@ -55,4 +55,9 @@ impl SetRepository {
         );
         self.db.execute_query_builder(query_builder).await
     }
+
+    pub async fn delete_all(&self) -> Result<u64> {
+        let qb = QueryBuilder::new("DELETE FROM set CASCADE");
+        self.db.execute_query_builder(qb).await
+    }
 }

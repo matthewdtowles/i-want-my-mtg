@@ -4,20 +4,20 @@ use anyhow::Result;
 use std::sync::Arc;
 use tracing::{debug, info, warn};
 
-pub struct SetIngestionService {
+pub struct SetService {
     client: SetClient,
     repository: SetRepository,
 }
 
-impl SetIngestionService {
+impl SetService {
     pub fn new(
-        connection_pool: Arc<ConnectionPool>,
+        db: Arc<ConnectionPool>,
         http_client: HttpClient,
         config: &Config,
     ) -> Self {
         Self {
             client: SetClient::new(http_client, config.mtg_json_base_url.clone()),
-            repository: SetRepository::new(connection_pool),
+            repository: SetRepository::new(db),
         }
     }
 
@@ -35,5 +35,10 @@ impl SetIngestionService {
         let count = self.repository.save_sets(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)
+    }
+
+    pub async fn delete_all(&self) -> Result<u64> {
+        info!("Deleting all sets.");
+        self.repository.delete_all().await
     }
 }

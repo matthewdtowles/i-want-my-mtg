@@ -5,12 +5,12 @@ use std::sync::Arc;
 use tracing::info;
 
 pub struct HealthCheckService {
-    connection_pool: Arc<ConnectionPool>,
+    db: Arc<ConnectionPool>,
 }
 
 impl HealthCheckService {
-    pub fn new(connection_pool: Arc<ConnectionPool>) -> Self {
-        Self { connection_pool }
+    pub fn new(db: Arc<ConnectionPool>) -> Self {
+        Self { db }
     }
 
     pub async fn basic_check(&self) -> Result<BasicHealthStatus> {
@@ -42,23 +42,23 @@ impl HealthCheckService {
     }
 
     async fn count_cards(&self) -> Result<i64> {
-        self.connection_pool
+        self.db
             .count("SELECT COUNT(*) FROM card")
             .await
     }
 
     async fn count_prices(&self) -> Result<i64> {
-        self.connection_pool
+        self.db
             .count("SELECT COUNT(*) FROM price")
             .await
     }
 
     async fn count_sets(&self) -> Result<i64> {
-        self.connection_pool.count("SELECT COUNT(*) FROM set").await
+        self.db.count("SELECT COUNT(*) FROM set").await
     }
 
     async fn count_cards_with_prices(&self) -> Result<i64> {
-        self.connection_pool
+        self.db
             .count("SELECT COUNT(DISTINCT card_id) FROM price")
             .await
     }

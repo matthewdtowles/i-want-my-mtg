@@ -2,10 +2,10 @@ use anyhow::Result;
 use clap::Parser;
 use cli::{commands::Cli, controller::CliController};
 use config::Config;
-use utils::HttpClient;
 use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use utils::HttpClient;
 
 mod card;
 mod cli;
@@ -39,24 +39,16 @@ async fn main() -> Result<()> {
 
     // Create CLI controller with feature services
     let cli_controller = CliController::new(
-        card::service::CardService::new(
-            connection_pool.clone(),
-            http_client.clone()
-        ),
-        set::service::SetService::new(
-            connection_pool.clone(),
-            http_client.clone(),
-            &config,
-        ),
-        price::service::PriceService::new(
-            connection_pool.clone(),
-            http_client.clone(),
-            &config,
-        ),
+        card::service::CardService::new(connection_pool.clone(), http_client.clone()),
+        set::service::SetService::new(connection_pool.clone(), http_client.clone(), &config),
+        price::service::PriceService::new(connection_pool.clone(), http_client.clone(), &config),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 
-    cli_controller.handle_command(cli.command).await?;
+    if let Err(e) = cli_controller.handle_command(cli.command).await {
+        eprint!("Error: {e}");
+        std::process::exit(1);
+    }
     info!("✨ Scry complete.");
     Ok(())
 }

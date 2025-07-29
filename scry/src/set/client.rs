@@ -4,6 +4,7 @@ use serde_json::Value;
 use std::sync::Arc;
 use tracing::{error, info};
 
+// TODO: Remove 
 pub struct SetClient {
     http_client: HttpClient,
     base_url: Arc<str>,

@@ -16,12 +16,14 @@ impl SetService {
         config: &Config,
     ) -> Self {
         Self {
+            // TODO: remove/replace with HttpClient directly
             client: SetClient::new(http_client, config.mtg_json_base_url.clone()),
             repository: SetRepository::new(db),
         }
     }
 
     pub async fn ingest_all(&self) -> Result<u64> {
+        // TODO: remove excess logging
         info!("Starting MTG set ingestion");
         let raw_data = self.client.fetch_all_sets().await?;
         debug!("Raw data fetched.");

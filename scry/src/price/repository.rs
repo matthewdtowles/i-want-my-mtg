@@ -1,7 +1,7 @@
 use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
-use sqlx::{QueryBuilder};
+use sqlx::QueryBuilder;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -21,7 +21,6 @@ impl PriceRepository {
                      LIMIT $1";
         let mut query_builder = QueryBuilder::new(query);
         query_builder.push_bind(batch_size);
-
         self.db.fetch_all_query_builder(query_builder).await
     }
 
@@ -29,19 +28,19 @@ impl PriceRepository {
         if prices.is_empty() {
             return Ok(0);
         }
-
         let mut query_builder =
             QueryBuilder::new("INSERT INTO price (card_id, foil, normal, date) ");
-
         query_builder.push_values(prices, |mut b, price| {
             b.push_bind(&price.card_id)
                 .push_bind(&price.foil)
                 .push_bind(&price.normal)
                 .push_bind(&price.date);
         });
-
-        query_builder.push(" ON CONFLICT (card_id, date) DO UPDATE SET foil = EXCLUDED.foil, normal = EXCLUDED.normal");
-
+        query_builder.push(
+            " ON CONFLICT (card_id, date) DO UPDATE SET 
+            foil = EXCLUDED.foil, 
+            normal = EXCLUDED.normal",
+        );
         self.db.execute_query_builder(query_builder).await
     }
 
@@ -58,10 +57,7 @@ impl PriceRepository {
                 .push_bind(&price.normal)
                 .push_bind(&price.date);
         });
-        query_builder.push(
-            " ON CONFLICT (card_id, date) DO NOTHING
-        RETURNING id",
-        );
+        query_builder.push(" ON CONFLICT (card_id, date) DO NOTHING RETURNING id");
         self.db
             .execute_query_builder_returning_ids(query_builder)
             .await

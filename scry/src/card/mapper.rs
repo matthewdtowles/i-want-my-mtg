@@ -6,7 +6,7 @@ use crate::utils::json;
 pub struct CardMapper;
 
 impl CardMapper {
-    pub fn map_mtg_json_to_cards(set_data: Value) -> Result<Vec<Card>> {
+    pub fn map_to_cards(set_data: Value) -> Result<Vec<Card>> {
         let cards_array = set_data
             .get("data")
             .and_then(|d| d.get("cards"))
@@ -15,11 +15,11 @@ impl CardMapper {
 
         cards_array
             .iter()
-            .map(|card_data| CardMapper::map_raw_json(card_data))
+            .map(|card_data| CardMapper::map_json_to_card(card_data))
             .collect()
     }
 
-    pub fn map_raw_json(card_data: &Value) -> Result<Card> {
+    pub fn map_json_to_card(card_data: &Value) -> Result<Card> {
         let id = json::extract_string(card_data, "uuid")?;
         let name = json::extract_string(card_data, "name")?;
         let set_code = json::extract_string(card_data, "setCode")?.to_lowercase();

@@ -12,7 +12,6 @@ use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
 use tracing::{debug, error, info, warn};
 
-const BASE_INGESTION_URL: &str = "https://mtgjson.com/api/v5/";
 const BATCH_SIZE: usize = 500;
 
 pub struct CardService {
@@ -31,9 +30,9 @@ impl CardService {
     /// Ingests all cards for a specific set identified by `set_code`.
     pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
         info!("Starting ingestion for set: {}", set_code);
-        let url = format!("{BASE_INGESTION_URL}{set_code}.json");
-        let raw_data = self.client.get_json(&url).await?;
-        let cards = CardMapper::map_mtg_json_to_cards(raw_data)?;
+        let url_path = format!("{set_code}.json");
+        let raw_data = self.client.get_json(&url_path).await?;
+        let cards = CardMapper::map_to_cards(raw_data)?;
         if cards.is_empty() {
             warn!("No cards found for set: {}", set_code);
             return Ok(0);
@@ -45,11 +44,11 @@ impl CardService {
 
     /// Ingests all available cards using a streaming approach.
     pub async fn ingest_all(&self) -> Result<u64> {
-        info!("Starting streaming ingestion of all cards from AllPrintings.json");
-        let url = format!("{BASE_INGESTION_URL}AllPrintings.json");
+        let url_path = "AllPrintings.json";
+        info!("Starting streaming ingestion of all cards from {}", url_path);
 
-        let byte_stream = self.client.get_bytes_stream(&url).await?;
-        info!("Received byte stream for AllPrintings.json");
+        let byte_stream = self.client.get_bytes_stream(url_path).await?;
+        debug!("Received byte stream for {}", url_path);
 
         let stream_reader =
             StreamReader::new(byte_stream.map(|result| {
@@ -116,7 +115,7 @@ impl CardService {
                     );
                     error_count += 1;
                     if error_count > 10 {
-                        error!("Too many parser errors ({}). Aborting stream.", error_count);
+                        error!("Parser error limit (10) exceeded. Aborting stream.");
                         return Err(anyhow::anyhow!(
                             "Streaming parse failed due to parser errors"
                         ));
@@ -213,7 +212,7 @@ impl StreamingCardProcessor {
     async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
     ) -> Result<usize> {
         // SkippingValue state: track nesting to know when to exit
         if let ParsingState::SkippingValue(skip_depth) = self.state {
@@ -549,7 +548,7 @@ impl StreamingCardProcessor {
 
     fn parse_card_from_json(&self, json: &str) -> Result<Card> {
         let value: serde_json::Value = serde_json::from_str(json)?;
-        let result = CardMapper::map_raw_json(&value);
+        let result = CardMapper::map_json_to_card(&value);
         result
     }
 

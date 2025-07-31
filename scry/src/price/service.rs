@@ -5,8 +5,6 @@ use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
 use futures::StreamExt;
-use sqlx::types::Json;
-use std::os::unix::process;
 use std::sync::Arc;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
@@ -15,12 +13,12 @@ use tracing::{debug, error, info, warn};
 const BATCH_SIZE: usize = 500;
 
 pub struct PriceService {
-    client: HttpClient,
+    client: Arc<HttpClient>,
     repository: PriceRepository,
 }
 
 impl PriceService {
-    pub fn new(db: Arc<ConnectionPool>, http_client: HttpClient) -> Self {
+    pub fn new(db: Arc<ConnectionPool>, http_client: Arc<HttpClient>) -> Self {
         Self {
             client: http_client,
             repository: PriceRepository::new(db),
@@ -29,15 +27,13 @@ impl PriceService {
 
     pub async fn ingest_all_today(&self) -> Result<u64> {
         let url_path = "AllPricesToday.json";
-        info!("Start ingestion of all prices");
+        debug!("Start ingestion of all prices");
         let byte_stream = self.client.get_bytes_stream(url_path).await?;
         debug!("Received byte stream for: {}", url_path);
-
         let stream_reader =
             StreamReader::new(byte_stream.map(|result| {
                 result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
             }));
-
         let mut buf_reader = BufReader::with_capacity(64 * 1024, stream_reader);
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
@@ -112,33 +108,34 @@ impl PriceService {
     }
 
     pub async fn archive(&self) -> Result<u64> {
-        info!("Starting price archival");
-        let mut archived_count = 0;
-        loop {
-            // read prices from price table
-            let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
-            if prices.is_empty() {
-                // while prices is not empty
-                info!("No prices to archive");
-                break;
-            }
-            // insert into price_history table, return inserted ids
-            let saved_ids = self.repository.save_to_history(&prices).await?;
-            // check if any prices were missed in saved_ids
-            // TODO: above
-            // delete from price table
-            archived_count += self.repository.delete_by_ids(&saved_ids).await?;
-            archived_count += saved_ids.len() as u64;
-            if archived_count != prices.len() as u64 {
-                warn!(
-                    "Some prices were not archived, expected: {}, archived: {}",
-                    prices.len(),
-                    archived_count
-                );
-            }
-        }
-        info!("Archived {} total prices", archived_count);
-        Ok(archived_count)
+        debug!("Starting price archival");
+        return Ok(0)
+        // let mut archived_count = 0;
+        // loop {
+        //     // read prices from price table
+        //     let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
+        //     if prices.is_empty() {
+        //         // while prices is not empty
+        //         info!("No prices to archive");
+        //         break;
+        //     }
+        //     // insert into price_history table, return inserted ids
+        //     let saved_ids = self.repository.save_to_history(&prices).await?;
+        //     // check if any prices were missed in saved_ids
+        //     // TODO: above
+        //     // delete from price table
+        //     archived_count += self.repository.delete_by_ids(&saved_ids).await?;
+        //     archived_count += saved_ids.len() as u64;
+        //     if archived_count != prices.len() as u64 {
+        //         warn!(
+        //             "Some prices were not archived, expected: {}, archived: {}",
+        //             prices.len(),
+        //             archived_count
+        //         );
+        //     }
+        // }
+        // info!("Archived {} total prices", archived_count);
+        // Ok(archived_count)
     }
 
     pub async fn delete_all(&self) -> Result<u64> {
@@ -155,14 +152,12 @@ struct PriceProcessor {
     current_price_json: String,
     in_data_object: bool,
     json_depth: usize,
-    prices_processed: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum PriceParsingState {
     Root,
     InCardPrice,
-    SkippingValue(usize),
 }
 
 impl PriceProcessor {
@@ -175,7 +170,6 @@ impl PriceProcessor {
             current_price_json: String::new(),
             in_data_object: false,
             json_depth: 0,
-            prices_processed: 0,
         }
     }
 
@@ -279,7 +273,7 @@ impl PriceProcessor {
     fn handle_end_object(&mut self) -> Result<usize> {
         if self.at_price_key() {
             self.current_price_json.push('}');
-            self.add_price_to_batch();
+            let _ = self.add_price_to_batch();
             return Ok(self.close_price_object()?);
         }
         Ok(0)
@@ -311,12 +305,14 @@ impl PriceProcessor {
 
     fn handle_field_name(&mut self, field_name: String) -> Result<usize> {
         if 1 == self.json_depth && "data" == field_name {
-            self.in_data_object == true;
+            self.in_data_object = true;
         } else if self.at_price_key() {
             self.current_card_uuid = Some(field_name.clone());
         }
         if self.in_price_object() {
-            self.add_comma();
+            if self.requires_comma() {
+                self.add_comma();
+            }
             self.add_field_key(field_name);
         }
         Ok(0)
@@ -340,17 +336,23 @@ impl PriceProcessor {
         self.in_data_object && self.json_depth >= 2
     }
 
-    fn add_comma(&mut self) {
-        if !self.current_price_json.is_empty() && !self.current_price_json.ends_with('{') {
-            self.current_price_json.push(',');
-        }
+    fn requires_comma(&mut self) -> bool {
+        !self.current_price_json.is_empty() && !self.current_price_json.ends_with('{')
     }
 
     fn add_field_key(&mut self, field_name: String) {
-        self.add_quote();
-        self.current_price_json.push_str(&field_name);
-        self.add_quote();
+        self.add_string(field_name);
         self.add_colon();
+    }
+
+    fn add_comma(&mut self) {
+        self.current_price_json.push(',');
+    }
+
+    fn add_string(&mut self, token: String) {
+        self.add_quote();
+        self.current_price_json.push_str(&token);
+        self.add_quote();
     }
 
     fn add_quote(&mut self) {

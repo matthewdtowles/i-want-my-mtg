@@ -15,12 +15,12 @@ use tracing::{debug, error, info, warn};
 const BATCH_SIZE: usize = 500;
 
 pub struct CardService {
-    client: HttpClient,
+    client: Arc<HttpClient>,
     repository: CardRepository,
 }
 
 impl CardService {
-    pub fn new(db: Arc<ConnectionPool>, http_client: HttpClient) -> Self {
+    pub fn new(db: Arc<ConnectionPool>, http_client: Arc<HttpClient>) -> Self {
         Self {
             client: http_client,
             repository: CardRepository::new(db),

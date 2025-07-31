@@ -1,31 +1,26 @@
-use crate::set::{client::SetClient, mapper::SetMapper, repository::SetRepository};
-use crate::{config::Config, database::ConnectionPool, utils::http_client::HttpClient};
+use crate::set::{mapper::SetMapper, repository::SetRepository};
+use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use std::sync::Arc;
 use tracing::{debug, info, warn};
 
 pub struct SetService {
-    client: SetClient,
+    client: Arc<HttpClient>,
     repository: SetRepository,
 }
 
 impl SetService {
-    pub fn new(
-        db: Arc<ConnectionPool>,
-        http_client: HttpClient,
-        config: &Config,
-    ) -> Self {
+    pub fn new(db: Arc<ConnectionPool>, http_client: Arc<HttpClient>) -> Self {
         Self {
-            // TODO: remove/replace with HttpClient directly
-            client: SetClient::new(http_client, config.mtg_json_base_url.clone()),
+            client: http_client,
             repository: SetRepository::new(db),
         }
     }
 
     pub async fn ingest_all(&self) -> Result<u64> {
-        // TODO: remove excess logging
-        info!("Starting MTG set ingestion");
-        let raw_data = self.client.fetch_all_sets().await?;
+        let url_path = "SetList.json";
+        debug!("Starting MTG set ingestion");
+        let raw_data = self.client.get_json(url_path).await?;
         debug!("Raw data fetched.");
         let sets = SetMapper::map_mtg_json_to_sets(raw_data)?;
         debug!("Mapping complete. {} sets found.", sets.len());
@@ -33,7 +28,6 @@ impl SetService {
             warn!("No sets found");
             return Ok(0);
         }
-        debug!("Bulk insert into repository.");
         let count = self.repository.save_sets(&sets).await?;
         info!("Successfully ingested {} sets", count);
         Ok(count)

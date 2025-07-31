@@ -1,12 +1,10 @@
 use anyhow::Result;
-use std::{env, sync::Arc};
+use std::env;
 
 #[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
     pub max_pool_size: u32,
-    pub archive_batch_size: u16,
-    pub mtg_json_base_url: Arc<str>,
 }
 
 impl Config {
@@ -14,10 +12,6 @@ impl Config {
         Ok(Config {
             database_url: Self::get_database_url()?,
             max_pool_size: Self::parse_env("DB_MAX_POOL_SIZE", "10")?,
-            archive_batch_size: Self::parse_env("ARCHIVE_BATCH_SIZE", "1000")?,
-            mtg_json_base_url: env::var("MTG_JSON_BASE_URL")
-                .unwrap_or_else(|_| "https://mtgjson.com/api/v5".to_string())
-                .into(),
         })
     }
 

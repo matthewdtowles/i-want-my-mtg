@@ -1,5 +1,4 @@
 pub mod service;
-mod client;
 mod mapper;
 mod models;
 mod repository;

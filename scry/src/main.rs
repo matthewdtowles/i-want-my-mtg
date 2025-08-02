@@ -35,13 +35,13 @@ async fn main() -> Result<()> {
     // Initialize minimal shared dependencies
     let connection_pool = Arc::new(database::ConnectionPool::new(&config).await?);
     // TODO: make Arc clone of HttpClient for each service?
-    let http_client = HttpClient::new();
+    let http_client = Arc::new(HttpClient::new());
 
     // Create CLI controller with feature services
     let cli_controller = CliController::new(
         card::service::CardService::new(connection_pool.clone(), http_client.clone()),
-        set::service::SetService::new(connection_pool.clone(), http_client.clone(), &config),
-        price::service::PriceService::new(connection_pool.clone(), http_client.clone(), &config),
+        set::service::SetService::new(connection_pool.clone(), http_client.clone()),
+        price::service::PriceService::new(connection_pool.clone(), http_client.clone()),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 

@@ -10,10 +10,8 @@ pub struct CardRepository {
 }
 
 impl CardRepository {
-    pub fn new(connection_pool: Arc<ConnectionPool>) -> Self {
-        Self {
-            db: connection_pool,
-        }
+    pub fn new(db: Arc<ConnectionPool>) -> Self {
+        Self { db }
     }
 
     pub async fn save(&self, cards: &[Card]) -> Result<u64> {

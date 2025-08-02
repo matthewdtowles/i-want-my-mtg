@@ -1,7 +1,8 @@
 use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
-use sqlx::QueryBuilder;
+use sqlx::{Error, QueryBuilder};
+use tracing::error;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -24,6 +25,13 @@ impl PriceRepository {
         self.db.fetch_all_query_builder(query_builder).await
     }
 
+    pub async fn fetch_all_card_ids(&self) -> Result<std::collections::HashSet<String>> {
+        let query = "SELECT id FROM card";
+        let query_builder = QueryBuilder::new(query);
+        let rows: Vec<(String,)> = self.db.fetch_all_query_builder(query_builder).await?;
+        Ok(rows.into_iter().map(|(id,)| id).collect())
+    }
+
     pub async fn save(&self, prices: &[Price]) -> Result<u64> {
         if prices.is_empty() {
             return Ok(0);
@@ -41,7 +49,13 @@ impl PriceRepository {
             foil = EXCLUDED.foil, 
             normal = EXCLUDED.normal",
         );
-        self.db.execute_query_builder(query_builder).await
+        match self.db.execute_query_builder(query_builder).await {
+            Ok(count) => Ok(count),
+            Err(e) => {
+                error!("Database error: {:?}", e);
+                Err(e.into())
+            }
+        }
     }
 
     pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<i64>> {

@@ -1,16 +1,20 @@
 use crate::price::models::Price;
-use crate::price::{mapper::PriceMapper, repository::PriceRepository};
+use crate::price::repository::PriceRepository;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
+use chrono::NaiveDate;
 use futures::StreamExt;
+use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::Decimal;
 use std::sync::Arc;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
 use tracing::{debug, error, info, warn};
 
 const BATCH_SIZE: usize = 500;
+const ALLOWED_PROVIDERS: &[&str] = &["tcgplayer", "cardkingdom", "cardsphere"];
 
 pub struct PriceService {
     client: Arc<HttpClient>,
@@ -37,9 +41,12 @@ impl PriceService {
         let mut buf_reader = BufReader::with_capacity(64 * 1024, stream_reader);
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
-        let mut price_processor = PriceProcessor::new(BATCH_SIZE); // TODO: impl
+        let mut price_processor = PriceProcessor::new(BATCH_SIZE);
         let mut total_processed = 0u64;
         let mut error_count = 0;
+        // At startup, fetch all valid card IDs
+        let valid_card_ids: std::collections::HashSet<String> =
+            self.repository.fetch_all_card_ids().await?;
         loop {
             let mut event = parser.next_event();
             if event == JsonEvent::NeedMoreInput {
@@ -69,8 +76,17 @@ impl PriceService {
                     let remaining_prices = price_processor.take_remaining();
                     if !remaining_prices.is_empty() {
                         debug!("Saving final batch of {} prices", remaining_prices.len());
-                        let final_count = self.repository.save(&remaining_prices).await?;
-                        total_processed += final_count;
+                        // Filter out prices with missing card_id
+                        let filtered_prices: Vec<Price> = remaining_prices
+                            .into_iter()
+                            .filter(|p| valid_card_ids.contains(&p.card_id))
+                            .collect();
+
+                        if !filtered_prices.is_empty() {
+                            let final_count = self.repository.save(&filtered_prices).await?;
+                            total_processed += final_count;
+                            info!("Processed {} prices so far...", total_processed);
+                        }
                     }
                     info!("Total prices saved: {}", total_processed);
                     return Ok(total_processed);
@@ -87,6 +103,7 @@ impl PriceService {
                     continue;
                 }
                 JsonEvent::NeedMoreInput => {
+                    debug!("JSON parser needs more input...");
                     continue;
                 }
                 _ => {
@@ -95,9 +112,15 @@ impl PriceService {
                     if processed_count > 0 {
                         let prices = price_processor.take_batch();
                         if !prices.is_empty() {
-                            let saved_count = self.repository.save(&prices).await?;
-                            total_processed += saved_count;
-                            if total_processed > 0 && total_processed % 5000 == 0 {
+                            // Filter out prices with missing card_id
+                            let filtered_prices: Vec<Price> = prices
+                                .into_iter()
+                                .filter(|p| valid_card_ids.contains(&p.card_id))
+                                .collect();
+
+                            if !filtered_prices.is_empty() {
+                                let saved_count = self.repository.save(&filtered_prices).await?;
+                                total_processed += saved_count;
                                 info!("Processed {} prices so far...", total_processed);
                             }
                         }
@@ -109,7 +132,7 @@ impl PriceService {
 
     pub async fn archive(&self) -> Result<u64> {
         debug!("Starting price archival");
-        return Ok(0)
+        return Ok(0);
         // let mut archived_count = 0;
         // loop {
         //     // read prices from price table
@@ -145,31 +168,29 @@ impl PriceService {
 }
 
 struct PriceProcessor {
-    state: PriceParsingState,
     batch: Vec<Price>,
     batch_size: usize,
     current_card_uuid: Option<String>,
-    current_price_json: String,
     in_data_object: bool,
     json_depth: usize,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum PriceParsingState {
-    Root,
-    InCardPrice,
+    accumulator: Option<PriceAccumulator>,
+    path: Vec<String>, // Track current path in JSON
+    provider_currencies: std::collections::HashMap<String, String>,
+    expecting_currency_for_provider: Option<String>,
 }
 
 impl PriceProcessor {
     pub fn new(batch_size: usize) -> Self {
         Self {
-            state: PriceParsingState::Root,
             batch: Vec::with_capacity(batch_size),
             batch_size,
             current_card_uuid: None,
-            current_price_json: String::new(),
             in_data_object: false,
             json_depth: 0,
+            accumulator: None,
+            path: Vec::new(),
+            provider_currencies: std::collections::HashMap::new(),
+            expecting_currency_for_provider: None,
         }
     }
 
@@ -186,62 +207,25 @@ impl PriceProcessor {
                 self.handle_field_name(field_name)
             }
             JsonEvent::ValueString => {
-                if self.in_price_object() {
-                    let value = parser.current_string().unwrap_or_default();
-                    return self.handle_string_value(value);
-                }
-                Ok(0)
+                let value = parser.current_string().unwrap_or_default();
+                self.handle_value(value)
             }
-            // TODO: REFACTOR int, double, true, false, etc below:
             JsonEvent::ValueInt => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    let value = parser
-                        .current_i64()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|_| "0".to_string());
-                    self.current_price_json.push_str(&value);
-                }
-                Ok(0)
+                let value = parser.current_i64().unwrap_or(0).to_string();
+                self.handle_value(value)
             }
             JsonEvent::ValueDouble => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    let value = parser
-                        .current_f64()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|_| "0.0".to_string());
-                    self.current_price_json.push_str(&value);
-                }
-                Ok(0)
+                let value = parser.current_f64().unwrap_or(0.0).to_string();
+                self.handle_value(value)
             }
-            JsonEvent::ValueTrue => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    self.current_price_json.push_str("true");
-                }
-                Ok(0)
-            }
-            JsonEvent::ValueFalse => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    self.current_price_json.push_str("false");
-                }
-                Ok(0)
-            }
-            JsonEvent::ValueNull => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    self.current_price_json.push_str("null");
-                }
-                Ok(0)
-            }
+            JsonEvent::ValueTrue => self.handle_value("true".to_string()),
+            JsonEvent::ValueFalse => self.handle_value("false".to_string()),
+            JsonEvent::ValueNull => self.handle_value("null".to_string()),
             JsonEvent::StartArray => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    self.current_price_json.push('[');
-                }
                 self.json_depth += 1;
                 Ok(0)
             }
             JsonEvent::EndArray => {
-                if self.in_data_object && self.json_depth >= 2 {
-                    self.current_price_json.push(']');
-                }
                 self.json_depth -= 1;
                 Ok(0)
             }
@@ -251,115 +235,169 @@ impl PriceProcessor {
             _ => Ok(0),
         }
     }
-    pub fn take_batch(&mut self) -> Vec<Price> {
-        std::mem::take(&mut self.batch)
-    }
-
-    pub fn take_remaining(&mut self) -> Vec<Price> {
-        std::mem::take(&mut self.batch)
-    }
 
     fn handle_start_object(&mut self) -> Result<usize> {
         self.json_depth += 1;
-        if self.at_price_key() {
-            debug!("Entering card price object");
-            self.current_price_json.clear();
-            self.current_price_json.push('{');
-            self.state = PriceParsingState::InCardPrice;
-        }
         Ok(0)
     }
 
     fn handle_end_object(&mut self) -> Result<usize> {
-        if self.at_price_key() {
-            self.current_price_json.push('}');
-            let _ = self.add_price_to_batch();
-            return Ok(self.close_price_object()?);
+        // If closing a card UUID object (depth 3), aggregate and push to batch
+        if self.in_data_object && self.json_depth == 3 {
+            if let (Some(card_uuid), Some(acc)) =
+                (self.current_card_uuid.take(), self.accumulator.take())
+            {
+                let date = acc
+                    .date
+                    .as_ref()
+                    .and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
+                let foil = acc.average_foil().map(|v| Decimal::from_f64(v)).flatten();
+                let normal = acc.average_normal().map(|v| Decimal::from_f64(v)).flatten();
+
+                if foil.is_some() || normal.is_some() {
+                    let price = Price {
+                        id: None,
+                        card_id: card_uuid,
+                        date: date.unwrap_or_else(|| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
+                        foil,
+                        normal,
+                    };
+                    self.batch.push(price);
+                }
+            }
+            let processed = if self.batch.len() >= self.batch_size {
+                self.batch.len()
+            } else {
+                0
+            };
+            self.json_depth -= 1;
+            self.path.pop();
+            return Ok(processed);
         }
+        // If closing the "data" object (depth 2)
+        if self.in_data_object && self.json_depth == 2 {
+            self.in_data_object = false;
+            self.path.pop();
+        }
+        self.json_depth -= 1;
+        self.path.pop();
         Ok(0)
     }
 
-    fn add_price_to_batch(&mut self) -> Result<()> {
-        if let Some(card_uuid) = &self.current_card_uuid {
-            let value: serde_json::Value = serde_json::from_str(&self.current_price_json)?;
-            if let Some(price) = PriceMapper::map_json_to_price(card_uuid, &value) {
-                self.batch.push(price);
-            }
-        }
-        Ok(())
-    }
-
-    // TODO: rename? Meant to close out the current price object and reset fresh for next one, if it comes
-    // gets the current batch len and returns it
-    fn close_price_object(&mut self) -> Result<usize> {
-        self.current_card_uuid = None;
-        self.current_price_json.clear();
-        let processed = if self.batch.len() >= self.batch_size {
-            self.batch.len()
-        } else {
-            0
-        };
-        self.json_depth -= 1;
-        Ok(processed)
-    }
-
+    // path[0] data | meta
+    // path[1] <card-uuid>
+    // path[2] paper | mtgo
+    // path[3] <provider name>
+    // path[4] currency | retail
+    // if currency -> value USD ?
+    // if retail: path[5] foil | normal
+    //              path[6] <yyyy-mm-dd> -> value
     fn handle_field_name(&mut self, field_name: String) -> Result<usize> {
-        if 1 == self.json_depth && "data" == field_name {
+        // Track "data" object
+        if self.json_depth == 1 && field_name == "data" {
             self.in_data_object = true;
         } else if self.at_price_key() {
             self.current_card_uuid = Some(field_name.clone());
+            self.accumulator = Some(PriceAccumulator::new());
+            self.provider_currencies.clear();
         }
-        if self.in_price_object() {
-            if self.requires_comma() {
-                self.add_comma();
-            }
-            self.add_field_key(field_name);
+        // Track currency for provider
+        if self.path.len() == 5 && self.path[2] == "paper" && field_name == "currency" {
+            self.expecting_currency_for_provider = Some(self.path[3].clone());
         }
+        self.path.push(field_name);
         Ok(0)
     }
 
-    fn handle_string_value(&mut self, value: String) -> Result<usize> {
-        if self.in_price_object() {
-            self.add_quote();
-            self.current_price_json
-                .push_str(&value.replace('"', "\\\""));
-            self.add_quote();
+    fn handle_value(&mut self, value: String) -> Result<usize> {
+        // Track currency for provider
+        if let Some(provider) = self.expecting_currency_for_provider.take() {
+            self.provider_currencies.insert(provider, value.clone());
         }
+
+        // Only aggregate if we're inside a card UUID object
+        if let Some(acc) = self.accumulator.as_mut() {
+            // Path: [data, <card-uuid>, paper, <provider>, retail, normal|foil, <date>]
+            if self.path.len() == 7
+                && self.path[0] == "data"
+                && self.path[2] == "paper"
+                && self.path[4] == "retail"
+                && (self.path[5] == "normal" || self.path[5] == "foil")
+            {
+                let provider = &self.path[3];
+                if ALLOWED_PROVIDERS.contains(&provider.as_str()) {
+                    if let Ok(price) = value.parse::<f64>() {
+                        if self.path[5] == "foil" {
+                            acc.add_foil(price);
+                            acc.date = Some(self.path[6].clone());
+                        } else if self.path[5] == "normal" {
+                            acc.add_normal(price);
+                            acc.date = Some(self.path[6].clone());
+                        }
+                    }
+                }
+            }
+        }
+        // After value, pop the last path segment
+        self.path.pop();
         Ok(0)
     }
 
     fn at_price_key(&self) -> bool {
-        2 == self.json_depth && self.in_data_object
+        self.in_data_object && self.json_depth == 2
     }
 
-    fn in_price_object(&mut self) -> bool {
-        self.in_data_object && self.json_depth >= 2
+    fn take_batch(&mut self) -> Vec<Price> {
+        std::mem::take(&mut self.batch)
     }
 
-    fn requires_comma(&mut self) -> bool {
-        !self.current_price_json.is_empty() && !self.current_price_json.ends_with('{')
+    fn take_remaining(&mut self) -> Vec<Price> {
+        std::mem::take(&mut self.batch)
+    }
+}
+
+struct PriceAccumulator {
+    foil_sum: f64,
+    foil_count: usize,
+    normal_sum: f64,
+    normal_count: usize,
+    date: Option<String>,
+}
+
+impl PriceAccumulator {
+    fn new() -> Self {
+        Self {
+            foil_sum: 0.0,
+            foil_count: 0,
+            normal_sum: 0.0,
+            normal_count: 0,
+            date: None,
+        }
     }
 
-    fn add_field_key(&mut self, field_name: String) {
-        self.add_string(field_name);
-        self.add_colon();
+    fn add_foil(&mut self, value: f64) {
+        self.foil_sum += value;
+        self.foil_count += 1;
     }
 
-    fn add_comma(&mut self) {
-        self.current_price_json.push(',');
+    fn add_normal(&mut self, value: f64) {
+        self.normal_sum += value;
+        self.normal_count += 1;
     }
 
-    fn add_string(&mut self, token: String) {
-        self.add_quote();
-        self.current_price_json.push_str(&token);
-        self.add_quote();
+    fn average_foil(&self) -> Option<f64> {
+        if self.foil_count > 0 {
+            Some(self.foil_sum / self.foil_count as f64)
+        } else {
+            None
+        }
     }
 
-    fn add_quote(&mut self) {
-        self.current_price_json.push('"');
-    }
-
-    fn add_colon(&mut self) {
-        self.current_price_json.push(':');
+    fn average_normal(&self) -> Option<f64> {
+        if self.normal_count > 0 {
+            Some(self.normal_sum / self.normal_count as f64)
+        } else {
+            None
+        }
     }
 }

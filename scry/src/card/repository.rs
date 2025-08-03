@@ -1,4 +1,4 @@
-use crate::{card::Card, database::ConnectionPool};
+use crate::{card::models::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
@@ -71,7 +71,6 @@ impl CardRepository {
                 .push_bind(&card.set_code)
                 .push_bind(&card.type_line);
         });
-        // TODO: evaluate if this can be encapsulated for reuse
         query_builder.push(
             " ON CONFLICT (id) DO UPDATE SET
             artist = EXCLUDED.artist,

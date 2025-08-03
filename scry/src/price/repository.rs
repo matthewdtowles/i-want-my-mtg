@@ -1,7 +1,7 @@
 use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
-use sqlx::{Error, QueryBuilder};
+use sqlx::QueryBuilder;
 use tracing::error;
 use std::sync::Arc;
 

@@ -103,11 +103,7 @@ impl CardService {
                     return Ok(total_processed);
                 }
                 JsonEvent::Error => {
-                    warn!(
-                        "JSON parser error at depth {} on path {}",
-                        card_processor.json_depth(),
-                        card_processor.json_path().join("/")
-                    );
+                    warn!("JSON parser error at depth {}", card_processor.json_depth());
                     error_count += 1;
                     if error_count > 10 {
                         error!("Parser error limit (10) exceeded. Aborting stream.");

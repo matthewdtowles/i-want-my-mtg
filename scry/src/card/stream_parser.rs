@@ -9,23 +9,21 @@ pub struct CardStreamParser {
     state: ParsingState,
     batch: Vec<Card>,
     batch_size: usize,
-    current_card_json: String,
-    json_depth: usize,
-    in_cards_array: bool,
-    in_card_object: bool,
     card_object_depth: usize,
-    json_path: Vec<String>,
-    sets_processed: usize,
+    current_card_json: String,
     current_set_code: Option<String>,
     expecting_cards_array: bool,
+    in_card_object: bool,
+    in_cards_array: bool,
+    json_depth: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum ParsingState {
     Root,
-    InSetObject,
-    InCardsArray,
     InCardObject,
+    InCardsArray,
+    InSetObject,
     SkippingValue(usize),
 }
 
@@ -35,15 +33,13 @@ impl CardStreamParser {
             state: ParsingState::Root,
             batch: Vec::with_capacity(batch_size),
             batch_size,
-            current_card_json: String::new(),
-            json_depth: 0,
-            in_cards_array: false,
-            in_card_object: false,
             card_object_depth: 0,
-            json_path: Vec::new(),
-            sets_processed: 0,
+            current_card_json: String::new(),
             current_set_code: None,
             expecting_cards_array: false,
+            in_card_object: false,
+            in_cards_array: false,
+            json_depth: 0,
         }
     }
 
@@ -62,14 +58,6 @@ impl CardStreamParser {
                     self.json_depth -= 1;
                     if self.json_depth <= skip_depth {
                         self.state = ParsingState::Root;
-                        if !self.json_path.is_empty() {
-                            let popped = self.json_path.pop();
-                            debug!(
-                                "Exited skip mode, popped: {:?}, new path len: {:?}",
-                                popped,
-                                self.json_path.len()
-                            );
-                        }
                     }
                 }
                 // Other Json Events: do nothing
@@ -133,10 +121,6 @@ impl CardStreamParser {
 
     pub fn json_depth(&mut self) -> usize {
         self.json_depth
-    }
-
-    pub fn json_path(&self) -> &Vec<String> {
-        &self.json_path
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
@@ -223,7 +207,6 @@ impl CardStreamParser {
         if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
             self.state = ParsingState::InSetObject;
-            self.sets_processed += 1;
         }
         // Handle arrays within card objects
         else if self.in_card_object {

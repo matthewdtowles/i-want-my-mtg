@@ -34,8 +34,8 @@ impl ConnectionPool {
     pub async fn execute_query_builder_returning_ids(
         &self,
         mut builder: QueryBuilder<'_, sqlx::Postgres>,
-    ) -> Result<Vec<i64>> {
-        let query = builder.build_query_scalar::<i64>();
+    ) -> Result<Vec<i32>> {
+        let query = builder.build_query_scalar::<i32>();
         query.fetch_all(&*self.pool).await.map_err(Into::into)
     }
 

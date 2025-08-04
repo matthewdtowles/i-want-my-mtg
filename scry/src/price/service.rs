@@ -129,33 +129,53 @@ impl PriceService {
 
     pub async fn archive(&self) -> Result<u64> {
         debug!("Starting price archival");
-        return Ok(0);
-        // let mut archived_count = 0;
-        // loop {
-        //     // read prices from price table
-        //     let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
-        //     if prices.is_empty() {
-        //         // while prices is not empty
-        //         info!("No prices to archive");
-        //         break;
-        //     }
-        //     // insert into price_history table, return inserted ids
-        //     let saved_ids = self.repository.save_to_history(&prices).await?;
-        //     // check if any prices were missed in saved_ids
-        //     // TODO: above
-        //     // delete from price table
-        //     archived_count += self.repository.delete_by_ids(&saved_ids).await?;
-        //     archived_count += saved_ids.len() as u64;
-        //     if archived_count != prices.len() as u64 {
-        //         warn!(
-        //             "Some prices were not archived, expected: {}, archived: {}",
-        //             prices.len(),
-        //             archived_count
-        //         );
-        //     }
-        // }
-        // info!("Archived {} total prices", archived_count);
-        // Ok(archived_count)
+        let mut archived_count = 0;
+        let mut attempts = 0;
+        let prices_count = self.repository.count_prices().await?;
+        info!(
+            "Total prices in Price table before archival: {}",
+            prices_count
+        );
+        loop {
+            let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
+            debug!("Obtained {} prices from Price table.", prices.len());
+            if prices.is_empty() {
+                warn!("No prices to archive");
+                break;
+            }
+            attempts += 1;
+
+            // TODO YOU ARE HERE !!! This is what we needed!! When we inject into Price History then the Price ID is different!!
+            // OR we just add a price_id column to the price_history table
+            let price_ids: Vec<i32> = prices.iter().filter_map(|p| p.id).collect();
+
+            // Save to history (does NOT copy id)
+            let saved_ids = self.repository.save_to_history(&prices).await?;
+            debug!(
+                "Total saved in Price History table: {}",
+                saved_ids.len()
+            );
+            if saved_ids.len() != prices.len() {
+                warn!(
+                    "Expected {} prices to be archived, but {} were archived in batch.",
+                    prices.len(),
+                    saved_ids.len()
+                );
+            }
+            let total_deleted = self.repository.delete_by_ids(&saved_ids).await?;
+            debug!("Total deleted from `price` table: {}", total_deleted);
+            if total_deleted > 0 {
+                attempts = 0;
+            }
+            archived_count += total_deleted;
+            if attempts > 3 {
+                warn!("Error archiving prices after 3 attempts.");
+                break;
+            }
+        }
+        info!("Total Prices at Start: {}", prices_count);
+        info!("Total Archived to Price History: {}", archived_count);
+        Ok(archived_count)
     }
 
     pub async fn delete_all(&self) -> Result<u64> {

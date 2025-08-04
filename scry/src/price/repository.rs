@@ -2,8 +2,8 @@ use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
 use sqlx::QueryBuilder;
-use tracing::error;
 use std::sync::Arc;
+use tracing::{debug, error};
 
 #[derive(Clone)]
 pub struct PriceRepository {
@@ -16,10 +16,11 @@ impl PriceRepository {
     }
 
     pub async fn fetch_batch(&self, batch_size: i16) -> Result<Vec<Price>> {
+        debug!("Fetch batch of size: {}", batch_size);
         let query = "SELECT id, card_id, foil, normal, date
                      FROM price 
                      ORDER BY id ASC 
-                     LIMIT $1";
+                     LIMIT ";
         let mut query_builder = QueryBuilder::new(query);
         query_builder.push_bind(batch_size);
         self.db.fetch_all_query_builder(query_builder).await
@@ -30,6 +31,10 @@ impl PriceRepository {
         let query_builder = QueryBuilder::new(query);
         let rows: Vec<(String,)> = self.db.fetch_all_query_builder(query_builder).await?;
         Ok(rows.into_iter().map(|(id,)| id).collect())
+    }
+
+    pub async fn count_prices(&self) -> Result<u64> {
+        Ok(self.db.count("SELECT COUNT(*) FROM price").await? as u64)
     }
 
     pub async fn save(&self, prices: &[Price]) -> Result<u64> {
@@ -58,32 +63,44 @@ impl PriceRepository {
         }
     }
 
-    pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<i64>> {
+    pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<i32>> {
         if prices.is_empty() {
             return Ok(vec![]);
         }
         let mut query_builder =
-            QueryBuilder::new("INSERT INTO price_history (price_id, card_id, foil, normal, date) ");
+            QueryBuilder::new("INSERT INTO price_history (card_id, foil, normal, date) ");
         query_builder.push_values(prices, |mut b, price| {
-            b.push_bind(&price.id)
-                .push_bind(&price.card_id)
+            b.push_bind(&price.card_id)
                 .push_bind(&price.foil)
                 .push_bind(&price.normal)
                 .push_bind(&price.date);
         });
         query_builder.push(" ON CONFLICT (card_id, date) DO NOTHING RETURNING id");
-        self.db
+        match self
+            .db
             .execute_query_builder_returning_ids(query_builder)
             .await
+        {
+            Ok(saved_ids) => Ok(saved_ids),
+            Err(e) => {
+                error!("Database error: {:?}", e);
+                Err(e.into())
+            }
+        }
     }
 
-    pub async fn delete_by_ids(&self, price_ids: &[i64]) -> Result<u64> {
+    pub async fn delete_by_ids(&self, price_ids: &[i32]) -> Result<u64> {
         if price_ids.is_empty() {
             return Ok(0);
         }
-        let query = "DELETE FROM price WHERE id = ANY($1)";
+        let query = "DELETE FROM price WHERE id IN (";
         let mut query_builder = QueryBuilder::new(query);
-        query_builder.push_bind(price_ids);
+        let mut separated = query_builder.separated(", ");
+        for id in price_ids {
+            separated.push_bind(id);
+        }
+        separated.push_unseparated(")");
+        debug!("Query: {}", query_builder.sql());
         self.db.execute_query_builder(query_builder).await
     }
 

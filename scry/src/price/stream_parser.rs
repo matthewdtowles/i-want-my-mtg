@@ -9,29 +9,29 @@ use rust_decimal::Decimal;
 const ALLOWED_PROVIDERS: &[&str] = &["tcgplayer", "cardkingdom", "cardsphere"];
 
 pub struct PriceStreamParser {
+    accumulator: Option<PriceAccumulator>,
     batch: Vec<Price>,
     batch_size: usize,
     current_card_uuid: Option<String>,
+    expecting_currency_for_provider: Option<String>,
     in_data_object: bool,
     json_depth: usize,
-    accumulator: Option<PriceAccumulator>,
     path: Vec<String>,
     provider_currencies: std::collections::HashMap<String, String>,
-    expecting_currency_for_provider: Option<String>,
 }
 
 impl PriceStreamParser {
     pub fn new(batch_size: usize) -> Self {
         Self {
+            accumulator: None,
             batch: Vec::with_capacity(batch_size),
             batch_size,
             current_card_uuid: None,
+            expecting_currency_for_provider: None,
             in_data_object: false,
             json_depth: 0,
-            accumulator: None,
             path: Vec::new(),
             provider_currencies: std::collections::HashMap::new(),
-            expecting_currency_for_provider: None,
         }
     }
 

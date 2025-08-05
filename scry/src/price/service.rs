@@ -5,6 +5,8 @@ use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
+use chrono::{Duration, NaiveDate, Timelike};
+use chrono_tz::America::New_York;
 use futures::StreamExt;
 use std::sync::Arc;
 use tokio::io::BufReader;
@@ -118,7 +120,7 @@ impl PriceService {
                             if !filtered_prices.is_empty() {
                                 let saved_count = self.repository.save(&filtered_prices).await?;
                                 total_processed += saved_count;
-                                info!("Processed {} prices so far...", total_processed);
+                                info!("Total prices processed {}", total_processed);
                             }
                         }
                     }
@@ -138,27 +140,27 @@ impl PriceService {
         );
         loop {
             let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
-            debug!("Obtained {} prices from Price table.", prices.len());
             if prices.is_empty() {
                 warn!("No prices to archive");
                 break;
             }
             attempts += 1;
+            // Get current UTC time and convert to EST
+            let utc_now = chrono::Utc::now();
+            let est_now = utc_now.with_timezone(&New_York);
 
-            let saved_card_ids = self.repository.save_to_history(&prices).await?;
-            debug!(
-                "Total saved in Price History table: {}",
-                saved_card_ids.len()
-            );
-            if saved_card_ids.len() != prices.len() {
-                warn!(
-                    "Expected {} prices to be archived, but {} were archived in batch.",
-                    prices.len(),
-                    saved_card_ids.len()
-                );
-            }
+            // Determine "today" based on EST hour
+            let today: NaiveDate = if est_now.hour() >= 10 {
+                est_now.date_naive()
+            } else {
+                est_now.date_naive() - Duration::days(1)
+            };
+
+            // Filter prices older than "today"
+            let old_prices: Vec<Price> = prices.into_iter().filter(|p| p.date < today).collect();
+
+            let saved_card_ids = self.repository.save_to_history(&old_prices).await?;
             let total_deleted = self.repository.delete_by_card_ids(&saved_card_ids).await?;
-            debug!("Total deleted from `price` table: {}", total_deleted);
             if total_deleted > 0 {
                 attempts = 0;
             }

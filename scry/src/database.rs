@@ -31,14 +31,6 @@ impl ConnectionPool {
         Ok(result.rows_affected())
     }
 
-    pub async fn execute_query_builder_returning_ids(
-        &self,
-        mut builder: QueryBuilder<'_, sqlx::Postgres>,
-    ) -> Result<Vec<i32>> {
-        let query = builder.build_query_scalar::<i32>();
-        query.fetch_all(&*self.pool).await.map_err(Into::into)
-    }
-
     pub async fn count(&self, query: &str) -> Result<i64> {
         let row = sqlx::query(query).fetch_one(&*self.pool).await?;
         let count: i64 = row.get(0);

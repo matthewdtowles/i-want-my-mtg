@@ -145,24 +145,19 @@ impl PriceService {
             }
             attempts += 1;
 
-            // TODO YOU ARE HERE !!! This is what we needed!! When we inject into Price History then the Price ID is different!!
-            // OR we just add a price_id column to the price_history table
-            let price_ids: Vec<i32> = prices.iter().filter_map(|p| p.id).collect();
-
-            // Save to history (does NOT copy id)
-            let saved_ids = self.repository.save_to_history(&prices).await?;
+            let saved_card_ids = self.repository.save_to_history(&prices).await?;
             debug!(
                 "Total saved in Price History table: {}",
-                saved_ids.len()
+                saved_card_ids.len()
             );
-            if saved_ids.len() != prices.len() {
+            if saved_card_ids.len() != prices.len() {
                 warn!(
                     "Expected {} prices to be archived, but {} were archived in batch.",
                     prices.len(),
-                    saved_ids.len()
+                    saved_card_ids.len()
                 );
             }
-            let total_deleted = self.repository.delete_by_ids(&saved_ids).await?;
+            let total_deleted = self.repository.delete_by_card_ids(&saved_card_ids).await?;
             debug!("Total deleted from `price` table: {}", total_deleted);
             if total_deleted > 0 {
                 attempts = 0;

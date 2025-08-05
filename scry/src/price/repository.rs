@@ -3,7 +3,7 @@ use crate::price::models::Price;
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-use tracing::{debug, error};
+use tracing::error;
 
 #[derive(Clone)]
 pub struct PriceRepository {
@@ -16,7 +16,6 @@ impl PriceRepository {
     }
 
     pub async fn fetch_batch(&self, batch_size: i16) -> Result<Vec<Price>> {
-        debug!("Fetch batch of size: {}", batch_size);
         let query = "SELECT id, card_id, foil, normal, date
                      FROM price 
                      ORDER BY id ASC 
@@ -63,7 +62,7 @@ impl PriceRepository {
         }
     }
 
-    pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<i32>> {
+    pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<String>> {
         if prices.is_empty() {
             return Ok(vec![]);
         }
@@ -75,32 +74,27 @@ impl PriceRepository {
                 .push_bind(&price.normal)
                 .push_bind(&price.date);
         });
-        query_builder.push(" ON CONFLICT (card_id, date) DO NOTHING RETURNING id");
-        match self
-            .db
-            .execute_query_builder_returning_ids(query_builder)
-            .await
-        {
-            Ok(saved_ids) => Ok(saved_ids),
+        query_builder.push(" ON CONFLICT (card_id, date) DO NOTHING RETURNING card_id");
+        match self.db.fetch_all_query_builder(query_builder).await { 
+            Ok(rows) => Ok(rows.into_iter().map(|(card_id,)| card_id).collect()),
             Err(e) => {
-                error!("Database error: {:?}", e);
+                error!("Database error saving to price_history: {:?}", e);
                 Err(e.into())
             }
         }
     }
 
-    pub async fn delete_by_ids(&self, price_ids: &[i32]) -> Result<u64> {
-        if price_ids.is_empty() {
+    pub async fn delete_by_card_ids(&self, card_ids: &[String]) -> Result<u64> {
+        if card_ids.is_empty() {
             return Ok(0);
         }
-        let query = "DELETE FROM price WHERE id IN (";
+        let query = "DELETE FROM price WHERE card_id IN (";
         let mut query_builder = QueryBuilder::new(query);
         let mut separated = query_builder.separated(", ");
-        for id in price_ids {
-            separated.push_bind(id);
+        for card_id in card_ids {
+            separated.push_bind(card_id);
         }
         separated.push_unseparated(")");
-        debug!("Query: {}", query_builder.sql());
         self.db.execute_query_builder(query_builder).await
     }
 

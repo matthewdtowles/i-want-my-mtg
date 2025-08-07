@@ -43,6 +43,7 @@ impl PriceService {
         let mut parser = JsonParser::new(&mut feeder);
         let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
         let mut total_processed = 0u64;
+        let mut total_processed_history = 0u64;
         let mut error_count = 0;
         // At startup, fetch all valid card IDs
         let valid_card_ids: std::collections::HashSet<String> =
@@ -83,11 +84,15 @@ impl PriceService {
                             .collect();
 
                         if !filtered_prices.is_empty() {
-                            let final_count = self.repository.save(&filtered_prices).await?;
+                            let final_count = self.repository.save_prices(&filtered_prices).await?;
                             total_processed += final_count;
+                            let final_count_history =
+                                self.repository.save_price_history(&filtered_prices).await?;
+                            total_processed_history += final_count_history;
                         }
                     }
                     info!("Total prices saved: {}", total_processed);
+                    info!("Total prices saved to history: {}", total_processed_history);
                     return Ok(total_processed);
                 }
                 JsonEvent::Error => {
@@ -118,9 +123,13 @@ impl PriceService {
                                 .collect();
 
                             if !filtered_prices.is_empty() {
-                                let saved_count = self.repository.save(&filtered_prices).await?;
+                                let saved_count =
+                                    self.repository.save_prices(&filtered_prices).await?;
                                 total_processed += saved_count;
                                 info!("Total prices processed {}", total_processed);
+                                let final_count_history =
+                                    self.repository.save_price_history(&filtered_prices).await?;
+                                total_processed_history += final_count_history;
                             }
                         }
                     }
@@ -129,54 +138,80 @@ impl PriceService {
         }
     }
 
-    pub async fn archive(&self) -> Result<u64> {
-        debug!("Starting price archival");
-        let mut archived_count = 0;
-        let mut attempts = 0;
-        let prices_count = self.repository.count_prices().await?;
-        info!(
-            "Total prices in Price table before archival: {}",
-            prices_count
-        );
-        loop {
-            let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
-            if prices.is_empty() {
-                warn!("No prices to archive");
-                break;
-            }
-            attempts += 1;
-            // Get current UTC time and convert to EST
-            let utc_now = chrono::Utc::now();
-            let est_now = utc_now.with_timezone(&New_York);
+    // pub async fn archive(&self) -> Result<u64> {
+    //     debug!("Starting price archival");
+    //     let mut archived_count = 0;
+    //     let mut attempts = 0;
+    //     let prices_count = self.repository.count_prices().await?;
+    //     info!(
+    //         "Total prices in Price table before archival: {}",
+    //         prices_count
+    //     );
+    //     loop {
+    //         let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
+    //         if prices.is_empty() {
+    //             warn!("No prices to archive");
+    //             break;
+    //         }
+    //         let today: NaiveDate = self.expected_latest_available_date()?;
+    //         let old_prices: Vec<Price> = prices.into_iter().filter(|p| p.date < today).collect();
+    //         let saved_card_ids = self.repository.save_to_history(&old_prices).await?;
+    //         let total_deleted = self.repository.delete_by_card_ids(&saved_card_ids).await?;
 
-            // Determine "today" based on EST hour
-            let today: NaiveDate = if est_now.hour() >= 10 {
-                est_now.date_naive()
-            } else {
-                est_now.date_naive() - Duration::days(1)
-            };
-
-            // Filter prices older than "today"
-            let old_prices: Vec<Price> = prices.into_iter().filter(|p| p.date < today).collect();
-
-            let saved_card_ids = self.repository.save_to_history(&old_prices).await?;
-            let total_deleted = self.repository.delete_by_card_ids(&saved_card_ids).await?;
-            if total_deleted > 0 {
-                attempts = 0;
-            }
-            archived_count += total_deleted;
-            if attempts > 3 {
-                warn!("Error archiving prices after 3 attempts.");
-                break;
-            }
-        }
-        info!("Total Prices at Start: {}", prices_count);
-        info!("Total Archived to Price History: {}", archived_count);
-        Ok(archived_count)
-    }
+    //         attempts += 1;
+    //         if total_deleted > 0 {
+    //             attempts = 0;
+    //         }
+    //         archived_count += total_deleted;
+    //         if attempts > 3 {
+    //             warn!("Error archiving prices after 3 attempts.");
+    //             break;
+    //         }
+    //     }
+    //     info!("Total Prices at Start: {}", prices_count);
+    //     info!("Total Archived to Price History: {}", archived_count);
+    //     Ok(archived_count)
+    // }
 
     pub async fn delete_all(&self) -> Result<u64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
+    }
+
+    /// Remove all old prices from db
+    pub async fn clean_up_prices(&self) -> Result<()> {
+        let mut price_dates = self.repository.get_price_dates().await?;
+        if price_dates.is_empty() {
+            warn!("No dates found in price table.");
+            return Ok(());
+        }
+        if let Some(max_date) = price_dates.iter().max() {
+            let max_date = max_date.clone();
+            price_dates.retain(|d| d != &max_date);
+        }
+        if price_dates.is_empty() {
+            info!("No old prices found in price table.");
+            return Ok(());
+        }
+        for d in price_dates {
+            self.repository.delete_by_date(d).await?;
+        }
+        Ok(())
+    }
+
+    pub async fn prices_are_current(&self) -> Result<bool> {
+        let price_dates = self.repository.get_price_dates().await?;
+        let expected_date = self.expected_latest_available_date()?;
+        Ok(price_dates.iter().max().map(|d| *d) == Some(expected_date))
+    }
+
+    // TODO: use this to figure out if latest date ingested
+    pub fn expected_latest_available_date(&self) -> Result<NaiveDate> {
+        let est_now = chrono::Utc::now().with_timezone(&New_York);
+        let est_hour = 10;
+        if est_now.hour() >= est_hour {
+            return Ok(est_now.date_naive());
+        }
+        Ok(est_now.date_naive() - Duration::days(1))
     }
 }

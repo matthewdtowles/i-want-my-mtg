@@ -1,6 +1,7 @@
 use crate::database::ConnectionPool;
 use crate::price::models::Price;
 use anyhow::Result;
+use chrono::NaiveDate;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
 use tracing::error;
@@ -15,16 +16,6 @@ impl PriceRepository {
         Self { db }
     }
 
-    pub async fn fetch_batch(&self, batch_size: i16) -> Result<Vec<Price>> {
-        let query = "SELECT id, card_id, foil, normal, date
-                     FROM price 
-                     ORDER BY id ASC 
-                     LIMIT ";
-        let mut query_builder = QueryBuilder::new(query);
-        query_builder.push_bind(batch_size);
-        self.db.fetch_all_query_builder(query_builder).await
-    }
-
     pub async fn fetch_all_card_ids(&self) -> Result<std::collections::HashSet<String>> {
         let query = "SELECT id FROM card";
         let query_builder = QueryBuilder::new(query);
@@ -32,16 +23,27 @@ impl PriceRepository {
         Ok(rows.into_iter().map(|(id,)| id).collect())
     }
 
-    pub async fn count_prices(&self) -> Result<u64> {
-        Ok(self.db.count("SELECT COUNT(*) FROM price").await? as u64)
+    pub async fn get_price_dates(&self) -> Result<Vec<NaiveDate>> {
+        let query = "SELECT DISTINCT(date) FROM price ORDER BY date DESC";
+        let query_builder = QueryBuilder::new(query);
+        let rows: Vec<(NaiveDate,)> = self.db.fetch_all_query_builder(query_builder).await?;
+        Ok(rows.into_iter().map(|(date,)| date).collect())
     }
 
-    pub async fn save(&self, prices: &[Price]) -> Result<u64> {
+    pub async fn save_prices(&self, prices: &[Price]) -> Result<u64> {
+        self.save(prices, "price").await
+    }
+
+    pub async fn save_price_history(&self, prices: &[Price]) -> Result<u64> {
+        self.save(prices, "price_history").await
+    }
+
+    async fn save(&self, prices: &[Price], table: &str) -> Result<u64> {
         if prices.is_empty() {
             return Ok(0);
         }
-        let mut query_builder =
-            QueryBuilder::new("INSERT INTO price (card_id, foil, normal, date) ");
+        let query = format!("INSERT INTO {} (card_id, foil, normal, date) ", table);
+        let mut query_builder = QueryBuilder::new(query);
         query_builder.push_values(prices, |mut b, price| {
             b.push_bind(&price.card_id)
                 .push_bind(&price.foil)
@@ -62,45 +64,16 @@ impl PriceRepository {
         }
     }
 
-    pub async fn save_to_history(&self, prices: &[Price]) -> Result<Vec<String>> {
-        if prices.is_empty() {
-            return Ok(vec![]);
-        }
-        let mut query_builder =
-            QueryBuilder::new("INSERT INTO price_history (card_id, foil, normal, date) ");
-        query_builder.push_values(prices, |mut b, price| {
-            b.push_bind(&price.card_id)
-                .push_bind(&price.foil)
-                .push_bind(&price.normal)
-                .push_bind(&price.date);
-        });
-        query_builder.push(" ON CONFLICT (card_id, date) DO NOTHING RETURNING card_id");
-        match self.db.fetch_all_query_builder(query_builder).await { 
-            Ok(rows) => Ok(rows.into_iter().map(|(card_id,)| card_id).collect()),
-            Err(e) => {
-                error!("Database error saving to price_history: {:?}", e);
-                Err(e.into())
-            }
-        }
-    }
-
-    pub async fn delete_by_card_ids(&self, card_ids: &[String]) -> Result<u64> {
-        if card_ids.is_empty() {
-            return Ok(0);
-        }
-        let query = "DELETE FROM price WHERE card_id IN (";
-        let mut query_builder = QueryBuilder::new(query);
-        let mut separated = query_builder.separated(", ");
-        for card_id in card_ids {
-            separated.push_bind(card_id);
-        }
-        separated.push_unseparated(")");
-        self.db.execute_query_builder(query_builder).await
-    }
-
     pub async fn delete_all(&self) -> Result<u64> {
         let query = "DELETE FROM price";
         let query_builder = QueryBuilder::new(query);
+        self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn delete_by_date(&self, date: NaiveDate) -> Result<u64> {
+        let query = "DELETE FROM price WHERE date = ";
+        let mut query_builder = QueryBuilder::new(query);
+        query_builder.push_bind(date);
         self.db.execute_query_builder(query_builder).await
     }
 }

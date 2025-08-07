@@ -4,7 +4,7 @@ use crate::{
 };
 use anyhow::Result;
 use dialoguer::Confirm;
-use tracing::info;
+use tracing::{info, warn};
 
 pub struct CliController {
     card_service: CardService,
@@ -71,10 +71,16 @@ impl CliController {
                     }
                 }
                 if do_all || prices {
-                    let archived = self.price_service.archive().await?;
-                    info!("{} prices archived.", archived);
                     let total_ingested = self.price_service.ingest_all_today().await?;
                     info!("{} prices ingested", total_ingested);
+                    self.price_service.clean_up_prices().await?;
+                    // log out dates in price table and price history table
+                    let has_current_prices = self.price_service.prices_are_current().await?;
+                    if has_current_prices {
+                        info!("Price table is up to date.");
+                    } else {
+                        warn!("Prices for today's date not yet ingested");
+                    }
                 }
 
                 Ok(())

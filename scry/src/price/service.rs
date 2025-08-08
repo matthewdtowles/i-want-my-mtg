@@ -138,41 +138,6 @@ impl PriceService {
         }
     }
 
-    // pub async fn archive(&self) -> Result<u64> {
-    //     debug!("Starting price archival");
-    //     let mut archived_count = 0;
-    //     let mut attempts = 0;
-    //     let prices_count = self.repository.count_prices().await?;
-    //     info!(
-    //         "Total prices in Price table before archival: {}",
-    //         prices_count
-    //     );
-    //     loop {
-    //         let prices = self.repository.fetch_batch(BATCH_SIZE as i16).await?;
-    //         if prices.is_empty() {
-    //             warn!("No prices to archive");
-    //             break;
-    //         }
-    //         let today: NaiveDate = self.expected_latest_available_date()?;
-    //         let old_prices: Vec<Price> = prices.into_iter().filter(|p| p.date < today).collect();
-    //         let saved_card_ids = self.repository.save_to_history(&old_prices).await?;
-    //         let total_deleted = self.repository.delete_by_card_ids(&saved_card_ids).await?;
-
-    //         attempts += 1;
-    //         if total_deleted > 0 {
-    //             attempts = 0;
-    //         }
-    //         archived_count += total_deleted;
-    //         if attempts > 3 {
-    //             warn!("Error archiving prices after 3 attempts.");
-    //             break;
-    //         }
-    //     }
-    //     info!("Total Prices at Start: {}", prices_count);
-    //     info!("Total Archived to Price History: {}", archived_count);
-    //     Ok(archived_count)
-    // }
-
     pub async fn delete_all(&self) -> Result<u64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
@@ -180,7 +145,7 @@ impl PriceService {
 
     /// Remove all old prices from db
     pub async fn clean_up_prices(&self) -> Result<()> {
-        let mut price_dates = self.repository.get_price_dates().await?;
+        let mut price_dates = self.repository.fetch_price_dates().await?;
         if price_dates.is_empty() {
             warn!("No dates found in price table.");
             return Ok(());
@@ -200,12 +165,11 @@ impl PriceService {
     }
 
     pub async fn prices_are_current(&self) -> Result<bool> {
-        let price_dates = self.repository.get_price_dates().await?;
+        let price_dates = self.repository.fetch_price_dates().await?;
         let expected_date = self.expected_latest_available_date()?;
         Ok(price_dates.iter().max().map(|d| *d) == Some(expected_date))
     }
 
-    // TODO: use this to figure out if latest date ingested
     pub fn expected_latest_available_date(&self) -> Result<NaiveDate> {
         let est_now = chrono::Utc::now().with_timezone(&New_York);
         let est_hour = 10;

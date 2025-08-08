@@ -74,7 +74,6 @@ impl CliController {
                     let total_ingested = self.price_service.ingest_all_today().await?;
                     info!("{} prices ingested", total_ingested);
                     self.price_service.clean_up_prices().await?;
-                    // log out dates in price table and price history table
                     let has_current_prices = self.price_service.prices_are_current().await?;
                     if has_current_prices {
                         info!("Price table is up to date.");

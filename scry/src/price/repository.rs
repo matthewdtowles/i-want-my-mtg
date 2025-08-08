@@ -23,7 +23,7 @@ impl PriceRepository {
         Ok(rows.into_iter().map(|(id,)| id).collect())
     }
 
-    pub async fn get_price_dates(&self) -> Result<Vec<NaiveDate>> {
+    pub async fn fetch_price_dates(&self) -> Result<Vec<NaiveDate>> {
         let query = "SELECT DISTINCT(date) FROM price ORDER BY date DESC";
         let query_builder = QueryBuilder::new(query);
         let rows: Vec<(NaiveDate,)> = self.db.fetch_all_query_builder(query_builder).await?;
@@ -36,6 +36,19 @@ impl PriceRepository {
 
     pub async fn save_price_history(&self, prices: &[Price]) -> Result<u64> {
         self.save(prices, "price_history").await
+    }
+
+    pub async fn delete_all(&self) -> Result<u64> {
+        let query = "DELETE FROM price";
+        let query_builder = QueryBuilder::new(query);
+        self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn delete_by_date(&self, date: NaiveDate) -> Result<u64> {
+        let query = "DELETE FROM price WHERE date = ";
+        let mut query_builder = QueryBuilder::new(query);
+        query_builder.push_bind(date);
+        self.db.execute_query_builder(query_builder).await
     }
 
     async fn save(&self, prices: &[Price], table: &str) -> Result<u64> {
@@ -62,18 +75,5 @@ impl PriceRepository {
                 Err(e.into())
             }
         }
-    }
-
-    pub async fn delete_all(&self) -> Result<u64> {
-        let query = "DELETE FROM price";
-        let query_builder = QueryBuilder::new(query);
-        self.db.execute_query_builder(query_builder).await
-    }
-
-    pub async fn delete_by_date(&self, date: NaiveDate) -> Result<u64> {
-        let query = "DELETE FROM price WHERE date = ";
-        let mut query_builder = QueryBuilder::new(query);
-        query_builder.push_bind(date);
-        self.db.execute_query_builder(query_builder).await
     }
 }

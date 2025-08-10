@@ -13,11 +13,9 @@ pub struct PriceStreamParser {
     batch: Vec<Price>,
     batch_size: usize,
     current_card_uuid: Option<String>,
-    expecting_currency_for_provider: Option<String>,
     in_data_object: bool,
     json_depth: usize,
     path: Vec<String>,
-    provider_currencies: std::collections::HashMap<String, String>,
 }
 
 impl PriceStreamParser {
@@ -27,11 +25,9 @@ impl PriceStreamParser {
             batch: Vec::with_capacity(batch_size),
             batch_size,
             current_card_uuid: None,
-            expecting_currency_for_provider: None,
             in_data_object: false,
             json_depth: 0,
             path: Vec::new(),
-            provider_currencies: std::collections::HashMap::new(),
         }
     }
 
@@ -123,8 +119,7 @@ impl PriceStreamParser {
             self.path.pop();
             return Ok(processed);
         }
-        // If closing the "data" object (depth 2)
-        if self.in_data_object && self.json_depth == 2 {
+        if self.in_price_object() {
             self.in_data_object = false;
             self.path.pop();
         }
@@ -137,34 +132,23 @@ impl PriceStreamParser {
         // Track "data" object
         if self.json_depth == 1 && field_name == "data" {
             self.in_data_object = true;
-        } else if self.at_price_key() {
+        } else if self.in_price_object() {
             self.current_card_uuid = Some(field_name.clone());
             self.accumulator = Some(PriceAccumulator::new());
-            self.provider_currencies.clear();
-        }
-        // Track currency for provider
-        if self.path.len() == 5 && self.path[2] == "paper" && field_name == "currency" {
-            self.expecting_currency_for_provider = Some(self.path[3].clone());
         }
         self.path.push(field_name);
         Ok(0)
     }
 
     fn handle_value(&mut self, value: String) -> Result<usize> {
-        // Track currency for provider
-        if let Some(provider) = self.expecting_currency_for_provider.take() {
-            self.provider_currencies.insert(provider, value.clone());
-        }
-
         // Only aggregate if we're inside a card UUID object
         if let Some(acc) = self.accumulator.as_mut() {
-            // Path: [data, <card-uuid>, paper, <provider>, retail, normal|foil, <date>]
-            if self.path.len() == 7
+            let at_price_value = self.path.len() == 7
                 && self.path[0] == "data"
                 && self.path[2] == "paper"
                 && self.path[4] == "retail"
-                && (self.path[5] == "normal" || self.path[5] == "foil")
-            {
+                && (self.path[5] == "normal" || self.path[5] == "foil");
+            if at_price_value {
                 let provider = &self.path[3];
                 if ALLOWED_PROVIDERS.contains(&provider.as_str()) {
                     if let Ok(price) = value.parse::<f64>() {
@@ -184,7 +168,7 @@ impl PriceStreamParser {
         Ok(0)
     }
 
-    fn at_price_key(&self) -> bool {
+    fn in_price_object(&self) -> bool {
         self.in_data_object && self.json_depth == 2
     }
 }

@@ -23,7 +23,7 @@ impl SetService {
         let raw_data = self.client.get_json(url_path).await?;
         debug!("Raw data fetched.");
         let sets = SetMapper::map_mtg_json_to_sets(raw_data)?;
-        debug!("Mapping complete. {} sets found.", sets.len());
+        info!("Mapping complete. {} sets found.", sets.len());
         if sets.is_empty() {
             warn!("No sets found");
             return Ok(0);

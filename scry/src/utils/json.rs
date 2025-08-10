@@ -29,7 +29,8 @@ pub fn extract_int(value: &Value, key: &str) -> Result<i32> {
 pub fn extract_date(value: &Value, key: &str) -> Result<NaiveDate> {
     let date_str = value
         .get(key)
-        .and_then(|v|  v.as_str())
+        .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow::anyhow!("Missing or invalid '{}' field", key))?;
-    NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| anyhow::anyhow!("Invalid date for '{}': {}", key, e))
+    NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
+        .map_err(|e| anyhow::anyhow!("Invalid date for '{}': {}", key, e))
 }

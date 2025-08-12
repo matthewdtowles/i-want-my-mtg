@@ -1,12 +1,8 @@
-use crate::utils::streaming::StreamingJsonParser;
-use actson::{tokio::AsyncBufReaderJsonFeeder, JsonParser};
 use anyhow::Result;
 use bytes::Bytes;
-use futures::{Stream, StreamExt};
+use futures::Stream;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
-use tokio::io::BufReader;
-use tokio_util::io::StreamReader;
 
 #[derive(Clone)]
 pub struct HttpClient {
@@ -35,29 +31,6 @@ impl HttpClient {
             ));
         }
         Ok(response.json::<T>().await?)
-    }
-
-    pub async fn get_json_parser(
-        &self,
-        url_path: &str,
-        buf_size: usize,
-    ) -> Result<
-        JsonParser<
-            AsyncBufReaderJsonFeeder<
-                BufReader<StreamReader<impl Stream<Item = Result<Bytes, reqwest::Error>>, Bytes>>,
-            >,
-        >,
-        anyhow::Error,
-    > {
-        let byte_stream = self.get_bytes_stream(url_path).await?;
-        let stream_reader =
-            StreamReader::new(byte_stream.map(|result| {
-                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-            }));
-        let buf_reader = BufReader::with_capacity(buf_size, stream_reader);
-        let feeder = AsyncBufReaderJsonFeeder::new(buf_reader);
-        let parser = JsonParser::new(feeder);
-        Ok(parser)
     }
 
     pub async fn get_bytes_stream(

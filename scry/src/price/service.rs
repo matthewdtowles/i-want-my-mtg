@@ -45,7 +45,6 @@ impl PriceService {
         let mut total_processed = 0u64;
         let mut total_processed_history = 0u64;
         let mut error_count = 0;
-        // At startup, fetch all valid card IDs
         let valid_card_ids: std::collections::HashSet<String> =
             self.repository.fetch_all_card_ids().await?;
         loop {

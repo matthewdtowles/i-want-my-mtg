@@ -2,11 +2,17 @@ use crate::price::models::Price;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
+use bytes::Bytes;
 use chrono::NaiveDate;
+use futures::StreamExt;
 use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
+use tokio::io::BufReader;
+use tokio_util::io::StreamReader;
+use tracing::{debug, error, warn};
 
 const ALLOWED_PROVIDERS: &[&str] = &["tcgplayer", "cardkingdom", "cardsphere"];
+const BUF_READER_SIZE: usize = 64 * 1024;
 
 pub struct PriceStreamParser {
     accumulator: Option<PriceAccumulator>,
@@ -170,6 +176,89 @@ impl PriceStreamParser {
 
     fn in_price_object(&self) -> bool {
         self.in_data_object && self.json_depth == 2
+    }
+
+    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<(u64, u64)>
+    where
+        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
+    {
+        let stream_reader = StreamReader::new(byte_stream.map(|result| {
+            result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        }));
+        let mut pinned_stream_reader = Box::pin(stream_reader);
+        let mut buf_reader = BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
+        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
+        let mut parser = JsonParser::new(&mut feeder);
+        let mut error_count = 0;
+        let mut prices_added = 0;
+        let mut history_added = 0;
+
+        loop {
+            let mut event = parser.next_event();
+            if event == JsonEvent::NeedMoreInput {
+                let mut fill_attempts = 0;
+                loop {
+                    match parser.feeder.fill_buf().await {
+                        Ok(()) => {
+                            fill_attempts += 1;
+                            if fill_attempts >= 3 {
+                                break;
+                            }
+                            continue;
+                        }
+                        Err(e) => {
+                            if fill_attempts == 0 {
+                                error!("Failed to fill buffer: {}", e);
+                            }
+                            break;
+                        }
+                    }
+                }
+                event = parser.next_event();
+            }
+
+            match event {
+                JsonEvent::Eof => {
+                    debug!("Reached end of all prices JSON file.");
+                    let remaining_prices = self.take_batch();
+                    if !remaining_prices.is_empty() {
+                        debug!("Processing final batch of {} prices", remaining_prices.len());
+                        let (p_added, ph_added) = on_batch(remaining_prices).await?;
+                        prices_added += p_added;
+                        history_added += ph_added;
+                    }
+                    return Ok((prices_added, history_added));
+                }
+                JsonEvent::Error => {
+                    warn!("JSON parser error at depth {}", self.json_depth());
+                    error_count += 1;
+                    if error_count > 10 {
+                        error!("Parser error limit (10) exceeded. Aborting stream.");
+                        return Err(anyhow::anyhow!(
+                            "Streaming parse failed due to parser errors"
+                        ));
+                    }
+                    continue;
+                }
+                JsonEvent::NeedMoreInput => {
+                    debug!("JSON parser needs more input...");
+                    continue;
+                }
+                _ => {
+                    error_count = 0;
+                    let processed_count = self.process_event(event, &parser).await?;
+                    if processed_count > 0 {
+                        let prices = self.take_batch();
+                        if !prices.is_empty() {
+                            let (p_added, ph_added) = on_batch(prices).await?;
+                            prices_added += p_added;
+                            history_added += ph_added;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

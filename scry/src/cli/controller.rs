@@ -71,8 +71,9 @@ impl CliController {
                     }
                 }
                 if do_all || prices {
-                    let total_ingested = self.price_service.ingest_all_today().await?;
-                    info!("{} prices ingested", total_ingested);
+                    let (prices_added, history_added) = self.price_service.ingest_all_today().await?;
+                    info!("{} prices ingested", prices_added);
+                    info!("{} price ingested to price history", history_added);
                     self.price_service.clean_up_prices().await?;
                     let has_current_prices = self.price_service.prices_are_current().await?;
                     if has_current_prices {

@@ -2,19 +2,13 @@ use crate::price::models::Price;
 use crate::price::repository::PriceRepository;
 use crate::price::stream_parser::PriceStreamParser;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
-use actson::tokio::AsyncBufReaderJsonFeeder;
-use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
 use chrono::{Duration, NaiveDate, Timelike};
 use chrono_tz::America::New_York;
-use futures::StreamExt;
 use std::sync::Arc;
-use tokio::io::BufReader;
-use tokio_util::io::StreamReader;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 const BATCH_SIZE: usize = 500;
-const BUF_READER_SIZE: usize = 64 * 1024;
 
 pub struct PriceService {
     client: Arc<HttpClient>,
@@ -29,112 +23,35 @@ impl PriceService {
         }
     }
 
-    pub async fn ingest_all_today(&self) -> Result<u64> {
+    pub async fn ingest_all_today(&self) -> Result<(u64, u64)> {
         let url_path = "AllPricesToday.json";
         debug!("Start ingestion of all prices");
         let byte_stream = self.client.get_bytes_stream(url_path).await?;
         debug!("Received byte stream for: {}", url_path);
-        let stream_reader =
-            StreamReader::new(byte_stream.map(|result| {
-                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-            }));
-        let mut buf_reader = BufReader::with_capacity(BUF_READER_SIZE, stream_reader);
-        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
-        let mut parser = JsonParser::new(&mut feeder);
+        let valid_card_ids = self.repository.fetch_all_card_ids().await?;
         let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
-        let mut total_processed = 0u64;
-        let mut total_processed_history = 0u64;
-        let mut error_count = 0;
-        let valid_card_ids: std::collections::HashSet<String> =
-            self.repository.fetch_all_card_ids().await?;
-        loop {
-            let mut event = parser.next_event();
-            if event == JsonEvent::NeedMoreInput {
-                let mut fill_attempts = 0;
-                loop {
-                    match parser.feeder.fill_buf().await {
-                        Ok(()) => {
-                            fill_attempts += 1;
-                            if fill_attempts >= 3 {
-                                break;
-                            }
-                            continue;
-                        }
-                        Err(e) => {
-                            if fill_attempts == 0 {
-                                error!("Failed to fill buffer: {}", e);
-                            }
-                            break;
-                        }
+        let (total_processed, total_processed_history) = stream_parser
+            .parse_stream(byte_stream, |batch| {
+                let valid_card_ids = &valid_card_ids;
+                let repository = &self.repository;
+                Box::pin(async move {
+                    let filtered_prices: Vec<Price> = batch
+                        .into_iter()
+                        .filter(|p| valid_card_ids.contains(&p.card_id))
+                        .collect();
+                    if !filtered_prices.is_empty() {
+                        let saved_count = repository.save_prices(&filtered_prices).await?;
+                        debug!("Saved batch of {} prices to price table.", saved_count);
+                        let history_count = repository.save_price_history(&filtered_prices).await?;
+                        debug!("Saved batch of {} prices to history table.", history_count);
+                        Ok((saved_count, history_count))
+                    } else {
+                        Ok((0, 0))
                     }
-                }
-                event = parser.next_event();
-            }
-            match event {
-                JsonEvent::Eof => {
-                    debug!("Reached end of all prices JSON file.");
-                    let remaining_prices = stream_parser.take_batch();
-                    if !remaining_prices.is_empty() {
-                        debug!("Saving final batch of {} prices", remaining_prices.len());
-                        // Filter out prices with missing card_id
-                        let filtered_prices: Vec<Price> = remaining_prices
-                            .into_iter()
-                            .filter(|p| valid_card_ids.contains(&p.card_id))
-                            .collect();
-
-                        if !filtered_prices.is_empty() {
-                            let final_count = self.repository.save_prices(&filtered_prices).await?;
-                            total_processed += final_count;
-                            let final_count_history =
-                                self.repository.save_price_history(&filtered_prices).await?;
-                            total_processed_history += final_count_history;
-                        }
-                    }
-                    info!("Total prices saved: {}", total_processed);
-                    info!("Total prices saved to history: {}", total_processed_history);
-                    return Ok(total_processed);
-                }
-                JsonEvent::Error => {
-                    warn!("JSON parser error at depth {}", stream_parser.json_depth(),);
-                    error_count += 1;
-                    if error_count > 10 {
-                        error!("Parser error limit (10) exceeded. Aborting stream.");
-                        return Err(anyhow::anyhow!(
-                            "Streaming parse failed due to parser errors"
-                        ));
-                    }
-                    continue;
-                }
-                JsonEvent::NeedMoreInput => {
-                    debug!("JSON parser needs more input...");
-                    continue;
-                }
-                _ => {
-                    error_count = 0;
-                    let processed_count = stream_parser.process_event(event, &parser).await?;
-                    if processed_count > 0 {
-                        let prices = stream_parser.take_batch();
-                        if !prices.is_empty() {
-                            // Filter out prices with missing card_id
-                            let filtered_prices: Vec<Price> = prices
-                                .into_iter()
-                                .filter(|p| valid_card_ids.contains(&p.card_id))
-                                .collect();
-
-                            if !filtered_prices.is_empty() {
-                                let saved_count =
-                                    self.repository.save_prices(&filtered_prices).await?;
-                                total_processed += saved_count;
-                                info!("Total prices processed {}", total_processed);
-                                let final_count_history =
-                                    self.repository.save_price_history(&filtered_prices).await?;
-                                total_processed_history += final_count_history;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                })
+            })
+            .await?;
+        Ok((total_processed, total_processed_history))
     }
 
     pub async fn delete_all(&self) -> Result<u64> {

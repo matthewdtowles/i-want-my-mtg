@@ -37,10 +37,6 @@ impl PriceStreamParser {
         }
     }
 
-    pub fn json_depth(&self) -> usize {
-        self.json_depth
-    }
-
     pub async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
@@ -83,6 +79,128 @@ impl PriceStreamParser {
         }
     }
 
+    pub async fn parse_stream<'a, S, F>(
+        &mut self,
+        byte_stream: S,
+        mut on_batch: F,
+    ) -> Result<(u64, u64)>
+    where
+        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
+    {
+        let stream_reader =
+            StreamReader::new(byte_stream.map(|result| {
+                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+            }));
+        let mut pinned_stream_reader = Box::pin(stream_reader);
+        let mut buf_reader =
+            BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
+        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
+        let mut parser = JsonParser::new(&mut feeder);
+        let mut error_count = 0;
+        let mut prices_added = 0;
+        let mut history_added = 0;
+        loop {
+            let event = self.get_next_event(&mut parser).await;
+            let (p_added, h_added, should_continue) = self
+                .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
+                .await?;
+            prices_added += p_added;
+            history_added += h_added;
+            if !should_continue {
+                return Ok((prices_added, history_added));
+            }
+        }
+    }
+
+    async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
+        &self,
+        parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+    ) -> JsonEvent {
+        let mut event = parser.next_event();
+        if event == JsonEvent::NeedMoreInput {
+            let mut fill_attempts = 0;
+            loop {
+                match parser.feeder.fill_buf().await {
+                    Ok(()) => {
+                        fill_attempts += 1;
+                        if fill_attempts >= 3 {
+                            break;
+                        }
+                        continue;
+                    }
+                    Err(e) => {
+                        if fill_attempts == 0 {
+                            error!("Failed to fill buffer: {}", e);
+                        }
+                        break;
+                    }
+                }
+            }
+            event = parser.next_event();
+        }
+        event
+    }
+
+    async fn handle_parse_event<'a, R, F>(
+        &mut self,
+        event: JsonEvent,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        on_batch: &mut F,
+        error_count: &mut usize,
+    ) -> Result<(u64, u64, bool)>
+    where
+        R: tokio::io::AsyncRead + Unpin,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
+    {
+        match event {
+            JsonEvent::Eof => {
+                debug!("Reached end of all prices JSON file.");
+                let remaining_prices = self.take_batch();
+                if !remaining_prices.is_empty() {
+                    debug!(
+                        "Processing final batch of {} prices",
+                        remaining_prices.len()
+                    );
+                    let (p_added, h_added) = on_batch(remaining_prices).await?;
+                    Ok((p_added, h_added, false))
+                } else {
+                    Ok((0, 0, false))
+                }
+            }
+            JsonEvent::Error => {
+                warn!("JSON parser error.");
+                *error_count += 1;
+                if *error_count > 10 {
+                    error!("Parser error limit (10) exceeded. Aborting stream.");
+                    return Err(anyhow::anyhow!(
+                        "Streaming parse failed due to parser errors"
+                    ));
+                }
+                Ok((0, 0, true))
+            }
+            JsonEvent::NeedMoreInput => {
+                debug!("JSON parser needs more input...");
+                Ok((0, 0, true))
+            }
+            _ => {
+                *error_count = 0;
+                let processed_count = self.process_event(event, parser).await?;
+                if processed_count > 0 {
+                    let prices = self.take_batch();
+                    if !prices.is_empty() {
+                        let (p_added, h_added) = on_batch(prices).await?;
+                        Ok((p_added, h_added, true))
+                    } else {
+                        Ok((0, 0, true))
+                    }
+                } else {
+                    Ok((0, 0, true))
+                }
+            }
+        }
+    }
+
     pub fn take_batch(&mut self) -> Vec<Price> {
         std::mem::take(&mut self.batch)
     }
@@ -93,7 +211,6 @@ impl PriceStreamParser {
     }
 
     fn handle_end_object(&mut self) -> Result<usize> {
-        // If closing a card UUID object (depth 3), aggregate and push to batch
         if self.in_data_object && self.json_depth == 3 {
             if let (Some(card_uuid), Some(acc)) =
                 (self.current_card_uuid.take(), self.accumulator.take())
@@ -104,7 +221,6 @@ impl PriceStreamParser {
                     .and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
                 let foil = acc.average_foil().map(|v| Decimal::from_f64(v)).flatten();
                 let normal = acc.average_normal().map(|v| Decimal::from_f64(v)).flatten();
-
                 if foil.is_some() || normal.is_some() {
                     let price = Price {
                         id: None,
@@ -135,7 +251,6 @@ impl PriceStreamParser {
     }
 
     fn handle_field_name(&mut self, field_name: String) -> Result<usize> {
-        // Track "data" object
         if self.json_depth == 1 && field_name == "data" {
             self.in_data_object = true;
         } else if self.in_price_object() {
@@ -147,7 +262,6 @@ impl PriceStreamParser {
     }
 
     fn handle_value(&mut self, value: String) -> Result<usize> {
-        // Only aggregate if we're inside a card UUID object
         if let Some(acc) = self.accumulator.as_mut() {
             let at_price_value = self.path.len() == 7
                 && self.path[0] == "data"
@@ -169,96 +283,12 @@ impl PriceStreamParser {
                 }
             }
         }
-        // After value, pop the last path segment
         self.path.pop();
         Ok(0)
     }
 
     fn in_price_object(&self) -> bool {
         self.in_data_object && self.json_depth == 2
-    }
-
-    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<(u64, u64)>
-    where
-        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
-        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
-    {
-        let stream_reader = StreamReader::new(byte_stream.map(|result| {
-            result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-        }));
-        let mut pinned_stream_reader = Box::pin(stream_reader);
-        let mut buf_reader = BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
-        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
-        let mut parser = JsonParser::new(&mut feeder);
-        let mut error_count = 0;
-        let mut prices_added = 0;
-        let mut history_added = 0;
-
-        loop {
-            let mut event = parser.next_event();
-            if event == JsonEvent::NeedMoreInput {
-                let mut fill_attempts = 0;
-                loop {
-                    match parser.feeder.fill_buf().await {
-                        Ok(()) => {
-                            fill_attempts += 1;
-                            if fill_attempts >= 3 {
-                                break;
-                            }
-                            continue;
-                        }
-                        Err(e) => {
-                            if fill_attempts == 0 {
-                                error!("Failed to fill buffer: {}", e);
-                            }
-                            break;
-                        }
-                    }
-                }
-                event = parser.next_event();
-            }
-
-            match event {
-                JsonEvent::Eof => {
-                    debug!("Reached end of all prices JSON file.");
-                    let remaining_prices = self.take_batch();
-                    if !remaining_prices.is_empty() {
-                        debug!("Processing final batch of {} prices", remaining_prices.len());
-                        let (p_added, ph_added) = on_batch(remaining_prices).await?;
-                        prices_added += p_added;
-                        history_added += ph_added;
-                    }
-                    return Ok((prices_added, history_added));
-                }
-                JsonEvent::Error => {
-                    warn!("JSON parser error at depth {}", self.json_depth());
-                    error_count += 1;
-                    if error_count > 10 {
-                        error!("Parser error limit (10) exceeded. Aborting stream.");
-                        return Err(anyhow::anyhow!(
-                            "Streaming parse failed due to parser errors"
-                        ));
-                    }
-                    continue;
-                }
-                JsonEvent::NeedMoreInput => {
-                    debug!("JSON parser needs more input...");
-                    continue;
-                }
-                _ => {
-                    error_count = 0;
-                    let processed_count = self.process_event(event, &parser).await?;
-                    if processed_count > 0 {
-                        let prices = self.take_batch();
-                        if !prices.is_empty() {
-                            let (p_added, ph_added) = on_batch(prices).await?;
-                            prices_added += p_added;
-                            history_added += ph_added;
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

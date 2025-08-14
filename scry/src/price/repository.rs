@@ -12,8 +12,19 @@ pub struct PriceRepository {
 }
 
 impl PriceRepository {
+    const PRICE_TABLE: &str = "price";
+    const PRICE_HISTORY_TABLE: &str = "price_history";
+
     pub fn new(db: Arc<ConnectionPool>) -> Self {
         Self { db }
+    }
+
+    pub async fn price_count(&self) -> Result<u64> {
+        self.count(Self::PRICE_TABLE).await
+    }
+
+    pub async fn price_history_count(&self) -> Result<u64> {
+        self.count(Self::PRICE_HISTORY_TABLE).await
     }
 
     pub async fn fetch_all_card_ids(&self) -> Result<std::collections::HashSet<String>> {
@@ -24,28 +35,28 @@ impl PriceRepository {
     }
 
     pub async fn fetch_price_dates(&self) -> Result<Vec<NaiveDate>> {
-        let query = "SELECT DISTINCT(date) FROM price ORDER BY date DESC";
+        let query = format!("SELECT DISTINCT(date) FROM {} ORDER BY date DESC", Self::PRICE_TABLE);
         let query_builder = QueryBuilder::new(query);
         let rows: Vec<(NaiveDate,)> = self.db.fetch_all_query_builder(query_builder).await?;
         Ok(rows.into_iter().map(|(date,)| date).collect())
     }
 
     pub async fn save_prices(&self, prices: &[Price]) -> Result<u64> {
-        self.save(prices, "price").await
+        self.save(prices, Self::PRICE_TABLE).await
     }
 
     pub async fn save_price_history(&self, prices: &[Price]) -> Result<u64> {
-        self.save(prices, "price_history").await
+        self.save(prices, Self::PRICE_HISTORY_TABLE).await
     }
 
     pub async fn delete_all(&self) -> Result<u64> {
-        let query = "DELETE FROM price";
+        let query = format!("DELETE FROM {}", Self::PRICE_TABLE);
         let query_builder = QueryBuilder::new(query);
         self.db.execute_query_builder(query_builder).await
     }
 
     pub async fn delete_by_date(&self, date: NaiveDate) -> Result<u64> {
-        let query = "DELETE FROM price WHERE date = ";
+        let query = format!("DELETE FROM {} WHERE date = ", Self::PRICE_TABLE);
         let mut query_builder = QueryBuilder::new(query);
         query_builder.push_bind(date);
         self.db.execute_query_builder(query_builder).await
@@ -75,5 +86,11 @@ impl PriceRepository {
                 Err(e.into())
             }
         }
+    }
+
+    async fn count(&self, table: &str) -> Result<u64> {
+        let query = format!("SELECT COUNT(*) FROM {}", table);
+        let count = self.db.count(query.as_str()).await?;
+        Ok(count as u64)
     }
 }

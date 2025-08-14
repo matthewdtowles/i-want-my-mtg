@@ -2,9 +2,14 @@ use crate::card::{mapper::CardMapper, models::Card};
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
-use tracing::{debug, info, warn};
+use bytes::Bytes;
+use futures::StreamExt;
+use tokio::io::BufReader;
+use tokio_util::io::StreamReader;
+use tracing::{debug, error, info, warn};
 
-/// Handles streaming JSON parsing state and card processing
+const BUF_READER_SIZE: usize = 64 * 1024;
+
 pub struct CardStreamParser {
     state: ParsingState,
     batch: Vec<Card>,
@@ -43,6 +48,111 @@ impl CardStreamParser {
         }
     }
 
+    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<u64>
+    where
+        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
+        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<u64>>,
+    {
+        let stream_reader =
+            StreamReader::new(byte_stream.map(|result| {
+                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+            }));
+        let mut pinned_stream_reader = Box::pin(stream_reader);
+        let mut buf_reader =
+            BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
+        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
+        let mut parser = JsonParser::new(&mut feeder);
+        let mut error_count = 0;
+        let mut cards_added = 0;
+        let mut i = 0;
+        loop {
+            let event = self.get_next_event(&mut parser).await;
+            let (added, should_continue) = self
+                .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
+                .await?;
+            cards_added += added;
+            if !should_continue {
+                return Ok(cards_added);
+            }
+        }
+    }
+
+    // TODO: MOVE TO COMMON PLACE FOR BOTH CARD AND PRICE (EXACT SAME FN!!!)
+    async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
+        &self,
+        parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+    ) -> JsonEvent {
+        let mut event = parser.next_event();
+        if event == JsonEvent::NeedMoreInput {
+            let mut fill_attempts = 0;
+            loop {
+                match parser.feeder.fill_buf().await {
+                    Ok(()) => {
+                        fill_attempts += 1;
+                        if fill_attempts >= 3 {
+                            break;
+                        }
+                        continue;
+                    }
+                    Err(e) => {
+                        if fill_attempts == 0 {
+                            error!("Failed to fill buffer: {}", e);
+                        }
+                    }
+                }
+            }
+            event = parser.next_event();
+        }
+        event
+    }
+
+    async fn handle_parse_event<'a, R, F>(
+        &mut self,
+        event: JsonEvent,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        on_batch: &mut F,
+        error_count: &mut usize,
+    ) -> Result<(u64, bool)>
+    where
+        R: tokio::io::AsyncRead + Unpin,
+        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<u64>>,
+    {
+        match event {
+            JsonEvent::Eof => {
+                let remaining_cards = self.take_batch();
+                if !remaining_cards.is_empty() {
+                    debug!("Processing final batch of {} cards", remaining_cards.len());
+                    let final_count = on_batch(remaining_cards).await?;
+                    Ok((final_count, false))
+                } else {
+                    Ok((0, false))
+                }
+            }
+            JsonEvent::Error => {
+                warn!("JSON parser error.");
+                *error_count += 1;
+                if *error_count > 10 {
+                    error!("Parser error limit (10) exceeded. Aborting stream.");
+                    return Err(anyhow::anyhow!("JSON streaming parse failed."));
+                }
+                Ok((0, true))
+            }
+            JsonEvent::NeedMoreInput => Ok((0, true)),
+            _ => {
+                *error_count = 0;
+                let processed_count = self.process_event(event, &parser).await?;
+                if processed_count > 0 {
+                    let cards = self.take_batch();
+                    if !cards.is_empty() {
+                        let added = on_batch(cards).await?;
+                        return Ok((added, true));
+                    }
+                }
+                Ok((0, true))
+            }
+        }
+    }
+
     pub async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
@@ -66,7 +176,7 @@ impl CardStreamParser {
             return Ok(0);
         }
 
-        // Handle depth tracking for all events
+        // Track depth for each event
         match event {
             JsonEvent::StartObject => {
                 self.json_depth += 1;
@@ -119,21 +229,15 @@ impl CardStreamParser {
         std::mem::take(&mut self.batch)
     }
 
-    pub fn json_depth(&mut self) -> usize {
-        self.json_depth
-    }
-
     fn handle_start_object(&mut self) -> Result<usize> {
         // Critical: Reset ALL set state immediately when entering a new set object
         if self.json_depth == 2 {
-            // Force complete reset - clear everything from previous set
             self.current_set_code = None;
             self.expecting_cards_array = false;
 
             // Reset parsing state to ensure clean start
             self.state = ParsingState::InSetObject;
         }
-
         // Handle card objects within the cards array
         if self.in_cards_array && self.json_depth == 5 && !self.in_card_object {
             self.in_card_object = true;
@@ -190,9 +294,7 @@ impl CardStreamParser {
                 let code = self.current_set_code.as_deref().unwrap();
                 info!("Processing cards for set: {}", code);
             }
-        }
-        // Handle arrays within card objects
-        else if self.in_card_object {
+        } else if self.in_card_object {
             let last_char = self.current_card_json.chars().last();
             if !matches!(last_char, Some('{') | Some('[') | Some(':') | Some(',')) {
                 self.current_card_json.push(',');
@@ -203,13 +305,10 @@ impl CardStreamParser {
     }
 
     fn handle_end_array(&mut self) -> Result<usize> {
-        // Exit cards array at depth 4
         if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
             self.state = ParsingState::InSetObject;
-        }
-        // Handle arrays within card objects
-        else if self.in_card_object {
+        } else if self.in_card_object {
             self.current_card_json.push(']');
         }
         Ok(0)

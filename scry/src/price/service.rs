@@ -23,14 +23,22 @@ impl PriceService {
         }
     }
 
-    pub async fn ingest_all_today(&self) -> Result<(u64, u64)> {
+    pub async fn fetch_price_count(&self) -> Result<u64> {
+        self.repository.price_count().await
+    }
+
+    pub async fn fetch_price_history_count(&self) -> Result<u64> {
+        self.repository.price_history_count().await
+    }
+
+    pub async fn ingest_all_today(&self) -> Result<()> {
         let url_path = "AllPricesToday.json";
         debug!("Start ingestion of all prices");
         let byte_stream = self.client.get_bytes_stream(url_path).await?;
         debug!("Received byte stream for: {}", url_path);
         let valid_card_ids = self.repository.fetch_all_card_ids().await?;
         let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
-        let (total_processed, total_processed_history) = stream_parser
+        stream_parser
             .parse_stream(byte_stream, |batch| {
                 let valid_card_ids = &valid_card_ids;
                 let repository = &self.repository;
@@ -44,14 +52,12 @@ impl PriceService {
                         debug!("Saved batch of {} prices to price table.", saved_count);
                         let history_count = repository.save_price_history(&filtered_prices).await?;
                         debug!("Saved batch of {} prices to history table.", history_count);
-                        Ok((saved_count, history_count))
-                    } else {
-                        Ok((0, 0))
                     }
+                    Ok(())
                 })
             })
             .await?;
-        Ok((total_processed, total_processed_history))
+        Ok(())
     }
 
     pub async fn delete_all(&self) -> Result<u64> {

@@ -37,7 +37,37 @@ impl PriceStreamParser {
         }
     }
 
-    pub async fn process_event<R: tokio::io::AsyncRead + Unpin>(
+    pub async fn parse_stream<'a, S, F>(
+        &mut self,
+        byte_stream: S,
+        mut on_batch: F,
+    ) -> Result<()>
+    where
+        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<()>>,
+    {
+        let stream_reader =
+            StreamReader::new(byte_stream.map(|result| {
+                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+            }));
+        let mut pinned_stream_reader = Box::pin(stream_reader);
+        let mut buf_reader =
+            BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
+        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
+        let mut parser = JsonParser::new(&mut feeder);
+        let mut error_count = 0;
+        loop {
+            let event = self.get_next_event(&mut parser).await;
+            let should_continue = self
+                .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
+                .await?;
+            if !should_continue {
+                return Ok(());
+            }
+        }
+    }
+
+    async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
@@ -79,40 +109,6 @@ impl PriceStreamParser {
         }
     }
 
-    pub async fn parse_stream<'a, S, F>(
-        &mut self,
-        byte_stream: S,
-        mut on_batch: F,
-    ) -> Result<(u64, u64)>
-    where
-        S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
-        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
-    {
-        let stream_reader =
-            StreamReader::new(byte_stream.map(|result| {
-                result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-            }));
-        let mut pinned_stream_reader = Box::pin(stream_reader);
-        let mut buf_reader =
-            BufReader::with_capacity(BUF_READER_SIZE, pinned_stream_reader.as_mut());
-        let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
-        let mut parser = JsonParser::new(&mut feeder);
-        let mut error_count = 0;
-        let mut prices_added = 0;
-        let mut history_added = 0;
-        loop {
-            let event = self.get_next_event(&mut parser).await;
-            let (p_added, h_added, should_continue) = self
-                .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
-                .await?;
-            prices_added += p_added;
-            history_added += h_added;
-            if !should_continue {
-                return Ok((prices_added, history_added));
-            }
-        }
-    }
-
     async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
         &self,
         parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
@@ -148,10 +144,10 @@ impl PriceStreamParser {
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
         on_batch: &mut F,
         error_count: &mut usize,
-    ) -> Result<(u64, u64, bool)>
+    ) -> Result<bool>
     where
         R: tokio::io::AsyncRead + Unpin,
-        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<(u64, u64)>>,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<()>>,
     {
         match event {
             JsonEvent::Eof => {
@@ -162,11 +158,9 @@ impl PriceStreamParser {
                         "Processing final batch of {} prices",
                         remaining_prices.len()
                     );
-                    let (p_added, h_added) = on_batch(remaining_prices).await?;
-                    Ok((p_added, h_added, false))
-                } else {
-                    Ok((0, 0, false))
+                    on_batch(remaining_prices).await?;
                 }
+                Ok(false)
             }
             JsonEvent::Error => {
                 warn!("JSON parser error.");
@@ -177,11 +171,11 @@ impl PriceStreamParser {
                         "Streaming parse failed due to parser errors"
                     ));
                 }
-                Ok((0, 0, true))
+                Ok(true)
             }
             JsonEvent::NeedMoreInput => {
                 debug!("JSON parser needs more input...");
-                Ok((0, 0, true))
+                Ok(true)
             }
             _ => {
                 *error_count = 0;
@@ -189,14 +183,10 @@ impl PriceStreamParser {
                 if processed_count > 0 {
                     let prices = self.take_batch();
                     if !prices.is_empty() {
-                        let (p_added, h_added) = on_batch(prices).await?;
-                        Ok((p_added, h_added, true))
-                    } else {
-                        Ok((0, 0, true))
+                        on_batch(prices).await?;
                     }
-                } else {
-                    Ok((0, 0, true))
                 }
+                Ok(true)
             }
         }
     }

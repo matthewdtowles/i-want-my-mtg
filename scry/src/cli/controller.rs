@@ -61,8 +61,11 @@ impl CliController {
                     info!("{} sets ingested", total_ingested);
                 }
                 if do_all || cards {
-                    let total_ingested = self.card_service.ingest_all().await?;
-                    info!("{} cards ingested", total_ingested);
+                    let total_cards_before = self.card_service.fetch_count().await?;
+                    self.card_service.ingest_all().await?;
+                    let total_cards_after = self.card_service.fetch_count().await?;
+                    info!("Total cards before {}", total_cards_before);
+                    info!("Total cards after {}", total_cards_after);
                 }
                 if !cards {
                     if let Some(set_code) = &set_cards {
@@ -71,18 +74,25 @@ impl CliController {
                     }
                 }
                 if do_all || prices {
-                    let (prices_added, history_added) = self.price_service.ingest_all_today().await?;
-                    info!("{} prices ingested", prices_added);
-                    info!("{} price ingested to price history", history_added);
+                    let total_prices_before = self.price_service.fetch_price_count().await?;
+                    let total_history_before =
+                        self.price_service.fetch_price_history_count().await?;
+                    self.price_service.ingest_all_today().await?;
                     self.price_service.clean_up_prices().await?;
+                    let total_prices_after = self.price_service.fetch_price_count().await?;
+                    let total_history_after =
+                        self.price_service.fetch_price_history_count().await?;
+                    info!("Total prices before: {}", total_prices_before);
+                    info!("Total prices after: {}", total_prices_after);
+                    info!("Total prices in history before: {}", total_history_before);
+                    info!("Total prices in history after: {}", total_history_after);
                     let has_current_prices = self.price_service.prices_are_current().await?;
                     if has_current_prices {
                         info!("Price table is up to date.");
                     } else {
-                        warn!("Prices for today's date not yet ingested");
+                        warn!("Prices for today's date not yet available.");
                     }
                 }
-
                 Ok(())
             }
 

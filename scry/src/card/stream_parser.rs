@@ -48,10 +48,10 @@ impl CardStreamParser {
         }
     }
 
-    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<u64>
+    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<()>
     where
         S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
-        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<u64>>,
+        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<()>>,
     {
         let stream_reader =
             StreamReader::new(byte_stream.map(|result| {
@@ -63,16 +63,16 @@ impl CardStreamParser {
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
         let mut error_count = 0;
-        let mut cards_added = 0;
-        let mut i = 0;
+        // let mut cards_added = 0;
+        // let mut i = 0;
         loop {
             let event = self.get_next_event(&mut parser).await;
-            let (added, should_continue) = self
+            let should_continue = self
                 .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
                 .await?;
-            cards_added += added;
+            // cards_added += added;
             if !should_continue {
-                return Ok(cards_added);
+                return Ok(());
             }
         }
     }
@@ -112,21 +112,19 @@ impl CardStreamParser {
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
         on_batch: &mut F,
         error_count: &mut usize,
-    ) -> Result<(u64, bool)>
+    ) -> Result<bool>
     where
         R: tokio::io::AsyncRead + Unpin,
-        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<u64>>,
+        F: FnMut(Vec<Card>) -> futures::future::BoxFuture<'a, Result<()>>,
     {
         match event {
             JsonEvent::Eof => {
                 let remaining_cards = self.take_batch();
                 if !remaining_cards.is_empty() {
                     debug!("Processing final batch of {} cards", remaining_cards.len());
-                    let final_count = on_batch(remaining_cards).await?;
-                    Ok((final_count, false))
-                } else {
-                    Ok((0, false))
+                    on_batch(remaining_cards).await?;
                 }
+                Ok(false)
             }
             JsonEvent::Error => {
                 warn!("JSON parser error.");
@@ -135,20 +133,19 @@ impl CardStreamParser {
                     error!("Parser error limit (10) exceeded. Aborting stream.");
                     return Err(anyhow::anyhow!("JSON streaming parse failed."));
                 }
-                Ok((0, true))
+                Ok(true)
             }
-            JsonEvent::NeedMoreInput => Ok((0, true)),
+            JsonEvent::NeedMoreInput => Ok(true),
             _ => {
                 *error_count = 0;
                 let processed_count = self.process_event(event, &parser).await?;
                 if processed_count > 0 {
                     let cards = self.take_batch();
                     if !cards.is_empty() {
-                        let added = on_batch(cards).await?;
-                        return Ok((added, true));
+                        on_batch(cards).await?;
                     }
                 }
-                Ok((0, true))
+                Ok(true)
             }
         }
     }

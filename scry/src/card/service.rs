@@ -26,11 +26,9 @@ impl CardService {
         self.repository.count().await
     }
 
-    /// Ingests all cards for a specific set identified by `set_code`.
     pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
         info!("Starting ingestion for set: {}", set_code);
-        let url_path = format!("{set_code}.json");
-        let raw_data = self.client.get_json(&url_path).await?;
+        let raw_data = self.client.fetch_set_cards(&set_code).await?;
         let cards = CardMapper::map_to_cards(raw_data)?;
         if cards.is_empty() {
             warn!("No cards found for set: {}", set_code);
@@ -41,11 +39,10 @@ impl CardService {
         Ok(count)
     }
 
-    /// Ingests all available cards using a streaming approach.
     pub async fn ingest_all(&self) -> Result<()> {
         let url_path = "AllPrintings.json";
         debug!("Start ingestion of all cards");
-        let byte_stream = self.client.get_bytes_stream(url_path).await?;
+        let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for {}", url_path);
         let mut stream_parser = CardStreamParser::new(Self::BATCH_SIZE);
         stream_parser

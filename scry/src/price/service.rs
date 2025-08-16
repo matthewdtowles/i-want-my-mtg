@@ -32,10 +32,9 @@ impl PriceService {
     }
 
     pub async fn ingest_all_today(&self) -> Result<()> {
-        let url_path = "AllPricesToday.json";
         debug!("Start ingestion of all prices");
-        let byte_stream = self.client.get_bytes_stream(url_path).await?;
-        debug!("Received byte stream for: {}", url_path);
+        let byte_stream = self.client.all_today_prices_stream().await?;
+        debug!("Received byte stream for today's prices.");
         let valid_card_ids = self.repository.fetch_all_card_ids().await?;
         let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
         stream_parser

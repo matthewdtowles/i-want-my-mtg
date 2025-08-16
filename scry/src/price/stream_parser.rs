@@ -37,11 +37,7 @@ impl PriceStreamParser {
         }
     }
 
-    pub async fn parse_stream<'a, S, F>(
-        &mut self,
-        byte_stream: S,
-        mut on_batch: F,
-    ) -> Result<()>
+    pub async fn parse_stream<'a, S, F>(&mut self, byte_stream: S, mut on_batch: F) -> Result<()>
     where
         S: futures::Stream<Item = Result<Bytes, reqwest::Error>>,
         F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<()>>,

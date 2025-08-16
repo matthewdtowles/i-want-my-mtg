@@ -63,14 +63,11 @@ impl CardStreamParser {
         let mut feeder = AsyncBufReaderJsonFeeder::new(&mut buf_reader);
         let mut parser = JsonParser::new(&mut feeder);
         let mut error_count = 0;
-        // let mut cards_added = 0;
-        // let mut i = 0;
         loop {
             let event = self.get_next_event(&mut parser).await;
             let should_continue = self
                 .handle_parse_event(event, &parser, &mut on_batch, &mut error_count)
                 .await?;
-            // cards_added += added;
             if !should_continue {
                 return Ok(());
             }

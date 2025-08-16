@@ -18,12 +18,11 @@ impl SetService {
     }
 
     pub async fn ingest_all(&self) -> Result<u64> {
-        let url_path = "SetList.json";
         debug!("Starting MTG set ingestion");
-        let raw_data = self.client.get_json(url_path).await?;
+        let raw_data = self.client.fetch_all_sets().await?;
         debug!("Raw data fetched.");
         let sets = SetMapper::map_mtg_json_to_sets(raw_data)?;
-        info!("Mapping complete. {} sets found.", sets.len());
+        debug!("{} sets found.", sets.len());
         if sets.is_empty() {
             warn!("No sets found");
             return Ok(0);

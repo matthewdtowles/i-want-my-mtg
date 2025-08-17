@@ -17,6 +17,10 @@ impl SetService {
         }
     }
 
+    pub async fn fetch_count(&self) -> Result<u64> {
+        self.repository.count().await
+    }
+
     pub async fn ingest_all(&self) -> Result<u64> {
         debug!("Starting MTG set ingestion");
         let raw_data = self.client.fetch_all_sets().await?;

@@ -14,6 +14,11 @@ impl SetRepository {
         Self { db }
     }
 
+    pub async fn count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM set").await?;
+        Ok(count as u64)
+    }
+
     pub async fn save_sets(&self, sets: &[Set]) -> Result<u64> {
         if sets.is_empty() {
             warn!("0 sets given, 0 sets saved.");

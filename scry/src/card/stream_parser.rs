@@ -11,7 +11,6 @@ use tracing::{debug, error, info, warn};
 const BUF_READER_SIZE: usize = 64 * 1024;
 
 pub struct CardStreamParser {
-    state: ParsingState,
     batch: Vec<Card>,
     batch_size: usize,
     card_object_depth: usize,
@@ -20,22 +19,15 @@ pub struct CardStreamParser {
     expecting_cards_array: bool,
     in_card_object: bool,
     in_cards_array: bool,
+    in_set_object: bool,
+    is_skipping_value: bool,
     json_depth: usize,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum ParsingState {
-    Root,
-    InCardObject,
-    InCardsArray,
-    InSetObject,
-    SkippingValue(usize),
+    skip_depth: usize,
 }
 
 impl CardStreamParser {
     pub fn new(batch_size: usize) -> Self {
         Self {
-            state: ParsingState::Root,
             batch: Vec::with_capacity(batch_size),
             batch_size,
             card_object_depth: 0,
@@ -44,7 +36,10 @@ impl CardStreamParser {
             expecting_cards_array: false,
             in_card_object: false,
             in_cards_array: false,
+            in_set_object: false,
+            is_skipping_value: false,
             json_depth: 0,
+            skip_depth: 0,
         }
     }
 
@@ -152,25 +147,21 @@ impl CardStreamParser {
         event: JsonEvent,
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
     ) -> Result<usize> {
-        // SkippingValue state: track nesting to know when to exit
-        if let ParsingState::SkippingValue(skip_depth) = self.state {
+        if self.is_skipping_value {
             match event {
                 JsonEvent::StartObject | JsonEvent::StartArray => {
                     self.json_depth += 1;
                 }
                 JsonEvent::EndObject | JsonEvent::EndArray => {
                     self.json_depth -= 1;
-                    if self.json_depth <= skip_depth {
-                        self.state = ParsingState::Root;
+                    if self.json_depth <= self.skip_depth {
+                        self.is_skipping_value = false;
                     }
                 }
-                // Other Json Events: do nothing
                 _ => {}
             }
             return Ok(0);
         }
-
-        // Track depth for each event
         match event {
             JsonEvent::StartObject => {
                 self.json_depth += 1;
@@ -228,9 +219,7 @@ impl CardStreamParser {
         if self.json_depth == 2 {
             self.current_set_code = None;
             self.expecting_cards_array = false;
-
-            // Reset parsing state to ensure clean start
-            self.state = ParsingState::InSetObject;
+            self.in_set_object = true;
         }
         // Handle card objects within the cards array
         if self.in_cards_array && self.json_depth == 5 && !self.in_card_object {
@@ -238,7 +227,6 @@ impl CardStreamParser {
             self.card_object_depth = self.json_depth;
             self.current_card_json.clear();
             self.current_card_json.push('{');
-            self.state = ParsingState::InCardObject;
         } else if self.in_card_object {
             // Starting a nested object within a card
             let last_char = self.current_card_json.chars().last();
@@ -256,7 +244,6 @@ impl CardStreamParser {
             // Only process when we're ending the top-level card object
             if self.json_depth == self.card_object_depth {
                 self.in_card_object = false;
-
                 let card_result = self.parse_card_from_json(&self.current_card_json);
                 match card_result {
                     Ok(card) => {
@@ -278,12 +265,9 @@ impl CardStreamParser {
     }
 
     fn handle_start_array(&mut self) -> Result<usize> {
-        // Only detect cards array when we're expecting it
         if self.json_depth == 4 && self.expecting_cards_array {
             self.in_cards_array = true;
-            self.state = ParsingState::InCardsArray;
             self.expecting_cards_array = false;
-
             if self.current_set_code.is_some() {
                 let code = self.current_set_code.as_deref().unwrap();
                 info!("Processing cards for set: {}", code);
@@ -301,7 +285,6 @@ impl CardStreamParser {
     fn handle_end_array(&mut self) -> Result<usize> {
         if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
-            self.state = ParsingState::InSetObject;
         } else if self.in_card_object {
             self.current_card_json.push(']');
         }
@@ -313,7 +296,6 @@ impl CardStreamParser {
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
     ) -> Result<usize> {
         let field_name = parser.current_string().unwrap_or_default();
-
         if self.json_depth == 2 {
             debug!("ENTERING SET: '{}'", field_name);
             // Reset all state for new set
@@ -324,16 +306,13 @@ impl CardStreamParser {
 
         match field_name.as_str() {
             "meta" if self.json_depth == 1 => {
-                self.state = ParsingState::SkippingValue(self.json_depth);
-            }
-            "data" if self.json_depth == 1 => {
-                self.state = ParsingState::Root;
+                self.is_skipping_value = true;
+                self.skip_depth = self.json_depth;
             }
             "cards" if self.json_depth == 3 => {
                 self.expecting_cards_array = true;
             }
             _ if self.in_card_object => {
-                // Build card JSON
                 if !self.current_card_json.ends_with('{') {
                     self.current_card_json.push(',');
                 }
@@ -349,7 +328,8 @@ impl CardStreamParser {
                     && self.json_depth >= 3
                     && self.current_set_code.is_none()
                 {
-                    self.state = ParsingState::SkippingValue(self.json_depth);
+                    self.is_skipping_value = true;
+                    self.skip_depth = self.json_depth;
                 }
             }
         }

@@ -39,21 +39,7 @@ impl PriceService {
         let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
         stream_parser
             .parse_stream(byte_stream, |batch| {
-                let valid_card_ids = &valid_card_ids;
-                let repository = &self.repository;
-                Box::pin(async move {
-                    let filtered_prices: Vec<Price> = batch
-                        .into_iter()
-                        .filter(|p| valid_card_ids.contains(&p.card_id))
-                        .collect();
-                    if !filtered_prices.is_empty() {
-                        let saved_count = repository.save_prices(&filtered_prices).await?;
-                        debug!("Saved batch of {} prices to price table.", saved_count);
-                        let history_count = repository.save_price_history(&filtered_prices).await?;
-                        debug!("Saved batch of {} prices to history table.", history_count);
-                    }
-                    Ok(())
-                })
+                Box::pin(self.save_prices(batch, &valid_card_ids))
             })
             .await?;
         Ok(())
@@ -98,5 +84,23 @@ impl PriceService {
             return Ok(est_now.date_naive());
         }
         Ok(est_now.date_naive() - Duration::days(1))
+    }
+
+    async fn save_prices(
+        &self,
+        prices: Vec<Price>,
+        valid_card_ids: &std::collections::HashSet<String>,
+    ) -> Result<()> {
+        let filtered_prices: Vec<Price> = prices
+            .into_iter()
+            .filter(|p| valid_card_ids.contains(&p.card_id))
+            .collect();
+        if !filtered_prices.is_empty() {
+            let saved_count = self.repository.save_prices(&filtered_prices).await?;
+            debug!("Saved batch of {} prices to price table.", saved_count);
+            let history_count = self.repository.save_price_history(&filtered_prices).await?;
+            debug!("Saved batch of {} prices to history table.", history_count);
+        }
+        Ok(())
     }
 }

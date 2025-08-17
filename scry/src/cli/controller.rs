@@ -152,10 +152,14 @@ impl CliController {
 
     async fn update_cards(&self) -> Result<()> {
         let total_cards_before = self.card_service.fetch_count().await?;
+        let total_legalities_before = self.card_service.fetch_legality_count().await?;
         self.card_service.ingest_all().await?;
         let total_cards_after = self.card_service.fetch_count().await?;
+        let total_legalities_after = self.card_service.fetch_legality_count().await?;
         info!("Total cards before {}", total_cards_before);
         info!("Total cards after {}", total_cards_after);
+        info!("Total legalities before {}", total_legalities_before);
+        info!("Total legalities after {}", total_legalities_after);
         Ok(())
     }
 

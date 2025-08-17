@@ -187,7 +187,7 @@ impl PriceStreamParser {
         }
     }
 
-    pub fn take_batch(&mut self) -> Vec<Price> {
+    fn take_batch(&mut self) -> Vec<Price> {
         std::mem::take(&mut self.batch)
     }
 

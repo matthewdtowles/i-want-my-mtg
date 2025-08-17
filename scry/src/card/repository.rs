@@ -19,6 +19,11 @@ impl CardRepository {
         Ok(count as u64)
     }
 
+    pub async fn legality_count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM legality").await?;
+        Ok(count as u64)
+    }
+
     pub async fn save(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");

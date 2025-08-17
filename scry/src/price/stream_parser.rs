@@ -63,6 +63,78 @@ impl PriceStreamParser {
         }
     }
 
+    async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
+        &self,
+        parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+    ) -> JsonEvent {
+        let mut event = parser.next_event();
+        if event == JsonEvent::NeedMoreInput {
+            let mut fill_attempts = 0;
+            loop {
+                match parser.feeder.fill_buf().await {
+                    Ok(()) => {
+                        fill_attempts += 1;
+                        if fill_attempts >= 3 {
+                            break;
+                        }
+                        continue;
+                    }
+                    Err(e) => {
+                        if fill_attempts == 0 {
+                            error!("Failed to fill buffer: {}", e);
+                        }
+                    }
+                }
+            }
+            event = parser.next_event();
+        }
+        event
+    }
+
+    async fn handle_parse_event<'a, R, F>(
+        &mut self,
+        event: JsonEvent,
+        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        on_batch: &mut F,
+        error_count: &mut usize,
+    ) -> Result<bool>
+    where
+        R: tokio::io::AsyncRead + Unpin,
+        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<()>>,
+    {
+        match event {
+            JsonEvent::Eof => {
+                let remaining = self.take_batch();
+                if !remaining.is_empty() {
+                    debug!("Processing final batch of {} length", remaining.len());
+                    on_batch(remaining).await?;
+                }
+                Ok(false)
+            }
+            JsonEvent::Error => {
+                warn!("JSON parser error.");
+                *error_count += 1;
+                if *error_count > 10 {
+                    error!("Parser error limit (10) exceeded. Aborting stream.");
+                    return Err(anyhow::anyhow!("JSON streaming parse failed."));
+                }
+                Ok(true)
+            }
+            JsonEvent::NeedMoreInput => Ok(true),
+            _ => {
+                *error_count = 0;
+                let processed_count = self.process_event(event, parser).await?;
+                if processed_count > 0 {
+                    let batch = self.take_batch();
+                    if !batch.is_empty() {
+                        on_batch(batch).await?;
+                    }
+                }
+                Ok(true)
+            }
+        }
+    }
+
     async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
@@ -104,89 +176,6 @@ impl PriceStreamParser {
             _ => Ok(0),
         }
     }
-
-    async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
-        &self,
-        parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
-    ) -> JsonEvent {
-        let mut event = parser.next_event();
-        if event == JsonEvent::NeedMoreInput {
-            let mut fill_attempts = 0;
-            loop {
-                match parser.feeder.fill_buf().await {
-                    Ok(()) => {
-                        fill_attempts += 1;
-                        if fill_attempts >= 3 {
-                            break;
-                        }
-                        continue;
-                    }
-                    Err(e) => {
-                        if fill_attempts == 0 {
-                            error!("Failed to fill buffer: {}", e);
-                        }
-                        break;
-                    }
-                }
-            }
-            event = parser.next_event();
-        }
-        event
-    }
-
-    async fn handle_parse_event<'a, R, F>(
-        &mut self,
-        event: JsonEvent,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
-        on_batch: &mut F,
-        error_count: &mut usize,
-    ) -> Result<bool>
-    where
-        R: tokio::io::AsyncRead + Unpin,
-        F: FnMut(Vec<Price>) -> futures::future::BoxFuture<'a, Result<()>>,
-    {
-        match event {
-            JsonEvent::Eof => {
-                debug!("Reached end of all prices JSON file.");
-                let remaining_prices = self.take_batch();
-                if !remaining_prices.is_empty() {
-                    debug!(
-                        "Processing final batch of {} prices",
-                        remaining_prices.len()
-                    );
-                    on_batch(remaining_prices).await?;
-                }
-                Ok(false)
-            }
-            JsonEvent::Error => {
-                warn!("JSON parser error.");
-                *error_count += 1;
-                if *error_count > 10 {
-                    error!("Parser error limit (10) exceeded. Aborting stream.");
-                    return Err(anyhow::anyhow!(
-                        "Streaming parse failed due to parser errors"
-                    ));
-                }
-                Ok(true)
-            }
-            JsonEvent::NeedMoreInput => {
-                debug!("JSON parser needs more input...");
-                Ok(true)
-            }
-            _ => {
-                *error_count = 0;
-                let processed_count = self.process_event(event, parser).await?;
-                if processed_count > 0 {
-                    let prices = self.take_batch();
-                    if !prices.is_empty() {
-                        on_batch(prices).await?;
-                    }
-                }
-                Ok(true)
-            }
-        }
-    }
-
     fn take_batch(&mut self) -> Vec<Price> {
         std::mem::take(&mut self.batch)
     }

@@ -69,7 +69,6 @@ impl CardStreamParser {
         }
     }
 
-    // TODO: MOVE TO COMMON PLACE FOR BOTH CARD AND PRICE (EXACT SAME FN!!!)
     async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
         &self,
         parser: &mut JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
@@ -111,10 +110,10 @@ impl CardStreamParser {
     {
         match event {
             JsonEvent::Eof => {
-                let remaining_cards = self.take_batch();
-                if !remaining_cards.is_empty() {
-                    debug!("Processing final batch of {} cards", remaining_cards.len());
-                    on_batch(remaining_cards).await?;
+                let remaining = self.take_batch();
+                if !remaining.is_empty() {
+                    debug!("Processing final batch of {} length", remaining.len());
+                    on_batch(remaining).await?;
                 }
                 Ok(false)
             }
@@ -130,11 +129,11 @@ impl CardStreamParser {
             JsonEvent::NeedMoreInput => Ok(true),
             _ => {
                 *error_count = 0;
-                let processed_count = self.process_event(event, &parser).await?;
+                let processed_count = self.process_event(event, parser).await?;
                 if processed_count > 0 {
-                    let cards = self.take_batch();
-                    if !cards.is_empty() {
-                        on_batch(cards).await?;
+                    let batch = self.take_batch();
+                    if !batch.is_empty() {
+                        on_batch(batch).await?;
                     }
                 }
                 Ok(true)
@@ -142,7 +141,7 @@ impl CardStreamParser {
         }
     }
 
-    pub async fn process_event<R: tokio::io::AsyncRead + Unpin>(
+    async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
@@ -210,7 +209,7 @@ impl CardStreamParser {
         }
     }
 
-    pub fn take_batch(&mut self) -> Vec<Card> {
+    fn take_batch(&mut self) -> Vec<Card> {
         std::mem::take(&mut self.batch)
     }
 

@@ -15,8 +15,6 @@ pub struct JsonStreamParser<T, P>
 where
     P: JsonEventProcessor<T>,
 {
-    // TODO: usage?
-    batch_size: usize,
     event_processor: P,
     _phantom: PhantomData<T>,
 }
@@ -35,9 +33,8 @@ impl<T, P> JsonStreamParser<T, P>
 where
     P: JsonEventProcessor<T>,
 {
-    pub fn new(batch_size: usize, event_processor: P) -> Self {
+    pub fn new(event_processor: P) -> Self {
         Self {
-            batch_size,
             event_processor,
             _phantom: PhantomData,
         }

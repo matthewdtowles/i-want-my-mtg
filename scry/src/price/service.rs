@@ -1,6 +1,7 @@
+use crate::price::event_processor::PriceEventProcessor;
 use crate::price::models::Price;
 use crate::price::repository::PriceRepository;
-use crate::price::stream_parser::PriceStreamParser;
+use crate::utils::JsonStreamParser;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use chrono::{Duration, NaiveDate, Timelike};
@@ -36,8 +37,9 @@ impl PriceService {
         let byte_stream = self.client.all_today_prices_stream().await?;
         debug!("Received byte stream for today's prices.");
         let valid_card_ids = self.repository.fetch_all_card_ids().await?;
-        let mut stream_parser = PriceStreamParser::new(BATCH_SIZE);
-        stream_parser
+        let event_processor = PriceEventProcessor::new(BATCH_SIZE);
+        let mut json_stream_parser = JsonStreamParser::new(event_processor);
+        json_stream_parser
             .parse_stream(byte_stream, |batch| {
                 Box::pin(self.save_prices(batch, &valid_card_ids))
             })

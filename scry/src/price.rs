@@ -1,6 +1,6 @@
 pub mod service;
 mod models;
 mod repository;
-mod stream_parser;
+mod event_processor;
 
 pub use service::PriceService;

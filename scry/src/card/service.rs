@@ -48,7 +48,7 @@ impl CardService {
         let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for all cards");
         let event_processor = CardEventProcessor::new(Self::BATCH_SIZE);
-        let mut json_stream_parser = JsonStreamParser::new(Self::BATCH_SIZE, event_processor);
+        let mut json_stream_parser = JsonStreamParser::new(event_processor);
         json_stream_parser
             .parse_stream(byte_stream, |batch| {
                 Box::pin(async move {

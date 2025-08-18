@@ -34,7 +34,6 @@ async fn main() -> Result<()> {
 
     // Initialize minimal shared dependencies
     let connection_pool = Arc::new(database::ConnectionPool::new(&config).await?);
-    // TODO: make Arc clone of HttpClient for each service?
     let http_client = Arc::new(HttpClient::new());
 
     // Create CLI controller with feature services

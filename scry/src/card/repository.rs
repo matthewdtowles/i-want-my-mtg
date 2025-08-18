@@ -1,4 +1,4 @@
-use crate::{card::Card, database::ConnectionPool};
+use crate::{card::models::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
@@ -12,6 +12,16 @@ pub struct CardRepository {
 impl CardRepository {
     pub fn new(db: Arc<ConnectionPool>) -> Self {
         Self { db }
+    }
+
+    pub async fn count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM card").await?;
+        Ok(count as u64)
+    }
+
+    pub async fn legality_count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM legality").await?;
+        Ok(count as u64)
     }
 
     pub async fn save(&self, cards: &[Card]) -> Result<u64> {
@@ -71,7 +81,6 @@ impl CardRepository {
                 .push_bind(&card.set_code)
                 .push_bind(&card.type_line);
         });
-        // TODO: evaluate if this can be encapsulated for reuse
         query_builder.push(
             " ON CONFLICT (id) DO UPDATE SET
             artist = EXCLUDED.artist,

@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
@@ -5,7 +7,7 @@ use bytes::Bytes;
 use futures::StreamExt;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, warn};
 
 const BUF_READER_SIZE: usize = 64 * 1024;
 
@@ -13,9 +15,10 @@ pub struct JsonStreamParser<T, P>
 where
     P: JsonEventProcessor<T>,
 {
-    batch: Vec<T>,
+    // TODO: usage?
     batch_size: usize,
     event_processor: P,
+    _phantom: PhantomData<T>,
 }
 
 pub trait JsonEventProcessor<T> {
@@ -25,7 +28,6 @@ pub trait JsonEventProcessor<T> {
         parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
     ) -> Result<usize>;
 
-    fn add_to_batch(&mut self, item: T);
     fn take_batch(&mut self) -> Vec<T>;
 }
 
@@ -35,9 +37,9 @@ where
 {
     pub fn new(batch_size: usize, event_processor: P) -> Self {
         Self {
-            batch: Vec::with_capacity(batch_size),
             batch_size,
             event_processor,
+            _phantom: PhantomData,
         }
     }
 

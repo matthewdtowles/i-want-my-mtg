@@ -2,10 +2,9 @@ import { Logger, Module } from "@nestjs/common";
 import { CommandModule } from "nestjs-command";
 import { AppModule } from "src/app.module";
 import { CoreCliModule } from "./core/core.cli.module";
-import { IngestionCliModule } from "./ingestion/ingestion.cli.module";
 
 @Module({
-    imports: [AppModule, CommandModule, CoreCliModule, IngestionCliModule]
+    imports: [AppModule, CommandModule, CoreCliModule,]
 })
 export class CliModule {
     private readonly LOGGER: Logger = new Logger(CliModule.name);

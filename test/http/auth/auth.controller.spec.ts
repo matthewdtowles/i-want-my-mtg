@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Response } from "express";
-import { AuthController } from "src/adapters/http/auth/auth.controller";
-import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
-import { AUTH_TOKEN_NAME } from "src/adapters/http/auth/dto/auth.types";
+import { AuthController } from "src/http/auth/auth.controller";
+import { AuthOrchestrator } from "src/http/auth/auth.orchestrator";
+import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
 import { UserRole } from "src/shared/constants/user.role.enum";
 
 

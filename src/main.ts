@@ -4,17 +4,17 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import * as cookieParser from "cookie-parser";
 import { create } from "express-handlebars";
 import { join } from "path";
-import { HttpExceptionFilter } from "./adapters/http/http.exception.filter";
 import { AppModule } from "./app.module";
+import { HttpExceptionFilter } from "./http/http.exception.filter";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
-    app.useStaticAssets(join(__dirname, ".", "adapters/http/public"));
-    app.setBaseViewsDir(join(__dirname, ".", "adapters/http/views"));
+    app.useStaticAssets(join(__dirname, ".", "http/public"));
+    app.setBaseViewsDir(join(__dirname, ".", "http/views"));
 
     const hbs = create({
-        layoutsDir: join(__dirname, ".", "adapters/http/views", "layouts"),
-        partialsDir: join(__dirname, ".", "adapters/http/views", "partials"),
+        layoutsDir: join(__dirname, ".", "http/views", "layouts"),
+        partialsDir: join(__dirname, ".", "http/views", "partials"),
         defaultLayout: "main",
         extname: ".hbs",
         helpers: {
@@ -27,7 +27,7 @@ async function bootstrap() {
     app.setViewEngine("hbs");
     app.use(cookieParser());
     app.useGlobalFilters(new HttpExceptionFilter());
-        app.useGlobalPipes(
+    app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
             forbidNonWhitelisted: false,

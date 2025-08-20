@@ -1,10 +1,10 @@
 import { BadRequestException, Logger } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { ActionStatus } from "src/adapters/http/action-status.enum";
-import { AuthenticatedRequest } from "src/adapters/http/auth/dto/authenticated.request";
-import { InventoryRequestDto } from "src/adapters/http/inventory/dto/inventory.request.dto";
-import { InventoryViewDto } from "src/adapters/http/inventory/dto/inventory.view.dto";
-import { InventoryOrchestrator } from "src/adapters/http/inventory/inventory.orchestrator";
+import { ActionStatus } from "src/http/action-status.enum";
+import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
+import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
+import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 

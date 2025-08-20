@@ -70,7 +70,7 @@ npm run test:cov
 ### Project Structure
 
 - `src/`: The main source code directory.
-  - `adapters/`: Contains the HTTP and database adapters.
+  - `http/`: Contains the HTTP adapter.
   - `core/`: Contains the core business logic and domain models.
   - `modules/`: Contains the NestJS modules.
 - `test/`: Contains the test files.

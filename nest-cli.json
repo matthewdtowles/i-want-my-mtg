@@ -6,11 +6,11 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include": "adapters/http/views/**/*",
+        "include": "http/views/**/*",
         "outDir": "dist"
       },
       {
-        "include": "adapters/http/public/**/*",
+        "include": "http/public/**/*",
         "outDir": "dist"
       }
     ]

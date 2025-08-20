@@ -1,8 +1,8 @@
 import { HttpStatus, Logger } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AuthOrchestrator } from "src/adapters/http/auth/auth.orchestrator";
-import { AuthResult } from "src/adapters/http/auth/dto/auth.result";
-import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
+import { AuthOrchestrator } from "src/http/auth/auth.orchestrator";
+import { AuthResult } from "src/http/auth/dto/auth.result";
+import { UserResponseDto } from "src/http/user/dto/user.response.dto";
 import { AuthService } from "src/core/auth/auth.service";
 
 

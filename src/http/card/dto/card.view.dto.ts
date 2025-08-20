@@ -1,0 +1,14 @@
+import { BaseViewDto } from "src/http/base.view.dto";
+import { CardResponseDto } from "src/http/card/dto/card.response.dto";
+import { SingleCardResponseDto } from "src/http/card/dto/single-card.response.dto";
+
+export class CardViewDto extends BaseViewDto {
+    readonly card: SingleCardResponseDto;
+    readonly otherPrintings: CardResponseDto[];
+
+    constructor(init: Partial<CardViewDto>) {
+        super(init);
+        this.card = init.card;
+        this.otherPrintings = init.otherPrintings || [];
+    }
+}

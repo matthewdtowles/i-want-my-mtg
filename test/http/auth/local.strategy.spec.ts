@@ -1,6 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { UserResponseDto } from "src/adapters/http/user/dto/user.response.dto";
+import { UserResponseDto } from "src/http/user/dto/user.response.dto";
 import { AuthService } from "src/core/auth/auth.service";
 import { LocalStrategy } from "src/core/auth/local.strategy";
 

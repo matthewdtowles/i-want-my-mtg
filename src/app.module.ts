@@ -2,18 +2,17 @@ import { Logger, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { CommandModule } from "nestjs-command";
 import { join } from "path";
 import { DatabaseModule } from "src/infrastructure/database/database.module";
 import { DataSource } from "typeorm";
-import { AdapterModule } from "./adapters/adapter.module";
 import { CoreModule } from "./core/core.module";
+import { HttpModule } from "./http/http.module";
 
 @Module({
     imports: [
         ConfigModule.forRoot(),
         ServeStaticModule.forRoot({
-            rootPath: join(__dirname, "..", "src", "adapters", "http", "public"),
+            rootPath: join(__dirname, "..", "src", "http", "public"),
             serveRoot: "/public",
         }),
         TypeOrmModule.forRootAsync({
@@ -48,8 +47,7 @@ import { CoreModule } from "./core/core.module";
         }),
         DatabaseModule,
         CoreModule,
-        AdapterModule,
-        CommandModule,
+        HttpModule,
     ],
 })
 export class AppModule {

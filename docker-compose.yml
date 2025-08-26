@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # NestJS Web Application
+  web:
+    build:
+      context: ./nestjs-app
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NODE_ENV=${NODE_ENV}
+    volumes:
+      - ./nestjs-app:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Rust ETL Application
+  etl:
+    build:
+      context: ./rust-etl
+      target: development
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - RUST_LOG=${RUST_LOG}
+    volumes:
+      - ./rust-etl:/app
+      - etl_target:/app/target  # Cache Rust builds
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["etl"]  # Only start when explicitly requested
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database Admin Interface
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  etl_target:

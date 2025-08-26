@@ -4,118 +4,118 @@
 
 "I Want My MTG" is a project for managing and viewing Magic: The Gathering collections. This project uses NestJS, TypeORM, and other modern web technologies.
 
-## Prerequisites
+## Development Workflow
 
-- Node.js (>= 14.x)
-- npm (>= 6.x)
-- PostgresQL (>= 8.x)
+### Initial Setup
 
-## Getting Started
+#### Copy Env File
+`cp .env.example. .env`
+- Add values to new `.env` file
 
-### Install Dependencies
+#### Start Dev Env
+`docker-compose up -d`
 
-```bash
-npm install
+#### View Logs
+`docker-compose logs -f web`
+
+### Development Workflow
+
+#### Start Web App + Database
+`docker-compose up web postgres`
+
+#### Run ETL Process
+`docker-compose run --rm etl`
+
+#### Run Tests
+```
+docker-compose exec web npm test
+docker-compose exec etl cargo test
 ```
 
-### Environment Variables
+#### Check Database
+`docker-compose exec postgres psql -U postgres -d i_want_my_mtg`
 
-Create a `.env` file in the root directory and add the following environment variables:
-
-```env
-# Database configuration
-APP_NAME=i-want-my-mtg
-DB_HOST=<your-value-here>
-DB_PORT=<your-value-here>
-DB_USERNAME=<your-value-here>
-DB_PASSWORD=<your-value-here>
-DB_NAME=<your-value-here>
-
-# JWT configuration
-JWT_SECRET=<your-value-here>
-
-
-### Database Setup
-
-Make sure you have PostgresQL running and create a database named `i_want_my_mtg`. Then, run the following command to synchronize the database schema:
-
-```bash
-npm run typeorm schema:sync
+#### Rebuild (For Dependency Changes)
+```
+docker-compose build web
+docker-compose up -d web
 ```
 
-### Running the Project
+### Database Management
 
-To start the project in development mode, run:
+#### Run Migrations
+`docker-compose exec web npm run migration:run`
 
-```bash
-npm run start:dev
+#### Seed Database
+`docker-compose exec web npm run seed`
+
+#### Database Backup
+`docker-compose exec postgres pg_dump -U postgres i_want_my_mtg > backup.sql`
+
+#### Reset Database
+```
+docker-compose down -v
+docker-compose up -d postgres
 ```
 
-The project will be running at `http://localhost:5432`.
+## Command Cheat Sheet
 
-### Running Tests
+### Development
 
-To run the tests, use the following command:
+#### Start Everything
+`docker-compose up`
 
-```bash
-npm run test
+#### Start Web App
+`docker-compose up web postgres`
+
+#### Run ETL
+`docker-compose run --rm etl`
+
+#### View Logs
+`docker-compose logs -f web`
+
+#### Execute Commands
+```
+docker-compose exec web npm run migration:run
+docker-compose exec postgres psql -U postgres -d i_want_my_mtg
 ```
 
-To run tests with coverage, use:
-
-```bash
-npm run test:cov
+#### Clean Up
+```
+docker-compose down -v
+docker system prune -a
 ```
 
-### Project Structure
+### Production
 
-- `src/`: The main source code directory.
-  - `http/`: Contains the HTTP adapter.
-  - `core/`: Contains the core business logic and domain models.
-  - `modules/`: Contains the NestJS modules.
-- `test/`: Contains the test files.
+#### Deploy (if using script)
+`./deploy.sh`
 
-### Scripts
+#### Check Status
+`docker-compose -f docker-compose.prod.yml ps`
 
-- `npm run start`: Start the project in production mode.
-- `npm run start:dev`: Start the project in development mode.
-- `npm run test`: Run the tests.
-- `npm run test:cov`: Run the tests with coverage.
-- `npm run lint`: Run the linter.
-- `npm run build`: Build the project.
-- See `package.json` for all other scripts
+#### View Logs
+`docker-compose -f docker-compose.prod.yml logs web`
 
+#### Run ETL Manually
+`docker-compose -f docker-compose.prod.yml run --rm etl`
 
-# Future Considerations
-
-## Notes on TypeORM Migrations:
-
-### Dir Struct
-src/migrations/0001_initial.ts (each file can be gen'd by type orm)
-src/ormconfig.ts
-
-### ormconfig.ts example
-```TypeScript
-import {TypeOrmModule} from '@nestjs/typeorm';
-import { User } from './entities/User';
-
-export default {
-  type: 'postgresql',
-  database: ':memory:',
-  entities: [User],
-  migrations: [__dirname + '/migrations/*.ts'],
-  migrationsRun: true, // set to false for manual migration execution
-  synchronize: false, // set to false for migrations to work
-};
-export const TypeOrmConfig = TypeOrmModule.forRoot(ormconfig);
+#### Update Single Service
+```
+docker-compose -f docker-compose.prod.yml pull web
+docker-compose -f docker-compose.prod.yml up -d web
 ```
 
-### Generate new migration file
-`npx typeorm migration:create <migration_name>`
+## Getting Started Checklist 
 
-### Run Migrations
-`npx typeorm migration:run`
-
-#
+- [ ] Clone repository
+- [ ] Copy .env.example to .env
+- [ ] Run docker-compose up
+- [ ] Visit http://localhost:3000 (web app)
+- [ ] Visit http://localhost:8080 (database admin)
+- [ ] Make code changes and see hot reload
+- [ ] Run ETL: docker-compose run --rm etl
+- [ ] Commit changes to trigger CI/CD
+- [ ] Deploy to production server
 
 [iwantmymtg.net](https://iwantmymtg.net)

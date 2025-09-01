@@ -11,12 +11,13 @@ CMD ["npm", "run", "start:dev"]
 
 # Build stage
 FROM base as build
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci
 COPY . .
 RUN npm run build
+RUN npm prune --production
 
 # Production stage
-FROM node:20-alpine3.19 as production
+FROM node:20-alpine as production
 WORKDIR /app
 
 # Update apk packages to ensure latest security patches

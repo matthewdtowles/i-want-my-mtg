@@ -4,7 +4,7 @@ services:
   # NestJS Web Application
   web:
     build:
-      context: ./nestjs-app
+      context: .
       target: development
     ports:
       - "3000:3000"
@@ -12,8 +12,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - NODE_ENV=${NODE_ENV}
     volumes:
-      - ./nestjs-app:/app
+      - .:/app
       - /app/node_modules
+      - /app/scry
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,20 +23,20 @@ services:
   # Rust ETL Application
   etl:
     build:
-      context: ./rust-etl
+      context: ./scry
       target: development
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - RUST_LOG=${RUST_LOG}
+      - SCRY_LOG=${SCRY_LOG}
     volumes:
-      - ./rust-etl:/app
-      - etl_target:/app/target  # Cache Rust builds
+      - ./scry:/app
+      - etl_target:/app/target
     depends_on:
       postgres:
         condition: service_healthy
-    profiles: ["etl"]  # Only start when explicitly requested
+    profiles: ["etl"]
 
-  # PostgreSQL Database
+  # PostgreSQL Database (shared by both)
   postgres:
     image: postgres:15-alpine
     environment:
@@ -46,7 +47,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d/
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -63,5 +64,4 @@ services:
 
 volumes:
   postgres_dev_data:
-  redis_dev_data:
   etl_target:

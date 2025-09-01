@@ -7,10 +7,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
     depends_on:
       - postgres
-      - redis
     networks:
       - app-network
 
@@ -19,7 +17,7 @@ services:
     restart: "no"  # Run once, don't restart
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - RUST_LOG=info
+      - SCRY_LOG=info
     depends_on:
       - postgres
     networks:
@@ -29,22 +27,14 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     networks:
       - app-network
     # Don't expose ports in production
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis_prod_data:/data
-    networks:
-      - app-network
 
   # Reverse proxy
   nginx:
@@ -63,7 +53,6 @@ services:
 
 volumes:
   postgres_prod_data:
-  redis_prod_data:
 
 networks:
   app-network:

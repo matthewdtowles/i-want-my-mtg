@@ -74,7 +74,7 @@ jobs:
       - name: Build and Push ETL App
         uses: docker/build-push-action@v5
         with:
-          context: ./rust-etl
+          context: ./scry
           target: production
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:${{ github.sha }}

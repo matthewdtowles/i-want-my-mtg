@@ -58,6 +58,33 @@ docker-compose down -v
 docker-compose up -d postgres
 ```
 
+## Example Dev Workflow
+### Daily development
+####  Start everything
+`docker-compose up -d`
+#### Watch web app logs
+`docker-compose logs -f web`
+#### Run ETL
+`docker-compose run --rm etl cargo run -- ingest`
+
+### Database operations
+`docker-compose exec postgres psql -U matthewtowles -d i_want_my_mtg`
+
+### Debugging
+#### Restart Web App
+`docker-compose restart web`
+#### Rebuild after package.json Change
+`docker-compose build web`
+#### Nuclear option - fresh start
+`docker-compose down -v`
+
+### Cleanup
+#### Stop Everything
+`docker-compose down`
+
+#### Clean up unused containers/images
+`docker system prune`
+
 ## Command Cheat Sheet
 
 ### Development

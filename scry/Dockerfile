@@ -1,7 +1,7 @@
 # Multi-stage build for Rust
-FROM rust:1.70-alpine as base
+FROM rust:1.88-alpine as base
 WORKDIR /app
-RUN apk add --no-cache musl-dev pkgconfig openssl-dev
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev openssl-libs-static
 
 # Development stage
 FROM base as development

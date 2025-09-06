@@ -23,25 +23,25 @@ impl JsonEventProcessor<Price> for PriceEventProcessor {
     async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
+        parser: &JsonParser<AsyncBufReaderJsonFeeder<R>>, // Do not remove
     ) -> Result<usize> {
         match event {
             JsonEvent::StartObject => self.handle_start_object(),
             JsonEvent::EndObject => self.handle_end_object(),
             JsonEvent::FieldName => {
-                let field_name = parser.current_string().unwrap_or_default();
-                self.handle_field_name(field_name)
+                let field_name = parser.current_str().unwrap_or_default();
+                self.handle_field_name(String::from(field_name))
             }
             JsonEvent::ValueString => {
-                let value = parser.current_string().unwrap_or_default();
-                self.handle_value(value)
+                let value = parser.current_str().unwrap_or_default();
+                self.handle_value(String::from(value))
             }
             JsonEvent::ValueInt => {
-                let value = parser.current_i64().unwrap_or(0).to_string();
+                let value = parser.current_int().unwrap_or(0).to_string();
                 self.handle_value(value)
             }
-            JsonEvent::ValueDouble => {
-                let value = parser.current_f64().unwrap_or(0.0).to_string();
+            JsonEvent::ValueFloat => {
+                let value = parser.current_float().unwrap_or(0.0).to_string();
                 self.handle_value(value)
             }
             JsonEvent::ValueTrue => self.handle_value("true".to_string()),
@@ -55,9 +55,6 @@ impl JsonEventProcessor<Price> for PriceEventProcessor {
                 self.json_depth -= 1;
                 Ok(0)
             }
-            JsonEvent::Error => Err(anyhow::anyhow!(
-                "JSON parser error - streaming parse failed at chunk boundary"
-            )),
             _ => Ok(0),
         }
     }

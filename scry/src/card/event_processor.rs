@@ -25,7 +25,7 @@ impl JsonEventProcessor<Card> for CardEventProcessor {
     async fn process_event<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
         event: JsonEvent,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>, // Do not remove
+        parser: &JsonParser<AsyncBufReaderJsonFeeder<R>>, // Do not remove
     ) -> Result<usize> {
         if self.is_skipping_value {
             match event {
@@ -63,19 +63,19 @@ impl JsonEventProcessor<Card> for CardEventProcessor {
             }
             JsonEvent::FieldName => self.handle_field_name(parser),
             JsonEvent::ValueString => {
-                let value = parser.current_string().unwrap_or_default();
+                let value = parser.current_str().unwrap_or_default();
                 self.handle_string_value(&value)
             }
             JsonEvent::ValueInt => {
                 let value = parser
-                    .current_i64()
-                    .map(|v| v.to_string())
+                    .current_int()
+                    .map(|v: i64| v.to_string())
                     .unwrap_or_else(|_| "0".to_string());
                 self.handle_number_value(&value)
             }
-            JsonEvent::ValueDouble => {
+            JsonEvent::ValueFloat => {
                 let value = parser
-                    .current_f64()
+                    .current_float()
                     .map(|v| v.to_string())
                     .unwrap_or_else(|_| "0.0".to_string());
                 self.handle_number_value(&value)
@@ -83,9 +83,6 @@ impl JsonEventProcessor<Card> for CardEventProcessor {
             JsonEvent::ValueTrue => self.handle_boolean_value(true),
             JsonEvent::ValueFalse => self.handle_boolean_value(false),
             JsonEvent::ValueNull => self.handle_null_value(),
-            JsonEvent::Error => Err(anyhow::anyhow!(
-                "JSON parser error - streaming parse failed at chunk boundary"
-            )),
             _ => Ok(0),
         }
     }
@@ -191,18 +188,18 @@ impl CardEventProcessor {
 
     fn handle_field_name<R: tokio::io::AsyncRead + Unpin>(
         &mut self,
-        parser: &JsonParser<'_, AsyncBufReaderJsonFeeder<'_, R>>,
+        parser: &JsonParser<AsyncBufReaderJsonFeeder<R>>,
     ) -> Result<usize> {
-        let field_name = parser.current_string().unwrap_or_default();
+        let field_name = parser.current_str().unwrap_or_default();
         if self.json_depth == 2 {
             debug!("ENTERING SET: '{}'", field_name);
             // Reset all state for new set
-            self.current_set_code = Some(field_name.clone());
+            self.current_set_code = Some(String::from(field_name));
             self.expecting_cards_array = false;
             return Ok(0);
         }
 
-        match field_name.as_str() {
+        match field_name {
             "meta" if self.json_depth == 1 => {
                 self.is_skipping_value = true;
                 self.skip_depth = self.json_depth;
@@ -222,7 +219,7 @@ impl CardEventProcessor {
             _ => {
                 // Don't skip fields within the current set
                 if !self.in_cards_array
-                    && !["name", "cards"].contains(&field_name.as_str())
+                    && !["name", "cards"].contains(&field_name)
                     && self.json_depth >= 3
                     && self.current_set_code.is_none()
                 {

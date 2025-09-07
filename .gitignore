@@ -49,3 +49,4 @@ Cargo.toml.orig
 /.cargo/
 rustfmt.toml
 .clippy.toml
+**vendor**

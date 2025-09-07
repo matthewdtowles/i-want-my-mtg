@@ -26,10 +26,10 @@ import { HttpModule } from "./http/http.module";
                 password: configService.get<string>("DB_PASSWORD"),
                 database: configService.get<string>("DB_NAME"),
                 autoLoadEntities: true,
-                synchronize: configService.get("NODE_ENV") !== "production",
+                synchronize: false,
                 dropSchema: false,
-                // logging: configService.get("NODE_ENV") !== "production" ? "all" : ["error"],
-                logging: false,
+                migrationsRun: false,
+                logging: configService.get("NODE_ENV") !== "production" ? ["error", "warn"] : ["error"],
                 extra: {
                     connectionLimit: 10,
                     queueLimit: 0,

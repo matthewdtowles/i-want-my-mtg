@@ -1,0 +1,28 @@
+# Exclude Rust ETL from web container
+scry/
+
+# Exclude development files
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env*
+.vscode
+.DS_Store
+coverage/
+.nyc_output
+.tmp
+
+# Exclude Docker files
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Exclude documentation and scripts
+README.md
+*.md
+deploy-script-example.sh
+.notes/
+
+# Exclude build artifacts that will be rebuilt
+dist/

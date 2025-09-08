@@ -11,7 +11,7 @@ export class HomeController {
 
     @UseGuards(UserGuard)
     @Get("/")
-    @Render("setListpage")
+    @Render("setListPage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         return await this.setOrchestrator.findSetList(req, []); // no breadcrumbs needed for home page
     }

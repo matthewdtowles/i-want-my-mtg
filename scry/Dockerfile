@@ -6,8 +6,8 @@ RUN apk add --no-cache musl-dev pkgconfig openssl-dev openssl-libs-static
 # Development stage
 FROM base as development
 COPY Cargo.toml Cargo.lock ./
-RUN mkdir src && echo "fn main() {}" > src/main.rs && cargo build
 COPY src ./src
+RUN cargo build
 CMD ["cargo", "run"]
 
 # Build stage  

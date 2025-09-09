@@ -9,6 +9,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - NODE_ENV=${NODE_ENV}
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - .:/app
       - /app/node_modules
@@ -29,9 +30,6 @@ services:
       - SCRY_LOG=${SCRY_LOG}
     env_file:
       - .env
-    # volumes:
-    #   - ./scry:/app
-    #   - etl_target:/app/target
     depends_on:
       postgres:
         condition: service_healthy

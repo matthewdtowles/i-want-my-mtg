@@ -20,19 +20,19 @@ jobs:
       - name: Start test env
         run: |
           cp .env.example .env
-          docker-compose up -d postgres
+          docker compose up -d postgres
           sleep 10
 
       - name: Run App Unit Tests
         run: |
-          docker-compose run --rm web npm test
+          docker compose run --rm web npm test
 
       - name: Run Scry Unit Tests
         run: |
-          docker-compose run --rm etl cargo test
+          docker compose run --rm etl cargo test
 
       - name: Cleanup
-        run: docker-compose down -v
+        run: docker compose down -v
 
   build:
     needs: test

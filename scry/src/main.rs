@@ -18,10 +18,12 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("* * * Starting Scry * * *");
+
     // Initialize logging
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("SCRY_LOG").unwrap_or_else(|_| "scry=debug".into()),
+            std::env::var("SCRY_LOG").unwrap_or_else(|_| "scry=info".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -30,7 +32,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     let config = Config::from_env()?;
 
-    info!("🔮 Scry - MTG Data Management Tool");
+    info!("Scry - MTG Data Management Tool");
 
     // Initialize minimal shared dependencies
     let connection_pool = Arc::new(database::ConnectionPool::new(&config).await?);
@@ -48,6 +50,8 @@ async fn main() -> Result<()> {
         eprint!("Error: {e}");
         std::process::exit(1);
     }
-    info!("✨ Scry complete.");
+    info!("* * * * * * * * * * * * *");
+    info!("* * * Scry complete * * *");
+    info!("* * * * * * * * * * * * *");
     Ok(())
 }

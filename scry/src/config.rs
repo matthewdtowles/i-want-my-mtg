@@ -16,10 +16,10 @@ impl Config {
     }
 
     fn get_database_url() -> Result<String> {
-        if let Ok(url) = env::var("DB_URL") {
+        if let Ok(url) = env::var("DATABASE_URL") {
             return Ok(url);
         }
-        env::var("DB_URL").or_else(|_| {
+        env::var("DATABASE_URL").or_else(|_| {
             let host = env::var("DB_HOST")?;
             let port = env::var("DB_PORT")?;
             let username = env::var("DB_USERNAME")?;

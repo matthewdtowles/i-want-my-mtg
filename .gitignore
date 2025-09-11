@@ -10,6 +10,11 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.development
+.env.test
+.env.prod
+.env.production
 
 # Ignore TypeScript cache
 *.tsbuildinfo

@@ -35,9 +35,6 @@ logs
 *.seed
 *.pid.lock
 
-# Ignore package-lock.json for npm
-package-lock.json
-
 # Ignore yarn.lock for Yarn
 yarn.lock
 
@@ -49,7 +46,6 @@ yarn.lock
 # Ignore Rust build and tool files
 **/target/
 **/*.rs.bk
-**Cargo.lock
 Cargo.toml.orig
 /.cargo/
 rustfmt.toml

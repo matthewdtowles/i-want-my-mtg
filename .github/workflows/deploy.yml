@@ -66,7 +66,7 @@ jobs:
       - name: Build and Push Web App
         uses: docker/build-push-action@v5
         with:
-          context: ./nestjs-app
+          context: .
           target: production
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}

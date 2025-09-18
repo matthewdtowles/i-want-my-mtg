@@ -91,12 +91,12 @@ jobs:
 
       - name: Deploy to Production LightSail Instance
         env:
-          LIGHTSAIL_SSH_PK: ${{ secrets.LIGHTSAIL_SSH_PK }}
+          SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
           LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         run: |
           # Setup SSH key
-          echo "$LIGHTSAIL_SSH_PK" > private_key
+          echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
           # Copy docker-compose files to server

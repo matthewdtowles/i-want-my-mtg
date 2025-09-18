@@ -41,7 +41,7 @@ yarn.lock
 # Ignore .DS_Store files (Mac)
 .DS_Store
 
-.notes*
+.notes/
 
 # Ignore Rust build and tool files
 **/target/

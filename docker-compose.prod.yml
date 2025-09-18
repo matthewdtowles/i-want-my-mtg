@@ -1,7 +1,7 @@
 services:
   # Web App
   web:
-    image: ghcr.io/${GITHUB_REPOSITORY}/web:${IMAGE_TAG:-latest}
+    image: ghcr.io/matthewdtowles/web:latest
     restart: unless-stopped
     environment:
       - DATABASE_URL=${DATABASE_URL}

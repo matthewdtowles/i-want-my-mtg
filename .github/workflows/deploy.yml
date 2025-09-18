@@ -93,11 +93,30 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
           LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          SCRY_LOG: ${{ secrets.SCRY_LOG }}
         run: |
           # Setup SSH key
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
+
+          # Create .env.prod file
+          cat > .env.prod <<EOF
+          APP_NAME=i-want-my-mtg
+          DATABASE_URL=$DATABASE_URL
+          JWT_SECRET=$JWT_SECRET
+          NODE_ENV=$NODE_ENV
+          POSTGRES_DB=$POSTGRES_DB
+          POSTGRES_USER=$POSTGRES_USER
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+          SCRY_LOG=$SCRY_LOG
+          EOF
 
           # Copy files to server
           scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
@@ -122,5 +141,5 @@ jobs:
             docker image prune -f
           EOF
 
-          # Cleanup local SSH key
-          rm private_key
+          # Cleanup local SSH key and temp files
+          rm private_key .env.prod

@@ -1,5 +1,5 @@
 services:
-  # NestJS Web Application
+  # Web Application
   web:
     build:
       context: .
@@ -19,7 +19,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # Rust ETL Application
+  # Scry - ETL Application
   etl:
     build:
       context: ./scry
@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     profiles: ["etl"]
 
-  # PostgreSQL Database (shared by both)
+  # PostgreSQL Database (shared by web and etl)
   postgres:
     image: postgres:15-alpine
     environment:

@@ -99,9 +99,10 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-          # Copy docker-compose files to server
+          # Copy files to server
           scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
           scp -o StrictHostKeyChecking=no -i private_key .env.prod ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
 
           # Deploy on server
           ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP << 'EOF'

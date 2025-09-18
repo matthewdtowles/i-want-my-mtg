@@ -89,9 +89,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to Production
+      - name: Deploy to Production LightSail Instance
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
+          LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         run: |
-          echo "Put whatever is needed to deploy to production server here"
-          # SSH to server and run deploy commands
-          # or trigger deployment webhook ??
-          # or use AWS deployment actions ??
+          # Setup SSH key
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+
+          # Copy files to server
+          scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key .env.prod ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
+
+          # Deploy on server
+          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP << 'EOF'
+            # Login to GHCR
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Stop existing containers
+            docker compose -f docker-compose.prod.yml down || true
+
+            # Pull latest images
+            docker compose --env-file .env.prod -f docker-compose.prod.yml pull
+
+            # Start services
+            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+
+            # Cleanup old images
+            docker image prune -f
+          EOF
+
+          # Cleanup local SSH key
+          rm private_key

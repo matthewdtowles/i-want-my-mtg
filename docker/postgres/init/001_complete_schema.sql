@@ -14,7 +14,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: card_rarity_enum; Type: TYPE; Schema: public; Owner: matthewtowles
+-- Name: card_rarity_enum; Type: TYPE; Schema: public
 --
 
 CREATE TYPE public.card_rarity_enum AS ENUM (
@@ -27,10 +27,9 @@ CREATE TYPE public.card_rarity_enum AS ENUM (
 );
 
 
-ALTER TYPE public.card_rarity_enum OWNER TO matthewtowles;
 
 --
--- Name: format_enum; Type: TYPE; Schema: public; Owner: matthewtowles
+-- Name: format_enum; Type: TYPE; Schema: public
 --
 
 CREATE TYPE public.format_enum AS ENUM (
@@ -48,10 +47,9 @@ CREATE TYPE public.format_enum AS ENUM (
 );
 
 
-ALTER TYPE public.format_enum OWNER TO matthewtowles;
 
 --
--- Name: legality_status_enum; Type: TYPE; Schema: public; Owner: matthewtowles
+-- Name: legality_status_enum; Type: TYPE; Schema: public
 --
 
 CREATE TYPE public.legality_status_enum AS ENUM (
@@ -61,10 +59,9 @@ CREATE TYPE public.legality_status_enum AS ENUM (
 );
 
 
-ALTER TYPE public.legality_status_enum OWNER TO matthewtowles;
 
 --
--- Name: status_enum; Type: TYPE; Schema: public; Owner: matthewtowles
+-- Name: status_enum; Type: TYPE; Schema: public
 --
 
 CREATE TYPE public.status_enum AS ENUM (
@@ -74,10 +71,9 @@ CREATE TYPE public.status_enum AS ENUM (
 );
 
 
-ALTER TYPE public.status_enum OWNER TO matthewtowles;
 
 --
--- Name: user_role_enum; Type: TYPE; Schema: public; Owner: matthewtowles
+-- Name: user_role_enum; Type: TYPE; Schema: public
 --
 
 CREATE TYPE public.user_role_enum AS ENUM (
@@ -86,14 +82,13 @@ CREATE TYPE public.user_role_enum AS ENUM (
 );
 
 
-ALTER TYPE public.user_role_enum OWNER TO matthewtowles;
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: card; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: card; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.card (
@@ -114,10 +109,9 @@ CREATE TABLE public.card (
 );
 
 
-ALTER TABLE public.card OWNER TO matthewtowles;
 
 --
--- Name: card_order_seq; Type: SEQUENCE; Schema: public; Owner: matthewtowles
+-- Name: card_order_seq; Type: SEQUENCE; Schema: public
 --
 
 CREATE SEQUENCE public.card_order_seq
@@ -129,17 +123,16 @@ CREATE SEQUENCE public.card_order_seq
     CACHE 1;
 
 
-ALTER TABLE public.card_order_seq OWNER TO matthewtowles;
 
 --
--- Name: card_order_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: matthewtowles
+-- Name: card_order_seq; Type: SEQUENCE OWNED BY; Schema: public
 --
 
 ALTER SEQUENCE public.card_order_seq OWNED BY public.card."order";
 
 
 --
--- Name: inventory; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: inventory; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.inventory (
@@ -150,10 +143,9 @@ CREATE TABLE public.inventory (
 );
 
 
-ALTER TABLE public.inventory OWNER TO matthewtowles;
 
 --
--- Name: legality; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: legality; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.legality (
@@ -163,10 +155,9 @@ CREATE TABLE public.legality (
 );
 
 
-ALTER TABLE public.legality OWNER TO matthewtowles;
 
 --
--- Name: price; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: price; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.price (
@@ -178,10 +169,9 @@ CREATE TABLE public.price (
 );
 
 
-ALTER TABLE public.price OWNER TO matthewtowles;
 
 --
--- Name: price_history; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: price_history; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.price_history (
@@ -193,10 +183,9 @@ CREATE TABLE public.price_history (
 );
 
 
-ALTER TABLE public.price_history OWNER TO matthewtowles;
 
 --
--- Name: price_history_id_seq; Type: SEQUENCE; Schema: public; Owner: matthewtowles
+-- Name: price_history_id_seq; Type: SEQUENCE; Schema: public
 --
 
 ALTER TABLE public.price_history ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -210,7 +199,7 @@ ALTER TABLE public.price_history ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTIT
 
 
 --
--- Name: price_id_seq; Type: SEQUENCE; Schema: public; Owner: matthewtowles
+-- Name: price_id_seq; Type: SEQUENCE; Schema: public
 --
 
 CREATE SEQUENCE public.price_id_seq
@@ -222,17 +211,16 @@ CREATE SEQUENCE public.price_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.price_id_seq OWNER TO matthewtowles;
 
 --
--- Name: price_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: matthewtowles
+-- Name: price_id_seq; Type: SEQUENCE OWNED BY; Schema: public
 --
 
 ALTER SEQUENCE public.price_id_seq OWNED BY public.price.id;
 
 
 --
--- Name: set; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: set; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.set (
@@ -247,10 +235,9 @@ CREATE TABLE public.set (
 );
 
 
-ALTER TABLE public.set OWNER TO matthewtowles;
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: matthewtowles
+-- Name: users; Type: TABLE; Schema: public
 --
 
 CREATE TABLE public.users (
@@ -262,10 +249,9 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO matthewtowles;
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: matthewtowles
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -277,38 +263,37 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO matthewtowles;
 
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: matthewtowles
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: card order; Type: DEFAULT; Schema: public; Owner: matthewtowles
+-- Name: card order; Type: DEFAULT; Schema: public
 --
 
 ALTER TABLE ONLY public.card ALTER COLUMN "order" SET DEFAULT nextval('public.card_order_seq'::regclass);
 
 
 --
--- Name: price id; Type: DEFAULT; Schema: public; Owner: matthewtowles
+-- Name: price id; Type: DEFAULT; Schema: public
 --
 
 ALTER TABLE ONLY public.price ALTER COLUMN id SET DEFAULT nextval('public.price_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: matthewtowles
+-- Name: users id; Type: DEFAULT; Schema: public
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: legality PK_5d47fb12ee9f5adc5bb8e36a842; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: legality PK_5d47fb12ee9f5adc5bb8e36a842; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.legality
@@ -316,7 +301,7 @@ ALTER TABLE ONLY public.legality
 
 
 --
--- Name: inventory PK_83dd749dbfec0574295a68f3e0f; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: inventory PK_83dd749dbfec0574295a68f3e0f; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.inventory
@@ -324,7 +309,7 @@ ALTER TABLE ONLY public.inventory
 
 
 --
--- Name: card PK_9451069b6f1199730791a7f4ae4; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: card PK_9451069b6f1199730791a7f4ae4; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.card
@@ -332,7 +317,7 @@ ALTER TABLE ONLY public.card
 
 
 --
--- Name: users PK_a3ffb1c0c8416b9fc6f907b7433; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: users PK_a3ffb1c0c8416b9fc6f907b7433; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.users
@@ -340,7 +325,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: price PK_d163e55e8cce6908b2e0f27cea4; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price PK_d163e55e8cce6908b2e0f27cea4; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price
@@ -348,7 +333,7 @@ ALTER TABLE ONLY public.price
 
 
 --
--- Name: set PK_e7149fddfa204f00c1113ac5b1b; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: set PK_e7149fddfa204f00c1113ac5b1b; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.set
@@ -356,7 +341,7 @@ ALTER TABLE ONLY public.set
 
 
 --
--- Name: price UQ_182035bb64a5e455b91e9a4d24e; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price UQ_182035bb64a5e455b91e9a4d24e; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price
@@ -364,7 +349,7 @@ ALTER TABLE ONLY public.price
 
 
 --
--- Name: users UQ_97672ac88f789774dd47f7c8be3; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: users UQ_97672ac88f789774dd47f7c8be3; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.users
@@ -372,7 +357,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: price_history price_history_pkey; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price_history price_history_pkey; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price_history
@@ -380,7 +365,7 @@ ALTER TABLE ONLY public.price_history
 
 
 --
--- Name: price_history uq_card_date_history; Type: CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price_history uq_card_date_history; Type: CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price_history
@@ -388,7 +373,7 @@ ALTER TABLE ONLY public.price_history
 
 
 --
--- Name: inventory FK_Inventory_Card; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: inventory FK_Inventory_Card; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.inventory
@@ -396,7 +381,7 @@ ALTER TABLE ONLY public.inventory
 
 
 --
--- Name: inventory FK_Inventory_User; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: inventory FK_Inventory_User; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.inventory
@@ -404,7 +389,7 @@ ALTER TABLE ONLY public.inventory
 
 
 --
--- Name: price FK_b8288d2373b2e06555bfeca6139; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price FK_b8288d2373b2e06555bfeca6139; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price
@@ -412,7 +397,7 @@ ALTER TABLE ONLY public.price
 
 
 --
--- Name: card FK_e53fc463a7a6cc91ddc4f3a6c58; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: card FK_e53fc463a7a6cc91ddc4f3a6c58; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.card
@@ -420,7 +405,7 @@ ALTER TABLE ONLY public.card
 
 
 --
--- Name: legality FK_f224925d2e2d1811a75d09bef70; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: legality FK_f224925d2e2d1811a75d09bef70; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.legality
@@ -428,7 +413,7 @@ ALTER TABLE ONLY public.legality
 
 
 --
--- Name: price_history fk_card_history; Type: FK CONSTRAINT; Schema: public; Owner: matthewtowles
+-- Name: price_history fk_card_history; Type: FK CONSTRAINT; Schema: public
 --
 
 ALTER TABLE ONLY public.price_history

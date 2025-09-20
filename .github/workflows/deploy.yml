@@ -17,6 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # TODO: Do we need to setup a test env at all? We don't have any integration tests that need a DB
       - name: Start test env
         run: |
           cp .env.example .env
@@ -124,22 +125,54 @@ jobs:
           scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
 
           # Deploy on server
-          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<EOF
             # Login to GHCR
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+            # Rename to docker-compose.yml for simplicity
+            mv docker-compose.prod.yml docker-compose.yml
+            mv .env.prod .env
+
             # Stop existing containers
-            docker compose -f docker-compose.prod.yml down || true
+            docker compose down || true
 
             # Pull latest images
-            docker compose --env-file .env.prod -f docker-compose.prod.yml pull
+            docker compose pull
 
-            # Start services
-            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+            # Start PostgreSQL first to ensure it's ready
+            docker compose up -d postgres
+            
+            # Wait for PostgreSQL to be healthy
+            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U postgres; do sleep 2; done'
 
-            # Cleanup old images
+            # Error handling for DB startup
+                        if [ $? -eq 0 ]; then
+              echo "PostgreSQL is ready!"
+            else
+              echo "PostgreSQL failed to start!"
+              docker compose logs postgres
+              exit 1
+            fi
+
+            echo "Starting services..."
+            docker compose up -d
+
+            # Deployment verification
+            sleep 10
+            echo "Checking service status..."
+            docker compose ps
+            docker compose logs web --tail=10
+
+            echo "Testing web service connectivity..."
+            timeout 30 bash -c 'until curl -f http://localhost:3000/health || curl -f http://localhost:3000; do echo "Waiting for web service..."; sleep 2; done' || {
+              echo "Web service failed to respond!"
+              docker compose logs web
+              exit 1
+            }
+
+            echo "Deployment successful!"
             docker image prune -f
           EOF
 
-          # Cleanup local SSH key and temp files
-          rm private_key .env.prod
+          # Cleanup local SSH key
+          rm private_key

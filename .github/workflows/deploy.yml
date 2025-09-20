@@ -17,13 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # TODO: Do we need to setup a test env at all? We don't have any integration tests that need a DB
-      - name: Start test env
-        run: |
-          cp .env.example .env
-          docker compose up -d postgres
-          sleep 10
-
       - name: Run App Unit Tests
         run: |
           docker compose run --rm web npm test

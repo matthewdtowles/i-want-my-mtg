@@ -22,10 +22,6 @@ jobs:
           cp .env.example .env
           docker compose run --rm web npm test
 
-      # - name: Run Scry Unit Tests
-      #   run: |
-      #     docker compose run --rm etl cargo test
-
       - name: Cleanup
         run: docker compose down -v
 
@@ -101,8 +97,8 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-          # Create .env.prod file
-          cat > .env.prod <<EOF
+          # Create .env file
+          cat > .env <<EOF
           APP_NAME=i-want-my-mtg
           DATABASE_URL=$DATABASE_URL
           JWT_SECRET=$JWT_SECRET
@@ -114,8 +110,8 @@ jobs:
           EOF
 
           # Copy files to server
-          scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
-          scp -o StrictHostKeyChecking=no -i private_key .env.prod ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key docker-compose.yml ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key .env ubuntu@$LIGHTSAIL_IP:~/
           scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
 
           # Deploy on server
@@ -125,7 +121,6 @@ jobs:
 
             # Rename to docker-compose.yml for simplicity
             mv docker-compose.prod.yml docker-compose.yml
-            mv .env.prod .env
 
             # Stop existing containers
             docker compose down || true

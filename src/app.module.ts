@@ -18,24 +18,47 @@ import { HttpModule } from "./http/http.module";
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                type: "postgres",
-                host: configService.get<string>("DB_HOST"),
-                port: configService.get<number>("DB_PORT"),
-                username: configService.get<string>("DB_USERNAME"),
-                password: configService.get<string>("DB_PASSWORD"),
-                database: configService.get<string>("DB_NAME"),
-                autoLoadEntities: true,
-                synchronize: false,
-                dropSchema: false,
-                migrationsRun: false,
-                logging: configService.get("NODE_ENV") !== "production" ? ["error", "warn"] : ["error"],
-                extra: {
-                    connectionLimit: 10,
-                    queueLimit: 0,
-                    waitForConnections: true,
-                },
-            }),
+            useFactory: (configService: ConfigService) => {
+                const databaseUrl = configService.get<string>("DATABASE_URL");
+
+                if (databaseUrl) {
+                    // Parse DATABASE_URL for production
+                    return {
+                        type: "postgres",
+                        url: databaseUrl,
+                        autoLoadEntities: true,
+                        synchronize: false,
+                        dropSchema: false,
+                        migrationsRun: false,
+                        logging: configService.get("NODE_ENV") !== "production" ? ["error", "warn"] : ["error"],
+                        extra: {
+                            connectionLimit: 10,
+                            queueLimit: 0,
+                            waitForConnections: true,
+                        },
+                    };
+                } else {
+                    // Use individual variables for development
+                    return {
+                        type: "postgres",
+                        host: configService.get<string>("DB_HOST"),
+                        port: configService.get<number>("DB_PORT"),
+                        username: configService.get<string>("DB_USERNAME"),
+                        password: configService.get<string>("DB_PASSWORD"),
+                        database: configService.get<string>("DB_NAME"),
+                        autoLoadEntities: true,
+                        synchronize: false,
+                        dropSchema: false,
+                        migrationsRun: false,
+                        logging: configService.get("NODE_ENV") !== "production" ? ["error", "warn"] : ["error"],
+                        extra: {
+                            connectionLimit: 10,
+                            queueLimit: 0,
+                            waitForConnections: true,
+                        },
+                    };
+                }
+            },
             dataSourceFactory: async (options) => {
                 try {
                     return await new DataSource(options).initialize();

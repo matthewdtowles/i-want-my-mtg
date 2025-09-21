@@ -80,7 +80,7 @@ scp -o StrictHostKeyChecking=no -i private_key .github/scripts/remote-deploy.sh 
 # Make remote script executable and run deployment
 log_info "Running deployment on remote server..."
 ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP \
-    "GITHUB_TOKEN=\"$GITHUB_TOKEN\" GITHUB_ACTOR=\"$GITHUB_ACTOR\" POSTGRES_USER=\"$POSTGRES_USER\" POSTGRES_DB=\"$POSTGRES_DB\" ./remote-deploy.sh"
+    "chmod +x remote-deploy.sh && GITHUB_TOKEN=\"$GITHUB_TOKEN\" GITHUB_ACTOR=\"$GITHUB_ACTOR\" POSTGRES_USER=\"$POSTGRES_USER\" POSTGRES_DB=\"$POSTGRES_DB\" ./remote-deploy.sh"
 
 # Cleanup
 log_info "Cleaning up..."

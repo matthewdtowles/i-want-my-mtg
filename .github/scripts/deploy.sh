@@ -75,7 +75,7 @@ log_info "Copying files to server..."
 scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
 scp -o StrictHostKeyChecking=no -i private_key .env ubuntu@$LIGHTSAIL_IP:~/
 scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
-scp -o StrictHostKeyChecking=no -i private_key scripts/remote-deploy.sh ubuntu@$LIGHTSAIL_IP:~/
+scp -o StrictHostKeyChecking=no -i private_key .github/scripts/remote-deploy.sh ubuntu@$LIGHTSAIL_IP:~/
 
 # Make remote script executable and run deployment
 log_info "Running deployment on remote server..."

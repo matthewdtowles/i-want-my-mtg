@@ -9,7 +9,7 @@ services:
       - NODE_ENV=${NODE_ENV}
       - JWT_SECRET=${JWT_SECRET}
     env_file:
-      - .env.prod
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,7 +22,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - SCRY_LOG=${SCRY_LOG}
     env_file:
-      - .env.prod
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,7 +37,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     env_file:
-      - .env.prod
+      - .env
     # No ports exposed to the outside world (internal only)
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data

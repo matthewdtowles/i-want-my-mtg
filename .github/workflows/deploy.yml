@@ -37,6 +37,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - name: Build ETL Binary
+        run: |
+          cd scry
+          cargo build --release --target x86_64-unknown-linux-musl
+          strip target/x86_64-unknown-linux-musl/release/scry
+
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
@@ -62,13 +73,13 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
 
-      - name: Build and Push ETL App
-        uses: docker/build-push-action@v5
+      # Remove the ETL Docker build step since we're using binary
+
+      - name: Upload ETL Binary
+        uses: actions/upload-artifact@v4
         with:
-          context: ./scry
-          target: production
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:${{ github.sha }}
+          name: scry-binary
+          path: scry/target/x86_64-unknown-linux-musl/release/scry
 
   deploy:
     needs: build
@@ -80,11 +91,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Download ETL Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: scry-binary
+          path: ./
+
       - name: Deploy to Production LightSail Instance
         env:
           SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
           LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIGHTSAIL_GITHUB_TOKEN: ${{ secrets.LIGHTSAIL_GITHUB_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
@@ -107,19 +125,24 @@ jobs:
           POSTGRES_USER=$POSTGRES_USER
           POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           SCRY_LOG=$SCRY_LOG
+          LIGHTSAIL_GITHUB_TOKEN=$LIGHTSAIL_GITHUB_TOKEN
           EOF
 
+          # Make binary executable
+          chmod +x scry
+
           # Copy files to server
-          scp -o StrictHostKeyChecking=no -i private_key docker-compose.yml ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
           scp -o StrictHostKeyChecking=no -i private_key .env ubuntu@$LIGHTSAIL_IP:~/
+          scp -o StrictHostKeyChecking=no -i private_key scry ubuntu@$LIGHTSAIL_IP:~/
           scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
 
           # Deploy on server
-          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<EOF
+          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<'EOF'
             # Login to GHCR
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # Rename to docker-compose.yml for simplicity
+            # Rename prod compose file to standard name
             mv docker-compose.prod.yml docker-compose.yml
 
             # Stop existing containers
@@ -132,10 +155,10 @@ jobs:
             docker compose up -d postgres
             
             # Wait for PostgreSQL to be healthy
-            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U postgres; do sleep 2; done'
+            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U $POSTGRES_USER; do sleep 2; done'
 
             # Error handling for DB startup
-                        if [ $? -eq 0 ]; then
+            if [ $? -eq 0 ]; then
               echo "PostgreSQL is ready!"
             else
               echo "PostgreSQL failed to start!"
@@ -143,8 +166,11 @@ jobs:
               exit 1
             fi
 
-            echo "Starting services..."
-            docker compose up -d
+            echo "Starting web service..."
+            docker compose up -d web
+
+            # Make ETL binary executable
+            chmod +x ~/scry
 
             # Deployment verification
             sleep 10
@@ -160,6 +186,12 @@ jobs:
             }
 
             echo "Deployment successful!"
+            echo "ETL binary available at: ~/scry"
+            
+            # Test ETL binary
+            echo "Testing ETL binary..."
+            ./scry --version || echo "ETL binary test failed"
+
             docker image prune -f
           EOF
 

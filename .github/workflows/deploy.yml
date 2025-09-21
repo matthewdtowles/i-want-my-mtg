@@ -116,22 +116,25 @@ jobs:
 
           # Deploy on server
           ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<'EOF'
-            # Login to GHCR - use environment variable passed to SSH
+            # Login to GHCR
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Clean up any old compose files that might interfere
+            rm -f docker-compose.yml docker-compose.override.yml
 
             # Rename prod compose file to standard name
             mv docker-compose.prod.yml docker-compose.yml
 
-            # Stop existing containers
-            docker compose down || true
+            # Stop and remove all existing containers and networks
+            docker compose down --remove-orphans || true
 
-            # Pull latest images
-            docker compose pull
+            # Pull only the services defined in production compose file
+            docker compose pull web postgres
 
             # Start PostgreSQL first to ensure it's ready
             docker compose up -d postgres
             
-            # Wait for PostgreSQL to be healthy - this will now work on remote machine
+            # Wait for PostgreSQL to be healthy
             timeout 60 bash -c 'until docker compose exec postgres pg_isready -U $POSTGRES_USER; do sleep 2; done'
 
             # Error handling for DB startup
@@ -143,8 +146,8 @@ jobs:
               exit 1
             fi
 
-            echo "Starting services..."
-            docker compose up -d
+            echo "Starting web service..."
+            docker compose up -d web
 
             # Deployment verification
             sleep 10

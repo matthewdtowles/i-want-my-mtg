@@ -80,7 +80,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to Production LightSail Instance
+      - name: Make deployment script executable
+        run: chmod +x .github/scripts/deploy.sh
+
+      - name: Deploy to Production
         env:
           SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
           LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
@@ -94,85 +97,4 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           SCRY_LOG: ${{ secrets.SCRY_LOG }}
-        run: |
-          # Setup SSH key
-          echo "$SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
-
-          # Create .env file
-          cat > .env <<EOF
-          APP_NAME=i-want-my-mtg
-          DB_HOST=postgres
-          DB_PORT=5432
-          DB_USERNAME=$POSTGRES_USER
-          DB_PASSWORD=$POSTGRES_PASSWORD
-          DB_NAME=$POSTGRES_DB
-          DATABASE_URL=$DATABASE_URL
-          JWT_SECRET=$JWT_SECRET
-          NODE_ENV=$NODE_ENV
-          POSTGRES_DB=$POSTGRES_DB
-          POSTGRES_USER=$POSTGRES_USER
-          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-          SCRY_LOG=$SCRY_LOG
-          LIGHTSAIL_GITHUB_TOKEN=$LIGHTSAIL_GITHUB_TOKEN
-          EOF
-
-          # Copy files to server
-          scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/
-          scp -o StrictHostKeyChecking=no -i private_key .env ubuntu@$LIGHTSAIL_IP:~/
-          scp -o StrictHostKeyChecking=no -i private_key -r docker/ ubuntu@$LIGHTSAIL_IP:~/
-
-          # Deploy on server
-          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<EOF
-            # Login to GHCR using environment variables passed to SSH
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-
-            # Clean up any old compose files that might interfere
-            rm -f docker-compose.yml docker-compose.override.yml
-
-            # Rename prod compose file to standard name
-            mv docker-compose.prod.yml docker-compose.yml
-
-            # Stop and remove all existing containers and networks
-            docker compose down --remove-orphans || true
-
-            # Pull only the services defined in production compose file
-            docker compose pull web postgres
-
-            # Start PostgreSQL first to ensure it's ready
-            docker compose up -d postgres
-            
-            # Wait for PostgreSQL to be healthy
-            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do echo "Waiting for DB..."; sleep 2; done'
-
-            # Error handling for DB startup
-            if [ \$? -eq 0 ]; then
-              echo "PostgreSQL is ready!"
-            else
-              echo "PostgreSQL failed to start!"
-              docker compose logs postgres
-              exit 1
-            fi
-
-            echo "Starting web service..."
-            docker compose up -d web
-
-            # Deployment verification
-            sleep 10
-            echo "Checking service status..."
-            docker compose ps
-            docker compose logs web --tail=10
-
-            echo "Testing web service connectivity..."
-            timeout 30 bash -c 'until curl -f http://localhost; do echo "Waiting for web service..."; sleep 2; done' || {
-              echo "Web service failed to respond!"
-              docker compose logs web
-              exit 1
-            }
-
-            echo "Deployment successful!"
-            docker image prune -f
-          EOF
-
-          # Cleanup local SSH key
-          rm private_key
+        run: ./.github/scripts/deploy.sh

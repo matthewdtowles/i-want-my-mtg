@@ -85,6 +85,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
           LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          LIGHTSAIL_GITHUB_TOKEN: ${{ secrets.LIGHTSAIL_GITHUB_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
@@ -107,6 +109,7 @@ jobs:
           POSTGRES_USER=$POSTGRES_USER
           POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           SCRY_LOG=$SCRY_LOG
+          LIGHTSAIL_GITHUB_TOKEN=$LIGHTSAIL_GITHUB_TOKEN
           EOF
 
           # Copy files to server
@@ -116,8 +119,8 @@ jobs:
 
           # Deploy on server
           ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP <<'EOF'
-            # Login to GHCR
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Login to GHCR using environment variables passed to SSH
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
             # Clean up any old compose files that might interfere
             rm -f docker-compose.yml docker-compose.override.yml
@@ -135,7 +138,7 @@ jobs:
             docker compose up -d postgres
             
             # Wait for PostgreSQL to be healthy
-            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U $POSTGRES_USER; do sleep 2; done'
+            timeout 60 bash -c 'until docker compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do echo "Waiting for DB..."; sleep 2; done'
 
             # Error handling for DB startup
             if [ $? -eq 0 ]; then
@@ -156,7 +159,7 @@ jobs:
             docker compose logs web --tail=10
 
             echo "Testing web service connectivity..."
-            timeout 30 bash -c 'until curl -f http://localhost:3000/health || curl -f http://localhost:3000; do echo "Waiting for web service..."; sleep 2; done' || {
+            timeout 30 bash -c 'until curl -f http://localhost:3000/health || curl -f http://localhost:80; do echo "Waiting for web service..."; sleep 2; done' || {
               echo "Web service failed to respond!"
               docker compose logs web
               exit 1

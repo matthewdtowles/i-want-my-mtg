@@ -22,5 +22,6 @@ FROM base AS production
 COPY package*.json ./
 RUN npm ci --only=production
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/src/http/public ./dist/http/public
 EXPOSE 3000
 CMD ["npm", "run", "start:prod"]

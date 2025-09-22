@@ -43,15 +43,33 @@ export class UserController {
     }
 
     @Post("create")
-    @Render("createUser")
-    async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
-        const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
-        res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 3600000,
-        }).redirect(`/?action=create&status=${HttpStatus.CREATED}&message=User%20created`);
+    async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<Response> {
+        try {
+            const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
+            res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 3600000,
+                path: "/",
+            });
+            return res.status(HttpStatus.CREATED).json({
+                success: true,
+                message: "User created successfully",
+                redirectTo: "/"
+            });
+        } catch (error) {
+            if (error.message.includes('already exists')) {
+                return res.status(HttpStatus.CONFLICT).json({
+                    success: false,
+                    error: 'A user with this email already exists'
+                });
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                error: 'An error occurred while creating your account'
+            });
+        }
     }
 
     @UseGuards(JwtAuthGuard)

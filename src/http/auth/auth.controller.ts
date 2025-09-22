@@ -27,17 +27,20 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post("login")
-    async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+    async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<Response> {
         const result: AuthResult = await this.authOrchestrator.login(req.user);
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, {
                 httpOnly: true,
                 sameSite: "strict",
-                secure: process.env.NODE_ENV === "production",
+                secure: false,
                 maxAge: 3600000, // 1 hour
+                path: "/", // Cookie is valid for the entire site
             });
+            return res.status(200).json({ success: true, redirectTo: result.redirectTo });
+        } else {
+            return res.status(401).json({ success: false, redirectTo: result.error });
         }
-        res.redirect(result.redirectTo);
     }
 
     @Get("logout")

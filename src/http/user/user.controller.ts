@@ -2,9 +2,7 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
-    HttpStatus,
-    Inject, Patch,
+    Get, Inject, Patch,
     Post,
     Render,
     Req,
@@ -12,6 +10,7 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { Response } from "express";
+import { AuthToken } from "src/core/auth/auth.types";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.result";
 import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
@@ -20,7 +19,6 @@ import { BaseViewDto } from "src/http/base.view.dto";
 import { CreateUserViewDto } from "src/http/user/dto/create-user.view.dto";
 import { UpdateUserRequestDto } from "src/http/user/dto/update-user.request.dto";
 import { UserOrchestrator } from "src/http/user/user.orchestrator";
-import { AuthToken } from "src/core/auth/auth.types";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { UserViewDto } from "./dto/user.view.dto";
 
@@ -56,13 +54,13 @@ export class UserController {
             return res.redirect('/user?welcome=true');
         } catch (error) {
             if (error.message.includes('already exists')) {
-                return res.render('createUser', { 
+                return res.render('createUser', {
                     error: 'A user with this email already exists. Please try logging in instead.',
                     email: createUserDto.email,
                     name: createUserDto.name
                 });
             }
-            return res.render('createUser', { 
+            return res.render('createUser', {
                 error: 'An error occurred while creating your account. Please try again.',
                 email: createUserDto.email,
                 name: createUserDto.name

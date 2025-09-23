@@ -30,15 +30,19 @@ export class AuthController {
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         const result: AuthResult = await this.authOrchestrator.login(req.user);
         if (result.success && result.token) {
+            console.log(`Settings cookie ${AUTH_TOKEN_NAME}=${result.token.substring(0, 10)}...`);
             res.cookie(AUTH_TOKEN_NAME, result.token, {
                 httpOnly: true,
                 sameSite: "strict",
                 secure: false,
                 maxAge: 3600000,
                 path: "/",
+                domain: undefined,
             });
+            console.log(`Cookie set. Redirecting to /user`);
             return res.redirect("/user");
         } else {
+            console.log("Login failed. Redirecting to /auth/login");
             return res.redirect("/auth/login?error=Invalid credentials");
         }
     }

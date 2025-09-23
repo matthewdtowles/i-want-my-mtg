@@ -10,7 +10,6 @@ import { HttpExceptionFilter } from "./http/http.exception.filter";
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     
-    // Add prefix for static assets
     app.useStaticAssets(join(__dirname, ".", "http/public"), {
         prefix: '/public/',
     });

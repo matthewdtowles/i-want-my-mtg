@@ -43,7 +43,7 @@ export class UserController {
     }
 
     @Post("create")
-    async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<Response> {
+    async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
         try {
             const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
             res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
@@ -53,21 +53,19 @@ export class UserController {
                 maxAge: 3600000,
                 path: "/",
             });
-            return res.status(HttpStatus.CREATED).json({
-                success: true,
-                message: "User created successfully",
-                redirectTo: "/"
-            });
+            return res.redirect('/user?welcome=true');
         } catch (error) {
             if (error.message.includes('already exists')) {
-                return res.status(HttpStatus.CONFLICT).json({
-                    success: false,
-                    error: 'A user with this email already exists'
+                return res.render('createUser', { 
+                    error: 'A user with this email already exists. Please try logging in instead.',
+                    email: createUserDto.email,
+                    name: createUserDto.name
                 });
             }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                success: false,
-                error: 'An error occurred while creating your account'
+            return res.render('createUser', { 
+                error: 'An error occurred while creating your account. Please try again.',
+                email: createUserDto.email,
+                name: createUserDto.name
             });
         }
     }

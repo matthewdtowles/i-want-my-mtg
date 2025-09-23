@@ -31,7 +31,7 @@ describe("AuthController", () => {
     });
 
     describe("login", () => {
-        it("should return a JWT token in a cookie and JSON response on success", async () => {
+        it("should set JWT token in cookie and redirect on success", async () => {
             const userDto = {
                 id: 1,
                 name: "Test User",
@@ -42,14 +42,13 @@ describe("AuthController", () => {
             const mockReq = { user: userDto } as any;
             const mockRes = {
                 cookie: jest.fn().mockReturnThis(),
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn().mockReturnThis(),
+                redirect: jest.fn().mockReturnThis(),
             } as unknown as Response;
 
             mockAuthOrchestrator.login.mockResolvedValue({
                 success: true,
                 token: "mock-jwt-token",
-                redirectTo: "/user?action=login&status=200",
+                redirectTo: "/user",
                 statusCode: 200,
             });
 
@@ -67,14 +66,10 @@ describe("AuthController", () => {
                     path: "/",
                 })
             );
-            expect(mockRes.status).toHaveBeenCalledWith(200);
-            expect(mockRes.json).toHaveBeenCalledWith({ 
-                success: true, 
-                redirectTo: "/user?action=login&status=200" 
-            });
+            expect(mockRes.redirect).toHaveBeenCalledWith("/user");
         });
 
-        it("should return JSON error response on authentication failure", async () => {
+        it("should redirect to login with error on authentication failure", async () => {
             const userDto = {
                 id: 1,
                 name: "Test User",
@@ -85,8 +80,7 @@ describe("AuthController", () => {
             const mockReq = { user: userDto } as any;
             const mockRes = {
                 cookie: jest.fn().mockReturnThis(),
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn().mockReturnThis(),
+                redirect: jest.fn().mockReturnThis(),
             } as unknown as Response;
 
             mockAuthOrchestrator.login.mockResolvedValue({
@@ -100,11 +94,7 @@ describe("AuthController", () => {
 
             expect(authOrchestrator.login).toHaveBeenCalledWith(userDto);
             expect(mockRes.cookie).not.toHaveBeenCalled();
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.json).toHaveBeenCalledWith({ 
-                success: false, 
-                redirectTo: "Authentication failed" 
-            });
+            expect(mockRes.redirect).toHaveBeenCalledWith("/auth/login?error=Invalid credentials");
         });
     });
 

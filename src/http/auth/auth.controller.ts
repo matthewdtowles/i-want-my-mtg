@@ -27,7 +27,7 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post("login")
-    async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+    async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<Response> {
         const result: AuthResult = await this.authOrchestrator.login(req.user);
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, {

@@ -64,6 +64,7 @@ describe("AuthController", () => {
                     secure: false,
                     maxAge: 3600000,
                     path: "/",
+                    path: "/",
                 })
             );
             expect(mockRes.redirect).toHaveBeenCalledWith("/user");

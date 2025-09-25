@@ -5,7 +5,7 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { UserGuard } from "src/http/auth/user.guard";
+import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { CardOrchestrator } from "src/http/card/card.orchestrator";
 import { CardViewDto } from "src/http/card/dto/card.view.dto";
 
@@ -13,7 +13,7 @@ import { CardViewDto } from "src/http/card/dto/card.view.dto";
 export class CardController {
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 
-    @UseGuards(UserGuard)
+    @UseGuards(OptionalAuthGuard)
     @Get(":setCode/:setNumber")
     @Render("card")
     async findSetCard(

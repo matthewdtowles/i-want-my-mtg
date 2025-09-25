@@ -1,18 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { ActionStatus } from "src/http/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { Breadcrumb } from "src/http/breadcrumb";
-import { HttpErrorHandler } from "src/http/http.error.handler";
-import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
-import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
-import { SetResponseDto } from "src/http/set/dto/set.response.dto";
-import { SetViewDto } from "src/http/set/dto/set.view.dto";
-import { SetPresenter } from "src/http/set/set.presenter";
 import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
+import { ActionStatus } from "src/http/action-status.enum";
+import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { Breadcrumb } from "src/http/breadcrumb";
+import { HttpErrorHandler } from "src/http/http.error.handler";
+import { isAuthenticated } from "src/http/http.util";
+import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
+import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
+import { SetResponseDto } from "src/http/set/dto/set.response.dto";
+import { SetViewDto } from "src/http/set/dto/set.view.dto";
+import { SetPresenter } from "src/http/set/set.presenter";
 
 @Injectable()
 export class SetOrchestrator {
@@ -25,11 +26,10 @@ export class SetOrchestrator {
     async findSetList(req: AuthenticatedRequest, _breadcrumbs?: Breadcrumb[]): Promise<SetListViewDto> {
         try {
             const allSets: Set[] = await this.setService.findAll();
-            // const uniqueOwned: number = req.user ? await this.inventoryService.getUniqueOwnedCountByUserId(req.user.id) : 0;
             const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
             const setMetaList: SetMetaResponseDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
             return new SetListViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 breadcrumbs: _breadcrumbs ? _breadcrumbs : [
                     { label: "Home", url: "/" },
                     { label: "Sets", url: "/sets" }
@@ -57,7 +57,7 @@ export class SetOrchestrator {
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
             return new SetViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 breadcrumbs: [
                     { label: "Home", url: "/" },
                     { label: "Sets", url: "/sets" },

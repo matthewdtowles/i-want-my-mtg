@@ -1,3 +1,5 @@
+import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+
 export const BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 
 export function toDollar(amount: number): string {
@@ -8,4 +10,8 @@ export function toDollar(amount: number): string {
         dollarAmount = "$" + dollarAmount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     return dollarAmount;
+}
+
+export function isAuthenticated(req: AuthenticatedRequest): boolean {
+    return req.user != null && typeof req.isAuthenticated === "function" ? req.isAuthenticated() : false;
 }

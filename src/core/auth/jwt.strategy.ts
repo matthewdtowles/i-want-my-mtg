@@ -32,10 +32,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload): Promise<User> {
-        this.LOGGER.debug(`Validating JWT payload for user: ${payload.sub}`);
+        this.LOGGER.debug(`Validating JWT payload for user`);
         const user: User = await this.userService.findById(parseInt(payload.sub));
         if (!user) {
-            this.LOGGER.error(`User not found for JWT payload: ${payload.sub}`);
+            this.LOGGER.error(`User not found for JWT payload`);
             throw new UnauthorizedException();
         }
         this.LOGGER.debug(`JWT validation successful for user: ${user.email}`);

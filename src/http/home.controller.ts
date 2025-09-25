@@ -1,6 +1,6 @@
-import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, Render, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { UserGuard } from "src/http/auth/user.guard";
+import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
 
@@ -9,7 +9,7 @@ import { SetOrchestrator } from "src/http/set/set.orchestrator";
 export class HomeController {
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
-    @UseGuards(UserGuard)
+    @UseGuards(OptionalAuthGuard)
     @Get("/")
     @Render("setListPage")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {

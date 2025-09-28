@@ -1,7 +1,9 @@
 import {
     Controller,
     Get,
-    Inject, Param,
+    Inject,
+    Param,
+    Query,
     Render,
     Req,
     UseGuards
@@ -20,8 +22,14 @@ export class SetController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
-    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req);
+    async setListing(
+        @Req() req: AuthenticatedRequest,
+        @Query('page') page: string = '1'
+    ): Promise<SetListViewDto> {
+        const pageNumber = Math.max(1, parseInt(page) || 1);
+        const defaultPageSize = 20;
+        // TODO: this should actually return a wrapper object with total count and items
+        return this.setOrchestrator.findSetListPaginated(req, [], pageNumber, defaultPageSize);
     }
 
     @UseGuards(OptionalAuthGuard)

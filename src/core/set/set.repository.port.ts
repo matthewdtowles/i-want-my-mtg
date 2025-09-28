@@ -23,12 +23,28 @@ export interface SetRepositoryPort {
     findAllSetsMeta(): Promise<Set[]>;
 
     /**
+     * Retrieves metadata for Set entities with pagination.
+     *
+     * @param {number} page - The page number (1-based index).
+     * @param {number} limit - The number of items per page.
+     * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
+     */
+    findAllSetsMetaPaginated(page: number, limit: number): Promise<Set[]>;
+
+    /**
      * Finds a Set entity by its unique three-letter code.
      *
      * @param {string} code - The unique three-letter set code (primary key).
      * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
      */
     findByCode(code: string): Promise<Set | null>;
+
+    /**
+     * Counts the total number of Set entities.
+     *
+     * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
+     */
+    totalSets(): Promise<number>;
 
     /**
      * Removes a Set entity.

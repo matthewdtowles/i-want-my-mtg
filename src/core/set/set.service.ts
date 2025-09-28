@@ -30,4 +30,14 @@ export class SetService {
         this.LOGGER.debug(`Calling findByCode(${setCode})`);
         return await this.repository.findByCode(setCode);
     }
+
+    async findAllPaginated(page: number, limit: number): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findAllPaginated(page: ${page}, limit: ${limit})`);
+        return await this.repository.findAllSetsMetaPaginated(page, limit);
+    }
+
+    async getTotalSetsCount(): Promise<number> {
+        this.LOGGER.debug('Calling getTotalSetsCount()');
+        return await this.repository.totalSets();
+    }
 }

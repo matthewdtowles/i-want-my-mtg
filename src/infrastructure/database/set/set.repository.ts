@@ -27,6 +27,17 @@ export class SetRepository implements SetRepositoryPort {
         return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 
+    async findAllSetsMetaPaginated(page: number, limit: number): Promise<Set[]> {
+        const skip = (page - 1) * limit;
+        const setMetaList: SetOrmEntity[] = await this.setRepository.find({
+            where: { baseSize: MoreThan(0), },
+            order: { releaseDate: "DESC", name: "ASC" },
+            skip: skip,
+            take: limit,
+        });
+        return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
+    }
+
     async findByCode(code: string): Promise<Set | null> {
         const set: SetOrmEntity = await this.setRepository.findOne({
             where: { code: code, },
@@ -38,6 +49,10 @@ export class SetRepository implements SetRepositoryPort {
             relations: ["cards", "cards.prices"],
         });
         return set ? SetMapper.toCore(set) : null;
+    }
+
+    async totalSets(): Promise<number> {
+        return await this.setRepository.count();
     }
 
     async delete(set: Set): Promise<void> {

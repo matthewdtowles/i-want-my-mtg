@@ -9,6 +9,7 @@ import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { Breadcrumb } from "src/http/breadcrumb";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/http.util";
+import { PaginationDto } from "src/http/pagination.dto";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
 import { SetResponseDto } from "src/http/set/dto/set.response.dto";
@@ -41,6 +42,31 @@ export class SetOrchestrator {
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findSetList");
         }
+    }
+
+    async findSetListPaginated(
+        req: AuthenticatedRequest,
+        breadcrumbs: Breadcrumb[],
+        page: number,
+        limit: number
+    ): Promise<SetListViewDto> {
+        const [sets, totalSets] = await Promise.all([
+            this.setService.findAllPaginated(page, limit),
+            this.setService.getTotalSetsCount()  // This gives us the total
+        ]);
+
+        const uniqueOwned: number = 0;
+        const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
+        const pagination = new PaginationDto(page, totalSets, limit); // Total is used here
+
+        return new SetListViewDto({
+            authenticated: isAuthenticated(req),
+            breadcrumbs: breadcrumbs,
+            message: `Page ${page} of ${Math.ceil(totalSets / limit)}`,
+            setList: setMetaList,
+            status: ActionStatus.SUCCESS,
+            pagination: pagination, // Contains all pagination info including total
+        });
     }
 
     async findBySetCode(setCode: string, req: AuthenticatedRequest): Promise<SetViewDto> {

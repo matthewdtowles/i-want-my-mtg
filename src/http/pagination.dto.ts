@@ -8,11 +8,13 @@ export class PaginationDto {
     readonly nextPage?: number;
     readonly skipBackPage?: number;
     readonly skipForwardPage?: number;
-
-    constructor(currentPage: number, totalItems: number, itemsPerPage: number) {
+    readonly limit: number;
+    
+    constructor(currentPage: number, totalItems: number, limit: number) {
         this.currentPage = currentPage;
         this.totalItems = totalItems;
-        this.totalPages = Math.ceil(totalItems / itemsPerPage);
+        this.limit = limit;
+        this.totalPages = Math.ceil(totalItems / limit);
         this.hasPrevPage = currentPage > 1;
         this.hasNextPage = currentPage < this.totalPages;
         this.prevPage = this.hasPrevPage ? currentPage - 1 : undefined;

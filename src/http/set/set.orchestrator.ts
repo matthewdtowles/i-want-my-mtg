@@ -51,7 +51,6 @@ export class SetOrchestrator {
         limit: number
     ): Promise<SetListViewDto> {
         try {
-            console.log(`Finding sets paginated: page=${page}, limit=${limit}`);
             const [sets, totalSets] = await Promise.all([
                 this.setService.findAllPaginated(page, limit),
                 this.setService.getTotalSetsCount()
@@ -59,7 +58,6 @@ export class SetOrchestrator {
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
             const pagination = new PaginationDto(page, totalSets, limit);
-            console.log("Pagination:", pagination);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: _breadcrumbs,

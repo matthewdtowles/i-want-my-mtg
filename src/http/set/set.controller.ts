@@ -3,6 +3,7 @@ import {
     Get,
     Inject,
     Param,
+    ParseIntPipe,
     Query,
     Render,
     Req,
@@ -16,6 +17,10 @@ import { SetOrchestrator } from "src/http/set/set.orchestrator";
 
 @Controller("sets")
 export class SetController {
+    private readonly breadcrumbs = [
+        { label: "Home", url: "/" },
+        { label: "Sets", url: "/sets" }
+    ];
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
@@ -24,15 +29,33 @@ export class SetController {
     @Render("setListPage")
     async setListing(
         @Req() req: AuthenticatedRequest,
-        @Query('page') page: string = '1'
+        @Query("page") page: string = "1"
     ): Promise<SetListViewDto> {
         const pageNumber = Math.max(1, parseInt(page) || 1);
         const defaultPageSize = 20;
-        const breadcrumbs = [
-            { label: "Home", url: "/" },
-            { label: "Sets", url: "/sets" }
-        ];
-        return this.setOrchestrator.findSetListPaginated(req, breadcrumbs, pageNumber, defaultPageSize);
+        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, pageNumber, defaultPageSize);
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get("page/:page")
+    @Render("setListPage")
+    async setListingPage(
+        @Req() req: AuthenticatedRequest,
+        @Param("page", ParseIntPipe) page: number
+    ): Promise<SetListViewDto> {
+        const limit = 20;
+        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, limit);
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get("page/:page/limit/:limit")
+    @Render("setListPage")
+    async setListingPageWithLimit(
+        @Req() req: AuthenticatedRequest,
+        @Param("page", ParseIntPipe) page: number,
+        @Param("limit", ParseIntPipe) limit: number
+    ): Promise<SetListViewDto> {
+        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, limit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -42,22 +65,4 @@ export class SetController {
         return this.setOrchestrator.findBySetCode(setCode, req);
     }
 
-    /* 
-      @Get('page/:page')
-  async getPage(
-    @Param('page', ParseIntPipe) page: number
-  ): Promise<PaginatedCardsDto> {
-    const limit = 20;
-    return this.cardsService.getPaginatedCards({ page, limit });
-  }
-
-  // /cards/page/:page/limit/:limit
-  @Get('page/:page/limit/:limit')
-  async getPageWithLimit(
-    @Param('page', ParseIntPipe) page: number,
-    @Param('limit', ParseIntPipe) limit: number
-  ): Promise<PaginatedCardsDto> {
-    return this.cardsService.getPaginatedCards({ page, limit });
-  }
-    */
 }

@@ -32,15 +32,15 @@
 
 <div class="pagination-container">
     {{#if pagination.hasPrevPage}}
-    <a href="/sets?page=1" class="pagination-btn pagination-btn-tertiary">&laquo;</a>
+    <a href="/sets/page/1/limit/{{pagination.limit}}" class="pagination-btn pagination-btn-tertiary">&laquo;</a>
     {{/if}}
 
     {{#if pagination.hasPrevPage}}
-    <a href="/sets?page={{pagination.prevPage}}" class="pagination-btn pagination-btn-primary">&lt;</a>
+    <a href="/sets/page/{{pagination.prevPage}}/limit/{{pagination.limit}}" class="pagination-btn pagination-btn-primary">&lt;</a>
     {{/if}}
 
     {{#if pagination.skipBackPage}}
-    <a href="/sets?page={{pagination.skipBackPage}}"
+    <a href="/sets/page/{{pagination.skipBackPage}}/limit/{{pagination.limit}}"
         class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
     <span>...</span>
     {{/if}}
@@ -49,15 +49,15 @@
 
     {{#if pagination.skipForwardPage}}
     <span>...</span>
-    <a href="/sets?page={{pagination.skipForwardPage}}"
+    <a href="/sets/page/{{pagination.skipForwardPage}}/limit/{{pagination.limit}}"
         class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
     {{/if}}
 
     {{#if pagination.hasNextPage}}
-    <a href="/sets?page={{pagination.nextPage}}" class="pagination-btn pagination-btn-primary">&gt;</a>
+    <a href="/sets/page/{{pagination.nextPage}}/limit/{{pagination.limit}}" class="pagination-btn pagination-btn-primary">&gt;</a>
     {{/if}}
 
     {{#if pagination.hasNextPage}}
-    <a href="/sets?page={{pagination.totalPages}}" class="pagination-btn pagination-btn-tertiary">&raquo;</a>
+    <a href="/sets/page/{{pagination.totalPages}}/limit/{{pagination.limit}}" class="pagination-btn pagination-btn-tertiary">&raquo;</a>
     {{/if}}
 </div>

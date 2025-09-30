@@ -21,6 +21,7 @@ export class SetController {
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
     ];
+    private readonly defaultLimit = 20;
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
@@ -32,8 +33,7 @@ export class SetController {
         @Query("page") page: string = "1"
     ): Promise<SetListViewDto> {
         const pageNumber = Math.max(1, parseInt(page) || 1);
-        const defaultPageSize = 20;
-        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, pageNumber, defaultPageSize);
+        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, pageNumber, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -43,8 +43,7 @@ export class SetController {
         @Req() req: AuthenticatedRequest,
         @Param("page", ParseIntPipe) page: number
     ): Promise<SetListViewDto> {
-        const limit = 20;
-        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, limit);
+        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -58,6 +57,7 @@ export class SetController {
         return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, limit);
     }
 
+    // TODO: convert to use page and limits too
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")

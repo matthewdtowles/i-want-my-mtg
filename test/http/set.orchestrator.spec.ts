@@ -124,44 +124,6 @@ describe("SetOrchestrator", () => {
         jest.clearAllMocks();
     });
 
-    describe("findSetList", () => {
-        it("should return list of sets", async () => {
-            mockSetService.findAll.mockResolvedValue(mockSets);
-            mockInventoryService.getUniqueOwnedCountByUserId.mockResolvedValue(1);
-
-            const result: SetListViewDto = await orchestrator.findSetList(mockAuthenticatedRequest);
-
-            expect(result).toBeDefined();
-            expect(result.authenticated).toBe(true);
-            expect(result.setList).toHaveLength(2);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(setService.findAll).toHaveBeenCalled();
-        });
-
-        it("should return error view when no sets found", async () => {
-            mockSetService.findAll.mockResolvedValue([]);
-
-            const result: SetListViewDto = await orchestrator.findSetList(mockAuthenticatedRequest);
-
-            expect(result.setList).toHaveLength(0);
-            expect(result.message).toBe("0 sets found");
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-        });
-
-        it("should handle unauthenticated requests", async () => {
-            const unauthenticatedReq = {
-                user: null,
-                isAuthenticated: () => false
-            } as AuthenticatedRequest;
-            mockSetService.findAll.mockResolvedValue(mockSets);
-
-            const result: SetListViewDto = await orchestrator.findSetList(unauthenticatedReq);
-
-            expect(result.authenticated).toBe(false);
-            expect(result.setList).toHaveLength(2);
-        });
-    });
-
     describe("findBySetCode", () => {
         it("should return set details", async () => {
             mockSetService.findByCode.mockResolvedValue(mockSets[0]);

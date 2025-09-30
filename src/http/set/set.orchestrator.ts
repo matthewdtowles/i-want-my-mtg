@@ -24,26 +24,6 @@ export class SetOrchestrator {
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
     ) { }
 
-    async findSetList(req: AuthenticatedRequest, _breadcrumbs?: Breadcrumb[]): Promise<SetListViewDto> {
-        try {
-            const allSets: Set[] = await this.setService.findAll();
-            const uniqueOwned: number = 0; // TODO: implement unique owned count in set service
-            const setMetaList: SetMetaResponseDto[] = allSets.map((s: Set) => SetPresenter.toSetMetaDto(s, uniqueOwned));
-            return new SetListViewDto({
-                authenticated: isAuthenticated(req),
-                breadcrumbs: _breadcrumbs ? _breadcrumbs : [
-                    { label: "Home", url: "/" },
-                    { label: "Sets", url: "/sets" }
-                ],
-                message: allSets ? `${allSets.length} sets found` : "No sets found",
-                setList: setMetaList,
-                status: allSets ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-            });
-        } catch (error) {
-            return HttpErrorHandler.toHttpException(error, "findSetList");
-        }
-    }
-
     async findSetListPaginated(
         req: AuthenticatedRequest,
         _breadcrumbs: Breadcrumb[],

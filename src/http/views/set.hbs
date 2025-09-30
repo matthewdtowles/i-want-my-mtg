@@ -90,6 +90,25 @@
     <a href="/sets/{{set.code}}/page/{{pagination.totalPages}}/limit/{{pagination.limit}}"
         class="pagination-btn pagination-btn-tertiary">&raquo;</a>
     {{/if}}
+
+    <form id="limitForm" class="flex items-center gap-2 mb-4 mt-2">
+        <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 
+                text-xs sm:text-sm bg-white border border-teal-300 rounded focus:ring-2 
+                focus:ring-teal-200 focus:outline-none">
+            <option value="10" {{#if (eq pagination.limit 10)}}selected{{/if}}>10</option>
+            <option value="20" {{#if (eq pagination.limit 20)}}selected{{/if}}>20</option>
+            <option value="50" {{#if (eq pagination.limit 50)}}selected{{/if}}>50</option>
+        </select>
+        <label for="limit" class="text-sm font-medium text-teal-700">per page</label>
+    </form>
+    <script>
+        document.getElementById("limit").addEventListener("change", function () {
+            var limit = this.value;
+            var page = {{ pagination.currentPage }};
+            var code = "{{ set.code }}";
+            window.location.href = "/sets/" + code + "/page/" + page + "/limit/" + limit;
+        });
+    </script>
 </div>
 
 <script src="/public/js/updateInventory.js" defer></script>

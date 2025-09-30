@@ -24,7 +24,7 @@ export class SetPresenter {
             ownedValue: this.calculateOwnedValue(set.cards, inventory),
             releaseDate: set.releaseDate,
             totalValue: this.calculateTotalValue(set.cards),
-            url: `sets/${set.code.toLowerCase()}`,
+            url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards ? set.cards.map(card => {
                 return CardPresenter.toCardResponse(card, inventoryQuantities.get(card.id), CardImgType.SMALL)
             }) : [],
@@ -42,7 +42,7 @@ export class SetPresenter {
             ownedValue: "0.00", // TODO: impl setValue dto and new repo, svc methods to calculate
             releaseDate: set.releaseDate,
             totalValue: "0.00", // TODO: impl setValue dto and new repo, svc methods to calculate
-            url: `sets/${set.code.toLowerCase()}`,
+            url: `/sets/${set.code.toLowerCase()}`,
         });
     }
 

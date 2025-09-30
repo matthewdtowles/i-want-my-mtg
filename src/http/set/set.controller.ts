@@ -28,8 +28,11 @@ export class SetController {
     ): Promise<SetListViewDto> {
         const pageNumber = Math.max(1, parseInt(page) || 1);
         const defaultPageSize = 20;
-        // TODO: this should actually return a wrapper object with total count and items
-        return this.setOrchestrator.findSetListPaginated(req, [], pageNumber, defaultPageSize);
+        const breadcrumbs = [
+            { label: "Home", url: "/" },
+            { label: "Sets", url: "/sets" }
+        ];
+        return this.setOrchestrator.findSetListPaginated(req, breadcrumbs, pageNumber, defaultPageSize);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -38,4 +41,23 @@ export class SetController {
     async findBySetCode(@Param("setCode") setCode: string, @Req() req: AuthenticatedRequest): Promise<SetViewDto> {
         return this.setOrchestrator.findBySetCode(setCode, req);
     }
+
+    /* 
+      @Get('page/:page')
+  async getPage(
+    @Param('page', ParseIntPipe) page: number
+  ): Promise<PaginatedCardsDto> {
+    const limit = 20;
+    return this.cardsService.getPaginatedCards({ page, limit });
+  }
+
+  // /cards/page/:page/limit/:limit
+  @Get('page/:page/limit/:limit')
+  async getPageWithLimit(
+    @Param('page', ParseIntPipe) page: number,
+    @Param('limit', ParseIntPipe) limit: number
+  ): Promise<PaginatedCardsDto> {
+    return this.cardsService.getPaginatedCards({ page, limit });
+  }
+    */
 }

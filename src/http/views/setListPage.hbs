@@ -30,26 +30,22 @@
     </tbody>
 </table>
 
-<div class="pagination flex items-center justify-center space-x-1 mt-4">
-    {{#if this.pagination.hasPrevPage}}
-    <a href="/sets?page={{this.pagination.prevPage}}"
-        class="pagination-link px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Previous</a>
+<div class="pagination-container">
+    {{#if pagination.hasPrevPage}}
+    <a href="/sets?page={{pagination.prevPage}}" class="pagination-btn pagination-btn-primary">&lt;</a>
     {{/if}}
 
-    {{#each this.pagination.prevPages}}
-    <a href="/sets?page={{this}}"
-        class="pagination-link px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">{{this}}</a>
+    {{#each pagination.prevPages}}
+    <a href="/sets?page={{this}}" class="pagination-btn pagination-btn-tertiary">{{this}}</a>
     {{/each}}
 
-    <span class="pagination-current px-3 py-2 bg-blue-600 text-white rounded">{{this.pagination.currentPage}}</span>
+    <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
 
-    {{#each this.pagination.nextPages}}
-    <a href="/sets?page={{this}}"
-        class="pagination-link px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">{{this}}</a>
+    {{#each pagination.nextPages}}
+    <a href="/sets?page={{this}}" class="pagination-btn pagination-btn-tertiary">{{this}}</a>
     {{/each}}
 
-    {{#if this.pagination.hasNextPage}}
-    <a href="/sets?page={{this.pagination.nextPage}}"
-        class="pagination-link px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Next</a>
+    {{#if pagination.hasNextPage}}
+    <a href="/sets?page={{pagination.nextPage}}" class="pagination-btn pagination-btn-primary">&gt;</a>
     {{/if}}
 </div>

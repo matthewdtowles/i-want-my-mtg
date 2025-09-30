@@ -26,14 +26,14 @@ export class SetService {
         return await this.repository.findAllSetsMeta();
     }
 
-    async findByCode(setCode: string): Promise<Set | null> {
-        this.LOGGER.debug(`Calling findByCode(${setCode})`);
-        return await this.repository.findByCode(setCode);
-    }
-
     async findAllPaginated(page: number, limit: number): Promise<Set[]> {
         this.LOGGER.debug(`Calling findAllPaginated(page: ${page}, limit: ${limit})`);
         return await this.repository.findAllSetsMetaPaginated(page, limit);
+    }
+
+    async findByCode(setCode: string): Promise<Set | null> {
+        this.LOGGER.debug(`Calling findByCode(${setCode})`);
+        return await this.repository.findByCode(setCode);
     }
 
     async getTotalSetsCount(): Promise<number> {

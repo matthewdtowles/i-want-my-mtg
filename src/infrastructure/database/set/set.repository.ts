@@ -52,7 +52,9 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async totalSets(): Promise<number> {
-        return await this.setRepository.count();
+        return await this.setRepository.count({
+            where: { baseSize: MoreThan(0), },
+        });
     }
 
     async delete(set: Set): Promise<void> {

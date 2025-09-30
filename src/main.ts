@@ -9,11 +9,11 @@ import { HttpExceptionFilter } from "./http/http.exception.filter";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
-    
+
     app.useStaticAssets(join(__dirname, ".", "http/public"), {
         prefix: '/public/',
     });
-    
+
     app.setBaseViewsDir(join(__dirname, ".", "http/views"));
 
     const hbs = create({

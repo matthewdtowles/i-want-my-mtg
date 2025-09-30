@@ -46,27 +46,31 @@ export class SetOrchestrator {
 
     async findSetListPaginated(
         req: AuthenticatedRequest,
-        breadcrumbs: Breadcrumb[],
+        _breadcrumbs: Breadcrumb[],
         page: number,
         limit: number
     ): Promise<SetListViewDto> {
-        const [sets, totalSets] = await Promise.all([
-            this.setService.findAllPaginated(page, limit),
-            this.setService.getTotalSetsCount()  // This gives us the total
-        ]);
-
-        const uniqueOwned: number = 0;
-        const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
-        const pagination = new PaginationDto(page, totalSets, limit); // Total is used here
-
-        return new SetListViewDto({
-            authenticated: isAuthenticated(req),
-            breadcrumbs: breadcrumbs,
-            message: `Page ${page} of ${Math.ceil(totalSets / limit)}`,
-            setList: setMetaList,
-            status: ActionStatus.SUCCESS,
-            pagination: pagination, // Contains all pagination info including total
-        });
+        try {
+            console.log(`Finding sets paginated: page=${page}, limit=${limit}`);
+            const [sets, totalSets] = await Promise.all([
+                this.setService.findAllPaginated(page, limit),
+                this.setService.getTotalSetsCount()
+            ]);
+            const uniqueOwned: number = 0;
+            const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
+            const pagination = new PaginationDto(page, totalSets, limit);
+            console.log("Pagination:", pagination);
+            return new SetListViewDto({
+                authenticated: isAuthenticated(req),
+                breadcrumbs: _breadcrumbs,
+                message: `Page ${page} of ${Math.ceil(totalSets / limit)}`,
+                setList: setMetaList,
+                status: ActionStatus.SUCCESS,
+                pagination: pagination,
+            });
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "findSetListPaginated");
+        }
     }
 
     async findBySetCode(setCode: string, req: AuthenticatedRequest): Promise<SetViewDto> {

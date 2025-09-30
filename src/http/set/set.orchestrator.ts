@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
+import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
@@ -22,9 +23,10 @@ export class SetOrchestrator {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
+        @Inject(CardService) private readonly cardService: CardService,
     ) { }
 
-    async findSetListPaginated(
+    async findSetList(
         req: AuthenticatedRequest,
         _breadcrumbs: Breadcrumb[],
         page: number,
@@ -32,7 +34,7 @@ export class SetOrchestrator {
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
-                this.setService.findAllPaginated(page, limit),
+                this.setService.findSets(page, limit),
                 this.setService.getTotalSetsCount()
             ]);
             const uniqueOwned: number = 0;
@@ -77,6 +79,45 @@ export class SetOrchestrator {
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findBySetCode");
+        }
+    }
+
+    async findBySetCodeWithPagination(
+        req: AuthenticatedRequest,
+        setCode: string,
+        page: number,
+        limit: number
+    ): Promise<SetViewDto> {
+        try {
+            const userId: number = req.user ? req.user.id : 0;
+            const set: Set | null = await this.setService.findByCode(setCode);
+            if (!set) {
+                throw new Error(`Set with code ${setCode} not found`);
+            }
+            const cards: Card[] = await this.cardService.findBySet(setCode, page, limit);
+            set.cards.push(...cards);
+            let inventory: Inventory[] = [];
+            if (userId && set.cards?.length) {
+                const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
+                inventory = await this.inventoryService.findByCards(userId, cardIds);
+            }
+            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
+            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode);
+            const pagination = new PaginationDto(page, totalCardsInSet, limit);
+            return new SetViewDto({
+                authenticated: isAuthenticated(req),
+                breadcrumbs: [
+                    { label: "Home", url: "/" },
+                    { label: "Sets", url: "/sets" },
+                    { label: setResonse.name, url: `/sets/${setCode}` },
+                ],
+                message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
+                set: setResonse,
+                status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                pagination: pagination,
+            });
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
         }
     }
 }

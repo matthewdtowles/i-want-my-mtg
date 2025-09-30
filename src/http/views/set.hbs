@@ -55,4 +55,41 @@
         </tbody>
     </table>
 </div>
+
+<div class="pagination-container">
+    {{#if pagination.hasPrevPage}}
+    <a href="/sets/{{set.code}}/page/1/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">&laquo;</a>
+    {{/if}}
+
+    {{#if pagination.hasPrevPage}}
+    <a href="/sets/{{set.code}}/page/{{pagination.prevPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-primary">&lt;</a>
+    {{/if}}
+
+    {{#if pagination.skipBackPage}}
+    <a href="/sets/{{set.code}}/page/{{pagination.skipBackPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
+    <span>...</span>
+    {{/if}}
+
+    <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
+
+    {{#if pagination.skipForwardPage}}
+    <span>...</span>
+    <a href="/sets/{{set.code}}/page/{{pagination.skipForwardPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
+    {{/if}}
+
+    {{#if pagination.hasNextPage}}
+    <a href="/sets/{{set.code}}/page/{{pagination.nextPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-primary">&gt;</a>
+    {{/if}}
+
+    {{#if pagination.hasNextPage}}
+    <a href="/sets/{{set.code}}/page/{{pagination.totalPages}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">&raquo;</a>
+    {{/if}}
+</div>
+
 <script src="/public/js/updateInventory.js" defer></script>

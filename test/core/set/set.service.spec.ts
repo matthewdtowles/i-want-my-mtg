@@ -30,9 +30,10 @@ describe("SetService", () => {
 
     const mockSetRepository: SetRepositoryPort = {
         save: jest.fn().mockResolvedValue(mockSets.length),
-        findAllSetsMeta: jest.fn().mockResolvedValue(mockSets),
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
         delete: jest.fn(),
+        findAllSetsMeta: jest.fn(),
+        totalSets: jest.fn().mockResolvedValue(mockSets.length),
     };
 
     beforeEach(async () => {
@@ -57,16 +58,6 @@ describe("SetService", () => {
         const savedSets: number = await service.save(mockCreateSetDtos);
         expect(repository.save).toHaveBeenCalledTimes(1);
         expect(savedSets).toBe(mockCreateSetDtos.length);
-    });
-
-    it("should find all sets - cards not included", async () => {
-        const foundSets: Set[] = await service.findAll();
-        expect(repository.findAllSetsMeta).toHaveBeenCalledTimes(1);
-        expect(foundSets).toHaveLength(mockSets.length);
-        foundSets.forEach((set) => {
-            expect(set).toHaveProperty("code");
-            expect(set).toHaveProperty("name");
-        });
     });
 
     it("should find set with cards by given set code", async () => {

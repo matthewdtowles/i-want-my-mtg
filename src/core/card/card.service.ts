@@ -46,6 +46,14 @@ export class CardService {
         }
     }
 
+    async findBySet(code: string, page: number, limit: number): Promise<Card[]> {
+        try {
+            return await this.repository.findBySet(code, page, limit);
+        } catch (error) {
+            throw new Error(`Error finding cards in set ${code}: ${error.message}`);
+        }
+    }
+
     async findById(id: string): Promise<Card | null> {
         try {
             return await this.repository.findById(id, ["set", "legalities", "prices"]);
@@ -54,19 +62,19 @@ export class CardService {
         }
     }
 
-    async findAllInSet(code: string): Promise<Card[]> {
-        try {
-            return await this.repository.findAllInSet(code);
-        } catch (error) {
-            throw new Error(`Error finding cards in set ${code}: ${error.message}`);
-        }
-    }
-
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
         try {
             return await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
         } catch (error) {
             throw new Error(`Error finding card with set code ${code} and number ${number}: ${error.message}`);
+        }
+    }
+
+    async totalCardsInSet(setCode: string): Promise<number> {
+        try {
+            return await this.repository.totalInSet(setCode);
+        } catch (error) {
+            throw new Error(`Error counting cards in set ${setCode}: ${error.message}`);
         }
     }
 

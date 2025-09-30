@@ -4,7 +4,6 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query,
     Render,
     Req,
     UseGuards
@@ -28,12 +27,8 @@ export class SetController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
-    async setListing(
-        @Req() req: AuthenticatedRequest,
-        @Query("page") page: string = "1"
-    ): Promise<SetListViewDto> {
-        const pageNumber = Math.max(1, parseInt(page) || 1);
-        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, pageNumber, this.defaultLimit);
+    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, 1, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -43,7 +38,7 @@ export class SetController {
         @Req() req: AuthenticatedRequest,
         @Param("page", ParseIntPipe) page: number
     ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, this.defaultLimit);
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -54,15 +49,37 @@ export class SetController {
         @Param("page", ParseIntPipe) page: number,
         @Param("limit", ParseIntPipe) limit: number
     ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetListPaginated(req, this.breadcrumbs, page, limit);
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit);
     }
 
-    // TODO: convert to use page and limits too
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")
-    async findBySetCode(@Param("setCode") setCode: string, @Req() req: AuthenticatedRequest): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(setCode, req);
+    async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
+        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, 1, this.defaultLimit);
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get(":setCode/page/:page")
+    @Render("set")
+    async findByCodePage(
+        @Req() req: AuthenticatedRequest,
+        @Param("setCode") setCode: string,
+        @Param("page", ParseIntPipe) page: number,
+    ): Promise<SetViewDto> {
+        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, page, this.defaultLimit);
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get(":setCode/page/:page/limit/:limit")
+    @Render("set")
+    async findByCodePageWithLimit(
+        @Req() req: AuthenticatedRequest,
+        @Param("setCode") setCode: string,
+        @Param("page", ParseIntPipe) page: number,
+        @Param("limit", ParseIntPipe) limit: number,
+    ): Promise<SetViewDto> {
+        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, page, limit);
     }
 
 }

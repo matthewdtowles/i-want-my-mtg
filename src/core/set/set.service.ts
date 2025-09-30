@@ -36,6 +36,9 @@ export class SetService {
         return await this.repository.findByCode(setCode);
     }
 
+    /**
+     * @returns The total number of sets that contain cards in the repository.
+     */
     async getTotalSetsCount(): Promise<number> {
         this.LOGGER.debug('Calling getTotalSetsCount()');
         return await this.repository.totalSets();

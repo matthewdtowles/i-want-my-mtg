@@ -32,20 +32,32 @@
 
 <div class="pagination-container">
     {{#if pagination.hasPrevPage}}
+    <a href="/sets?page=1" class="pagination-btn pagination-btn-tertiary">&laquo;</a>
+    {{/if}}
+
+    {{#if pagination.hasPrevPage}}
     <a href="/sets?page={{pagination.prevPage}}" class="pagination-btn pagination-btn-primary">&lt;</a>
     {{/if}}
 
-    {{#each pagination.prevPages}}
-    <a href="/sets?page={{this}}" class="pagination-btn pagination-btn-tertiary">{{this}}</a>
-    {{/each}}
+    {{#if pagination.skipBackPage}}
+    <a href="/sets?page={{pagination.skipBackPage}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
+    <span>...</span>
+    {{/if}}
 
     <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
 
-    {{#each pagination.nextPages}}
-    <a href="/sets?page={{this}}" class="pagination-btn pagination-btn-tertiary">{{this}}</a>
-    {{/each}}
+    {{#if pagination.skipForwardPage}}
+    <span>...</span>
+    <a href="/sets?page={{pagination.skipForwardPage}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
+    {{/if}}
 
     {{#if pagination.hasNextPage}}
     <a href="/sets?page={{pagination.nextPage}}" class="pagination-btn pagination-btn-primary">&gt;</a>
+    {{/if}}
+
+    {{#if pagination.hasNextPage}}
+    <a href="/sets?page={{pagination.totalPages}}" class="pagination-btn pagination-btn-tertiary">&raquo;</a>
     {{/if}}
 </div>

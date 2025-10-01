@@ -8,11 +8,12 @@ import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dt
 import { InventoryResponseDto } from "src/http/inventory/dto/inventory.response.dto";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
-import { PaginationDto } from "../pagination.dto";
+import { PaginationDto } from "src/http/pagination.dto";
 
 @Injectable()
 export class InventoryOrchestrator {
     private readonly LOGGER: Logger = new Logger(InventoryOrchestrator.name);
+    private readonly BASE_URL: string = "/inventory";
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
 
@@ -24,12 +25,12 @@ export class InventoryOrchestrator {
             const username: string = req.user.name;
             const totalValue: string = "0.00";
             const totalInventoryItems: number = await this.inventoryService.totalInventoryItemsForUser(req.user.id);
-            const pagination = new PaginationDto(page, totalInventoryItems, limit);
+            const pagination = new PaginationDto(page, totalInventoryItems, limit, this.BASE_URL);
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
                     { label: "Home", url: "/" },
-                    { label: "Inventory", url: "/inventory" },
+                    { label: "Inventory", url: this.BASE_URL },
                 ],
                 cards,
                 message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,

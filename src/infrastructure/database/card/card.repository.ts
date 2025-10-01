@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
-import { LegalityOrmEntity } from "./legality.orm-entity";
-import { CardMapper } from "src/infrastructure/database/card/card.mapper";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
+import { CardMapper } from "src/infrastructure/database/card/card.mapper";
 import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { Repository } from "typeorm";
+import { LegalityOrmEntity } from "./legality.orm-entity";
 
 
 @Injectable()
@@ -33,12 +33,14 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findAllInSet(code: string): Promise<Card[]> {
+    async findBySet(code: string, page: number, limit: number): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
-        where: {
-                set: { code: code, },
+            where: {
+                set: { code },
             },
-            order: { number: "ASC", },
+            order: { order: "ASC", },
+            skip: (page - 1) * limit,
+            take: limit,
             relations: ["legalities", "prices"],
         }) ?? [];
         return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
@@ -61,6 +63,12 @@ export class CardRepository implements CardRepositoryPort {
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
         return ormCard ? CardMapper.toCore(ormCard) : null;
+    }
+
+    async totalInSet(code: string): Promise<number> {
+        return this.cardRepository.count({
+            where: { set: { code } },
+        });
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {

@@ -16,28 +16,28 @@ export class SetRepository implements SetRepositoryPort {
         return savedSets.length ?? 0;
     }
 
-    async findAllSetsMeta(): Promise<Set[]> {
+    async findAllSetsMeta(page: number, limit: number): Promise<Set[]> {
+        const skip = (page - 1) * limit;
         const setMetaList: SetOrmEntity[] = await this.setRepository.find({
             where: { baseSize: MoreThan(0), },
-            order: {
-                releaseDate: "DESC",
-                name: "ASC",
-            },
-        }) ?? [];
+            order: { releaseDate: "DESC", name: "ASC" },
+            skip: skip,
+            take: limit,
+        });
         return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 
     async findByCode(code: string): Promise<Set | null> {
         const set: SetOrmEntity = await this.setRepository.findOne({
-            where: { code: code, },
-            order: {
-                cards: {
-                    order: "ASC",
-                },
-            },
-            relations: ["cards", "cards.prices"],
+            where: { code },
         });
         return set ? SetMapper.toCore(set) : null;
+    }
+
+    async totalSets(): Promise<number> {
+        return await this.setRepository.count({
+            where: { baseSize: MoreThan(0), },
+        });
     }
 
     async delete(set: Set): Promise<void> {

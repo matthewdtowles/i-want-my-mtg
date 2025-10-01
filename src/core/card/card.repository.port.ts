@@ -24,10 +24,14 @@ export interface CardRepositoryPort {
     findById(id: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * @param code three letter set code
-     * @returns card entities in set with code
+     * Retrieves Card entities by set code with pagination.
+     *
+     * @param {string} code - The unique three-letter set code (primary key).
+     * @param {number} page - The page number (1-based index).
+     * @param {number} limit - The number of items per page.
+     * @returns {Promise<Card[]>} A promise that resolves to an array of Card entities.
      */
-    findAllInSet(code: string): Promise<Card[]>;
+    findBySet(code: string, page: number, limit: number): Promise<Card[]>;
 
     /**
      * @param name
@@ -42,6 +46,12 @@ export interface CardRepositoryPort {
      * @returns card entity in set with code and card number in set
      */
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
+
+    /**
+     * @param code three letter set code
+     * @returns total number of cards in set with code
+     */
+    totalInSet(code: string): Promise<number>;
 
     /**
      * @param ids of cards to verify existence

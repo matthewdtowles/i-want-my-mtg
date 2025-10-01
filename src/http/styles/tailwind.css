@@ -53,8 +53,7 @@
 }
 
 .foil-badge {
-    @apply inline-flex items-center text-xs font-medium ml-1 bg-purple-600 text-white px-1.5 py-0.5 
-        rounded shadow-inner;
+    @apply inline-flex items-center text-xs font-medium ml-1 bg-purple-600 text-white px-1.5 py-0.5 rounded shadow-inner;
 }
 
 .input-field {
@@ -101,9 +100,28 @@
     @apply text-teal-700 text-lg md:text-base lg:text-xl mb-6;
 }
 
+.pagination-container {
+    @apply flex flex-wrap items-center justify-center gap-2 mt-6 px-2 py-3 w-full sm:gap-3 sm:mt-8 md:gap-4 md:mt-10 lg:w-auto;
+}
+
+.pagination-btn {
+    @apply btn text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2;
+}
+
+.pagination-btn-primary {
+    @apply btn-primary;
+}
+
+.pagination-btn-secondary {
+    @apply btn-secondary cursor-default;
+}
+
+.pagination-btn-tertiary {
+    @apply btn-tertiary;
+}
+
 .price-foil {
-    @apply inline-block py-1 px-2 text-white font-medium bg-gradient-to-r from-purple-500 to-teal-400 
-        rounded-md shadow-sm;
+    @apply inline-block py-1 px-2 text-white font-medium bg-gradient-to-r from-purple-500 to-teal-400 rounded-md shadow-sm;
 }
 
 .price-normal {
@@ -123,8 +141,7 @@
 }
 
 .quantity-owned {
-    @apply text-center border-none bg-transparent text-white px-0 text-sm sm:text-xs md:text-base lg:text-base w-12 sm:w-12 
-        md:w-12 lg:w-12 xl:w-16 focus:outline-none focus:ring-0; 
+    @apply text-center border-none bg-transparent text-white px-0 text-sm sm:text-xs md:text-base lg:text-base w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16 focus:outline-none focus:ring-0;
 }
 
 .response-message {
@@ -164,7 +181,7 @@
 }
 
 .table-container {
-    @apply w-full bg-white ;
+    @apply w-full bg-white;
 }
 
 .table-header {

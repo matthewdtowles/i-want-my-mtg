@@ -43,10 +43,22 @@ export interface InventoryRepositoryPort {
     findByCards(userId: number, cardIds: string[]): Promise<Inventory[]>;
 
     /**
+     * Find user inventory items with pagination
+     *
      * @param userId
-     * @returns user's inventory entities
+     * @param page
+     * @param limit
+     * @returns user's inventory entities for given page
      */
-    findByUser(userId: number): Promise<Inventory[]>;
+    findByUser(userId: number, page: number, limit: number): Promise<Inventory[]>;
+
+    /**
+     * Get total number of inventory items for user
+     * 
+     * @param userId 
+     * @returns total number of inventory items
+     */
+    totalInventoryItemsForUser(userId: number): Promise<number>;
 
     /**
      * Delete inventory entity

@@ -44,13 +44,22 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async findByUser(userId: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding all inventory items for userId: ${userId}`);
+    async findByUser(userId: number, page: number, limit: number): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}`);
         const items = await this.repository.find({
             where: { userId },
             relations: ["card", "card.prices"],
+            skip: (page - 1) * limit,
+            take: limit,
         });
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
+    }
+
+    async totalInventoryItemsForUser(userId: number): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}`);
+        return await this.repository.count({
+            where: { userId },
+        });
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {

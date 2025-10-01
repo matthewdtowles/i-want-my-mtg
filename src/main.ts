@@ -9,11 +9,11 @@ import { HttpExceptionFilter } from "./http/http.exception.filter";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
-    
+
     app.useStaticAssets(join(__dirname, ".", "http/public"), {
         prefix: '/public/',
     });
-    
+
     app.setBaseViewsDir(join(__dirname, ".", "http/views"));
 
     const hbs = create({
@@ -25,6 +25,7 @@ async function bootstrap() {
             toUpperCase: (str: string) => str.toUpperCase(),
             toLowerCase: (str: string) => str.toLowerCase(),
             capitalize: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
+            eq: (a: any, b: any) => a === b,
         },
     });
     app.engine("hbs", hbs.engine);

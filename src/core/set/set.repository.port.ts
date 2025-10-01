@@ -16,11 +16,13 @@ export interface SetRepositoryPort {
     save(set: Set[]): Promise<number>;
 
     /**
-     * Retrieves metadata for all Set entities without including cards.
+     * Retrieves metadata for Set entities with pagination.
      *
+     * @param {number} page - The page number (1-based index).
+     * @param {number} limit - The number of items per page.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
-    findAllSetsMeta(): Promise<Set[]>;
+    findAllSetsMeta(page: number, limit: number): Promise<Set[]>;
 
     /**
      * Finds a Set entity by its unique three-letter code.
@@ -29,6 +31,13 @@ export interface SetRepositoryPort {
      * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
      */
     findByCode(code: string): Promise<Set | null>;
+
+    /**
+     * Counts the total number of Set entities.
+     *
+     * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
+     */
+    totalSets(): Promise<number>;
 
     /**
      * Removes a Set entity.

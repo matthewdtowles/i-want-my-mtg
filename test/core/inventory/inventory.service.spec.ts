@@ -110,18 +110,18 @@ describe("InventoryService", () => {
         });
     });
 
-    describe("findAllCardsForUser", () => {
+    describe("findAllForUser", () => {
         it("should find all inventory items for a user", async () => {
             const expectedItems = [testInventoryItem, testInventoryFoil];
             repository.findByUser.mockResolvedValue(expectedItems);
-            const result = await service.findAllCardsForUser(1);
+            const result = await service.findAllForUser(1, 1, 10);
 
-            expect(repository.findByUser).toHaveBeenCalledWith(1);
+            expect(repository.findByUser).toHaveBeenCalledWith(1, 1, 10);
             expect(result).toEqual(expectedItems);
         });
 
         it("should return empty array when userId is missing", async () => {
-            const result = await service.findAllCardsForUser(null);
+            const result = await service.findAllForUser(null, 1, 10);
             expect(repository.findByUser).not.toHaveBeenCalled();
             expect(result).toEqual([]);
         });

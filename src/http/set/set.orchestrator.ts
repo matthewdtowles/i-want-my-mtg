@@ -53,36 +53,7 @@ export class SetOrchestrator {
         }
     }
 
-    async findBySetCode(setCode: string, req: AuthenticatedRequest): Promise<SetViewDto> {
-        try {
-            const userId: number = req.user ? req.user.id : 0;
-            const set: Set | null = await this.setService.findByCode(setCode);
-            if (!set) {
-                throw new Error(`Set with code ${setCode} not found`);
-            }
-            let inventory: Inventory[] = [];
-            if (userId && set.cards?.length) {
-                const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
-                inventory = await this.inventoryService.findByCards(userId, cardIds);
-            }
-            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            return new SetViewDto({
-                authenticated: isAuthenticated(req),
-                breadcrumbs: [
-                    { label: "Home", url: "/" },
-                    { label: "Sets", url: "/sets" },
-                    { label: setResonse.name, url: `/sets/${setCode}` },
-                ],
-                message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
-                set: setResonse,
-                status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-            });
-        } catch (error) {
-            return HttpErrorHandler.toHttpException(error, "findBySetCode");
-        }
-    }
-
-    async findBySetCodeWithPagination(
+    async findBySetCode(
         req: AuthenticatedRequest,
         setCode: string,
         page: number,

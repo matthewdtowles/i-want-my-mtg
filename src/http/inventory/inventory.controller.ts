@@ -2,22 +2,24 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject, Patch,
+    Get, Inject, Param, ParseIntPipe, Patch,
     Post,
     Render,
     Req, UseGuards
 } from "@nestjs/common";
+import { Inventory } from "src/core/inventory/inventory.entity";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.result";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
-import { Inventory } from "src/core/inventory/inventory.entity";
 import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 
 
 @Controller("inventory")
 export class InventoryController {
+
+    private readonly defaultLimit = 20;
 
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
@@ -25,7 +27,28 @@ export class InventoryController {
     @Get()
     @Render("inventory")
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
-        return this.inventoryOrchestrator.findByUser(req);
+        return this.inventoryOrchestrator.findByUser(req, 1, this.defaultLimit);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("page/:page")
+    @Render("inventory")
+    async findByUserPage(
+        @Req() req: AuthenticatedRequest,
+        @Param("page", ParseIntPipe) page: number,
+    ): Promise<InventoryViewDto> {
+        return this.inventoryOrchestrator.findByUser(req, page, this.defaultLimit);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("page/:page/limit/:limit")
+    @Render("inventory")
+    async findByUserPageWithLimit(
+        @Req() req: AuthenticatedRequest,
+        @Param("page", ParseIntPipe) page: number,
+        @Param("limit", ParseIntPipe) limit: number,
+    ): Promise<InventoryViewDto> {
+        return this.inventoryOrchestrator.findByUser(req, page, limit);
     }
 
     @UseGuards(JwtAuthGuard)

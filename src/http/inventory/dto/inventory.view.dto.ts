@@ -1,16 +1,19 @@
 import { BaseViewDto } from "src/http/base.view.dto";
 import { InventoryResponseDto } from "src/http/inventory/dto/inventory.response.dto";
+import { PaginationDto } from "src/http/pagination.dto";
 
 
 export class InventoryViewDto extends BaseViewDto {
     readonly cards: InventoryResponseDto[];
     readonly username: string;
     readonly totalValue: string;
+    readonly pagination?: PaginationDto;
 
     constructor(init: Partial<InventoryViewDto>) {
         super(init);
         this.cards = init.cards || [];
         this.username = init.username || "";
         this.totalValue = init.totalValue || "0.00";
+        this.pagination = init.pagination;
     }
 }

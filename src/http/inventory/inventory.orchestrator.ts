@@ -1,4 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
+import { Inventory } from "src/core/inventory/inventory.entity";
+import { InventoryService } from "src/core/inventory/inventory.service";
 import { ActionStatus } from "src/http/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
@@ -6,8 +8,7 @@ import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dt
 import { InventoryResponseDto } from "src/http/inventory/dto/inventory.response.dto";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { InventoryService } from "src/core/inventory/inventory.service";
+import { PaginationDto } from "../pagination.dto";
 
 @Injectable()
 export class InventoryOrchestrator {
@@ -15,14 +16,15 @@ export class InventoryOrchestrator {
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
 
-    async findByUser(req: AuthenticatedRequest): Promise<InventoryViewDto> {
+    async findByUser(req: AuthenticatedRequest, page: number, limit: number): Promise<InventoryViewDto> {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const inventoryItems: Inventory[] = await this.inventoryService.findAllCardsForUser(req.user.id);
-            const cards: InventoryResponseDto[] = inventoryItems.map(item =>
-                InventoryPresenter.toInventoryResponseDto(item));
+            const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, page, limit);
+            const cards: InventoryResponseDto[] = inventoryItems.map(item => InventoryPresenter.toInventoryResponseDto(item));
             const username: string = req.user.name;
             const totalValue: string = "0.00";
+            const totalInventoryItems: number = await this.inventoryService.totalInventoryItemsForUser(req.user.id);
+            const pagination = new PaginationDto(page, totalInventoryItems, limit);
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
@@ -34,9 +36,10 @@ export class InventoryOrchestrator {
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
                 totalValue,
+                pagination,
             });
         } catch (error) {
-            return HttpErrorHandler.toHttpException(error, "findByUser");
+            return HttpErrorHandler.toHttpException(error, "findByUserWithPagination");
         }
     }
 

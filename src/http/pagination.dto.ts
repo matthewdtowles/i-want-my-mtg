@@ -9,7 +9,7 @@ export class PaginationDto {
     readonly skipBackPage?: number;
     readonly skipForwardPage?: number;
     readonly limit: number;
-    
+
     constructor(currentPage: number, totalItems: number, limit: number) {
         this.currentPage = currentPage;
         this.totalItems = totalItems;

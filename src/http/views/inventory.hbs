@@ -51,4 +51,57 @@
         </tbody>
     </table>
 </section>
+<div class="pagination-container">
+    {{#if pagination.hasPrevPage}}
+    <a href="/inventory/page/1/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">&laquo;</a>
+    {{/if}}
+
+    {{#if pagination.hasPrevPage}}
+    <a href="/inventory/page/{{pagination.prevPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-primary">&lt;</a>
+    {{/if}}
+
+    {{#if pagination.skipBackPage}}
+    <a href="/inventory/page/{{pagination.skipBackPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
+    <span>...</span>
+    {{/if}}
+
+    <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
+
+    {{#if pagination.skipForwardPage}}
+    <span>...</span>
+    <a href="/inventory/page/{{pagination.skipForwardPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
+    {{/if}}
+
+    {{#if pagination.hasNextPage}}
+    <a href="/inventory/page/{{pagination.nextPage}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-primary">&gt;</a>
+    {{/if}}
+
+    {{#if pagination.hasNextPage}}
+    <a href="/inventory/page/{{pagination.totalPages}}/limit/{{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">&raquo;</a>
+    {{/if}}
+
+    <form id="limitForm" class="flex items-center gap-2 mb-4 mt-2">
+        <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 
+                text-xs sm:text-sm bg-white border border-teal-300 rounded focus:ring-2 
+                focus:ring-teal-200 focus:outline-none">
+            <option value="10" {{#if (eq pagination.limit 10)}}selected{{/if}}>10</option>
+            <option value="20" {{#if (eq pagination.limit 20)}}selected{{/if}}>20</option>
+            <option value="50" {{#if (eq pagination.limit 50)}}selected{{/if}}>50</option>
+        </select>
+        <label for="limit" class="text-sm font-medium text-teal-700">per page</label>
+    </form>
+    <script>
+        document.getElementById("limit").addEventListener("change", function () {
+            var limit = this.value;
+            var page = {{ pagination.currentPage }};
+            window.location.href = "/inventory/page/" + page + "/limit/" + limit;
+        });
+    </script>
+</div>
 <script src="/public/js/updateInventory.js" defer></script>

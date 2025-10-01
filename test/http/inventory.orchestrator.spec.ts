@@ -1,56 +1,41 @@
-import { BadRequestException, Logger } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { ActionStatus } from "src/http/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
-import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
-import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
+import { Card } from "src/core/card/card.entity";
+import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { ActionStatus } from "src/http/action-status.enum";
+import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
+import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
 
 
 describe("InventoryOrchestrator", () => {
     let orchestrator: InventoryOrchestrator;
-    let inventoryService: InventoryService;
-
-    const mockInventoryService = {
-        findAllCardsForUser: jest.fn(),
-        save: jest.fn(),
-        delete: jest.fn(),
-    };
+    let inventoryService: jest.Mocked<InventoryService>;
 
     const mockAuthenticatedRequest = {
-        user: {
-            id: 1,
-            name: "Test User",
-            email: "test@example.com",
-        },
+        user: { id: 1, name: "Test User", email: "test@example.com" },
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
-
-    const mockInventoryRequest: InventoryRequestDto[] = [
-        {
-            cardId: "card1",
-            quantity: 3,
-            isFoil: false,
-            userId: 1,
-        },
-    ];
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryOrchestrator,
                 {
-                    provide: InventoryService,
-                    useValue: mockInventoryService,
+                    provide: InventoryService, useValue: {
+                        findAllForUser: jest.fn(),
+                        totalInventoryItemsForUser: jest.fn(),
+                        save: jest.fn(),
+                        delete: jest.fn(),
+                    }
                 },
             ],
         }).compile();
 
-        module.useLogger(new Logger());
-        orchestrator = module.get<InventoryOrchestrator>(InventoryOrchestrator);
-        inventoryService = module.get<InventoryService>(InventoryService);
+        orchestrator = module.get(InventoryOrchestrator);
+        inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
     });
 
     afterEach(() => {
@@ -58,53 +43,98 @@ describe("InventoryOrchestrator", () => {
     });
 
     describe("findByUser", () => {
-        it("should return empty inventory view when user has no items", async () => {
-            mockInventoryService.findAllCardsForUser.mockResolvedValue([]);
-
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest);
-
-            expect(result).toBeDefined();
-            expect(result.cards).toHaveLength(0);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-        });
-    });
-
-    describe("save", () => {
-        it("should save inventory items and return them", async () => {
-            const mockInventoryItems: Inventory[] = [
+        it("returns inventory view with items and pagination", async () => {
+            const mockCard: Card = {
+                id: "card1",
+                name: "Test Card",
+                setCode: "TST",
+                number: "1",
+                hasFoil: true,
+                hasNonFoil: true,
+                imgSrc: "https://example.com/card1.png",
+                isReserved: false,
+                rarity: CardRarity.Common,
+                manaCost: "{1}{G}",
+                oracleText: "Test oracle text",
+                type: "Test",
+                legalities: [],
+                prices: [],
+            };
+            inventoryService.findAllForUser.mockResolvedValue([
                 {
                     userId: 1,
                     cardId: "card1",
                     quantity: 2,
                     isFoil: false,
-                },
-                {
-                    userId: 1,
-                    cardId: "card1",
-                    quantity: 1,
-                    isFoil: true,
-                }
-            ];
-            mockInventoryService.save.mockResolvedValue(mockInventoryItems);
+                    card: mockCard,
+                } as Inventory,
+            ]);
+            inventoryService.totalInventoryItemsForUser.mockResolvedValue(1);
 
-            const result = await orchestrator.save(mockInventoryRequest, mockAuthenticatedRequest);
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+
+            expect(result.cards.length).toBe(1);
+            expect(result.pagination.currentPage).toBe(1);
+            expect(result.pagination.totalItems).toBe(1);
+            expect(result.status).toBe(ActionStatus.SUCCESS);
+        });
+
+        it("returns empty inventory view when user has no items", async () => {
+            inventoryService.findAllForUser.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForUser.mockResolvedValue(0);
+
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+
+            expect(result.cards).toHaveLength(0);
+            expect(result.pagination.totalItems).toBe(0);
+            expect(result.status).toBe(ActionStatus.SUCCESS);
+        });
+
+        it("throws error if not authenticated", async () => {
+            const unauthenticatedRequest = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
+
+            await expect(orchestrator.findByUser(unauthenticatedRequest, 1, 10)).rejects.toThrow();
+        });
+
+    });
+
+    describe("save", () => {
+        it("saves inventory items and returns them", async () => {
+            const mockInventoryItems: Inventory[] = [
+                { userId: 1, cardId: "card1", quantity: 2, isFoil: false } as Inventory,
+            ];
+            inventoryService.save.mockResolvedValue(mockInventoryItems);
+
+            const result = await orchestrator.save([
+                { cardId: "card1", quantity: 2, isFoil: false, userId: 1 }
+            ], mockAuthenticatedRequest);
 
             expect(result).toEqual(mockInventoryItems);
             expect(inventoryService.save).toHaveBeenCalledTimes(1);
         });
 
-        it("should throw error if request is not authenticated", async () => {
-            const unauthenticatedRequest = { user: null } as AuthenticatedRequest;
+        it("throws error if request is not authenticated", async () => {
+            const unauthenticatedRequest = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
 
             await expect(
-                orchestrator.save(mockInventoryRequest, unauthenticatedRequest)
+                orchestrator.save([{ cardId: "card1", quantity: 2, isFoil: false, userId: 1 }], unauthenticatedRequest)
             ).rejects.toThrow();
+        });
+
+        it("returns error DTO on service failure", async () => {
+            inventoryService.save.mockRejectedValue(new Error("DB error"));
+
+            await expect(
+                orchestrator.save([
+                    { cardId: "card1", quantity: 2, isFoil: false, userId: 1 }
+                ], mockAuthenticatedRequest)
+            ).rejects.toThrow("An unexpected error occurred");
         });
     });
 
     describe("delete", () => {
-        it("should delete inventory item and return true", async () => {
-            mockInventoryService.delete.mockResolvedValue(true);
+        it("deletes inventory item and returns true", async () => {
+            inventoryService.delete.mockResolvedValue(true);
 
             const result = await orchestrator.delete(mockAuthenticatedRequest, "card1", false);
 
@@ -116,19 +146,27 @@ describe("InventoryOrchestrator", () => {
             );
         });
 
-        it("should throw BadRequestException if cardId is missing", async () => {
+        it("throws BadRequestException if cardId is missing", async () => {
             await expect(
                 orchestrator.delete(mockAuthenticatedRequest, null, false)
             ).rejects.toThrow(BadRequestException);
             expect(inventoryService.delete).not.toHaveBeenCalled();
         });
 
-        it("should throw error if request is not authenticated", async () => {
-            const unauthenticatedRequest = { user: null } as AuthenticatedRequest;
+        it("throws error if request is not authenticated", async () => {
+            const unauthenticatedRequest = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
 
             await expect(
                 orchestrator.delete(unauthenticatedRequest, "card1", false)
             ).rejects.toThrow();
+        });
+
+        it("returns error DTO on service failure", async () => {
+            inventoryService.delete.mockRejectedValue(new Error("DB error"));
+
+            await expect(
+                orchestrator.delete(mockAuthenticatedRequest, "card1", false)
+            ).rejects.toThrow("An unexpected error occurred");
         });
     });
 });

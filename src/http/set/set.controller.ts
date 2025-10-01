@@ -56,7 +56,7 @@ export class SetController {
     @Get(":setCode")
     @Render("set")
     async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, 1, this.defaultLimit);
+        return this.setOrchestrator.findBySetCode(req, setCode, 1, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -67,7 +67,7 @@ export class SetController {
         @Param("setCode") setCode: string,
         @Param("page", ParseIntPipe) page: number,
     ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, page, this.defaultLimit);
+        return this.setOrchestrator.findBySetCode(req, setCode, page, this.defaultLimit);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -79,7 +79,7 @@ export class SetController {
         @Param("page", ParseIntPipe) page: number,
         @Param("limit", ParseIntPipe) limit: number,
     ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCodeWithPagination(req, setCode, page, limit);
+        return this.setOrchestrator.findBySetCode(req, setCode, page, limit);
     }
 
 }

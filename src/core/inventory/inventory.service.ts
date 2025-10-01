@@ -25,14 +25,14 @@ export class InventoryService {
         return await this.repository.save(toSave);
     }
 
+    async findAllForUser(userId: number, page: number, limit: number): Promise<Inventory[]> {
+        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${page}, limit: ${limit}`);
+        return userId ? await this.repository.findByUser(userId, page, limit) : [];
+    }
+
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}`);
         return userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
-    }
-
-    async findAllCardsForUser(userId: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`findAllCardsForUser ${userId}`);
-        return userId ? await this.repository.findByUser(userId) : [];
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
@@ -41,6 +41,11 @@ export class InventoryService {
             return [];
         }
         return await this.repository.findByCards(userId, cardIds);
+    }
+
+    async totalInventoryItemsForUser(userId: number): Promise<number> {
+        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}`);
+        return await this.repository.totalInventoryItemsForUser(userId);
     }
 
     /**

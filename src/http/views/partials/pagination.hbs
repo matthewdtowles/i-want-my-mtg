@@ -1,4 +1,3 @@
-{{#unless eq pagination.totalPages 1}}
 <section class="pagination-container">
     {{#if pagination.hasPrevPage}}
     <a href="{{pagination.baseUrl}}/page/1/limit/{{pagination.limit}}"
@@ -18,7 +17,7 @@
         {{/unless}}
     {{/if}}
 
-    <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
+    <span class="pagination-btn pagination-btn-secondary" aria-current="page">{{pagination.currentPage}}</span>
 
     {{#if pagination.skipForwardPage}}
         {{#unless (eq pagination.skipForwardPage pagination.currentPage)}}
@@ -51,10 +50,12 @@
     <script>
         document.getElementById("limit").addEventListener("change", function () {
             var limit = this.value;
+            var totalItems = {{ pagination.totalItems }};
+            var lastPage = Math.ceil(totalItems / limit);
             var page = {{ pagination.currentPage }};
             var baseUrl = "{{pagination.baseUrl}}";
+            page = Math.min(page, lastPage);
             window.location.href = baseUrl + "/page/" + page + "/limit/" + limit;
         });
     </script>
 </section>
-{{/unless}}

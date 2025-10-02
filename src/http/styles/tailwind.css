@@ -113,7 +113,8 @@
 }
 
 .pagination-btn-secondary {
-    @apply btn-secondary cursor-default;
+    @apply bg-teal-600 text-white font-bold border-2 border-teal-800 cursor-default pointer-events-none shadow-lg scale-110;
+    /* Extra emphasis: bold, strong border, shadow, slightly larger, not clickable */
 }
 
 .pagination-btn-tertiary {

@@ -17,7 +17,7 @@
         {{/unless}}
     {{/if}}
 
-    <span class="pagination-btn pagination-btn-secondary">{{pagination.currentPage}}</span>
+    <span class="pagination-btn pagination-btn-secondary" aria-current="page">{{pagination.currentPage}}</span>
 
     {{#if pagination.skipForwardPage}}
         {{#unless (eq pagination.skipForwardPage pagination.currentPage)}}
@@ -41,17 +41,20 @@
         <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 
                 text-xs sm:text-sm bg-white border border-teal-300 rounded focus:ring-2 
                 focus:ring-teal-200 focus:outline-none">
-            <option value="10" {{#if (eq pagination.limit 10)}}selected{{/if}}>10</option>
-            <option value="20" {{#if (eq pagination.limit 20)}}selected{{/if}}>20</option>
+            <option value="25" {{#if (eq pagination.limit 25)}}selected{{/if}}>25</option>
             <option value="50" {{#if (eq pagination.limit 50)}}selected{{/if}}>50</option>
+            <option value="100" {{#if (eq pagination.limit 100)}}selected{{/if}}>100</option>
         </select>
         <label for="limit" class="text-sm font-medium text-teal-700">per page</label>
     </form>
     <script>
         document.getElementById("limit").addEventListener("change", function () {
             var limit = this.value;
+            var totalItems = {{ pagination.totalItems }};
+            var lastPage = Math.ceil(totalItems / limit);
             var page = {{ pagination.currentPage }};
             var baseUrl = "{{pagination.baseUrl}}";
+            page = Math.min(page, lastPage);
             window.location.href = baseUrl + "/page/" + page + "/limit/" + limit;
         });
     </script>

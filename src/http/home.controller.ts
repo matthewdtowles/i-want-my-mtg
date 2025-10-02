@@ -11,7 +11,7 @@ export class HomeController {
 
     @UseGuards(OptionalAuthGuard)
     @Get("/")
-    @Render("setListPage")
+    @Render("home")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         return await this.setOrchestrator.findSetList(req, [], 1, 20);
     }

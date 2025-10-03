@@ -185,5 +185,3 @@ docker-compose -f docker-compose.prod.yml up -d web
 - [ ] Run ETL: docker-compose run --rm etl
 - [ ] Commit changes to trigger CI/CD
 - [ ] Deploy to production server
-
-[iwantmymtg.net](http://iwantmymtg.net)

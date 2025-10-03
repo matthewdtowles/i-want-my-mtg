@@ -11,7 +11,7 @@
                 <th class="table-header">Name</th>
                 <th class="table-header">Set</th>
                 <th class="table-header">Price</th>
-                <th class="table-header pr-2">Delete</th>
+                <th class="table-header pr-2 xs-hide">Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -36,7 +36,7 @@
                         {{card.priceValue}}
                     </span>
                 </td>
-                <td class="delete-inventory-entry pr-2">
+                <td class="delete-inventory-entry pr-2 xs-hide">
                     <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
                         <input type="hidden" name="card-id" value="{{card.cardId}}" />
                         <input type="hidden" name="isFoil" value="{{card.isFoil}}" />

@@ -32,6 +32,10 @@ rm -f docker-compose.yml docker-compose.override.yml
 log_info "Setting up production compose file..."
 mv docker-compose.prod.yml docker-compose.yml
 
+log_info "Creating docker-pg-exec alias..."
+echo "alias docker-pg-exec='docker exec -it ubuntu-postgres-1 psql -U iwmm_pg_user -d i_want_my_mtg'" >> ~/.bashrc
+log_info "Alias docker-pg-exec added."
+
 # Stop existing containers
 log_info "Stopping existing containers..."
 docker compose down --remove-orphans || true
@@ -75,5 +79,8 @@ timeout 30 bash -c 'until curl -f http://localhost; do echo "Waiting for web ser
 
 log_info "Cleaning up old images..."
 docker image prune -f
+
+log_info "Disk space usage:"
+df -h
 
 log_info "Remote deployment completed successfully!"

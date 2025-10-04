@@ -1,53 +1,71 @@
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 input[type="number"] {
-    appearance: textfield;
-    -moz-appearance: textfield;
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 .bg-success {
-    background-color: rgb(185 250 185);
+  background-color: rgb(185 250 185);
 }
 
 .bg-error {
-    background-color: rgb(252 165 165);
+  background-color: rgb(252 165 165);
 }
 
 .bg-warning {
-    background-color: rgb(255 255 0);
+  background-color: rgb(255 255 0);
 }
 
 .bg-info {
-    background-color: rgb(173 216 230);
+  background-color: rgb(173 216 230);
 }
 
 @media (max-width: 450px) {
-  table, .table-container, .min-w-full {
+
+  table,
+  .table-container,
+  .min-w-full {
     font-size: 0.7rem !important;
   }
-  th, td {
+
+  th,
+  td {
     padding-left: 0.25rem !important;
     padding-right: 0.25rem !important;
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
   }
-  .card-img-preview {
-    max-width: 32px !important;
-    max-height: 32px !important;
-  }
-  .price-normal, .price-foil {
+
+  .price-normal,
+  .price-foil {
     font-size: 0.7rem !important;
   }
-  .xs-hide { display: none !important; }
-  .xs-show { display: block !important; }
-  th.xs-show, td.xs-show { display: table-cell !important; }
-  tr.xs-show { display: table-row !important; }
+
+  .xs-hide {
+    display: none !important;
+  }
+
+  .xs-show {
+    display: block !important;
+  }
+
+  th.xs-show,
+  td.xs-show {
+    display: table-cell !important;
+  }
+
+  tr.xs-show {
+    display: table-row !important;
+  }
 }
 
 @media (min-width: 451px) {
-  .xs-show { display: none !important; }
+  .xs-show {
+    display: none !important;
+  }
 }

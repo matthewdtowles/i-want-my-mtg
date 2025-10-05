@@ -1,61 +1,54 @@
 <section class="pagination-container">
     {{#if pagination.hasPrevPage}}
-    <a href="{{pagination.baseUrl}}/page/1/limit/{{pagination.limit}}"
+    <a href="{{pagination.baseUrl}}?page=1&limit={{pagination.limit}}"
         class="pagination-btn pagination-btn-tertiary">&laquo;</a>
     {{/if}}
 
     {{#if pagination.hasPrevPage}}
-    <a href="{{ pagination.baseUrl }}/page/{{pagination.prevPage}}/limit/{{pagination.limit}}"
+    <a href="{{ pagination.baseUrl }}?page={{pagination.prevPage}}&limit={{pagination.limit}}"
         class="pagination-btn pagination-btn-primary">&lt;</a>
     {{/if}}
 
     {{#if pagination.skipBackPage}}
-        {{#unless (eq pagination.skipBackPage pagination.currentPage)}}
-        <a href="{{pagination.baseUrl}}/page/{{pagination.skipBackPage}}/limit/{{pagination.limit}}"
-            class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
-        <span>...</span>
-        {{/unless}}
+    {{#unless (eq pagination.skipBackPage pagination.currentPage)}}
+    <a href="{{pagination.baseUrl}}?page={{pagination.skipBackPage}}&limit={{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
+    <span>...</span>
+    {{/unless}}
     {{/if}}
 
     <span class="pagination-btn pagination-btn-secondary" aria-current="page">{{pagination.currentPage}}</span>
 
     {{#if pagination.skipForwardPage}}
-        {{#unless (eq pagination.skipForwardPage pagination.currentPage)}}
-        <span>...</span>
-        <a href="{{pagination.baseUrl}}/page/{{pagination.skipForwardPage}}/limit/{{pagination.limit}}"
-            class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
-        {{/unless}}
+    {{#unless (eq pagination.skipForwardPage pagination.currentPage)}}
+    <span>...</span>
+    <a href="{{pagination.baseUrl}}?page={{pagination.skipForwardPage}}&limit={{pagination.limit}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
+    {{/unless}}
     {{/if}}
 
     {{#if pagination.hasNextPage}}
-    <a href="{{pagination.baseUrl}}/page/{{pagination.nextPage}}/limit/{{pagination.limit}}"
+    <a href="{{pagination.baseUrl}}?page={{pagination.nextPage}}&limit={{pagination.limit}}"
         class="pagination-btn pagination-btn-primary">&gt;</a>
     {{/if}}
 
     {{#if pagination.hasNextPage}}
-    <a href="{{pagination.baseUrl}}/page/{{pagination.totalPages}}/limit/{{pagination.limit}}"
+    <a href="{{pagination.baseUrl}}?page={{pagination.totalPages}}&limit={{pagination.limit}}"
         class="pagination-btn pagination-btn-tertiary">&raquo;</a>
     {{/if}}
 
-    <form id="limitForm" class="flex items-center gap-2 mb-4 mt-2">
+    <form method="get" action="{{pagination.baseUrl}}" class="flex items-center gap-2 mb-4 mt-2">
+        <input type="hidden" name="page" value="{{pagination.currentPage}}">
+        {{#if filter}}
+        <input type="hidden" name="filter" value="{{filter}}">
+        {{/if}}
         <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 
                 text-xs sm:text-sm bg-white border border-teal-300 rounded focus:ring-2 
-                focus:ring-teal-200 focus:outline-none">
+                focus:ring-teal-200 focus:outline-none" onchange="this.form.submit()">
             <option value="25" {{#if (eq pagination.limit 25)}}selected{{/if}}>25</option>
             <option value="50" {{#if (eq pagination.limit 50)}}selected{{/if}}>50</option>
             <option value="100" {{#if (eq pagination.limit 100)}}selected{{/if}}>100</option>
         </select>
         <label for="limit" class="text-sm font-medium text-teal-700">per page</label>
     </form>
-    <script>
-        document.getElementById("limit").addEventListener("change", function () {
-            var limit = this.value;
-            var totalItems = {{ pagination.totalItems }};
-            var lastPage = Math.ceil(totalItems / limit);
-            var page = {{ pagination.currentPage }};
-            var baseUrl = "{{pagination.baseUrl}}";
-            page = Math.min(page, lastPage);
-            window.location.href = baseUrl + "/page/" + page + "/limit/" + limit;
-        });
-    </script>
 </section>

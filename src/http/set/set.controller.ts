@@ -4,6 +4,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
+    Query,
     Render,
     Req,
     UseGuards
@@ -27,8 +28,13 @@ export class SetController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
-    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, 1, this.defaultLimit);
+    async setListing(
+        @Req() req: AuthenticatedRequest,
+        @Query("page", ParseIntPipe) page: number = 1,
+        @Query("limit") limit: number = this.defaultLimit,
+        @Query("filter") filter?: string
+    ): Promise<SetListViewDto> {
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
     }
 
     @UseGuards(OptionalAuthGuard)

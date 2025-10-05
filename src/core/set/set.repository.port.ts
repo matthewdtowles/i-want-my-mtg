@@ -20,9 +20,10 @@ export interface SetRepositoryPort {
      *
      * @param {number} page - The page number (1-based index).
      * @param {number} limit - The number of items per page.
+     * @param {string} [filter] - Optional filter string to search sets.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
-    findAllSetsMeta(page: number, limit: number): Promise<Set[]>;
+    findAllSetsMeta(page: number, limit: number, filter?: string): Promise<Set[]>;
 
     /**
      * Finds a Set entity by its unique three-letter code.

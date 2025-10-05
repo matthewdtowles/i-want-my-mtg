@@ -30,11 +30,12 @@ export class SetOrchestrator {
         req: AuthenticatedRequest,
         _breadcrumbs: Breadcrumb[],
         page: number,
-        limit: number
+        limit: number,
+        filter?: string
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
-                this.setService.findSets(page, limit),
+                this.setService.findSets(page, limit, filter),
                 this.setService.getTotalSetsCount()
             ]);
             const uniqueOwned: number = 0;

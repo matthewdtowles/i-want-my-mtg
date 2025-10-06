@@ -1,87 +1,36 @@
-<form id="set-filter-form" method="get" action="{{pagination.baseUrl}}" class="mb-4 flex items-center gap-2 relative">
-    <input type="text" id="set-filter" name="filter" value="{{filter}}" placeholder="Filter sets..." autocomplete="off"
-        class="input-field w-48 px-2 py-1 border border-teal-300 rounded pr-8" />
-    <input type="hidden" name="page" value="1" />
-    <input type="hidden" name="limit" value="{{pagination.limit}}" />
-    <button type="button" id="clear-filter-btn"
-        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-600 focus:outline-none"
-        style="display: {{#if filter}}inline{{else}}none{{/if}};" aria-label="Clear filter">&#10005;</button>
-</form>
-<script>
-    const filterInput = document.getElementById("set-filter");
-    const form = document.getElementById("set-filter-form");
-    const clearBtn = document.getElementById("clear-filter-btn");
+<div class="w-full max-w-5xl mx-auto">
+    {{>filter}}
 
-    let debounceTimeout;
-
-    function fetchFilteredSets(filter) {
-        const params = new URLSearchParams();
-        params.set('filter', filter);
-        params.set('page', 1);
-        params.set('limit', form.querySelector('input[name="limit"]').value);
-
-        fetch(form.action + "?" + params.toString())
-            .then(response => response.text())
-            .then(html => {
-                // Replace the table and pagination with the new HTML
-                // You may want to return only the table+pagination partial from your backend for AJAX requests
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                const newTable = doc.querySelector("table");
-                const newPagination = doc.querySelector(".pagination-container");
-                document.querySelector("table").replaceWith(newTable);
-                document.querySelector(".pagination-container").replaceWith(newPagination);
-            });
-    }
-
-    filterInput.addEventListener("input", function () {
-        clearTimeout(debounceTimeout);
-        clearBtn.style.display = this.value ? "inline" : "none";
-        debounceTimeout = setTimeout(() => {
-            fetchFilteredSets(this.value);
-        }, 300);
-    });
-
-    clearBtn.addEventListener("click", function () {
-        filterInput.value = "";
-        clearBtn.style.display = "none";
-        fetchFilteredSets("");
-    });
-
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
-    });
-</script>
-<table class="min-w-full bg-white">
-    <thead>
-        <tr class="table-header-row">
-            <th class="table-header pl-2">Set</th>
-            <th class="table-header">Price</th>
-            <th class="table-header">Owned</th>
-            <th class="table-header xs-hide pr-2">Release Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{#each setList}}
-        <tr class="table-row">
-            <td class="py-2 pl-2">
-                <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
-                <a href="{{this.url}}" class="table-link">{{this.name}}</a>
-            </td>
-            <td class="py-2">${{this.totalValue}}</td>
-            <td class="py-2">
-                <div class="relative w-full h-6 bg-gray-200 rounded">
-                    <div class="absolute top-0 left-0 h-full bg-teal-500 rounded"
-                        style="width: {{this.ownedPercentage}}%;"></div>
-                    <span class="absolute inset-0 flex items-center justify-center text-black font-bold">
-                        ${{this.ownedValue}}
-                    </span>
-                </div>
-            </td>
-            <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
-        </tr>
-        {{/each}}
-    </tbody>
-</table>
-
+    <table class="min-w-full bg-white">
+        <thead>
+            <tr class="table-header-row">
+                <th class="table-header pl-2">Set</th>
+                <th class="table-header">Price</th>
+                <th class="table-header">Owned</th>
+                <th class="table-header xs-hide pr-2">Release Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each setList}}
+            <tr class="table-row">
+                <td class="py-2 pl-2">
+                    <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                    <a href="{{this.url}}" class="table-link">{{this.name}}</a>
+                </td>
+                <td class="py-2">${{this.totalValue}}</td>
+                <td class="py-2">
+                    <div class="relative w-full h-6 bg-gray-200 rounded">
+                        <div class="absolute top-0 left-0 h-full bg-teal-500 rounded"
+                            style="width: {{this.ownedPercentage}}%;"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-black font-bold">
+                            ${{this.ownedValue}}
+                        </span>
+                    </div>
+                </td>
+                <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
 {{>pagination}}

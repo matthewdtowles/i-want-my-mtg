@@ -14,6 +14,7 @@ import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
+import { sanitizeInt } from "src/http/http.util";
 
 @Controller("sets")
 export class SetController {
@@ -21,7 +22,7 @@ export class SetController {
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
     ];
-    private readonly defaultLimit = 20;
+    private readonly defaultLimit = 25;
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
@@ -30,32 +31,14 @@ export class SetController {
     @Render("setListPage")
     async setListing(
         @Req() req: AuthenticatedRequest,
-        @Query("page", ParseIntPipe) page: number = 1,
-        @Query("limit") limit: number = this.defaultLimit,
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string,
         @Query("filter") filter?: string
     ): Promise<SetListViewDto> {
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
+        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
         return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get("page/:page")
-    @Render("setListPage")
-    async setListingPage(
-        @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number
-    ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get("page/:page/limit/:limit")
-    @Render("setListPage")
-    async setListingPageWithLimit(
-        @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number,
-        @Param("limit", ParseIntPipe) limit: number
-    ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit);
     }
 
     @UseGuards(OptionalAuthGuard)

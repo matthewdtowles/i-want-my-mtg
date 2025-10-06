@@ -36,7 +36,7 @@ export class SetOrchestrator {
         try {
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(page, limit, filter),
-                this.setService.getTotalSetsCount()
+                this.setService.getTotalSetsCount(filter)
             ]);
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
@@ -92,6 +92,15 @@ export class SetOrchestrator {
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
+        }
+    }
+
+    async getLastPage(limit: number, filter?: string): Promise<number> {
+        try {
+            const totalSets = await this.setService.getTotalSetsCount(filter);
+            return Math.max(1, Math.ceil(totalSets / limit));
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getLastPage");
         }
     }
 }

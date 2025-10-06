@@ -23,8 +23,8 @@ export class SetService {
         return await this.repository.findByCode(setCode);
     }
 
-    async getTotalSetsCount(): Promise<number> {
-        this.LOGGER.debug('Calling getTotalSetsCount()');
-        return await this.repository.totalSets();
+    async getTotalSetsCount(filter?: string): Promise<number> {
+        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${filter})`);
+        return await this.repository.totalSets(filter);
     }
 }

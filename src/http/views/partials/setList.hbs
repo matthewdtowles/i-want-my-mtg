@@ -1,3 +1,57 @@
+<form id="set-filter-form" method="get" action="{{pagination.baseUrl}}" class="mb-4 flex items-center gap-2 relative">
+    <input type="text" id="set-filter" name="filter" value="{{filter}}" placeholder="Filter sets..." autocomplete="off"
+        class="input-field w-48 px-2 py-1 border border-teal-300 rounded pr-8" />
+    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="limit" value="{{pagination.limit}}" />
+    <button type="button" id="clear-filter-btn"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-600 focus:outline-none"
+        style="display: {{#if filter}}inline{{else}}none{{/if}};" aria-label="Clear filter">&#10005;</button>
+</form>
+<script>
+    const filterInput = document.getElementById("set-filter");
+    const form = document.getElementById("set-filter-form");
+    const clearBtn = document.getElementById("clear-filter-btn");
+
+    let debounceTimeout;
+
+    function fetchFilteredSets(filter) {
+        const params = new URLSearchParams();
+        params.set('filter', filter);
+        params.set('page', 1);
+        params.set('limit', form.querySelector('input[name="limit"]').value);
+
+        fetch(form.action + "?" + params.toString())
+            .then(response => response.text())
+            .then(html => {
+                // Replace the table and pagination with the new HTML
+                // You may want to return only the table+pagination partial from your backend for AJAX requests
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const newTable = doc.querySelector("table");
+                const newPagination = doc.querySelector(".pagination-container");
+                document.querySelector("table").replaceWith(newTable);
+                document.querySelector(".pagination-container").replaceWith(newPagination);
+            });
+    }
+
+    filterInput.addEventListener("input", function () {
+        clearTimeout(debounceTimeout);
+        clearBtn.style.display = this.value ? "inline" : "none";
+        debounceTimeout = setTimeout(() => {
+            fetchFilteredSets(this.value);
+        }, 300);
+    });
+
+    clearBtn.addEventListener("click", function () {
+        filterInput.value = "";
+        clearBtn.style.display = "none";
+        fetchFilteredSets("");
+    });
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+    });
+</script>
 <table class="min-w-full bg-white">
     <thead>
         <tr class="table-header-row">

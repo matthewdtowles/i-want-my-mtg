@@ -4,7 +4,7 @@ import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { SetMapper } from "src/infrastructure/database/set/set.mapper";
 import { SetOrmEntity } from "src/infrastructure/database/set/set.orm-entity";
-import { Like, MoreThan, Repository } from "typeorm";
+import { ILike, MoreThan, Repository } from "typeorm";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
@@ -21,7 +21,7 @@ export class SetRepository implements SetRepositoryPort {
         const setMetaList: SetOrmEntity[] = await this.setRepository.find({
             where: {
                 baseSize: MoreThan(0),
-                ...(filter && filter.length > 0 ? { name: Like(`%${filter}%`) } : {})
+                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
             },
             order: { releaseDate: "DESC", name: "ASC" },
             skip: skip,
@@ -34,7 +34,7 @@ export class SetRepository implements SetRepositoryPort {
         const set: SetOrmEntity = await this.setRepository.findOne({
             where: {
                 code,
-                ...(filter && filter.length > 0 ? { name: Like(`%${filter}%`) } : {})
+                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
             },
         });
         return set ? SetMapper.toCore(set) : null;
@@ -44,7 +44,7 @@ export class SetRepository implements SetRepositoryPort {
         return await this.setRepository.count({
             where: {
                 baseSize: MoreThan(0),
-                ...(filter && filter.length > 0 ? { name: Like(`%${filter}%`) } : {})
+                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
             },
         });
     }

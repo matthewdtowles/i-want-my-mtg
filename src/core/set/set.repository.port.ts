@@ -36,9 +36,10 @@ export interface SetRepositoryPort {
     /**
      * Counts the total number of Set entities.
      *
+     * @param {string} [filter] - Optional filter string to search sets.
      * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
      */
-    totalSets(): Promise<number>;
+    totalSets(filter?: string): Promise<number>;
 
     /**
      * Removes a Set entity.

@@ -15,3 +15,14 @@ export function toDollar(amount: number): string {
 export function isAuthenticated(req: AuthenticatedRequest): boolean {
     return req.user != null && typeof req.isAuthenticated === "function" ? req.isAuthenticated() : false;
 }
+
+export function sanitizeInt(value: string | undefined, defaultValue: number): number {
+    if (!value) {
+        return defaultValue;
+    }
+    const parsed = parseInt(value, 10);
+    if (isNaN(parsed) || parsed < 1) {
+        return defaultValue;
+    }
+    return parsed;
+}

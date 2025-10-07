@@ -26,3 +26,11 @@ export function sanitizeInt(value: string | undefined, defaultValue: number): nu
     }
     return parsed;
 }
+
+export function safeAlphaNumeric(value: string): string | null {
+    if (!value || value.trim().length === 0) {
+        return null;
+    }
+    const sanitized = value.trim().replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+    return sanitized.length > 0 ? sanitized : null;
+}

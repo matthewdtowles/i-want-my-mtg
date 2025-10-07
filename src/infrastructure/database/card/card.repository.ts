@@ -5,7 +5,7 @@ import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
 import { CardMapper } from "src/infrastructure/database/card/card.mapper";
 import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
-import { Repository } from "typeorm";
+import { ILike, Repository } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
 
 
@@ -33,10 +33,11 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findBySet(code: string, page: number, limit: number): Promise<Card[]> {
+    async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: {
                 set: { code },
+                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {}),
             },
             order: { order: "ASC", },
             skip: (page - 1) * limit,
@@ -65,9 +66,12 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string): Promise<number> {
+    async totalInSet(code: string, filter?: string): Promise<number> {
         return this.cardRepository.count({
-            where: { set: { code } },
+            where: { 
+                set: { code },
+                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {}),
+            },
         });
     }
 

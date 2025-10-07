@@ -10,8 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
         params.set("filter", filter);
         params.set("page", 1);
         params.set("limit", form.querySelector("input[name=\"limit\"]").value);
-
-        fetch(form.action + "?" + params.toString())
+        url = form.action + "?" + params.toString();
+        console.log("Fetching URL:", url);
+        fetch(url)
             .then(response => response.text())
             .then(html => {
                 // Replace the table and pagination with the new HTML

@@ -14,7 +14,7 @@ import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
-import { sanitizeInt } from "src/http/http.util";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
 
 @Controller("sets")
 export class SetController {
@@ -44,31 +44,18 @@ export class SetController {
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")
-    async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, 1, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get(":setCode/page/:page")
-    @Render("set")
-    async findByCodePage(
+    async findBySetCode(
         @Req() req: AuthenticatedRequest,
         @Param("setCode") setCode: string,
-        @Param("page", ParseIntPipe) page: number,
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string,
+        @Query("filter") filterRaw?: string
     ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, page, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get(":setCode/page/:page/limit/:limit")
-    @Render("set")
-    async findByCodePageWithLimit(
-        @Req() req: AuthenticatedRequest,
-        @Param("setCode") setCode: string,
-        @Param("page", ParseIntPipe) page: number,
-        @Param("limit", ParseIntPipe) limit: number,
-    ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, page, limit);
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const filter = safeAlphaNumeric(filterRaw);
+        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, limit, filter);
+        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+        return this.setOrchestrator.findBySetCode(req, setCode, page, limit, filter);
     }
 
 }

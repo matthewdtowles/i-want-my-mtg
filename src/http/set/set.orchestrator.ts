@@ -59,7 +59,8 @@ export class SetOrchestrator {
         req: AuthenticatedRequest,
         setCode: string,
         page: number,
-        limit: number
+        limit: number,
+        filter?: string
     ): Promise<SetViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -67,7 +68,7 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            const cards: Card[] = await this.cardService.findBySet(setCode, page, limit);
+            const cards: Card[] = await this.cardService.findBySet(setCode, page, limit, filter);
             set.cards.push(...cards);
             let inventory: Inventory[] = [];
             if (userId && set.cards?.length) {
@@ -101,6 +102,15 @@ export class SetOrchestrator {
             return Math.max(1, Math.ceil(totalSets / limit));
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "getLastPage");
+        }
+    }
+
+    async getLastCardPage(setCode: string, limit: number, filter?: string): Promise<number> {
+        try {
+            const totalCards = await this.cardService.totalCardsInSet(setCode, filter);
+            return Math.max(1, Math.ceil(totalCards / limit));
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getLastCardPage");
         }
     }
 }

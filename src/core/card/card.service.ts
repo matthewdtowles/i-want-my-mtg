@@ -46,9 +46,9 @@ export class CardService {
         }
     }
 
-    async findBySet(code: string, page: number, limit: number): Promise<Card[]> {
+    async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
         try {
-            return await this.repository.findBySet(code, page, limit);
+            return await this.repository.findBySet(code, page, limit, filter);
         } catch (error) {
             throw new Error(`Error finding cards in set ${code}: ${error.message}`);
         }
@@ -70,11 +70,11 @@ export class CardService {
         }
     }
 
-    async totalCardsInSet(setCode: string): Promise<number> {
+    async totalCardsInSet(setCode: string, filter?: string): Promise<number> {
         try {
-            return await this.repository.totalInSet(setCode);
+            return await this.repository.totalInSet(setCode, filter);
         } catch (error) {
-            throw new Error(`Error counting cards in set ${setCode}: ${error.message}`);
+            throw new Error(`Error counting cards in set ${setCode} with filter ${filter}: ${error.message}`);
         }
     }
 

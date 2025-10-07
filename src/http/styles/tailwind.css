@@ -52,12 +52,31 @@
     color: darkred;
 }
 
+.filter-input {
+    @apply w-full pl-11 pr-12 py-2 border border-teal-300 rounded-md transition-all duration-150 focus:outline-none;
+}
+
+/* On hover: border becomes teal, glow slightly stronger but still max 8px */
+.filter-input:hover {
+    @apply border-teal-500;
+    box-shadow: 0 0 2px 0 rgba(44, 200, 202, 0.4);
+}
+
+/* On active/focus: border teal, ring, glow at max 8px */
+.filter-input:focus,
+.filter-input:active {
+    @apply border-teal-500 ring-2 ring-teal-400;
+    box-shadow: 0 0 4px 0 rgba(44, 200, 202, 0.5);
+    background: #edf9f8;
+}
+
 .foil-badge {
     @apply inline-flex items-center text-xs font-medium ml-1 bg-purple-600 text-white px-1.5 py-0.5 rounded shadow-inner;
 }
 
 .input-field {
-    @apply mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
+    @apply mt-1 w-full p-3 border border-teal-400 rounded-md focus:ring-2 focus:ring-teal-400 focus:ring-opacity-60 transition-all duration-150;
+    box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.3);
 }
 
 .input-label {
@@ -112,7 +131,7 @@
     @apply btn-primary;
 }
 
-.pagination-btn-secondary {
+.pagination-btn-current {
     @apply bg-teal-600 text-white font-bold border-2 border-teal-800 cursor-default pointer-events-none shadow-lg scale-110;
     /* Extra emphasis: bold, strong border, shadow, slightly larger, not clickable */
 }

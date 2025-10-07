@@ -1,8 +1,8 @@
 import { Card } from "src/core/card/card.entity";
 import { Set } from "src/core/set/set.entity";
-import { CardMapper } from "src/infrastructure/database/card/card.mapper";
+import { CardMapper } from "src/database/card/card.mapper";
+import { CardOrmEntity } from "src/database/card/card.orm-entity";
 import { SetOrmEntity } from "./set.orm-entity";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
 
 
 export class SetMapper {

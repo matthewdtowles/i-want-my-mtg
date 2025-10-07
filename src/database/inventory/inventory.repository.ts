@@ -2,8 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
-import { InventoryMapper } from "src/infrastructure/database/inventory/inventory.mapper";
-import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
+import { InventoryMapper } from "src/database/inventory/inventory.mapper";
+import { InventoryOrmEntity } from "src/database/inventory/inventory.orm-entity";
 import { In, Repository } from "typeorm";
 
 @Injectable()

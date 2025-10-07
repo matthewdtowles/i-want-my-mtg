@@ -1,7 +1,7 @@
 import { Logger, Module } from "@nestjs/common";
 import { InventoryModule } from "src/core/inventory/inventory.module";
 import { UserService } from "src/core/user/user.service";
-import { DatabaseModule } from "src/infrastructure/database/database.module";
+import { DatabaseModule } from "src/database/database.module";
 
 @Module({
     imports: [DatabaseModule, InventoryModule],

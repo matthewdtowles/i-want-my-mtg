@@ -1,8 +1,8 @@
 import { Card } from "src/core/card/card.entity";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
-import { LegalityMapper } from "src/infrastructure/database/card/legality.mapper";
-import { PriceMapper } from "src/infrastructure/database/price/price.mapper";
-import { SetMapper } from "src/infrastructure/database/set/set.mapper";
+import { CardOrmEntity } from "src/database/card/card.orm-entity";
+import { LegalityMapper } from "src/database/card/legality.mapper";
+import { PriceMapper } from "src/database/price/price.mapper";
+import { SetMapper } from "src/database/set/set.mapper";
 
 export class CardMapper {
 

@@ -25,7 +25,7 @@ export class InventoryOrchestrator {
             const username: string = req.user.name;
             const totalValue: string = "0.00";
             const totalInventoryItems: number = await this.inventoryService.totalInventoryItemsForUser(req.user.id, filter);
-            const pagination = new PaginationDto(page, totalInventoryItems, limit, this.BASE_URL);
+            const pagination = new PaginationDto(page, totalInventoryItems, limit, this.BASE_URL, filter);
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [

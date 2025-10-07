@@ -1,12 +1,12 @@
 <form id="filter-form" method="get" action="{{pagination.baseUrl}}" class="mb-4">
     <div class="relative w-full">
-        <input type="text" id="filter" name="filter" value="{{filter}}" placeholder="Filter..." autocomplete="off"
+        <input type="text" id="filter" name="filter" value="{{pagination.filter}}" placeholder="Filter..." autocomplete="off"
             class="input-field w-full px-2 py-1 border border-teal-300 rounded pr-12" />
         <button type="button" id="clear-filter-btn" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-1 bg-white transition-colors duration-150
                    text-gray-400 hover:text-teal-600 focus:outline-none"
-            style="display: {{#if filter}}inline{{else}}none{{/if}};" aria-label="Clear filter">&#10005;</button>
+            style="display: {{#if pagination.filter}}inline{{else}}none{{/if}};" aria-label="Clear filter">&#10005;</button>
     </div>
-    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="page" value="{{pagination.currentPage}}" />
     <input type="hidden" name="limit" value="{{pagination.limit}}" />
 </form>
 

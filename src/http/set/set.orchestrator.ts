@@ -41,7 +41,7 @@ export class SetOrchestrator {
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
             const baseUrl = "/sets";
-            const pagination = new PaginationDto(page, totalSets, limit, baseUrl);
+            const pagination = new PaginationDto(page, totalSets, limit, baseUrl, filter);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: _breadcrumbs,
@@ -78,7 +78,7 @@ export class SetOrchestrator {
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
             const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, filter);
             const baseUrl = `/sets/${setCode}`;
-            const pagination = new PaginationDto(page, totalCardsInSet, limit, baseUrl);
+            const pagination = new PaginationDto(page, totalCardsInSet, limit, baseUrl, filter);
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [

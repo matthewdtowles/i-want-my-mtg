@@ -57,6 +57,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
             });
         }
         qb.skip((page - 1) * limit).take(limit);
+        qb.orderBy("card.order", "ASC");
         const items = await qb.getMany();
         return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }

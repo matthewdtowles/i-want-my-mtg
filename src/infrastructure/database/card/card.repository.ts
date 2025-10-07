@@ -34,17 +34,20 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
-        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
-            where: {
-                set: { code },
-                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {}),
-            },
-            order: { order: "ASC", },
-            skip: (page - 1) * limit,
-            take: limit,
-            relations: ["legalities", "prices"],
-        }) ?? [];
-        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
+        const qb = this.cardRepository.createQueryBuilder("card")
+            .leftJoinAndSelect("card.legalities", "legalities")
+            .leftJoinAndSelect("card.prices", "prices")
+            .where("card.setCode = :code", { code });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        qb.skip((page - 1) * limit).take(limit);
+        qb.orderBy("card.order", "ASC");
+        const items = await qb.getMany();
+        return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
@@ -67,12 +70,15 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async totalInSet(code: string, filter?: string): Promise<number> {
-        return this.cardRepository.count({
-            where: { 
-                set: { code },
-                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {}),
-            },
-        });
+        const qb = this.cardRepository.createQueryBuilder("card")
+            .where("card.setCode = :code", { code });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        return qb.getCount();
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {

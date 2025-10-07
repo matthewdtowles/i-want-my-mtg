@@ -17,16 +17,16 @@ export class SetRepository implements SetRepositoryPort {
     }
 
     async findAllSetsMeta(page: number, limit: number, filter?: string): Promise<Set[]> {
-        const skip = (page - 1) * limit;
-        const setMetaList: SetOrmEntity[] = await this.setRepository.find({
-            where: {
-                baseSize: MoreThan(0),
-                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
-            },
-            order: { releaseDate: "DESC", name: "ASC" },
-            skip: skip,
-            take: limit,
-        });
+        const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        qb.skip((page - 1) * limit).take(limit);
+        qb.orderBy("set.releaseDate", "DESC").addOrderBy("set.name", "ASC");
+        const setMetaList: SetOrmEntity[] = await qb.getMany();
         return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 

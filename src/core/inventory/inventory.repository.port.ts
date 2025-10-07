@@ -48,17 +48,19 @@ export interface InventoryRepositoryPort {
      * @param userId
      * @param page
      * @param limit
+     * @param filter optional filter by card name
      * @returns user's inventory entities for given page
      */
-    findByUser(userId: number, page: number, limit: number): Promise<Inventory[]>;
+    findByUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]>;
 
     /**
      * Get total number of inventory items for user
      * 
      * @param userId 
+     * @param filter optional filter by card name
      * @returns total number of inventory items
      */
-    totalInventoryItemsForUser(userId: number): Promise<number>;
+    totalInventoryItemsForUser(userId: number, filter?: string): Promise<number>;
 
     /**
      * Delete inventory entity

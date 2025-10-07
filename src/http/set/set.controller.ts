@@ -3,7 +3,6 @@ import {
     Get,
     Inject,
     Param,
-    ParseIntPipe,
     Query,
     Render,
     Req,
@@ -11,10 +10,10 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
 
 @Controller("sets")
 export class SetController {
@@ -33,9 +32,10 @@ export class SetController {
         @Req() req: AuthenticatedRequest,
         @Query("page") pageRaw?: string,
         @Query("limit") limitRaw?: string,
-        @Query("filter") filter?: string
+        @Query("filter") filterRaw?: string
     ): Promise<SetListViewDto> {
         const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const filter = safeAlphaNumeric(filterRaw);
         const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
         const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
         return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);

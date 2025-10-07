@@ -4,7 +4,7 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { InventoryMapper } from "src/infrastructure/database/inventory/inventory.mapper";
 import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
-import { In, Repository } from "typeorm";
+import { ILike, In, Repository } from "typeorm";
 
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
@@ -44,10 +44,15 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async findByUser(userId: number, page: number, limit: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}`);
+    async findByUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}, filter: ${filter}`);
         const items = await this.repository.find({
-            where: { userId },
+            where: { 
+                userId,
+                card: {
+                    name: filter ? ILike(`%${filter}%`) : undefined,
+                },
+            },
             relations: ["card", "card.prices"],
             skip: (page - 1) * limit,
             take: limit,
@@ -55,10 +60,15 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async totalInventoryItemsForUser(userId: number): Promise<number> {
-        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}`);
+    async totalInventoryItemsForUser(userId: number, filter?: string): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${filter}`);
         return await this.repository.count({
-            where: { userId },
+            where: { 
+                userId,
+                card: {
+                    name: filter ? ILike(`%${filter}%`) : undefined,
+                },
+            },
         });
     }
 

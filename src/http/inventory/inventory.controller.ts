@@ -4,51 +4,45 @@ import {
     Delete,
     Get, Inject, Param, ParseIntPipe, Patch,
     Post,
+    Query,
     Render,
     Req, UseGuards
 } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.result";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
 import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
-import { JwtAuthGuard } from "../auth/jwt.auth.guard";
 
 
 @Controller("inventory")
 export class InventoryController {
 
-    private readonly defaultLimit = 20;
+    private readonly defaultLimit = 25;
 
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
-        return this.inventoryOrchestrator.findByUser(req, 1, this.defaultLimit);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get("page/:page")
-    @Render("inventory")
-    async findByUserPage(
+    async findByUser(
         @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number,
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string,
+        @Query("filter") filterRaw?: string,
     ): Promise<InventoryViewDto> {
-        return this.inventoryOrchestrator.findByUser(req, page, this.defaultLimit);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get("page/:page/limit/:limit")
-    @Render("inventory")
-    async findByUserPageWithLimit(
-        @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number,
-        @Param("limit", ParseIntPipe) limit: number,
-    ): Promise<InventoryViewDto> {
-        return this.inventoryOrchestrator.findByUser(req, page, limit);
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const filter = safeAlphaNumeric(filterRaw);
+        const userId = req.user?.id;
+        if (!userId) {
+            throw new Error("User ID not found in request");
+        }
+        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, limit, filter);
+        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+        return this.inventoryOrchestrator.findByUser(req, page, limit, filter);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -85,7 +79,6 @@ export class InventoryController {
         @Body('cardId') cardId: string,
         @Body('isFoil') isFoil: boolean,
         @Req() req: AuthenticatedRequest,
-        // TODO: define type?
     ): Promise<ApiResult<{ cardId: string, isFoil: boolean }>> {
         try {
             await this.inventoryOrchestrator.delete(req, cardId, isFoil);

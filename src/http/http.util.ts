@@ -31,6 +31,12 @@ export function safeAlphaNumeric(value: string): string | null {
     if (!value || value.trim().length === 0) {
         return null;
     }
-    const sanitized = value.trim().replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+    let sanitized = value.trim().replace(/[^a-zA-Z0-9\-]/g, " ");
+    // Collapse multiple spaces to a single space
+    sanitized = sanitized.replace(/\s+/g, " ");
+    const charLimit = 25;
+    if (sanitized.length > charLimit) {
+        sanitized = sanitized.substring(0, charLimit);
+    }
     return sanitized.length > 0 ? sanitized : null;
 }

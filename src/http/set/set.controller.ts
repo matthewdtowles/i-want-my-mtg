@@ -3,13 +3,14 @@ import {
     Get,
     Inject,
     Param,
-    ParseIntPipe,
+    Query,
     Render,
     Req,
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
@@ -20,66 +21,41 @@ export class SetController {
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
     ];
-    private readonly defaultLimit = 20;
+    private readonly defaultLimit = 25;
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
-    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, 1, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get("page/:page")
-    @Render("setListPage")
-    async setListingPage(
+    async setListing(
         @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string,
+        @Query("filter") filterRaw?: string
     ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get("page/:page/limit/:limit")
-    @Render("setListPage")
-    async setListingPageWithLimit(
-        @Req() req: AuthenticatedRequest,
-        @Param("page", ParseIntPipe) page: number,
-        @Param("limit", ParseIntPipe) limit: number
-    ): Promise<SetListViewDto> {
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit);
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const filter = safeAlphaNumeric(filterRaw);
+        const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
+        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
     }
 
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")
-    async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, 1, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get(":setCode/page/:page")
-    @Render("set")
-    async findByCodePage(
+    async findBySetCode(
         @Req() req: AuthenticatedRequest,
         @Param("setCode") setCode: string,
-        @Param("page", ParseIntPipe) page: number,
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string,
+        @Query("filter") filterRaw?: string
     ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, page, this.defaultLimit);
-    }
-
-    @UseGuards(OptionalAuthGuard)
-    @Get(":setCode/page/:page/limit/:limit")
-    @Render("set")
-    async findByCodePageWithLimit(
-        @Req() req: AuthenticatedRequest,
-        @Param("setCode") setCode: string,
-        @Param("page", ParseIntPipe) page: number,
-        @Param("limit", ParseIntPipe) limit: number,
-    ): Promise<SetViewDto> {
-        return this.setOrchestrator.findBySetCode(req, setCode, page, limit);
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const filter = safeAlphaNumeric(filterRaw);
+        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, limit, filter);
+        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+        return this.setOrchestrator.findBySetCode(req, setCode, page, limit, filter);
     }
 
 }

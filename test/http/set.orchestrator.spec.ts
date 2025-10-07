@@ -55,7 +55,7 @@ describe("SetOrchestrator", () => {
                 {
                     provide: SetService, useValue: {
                         findSets: jest.fn(),
-                        getTotalSetsCount: jest.fn(),
+                        totalSetsCount: jest.fn(),
                         findByCode: jest.fn(),
                     }
                 },
@@ -87,7 +87,7 @@ describe("SetOrchestrator", () => {
     describe("findSetList", () => {
         it("returns paginated sets and pagination info", async () => {
             setService.findSets.mockResolvedValue([mockSet]);
-            setService.getTotalSetsCount.mockResolvedValue(1);
+            setService.totalSetsCount.mockResolvedValue(1);
 
             const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], 1, 10);
 
@@ -108,7 +108,7 @@ describe("SetOrchestrator", () => {
 
         it("handles empty set list", async () => {
             setService.findSets.mockResolvedValue([]);
-            setService.getTotalSetsCount.mockResolvedValue(0);
+            setService.totalSetsCount.mockResolvedValue(0);
 
             const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], 1, 10);
 

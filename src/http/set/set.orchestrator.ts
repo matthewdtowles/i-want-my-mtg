@@ -30,17 +30,18 @@ export class SetOrchestrator {
         req: AuthenticatedRequest,
         _breadcrumbs: Breadcrumb[],
         page: number,
-        limit: number
+        limit: number,
+        filter?: string
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
-                this.setService.findSets(page, limit),
-                this.setService.getTotalSetsCount()
+                this.setService.findSets(page, limit, filter),
+                this.setService.totalSetsCount(filter)
             ]);
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
             const baseUrl = "/sets";
-            const pagination = new PaginationDto(page, totalSets, limit, baseUrl);
+            const pagination = new PaginationDto(page, totalSets, limit, baseUrl, filter);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: _breadcrumbs,
@@ -58,7 +59,8 @@ export class SetOrchestrator {
         req: AuthenticatedRequest,
         setCode: string,
         page: number,
-        limit: number
+        limit: number,
+        filter?: string
     ): Promise<SetViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -66,7 +68,7 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            const cards: Card[] = await this.cardService.findBySet(setCode, page, limit);
+            const cards: Card[] = await this.cardService.findBySet(setCode, page, limit, filter);
             set.cards.push(...cards);
             let inventory: Inventory[] = [];
             if (userId && set.cards?.length) {
@@ -74,9 +76,9 @@ export class SetOrchestrator {
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode);
+            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, filter);
             const baseUrl = `/sets/${setCode}`;
-            const pagination = new PaginationDto(page, totalCardsInSet, limit, baseUrl);
+            const pagination = new PaginationDto(page, totalCardsInSet, limit, baseUrl, filter);
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -91,6 +93,24 @@ export class SetOrchestrator {
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
+        }
+    }
+
+    async getLastPage(limit: number, filter?: string): Promise<number> {
+        try {
+            const totalSets = await this.setService.totalSetsCount(filter);
+            return Math.max(1, Math.ceil(totalSets / limit));
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getLastPage");
+        }
+    }
+
+    async getLastCardPage(setCode: string, limit: number, filter?: string): Promise<number> {
+        try {
+            const totalCards = await this.cardService.totalCardsInSet(setCode, filter);
+            return Math.max(1, Math.ceil(totalCards / limit));
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getLastCardPage");
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Price } from "src/core/price/price.entity";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
-import { PriceOrmEntity } from "src/infrastructure/database/price/price.orm-entity";
+import { CardOrmEntity } from "src/database/card/card.orm-entity";
+import { PriceOrmEntity } from "src/database/price/price.orm-entity";
 
 export class PriceMapper {
     static toCore(ormPrice: PriceOrmEntity): Price {

@@ -3,53 +3,55 @@
         <h3 class="page-title">{{this.username}}'s Inventory</h3>
         <p>Value: ${{#if this.ownedValue}}{{this.ownedValue}}{{else}}0.00{{/if}}</p>
     </section>
+    <div class="w-full mx-auto">
+        {{>filter}}
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Owned</th>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Set</th>
+                    <th class="table-header">Price</th>
+                    <th class="table-header pr-2 xs-hide">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each cards as |card|}}
+                <tr class="table-row">
+                    <td class="pl-2">{{>cardsOwned card=card}}</td>
+                    <td class="card-name-link" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
+                        <a href="{{card.url}}">{{card.name}}</a>
+                        {{>reserved card=card}}
+                        <a href="{{card.url}}" class="card-img-link">
+                            <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/sets/{{card.setCode}}">
+                            <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
+                            {{toUpperCase card.setCode}}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
+                            {{card.priceValue}}
+                        </span>
+                    </td>
+                    <td class="delete-inventory-entry pr-2 xs-hide">
+                        <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
+                            <input type="hidden" name="card-id" value="{{card.cardId}}" />
+                            <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
 
-    <table class="table-container w-full">
-        <thead>
-            <tr class="table-header-row">
-                <th class="table-header pl-2">Owned</th>
-                <th class="table-header">Name</th>
-                <th class="table-header">Set</th>
-                <th class="table-header">Price</th>
-                <th class="table-header pr-2 xs-hide">Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each cards as |card|}}
-            <tr class="table-row">
-                <td class="pl-2">{{>cardsOwned card=card}}</td>
-                <td class="card-name-link" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
-                    <a href="{{card.url}}">{{card.name}}</a>
-                    {{>reserved card=card}}
-                    <a href="{{card.url}}" class="card-img-link">
-                        <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
-                    </a>
-                </td>
-                <td>
-                    <a href="/sets/{{card.setCode}}">
-                        <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
-                        {{toUpperCase card.setCode}}
-                    </a>
-                </td>
-                <td>
-                    <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
-                        {{card.priceValue}}
-                    </span>
-                </td>
-                <td class="delete-inventory-entry pr-2 xs-hide">
-                    <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
-                        <input type="hidden" name="card-id" value="{{card.cardId}}" />
-                        <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
-
-                        <button type="button" class="delete-inventory-button">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
+                            <button type="button" class="delete-inventory-button">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
 </section>
 
 {{>pagination}}

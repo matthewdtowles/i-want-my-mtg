@@ -2,8 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
-import { InventoryMapper } from "src/infrastructure/database/inventory/inventory.mapper";
-import { InventoryOrmEntity } from "src/infrastructure/database/inventory/inventory.orm-entity";
+import { InventoryMapper } from "src/database/inventory/inventory.mapper";
+import { InventoryOrmEntity } from "src/database/inventory/inventory.orm-entity";
 import { In, Repository } from "typeorm";
 
 @Injectable()
@@ -44,22 +44,36 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async findByUser(userId: number, page: number, limit: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}`);
-        const items = await this.repository.find({
-            where: { userId },
-            relations: ["card", "card.prices"],
-            skip: (page - 1) * limit,
-            take: limit,
-        });
-        return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
+    async findByUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}, filter: ${filter}`);
+        const qb = this.repository.createQueryBuilder("inventory")
+            .leftJoinAndSelect("inventory.card", "card")
+            .leftJoinAndSelect("card.prices", "prices")
+            .where("inventory.userId = :userId", { userId });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        qb.skip((page - 1) * limit).take(limit);
+        qb.orderBy("card.order", "ASC");
+        const items = await qb.getMany();
+        return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
-    async totalInventoryItemsForUser(userId: number): Promise<number> {
-        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}`);
-        return await this.repository.count({
-            where: { userId },
-        });
+    async totalInventoryItemsForUser(userId: number, filter?: string): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${filter}`);
+        const qb = this.repository.createQueryBuilder("inventory")
+            .leftJoin("inventory.card", "card")
+            .where("inventory.userId = :userId", { userId });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        return await qb.getCount();
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {

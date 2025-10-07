@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
-import { CardMapper } from "src/infrastructure/database/card/card.mapper";
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
+import { CardMapper } from "src/database/card/card.mapper";
+import { CardOrmEntity } from "src/database/card/card.orm-entity";
 import { Repository } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
 
@@ -33,17 +33,21 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findBySet(code: string, page: number, limit: number): Promise<Card[]> {
-        const ormCards: CardOrmEntity[] = await this.cardRepository.find({
-            where: {
-                set: { code },
-            },
-            order: { order: "ASC", },
-            skip: (page - 1) * limit,
-            take: limit,
-            relations: ["legalities", "prices"],
-        }) ?? [];
-        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
+    async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
+        const qb = this.cardRepository.createQueryBuilder("card")
+            .leftJoinAndSelect("card.legalities", "legalities")
+            .leftJoinAndSelect("card.prices", "prices")
+            .where("card.setCode = :code", { code });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        qb.skip((page - 1) * limit).take(limit);
+        qb.orderBy("card.order", "ASC");
+        const items = await qb.getMany();
+        return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
     async findAllWithName(name: string): Promise<Card[]> {
@@ -65,10 +69,16 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string): Promise<number> {
-        return this.cardRepository.count({
-            where: { set: { code } },
-        });
+    async totalInSet(code: string, filter?: string): Promise<number> {
+        const qb = this.cardRepository.createQueryBuilder("card")
+            .where("card.setCode = :code", { code });
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        return qb.getCount();
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {

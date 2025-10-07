@@ -13,9 +13,9 @@ export class SetService {
         return await this.repository.save(sets);
     }
 
-    async findSets(page: number, limit: number): Promise<Set[]> {
-        this.LOGGER.debug(`Calling findSets(page: ${page}, limit: ${limit})`);
-        return await this.repository.findAllSetsMeta(page, limit);
+    async findSets(page: number, limit: number, filter?: string): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findSets(page: ${page}, limit: ${limit}, filter: ${filter})`);
+        return await this.repository.findAllSetsMeta(page, limit, filter);
     }
 
     async findByCode(setCode: string): Promise<Set | null> {
@@ -23,8 +23,8 @@ export class SetService {
         return await this.repository.findByCode(setCode);
     }
 
-    async getTotalSetsCount(): Promise<number> {
-        this.LOGGER.debug('Calling getTotalSetsCount()');
-        return await this.repository.totalSets();
+    async totalSetsCount(filter?: string): Promise<number> {
+        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${filter})`);
+        return await this.repository.totalSets(filter);
     }
 }

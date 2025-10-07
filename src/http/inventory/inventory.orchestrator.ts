@@ -17,15 +17,15 @@ export class InventoryOrchestrator {
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
 
-    async findByUser(req: AuthenticatedRequest, page: number, limit: number): Promise<InventoryViewDto> {
+    async findByUser(req: AuthenticatedRequest, page: number, limit: number, filter?: string): Promise<InventoryViewDto> {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, page, limit);
+            const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, page, limit, filter);
             const cards: InventoryResponseDto[] = inventoryItems.map(item => InventoryPresenter.toInventoryResponseDto(item));
             const username: string = req.user.name;
             const totalValue: string = "0.00";
-            const totalInventoryItems: number = await this.inventoryService.totalInventoryItemsForUser(req.user.id);
-            const pagination = new PaginationDto(page, totalInventoryItems, limit, this.BASE_URL);
+            const totalInventoryItems: number = await this.inventoryService.totalInventoryItemsForUser(req.user.id, filter);
+            const pagination = new PaginationDto(page, totalInventoryItems, limit, this.BASE_URL, filter);
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
@@ -41,6 +41,15 @@ export class InventoryOrchestrator {
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findByUserWithPagination");
+        }
+    }
+
+    async getLastPage(userId: number, limit: number, filter?: string): Promise<number> {
+        try {
+            const totalItems: number = await this.inventoryService.totalInventoryItemsForUser(userId, filter);
+            return Math.max(1, Math.ceil(totalItems / limit));
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getLastPage");
         }
     }
 

@@ -21,7 +21,7 @@ impl SetMapper {
         let code = json::extract_string(set_data, "code")?.to_lowercase();
         let base_size: i32 = json::extract_int(set_data, "baseSetSize")?;
         let block = json::extract_optional_string(set_data, "block");
-        let keyrune_code = json::extract_string(set_data, "keyruneCode")?;
+        let keyrune_code = json::extract_string(set_data, "keyruneCode")?.to_lowercase();
         let name = json::extract_string(set_data, "name")?;
         let parent_code = match json::extract_optional_string(set_data, "parentCode") {
             Some(pc) => Some(pc.to_lowercase()),

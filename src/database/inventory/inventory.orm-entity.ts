@@ -1,5 +1,5 @@
-import { CardOrmEntity } from "src/infrastructure/database/card/card.orm-entity";
-import { UserOrmEntity } from "src/infrastructure/database/user/user.orm-entity";
+import { CardOrmEntity } from "src/database/card/card.orm-entity";
+import { UserOrmEntity } from "src/database/user/user.orm-entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity("inventory")

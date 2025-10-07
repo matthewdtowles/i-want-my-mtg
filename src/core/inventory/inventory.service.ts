@@ -25,9 +25,9 @@ export class InventoryService {
         return await this.repository.save(toSave);
     }
 
-    async findAllForUser(userId: number, page: number, limit: number): Promise<Inventory[]> {
-        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${page}, limit: ${limit}`);
-        return userId ? await this.repository.findByUser(userId, page, limit) : [];
+    async findAllForUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]> {
+        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${page}, limit: ${limit}, filter: ${filter}`);
+        return userId ? await this.repository.findByUser(userId, page, limit, filter) : [];
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
@@ -43,9 +43,9 @@ export class InventoryService {
         return await this.repository.findByCards(userId, cardIds);
     }
 
-    async totalInventoryItemsForUser(userId: number): Promise<number> {
-        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}`);
-        return await this.repository.totalInventoryItemsForUser(userId);
+    async totalInventoryItemsForUser(userId: number, filter?: string): Promise<number> {
+        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${filter}`);
+        return await this.repository.totalInventoryItemsForUser(userId, filter);
     }
 
     /**

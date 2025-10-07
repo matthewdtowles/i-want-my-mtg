@@ -29,9 +29,10 @@ export interface CardRepositoryPort {
      * @param {string} code - The unique three-letter set code (primary key).
      * @param {number} page - The page number (1-based index).
      * @param {number} limit - The number of items per page.
+     * @param {string} [filter] - Optional filter to apply to card name.
      * @returns {Promise<Card[]>} A promise that resolves to an array of Card entities.
      */
-    findBySet(code: string, page: number, limit: number): Promise<Card[]>;
+    findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]>;
 
     /**
      * @param name
@@ -49,9 +50,10 @@ export interface CardRepositoryPort {
 
     /**
      * @param code three letter set code
+     * @param filter optional filter to apply to card name
      * @returns total number of cards in set with code
      */
-    totalInSet(code: string): Promise<number>;
+    totalInSet(code: string, filter?: string): Promise<number>;
 
     /**
      * @param ids of cards to verify existence

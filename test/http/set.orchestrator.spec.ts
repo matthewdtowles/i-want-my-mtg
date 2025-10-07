@@ -55,7 +55,7 @@ describe("SetOrchestrator", () => {
                 {
                     provide: SetService, useValue: {
                         findSets: jest.fn(),
-                        getTotalSetsCount: jest.fn(),
+                        totalSetsCount: jest.fn(),
                         findByCode: jest.fn(),
                     }
                 },

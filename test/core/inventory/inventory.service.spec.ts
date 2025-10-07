@@ -116,7 +116,7 @@ describe("InventoryService", () => {
             repository.findByUser.mockResolvedValue(expectedItems);
             const result = await service.findAllForUser(1, 1, 10);
 
-            expect(repository.findByUser).toHaveBeenCalledWith(1, 1, 10);
+            expect(repository.findByUser).toHaveBeenCalledWith(1, 1, 10, undefined);
             expect(result).toEqual(expectedItems);
         });
 

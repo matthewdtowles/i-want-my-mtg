@@ -37,8 +37,7 @@ export class CardOrchestrator {
             const inventory: Inventory[] = userId > 0
                 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
 
-            const inventoryQuantities: InventoryQuantities = InventoryPresenter
-                .toQuantityMap(inventory)?.get(coreCard.id);
+            const inventoryQuantities: InventoryQuantities = InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id);
 
             const singleCard: SingleCardResponseDto = CardPresenter
                 .toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);

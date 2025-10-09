@@ -23,4 +23,6 @@ export class CardController {
     ): Promise<CardViewDto> {
         return this.cardOrchestrator.findSetCard(setCode, setNumber, req);
     }
+
+    // TODO: REST API to get all cards with given name with pagination from async call
 }

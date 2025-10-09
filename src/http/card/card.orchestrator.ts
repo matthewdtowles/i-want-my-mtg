@@ -71,7 +71,7 @@ export class CardOrchestrator {
             const totalCards: number = await this.cardService.totalCardsInSet(setCode, filter);
             return Math.max(1, Math.ceil(totalCards / limit));
         } catch (error) {
-            throw new Error(`Error calculating last page: ${error.message}`);
+            throw new Error(`Error calculating last page: ${String(error)}`);
         }
     }
 }

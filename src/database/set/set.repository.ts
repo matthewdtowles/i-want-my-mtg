@@ -30,23 +30,24 @@ export class SetRepository implements SetRepositoryPort {
         return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 
-    async findByCode(code: string, filter?: string): Promise<Set | null> {
+    async findByCode(code: string): Promise<Set | null> {
         const set: SetOrmEntity = await this.setRepository.findOne({
             where: {
-                code,
-                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
+                code
             },
         });
         return set ? SetMapper.toCore(set) : null;
     }
 
     async totalSets(filter?: string): Promise<number> {
-        return await this.setRepository.count({
-            where: {
-                baseSize: MoreThan(0),
-                ...(filter && filter.length > 0 ? { name: ILike(`%${filter}%`) } : {})
-            },
-        });
+        const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
+        if (filter) {
+            const fragments = filter.split(" ").filter(f => f.length > 0);
+            fragments.forEach((fragment, i) => {
+                qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
+            });
+        }
+        return await qb.getCount();
     }
 
     async delete(set: Set): Promise<void> {

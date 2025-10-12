@@ -50,10 +50,12 @@ export class CardRepository implements CardRepositoryPort {
         return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
-    async findAllWithName(name: string): Promise<Card[]> {
+    async findWithName(name: string, page: number, limit: number): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: { name },
-            relations: this.DEFAULT_RELATIONS
+            relations: this.DEFAULT_RELATIONS,
+            skip: (page - 1) * limit,
+            take: limit,
         }) ?? []
         return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
     }

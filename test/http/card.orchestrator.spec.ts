@@ -46,7 +46,7 @@ describe("CardOrchestrator", () => {
         number: "001",
         manaCost: "{R}",
         type: "Instant",
-        rarity: CardRarity.Common, 
+        rarity: CardRarity.Common,
         artist: "Christopher Rush",
         prices: [],
     });
@@ -60,7 +60,7 @@ describe("CardOrchestrator", () => {
         number: "149",
         manaCost: "{R}",
         type: "Instant",
-        rarity: CardRarity.Common, 
+        rarity: CardRarity.Common,
         artist: "Christopher Rush",
         prices: [],
     });
@@ -124,7 +124,7 @@ describe("CardOrchestrator", () => {
             expect(result.breadcrumbs[3].label).toBe("Lightning Bolt");
 
             expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith("TST", "001");
-            expect(cardService.findAllWithName).toHaveBeenCalledWith("Lightning Bolt");
+            expect(cardService.findWithName).toHaveBeenCalledWith("Lightning Bolt");
             expect(inventoryService.findForUser).toHaveBeenCalledWith(1, "card1");
         });
 

@@ -74,7 +74,7 @@
             <tbody>
                 {{#each otherPrintings as |p|}}
                 <tr class="table-row">
-                    <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}">r</i></td>
+                    <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
                     <td class="card-name-link py-2" data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}">
                         <a href="{{p.url}}">{{p.name}}</a>
                         {{>reserved card=p}}

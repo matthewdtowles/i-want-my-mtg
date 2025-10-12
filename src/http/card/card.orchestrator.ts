@@ -18,6 +18,8 @@ import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
 @Injectable()
 export class CardOrchestrator {
 
+    private readonly defaultLimit: number = 10;
+
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService
@@ -26,6 +28,7 @@ export class CardOrchestrator {
     async findSetCard(
         setCode: string,
         setNumber: string,
+        page: number,
         req: AuthenticatedRequest
     ): Promise<CardViewDto> {
         try {
@@ -34,15 +37,16 @@ export class CardOrchestrator {
             if (!coreCard) {
                 throw new Error(`Card with set code ${setCode} and number ${setNumber} not found`);
             }
-            const inventory: Inventory[] = userId > 0
-                ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
+            const inventory: Inventory[] = userId > 0 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
 
-            const inventoryQuantities: InventoryQuantities = InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id);
+            const inventoryQuantities: InventoryQuantities = InventoryPresenter
+                .toQuantityMap(inventory)
+                ?.get(coreCard.id);
 
             const singleCard: SingleCardResponseDto = CardPresenter
                 .toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
 
-            const allPrintings: Card[] = await this.cardService.findAllWithName(singleCard.name);
+            const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, page, this.defaultLimit);
             const otherPrintings: CardResponseDto[] = allPrintings
                 .filter(card => card.setCode !== setCode)
                 .map(card => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
@@ -65,12 +69,21 @@ export class CardOrchestrator {
         }
     }
 
-    async getLastPage(setCode: string, limit: number, filter?: string): Promise<number> {
+    async findPrintings(name: string, page: number, limit: number): Promise<CardResponseDto[]> {
         try {
-            const totalCards: number = await this.cardService.totalCardsInSet(setCode, filter);
-            return Math.max(1, Math.ceil(totalCards / limit));
+            const allPrintings: Card[] = await this.cardService.findWithName(name, limit, (page - 1) * limit);
+            return allPrintings.map(card => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
         } catch (error) {
-            throw new Error(`Error calculating last page: ${String(error)}`);
+            return HttpErrorHandler.toHttpException(error, "findPrintings");
+        }
+    }
+
+    async getPrintingsLastPage(name: string, limit: number): Promise<number> {
+        try {
+            const totalCards: number = await this.cardService.totalWithName(name);
+            return Math.max(Math.ceil(totalCards / limit), 1);
+        } catch (error) {
+            return HttpErrorHandler.toHttpException(error, "getPrintingsLastPage");
         }
     }
 }

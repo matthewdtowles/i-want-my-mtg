@@ -38,9 +38,9 @@ export class CardService {
         return savedEntities;
     }
 
-    async findAllWithName(name: string): Promise<Card[]> {
+    async findWithName(name: string, page: number, limit: number): Promise<Card[]> {
         try {
-            return await this.repository.findAllWithName(name);
+            return await this.repository.findWithName(name, page, limit);
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
         }

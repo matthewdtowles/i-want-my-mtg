@@ -57,5 +57,4 @@ export class SetController {
         const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
         return this.setOrchestrator.findBySetCode(req, setCode, page, limit, filter);
     }
-
 }

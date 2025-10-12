@@ -144,18 +144,18 @@ describe("CardService", () => {
     describe("findAllWithName", () => {
         it("should return cards with the given name", async () => {
             const cards = [testCard];
-            repository.findAllWithName.mockResolvedValue(cards);
+            repository.findWithName.mockResolvedValue(cards);
 
-            const result = await service.findAllWithName("Test Card");
+            const result = await service.findWithName("Test Card");
 
-            expect(repository.findAllWithName).toHaveBeenCalledWith("Test Card");
+            expect(repository.findWithName).toHaveBeenCalledWith("Test Card");
             expect(result).toEqual(cards);
         });
 
         it("should throw error when repository fails", async () => {
-            repository.findAllWithName.mockRejectedValue(new Error("Database error"));
+            repository.findWithName.mockRejectedValue(new Error("Database error"));
 
-            await expect(service.findAllWithName("Test Card"))
+            await expect(service.findWithName("Test Card"))
                 .rejects
                 .toThrow("Error finding cards with name Test Card");
         });

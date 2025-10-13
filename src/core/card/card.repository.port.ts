@@ -56,6 +56,12 @@ export interface CardRepositoryPort {
     totalInSet(code: string, filter?: string): Promise<number>;
 
     /**
+     * @param {string} name - name of cards to count
+     * @returns {Promise<number>} - total number of cards with name
+     */
+    totalWithName(name: string): Promise<number>;
+
+    /**
      * @param {string[]} ids - ids of cards to verify existence
      * @returns {Promise<Set<string>>} - A promise that resolves to a set of card IDs with ID in IDs
      */

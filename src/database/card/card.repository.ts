@@ -83,6 +83,12 @@ export class CardRepository implements CardRepositoryPort {
         return qb.getCount();
     }
 
+    async totalWithName(name: string): Promise<number> {
+        return await this.cardRepository.count({
+            where: { name }
+        });
+    }
+
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
         if (0 === cardIds.length) return new Set();
         const ormCards: CardOrmEntity[] = await this.cardRepository

@@ -78,6 +78,14 @@ export class CardService {
         }
     }
 
+    async totalWithName(name: string): Promise<number> {
+        try {
+            return await this.repository.totalWithName(name);
+        } catch (error) {
+            throw new Error(`Error counting cards with name ${name}: ${error.message}`);
+        }
+    }
+
     private extractLegalitiesToSave(card: Card): Legality[] {
         return card?.legalities?.map((leg: Legality) => {
             if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)

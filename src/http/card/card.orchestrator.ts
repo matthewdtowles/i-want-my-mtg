@@ -14,11 +14,10 @@ import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/http.util";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
+import { PaginationDto } from "src/http/pagination.dto";
 
 @Injectable()
 export class CardOrchestrator {
-
-    private readonly defaultLimit: number = 10;
 
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
@@ -26,10 +25,11 @@ export class CardOrchestrator {
     ) { }
 
     async findSetCard(
+        req: AuthenticatedRequest,
         setCode: string,
         setNumber: string,
         page: number,
-        req: AuthenticatedRequest
+        limit: number,
     ): Promise<CardViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -46,10 +46,13 @@ export class CardOrchestrator {
             const singleCard: SingleCardResponseDto = CardPresenter
                 .toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
 
-            const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, page, this.defaultLimit);
+            const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, page, limit);
             const otherPrintings: CardResponseDto[] = allPrintings
                 .filter(card => card.setCode !== setCode)
                 .map(card => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
+
+            const totalCardsWithName: number = await this.cardService.totalWithName(singleCard.name);
+            const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
 
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
@@ -57,24 +60,16 @@ export class CardOrchestrator {
                     { label: "Home", url: "/" },
                     { label: "Sets", url: "/sets" },
                     { label: singleCard.setCode.toUpperCase(), url: `/sets/${singleCard.setCode}` },
-                    { label: singleCard.name, url: `/cards/${singleCard.setCode}/${singleCard.number}` },
+                    { label: singleCard.name, url: `/card/${singleCard.setCode}/${singleCard.number}` },
                 ],
                 card: singleCard,
                 otherPrintings,
                 message: HttpStatus.OK === 200 ? "Card found" : "Card not found",
                 status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                pagination: new PaginationDto(page, totalCardsWithName, limit, baseUrl),
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findSetCard");
-        }
-    }
-
-    async findPrintings(name: string, page: number, limit: number): Promise<CardResponseDto[]> {
-        try {
-            const allPrintings: Card[] = await this.cardService.findWithName(name, limit, (page - 1) * limit);
-            return allPrintings.map(card => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
-        } catch (error) {
-            return HttpErrorHandler.toHttpException(error, "findPrintings");
         }
     }
 

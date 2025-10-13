@@ -8,7 +8,7 @@ import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { CardOrchestrator } from "src/http/card/card.orchestrator";
 import { CardViewDto } from "src/http/card/dto/card.view.dto";
-import { sanitizeInt } from "../http.util";
+import { sanitizeInt } from "src/http/http.util";
 
 @Controller("card")
 export class CardController {
@@ -21,23 +21,15 @@ export class CardController {
     @Get(":setCode/:setNumber")
     @Render("card")
     async findSetCard(
+        @Req() req: AuthenticatedRequest,
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
-        @Req() req: AuthenticatedRequest
-    ): Promise<CardViewDto> {
-        return this.cardOrchestrator.findSetCard(setCode, setNumber, req);
-    }
-
-    // TODO: REST API to get all cards with given name with pagination from async call
-    @Get("printings/:name")
-    async findPrintings(
-        @Param("name") name: string,
         @Query("page") pageRaw?: string,
         @Query("limit") limitRaw?: string
-    ): Promise<CardViewDto[]> {
+    ): Promise<CardViewDto> {
         const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const lastPage = await this.cardOrchestrator.getPrintingsLastPage(name, limit);
+        const lastPage = await this.cardOrchestrator.getPrintingsLastPage(setNumber, limit);
         const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.cardOrchestrator.findPrintings(name, page, limit);
+        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, page, limit);
     }
 }

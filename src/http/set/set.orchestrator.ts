@@ -78,7 +78,6 @@ export class SetOrchestrator {
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
             const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, filter);
             const baseUrl = `/sets/${setCode}`;
-            const pagination = new PaginationDto(page, totalCardsInSet, limit, baseUrl, filter);
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -89,7 +88,7 @@ export class SetOrchestrator {
                 message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                pagination: pagination,
+                pagination: new PaginationDto(page, totalCardsInSet, limit, baseUrl, filter),
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");

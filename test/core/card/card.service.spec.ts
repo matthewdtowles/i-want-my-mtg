@@ -37,7 +37,7 @@ describe("CardService", () => {
             deleteLegality: jest.fn(),
             findByIds: jest.fn(),
             findAllInSet: jest.fn(),
-            findAllWithName: jest.fn(),
+            findWithName: jest.fn(),
             findBySetCodeAndNumber: jest.fn(),
             delete: jest.fn(),
         };
@@ -146,16 +146,16 @@ describe("CardService", () => {
             const cards = [testCard];
             repository.findWithName.mockResolvedValue(cards);
 
-            const result = await service.findWithName("Test Card");
+            const result = await service.findWithName("Test Card", 1, 10);
 
-            expect(repository.findWithName).toHaveBeenCalledWith("Test Card");
+            expect(repository.findWithName).toHaveBeenCalledWith("Test Card", 1, 10);
             expect(result).toEqual(cards);
         });
 
         it("should throw error when repository fails", async () => {
             repository.findWithName.mockRejectedValue(new Error("Database error"));
 
-            await expect(service.findWithName("Test Card"))
+            await expect(service.findWithName("Test Card", 1, 10))
                 .rejects
                 .toThrow("Error finding cards with name Test Card");
         });

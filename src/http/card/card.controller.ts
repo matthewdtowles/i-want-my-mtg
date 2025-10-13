@@ -6,14 +6,14 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { CardOrchestrator } from "src/http/card/card.orchestrator";
-import { CardViewDto } from "src/http/card/dto/card.view.dto";
 import { sanitizeInt } from "src/http/http.util";
+import { CardOrchestrator } from "./card.orchestrator";
+import { CardViewDto } from "./dto/card.view.dto";
 
 @Controller("card")
 export class CardController {
 
-    private readonly defaultLimit = 10;
+    private readonly defaultLimit = 25;
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 
@@ -28,8 +28,7 @@ export class CardController {
         @Query("limit") limitRaw?: string
     ): Promise<CardViewDto> {
         const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const lastPage = await this.cardOrchestrator.getPrintingsLastPage(setNumber, limit);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+        const page = sanitizeInt(pageRaw, 1);
         return this.cardOrchestrator.findSetCard(req, setCode, setNumber, page, limit);
     }
 }

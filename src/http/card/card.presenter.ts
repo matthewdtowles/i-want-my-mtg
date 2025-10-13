@@ -3,11 +3,11 @@ import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Format } from "src/core/card/format.enum";
 import { Price } from "src/core/price/price.entity";
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { LegalityResponseDto } from "src/http/card/dto/legality.response.dto";
-import { SingleCardResponseDto } from "src/http/card/dto/single-card.response.dto";
 import { BASE_IMAGE_URL, toDollar } from "src/http/http.util";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
+import { CardResponseDto } from "./dto/card.response.dto";
+import { LegalityResponseDto } from "./dto/legality.response.dto";
+import { SingleCardResponseDto } from "./dto/single-card.response.dto";
 
 export class CardPresenter {
 

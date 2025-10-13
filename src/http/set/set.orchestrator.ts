@@ -11,11 +11,11 @@ import { Breadcrumb } from "src/http/breadcrumb";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/http.util";
 import { PaginationDto } from "src/http/pagination.dto";
-import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
-import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
-import { SetResponseDto } from "src/http/set/dto/set.response.dto";
-import { SetViewDto } from "src/http/set/dto/set.view.dto";
-import { SetPresenter } from "src/http/set/set.presenter";
+import { SetListViewDto } from "./dto/set-list.view.dto";
+import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
+import { SetResponseDto } from "./dto/set.response.dto";
+import { SetViewDto } from "./dto/set.view.dto";
+import { SetPresenter } from "./set.presenter";
 
 @Injectable()
 export class SetOrchestrator {

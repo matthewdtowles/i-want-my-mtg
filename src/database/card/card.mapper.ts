@@ -1,6 +1,6 @@
 import { Card } from "src/core/card/card.entity";
-import { CardOrmEntity } from "src/database/card/card.orm-entity";
-import { LegalityMapper } from "src/database/card/legality.mapper";
+import { CardOrmEntity } from "./card.orm-entity";
+import { LegalityMapper } from "./legality.mapper";
 import { PriceMapper } from "src/database/price/price.mapper";
 import { SetMapper } from "src/database/set/set.mapper";
 

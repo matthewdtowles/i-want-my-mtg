@@ -6,15 +6,15 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { ActionStatus } from "src/http/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { CardPresenter } from "src/http/card/card.presenter";
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { CardViewDto } from "src/http/card/dto/card.view.dto";
-import { SingleCardResponseDto } from "src/http/card/dto/single-card.response.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/http.util";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
 import { PaginationDto } from "src/http/pagination.dto";
+import { CardPresenter } from "./card.presenter";
+import { CardResponseDto } from "./dto/card.response.dto";
+import { CardViewDto } from "./dto/card.view.dto";
+import { SingleCardResponseDto } from "./dto/single-card.response.dto";
 
 @Injectable()
 export class CardOrchestrator {
@@ -46,7 +46,11 @@ export class CardOrchestrator {
             const singleCard: SingleCardResponseDto = CardPresenter
                 .toSingleCardResponse(coreCard, inventoryQuantities, CardImgType.NORMAL);
 
-            const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, page, limit);
+            const lastPage = await this.getPrintingsLastPage(singleCard.name, limit);
+
+            const allPrintings: Card[] = await this.cardService
+                .findWithName(singleCard.name, Math.min(page, lastPage), limit);
+
             const otherPrintings: CardResponseDto[] = allPrintings
                 .filter(card => card.setCode !== setCode)
                 .map(card => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
@@ -76,7 +80,7 @@ export class CardOrchestrator {
     async getPrintingsLastPage(name: string, limit: number): Promise<number> {
         try {
             const totalCards: number = await this.cardService.totalWithName(name);
-            return Math.max(Math.ceil(totalCards / limit), 1);
+            return Math.max(1, Math.ceil(totalCards / limit));
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "getPrintingsLastPage");
         }

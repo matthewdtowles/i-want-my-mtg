@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "chown -R $(whoami):$(whoami) ./dist",
     "start:fresh": "npx tailwindcss -i ./src/http/styles/tailwind.css -o ./src/http/public/css/tailwind.css && nest build && npm run start",
     "build": "nest build",
     "build:css": "npx tailwindcss -i ./src/http/styles/tailwind.css -o ./src/http/public/css/tailwind.css",

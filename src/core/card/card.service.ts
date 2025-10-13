@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Card } from "src/core/card/card.entity";
-import { CardRepositoryPort } from "src/core/card/card.repository.port";
-import { Format } from "src/core/card/format.enum";
-import { Legality } from "src/core/card/legality.entity";
-import { LegalityStatus } from "src/core/card/legality.status.enum";
+import { Card } from "./card.entity";
+import { CardRepositoryPort } from "./card.repository.port";
+import { Format } from "./format.enum";
+import { Legality } from "./legality.entity";
+import { LegalityStatus } from "./legality.status.enum";
 
 @Injectable()
 export class CardService {
@@ -38,9 +38,9 @@ export class CardService {
         return savedEntities;
     }
 
-    async findAllWithName(name: string): Promise<Card[]> {
+    async findWithName(name: string, page: number, limit: number): Promise<Card[]> {
         try {
-            return await this.repository.findAllWithName(name);
+            return await this.repository.findWithName(name, page, limit);
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
         }
@@ -75,6 +75,14 @@ export class CardService {
             return await this.repository.totalInSet(setCode, filter);
         } catch (error) {
             throw new Error(`Error counting cards in set ${setCode} with filter ${filter}: ${error.message}`);
+        }
+    }
+
+    async totalWithName(name: string): Promise<number> {
+        try {
+            return await this.repository.totalWithName(name);
+        } catch (error) {
+            throw new Error(`Error counting cards with name ${name}: ${error.message}`);
         }
     }
 

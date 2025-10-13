@@ -11,67 +11,70 @@ export interface CardRepositoryPort {
     /**
      * Create card entities, update if they exist
      *
-     * @param cards
-     * @returns number of saved cards
+     * @param {Card[]} cards - Array of card entities to be saved
+     * @returns {Promise<number>} - A promise that resolves to the number of saved cards.
      */
     save(cards: Card[]): Promise<number>;
 
     /**
-     * @param id
-     * @param relations relations to load
-     * @returns card entity with id, null if not found
+     * @param {string} id - The unique identifier of the card.
+     * @param {string[]} relations - relations to load
+     * @returns {Promise<Card | null>} - A promise that resolves to a card entity, null if not found
      */
     findById(id: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * Retrieves Card entities by set code with pagination.
-     *
      * @param {string} code - The unique three-letter set code (primary key).
      * @param {number} page - The page number (1-based index).
      * @param {number} limit - The number of items per page.
      * @param {string} [filter] - Optional filter to apply to card name.
-     * @returns {Promise<Card[]>} A promise that resolves to an array of Card entities.
+     * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities.
      */
     findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]>;
 
     /**
-     * @param name
-     * @returns card entities with name
+     * @param {string} name - of card to find
+     * @param {number} page - The page number (1-based index).
+     * @param {number} limit - number of cards to return
+     * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities with the given name.
      */
-    findAllWithName(name: string): Promise<Card[]>;
+    findWithName(name: string, page: number, limit: number): Promise<Card[]>;
 
     /**
-     * @param code three letter set code
-     * @param number card number in set
-     * @param relations relations to load
-     * @returns card entity in set with code and card number in set
+     * @param {string} code - three letter set code
+     * @param {string} number - card number in set
+     * @param {string[]} relations - relations to load
+     * @returns {Promise<Card | null>} - A promise that resolves to a card entity in set with code and card number in set, null if not found
      */
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * @param code three letter set code
-     * @param filter optional filter to apply to card name
-     * @returns total number of cards in set with code
+     * @param {string} code - three letter set code
+     * @param {string} [filter] - optional filter to apply to card name
+     * @returns {Promise<number>} - total number of cards in set with code
      */
     totalInSet(code: string, filter?: string): Promise<number>;
 
     /**
-     * @param ids of cards to verify existence
-     * @returns Set of card IDs with ID in IDs
+     * @param {string} name - name of cards to count
+     * @returns {Promise<number>} - total number of cards with name
+     */
+    totalWithName(name: string): Promise<number>;
+
+    /**
+     * @param {string[]} ids - ids of cards to verify existence
+     * @returns {Promise<Set<string>>} - A promise that resolves to a set of card IDs with ID in IDs
      */
     verifyCardsExist(ids: string[]): Promise<Set<string>>;
 
     /**
-     * Remove card entity
-     *
-     * @param id 
+     * @param {string} id - The unique identifier of the card to be removed.
      */
     delete(id: string): Promise<void>;
 
     /**
-     * Remove legality entity
-     *
-     * @param legality
+     * @param {string} cardId - The unique identifier of the card.
+     * @param {Format} format - The format for which the legality is to be removed.
      */
     deleteLegality(cardId: string, format: Format): Promise<void>;
 }

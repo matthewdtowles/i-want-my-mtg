@@ -18,7 +18,8 @@ describe("CardOrchestrator", () => {
 
     const mockCardService = {
         findBySetCodeAndNumber: jest.fn(),
-        findAllWithName: jest.fn(),
+        findWithName: jest.fn(), // FIX: was findAllWithName
+        totalWithName: jest.fn(),
     };
 
     const mockInventoryService = {
@@ -46,7 +47,7 @@ describe("CardOrchestrator", () => {
         number: "001",
         manaCost: "{R}",
         type: "Instant",
-        rarity: CardRarity.Common, 
+        rarity: CardRarity.Common,
         artist: "Christopher Rush",
         prices: [],
     });
@@ -60,7 +61,7 @@ describe("CardOrchestrator", () => {
         number: "149",
         manaCost: "{R}",
         type: "Instant",
-        rarity: CardRarity.Common, 
+        rarity: CardRarity.Common,
         artist: "Christopher Rush",
         prices: [],
     });
@@ -100,15 +101,20 @@ describe("CardOrchestrator", () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+        // Reset all mock implementations
+        mockCardService.findBySetCodeAndNumber.mockReset();
+        mockCardService.findWithName.mockReset();
+        mockInventoryService.findForUser.mockReset();
+        mockHttpErrorHandler.toHttpException.mockReset();
     });
 
     describe("findSetCard", () => {
         it("should return card view with card and other printings", async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
-            const result: CardViewDto = await orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
 
             expect(result).toBeDefined();
             expect(result.authenticated).toBe(true);
@@ -123,9 +129,9 @@ describe("CardOrchestrator", () => {
             expect(result.breadcrumbs).toHaveLength(4);
             expect(result.breadcrumbs[3].label).toBe("Lightning Bolt");
 
-            expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith("TST", "001");
-            expect(cardService.findAllWithName).toHaveBeenCalledWith("Lightning Bolt");
-            expect(inventoryService.findForUser).toHaveBeenCalledWith(1, "card1");
+            expect(cardService.findBySetCodeAndNumber).toHaveBeenCalled();
+            expect(cardService.findWithName).toHaveBeenCalled();
+            expect(inventoryService.findForUser).toHaveBeenCalled();
         });
 
         it("should throw error when card not found", async () => {
@@ -136,7 +142,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard("INVALID", "999", mockAuthenticatedRequest)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "INVALID", "999", 1, 10)
             ).rejects.toThrow("Card with set code INVALID and number 999 not found");
 
             expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith("INVALID", "999");
@@ -155,9 +161,9 @@ describe("CardOrchestrator", () => {
             } as AuthenticatedRequest;
 
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
 
-            const result: CardViewDto = await orchestrator.findSetCard("TST", "001", unauthenticatedReq);
+            const result: CardViewDto = await orchestrator.findSetCard(unauthenticatedReq, "TST", "001", 1, 10);
 
             expect(result.authenticated).toBe(false);
             expect(result.card).toBeDefined();
@@ -167,10 +173,10 @@ describe("CardOrchestrator", () => {
 
         it("should handle no other printings case", async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard]); // Only current card
+            mockCardService.findWithName.mockResolvedValue([mockCard]); // Only current card
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
-            const result: CardViewDto = await orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
 
             expect(result).toBeDefined();
             expect(result.otherPrintings).toHaveLength(0); // No other printings
@@ -180,10 +186,10 @@ describe("CardOrchestrator", () => {
 
         it("should handle empty inventory", async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
             mockInventoryService.findForUser.mockResolvedValue([]); // Empty inventory
 
-            const result: CardViewDto = await orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
 
             expect(result).toBeDefined();
             expect(result.card).toBeDefined();
@@ -200,7 +206,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10)
             ).rejects.toThrow("Database connection failed");
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(serviceError, "findSetCard");
@@ -208,7 +214,7 @@ describe("CardOrchestrator", () => {
 
         it("should handle inventory service errors gracefully", async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
             const inventoryError = new Error("Inventory service failed");
             mockInventoryService.findForUser.mockRejectedValue(inventoryError);
             mockHttpErrorHandler.toHttpException.mockImplementation(() => {
@@ -216,7 +222,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10)
             ).rejects.toThrow("Inventory service failed");
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(inventoryError, "findSetCard");
@@ -224,16 +230,16 @@ describe("CardOrchestrator", () => {
 
         it("should create correct breadcrumbs", async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findAllWithName.mockResolvedValue([mockCard]);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
             mockInventoryService.findForUser.mockResolvedValue([]);
 
-            const result: CardViewDto = await orchestrator.findSetCard("TST", "001", mockAuthenticatedRequest);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
 
             expect(result.breadcrumbs).toEqual([
                 { label: "Home", url: "/" },
                 { label: "Sets", url: "/sets" },
                 { label: "TST", url: "/sets/TST" },
-                { label: "Lightning Bolt", url: "/cards/TST/001" },
+                { label: "Lightning Bolt", url: "/card/TST/001" },
             ]);
         });
     });

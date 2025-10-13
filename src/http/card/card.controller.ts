@@ -1,26 +1,34 @@
 import {
     Controller,
-    Get, Inject, Param, Render,
+    Get, Inject, Param, Query, Render,
     Req,
     UseGuards
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { CardOrchestrator } from "src/http/card/card.orchestrator";
-import { CardViewDto } from "src/http/card/dto/card.view.dto";
+import { sanitizeInt } from "src/http/http.util";
+import { CardOrchestrator } from "./card.orchestrator";
+import { CardViewDto } from "./dto/card.view.dto";
 
 @Controller("card")
 export class CardController {
+
+    private readonly defaultLimit = 25;
+
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode/:setNumber")
     @Render("card")
     async findSetCard(
+        @Req() req: AuthenticatedRequest,
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
-        @Req() req: AuthenticatedRequest
+        @Query("page") pageRaw?: string,
+        @Query("limit") limitRaw?: string
     ): Promise<CardViewDto> {
-        return this.cardOrchestrator.findSetCard(setCode, setNumber, req);
+        const limit = sanitizeInt(limitRaw, this.defaultLimit);
+        const page = sanitizeInt(pageRaw, 1);
+        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, page, limit);
     }
 }

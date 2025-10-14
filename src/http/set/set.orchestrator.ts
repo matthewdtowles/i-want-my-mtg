@@ -10,7 +10,7 @@ import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { Breadcrumb } from "src/http/base/breadcrumb";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/base/http.util";
-import { PaginationDto } from "src/http/query/pagination.dto";
+import { PaginationDto } from "src/http/base/pagination.dto";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";

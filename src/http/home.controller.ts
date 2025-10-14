@@ -13,6 +13,6 @@ export class HomeController {
     @Get("/")
     @Render("home")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return await this.setOrchestrator.findSetList(req, [], 1, 20);
+        return await this.setOrchestrator.findSetList(req, [], 1, 25);
     }
 }

@@ -10,7 +10,7 @@ import { HttpErrorHandler } from "src/http/http.error.handler";
 import { isAuthenticated } from "src/http/base/http.util";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
-import { PaginationDto } from "src/http/query/pagination.dto";
+import { PaginationDto } from "src/http/base/pagination.dto";
 import { CardPresenter } from "./card.presenter";
 import { CardResponseDto } from "./dto/card.response.dto";
 import { CardViewDto } from "./dto/card.view.dto";

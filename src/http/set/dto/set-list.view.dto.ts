@@ -1,5 +1,5 @@
 import { BaseViewDto } from "src/http/base/base.view.dto";
-import { PaginationDto } from "src/http/query/pagination.dto";
+import { PaginationDto } from "src/http/base/pagination.dto";
 import { SetMetaResponseDto } from "./set-meta.response.dto";
 
 export class SetListViewDto extends BaseViewDto {

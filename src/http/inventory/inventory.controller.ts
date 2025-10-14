@@ -13,7 +13,7 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/query/query.util";
+import { safeAlphaNumeric, sanitizeInt } from "src/core/query/query.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";

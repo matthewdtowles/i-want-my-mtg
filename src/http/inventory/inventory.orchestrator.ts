@@ -4,7 +4,7 @@ import { InventoryService } from "src/core/inventory/inventory.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
-import { PaginationDto } from "src/http/query/pagination.dto";
+import { PaginationDto } from "src/http/base/pagination.dto";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";

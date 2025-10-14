@@ -12,13 +12,11 @@ export class QueryOptionsDto {
     readonly sort?: SortOptions;
 
     constructor(init?: Partial<QueryOptionsDto>) {
-        console.log("QueryOptionsDto init:", init);
         init = init || {};
         this.page = sanitizeInt(init.page, this.DEFAULT_PAGE);
         this.limit = sanitizeInt(init.limit, this.DEFAULT_LIMIT);
         this.ascend = safeBoolean(init.ascend, false);
         this.filter = safeAlphaNumeric(init.filter);
         this.sort = init.sort;
-        console.log("QueryOptionsDto constructed:", this);
     }
 }

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -20,6 +20,8 @@ import { SetPresenter } from "./set.presenter";
 @Injectable()
 export class SetOrchestrator {
 
+    private readonly LOGGER: Logger = new Logger(SetOrchestrator.name);
+
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
@@ -34,6 +36,7 @@ export class SetOrchestrator {
         filter?: string
     ): Promise<SetListViewDto> {
         try {
+            this.LOGGER.debug(`Finding sets - page: ${page}, limit: ${limit}, filter: ${filter}`);
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(page, limit, filter),
                 this.setService.totalSetsCount(filter)

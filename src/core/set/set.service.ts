@@ -25,6 +25,8 @@ export class SetService {
 
     async totalSetsCount(filter?: string): Promise<number> {
         this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${filter})`);
-        return await this.repository.totalSets(filter);
+        const result = await this.repository.totalSets(filter);
+        this.LOGGER.debug(`Total sets: ${result}`);
+        return result;
     }
 }

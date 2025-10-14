@@ -2,6 +2,7 @@ import {
     Controller,
     Get,
     Inject,
+    Logger,
     Param,
     Query,
     Render,
@@ -10,13 +11,17 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/base/http.util";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/query/query.util";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetOrchestrator } from "./set.orchestrator";
+import { QueryOptionsDto } from "../query/query-options.dto";
 
 @Controller("sets")
 export class SetController {
+
+    private readonly LOGGER: Logger = new Logger(SetController.name);
+
     private readonly breadcrumbs = [
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
@@ -25,20 +30,36 @@ export class SetController {
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
+    // @UseGuards(OptionalAuthGuard)
+    // @Get()
+    // @Render("setListPage")
+    // async setListing(
+    //     @Req() req: AuthenticatedRequest,
+    //     @Query("page") pageRaw?: string,
+    //     @Query("limit") limitRaw?: string,
+    //     @Query("filter") filterRaw?: string
+    // ): Promise<SetListViewDto> {
+    //     const limit = sanitizeInt(limitRaw, this.defaultLimit);
+    //     const filter = safeAlphaNumeric(filterRaw);
+    //     const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
+    //     const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
+    //     return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
+    // }
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
     async setListing(
         @Req() req: AuthenticatedRequest,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string,
-        @Query("filter") filterRaw?: string
+        @Query() query: any
     ): Promise<SetListViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const filter = safeAlphaNumeric(filterRaw);
-        const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
+        const rawQueryOptions = new QueryOptionsDto(query);
+        const lastPage = await this.setOrchestrator.getLastPage(rawQueryOptions.limit, rawQueryOptions.filter);
+        this.LOGGER.debug(`Query Options: ${JSON.stringify(rawQueryOptions)}`);
+        const queryOptions = new QueryOptionsDto({
+            ...rawQueryOptions,
+            page: Math.min(sanitizeInt(query.page, 1), lastPage)
+        });
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, queryOptions.page, queryOptions.limit, queryOptions.filter);
     }
 
     @UseGuards(OptionalAuthGuard)

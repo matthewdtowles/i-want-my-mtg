@@ -3,37 +3,28 @@
     <table class="min-w-full bg-white">
         <thead>
             <tr class="table-header-row">
-                <th class="table-header pl-2" data-sort="name">
-                    <button type="button" class="sort-btn" data-sort="name">
-                        Name
-                        <span class="sort-icon" data-sort="name">
-                            {{>downarrow}}
-                        </span>
-                    </button>
+                <th class="table-header pl-2">
+                    <a href="?sort=set&ascend={{ascend}}" class="sort-btn">
+                        Set <span class="sort-icon">{{>downarrow}}</span>
+                    </a>
                 </th>
-                <th class="table-header" data-sort="price">
-                    <button type="button" class="sort-btn" data-sort="price">
+                <th class="table-header">
+                    <a href="?sort=setValue&ascend={{ascend}}" class="sort-btn">
                         Total Value
-                        <span class="sort-icon" data-sort="price">
-                            {{>downarrow}}
-                        </span>
-                    </button>
+                        <span class="sort-icon">{{>downarrow}}</span>
+                    </a>
                 </th>
-                <th class="table-header" data-sort="owned">
-                    <button type="button" class="sort-btn" data-sort="owned">
+                <th class="table-header">
+                    <a href="?sort=ownedValue&ascend={{ascend}}" class="sort-btn">
                         Owned Value
-                        <span class="sort-icon" data-sort="owned">
-                            {{>downarrow}}
-                        </span>
-                    </button>
+                        <span class="sort-icon">{{>downarrow}}</span>
+                    </a>
                 </th>
-                <th class="table-header xs-hide pr-2" data-sort="releaseDate">
-                    <button type="button" class="sort-btn" data-sort="releaseDate">
+                <th class="table-header xs-hide pr-2">
+                    <a href="?sort=releaseDate&ascend={{ascend}}" class="sort-btn">
                         Release Date
-                        <span class="sort-icon" data-sort="releaseDate">
-                            {{>downarrow}}
-                        </span>
-                    </button>
+                        <span class="sort-icon">{{>downarrow}}</span>
+                    </a>
                 </th>
             </tr>
         </thead>

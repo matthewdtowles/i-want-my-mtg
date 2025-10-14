@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { sanitizeInt } from "src/http/base/http.util";
+import { sanitizeInt } from "src/http/query/query.util";
 import { CardOrchestrator } from "./card.orchestrator";
 import { CardViewDto } from "./dto/card.view.dto";
 

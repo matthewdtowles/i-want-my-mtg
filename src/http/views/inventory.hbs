@@ -9,44 +9,96 @@
             <thead>
                 <tr class="table-header-row">
                     <th class="table-header pl-2" data-sort="owned">
-                        <button type="button" class="sort-btn" data-sort="owned">
+                        <a href="?sort=owned&direction={{#if (and (eq sort " owned") (eq direction "desc"
+                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " owned")}}active{{/if}}">
                             Owned
-                            <span class="sort-icon" data-sort="owned">
+                            {{#if (eq sort "owned")}}
+                            {{#if (eq direction "desc")}}
+                            <span class="sort-icon">
                                 <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10 14l6-6H4l6 6z" />
                                 </svg>
                             </span>
-                        </button>
+                            {{else}}
+                            <span class="sort-icon">▲</span>
+                            {{/if}}
+                            {{else}}
+                            <span class="sort-icon text-gray-300">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                            {{/if}}
+                        </a>
                     </th>
                     <th class="table-header" data-sort="name">
-                        <button type="button" class="sort-btn" data-sort="name">
+                        <a href="?sort=name&direction={{#if (and (eq sort " name") (eq direction "desc"
+                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " name")}}active{{/if}}">
                             Name
-                            <span class="sort-icon" data-sort="name">
+                            {{#if (eq sort "name")}}
+                            {{#if (eq direction "desc")}}
+                            <span class="sort-icon">
                                 <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10 14l6-6H4l6 6z" />
                                 </svg>
                             </span>
-                        </button>
+                            {{else}}
+                            <span class="sort-icon">▲</span>
+                            {{/if}}
+                            {{else}}
+                            <span class="sort-icon text-gray-300">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                            {{/if}}
+                        </a>
                     </th>
                     <th class="table-header" data-sort="set">
-                        <button type="button" class="sort-btn" data-sort="set">
+                        <a href="?sort=set&direction={{#if (and (eq sort " set") (eq direction "desc"
+                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " set")}}active{{/if}}">
                             Set
-                            <span class="sort-icon" data-sort="set">
+                            {{#if (eq sort "set")}}
+                            {{#if (eq direction "desc")}}
+                            <span class="sort-icon">
                                 <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10 14l6-6H4l6 6z" />
                                 </svg>
                             </span>
-                        </button>
+                            {{else}}
+                            <span class="sort-icon">▲</span>
+                            {{/if}}
+                            {{else}}
+                            <span class="sort-icon text-gray-300">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                            {{/if}}
+                        </a>
                     </th>
                     <th class="table-header" data-sort="price">
-                        <button type="button" class="sort-btn" data-sort="">
+                        <a href="?sort=price&direction={{#if (and (eq sort " price") (eq direction "desc"
+                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " price")}}active{{/if}}">
                             Price
-                            <span class="sort-icon" data-sort="price">
+                            {{#if (eq sort "price")}}
+                            {{#if (eq direction "desc")}}
+                            <span class="sort-icon">
                                 <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10 14l6-6H4l6 6z" />
                                 </svg>
                             </span>
-                        </button>
+                            {{else}}
+                            <span class="sort-icon">▲</span>
+                            {{/if}}
+                            {{else}}
+                            <span class="sort-icon text-gray-300">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                            {{/if}}
+                        </a>
                     </th>
                     <th class="table-header pr-2 xs-hide"></th>
                 </tr>

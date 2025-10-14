@@ -16,6 +16,7 @@ export function isAuthenticated(req: AuthenticatedRequest): boolean {
     return req.user != null && typeof req.isAuthenticated === "function" ? req.isAuthenticated() : false;
 }
 
+// TODO: move the bottom two to query module?
 export function sanitizeInt(value: string | undefined, defaultValue: number): number {
     if (!value) {
         return defaultValue;

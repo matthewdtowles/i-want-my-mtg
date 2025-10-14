@@ -9,95 +9,27 @@
             <thead>
                 <tr class="table-header-row">
                     <th class="table-header pl-2" data-sort="owned">
-                        <a href="?sort=owned&direction={{#if (and (eq sort " owned") (eq direction "desc"
-                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " owned")}}active{{/if}}">
+                        <a href="?sort=owned&ascend={{ascend}}" class="sort-btn">
                             Owned
-                            {{#if (eq sort "owned")}}
-                            {{#if (eq direction "desc")}}
-                            <span class="sort-icon">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{else}}
-                            <span class="sort-icon">▲</span>
-                            {{/if}}
-                            {{else}}
-                            <span class="sort-icon text-gray-300">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{/if}}
+                            <span class="sort-icon">{{>downarrow}}</span>
                         </a>
                     </th>
                     <th class="table-header" data-sort="name">
-                        <a href="?sort=name&direction={{#if (and (eq sort " name") (eq direction "desc"
-                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " name")}}active{{/if}}">
+                        <a href="?sort=name&ascend={{ascend}}" class="sort-btn">
                             Name
-                            {{#if (eq sort "name")}}
-                            {{#if (eq direction "desc")}}
-                            <span class="sort-icon">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{else}}
-                            <span class="sort-icon">▲</span>
-                            {{/if}}
-                            {{else}}
-                            <span class="sort-icon text-gray-300">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{/if}}
+                            <span class="sort-icon">{{>downarrow}}</span>
                         </a>
                     </th>
                     <th class="table-header" data-sort="set">
-                        <a href="?sort=set&direction={{#if (and (eq sort " set") (eq direction "desc"
-                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " set")}}active{{/if}}">
+                        <a href="?sort=set&ascend={{ascend}}" class="sort-btn">
                             Set
-                            {{#if (eq sort "set")}}
-                            {{#if (eq direction "desc")}}
-                            <span class="sort-icon">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{else}}
-                            <span class="sort-icon">▲</span>
-                            {{/if}}
-                            {{else}}
-                            <span class="sort-icon text-gray-300">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{/if}}
+                            <span class="sort-icon">{{>downarrow}}</span>
                         </a>
                     </th>
                     <th class="table-header" data-sort="price">
-                        <a href="?sort=price&direction={{#if (and (eq sort " price") (eq direction "desc"
-                            ))}}asc{{else}}desc{{/if}}" class="sort-btn {{#if (eq sort " price")}}active{{/if}}">
+                        <a href="?sort=price&ascend={{ascend}}" class="sort-btn">
                             Price
-                            {{#if (eq sort "price")}}
-                            {{#if (eq direction "desc")}}
-                            <span class="sort-icon">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{else}}
-                            <span class="sort-icon">▲</span>
-                            {{/if}}
-                            {{else}}
-                            <span class="sort-icon text-gray-300">
-                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 14l6-6H4l6 6z" />
-                                </svg>
-                            </span>
-                            {{/if}}
+                            <span class="sort-icon">{{>downarrow}}</span>
                         </a>
                     </th>
                     <th class="table-header pr-2 xs-hide"></th>

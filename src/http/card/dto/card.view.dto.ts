@@ -1,7 +1,7 @@
 import { BaseViewDto } from "src/http/base.view.dto";
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { SingleCardResponseDto } from "src/http/card/dto/single-card.response.dto";
 import { PaginationDto } from "src/http/pagination.dto";
+import { CardResponseDto } from "./card.response.dto";
+import { SingleCardResponseDto } from "./single-card.response.dto";
 
 export class CardViewDto extends BaseViewDto {
     readonly card: SingleCardResponseDto;

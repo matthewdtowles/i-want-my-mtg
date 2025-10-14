@@ -5,7 +5,7 @@ import {
     NotFoundException,
     UnauthorizedException
 } from "@nestjs/common";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "./auth/dto/authenticated.request";
 
 
 export class HttpErrorHandler {

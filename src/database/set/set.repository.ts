@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
-import { SetMapper } from "src/database/set/set.mapper";
-import { SetOrmEntity } from "src/database/set/set.orm-entity";
-import { ILike, MoreThan, Repository } from "typeorm";
+import { Repository } from "typeorm";
+import { SetMapper } from "./set.mapper";
+import { SetOrmEntity } from "./set.orm-entity";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {

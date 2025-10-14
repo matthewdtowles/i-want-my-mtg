@@ -1,6 +1,6 @@
 import { BaseViewDto } from "src/http/base.view.dto";
 import { PaginationDto } from "src/http/pagination.dto";
-import { SetResponseDto } from "src/http/set/dto/set.response.dto";
+import { SetResponseDto } from "./set.response.dto";
 
 export class SetViewDto extends BaseViewDto {
     readonly set: SetResponseDto;

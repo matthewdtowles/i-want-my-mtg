@@ -1,6 +1,6 @@
 import { User } from "src/core/user/user.entity";
-import { UserOrmEntity } from "src/database/user/user.orm-entity";
 import { UserRole } from "src/shared/constants/user.role.enum";
+import { UserOrmEntity } from "./user.orm-entity";
 
 export class UserMapper {
 

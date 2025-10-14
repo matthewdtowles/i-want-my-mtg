@@ -1,6 +1,6 @@
 import { Logger, Module } from "@nestjs/common";
-import { InventoryService } from "src/core/inventory/inventory.service";
 import { DatabaseModule } from "src/database/database.module";
+import { InventoryService } from "./inventory.service";
 
 @Module({
     imports: [DatabaseModule],

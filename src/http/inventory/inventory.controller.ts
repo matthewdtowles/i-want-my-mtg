@@ -2,7 +2,8 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject, Param, ParseIntPipe, Patch,
+    Get, Inject,
+    Patch,
     Post,
     Query,
     Render,
@@ -13,9 +14,9 @@ import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
-import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
-import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
-import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
+import { InventoryRequestDto } from "./dto/inventory.request.dto";
+import { InventoryViewDto } from "./dto/inventory.view.dto";
+import { InventoryOrchestrator } from "./inventory.orchestrator";
 
 
 @Controller("inventory")

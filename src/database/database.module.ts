@@ -5,17 +5,17 @@ import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository
 import { PriceRepositoryPort } from "src/core/price/price.repository.port";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { UserRepositoryPort } from "src/core/user/user.repository.port";
-import { CardOrmEntity } from "src/database/card/card.orm-entity";
-import { CardRepository } from "src/database/card/card.repository";
-import { LegalityOrmEntity } from "src/database/card/legality.orm-entity";
-import { InventoryOrmEntity } from "src/database/inventory/inventory.orm-entity";
-import { InventoryRepository } from "src/database/inventory/inventory.repository";
-import { PriceOrmEntity } from "src/database/price/price.orm-entity";
-import { PriceRepository } from "src/database/price/price.repository";
-import { SetOrmEntity } from "src/database/set/set.orm-entity";
-import { SetRepository } from "src/database/set/set.repository";
-import { UserOrmEntity } from "src/database/user/user.orm-entity";
-import { UserRepository } from "src/database/user/user.repository";
+import { CardOrmEntity } from "./card/card.orm-entity";
+import { CardRepository } from "./card/card.repository";
+import { LegalityOrmEntity } from "./card/legality.orm-entity";
+import { InventoryOrmEntity } from "./inventory/inventory.orm-entity";
+import { InventoryRepository } from "./inventory/inventory.repository";
+import { PriceOrmEntity } from "./price/price.orm-entity";
+import { PriceRepository } from "./price/price.repository";
+import { SetOrmEntity } from "./set/set.orm-entity";
+import { SetRepository } from "./set/set.repository";
+import { UserOrmEntity } from "./user/user.orm-entity";
+import { UserRepository } from "./user/user.repository";
 
 @Module({
     imports: [

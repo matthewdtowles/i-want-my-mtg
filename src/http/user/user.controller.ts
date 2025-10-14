@@ -16,11 +16,11 @@ import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { BaseViewDto } from "src/http/base.view.dto";
-import { CreateUserViewDto } from "src/http/user/dto/create-user.view.dto";
-import { UpdateUserRequestDto } from "src/http/user/dto/update-user.request.dto";
-import { UserOrchestrator } from "src/http/user/user.orchestrator";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
+import { CreateUserViewDto } from "./dto/create-user.view.dto";
+import { UpdateUserRequestDto } from "./dto/update-user.request.dto";
 import { UserViewDto } from "./dto/user.view.dto";
+import { UserOrchestrator } from "./user.orchestrator";
 
 
 @Controller("user")

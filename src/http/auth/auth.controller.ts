@@ -7,11 +7,11 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { Response } from "express";
-import { AuthOrchestrator } from "src/http/auth/auth.orchestrator";
-import { AuthResult } from "src/http/auth/dto/auth.result";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { LoginFormViewDto } from "src/http/auth/dto/login-form.view.dto";
+import { AuthOrchestrator } from "./auth.orchestrator";
+import { AuthResult } from "./dto/auth.result";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
+import { AuthenticatedRequest } from "./dto/authenticated.request";
+import { LoginFormViewDto } from "./dto/login-form.view.dto";
 import { LocalAuthGuard } from "./local.auth.guard";
 
 @Controller("auth")

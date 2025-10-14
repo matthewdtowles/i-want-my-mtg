@@ -1,6 +1,6 @@
 import { Logger, Module } from "@nestjs/common";
-import { CardService } from "src/core/card/card.service";
 import { DatabaseModule } from "src/database/database.module";
+import { CardService } from "./card.service";
 
 @Module({
     imports: [DatabaseModule],

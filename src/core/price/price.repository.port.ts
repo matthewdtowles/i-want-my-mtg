@@ -1,4 +1,4 @@
-import { Price } from "src/core/price/price.entity";
+import { Price } from "./price.entity";
 
 export const PriceRepositoryPort = "PriceRepositoryPort";
 

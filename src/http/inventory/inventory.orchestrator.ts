@@ -4,11 +4,11 @@ import { InventoryService } from "src/core/inventory/inventory.service";
 import { ActionStatus } from "src/http/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
-import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
-import { InventoryResponseDto } from "src/http/inventory/dto/inventory.response.dto";
-import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
-import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { PaginationDto } from "src/http/pagination.dto";
+import { InventoryRequestDto } from "./dto/inventory.request.dto";
+import { InventoryResponseDto } from "./dto/inventory.response.dto";
+import { InventoryViewDto } from "./dto/inventory.view.dto";
+import { InventoryPresenter } from "./inventory.presenter";
 
 @Injectable()
 export class InventoryOrchestrator {

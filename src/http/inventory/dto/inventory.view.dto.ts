@@ -1,6 +1,6 @@
 import { BaseViewDto } from "src/http/base.view.dto";
-import { InventoryResponseDto } from "src/http/inventory/dto/inventory.response.dto";
 import { PaginationDto } from "src/http/pagination.dto";
+import { InventoryResponseDto } from "./inventory.response.dto";
 
 
 export class InventoryViewDto extends BaseViewDto {

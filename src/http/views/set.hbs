@@ -16,14 +16,68 @@
     <table class="table-container">
         <thead>
             <tr class="table-header-row">
-                <th class="table-header pl-2"># Owned</th>
-                <th class="table-header">Card No.</th>
-                <th class="table-header">Name</th>
+                <th class="table-header pl-2" data-sort="owned">
+                    <button type="button" class="sort-btn" data-sort="owned">
+                        Owned
+                        <span class="sort-icon" data-sort="owned">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
+                <th class="table-header" data-sort="number">
+                    <button type="button" class="sort-btn" data-sort="number">
+                        Card No.
+                        <span class="sort-icon" data-sort="number">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
+                <th class="table-header" data-sort="name">
+                    <button type="button" class="sort-btn" data-sort="name">
+                        Name
+                        <span class="sort-icon" data-sort="name">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
                 <th class="table-header xs-hide">Mana Cost</th>
                 <th class="table-header xs-hide">Rarity</th>
-                <th class="table-header xs-hide">Price</th>
-                <th class="table-header xs-hide pr-2">Foil Price</th>
-                <th class="table-header xs-show pr-2">Prices</th>
+                <th class="table-header xs-hide" data-sort="price">
+                    <button type="button" class="sort-btn" data-sort="price">
+                        Price
+                        <span class="sort-icon" data-sort="price">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
+                <th class="table-header xs-hide pr-2" data-sort="foilPrice">
+                    <button type="button" class="sort-btn" data-sort="foilPrice">
+                        Foil Price
+                        <span class="sort-icon" data-sort="foilPrice">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
+                <th class="table-header xs-show pr-2" data-sort="prices">
+                    <button type="button" class="sort-btn" data-sort="prices">
+                        Prices
+                        <span class="sort-icon" data-sort="prices">
+                            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 14l6-6H4l6 6z" />
+                            </svg>
+                        </span>
+                    </button>
+                </th>
             </tr>
         </thead>
         <tbody>

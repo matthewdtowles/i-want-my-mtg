@@ -8,11 +8,47 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Owned</th>
-                    <th class="table-header">Name</th>
-                    <th class="table-header">Set</th>
-                    <th class="table-header">Price</th>
-                    <th class="table-header pr-2 xs-hide">Delete</th>
+                    <th class="table-header pl-2" data-sort="owned">
+                        <button type="button" class="sort-btn" data-sort="owned">
+                            Owned
+                            <span class="sort-icon" data-sort="owned">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                        </button>
+                    </th>
+                    <th class="table-header" data-sort="name">
+                        <button type="button" class="sort-btn" data-sort="name">
+                            Name
+                            <span class="sort-icon" data-sort="name">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                        </button>
+                    </th>
+                    <th class="table-header" data-sort="set">
+                        <button type="button" class="sort-btn" data-sort="set">
+                            Set
+                            <span class="sort-icon" data-sort="set">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                        </button>
+                    </th>
+                    <th class="table-header" data-sort="price">
+                        <button type="button" class="sort-btn" data-sort="">
+                            Price
+                            <span class="sort-icon" data-sort="price">
+                                <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 14l6-6H4l6 6z" />
+                                </svg>
+                            </span>
+                        </button>
+                    </th>
+                    <th class="table-header pr-2 xs-hide"></th>
                 </tr>
             </thead>
             <tbody>

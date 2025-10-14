@@ -1,6 +1,6 @@
 import { BaseViewDto } from "src/http/base.view.dto";
 import { PaginationDto } from "src/http/pagination.dto";
-import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
+import { SetMetaResponseDto } from "./set-meta.response.dto";
 
 export class SetListViewDto extends BaseViewDto {
     readonly setList: SetMetaResponseDto[];

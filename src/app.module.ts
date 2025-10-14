@@ -3,9 +3,9 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { join } from "path";
-import { DatabaseModule } from "src/database/database.module";
 import { DataSource } from "typeorm";
 import { CoreModule } from "./core/core.module";
+import { DatabaseModule } from "./database/database.module";
 import { HttpModule } from "./http/http.module";
 
 @Module({

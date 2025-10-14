@@ -2,10 +2,10 @@ import { Logger, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { AuthService } from "src/core/auth/auth.service";
-import { JwtStrategy } from "src/core/auth/jwt.strategy";
-import { LocalStrategy } from "src/core/auth/local.strategy";
 import { UserModule } from "src/core/user/user.module";
+import { AuthService } from "./auth.service";
+import { JwtStrategy } from "./jwt.strategy";
+import { LocalStrategy } from "./local.strategy";
 
 @Module({
     imports: [

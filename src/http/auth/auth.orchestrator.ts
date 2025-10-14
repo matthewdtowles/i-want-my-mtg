@@ -2,9 +2,9 @@ import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
-import { AuthResult } from "src/http/auth/dto/auth.result";
+import { UserResponseDto } from "src/http/user/dto/user.response.dto";
 import { UserRole } from "src/shared/constants/user.role.enum";
-import { UserResponseDto } from "../user/dto/user.response.dto";
+import { AuthResult } from "./dto/auth.result";
 
 
 @Injectable()

@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { User } from "src/core/user/user.entity";
-import { UserRepositoryPort } from "src/core/user/user.repository.port";
+import { User } from "./user.entity";
+import { UserRepositoryPort } from "./user.repository.port";
 
 
 @Injectable()
@@ -37,7 +37,7 @@ export class UserService {
     async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`update`);
         if (user.password) {
-            throw new Error("Password must be updated separately."); 
+            throw new Error("Password must be updated separately.");
         }
         return await this.repository.update(user) ?? null;
     }

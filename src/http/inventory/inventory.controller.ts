@@ -10,10 +10,10 @@ import {
     Req, UseGuards
 } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.result";
+import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/base/http.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";

@@ -10,7 +10,7 @@ import {
     UnauthorizedException
 } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ActionStatus } from "./action-status.enum";
+import { ActionStatus } from "./base/action-status.enum";
 import { LoginFormViewDto } from "./auth/dto/login-form.view.dto";
 import { CreateUserViewDto } from "./user/dto/create-user.view.dto";
 

@@ -5,7 +5,7 @@ import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
-import { ActionStatus } from "src/http/action-status.enum";
+import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";

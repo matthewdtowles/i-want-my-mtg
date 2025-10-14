@@ -1,5 +1,5 @@
-import { BaseViewDto } from "src/http/base.view.dto";
-import { PaginationDto } from "src/http/pagination.dto";
+import { BaseViewDto } from "src/http/base/base.view.dto";
+import { PaginationDto } from "src/http/query/pagination.dto";
 import { CardResponseDto } from "./card.response.dto";
 import { SingleCardResponseDto } from "./single-card.response.dto";
 

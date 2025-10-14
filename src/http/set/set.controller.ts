@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
+import { safeAlphaNumeric, sanitizeInt } from "src/http/base/http.util";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetOrchestrator } from "./set.orchestrator";

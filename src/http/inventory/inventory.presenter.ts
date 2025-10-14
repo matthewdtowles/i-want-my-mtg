@@ -1,7 +1,7 @@
 import { Card } from "src/core/card/card.entity";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Price } from "src/core/price/price.entity";
-import { BASE_IMAGE_URL, toDollar } from "src/http/http.util";
+import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryQuantities } from "./inventory.quantities";

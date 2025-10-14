@@ -1,4 +1,4 @@
-import { BaseViewDto } from "src/http/base.view.dto";
+import { BaseViewDto } from "src/http/base/base.view.dto";
 
 export class CreateUserViewDto extends BaseViewDto {
     readonly name: string;

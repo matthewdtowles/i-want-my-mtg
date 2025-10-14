@@ -1,8 +1,8 @@
 import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { ActionStatus } from "src/http/action-status.enum";
+import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { BaseViewDto } from "src/http/base.view.dto";
+import { BaseViewDto } from "src/http/base/base.view.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { CreateUserRequestDto } from "src/http/user/dto/create-user.request.dto";
 import { UpdateUserRequestDto } from "src/http/user/dto/update-user.request.dto";
@@ -239,7 +239,7 @@ describe("UserOrchestrator", () => {
     });
 
     describe("updatePassword", () => {
-        beforeEach(() => mockHttpErrorHandler.validateAuthenticatedRequest.mockImplementation(() => {}));
+        beforeEach(() => mockHttpErrorHandler.validateAuthenticatedRequest.mockImplementation(() => { }));
 
         it("should update password and return success view", async () => {
             mockUserService.updatePassword.mockResolvedValue(true);
@@ -282,7 +282,7 @@ describe("UserOrchestrator", () => {
     });
 
     describe("deleteUser", () => {
-        beforeEach(() => mockHttpErrorHandler.validateAuthenticatedRequest.mockImplementation(() => {}));
+        beforeEach(() => mockHttpErrorHandler.validateAuthenticatedRequest.mockImplementation(() => { }));
 
         it("should delete user and return success view", async () => {
             mockUserService.remove.mockResolvedValue(undefined);

@@ -4,7 +4,7 @@ import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { BaseViewDto } from "src/http/base/base.view.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { UserRole } from "src/shared/constants/user.role.enum";

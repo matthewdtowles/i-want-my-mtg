@@ -10,7 +10,7 @@ import {
     Req, UseGuards
 } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { safeAlphaNumeric, sanitizeInt } from "src/core/query/query.util";

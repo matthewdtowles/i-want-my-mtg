@@ -7,6 +7,7 @@ import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
 import { CardOrmEntity } from "./card.orm-entity";
 import { LegalityOrmEntity } from "./legality.orm-entity";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 
 @Injectable()
@@ -33,29 +34,29 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
+    async findBySet(code: string, options: QueryOptionsDto): Promise<Card[]> {
         const qb = this.cardRepository.createQueryBuilder("card")
             .leftJoinAndSelect("card.legalities", "legalities")
             .leftJoinAndSelect("card.prices", "prices")
             .where("card.setCode = :code", { code });
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
+        if (options.filter) {
+            const fragments = options.filter.split(" ").filter(f => f.length > 0);
             fragments.forEach((fragment, i) => {
                 qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
             });
         }
-        qb.skip((page - 1) * limit).take(limit);
+        qb.skip((options.page - 1) * options.limit).take(options.limit);
         qb.orderBy("card.order", "ASC");
         const items = await qb.getMany();
         return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
-    async findWithName(name: string, page: number, limit: number): Promise<Card[]> {
+    async findWithName(name: string, options: QueryOptionsDto): Promise<Card[]> {
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: { name },
             relations: this.DEFAULT_RELATIONS,
-            skip: (page - 1) * limit,
-            take: limit,
+            skip: (options.page - 1) * options.limit,
+            take: options.limit,
         }) ?? []
         return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
     }

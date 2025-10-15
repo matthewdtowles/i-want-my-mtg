@@ -1,7 +1,7 @@
 import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { BaseViewDto } from "src/http/base/base.view.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { CreateUserRequestDto } from "src/http/user/dto/create-user.request.dto";

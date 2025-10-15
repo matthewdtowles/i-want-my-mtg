@@ -1,4 +1,4 @@
-import { AuthenticatedRequest } from "../auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 
 export const BASE_IMAGE_URL: string = "https://cards.scryfall.io";
 

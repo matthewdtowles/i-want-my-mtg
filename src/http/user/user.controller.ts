@@ -13,7 +13,7 @@ import { Response } from "express";
 import { AuthToken } from "src/core/auth/auth.types";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { BaseViewDto } from "src/http/base/base.view.dto";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";

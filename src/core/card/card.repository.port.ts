@@ -1,3 +1,4 @@
+import { QueryOptionsDto } from "../query/query-options.dto";
 import { Card } from "./card.entity";
 import { Format } from "./format.enum";
 
@@ -25,20 +26,17 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - The unique three-letter set code (primary key).
-     * @param {number} page - The page number (1-based index).
-     * @param {number} limit - The number of items per page.
-     * @param {string} [filter] - Optional filter to apply to card name.
+     * @param {QueryOptionsDto} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities.
      */
-    findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]>;
+    findBySet(code: string, options: QueryOptionsDto): Promise<Card[]>;
 
     /**
      * @param {string} name - of card to find
-     * @param {number} page - The page number (1-based index).
-     * @param {number} limit - number of cards to return
+     * @param {QueryOptionsDto} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities with the given name.
      */
-    findWithName(name: string, page: number, limit: number): Promise<Card[]>;
+    findWithName(name: string, options: QueryOptionsDto): Promise<Card[]>;
 
     /**
      * @param {string} code - three letter set code

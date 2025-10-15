@@ -7,10 +7,10 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { Response } from "express";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { AuthOrchestrator } from "./auth.orchestrator";
 import { AuthResult } from "./dto/auth.result";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
-import { AuthenticatedRequest } from "./dto/authenticated.request";
 import { LoginFormViewDto } from "./dto/login-form.view.dto";
 import { LocalAuthGuard } from "./local.auth.guard";
 
@@ -40,6 +40,7 @@ export class AuthController {
             });
             return res.redirect("/user");
         } else {
+            // TODO: remove the query param for error in favor of flash messages ??
             return res.redirect("/auth/login?error=Invalid credentials");
         }
     }

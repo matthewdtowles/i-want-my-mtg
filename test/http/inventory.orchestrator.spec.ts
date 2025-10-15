@@ -5,7 +5,7 @@ import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
 

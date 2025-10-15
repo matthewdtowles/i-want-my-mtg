@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { CardOrchestrator } from "src/http/card/card.orchestrator";
 import { CardViewDto } from "src/http/card/dto/card.view.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";

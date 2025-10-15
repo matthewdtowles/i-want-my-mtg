@@ -3,11 +3,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
 import { CardOrmEntity } from "./card.orm-entity";
 import { LegalityOrmEntity } from "./legality.orm-entity";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 
 @Injectable()

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Set } from "./set.entity";
 import { SetRepositoryPort } from "./set.repository.port";
+import { QueryOptionsDto } from "../query/query-options.dto";
 
 @Injectable()
 export class SetService {
@@ -13,9 +14,9 @@ export class SetService {
         return await this.repository.save(sets);
     }
 
-    async findSets(page: number, limit: number, filter?: string): Promise<Set[]> {
-        this.LOGGER.debug(`Calling findSets(page: ${page}, limit: ${limit}, filter: ${filter})`);
-        return await this.repository.findAllSetsMeta(page, limit, filter);
+    async findSets(query: QueryOptionsDto): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findSets(page: ${query.page}, limit: ${query.limit}, filter: ${query.filter})`);
+        return await this.repository.findAllSetsMeta(query);
     }
 
     async findByCode(setCode: string): Promise<Set | null> {

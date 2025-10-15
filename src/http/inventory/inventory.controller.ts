@@ -17,6 +17,7 @@ import { safeAlphaNumeric, sanitizeInt } from "src/core/query/query.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 
 @Controller("inventory")
@@ -29,21 +30,18 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(
-        @Req() req: AuthenticatedRequest,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string,
-        @Query("filter") filterRaw?: string,
-    ): Promise<InventoryViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const filter = safeAlphaNumeric(filterRaw);
+    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
         const userId = req.user?.id;
         if (!userId) {
             throw new Error("User ID not found in request");
         }
-        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, limit, filter);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.inventoryOrchestrator.findByUser(req, page, limit, filter);
+        const rawOptions = new QueryOptionsDto(req.query);
+        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
+        const options = new QueryOptionsDto({
+            ...rawOptions,
+            page: Math.min(sanitizeInt(rawOptions.page, 1), lastPage)
+        });
+        return this.inventoryOrchestrator.findByUser(req, options);
     }
 
     @UseGuards(JwtAuthGuard)

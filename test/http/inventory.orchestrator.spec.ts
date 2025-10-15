@@ -4,6 +4,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
@@ -18,6 +19,8 @@ describe("InventoryOrchestrator", () => {
         user: { id: 1, name: "Test User", email: "test@example.com" },
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
+
+    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10, filter: "test" });
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -71,7 +74,7 @@ describe("InventoryOrchestrator", () => {
             ]);
             inventoryService.totalInventoryItemsForUser.mockResolvedValue(1);
 
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
             expect(result.cards.length).toBe(1);
             expect(result.pagination.currentPage).toBe(1);
@@ -83,7 +86,7 @@ describe("InventoryOrchestrator", () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForUser.mockResolvedValue(0);
 
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
             expect(result.cards).toHaveLength(0);
             expect(result.pagination.totalItems).toBe(0);
@@ -93,7 +96,7 @@ describe("InventoryOrchestrator", () => {
         it("throws error if not authenticated", async () => {
             const unauthenticatedRequest = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
 
-            await expect(orchestrator.findByUser(unauthenticatedRequest, 1, 10)).rejects.toThrow();
+            await expect(orchestrator.findByUser(unauthenticatedRequest, mockQueryOptions)).rejects.toThrow();
         });
 
     });

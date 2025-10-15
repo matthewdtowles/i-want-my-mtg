@@ -34,7 +34,7 @@ export class SetOrchestrator {
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
-                this.setService.findSets(query.page, query.limit, query.filter),
+                this.setService.findSets(query),
                 this.setService.totalSetsCount(query.filter)
             ]);
             const uniqueOwned: number = 0;

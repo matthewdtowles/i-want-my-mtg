@@ -8,6 +8,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 jest.mock("src/http/http.error.handler");
 
@@ -66,6 +67,8 @@ describe("CardOrchestrator", () => {
         prices: [],
     });
 
+    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10 });
+
     const mockInventory = [
         {
             id: "inv1",
@@ -114,7 +117,7 @@ describe("CardOrchestrator", () => {
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
-            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions);
 
             expect(result).toBeDefined();
             expect(result.authenticated).toBe(true);
@@ -142,7 +145,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard(mockAuthenticatedRequest, "INVALID", "999", 1, 10)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "INVALID", "999", mockQueryOptions)
             ).rejects.toThrow("Card with set code INVALID and number 999 not found");
 
             expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith("INVALID", "999");
@@ -163,7 +166,7 @@ describe("CardOrchestrator", () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
 
-            const result: CardViewDto = await orchestrator.findSetCard(unauthenticatedReq, "TST", "001", 1, 10);
+            const result: CardViewDto = await orchestrator.findSetCard(unauthenticatedReq, "TST", "001", mockQueryOptions);
 
             expect(result.authenticated).toBe(false);
             expect(result.card).toBeDefined();
@@ -176,7 +179,7 @@ describe("CardOrchestrator", () => {
             mockCardService.findWithName.mockResolvedValue([mockCard]); // Only current card
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
-            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions);
 
             expect(result).toBeDefined();
             expect(result.otherPrintings).toHaveLength(0); // No other printings
@@ -189,7 +192,7 @@ describe("CardOrchestrator", () => {
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
             mockInventoryService.findForUser.mockResolvedValue([]); // Empty inventory
 
-            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions);
 
             expect(result).toBeDefined();
             expect(result.card).toBeDefined();
@@ -206,7 +209,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions)
             ).rejects.toThrow("Database connection failed");
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(serviceError, "findSetCard");
@@ -222,7 +225,7 @@ describe("CardOrchestrator", () => {
             });
 
             await expect(
-                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10)
+                orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions)
             ).rejects.toThrow("Inventory service failed");
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(inventoryError, "findSetCard");
@@ -233,7 +236,7 @@ describe("CardOrchestrator", () => {
             mockCardService.findWithName.mockResolvedValue([mockCard]);
             mockInventoryService.findForUser.mockResolvedValue([]);
 
-            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", 1, 10);
+            const result: CardViewDto = await orchestrator.findSetCard(mockAuthenticatedRequest, "TST", "001", mockQueryOptions);
 
             expect(result.breadcrumbs).toEqual([
                 { label: "Home", url: "/" },

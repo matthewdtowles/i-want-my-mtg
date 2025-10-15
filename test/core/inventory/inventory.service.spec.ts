@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 describe("InventoryService", () => {
     let service: InventoryService;
@@ -20,6 +21,8 @@ describe("InventoryService", () => {
         isFoil: true,
         quantity: 2,
     });
+
+    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10, filter: "test" });
 
     beforeEach(async () => {
         const mockRepository = {
@@ -114,14 +117,14 @@ describe("InventoryService", () => {
         it("should find all inventory items for a user", async () => {
             const expectedItems = [testInventoryItem, testInventoryFoil];
             repository.findByUser.mockResolvedValue(expectedItems);
-            const result = await service.findAllForUser(1, 1, 10);
+            const result = await service.findAllForUser(1, mockQueryOptions);
 
-            expect(repository.findByUser).toHaveBeenCalledWith(1, 1, 10, undefined);
+            expect(repository.findByUser).toHaveBeenCalledWith(1, mockQueryOptions);
             expect(result).toEqual(expectedItems);
         });
 
         it("should return empty array when userId is missing", async () => {
-            const result = await service.findAllForUser(null, 1, 10);
+            const result = await service.findAllForUser(null, mockQueryOptions);
             expect(repository.findByUser).not.toHaveBeenCalled();
             expect(result).toEqual([]);
         });

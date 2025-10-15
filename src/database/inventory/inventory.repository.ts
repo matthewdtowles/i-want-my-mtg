@@ -5,6 +5,7 @@ import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository
 import { In, Repository } from "typeorm";
 import { InventoryMapper } from "./inventory.mapper";
 import { InventoryOrmEntity } from "./inventory.orm-entity";
+import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
@@ -44,31 +45,31 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async findByUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${page}, limit: ${limit}, filter: ${filter}`);
+    async findByUser(userId: number, options: QueryOptionsDto): Promise<Inventory[]> {
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
         const qb = this.repository.createQueryBuilder("inventory")
             .leftJoinAndSelect("inventory.card", "card")
             .leftJoinAndSelect("card.prices", "prices")
             .where("inventory.userId = :userId", { userId });
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
+        if (options.filter) {
+            const fragments = options.filter.split(" ").filter(f => f.length > 0);
             fragments.forEach((fragment, i) => {
                 qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
             });
         }
-        qb.skip((page - 1) * limit).take(limit);
+        qb.skip((options.page - 1) * options.limit).take(options.limit);
         qb.orderBy("card.order", "ASC");
         const items = await qb.getMany();
         return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
-    async totalInventoryItemsForUser(userId: number, filter?: string): Promise<number> {
-        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${filter}`);
+    async totalInventoryItemsForUser(userId: number, options: QueryOptionsDto): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}`);
         const qb = this.repository.createQueryBuilder("inventory")
             .leftJoin("inventory.card", "card")
             .where("inventory.userId = :userId", { userId });
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
+        if (options.filter) {
+            const fragments = options.filter.split(" ").filter(f => f.length > 0);
             fragments.forEach((fragment, i) => {
                 qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
             });

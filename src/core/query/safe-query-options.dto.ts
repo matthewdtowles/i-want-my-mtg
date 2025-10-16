@@ -28,7 +28,7 @@ export class SafeQueryOptions {
         return params.length > 0 ? `?${params.join("&")}` : "";
     }
 
-    sanitizeInt(value: any, defaultValue: number): number {
+    private sanitizeInt(value: any, defaultValue: number): number {
         if (value == null || value === "") {
             return defaultValue;
         }
@@ -46,7 +46,7 @@ export class SafeQueryOptions {
         return defaultValue;
     }
 
-    safeAlphaNumeric(value: any): string | null {
+    private safeAlphaNumeric(value: any): string | null {
         if (!value || value.trim().length === 0) {
             return null;
         }
@@ -60,7 +60,7 @@ export class SafeQueryOptions {
         return sanitized.length > 0 ? sanitized : null;
     }
 
-    safeBoolean(value: any, defaultValue: boolean): boolean {
+    private safeBoolean(value: any, defaultValue: boolean): boolean {
         if (value == null || value === "") {
             return defaultValue;
         }
@@ -75,7 +75,7 @@ export class SafeQueryOptions {
         return defaultValue;
     }
 
-    safeSort(value: any): SortOptions | null {
+    private safeSort(value: any): SortOptions | null {
         return isEnumValue(SortOptions, value) ? value : null;
     }
 }

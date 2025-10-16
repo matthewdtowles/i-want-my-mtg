@@ -1,4 +1,4 @@
-import { QueryOptionsDto } from "../query/query-options.dto";
+import { SafeQueryOptions } from "../query/safe-query-options.dto";
 import { Inventory } from "./inventory.entity";
 
 
@@ -47,19 +47,19 @@ export interface InventoryRepositoryPort {
      * Find user inventory items with pagination
      *
      * @param {number} userId 
-     * @param {QueryOptionsDto} options safe pagination and filter options
+     * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns user's inventory entities for given page
      */
-    findByUser(userId: number, options: QueryOptionsDto): Promise<Inventory[]>;
+    findByUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]>;
 
     /**
      * Get total number of inventory items for user
      *
      * @param {number} userId
-     * @param {QueryOptionsDto} options safe pagination and filter options
+     * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns total number of inventory items
      */
-    totalInventoryItemsForUser(userId: number, options: QueryOptionsDto): Promise<number>;
+    totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
      * Delete inventory entity

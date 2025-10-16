@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 describe("InventoryService", () => {
     let service: InventoryService;
@@ -22,7 +22,7 @@ describe("InventoryService", () => {
         quantity: 2,
     });
 
-    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10, filter: "test" });
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: "test" });
 
     beforeEach(async () => {
         const mockRepository = {

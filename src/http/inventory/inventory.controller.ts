@@ -17,7 +17,7 @@ import { safeAlphaNumeric, sanitizeInt } from "src/core/query/query.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 
 @Controller("inventory")
@@ -35,9 +35,9 @@ export class InventoryController {
         if (!userId) {
             throw new Error("User ID not found in request");
         }
-        const rawOptions = new QueryOptionsDto(req.query);
+        const rawOptions = new SafeQueryOptions(req.query);
         const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
-        const options = new QueryOptionsDto({
+        const options = new SafeQueryOptions({
             ...rawOptions,
             page: Math.min(sanitizeInt(rawOptions.page, 1), lastPage)
         });

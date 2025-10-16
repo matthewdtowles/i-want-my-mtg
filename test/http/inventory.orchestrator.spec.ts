@@ -4,7 +4,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
@@ -20,7 +20,7 @@ describe("InventoryOrchestrator", () => {
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
 
-    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10, filter: "test" });
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: "test" });
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

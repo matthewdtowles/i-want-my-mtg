@@ -1,14 +1,14 @@
 import { safeAlphaNumeric, safeBoolean, sanitizeInt } from "./query.util";
 import { SortOptions } from "./sort-options.enum";
 
-export class QueryOptionsDto {
+export class SafeQueryOptions {
     readonly page: number;
     readonly limit: number;
     readonly ascend: boolean;
     readonly filter?: string;
     readonly sort?: SortOptions;
 
-    constructor(init?: Partial<QueryOptionsDto>) {
+    constructor(init?: Partial<SafeQueryOptions>) {
         init = init || {};
         this.page = sanitizeInt(init.page, 1);
         this.limit = sanitizeInt(init.limit, 25);

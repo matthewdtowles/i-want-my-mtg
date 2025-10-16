@@ -8,7 +8,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 jest.mock("src/http/http.error.handler");
 
@@ -67,7 +67,7 @@ describe("CardOrchestrator", () => {
         prices: [],
     });
 
-    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10 });
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10 });
 
     const mockInventory = [
         {

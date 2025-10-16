@@ -16,7 +16,7 @@ import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 @Injectable()
 export class SetOrchestrator {
@@ -30,7 +30,7 @@ export class SetOrchestrator {
     async findSetList(
         req: AuthenticatedRequest,
         breadcrumbs: Breadcrumb[],
-        query: QueryOptionsDto
+        query: SafeQueryOptions
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
@@ -57,7 +57,7 @@ export class SetOrchestrator {
     async findBySetCode(
         req: AuthenticatedRequest,
         setCode: string,
-        query: QueryOptionsDto
+        query: SafeQueryOptions
     ): Promise<SetViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -92,7 +92,7 @@ export class SetOrchestrator {
         }
     }
 
-    async getLastPage(query: QueryOptionsDto): Promise<number> {
+    async getLastPage(query: SafeQueryOptions): Promise<number> {
         try {
             const totalSets = await this.setService.totalSetsCount(query);
             return Math.max(1, Math.ceil(totalSets / query.limit));
@@ -101,7 +101,7 @@ export class SetOrchestrator {
         }
     }
 
-    async getLastCardPage(setCode: string, query: QueryOptionsDto): Promise<number> {
+    async getLastCardPage(setCode: string, query: SafeQueryOptions): Promise<number> {
         try {
             const totalCards = await this.cardService.totalCardsInSet(setCode, query);
             return Math.max(1, Math.ceil(totalCards / query.limit));

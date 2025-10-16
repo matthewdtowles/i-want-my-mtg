@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
 import { CardOrmEntity } from "./card.orm-entity";
@@ -36,7 +36,7 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findBySet(code: string, options: QueryOptionsDto): Promise<Card[]> {
+    async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
         const qb = this.cardRepository.createQueryBuilder("card")
             .leftJoinAndSelect("card.legalities", "legalities")
             .leftJoinAndSelect("card.prices", "prices")
@@ -53,7 +53,7 @@ export class CardRepository implements CardRepositoryPort {
         return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
-    async findWithName(name: string, options: QueryOptionsDto): Promise<Card[]> {
+    async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find with name: ${name}, options: ${JSON.stringify(options)}`)
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: { name },
@@ -75,7 +75,7 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string, options: QueryOptionsDto): Promise<number> {
+    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
         const qb = this.cardRepository.createQueryBuilder("card")
             .where("card.setCode = :code", { code });
         if (options.filter) {

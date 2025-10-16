@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Set } from "src/core/set/set.entity";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Inventory } from "./inventory.entity";
 import { InventoryRepositoryPort } from "./inventory.repository.port";
 
@@ -26,7 +26,7 @@ export class InventoryService {
         return await this.repository.save(toSave);
     }
 
-    async findAllForUser(userId: number, options: QueryOptionsDto): Promise<Inventory[]> {
+    async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
         return userId ? await this.repository.findByUser(userId, options) : [];
     }
@@ -44,7 +44,7 @@ export class InventoryService {
         return await this.repository.findByCards(userId, cardIds);
     }
 
-    async totalInventoryItemsForUser(userId: number, options: QueryOptionsDto): Promise<number> {
+    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}`);
         return await this.repository.totalInventoryItemsForUser(userId, options);
     }

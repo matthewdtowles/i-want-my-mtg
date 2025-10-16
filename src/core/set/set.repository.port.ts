@@ -1,4 +1,4 @@
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "./set.entity";
 import { Query } from "typeorm/driver/Query";
 
@@ -20,10 +20,10 @@ export interface SetRepositoryPort {
     /**
      * Retrieves metadata for Set entities with pagination.
      *
-     * @param {QueryOptionsDto} options - The query options for pagination and filtering.
+     * @param {SafeQueryOptions} options - The query options for pagination and filtering.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
-    findAllSetsMeta(options: QueryOptionsDto): Promise<Set[]>;
+    findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]>;
 
     /**
      * Finds a Set entity by its unique three-letter code.
@@ -36,10 +36,10 @@ export interface SetRepositoryPort {
     /**
      * Counts the total number of Set entities.
      *
-     * @param {QueryOptionsDto} [options] - Optional criteria to search sets.
+     * @param {SafeQueryOptions} [options] - Optional criteria to search sets.
      * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
      */
-    totalSets(options: QueryOptionsDto): Promise<number>;
+    totalSets(options: SafeQueryOptions): Promise<number>;
 
     /**
      * Removes a Set entity.

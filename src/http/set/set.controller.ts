@@ -9,7 +9,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { sanitizeInt } from "src/core/query/query.util";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
@@ -34,9 +34,9 @@ export class SetController {
     @Render("setListPage")
     async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.debug(`Set listing AuthenticatedRequest: ${JSON.stringify(req.query)}`);
-        const rawQuery = new QueryOptionsDto(req.query);
+        const rawQuery = new SafeQueryOptions(req.query);
         const lastPage = await this.setOrchestrator.getLastPage(rawQuery);
-        const options = new QueryOptionsDto({
+        const options = new SafeQueryOptions({
             ...rawQuery,
             page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
         });
@@ -51,9 +51,9 @@ export class SetController {
         @Param("setCode") setCode: string,
         @Query() query: any
     ): Promise<SetViewDto> {
-        const rawQuery = new QueryOptionsDto(query);
+        const rawQuery = new SafeQueryOptions(query);
         const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawQuery);
-        const options = new QueryOptionsDto({
+        const options = new SafeQueryOptions({
             ...rawQuery,
             page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
         });

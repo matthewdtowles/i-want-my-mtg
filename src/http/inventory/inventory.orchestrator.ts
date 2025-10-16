@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { PaginationDto } from "src/http/base/pagination.dto";
@@ -18,7 +18,7 @@ export class InventoryOrchestrator {
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
 
-    async findByUser(req: AuthenticatedRequest, options: QueryOptionsDto): Promise<InventoryViewDto> {
+    async findByUser(req: AuthenticatedRequest, options: SafeQueryOptions): Promise<InventoryViewDto> {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, options);
@@ -45,7 +45,7 @@ export class InventoryOrchestrator {
         }
     }
 
-    async getLastPage(userId: number, options: QueryOptionsDto): Promise<number> {
+    async getLastPage(userId: number, options: SafeQueryOptions): Promise<number> {
         try {
             const totalItems: number = await this.inventoryService.totalInventoryItemsForUser(userId, options);
             return Math.max(1, Math.ceil(totalItems / options.limit));

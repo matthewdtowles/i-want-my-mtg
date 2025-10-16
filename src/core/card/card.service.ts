@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
 import { Format } from "./format.enum";
@@ -39,7 +39,7 @@ export class CardService {
         return savedEntities;
     }
 
-    async findWithName(name: string, options: QueryOptionsDto): Promise<Card[]> {
+    async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         try {
             return await this.repository.findWithName(name, options);
         } catch (error) {
@@ -47,7 +47,7 @@ export class CardService {
         }
     }
 
-    async findBySet(code: string, query: QueryOptionsDto): Promise<Card[]> {
+    async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
         try {
             return await this.repository.findBySet(code, query);
         } catch (error) {
@@ -71,7 +71,7 @@ export class CardService {
         }
     }
 
-    async totalCardsInSet(setCode: string, options: QueryOptionsDto): Promise<number> {
+    async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
         try {
             return await this.repository.totalInSet(setCode, options);
         } catch (error) {

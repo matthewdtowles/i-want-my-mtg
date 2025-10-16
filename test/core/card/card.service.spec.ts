@@ -6,13 +6,13 @@ import { CardService } from "src/core/card/card.service";
 import { Format } from "src/core/card/format.enum";
 import { Legality } from "src/core/card/legality.entity";
 import { LegalityStatus } from "src/core/card/legality.status.enum";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 describe("CardService", () => {
     let service: CardService;
     let repository: jest.Mocked<CardRepositoryPort>;
 
-    const mockQueryOptions = new QueryOptionsDto({ page: 1, limit: 10 });
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10 });
 
     const testCard = new Card({
         id: "test-card-id",

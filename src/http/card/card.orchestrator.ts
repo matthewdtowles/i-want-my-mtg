@@ -4,7 +4,7 @@ import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { sanitizeInt } from "src/core/query/query.util";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
@@ -32,7 +32,7 @@ export class CardOrchestrator {
         req: AuthenticatedRequest,
         setCode: string,
         setNumber: string,
-        rawQuery: QueryOptionsDto
+        rawQuery: SafeQueryOptions
     ): Promise<CardViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -55,7 +55,7 @@ export class CardOrchestrator {
             const lastPage = await this.getPrintingsLastPage(singleCard.name, rawQuery);
             this.LOGGER.debug(`rawQuery after lastPage: ${JSON.stringify(rawQuery)}`)
             this.LOGGER.debug(`lastPage: ${lastPage}`)
-            const options = new QueryOptionsDto({
+            const options = new SafeQueryOptions({
                 ...rawQuery,
                 page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
             });
@@ -89,7 +89,7 @@ export class CardOrchestrator {
         }
     }
 
-    async getPrintingsLastPage(name: string, query: QueryOptionsDto): Promise<number> {
+    async getPrintingsLastPage(name: string, query: SafeQueryOptions): Promise<number> {
         try {
             const totalCards: number = await this.cardService.totalWithName(name);
             return Math.max(1, Math.ceil(totalCards / query.limit));

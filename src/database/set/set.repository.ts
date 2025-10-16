@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { Repository } from "typeorm";
 import { SetMapper } from "./set.mapper";
 import { SetOrmEntity } from "./set.orm-entity";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
 
 @Injectable()
 export class SetRepository implements SetRepositoryPort {
@@ -17,7 +17,7 @@ export class SetRepository implements SetRepositoryPort {
         return savedSets.length ?? 0;
     }
 
-    async findAllSetsMeta(options: QueryOptionsDto): Promise<Set[]> {
+    async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
         if (options.filter) {
             const fragments = options.filter.split(" ").filter(f => f.length > 0);
@@ -40,7 +40,7 @@ export class SetRepository implements SetRepositoryPort {
         return set ? SetMapper.toCore(set) : null;
     }
 
-    async totalSets(options: QueryOptionsDto): Promise<number> {
+    async totalSets(options: SafeQueryOptions): Promise<number> {
         const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
         if (options.filter) {
             const fragments = options.filter.split(" ").filter(f => f.length > 0);

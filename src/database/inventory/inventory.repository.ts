@@ -5,7 +5,7 @@ import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository
 import { In, Repository } from "typeorm";
 import { InventoryMapper } from "./inventory.mapper";
 import { InventoryOrmEntity } from "./inventory.orm-entity";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 @Injectable()
 export class InventoryRepository implements InventoryRepositoryPort {
@@ -45,7 +45,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
     }
 
-    async findByUser(userId: number, options: QueryOptionsDto): Promise<Inventory[]> {
+    async findByUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
         this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
         const qb = this.repository.createQueryBuilder("inventory")
             .leftJoinAndSelect("inventory.card", "card")
@@ -63,7 +63,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
-    async totalInventoryItemsForUser(userId: number, options: QueryOptionsDto): Promise<number> {
+    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}`);
         const qb = this.repository.createQueryBuilder("inventory")
             .leftJoin("inventory.card", "card")

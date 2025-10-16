@@ -5,7 +5,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { QueryOptionsDto } from "src/core/query/query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { CardOrchestrator } from "./card.orchestrator";
@@ -26,7 +26,7 @@ export class CardController {
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
     ): Promise<CardViewDto> {
-        const rawQuery = new QueryOptionsDto(req.query);
+        const rawQuery = new SafeQueryOptions(req.query);
         this.LOGGER.debug(`Set listing options object: ${JSON.stringify(rawQuery)}`);
         return this.cardOrchestrator.findSetCard(req, setCode, setNumber, rawQuery);
     }

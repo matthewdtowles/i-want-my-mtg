@@ -1,4 +1,4 @@
-import { QueryOptionsDto } from "../query/query-options.dto";
+import { SafeQueryOptions } from "../query/safe-query-options.dto";
 import { Card } from "./card.entity";
 import { Format } from "./format.enum";
 
@@ -26,17 +26,17 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - The unique three-letter set code (primary key).
-     * @param {QueryOptionsDto} options - Query options for pagination and filtering.
+     * @param {SafeQueryOptions} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities.
      */
-    findBySet(code: string, options: QueryOptionsDto): Promise<Card[]>;
+    findBySet(code: string, options: SafeQueryOptions): Promise<Card[]>;
 
     /**
      * @param {string} name - of card to find
-     * @param {QueryOptionsDto} options - Query options for pagination and filtering.
+     * @param {SafeQueryOptions} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities with the given name.
      */
-    findWithName(name: string, options: QueryOptionsDto): Promise<Card[]>;
+    findWithName(name: string, options: SafeQueryOptions): Promise<Card[]>;
 
     /**
      * @param {string} code - three letter set code
@@ -48,10 +48,10 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - three letter set code
-     * @param {QueryOptionsDto} [options] - Options for filtering
+     * @param {SafeQueryOptions} [options] - Options for filtering
      * @returns {Promise<number>} - total number of cards in set with code
      */
-    totalInSet(code: string, options: QueryOptionsDto): Promise<number>;
+    totalInSet(code: string, options: SafeQueryOptions): Promise<number>;
 
     /**
      * @param {string} name - name of cards to count

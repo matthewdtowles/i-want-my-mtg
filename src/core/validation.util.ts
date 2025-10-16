@@ -5,3 +5,7 @@ export function validateInit<T>(init: Partial<T>, requiredFields: (keyof T)[]): 
         }
     }
 }
+
+export function isEnumValue<T>(enumObj: T, value: unknown): value is T[keyof T] {
+    return Object.values(enumObj).includes(value as T[keyof T]);
+}

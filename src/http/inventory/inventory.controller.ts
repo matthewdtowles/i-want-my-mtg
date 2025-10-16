@@ -5,19 +5,17 @@ import {
     Get, Inject,
     Patch,
     Post,
-    Query,
     Render,
     Req, UseGuards
 } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
-import { safeAlphaNumeric, sanitizeInt } from "src/core/query/query.util";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 
 @Controller("inventory")
@@ -39,7 +37,7 @@ export class InventoryController {
         const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
         const options = new SafeQueryOptions({
             ...rawOptions,
-            page: Math.min(sanitizeInt(rawOptions.page, 1), lastPage)
+            page: Math.min(rawOptions.page, lastPage)
         });
         return this.inventoryOrchestrator.findByUser(req, options);
     }

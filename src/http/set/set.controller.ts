@@ -10,7 +10,6 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { sanitizeInt } from "src/core/query/query.util";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { SetListViewDto } from "./dto/set-list.view.dto";
@@ -38,7 +37,7 @@ export class SetController {
         const lastPage = await this.setOrchestrator.getLastPage(rawQuery);
         const options = new SafeQueryOptions({
             ...rawQuery,
-            page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
+            page: Math.min(rawQuery.page, lastPage)
         });
         return this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
     }
@@ -55,7 +54,7 @@ export class SetController {
         const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawQuery);
         const options = new SafeQueryOptions({
             ...rawQuery,
-            page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
+            page: Math.min(rawQuery.page, lastPage)
         });
         return this.setOrchestrator.findBySetCode(req, setCode, options);
     }

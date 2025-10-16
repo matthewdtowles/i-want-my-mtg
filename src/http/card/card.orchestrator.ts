@@ -5,7 +5,6 @@ import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { sanitizeInt } from "src/core/query/query.util";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { isAuthenticated } from "src/http/base/http.util";
@@ -57,7 +56,7 @@ export class CardOrchestrator {
             this.LOGGER.debug(`lastPage: ${lastPage}`)
             const options = new SafeQueryOptions({
                 ...rawQuery,
-                page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
+                page: Math.min(rawQuery.page, lastPage)
             });
             this.LOGGER.debug(`options: ${JSON.stringify(options)}`)
 

@@ -48,10 +48,10 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - three letter set code
-     * @param {string} [filter] - optional filter to apply to card name
+     * @param {QueryOptionsDto} [options] - Options for filtering
      * @returns {Promise<number>} - total number of cards in set with code
      */
-    totalInSet(code: string, filter?: string): Promise<number>;
+    totalInSet(code: string, options: QueryOptionsDto): Promise<number>;
 
     /**
      * @param {string} name - name of cards to count

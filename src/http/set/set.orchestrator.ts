@@ -35,7 +35,7 @@ export class SetOrchestrator {
         try {
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(query),
-                this.setService.totalSetsCount(query.filter)
+                this.setService.totalSetsCount(query)
             ]);
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
@@ -73,7 +73,7 @@ export class SetOrchestrator {
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, query.filter);
+            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, query);
             const baseUrl = `/sets/${setCode}`;
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
@@ -94,7 +94,7 @@ export class SetOrchestrator {
 
     async getLastPage(query: QueryOptionsDto): Promise<number> {
         try {
-            const totalSets = await this.setService.totalSetsCount(query.filter);
+            const totalSets = await this.setService.totalSetsCount(query);
             return Math.max(1, Math.ceil(totalSets / query.limit));
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "getLastPage");
@@ -103,7 +103,7 @@ export class SetOrchestrator {
 
     async getLastCardPage(setCode: string, query: QueryOptionsDto): Promise<number> {
         try {
-            const totalCards = await this.cardService.totalCardsInSet(setCode, query.filter);
+            const totalCards = await this.cardService.totalCardsInSet(setCode, query);
             return Math.max(1, Math.ceil(totalCards / query.limit));
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");

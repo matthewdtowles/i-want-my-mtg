@@ -40,10 +40,10 @@ export class SetRepository implements SetRepositoryPort {
         return set ? SetMapper.toCore(set) : null;
     }
 
-    async totalSets(filter?: string): Promise<number> {
+    async totalSets(options: QueryOptionsDto): Promise<number> {
         const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
+        if (options.filter) {
+            const fragments = options.filter.split(" ").filter(f => f.length > 0);
             fragments.forEach((fragment, i) => {
                 qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
             });

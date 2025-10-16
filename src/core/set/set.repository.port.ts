@@ -1,5 +1,6 @@
 import { QueryOptionsDto } from "src/core/query/query-options.dto";
 import { Set } from "./set.entity";
+import { Query } from "typeorm/driver/Query";
 
 export const SetRepositoryPort = "SetRepositoryPort";
 
@@ -35,10 +36,10 @@ export interface SetRepositoryPort {
     /**
      * Counts the total number of Set entities.
      *
-     * @param {string} [filter] - Optional filter string to search sets.
+     * @param {QueryOptionsDto} [options] - Optional criteria to search sets.
      * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
      */
-    totalSets(filter?: string): Promise<number>;
+    totalSets(options: QueryOptionsDto): Promise<number>;
 
     /**
      * Removes a Set entity.

@@ -15,7 +15,7 @@ export class SetService {
     }
 
     async findSets(query: QueryOptionsDto): Promise<Set[]> {
-        this.LOGGER.debug(`Calling findSets(page: ${query.page}, limit: ${query.limit}, filter: ${query.filter})`);
+        this.LOGGER.debug(`Calling findSets(page: ${JSON.stringify(query)})`);
         return await this.repository.findAllSetsMeta(query);
     }
 
@@ -24,9 +24,9 @@ export class SetService {
         return await this.repository.findByCode(setCode);
     }
 
-    async totalSetsCount(filter?: string): Promise<number> {
-        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${filter})`);
-        const result = await this.repository.totalSets(filter);
+    async totalSetsCount(options: QueryOptionsDto): Promise<number> {
+        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${options.filter})`);
+        const result = await this.repository.totalSets(options.filter);
         this.LOGGER.debug(`Total sets: ${result}`);
         return result;
     }

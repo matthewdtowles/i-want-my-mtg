@@ -2,9 +2,6 @@ import { safeAlphaNumeric, safeBoolean, sanitizeInt } from "./query.util";
 import { SortOptions } from "./sort-options.enum";
 
 export class QueryOptionsDto {
-    readonly DEFAULT_PAGE = 1;
-    readonly DEFAULT_LIMIT = 25;
-
     readonly page: number;
     readonly limit: number;
     readonly ascend: boolean;
@@ -13,8 +10,8 @@ export class QueryOptionsDto {
 
     constructor(init?: Partial<QueryOptionsDto>) {
         init = init || {};
-        this.page = sanitizeInt(init.page, this.DEFAULT_PAGE);
-        this.limit = sanitizeInt(init.limit, this.DEFAULT_LIMIT);
+        this.page = sanitizeInt(init.page, 1);
+        this.limit = sanitizeInt(init.limit, 25);
         this.ascend = safeBoolean(init.ascend, false);
         this.filter = safeAlphaNumeric(init.filter);
         this.sort = init.sort;

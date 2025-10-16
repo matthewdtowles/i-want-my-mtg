@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
@@ -12,6 +12,8 @@ import { LegalityOrmEntity } from "./legality.orm-entity";
 
 @Injectable()
 export class CardRepository implements CardRepositoryPort {
+
+    private readonly LOGGER: Logger = new Logger(CardRepository.name);
 
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
@@ -52,6 +54,7 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findWithName(name: string, options: QueryOptionsDto): Promise<Card[]> {
+        this.LOGGER.debug(`Find with name: ${name}, options: ${JSON.stringify(options)}`)
         const ormCards: CardOrmEntity[] = await this.cardRepository.find({
             where: { name },
             relations: this.DEFAULT_RELATIONS,
@@ -72,11 +75,11 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string, filter?: string): Promise<number> {
+    async totalInSet(code: string, options: QueryOptionsDto): Promise<number> {
         const qb = this.cardRepository.createQueryBuilder("card")
             .where("card.setCode = :code", { code });
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
+        if (options.filter) {
+            const fragments = options.filter.split(" ").filter(f => f.length > 0);
             fragments.forEach((fragment, i) => {
                 qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
             });

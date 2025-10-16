@@ -39,9 +39,9 @@ export class CardService {
         return savedEntities;
     }
 
-    async findWithName(name: string, query: QueryOptionsDto): Promise<Card[]> {
+    async findWithName(name: string, options: QueryOptionsDto): Promise<Card[]> {
         try {
-            return await this.repository.findWithName(name, query);
+            return await this.repository.findWithName(name, options);
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
         }
@@ -71,11 +71,11 @@ export class CardService {
         }
     }
 
-    async totalCardsInSet(setCode: string, filter?: string): Promise<number> {
+    async totalCardsInSet(setCode: string, options: QueryOptionsDto): Promise<number> {
         try {
-            return await this.repository.totalInSet(setCode, filter);
+            return await this.repository.totalInSet(setCode, options);
         } catch (error) {
-            throw new Error(`Error counting cards in set ${setCode} with filter ${filter}: ${error.message}`);
+            throw new Error(`Error counting cards in set ${setCode} with filter ${options.filter}: ${error.message}`);
         }
     }
 

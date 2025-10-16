@@ -36,11 +36,11 @@ export class SetController {
         this.LOGGER.debug(`Set listing AuthenticatedRequest: ${JSON.stringify(req.query)}`);
         const rawQuery = new QueryOptionsDto(req.query);
         const lastPage = await this.setOrchestrator.getLastPage(rawQuery);
-        const queryOptions = new QueryOptionsDto({
+        const options = new QueryOptionsDto({
             ...rawQuery,
             page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
         });
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, queryOptions);
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
     }
 
     @UseGuards(OptionalAuthGuard)
@@ -53,10 +53,10 @@ export class SetController {
     ): Promise<SetViewDto> {
         const rawQuery = new QueryOptionsDto(query);
         const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawQuery);
-        const queryOptions = new QueryOptionsDto({
+        const options = new QueryOptionsDto({
             ...rawQuery,
-            page: Math.min(sanitizeInt(query.page, 1), lastPage)
+            page: Math.min(sanitizeInt(rawQuery.page, 1), lastPage)
         });
-        return this.setOrchestrator.findBySetCode(req, setCode, queryOptions);
+        return this.setOrchestrator.findBySetCode(req, setCode, options);
     }
 }

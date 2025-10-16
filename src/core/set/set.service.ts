@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "./set.entity";
 import { SetRepositoryPort } from "./set.repository.port";
-import { SafeQueryOptions } from "../query/safe-query-options.dto";
 
 @Injectable()
 export class SetService {

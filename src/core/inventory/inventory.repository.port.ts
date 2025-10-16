@@ -1,4 +1,4 @@
-import { SafeQueryOptions } from "../query/safe-query-options.dto";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Inventory } from "./inventory.entity";
 
 

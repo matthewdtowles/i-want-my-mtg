@@ -1,4 +1,4 @@
-import { isEnumValue } from "../validation.util";
+import { isEnumValue } from "src/core/validation.util";
 import { SortOptions } from "./sort-options.enum";
 
 export class SafeQueryOptions {

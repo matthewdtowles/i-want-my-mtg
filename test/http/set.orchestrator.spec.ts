@@ -96,8 +96,7 @@ describe("SetOrchestrator", () => {
 
             expect(result).toBeInstanceOf(SetListViewDto);
             expect(result.setList.length).toBe(1);
-            expect(result.pagination.currentPage).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.current).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -116,7 +115,6 @@ describe("SetOrchestrator", () => {
             const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], mockQueryOptions);
 
             expect(result.setList.length).toBe(0);
-            expect(result.pagination.totalItems).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
     });
@@ -132,7 +130,7 @@ describe("SetOrchestrator", () => {
 
             expect(result).toBeInstanceOf(SetViewDto);
             expect(result.set.cards.length).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.currentPage).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 

@@ -3,20 +3,23 @@ import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { ActionStatus } from "src/http/base/action-status.enum";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { Breadcrumb } from "src/http/base/breadcrumb";
 import { isAuthenticated } from "src/http/base/http.util";
 import { PaginationDto } from "src/http/base/pagination.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
+import { FilterResponseDto } from "src/http/list/filter.response.dto";
+import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
+import { SortResponseDto } from "src/http/list/sort.response.dto";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
 @Injectable()
 export class SetOrchestrator {
@@ -40,7 +43,10 @@ export class SetOrchestrator {
             const uniqueOwned: number = 0;
             const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
             const baseUrl = "/sets";
-            const pagination = new PaginationDto(query.page, totalSets, query.limit, baseUrl, query.filter);
+            const paginationDto = new PaginationDto(query.page, totalSets, query.limit, baseUrl, query.filter);
+            const pagination = new PaginationResponseDto(query, baseUrl, totalSets);
+            const filter = new FilterResponseDto();
+            const sort = new SortResponseDto();
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -48,6 +54,8 @@ export class SetOrchestrator {
                 setList: setMetaList,
                 status: ActionStatus.SUCCESS,
                 pagination,
+                filter,
+                sort,
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findSetListPaginated");

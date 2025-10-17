@@ -78,7 +78,7 @@ describe("InventoryOrchestrator", () => {
 
             expect(result.cards.length).toBe(1);
             expect(result.pagination.currentPage).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.totalPages).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -89,7 +89,7 @@ describe("InventoryOrchestrator", () => {
             const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
             expect(result.cards).toHaveLength(0);
-            expect(result.pagination.totalItems).toBe(0);
+            expect(result.pagination.totalPages).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 

@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.text())
             .then(html => {
                 // Replace the table and pagination with the new HTML
-                // You may want to return only the table+pagination partial from your backend for AJAX requests
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, "text/html");
                 const newTable = doc.querySelector("table");

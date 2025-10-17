@@ -21,8 +21,6 @@ import { InventoryOrchestrator } from "./inventory.orchestrator";
 @Controller("inventory")
 export class InventoryController {
 
-    private readonly defaultLimit = 25;
-
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
     @UseGuards(JwtAuthGuard)

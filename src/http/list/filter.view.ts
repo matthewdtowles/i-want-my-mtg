@@ -1,6 +1,6 @@
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 
-export class FilterResponseDto {
+export class FilterView {
     readonly baseUrl: string;
     readonly page: number;
     readonly limit: number;

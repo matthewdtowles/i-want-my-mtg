@@ -5,13 +5,14 @@ import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
-import { FilterResponseDto } from "src/http/list/filter.response.dto";
-import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
-import { SortResponseDto } from "src/http/list/sort.response.dto";
+import { FilterView } from "src/http/list/filter.view";
+import { PaginationView } from "src/http/list/pagination.view";
+import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryPresenter } from "./inventory.presenter";
+import { SortOptions } from "src/core/query/sort-options.enum";
 
 @Injectable()
 export class InventoryOrchestrator {
@@ -29,6 +30,12 @@ export class InventoryOrchestrator {
             );
             const username: string = req.user.name;
             const baseUrl = "/inventory";
+            const sortableHeaders = [
+                new SortableHeaderView({...options, sort: SortOptions.OWNED_QUANTITY }, "Owned"),
+                new SortableHeaderView({...options, sort: SortOptions.NAME }, "Name"),
+                new SortableHeaderView({...options, sort: SortOptions.SET }, "Set"),
+                new SortableHeaderView({...options, sort: SortOptions.PRICE}, "Price"),
+            ];
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -41,13 +48,13 @@ export class InventoryOrchestrator {
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
                 totalValue: "0,00",
-                pagination: new PaginationResponseDto(
+                pagination: new PaginationView(
                     options,
                     baseUrl,
                     await this.inventoryService.totalInventoryItemsForUser(req.user.id, options)
                 ),
-                filter: new FilterResponseDto(options, baseUrl),
-                sort: new SortResponseDto(),
+                filter: new FilterView(options, baseUrl),
+                sortableHeaders 
             });
         } catch (error) {
             this.LOGGER.error(error.message);

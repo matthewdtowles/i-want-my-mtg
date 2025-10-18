@@ -1,7 +1,7 @@
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { buildQueryString } from "src/http/base/http.util";
 
-export class PaginationResponseDto {
+export class PaginationView {
     readonly current: number;
     readonly total: number;
     readonly baseUrl: string;
@@ -74,12 +74,12 @@ export class PaginationResponseDto {
 
     private buildSkipForward(options: SafeQueryOptions): PaginationLink | undefined {
         const skipForwardValue = this.current + Math.floor(this.total / 3);
-        return skipForwardValue < this.total && skipForwardValue > this.current ? 
-        new PaginationLink(`${this.baseUrl}/${buildQueryString({
-            ...options,
-            page: skipForwardValue
-        })}`, String(skipForwardValue))
-        : undefined;
+        return skipForwardValue < this.total && skipForwardValue > this.current ?
+            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+                ...options,
+                page: skipForwardValue
+            })}`, String(skipForwardValue))
+            : undefined;
     }
 
     private hasPreviousPage(): boolean {

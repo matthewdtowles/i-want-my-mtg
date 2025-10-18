@@ -1,8 +1,8 @@
-import { ListViewDto } from "src/http/list/list.view.dto";
+import { ListView } from "src/http/list/list.view";
 import { InventoryResponseDto } from "./inventory.response.dto";
 
 
-export class InventoryViewDto extends ListViewDto {
+export class InventoryViewDto extends ListView {
     readonly cards: InventoryResponseDto[];
     readonly username: string;
     readonly totalValue: string;

@@ -10,12 +10,13 @@ import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { isAuthenticated } from "src/http/base/http.util";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
-import { FilterResponseDto } from "src/http/list/filter.response.dto";
-import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
-import { SortResponseDto } from "src/http/list/sort.response.dto";
+import { FilterView } from "src/http/list/filter.view";
+import { PaginationView } from "src/http/list/pagination.view";
+import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 
 @Injectable()
 export class CardOrchestrator {
@@ -58,7 +59,12 @@ export class CardOrchestrator {
 
             const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, options);
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
-
+            const sortableHeaders = [
+                new SortableHeaderView({ ...options, sort: SortOptions.SET }, "Set"),
+                new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
+                new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
+                new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price"),
+            ];
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -73,13 +79,13 @@ export class CardOrchestrator {
                 ),
                 message: HttpStatus.OK === 200 ? "Card found" : "Card not found",
                 status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                pagination: new PaginationResponseDto(
+                pagination: new PaginationView(
                     options,
                     baseUrl,
                     await this.cardService.totalWithName(singleCard.name)
                 ),
-                filter: new FilterResponseDto(options, baseUrl),
-                sort: new SortResponseDto(),
+                filter: new FilterView(options, baseUrl),
+                sortableHeaders
             });
         } catch (error) {
             this.LOGGER.error(error.message);

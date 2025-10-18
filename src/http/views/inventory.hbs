@@ -8,7 +8,8 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2" data-sort="owned">
+                    {{#each }}
+                    {{!-- <th class="table-header pl-2" data-sort="owned">
                         <a href="?sort=owned&ascend={{ascend}}" class="sort-btn">
                             Owned
                             <span class="sort-icon">{{>downarrow}}</span>
@@ -32,7 +33,7 @@
                             <span class="sort-icon">{{>downarrow}}</span>
                         </a>
                     </th>
-                    <th class="table-header pr-2 xs-hide"></th>
+                    <th class="table-header pr-2 xs-hide"></th> --}}
                 </tr>
             </thead>
             <tbody>

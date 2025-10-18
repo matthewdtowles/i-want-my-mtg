@@ -33,9 +33,9 @@ export function safeAlphaNumeric(value: any): string | null {
     return sanitized.length > 0 ? sanitized : null;
 }
 
-export function safeBoolean(value: any, defaultValue: boolean): boolean {
+export function safeBoolean(value: any): boolean | null {
     if (value == null || value === "") {
-        return defaultValue;
+        return null;
     }
     if (typeof value === "boolean") {
         return value;
@@ -45,7 +45,7 @@ export function safeBoolean(value: any, defaultValue: boolean): boolean {
         if (trimmed === "true") return true;
         if (trimmed === "false") return false;
     }
-    return defaultValue;
+    return null;
 }
 
 export function safeSort(value: any): SortOptions | null {

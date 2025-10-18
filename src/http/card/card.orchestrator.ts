@@ -10,7 +10,9 @@ import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { isAuthenticated } from "src/http/base/http.util";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
+import { FilterResponseDto } from "src/http/list/filter.response.dto";
 import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
+import { SortResponseDto } from "src/http/list/sort.response.dto";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
@@ -76,6 +78,8 @@ export class CardOrchestrator {
                     baseUrl,
                     await this.cardService.totalWithName(singleCard.name)
                 ),
+                filter: new FilterResponseDto(options, baseUrl),
+                sort: new SortResponseDto(),
             });
         } catch (error) {
             this.LOGGER.error(error.message);

@@ -5,7 +5,9 @@ import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
+import { FilterResponseDto } from "src/http/list/filter.response.dto";
 import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
+import { SortResponseDto } from "src/http/list/sort.response.dto";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
@@ -44,6 +46,8 @@ export class InventoryOrchestrator {
                     baseUrl,
                     await this.inventoryService.totalInventoryItemsForUser(req.user.id, options)
                 ),
+                filter: new FilterResponseDto(options, baseUrl),
+                sort: new SortResponseDto(),
             });
         } catch (error) {
             this.LOGGER.error(error.message);

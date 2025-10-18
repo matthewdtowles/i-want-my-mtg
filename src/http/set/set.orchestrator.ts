@@ -10,13 +10,11 @@ import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { Breadcrumb } from "src/http/base/breadcrumb";
 import { isAuthenticated } from "src/http/base/http.util";
-import { PaginationDto } from "src/http/base/pagination.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterResponseDto } from "src/http/list/filter.response.dto";
 import { PaginationResponseDto } from "src/http/list/pagination.response.dto";
 import { SortResponseDto } from "src/http/list/sort.response.dto";
 import { SetListViewDto } from "./dto/set-list.view.dto";
-import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
@@ -40,22 +38,16 @@ export class SetOrchestrator {
                 this.setService.findSets(query),
                 this.setService.totalSetsCount(query)
             ]);
-            const uniqueOwned: number = 0;
-            const setMetaList: SetMetaResponseDto[] = sets.map((set: Set) => SetPresenter.toSetMetaDto(set, uniqueOwned));
-            const baseUrl = "/sets";
-            const paginationDto = new PaginationDto(query.page, totalSets, query.limit, baseUrl, query.filter);
-            const pagination = new PaginationResponseDto(query, baseUrl, totalSets);
-            const filter = new FilterResponseDto();
-            const sort = new SortResponseDto();
+            const pagination = new PaginationResponseDto(query, "/sets", totalSets);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
-                message: `Page ${query.page} of ${Math.ceil(totalSets / query.limit)}`,
-                setList: setMetaList,
+                message: `Page ${pagination.current} of ${pagination.total}`,
+                setList: sets.map((set: Set) => SetPresenter.toSetMetaDto(set, 0)),
                 status: ActionStatus.SUCCESS,
                 pagination,
-                filter,
-                sort,
+                filter: new FilterResponseDto(),
+                sort: new SortResponseDto(),
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findSetListPaginated");
@@ -81,8 +73,7 @@ export class SetOrchestrator {
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            const totalCardsInSet: number = await this.cardService.totalCardsInSet(setCode, query);
-            const baseUrl = `/sets/${setCode}`;
+
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -93,7 +84,11 @@ export class SetOrchestrator {
                 message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                pagination: new PaginationDto(query.page, totalCardsInSet, query.limit, baseUrl, query.filter),
+                pagination: new PaginationResponseDto(
+                    query,
+                    `/sets/${setCode}`,
+                    await this.cardService.totalCardsInSet(setCode, query)
+                ),
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");

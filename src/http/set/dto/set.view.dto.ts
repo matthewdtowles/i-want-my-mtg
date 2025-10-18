@@ -1,14 +1,11 @@
-import { BaseViewDto } from "src/http/base/base.view.dto";
-import { PaginationDto } from "src/http/base/pagination.dto";
+import { ListViewDto } from "src/http/list/list.view.dto";
 import { SetResponseDto } from "./set.response.dto";
 
-export class SetViewDto extends BaseViewDto {
+export class SetViewDto extends ListViewDto {
     readonly set: SetResponseDto;
-    readonly pagination?: PaginationDto;
 
     constructor(init: Partial<SetViewDto>) {
         super(init);
         this.set = init.set;
-        this.pagination = init.pagination;
     }
 }

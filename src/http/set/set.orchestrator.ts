@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -22,6 +22,8 @@ import { SetPresenter } from "./set.presenter";
 @Injectable()
 export class SetOrchestrator {
 
+    private readonly LOGGER: Logger = new Logger(SetOrchestrator.name);
+
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
@@ -38,7 +40,8 @@ export class SetOrchestrator {
                 this.setService.findSets(query),
                 this.setService.totalSetsCount(query)
             ]);
-            const pagination = new PaginationResponseDto(query, "/sets", totalSets);
+            const baseUrl = "/sets";
+            const pagination = new PaginationResponseDto(query, baseUrl, totalSets);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -46,10 +49,11 @@ export class SetOrchestrator {
                 setList: sets.map((set: Set) => SetPresenter.toSetMetaDto(set, 0)),
                 status: ActionStatus.SUCCESS,
                 pagination,
-                filter: new FilterResponseDto(),
+                filter: new FilterResponseDto(query, baseUrl),
                 sort: new SortResponseDto(),
             });
         } catch (error) {
+            this.LOGGER.error(error.message);
             return HttpErrorHandler.toHttpException(error, "findSetListPaginated");
         }
     }
@@ -73,24 +77,28 @@ export class SetOrchestrator {
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
+            const baseUrl = `/sets/${setCode}`;
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
                     { label: "Home", url: "/" },
                     { label: "Sets", url: "/sets" },
-                    { label: setResonse.name, url: `/sets/${setCode}` },
+                    { label: setResonse.name, url: baseUrl },
                 ],
                 message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 pagination: new PaginationResponseDto(
                     query,
-                    `/sets/${setCode}`,
+                    baseUrl,
                     await this.cardService.totalCardsInSet(setCode, query)
                 ),
+                filter: new FilterResponseDto(query, baseUrl),
+                sort: new SortResponseDto(),
             });
         } catch (error) {
+            this.LOGGER.error(error.message);
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
         }
     }
@@ -100,6 +108,7 @@ export class SetOrchestrator {
             const totalSets = await this.setService.totalSetsCount(query);
             return Math.max(1, Math.ceil(totalSets / query.limit));
         } catch (error) {
+            this.LOGGER.error(error.message);
             return HttpErrorHandler.toHttpException(error, "getLastPage");
         }
     }
@@ -109,6 +118,7 @@ export class SetOrchestrator {
             const totalCards = await this.cardService.totalCardsInSet(setCode, query);
             return Math.max(1, Math.ceil(totalCards / query.limit));
         } catch (error) {
+            this.LOGGER.error(error.message);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");
         }
     }

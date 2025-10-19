@@ -5,6 +5,7 @@ import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { isAuthenticated } from "src/http/base/http.util";
@@ -13,10 +14,11 @@ import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
+import { TableHeaderView } from "src/http/list/table-header.view";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
-import { SortOptions } from "src/core/query/sort-options.enum";
+import { TableHeadersRowView } from "../list/table-headers-row.view";
 
 @Injectable()
 export class CardOrchestrator {
@@ -59,12 +61,7 @@ export class CardOrchestrator {
 
             const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, options);
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
-            const sortableHeaders = [
-                new SortableHeaderView({ ...options, sort: SortOptions.SET }, "Set"),
-                new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
-                new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
-                new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price"),
-            ];
+
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -85,7 +82,12 @@ export class CardOrchestrator {
                     await this.cardService.totalWithName(singleCard.name)
                 ),
                 filter: new FilterView(options, baseUrl),
-                sortableHeaders
+                tableHeadersRow: new TableHeadersRowView([
+                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name", ["pl-2"]),
+                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price", ["pr-2"]),
+                ])
             });
         } catch (error) {
             this.LOGGER.error(error.message);

@@ -4,6 +4,7 @@ import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
@@ -14,11 +15,11 @@ import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
+import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
-import { SortOptions } from "src/core/query/sort-options.enum";
 
 @Injectable()
 export class SetOrchestrator {
@@ -43,12 +44,7 @@ export class SetOrchestrator {
             ]);
             const baseUrl = "/sets";
             const pagination = new PaginationView(query, baseUrl, totalSets);
-            const sortableHeaders = [
-                new SortableHeaderView({...query, sort: SortOptions.NAME}, "Name"),
-                new SortableHeaderView({...query, sort: SortOptions.SET_VALUE}, "Set Value"),
-                new SortableHeaderView({...query, sort: SortOptions.OWNED_VALUE}, "Owned Value"),
-                new SortableHeaderView({...query, sort: SortOptions.RELEASE_DATE}, "Release Date"),
-            ];
+
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -57,7 +53,16 @@ export class SetOrchestrator {
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(query, baseUrl),
-                sortableHeaders 
+                tableHeadersRow: new TableHeadersRowView([
+                    new SortableHeaderView({ ...query, sort: SortOptions.NAME }, "Name", ["pl-2"]),
+                    new SortableHeaderView({ ...query, sort: SortOptions.SET_VALUE }, "Set Value"),
+                    new SortableHeaderView({ ...query, sort: SortOptions.OWNED_VALUE }, "Owned Value"),
+                    new SortableHeaderView(
+                        { ...query, sort: SortOptions.RELEASE_DATE },
+                        "Release Date",
+                        ["xs-hide", "pr-2"]
+                    ),
+                ])
             });
         } catch (error) {
             this.LOGGER.error(error.message);
@@ -68,7 +73,7 @@ export class SetOrchestrator {
     async findBySetCode(
         req: AuthenticatedRequest,
         setCode: string,
-        query: SafeQueryOptions
+        options: SafeQueryOptions
     ): Promise<SetViewDto> {
         try {
             const userId: number = req.user ? req.user.id : 0;
@@ -76,7 +81,7 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            const cards: Card[] = await this.cardService.findBySet(setCode, query);
+            const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             let inventory: Inventory[] = [];
             if (userId && set.cards?.length) {
@@ -85,13 +90,6 @@ export class SetOrchestrator {
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
             const baseUrl = `/sets/${setCode}`;
-            const sortableHeaders = [
-                new SortableHeaderView({...query, sort: SortOptions.OWNED_QUANTITY}, "Owned"),
-                new SortableHeaderView({...query, sort: SortOptions.NUMBER}, "Number"),
-                new SortableHeaderView({...query, sort: SortOptions.NAME}, "Name"),
-                new SortableHeaderView({...query, sort: SortOptions.PRICE}, "Price"),
-                new SortableHeaderView({...query, sort: SortOptions.PRICE_FOIL}, "Foil Price"),
-            ];
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
@@ -104,12 +102,18 @@ export class SetOrchestrator {
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 pagination: new PaginationView(
-                    query,
+                    options,
                     baseUrl,
-                    await this.cardService.totalCardsInSet(setCode, query)
+                    await this.cardService.totalCardsInSet(setCode, options)
                 ),
-                filter: new FilterView(query, baseUrl),
-                sortableHeaders
+                filter: new FilterView(options, baseUrl),
+                tableHeadersRow: new TableHeadersRowView([
+                    new SortableHeaderView({ ...options, sort: SortOptions.OWNED_QUANTITY }, "Owned"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.NUMBER }, "Number"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price"),
+                ])
             });
         } catch (error) {
             this.LOGGER.error(error.message);

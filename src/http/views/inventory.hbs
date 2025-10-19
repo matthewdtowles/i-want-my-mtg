@@ -7,34 +7,7 @@
         {{>filter}}
         <table class="table-container w-full">
             <thead>
-                <tr class="table-header-row">
-                    {{#each }}
-                    {{!-- <th class="table-header pl-2" data-sort="owned">
-                        <a href="?sort=owned&ascend={{ascend}}" class="sort-btn">
-                            Owned
-                            <span class="sort-icon">{{>downarrow}}</span>
-                        </a>
-                    </th>
-                    <th class="table-header" data-sort="name">
-                        <a href="?sort=name&ascend={{ascend}}" class="sort-btn">
-                            Name
-                            <span class="sort-icon">{{>downarrow}}</span>
-                        </a>
-                    </th>
-                    <th class="table-header" data-sort="set">
-                        <a href="?sort=set&ascend={{ascend}}" class="sort-btn">
-                            Set
-                            <span class="sort-icon">{{>downarrow}}</span>
-                        </a>
-                    </th>
-                    <th class="table-header" data-sort="price">
-                        <a href="?sort=price&ascend={{ascend}}" class="sort-btn">
-                            Price
-                            <span class="sort-icon">{{>downarrow}}</span>
-                        </a>
-                    </th>
-                    <th class="table-header pr-2 xs-hide"></th> --}}
-                </tr>
+                {{>tableHeadersRow}}
             </thead>
             <tbody>
                 {{#each cards as |card|}}

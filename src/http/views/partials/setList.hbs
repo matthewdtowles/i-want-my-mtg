@@ -2,31 +2,7 @@
     {{>filter}}
     <table class="min-w-full bg-white">
         <thead>
-            <tr class="table-header-row">
-                <th class="table-header pl-2">
-                    <a href="?sort=set&ascend={{ascend}}" class="sort-btn">
-                        Set <span class="sort-icon">{{>downarrow}}</span>
-                    </a>
-                </th>
-                <th class="table-header">
-                    <a href="?sort=setValue&ascend={{ascend}}" class="sort-btn">
-                        Total Value
-                        <span class="sort-icon">{{>downarrow}}</span>
-                    </a>
-                </th>
-                <th class="table-header">
-                    <a href="?sort=ownedValue&ascend={{ascend}}" class="sort-btn">
-                        Owned Value
-                        <span class="sort-icon">{{>downarrow}}</span>
-                    </a>
-                </th>
-                <th class="table-header xs-hide pr-2">
-                    <a href="?sort=releaseDate&ascend={{ascend}}" class="sort-btn">
-                        Release Date
-                        <span class="sort-icon">{{>downarrow}}</span>
-                    </a>
-                </th>
-            </tr>
+            {{>tableHeadersRow}}
         </thead>
         <tbody>
             {{#each setList}}

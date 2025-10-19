@@ -2,17 +2,19 @@ import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common"
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
+import { TableHeaderView } from "src/http/list/table-header.view";
+import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryPresenter } from "./inventory.presenter";
-import { SortOptions } from "src/core/query/sort-options.enum";
 
 @Injectable()
 export class InventoryOrchestrator {
@@ -30,12 +32,6 @@ export class InventoryOrchestrator {
             );
             const username: string = req.user.name;
             const baseUrl = "/inventory";
-            const sortableHeaders = [
-                new SortableHeaderView({...options, sort: SortOptions.OWNED_QUANTITY }, "Owned"),
-                new SortableHeaderView({...options, sort: SortOptions.NAME }, "Name"),
-                new SortableHeaderView({...options, sort: SortOptions.SET }, "Set"),
-                new SortableHeaderView({...options, sort: SortOptions.PRICE}, "Price"),
-            ];
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -54,7 +50,13 @@ export class InventoryOrchestrator {
                     await this.inventoryService.totalInventoryItemsForUser(req.user.id, options)
                 ),
                 filter: new FilterView(options, baseUrl),
-                sortableHeaders 
+                tableHeadersRow: new TableHeadersRowView([
+                    new SortableHeaderView({ ...options, sort: SortOptions.OWNED_QUANTITY }, "Owned", ["pl-2"]),
+                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.SET }, "Set"),
+                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
+                    new TableHeaderView("", ["pr-2", "xs-hide"])
+                ])
             });
         } catch (error) {
             this.LOGGER.error(error.message);

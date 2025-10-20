@@ -44,10 +44,8 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.setCode = :code`, { code });
         this.addFilters(qb, options.filter);
-        this.paginate(qb, options);
-        options.sort
-            ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
-            : qb.orderBy(`${SortOptions.NUMBER}`, this.ASC);
+        this.addPagination(qb, options);
+        this.addOrdering(qb, options, SortOptions.NUMBER);
         return (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
@@ -56,12 +54,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         const qb = this.cardRepository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.name = :name`, { name });
-        this.paginate(qb, options);
-        options.sort
-            ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
-            : qb.orderBy(`${SortOptions.CARD_SET}`, this.ASC)
-        const ormCards: CardOrmEntity[] = await qb.getMany();
-        return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
+        this.addPagination(qb, options);
+        this.addOrdering(qb, options, SortOptions.PRICE, true);
+        return (await qb.getMany()).map((card: CardOrmEntity) => CardMapper.toCore(card));
     }
 
     async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {

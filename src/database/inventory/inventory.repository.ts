@@ -22,8 +22,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`Saving ${inventoryItems.length} inventory items`);
         const ormItems: InventoryOrmEntity[] = inventoryItems.map((item: Inventory) => InventoryMapper.toOrmEntity(item));
-        const savedItems: InventoryOrmEntity[] = await this.repository.save(ormItems);
-        return savedItems.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
+        return (await this.repository.save(ormItems)).map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null> {
@@ -57,10 +56,8 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
             .leftJoinAndSelect("card.prices", "prices")
             .where(`${this.TABLE}.userId = :userId`, { userId });
         this.addFilters(qb, options.filter);
-        qb.skip((options.page - 1) * options.limit).take(options.limit);
-        options.sort
-            ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
-            : qb.orderBy(SortOptions.NUMBER, this.ASC);
+        this.addPagination(qb, options);
+        this.addOrdering(qb, options, SortOptions.NUMBER)
         return (await qb.getMany()).map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 

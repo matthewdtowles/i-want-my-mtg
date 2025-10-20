@@ -26,11 +26,10 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         const qb = this.createBaseQuery();
         this.addFilters(qb, options.filter);
-        qb.skip((options.page - 1) * options.limit).take(options.limit);
-        options.sort
-            ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
-            : qb.orderBy(`${SortOptions.RELEASE_DATE}`, this.DESC)
-                .addOrderBy(`${SortOptions.SET}`, this.ASC);
+        this.addPagination(qb, options);
+        this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
+        // extra order clause for default
+        if (!options.sort) qb.addOrderBy(`${SortOptions.SET}`, this.ASC, this.NULLS_LAST);
         return (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 

@@ -1,5 +1,6 @@
-import { Card } from "src/core/card/card.entity";
-import { Format } from "src/core/card/format.enum";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { Card } from "./card.entity";
+import { Format } from "./format.enum";
 
 export const CardRepositoryPort = "CardRepositoryPort";
 
@@ -25,20 +26,17 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - The unique three-letter set code (primary key).
-     * @param {number} page - The page number (1-based index).
-     * @param {number} limit - The number of items per page.
-     * @param {string} [filter] - Optional filter to apply to card name.
+     * @param {SafeQueryOptions} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities.
      */
-    findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]>;
+    findBySet(code: string, options: SafeQueryOptions): Promise<Card[]>;
 
     /**
      * @param {string} name - of card to find
-     * @param {number} page - The page number (1-based index).
-     * @param {number} limit - number of cards to return
+     * @param {SafeQueryOptions} options - Query options for pagination and filtering.
      * @returns {Promise<Card[]>} - A promise that resolves to an array of Card entities with the given name.
      */
-    findWithName(name: string, page: number, limit: number): Promise<Card[]>;
+    findWithName(name: string, options: SafeQueryOptions): Promise<Card[]>;
 
     /**
      * @param {string} code - three letter set code
@@ -50,10 +48,10 @@ export interface CardRepositoryPort {
 
     /**
      * @param {string} code - three letter set code
-     * @param {string} [filter] - optional filter to apply to card name
+     * @param {SafeQueryOptions} [options] - Options for filtering
      * @returns {Promise<number>} - total number of cards in set with code
      */
-    totalInSet(code: string, filter?: string): Promise<number>;
+    totalInSet(code: string, options: SafeQueryOptions): Promise<number>;
 
     /**
      * @param {string} name - name of cards to count

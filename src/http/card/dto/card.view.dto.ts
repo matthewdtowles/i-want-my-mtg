@@ -1,17 +1,14 @@
-import { BaseViewDto } from "src/http/base.view.dto";
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { SingleCardResponseDto } from "src/http/card/dto/single-card.response.dto";
-import { PaginationDto } from "src/http/pagination.dto";
+import { ListView } from "src/http/list/list.view";
+import { CardResponseDto } from "./card.response.dto";
+import { SingleCardResponseDto } from "./single-card.response.dto";
 
-export class CardViewDto extends BaseViewDto {
+export class CardViewDto extends ListView {
     readonly card: SingleCardResponseDto;
     readonly otherPrintings: CardResponseDto[];
-    readonly pagination?: PaginationDto;
 
     constructor(init: Partial<CardViewDto>) {
         super(init);
         this.card = init.card;
         this.otherPrintings = init.otherPrintings || [];
-        this.pagination = init.pagination;
     }
 }

@@ -4,8 +4,9 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
-import { ActionStatus } from "src/http/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { ActionStatus } from "src/http/base/action-status.enum";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
 import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
 
@@ -18,6 +19,8 @@ describe("InventoryOrchestrator", () => {
         user: { id: 1, name: "Test User", email: "test@example.com" },
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
+
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: "test" });
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -71,11 +74,11 @@ describe("InventoryOrchestrator", () => {
             ]);
             inventoryService.totalInventoryItemsForUser.mockResolvedValue(1);
 
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
             expect(result.cards.length).toBe(1);
-            expect(result.pagination.currentPage).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.current).toBe(1);
+            expect(result.pagination.total).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -83,17 +86,17 @@ describe("InventoryOrchestrator", () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForUser.mockResolvedValue(0);
 
-            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, 1, 10);
+            const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
             expect(result.cards).toHaveLength(0);
-            expect(result.pagination.totalItems).toBe(0);
+            expect(result.pagination.total).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
         it("throws error if not authenticated", async () => {
             const unauthenticatedRequest = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
 
-            await expect(orchestrator.findByUser(unauthenticatedRequest, 1, 10)).rejects.toThrow();
+            await expect(orchestrator.findByUser(unauthenticatedRequest, mockQueryOptions)).rejects.toThrow();
         });
 
     });

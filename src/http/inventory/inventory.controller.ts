@@ -2,47 +2,42 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject, Param, ParseIntPipe, Patch,
+    Get, Inject,
+    Patch,
     Post,
-    Query,
     Render,
     Req, UseGuards
 } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
-import { ApiResult, createErrorResult, createSuccessResult } from "src/http/api.result";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
-import { InventoryRequestDto } from "src/http/inventory/dto/inventory.request.dto";
-import { InventoryViewDto } from "src/http/inventory/dto/inventory.view.dto";
-import { InventoryOrchestrator } from "src/http/inventory/inventory.orchestrator";
+import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { InventoryRequestDto } from "./dto/inventory.request.dto";
+import { InventoryViewDto } from "./dto/inventory.view.dto";
+import { InventoryOrchestrator } from "./inventory.orchestrator";
 
 
 @Controller("inventory")
 export class InventoryController {
-
-    private readonly defaultLimit = 25;
 
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
-    async findByUser(
-        @Req() req: AuthenticatedRequest,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string,
-        @Query("filter") filterRaw?: string,
-    ): Promise<InventoryViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const filter = safeAlphaNumeric(filterRaw);
+    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
         const userId = req.user?.id;
         if (!userId) {
             throw new Error("User ID not found in request");
         }
-        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, limit, filter);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.inventoryOrchestrator.findByUser(req, page, limit, filter);
+        const rawOptions = new SafeQueryOptions(req.query);
+        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
+        const options = new SafeQueryOptions({
+            ...rawOptions,
+            page: Math.min(rawOptions.page, lastPage)
+        });
+        return this.inventoryOrchestrator.findByUser(req, options);
     }
 
     @UseGuards(JwtAuthGuard)

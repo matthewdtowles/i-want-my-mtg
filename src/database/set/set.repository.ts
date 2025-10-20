@@ -1,56 +1,58 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
-import { SetMapper } from "src/database/set/set.mapper";
-import { SetOrmEntity } from "src/database/set/set.orm-entity";
-import { ILike, MoreThan, Repository } from "typeorm";
+import { BaseRepository } from "src/database/base.repository";
+import { Repository, SelectQueryBuilder } from "typeorm";
+import { SetMapper } from "./set.mapper";
+import { SetOrmEntity } from "./set.orm-entity";
 
 @Injectable()
-export class SetRepository implements SetRepositoryPort {
+export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRepositoryPort {
 
-    constructor(@InjectRepository(SetOrmEntity) private readonly setRepository: Repository<SetOrmEntity>) { }
+    readonly TABLE = "set";
+
+    constructor(@InjectRepository(SetOrmEntity) private readonly setRepository: Repository<SetOrmEntity>) {
+        super();
+    }
 
     async save(sets: Set[]): Promise<number> {
         const savedSets: SetOrmEntity[] = await this.setRepository.save(sets) ?? [];
         return savedSets.length ?? 0;
     }
 
-    async findAllSetsMeta(page: number, limit: number, filter?: string): Promise<Set[]> {
-        const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
-            fragments.forEach((fragment, i) => {
-                qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
-            });
-        }
-        qb.skip((page - 1) * limit).take(limit);
-        qb.orderBy("set.releaseDate", "DESC").addOrderBy("set.name", "ASC");
-        const setMetaList: SetOrmEntity[] = await qb.getMany();
-        return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
+    async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
+        const qb = this.createBaseQuery();
+        this.addFilters(qb, options.filter);
+        this.addPagination(qb, options);
+        this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
+        // extra order clause for default
+        if (!options.sort) qb.addOrderBy(`${SortOptions.SET}`, this.ASC, this.NULLS_LAST);
+        return (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 
     async findByCode(code: string): Promise<Set | null> {
         const set: SetOrmEntity = await this.setRepository.findOne({
-            where: {
-                code
-            },
+            where: { code },
         });
         return set ? SetMapper.toCore(set) : null;
     }
 
-    async totalSets(filter?: string): Promise<number> {
-        const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
-        if (filter) {
-            const fragments = filter.split(" ").filter(f => f.length > 0);
-            fragments.forEach((fragment, i) => {
-                qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
-            });
-        }
+    async totalSets(options: SafeQueryOptions): Promise<number> {
+        const qb = this.createBaseQuery();
+        this.addFilters(qb, options.filter);
         return await qb.getCount();
     }
 
     async delete(set: Set): Promise<void> {
         await this.setRepository.delete(set);
+    }
+
+    private createBaseQuery(): SelectQueryBuilder<SetOrmEntity> {
+        return this.setRepository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.baseSize > 0`);
     }
 }

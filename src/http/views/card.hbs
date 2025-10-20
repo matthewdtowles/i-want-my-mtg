@@ -71,10 +71,13 @@
     <section class="section-container">
         <h3 class="section-title">Other Printings</h3>
         <table class="table-container">
+            <thead>
+                {{>tableHeadersRow}}
+            </thead>
             <tbody>
                 {{#each otherPrintings as |p|}}
                 <tr class="table-row">
-                    <td class="set-icon py-2"><i class="ss ss-{{p.setCode}}"></i></td>
+                    <td class="set-icon pl-2 py-2"><i class="ss ss-{{p.setCode}}"></i></td>
                     <td class="card-name-link py-2" data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}">
                         <a href="{{p.url}}">{{p.name}}</a>
                         {{>reserved card=p}}
@@ -88,7 +91,7 @@
                         <span class="price-normal">{{p.normalPrice}}</span>
                         {{/if}}
                     </td>
-                    <td class="py-2 text-right">
+                    <td class="py-2 pr-2">
                         {{#if p.hasFoil}}
                         <span class="price-foil">{{p.foilPrice}}</span>
                         <span class="foil-badge xs-hide">Foil</span>

@@ -26,7 +26,7 @@
   "include": [
     "src/**/*.ts",
     "test/**/*.ts"
-  ],
+, "src/http/set/dto/set-list.view.dto.ts.bk"  ],
   "exclude": [
     "node_modules",
     "dist"

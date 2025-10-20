@@ -1,14 +1,11 @@
-import { BaseViewDto } from "src/http/base.view.dto";
-import { PaginationDto } from "src/http/pagination.dto";
-import { SetMetaResponseDto } from "src/http/set/dto/set-meta.response.dto";
+import { ListView } from "src/http/list/list.view";
+import { SetMetaResponseDto } from "./set-meta.response.dto";
 
-export class SetListViewDto extends BaseViewDto {
+export class SetListViewDto extends ListView {
     readonly setList: SetMetaResponseDto[];
-    readonly pagination?: PaginationDto;
 
     constructor(init: Partial<SetListViewDto>) {
         super(init);
         this.setList = init.setList || [];
-        this.pagination = init.pagination;
     }
 }

@@ -1,9 +1,9 @@
 import { Logger, Module } from "@nestjs/common";
-import { AuthModule } from "src/core/auth/auth.module";
-import { CardModule } from "src/core/card/card.module";
-import { InventoryModule } from "src/core/inventory/inventory.module";
-import { SetModule } from "src/core/set/set.module";
-import { UserModule } from "src/core/user/user.module";
+import { AuthModule } from "./auth/auth.module";
+import { CardModule } from "./card/card.module";
+import { InventoryModule } from "./inventory/inventory.module";
+import { SetModule } from "./set/set.module";
+import { UserModule } from "./user/user.module";
 
 
 @Module({

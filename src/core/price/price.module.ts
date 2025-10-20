@@ -1,7 +1,7 @@
 import { Logger, Module } from "@nestjs/common";
 import { CardModule } from "src/core/card/card.module";
-import { PriceService } from "src/core/price/price.service";
 import { DatabaseModule } from "src/database/database.module";
+import { PriceService } from "./price.service";
 
 @Module({
     imports: [DatabaseModule, CardModule],

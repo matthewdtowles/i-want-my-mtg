@@ -6,15 +6,7 @@
     <div class="w-full mx-auto">
         {{>filter}}
         <table class="table-container w-full">
-            <thead>
-                <tr class="table-header-row">
-                    <th class="table-header pl-2">Owned</th>
-                    <th class="table-header">Name</th>
-                    <th class="table-header">Set</th>
-                    <th class="table-header">Price</th>
-                    <th class="table-header pr-2 xs-hide">Delete</th>
-                </tr>
-            </thead>
+            <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each cards as |card|}}
                 <tr class="table-row">

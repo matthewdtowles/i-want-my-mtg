@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Set } from "src/core/set/set.entity";
-import { SetRepositoryPort } from "src/core/set/set.repository.port";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { Set } from "./set.entity";
+import { SetRepositoryPort } from "./set.repository.port";
 
 @Injectable()
 export class SetService {
@@ -13,9 +14,9 @@ export class SetService {
         return await this.repository.save(sets);
     }
 
-    async findSets(page: number, limit: number, filter?: string): Promise<Set[]> {
-        this.LOGGER.debug(`Calling findSets(page: ${page}, limit: ${limit}, filter: ${filter})`);
-        return await this.repository.findAllSetsMeta(page, limit, filter);
+    async findSets(query: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findSets(page: ${JSON.stringify(query)})`);
+        return await this.repository.findAllSetsMeta(query);
     }
 
     async findByCode(setCode: string): Promise<Set | null> {
@@ -23,8 +24,10 @@ export class SetService {
         return await this.repository.findByCode(setCode);
     }
 
-    async totalSetsCount(filter?: string): Promise<number> {
-        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${filter})`);
-        return await this.repository.totalSets(filter);
+    async totalSetsCount(options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Calling getTotalSetsCount(filter: ${options.filter})`);
+        const result = await this.repository.totalSets(options);
+        this.LOGGER.debug(`Total sets: ${result}`);
+        return result;
     }
 }

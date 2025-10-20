@@ -14,18 +14,7 @@
 <div class="w-full mx-auto">
     {{>filter}}
     <table class="table-container">
-        <thead>
-            <tr class="table-header-row">
-                <th class="table-header pl-2"># Owned</th>
-                <th class="table-header">Card No.</th>
-                <th class="table-header">Name</th>
-                <th class="table-header xs-hide">Mana Cost</th>
-                <th class="table-header xs-hide">Rarity</th>
-                <th class="table-header xs-hide">Price</th>
-                <th class="table-header xs-hide pr-2">Foil Price</th>
-                <th class="table-header xs-show pr-2">Prices</th>
-            </tr>
-        </thead>
+        <thead>{{>tableHeadersRow}}</thead>
         <tbody>
             {{#each set.cards}}
             <tr class="table-row">

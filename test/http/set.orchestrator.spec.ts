@@ -3,10 +3,11 @@ import { Card } from "src/core/card/card.entity";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
-import { ActionStatus } from "src/http/action-status.enum";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { ActionStatus } from "src/http/base/action-status.enum";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
 import { SetViewDto } from "src/http/set/dto/set.view.dto";
 import { SetOrchestrator } from "src/http/set/set.orchestrator";
@@ -31,6 +32,8 @@ describe("SetOrchestrator", () => {
         cards: [],
         type: "test",
     };
+
+    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: "test" });
 
     const mockCard: Card = {
         id: "card1",
@@ -89,12 +92,11 @@ describe("SetOrchestrator", () => {
             setService.findSets.mockResolvedValue([mockSet]);
             setService.totalSetsCount.mockResolvedValue(1);
 
-            const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], 1, 10);
+            const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], mockQueryOptions);
 
             expect(result).toBeInstanceOf(SetListViewDto);
             expect(result.setList.length).toBe(1);
-            expect(result.pagination.currentPage).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.current).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -102,7 +104,7 @@ describe("SetOrchestrator", () => {
             setService.findSets.mockRejectedValue(new Error("DB error"));
 
             await expect(
-                orchestrator.findSetList(mockAuthenticatedRequest, [], 1, 10)
+                orchestrator.findSetList(mockAuthenticatedRequest, [], mockQueryOptions)
             ).rejects.toThrow("An unexpected error occurred");
         });
 
@@ -110,10 +112,9 @@ describe("SetOrchestrator", () => {
             setService.findSets.mockResolvedValue([]);
             setService.totalSetsCount.mockResolvedValue(0);
 
-            const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], 1, 10);
+            const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], mockQueryOptions);
 
             expect(result.setList.length).toBe(0);
-            expect(result.pagination.totalItems).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
     });
@@ -125,11 +126,11 @@ describe("SetOrchestrator", () => {
             cardService.totalCardsInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
 
-            const result = await orchestrator.findBySetCode(mockAuthenticatedRequest, "TST", 1, 10);
+            const result = await orchestrator.findBySetCode(mockAuthenticatedRequest, "TST", mockQueryOptions);
 
             expect(result).toBeInstanceOf(SetViewDto);
             expect(result.set.cards.length).toBe(1);
-            expect(result.pagination.totalItems).toBe(1);
+            expect(result.pagination.current).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -137,7 +138,7 @@ describe("SetOrchestrator", () => {
             setService.findByCode.mockResolvedValue(null);
 
             await expect(
-                orchestrator.findBySetCode(mockAuthenticatedRequest, "BAD", 1, 10)
+                orchestrator.findBySetCode(mockAuthenticatedRequest, "BAD", mockQueryOptions)
             ).rejects.toThrow("Set with code BAD not found");
         });
 
@@ -148,7 +149,7 @@ describe("SetOrchestrator", () => {
             cardService.totalCardsInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
 
-            const result = await orchestrator.findBySetCode(unauthReq, "TST", 1, 10);
+            const result = await orchestrator.findBySetCode(unauthReq, "TST", mockQueryOptions);
 
             expect(result.authenticated).toBe(false);
             expect(result.status).toBe(ActionStatus.SUCCESS);
@@ -159,7 +160,7 @@ describe("SetOrchestrator", () => {
             cardService.findBySet.mockRejectedValue(new Error("Card error"));
 
             await expect(
-                orchestrator.findBySetCode(mockAuthenticatedRequest, "TST", 1, 10)
+                orchestrator.findBySetCode(mockAuthenticatedRequest, "TST", mockQueryOptions)
             ).rejects.toThrow("An unexpected error occurred");
         });
     });

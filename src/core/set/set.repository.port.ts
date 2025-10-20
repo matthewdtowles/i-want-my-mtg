@@ -1,3 +1,4 @@
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "./set.entity";
 
 export const SetRepositoryPort = "SetRepositoryPort";
@@ -18,12 +19,10 @@ export interface SetRepositoryPort {
     /**
      * Retrieves metadata for Set entities with pagination.
      *
-     * @param {number} page - The page number (1-based index).
-     * @param {number} limit - The number of items per page.
-     * @param {string} [filter] - Optional filter string to search sets.
+     * @param {SafeQueryOptions} options - The query options for pagination and filtering.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
-    findAllSetsMeta(page: number, limit: number, filter?: string): Promise<Set[]>;
+    findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]>;
 
     /**
      * Finds a Set entity by its unique three-letter code.
@@ -36,10 +35,10 @@ export interface SetRepositoryPort {
     /**
      * Counts the total number of Set entities.
      *
-     * @param {string} [filter] - Optional filter string to search sets.
+     * @param {SafeQueryOptions} [options] - Optional criteria to search sets.
      * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
      */
-    totalSets(filter?: string): Promise<number>;
+    totalSets(options: SafeQueryOptions): Promise<number>;
 
     /**
      * Removes a Set entity.

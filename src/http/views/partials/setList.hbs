@@ -1,14 +1,7 @@
 <div class="w-full mx-auto">
     {{>filter}}
     <table class="min-w-full bg-white">
-        <thead>
-            <tr class="table-header-row">
-                <th class="table-header pl-2">Set</th>
-                <th class="table-header">Price</th>
-                <th class="table-header">Owned</th>
-                <th class="table-header xs-hide pr-2">Release Date</th>
-            </tr>
-        </thead>
+        <thead>{{>tableHeadersRow}}</thead>
         <tbody>
             {{#each setList}}
             <tr class="table-row">

@@ -1,19 +1,20 @@
 import {
     Controller,
-    Get, Inject, Param, Query, Render,
+    Get, Inject, Logger, Param,
+    Render,
     Req,
     UseGuards
 } from "@nestjs/common";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { sanitizeInt } from "src/http/http.util";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { CardOrchestrator } from "./card.orchestrator";
 import { CardViewDto } from "./dto/card.view.dto";
 
 @Controller("card")
 export class CardController {
 
-    private readonly defaultLimit = 25;
+    private readonly LOGGER: Logger = new Logger(CardController.name);
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 
@@ -24,11 +25,9 @@ export class CardController {
         @Req() req: AuthenticatedRequest,
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string
     ): Promise<CardViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const page = sanitizeInt(pageRaw, 1);
-        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, page, limit);
+        const rawQuery = new SafeQueryOptions(req.query);
+        this.LOGGER.debug(`Set listing options object: ${JSON.stringify(rawQuery)}`);
+        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, rawQuery);
     }
 }

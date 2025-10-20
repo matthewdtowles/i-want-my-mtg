@@ -1,4 +1,5 @@
-import { Inventory } from "src/core/inventory/inventory.entity";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { Inventory } from "./inventory.entity";
 
 
 export const InventoryRepositoryPort = "InventoryRepositoryPort";
@@ -45,22 +46,20 @@ export interface InventoryRepositoryPort {
     /**
      * Find user inventory items with pagination
      *
-     * @param userId
-     * @param page
-     * @param limit
-     * @param filter optional filter by card name
+     * @param {number} userId 
+     * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns user's inventory entities for given page
      */
-    findByUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]>;
+    findByUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]>;
 
     /**
      * Get total number of inventory items for user
-     * 
-     * @param userId 
-     * @param filter optional filter by card name
+     *
+     * @param {number} userId
+     * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns total number of inventory items
      */
-    totalInventoryItemsForUser(userId: number, filter?: string): Promise<number>;
+    totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
      * Delete inventory entity

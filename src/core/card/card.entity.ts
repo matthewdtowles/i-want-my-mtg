@@ -1,8 +1,8 @@
-import { CardRarity } from "src/core/card/card.rarity.enum";
-import { Legality } from "src/core/card/legality.entity";
 import { Price } from "src/core/price/price.entity";
 import { Set } from "src/core/set/set.entity";
 import { validateInit } from "src/core/validation.util";
+import { CardRarity } from "./card.rarity.enum";
+import { Legality } from "./legality.entity";
 
 export class Card {
     readonly id: string;

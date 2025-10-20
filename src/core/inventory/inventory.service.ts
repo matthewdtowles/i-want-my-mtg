@@ -1,7 +1,8 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { Set } from "src/core/set/set.entity";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { Inventory } from "./inventory.entity";
+import { InventoryRepositoryPort } from "./inventory.repository.port";
 
 
 @Injectable()
@@ -25,9 +26,9 @@ export class InventoryService {
         return await this.repository.save(toSave);
     }
 
-    async findAllForUser(userId: number, page: number, limit: number, filter?: string): Promise<Inventory[]> {
-        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${page}, limit: ${limit}, filter: ${filter}`);
-        return userId ? await this.repository.findByUser(userId, page, limit, filter) : [];
+    async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
+        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
+        return userId ? await this.repository.findByUser(userId, options) : [];
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
@@ -43,9 +44,9 @@ export class InventoryService {
         return await this.repository.findByCards(userId, cardIds);
     }
 
-    async totalInventoryItemsForUser(userId: number, filter?: string): Promise<number> {
-        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${filter}`);
-        return await this.repository.totalInventoryItemsForUser(userId, filter);
+    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}`);
+        return await this.repository.totalInventoryItemsForUser(userId, options);
     }
 
     /**

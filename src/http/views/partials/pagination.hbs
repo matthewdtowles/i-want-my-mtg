@@ -1,47 +1,36 @@
 <section class="pagination-container">
 
-    {{#if pagination.hasPrevPage}}
-    <a href="{{ pagination.baseUrl }}?page={{pagination.prevPage}}&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-primary">&lt;</a>
+    {{#if pagination.previous}}
+    <a href="{{pagination.previous.href}}"
+        class="pagination-btn pagination-btn-primary">{{pagination.previous.text}}</a>
+
+    <a href="{{pagination.first.href}}" class="pagination-btn pagination-btn-tertiary">{{pagination.first.text}}</a>
     {{/if}}
 
-    {{#if pagination.hasPrevPage}}
-    <a href="{{pagination.baseUrl}}?page=1&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-tertiary">1</a>
-    {{/if}}
-
-    {{#if pagination.skipBackPage}}
-    {{#unless (eq pagination.skipBackPage pagination.currentPage)}}
-    <a href="{{pagination.baseUrl}}?page={{pagination.skipBackPage}}&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBackPage}}</a>
+    {{#if pagination.skipBack}}
+    <a href="{{pagination.skipBack.href}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipBack.text}}</a>
     <span>...</span>
-    {{/unless}}
     {{/if}}
 
-    <span class="pagination-btn pagination-btn-current" aria-current="page">{{pagination.currentPage}}</span>
+    <span class="pagination-btn pagination-btn-current" aria-current="page">{{pagination.current}}</span>
 
-    {{#if pagination.skipForwardPage}}
-    {{#unless (eq pagination.skipForwardPage pagination.currentPage)}}
+    {{#if pagination.skipForward}}
     <span>...</span>
-    <a href="{{pagination.baseUrl}}?page={{pagination.skipForwardPage}}&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForwardPage}}</a>
-    {{/unless}}
+    <a href="{{pagination.skipForward.href}}"
+        class="pagination-btn pagination-btn-tertiary">{{pagination.skipForward.text}}</a>
     {{/if}}
 
-    {{#if pagination.hasNextPage}}
-    <a href="{{pagination.baseUrl}}?page={{pagination.totalPages}}&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-tertiary">{{pagination.totalPages}}</a>
-    {{/if}}
+    {{#if pagination.next}}
+    <a href="{{pagination.last.href}}" class="pagination-btn pagination-btn-tertiary">{{pagination.last.text}}</a>
 
-    {{#if pagination.hasNextPage}}
-    <a href="{{pagination.baseUrl}}?page={{pagination.nextPage}}&limit={{pagination.limit}}{{#if pagination.filter}}&filter={{pagination.filter}}{{/if}}"
-        class="pagination-btn pagination-btn-primary">&gt;</a>
+    <a href="{{pagination.next.href}}" class="pagination-btn pagination-btn-primary">{{pagination.next.text}}</a>
     {{/if}}
 
     <form method="get" action="{{pagination.baseUrl}}" class="flex items-center gap-2 mb-4 mt-2">
-        <input type="hidden" name="page" value="{{pagination.currentPage}}">
-        {{#if pagination.filter}}
-        <input type="hidden" name="filter" value="{{pagination.filter}}">
+        <input type="hidden" name="page" value="{{pagination.current}}">
+        {{#if filter}}
+        <input type="hidden" name="filter" value="{{filter.term}}">
         {{/if}}
         <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 
                 text-xs sm:text-sm bg-white border border-teal-300 rounded focus:ring-2 

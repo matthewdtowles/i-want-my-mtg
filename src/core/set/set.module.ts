@@ -1,6 +1,6 @@
 import { Logger, Module } from "@nestjs/common";
-import { SetService } from "src/core/set/set.service";
 import { DatabaseModule } from "src/database/database.module";
+import { SetService } from "./set.service";
 
 @Module({
     imports: [DatabaseModule],

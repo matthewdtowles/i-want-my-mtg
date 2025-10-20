@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
 import { Format } from "./format.enum";
@@ -38,17 +39,17 @@ export class CardService {
         return savedEntities;
     }
 
-    async findWithName(name: string, page: number, limit: number): Promise<Card[]> {
+    async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         try {
-            return await this.repository.findWithName(name, page, limit);
+            return await this.repository.findWithName(name, options);
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
         }
     }
 
-    async findBySet(code: string, page: number, limit: number, filter?: string): Promise<Card[]> {
+    async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
         try {
-            return await this.repository.findBySet(code, page, limit, filter);
+            return await this.repository.findBySet(code, query);
         } catch (error) {
             throw new Error(`Error finding cards in set ${code}: ${error.message}`);
         }
@@ -70,11 +71,11 @@ export class CardService {
         }
     }
 
-    async totalCardsInSet(setCode: string, filter?: string): Promise<number> {
+    async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
         try {
-            return await this.repository.totalInSet(setCode, filter);
+            return await this.repository.totalInSet(setCode, options);
         } catch (error) {
-            throw new Error(`Error counting cards in set ${setCode} with filter ${filter}: ${error.message}`);
+            throw new Error(`Error counting cards in set ${setCode} with filter ${options.filter}: ${error.message}`);
         }
     }
 

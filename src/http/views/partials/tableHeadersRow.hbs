@@ -1,0 +1,9 @@
+<tr class="table-header-row">
+    {{#each tableHeadersRow.headers as |header|}}
+    {{#if header.href}}
+    {{>sortableHeader header=header}}
+    {{else}}
+    {{>tableHeader header=header}}
+    {{/if}}
+    {{/each}}
+</tr>

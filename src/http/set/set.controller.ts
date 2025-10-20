@@ -3,58 +3,50 @@ import {
     Get,
     Inject,
     Param,
-    Query,
     Render,
     Req,
     UseGuards
 } from "@nestjs/common";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { safeAlphaNumeric, sanitizeInt } from "src/http/http.util";
-import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
-import { SetViewDto } from "src/http/set/dto/set.view.dto";
-import { SetOrchestrator } from "src/http/set/set.orchestrator";
+import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { SetListViewDto } from "./dto/set-list.view.dto";
+import { SetViewDto } from "./dto/set.view.dto";
+import { SetOrchestrator } from "./set.orchestrator";
 
 @Controller("sets")
 export class SetController {
+
     private readonly breadcrumbs = [
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
     ];
-    private readonly defaultLimit = 25;
 
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render("setListPage")
-    async setListing(
-        @Req() req: AuthenticatedRequest,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string,
-        @Query("filter") filterRaw?: string
-    ): Promise<SetListViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const filter = safeAlphaNumeric(filterRaw);
-        const lastPage = await this.setOrchestrator.getLastPage(limit, filter);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, page, limit, filter);
+    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
+        const rawQuery = new SafeQueryOptions(req.query);
+        const lastPage = await this.setOrchestrator.getLastPage(rawQuery);
+        const options = new SafeQueryOptions({
+            ...rawQuery,
+            page: Math.min(rawQuery.page, lastPage)
+        });
+        return this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
     }
 
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")
-    async findBySetCode(
-        @Req() req: AuthenticatedRequest,
-        @Param("setCode") setCode: string,
-        @Query("page") pageRaw?: string,
-        @Query("limit") limitRaw?: string,
-        @Query("filter") filterRaw?: string
-    ): Promise<SetViewDto> {
-        const limit = sanitizeInt(limitRaw, this.defaultLimit);
-        const filter = safeAlphaNumeric(filterRaw);
-        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, limit, filter);
-        const page = Math.min(sanitizeInt(pageRaw, 1), lastPage);
-        return this.setOrchestrator.findBySetCode(req, setCode, page, limit, filter);
+    async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
+        const rawQuery = new SafeQueryOptions(req.query);
+        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawQuery);
+        const options = new SafeQueryOptions({
+            ...rawQuery,
+            page: Math.min(rawQuery.page, lastPage)
+        });
+        return this.setOrchestrator.findBySetCode(req, setCode, options);
     }
 }

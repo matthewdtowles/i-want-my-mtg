@@ -1,5 +1,5 @@
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { LegalityResponseDto } from "src/http/card/dto/legality.response.dto";
+import { CardResponseDto } from "./card.response.dto";
+import { LegalityResponseDto } from "./legality.response.dto";
 
 export class SingleCardResponseDto extends CardResponseDto {
     readonly artist?: string;

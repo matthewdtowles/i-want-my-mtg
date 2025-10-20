@@ -1,8 +1,9 @@
 import { Controller, Get, Inject, Render, Req, UseGuards } from "@nestjs/common";
-import { AuthenticatedRequest } from "src/http/auth/dto/authenticated.request";
-import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { SetListViewDto } from "src/http/set/dto/set-list.view.dto";
-import { SetOrchestrator } from "src/http/set/set.orchestrator";
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { OptionalAuthGuard } from "./auth/optional-auth.guard";
+import { AuthenticatedRequest } from "./base/authenticated.request";
+import { SetListViewDto } from "./set/dto/set-list.view.dto";
+import { SetOrchestrator } from "./set/set.orchestrator";
 
 
 @Controller()
@@ -13,6 +14,7 @@ export class HomeController {
     @Get("/")
     @Render("home")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return await this.setOrchestrator.findSetList(req, [], 1, 20);
+        const query: SafeQueryOptions = new SafeQueryOptions(req.query);
+        return await this.setOrchestrator.findSetList(req, [], query);
     }
 }

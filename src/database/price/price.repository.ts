@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Price } from "src/core/price/price.entity";
 import { PriceRepositoryPort } from "src/core/price/price.repository.port";
-import { PriceMapper } from "src/database/price/price.mapper";
-import { PriceOrmEntity } from "src/database/price/price.orm-entity";
 import { Repository } from "typeorm";
+import { PriceMapper } from "./price.mapper";
+import { PriceOrmEntity } from "./price.orm-entity";
 
 @Injectable()
 export class PriceRepository implements PriceRepositoryPort {

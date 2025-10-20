@@ -1,4 +1,4 @@
-import { toDollar } from "src/http/http.util";
+import { toDollar } from "src/http/base/http.util";
 
 describe("toDollar", () => {
     it("should handle numbers less than 1 correctly", () => {

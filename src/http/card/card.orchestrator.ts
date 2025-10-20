@@ -86,7 +86,7 @@ export class CardOrchestrator {
                     new SortableHeaderView(options, SortOptions.CARD_SET, ["pl-2"]),
                     new TableHeaderView("Card"),
                     new SortableHeaderView(options, SortOptions.PRICE),
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["pr - 2"]),
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["pr-2"]),
                 ])
             });
         } catch (error) {

@@ -1,3 +1,4 @@
+import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
 export abstract class BaseRepository<T> {
@@ -19,5 +20,10 @@ export abstract class BaseRepository<T> {
                     )
                 );
         }
+    }
+
+    protected paginate(qb: SelectQueryBuilder<T>, options: SafeQueryOptions) {
+        qb.skip((options.page - 1) * options.limit)
+            .take(options.limit);
     }
 }

@@ -4,6 +4,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { BaseRepository } from "src/database/base.repository";
 import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
 import { CardOrmEntity } from "./card.orm-entity";
@@ -11,16 +12,18 @@ import { LegalityOrmEntity } from "./legality.orm-entity";
 
 
 @Injectable()
-export class CardRepository implements CardRepositoryPort {
+export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
 
+    readonly TABLE = "card";
     private readonly LOGGER: Logger = new Logger(CardRepository.name);
-
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(
         @InjectRepository(CardOrmEntity) private readonly cardRepository: Repository<CardOrmEntity>,
         @InjectRepository(LegalityOrmEntity) private readonly legalityRepository: Repository<LegalityOrmEntity>,
-    ) { }
+    ) {
+        super();
+    }
 
     async save(cards: Card[]): Promise<number> {
         const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
@@ -37,25 +40,14 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
-        const qb = this.cardRepository.createQueryBuilder("card")
-            .leftJoinAndSelect("card.legalities", "legalities")
-            .leftJoinAndSelect("card.prices", "prices")
-            .where("card.setCode = :code", { code });
-        if (options.filter) {
-            options.filter
-                .split(" ")
-                .filter(f => f.length > 0)
-                .forEach((fragment, i) =>
-                    qb.andWhere(
-                        `card.name ILIKE :fragment${i}`,
-                        { [`fragment${i}`]: `%${fragment}%` }
-                    )
-                );
-        }
+        const qb = this.cardRepository.createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
+            .where(`${this.TABLE}.setCode = :code`, { code });
+        this.addFilters(qb, options.filter);
         qb.skip((options.page - 1) * options.limit).take(options.limit);
         options.sort
-            ? qb.orderBy(`card.${options.sort}`, options.ascend ? "ASC" : "DESC")
-            : qb.orderBy("card.order", "ASC");
+            ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
+            : qb.orderBy(`${this.TABLE}.order`, this.ASC);
         return (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
@@ -82,14 +74,10 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
-        const qb = this.cardRepository.createQueryBuilder("card")
-            .where("card.setCode = :code", { code });
-        if (options.filter) {
-            const fragments = options.filter.split(" ").filter(f => f.length > 0);
-            fragments.forEach((fragment, i) => {
-                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
-            });
-        }
+        const qb = this.cardRepository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.setCode = :code`, { code });
+        this.addFilters(qb, options.filter);
         return qb.getCount();
     }
 
@@ -102,9 +90,9 @@ export class CardRepository implements CardRepositoryPort {
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
         if (0 === cardIds.length) return new Set();
         const ormCards: CardOrmEntity[] = await this.cardRepository
-            .createQueryBuilder("card")
-            .select("card.id")
-            .where("card.id IN (:...ids)", { ids: cardIds })
+            .createQueryBuilder(this.TABLE)
+            .select(`${this.TABLE}.id`)
+            .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
             .getMany();
         return new Set(ormCards.map((c: CardOrmEntity) => c.id));
     }

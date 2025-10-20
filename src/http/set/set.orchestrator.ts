@@ -54,9 +54,9 @@ export class SetOrchestrator {
                 pagination,
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.NAME, ["pl-2"]),
-                    new TableHeaderView("Set Value"), // TODO: make sortable after set value calc impl
-                    new TableHeaderView("Owned Value"), // TODO: ? make sortable ?
+                    new SortableHeaderView(options, SortOptions.SET, ["pl-2"]),
+                    new TableHeaderView("Set Value"),
+                    new TableHeaderView("Owned Value"),
                     new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]),
                 ])
             });
@@ -104,9 +104,9 @@ export class SetOrchestrator {
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.OWNED_QUANTITY),
+                    new TableHeaderView("Owned"),
                     new SortableHeaderView(options, SortOptions.NUMBER),
-                    new SortableHeaderView(options, SortOptions.NAME),
+                    new SortableHeaderView(options, SortOptions.CARD),
                     new TableHeaderView("Mana Cost"),
                     new TableHeaderView("Rarity"),
                     new SortableHeaderView(options, SortOptions.PRICE),

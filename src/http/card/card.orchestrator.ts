@@ -18,6 +18,7 @@ import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
+import { TableHeaderView } from "../list/table-header.view";
 
 @Injectable()
 export class CardOrchestrator {
@@ -82,8 +83,8 @@ export class CardOrchestrator {
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.NAME, ["pl-2"]),
-                    new SortableHeaderView(options, SortOptions.NAME),
+                    new SortableHeaderView(options, SortOptions.CARD_SET, ["pl-2"]),
+                    new TableHeaderView("Card"),
                     new SortableHeaderView(options, SortOptions.PRICE),
                     new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["pr - 2"]),
                 ])

@@ -14,11 +14,10 @@ import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
-import { TableHeaderView } from "src/http/list/table-header.view";
+import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
-import { TableHeadersRowView } from "../list/table-headers-row.view";
 
 @Injectable()
 export class CardOrchestrator {
@@ -83,10 +82,10 @@ export class CardOrchestrator {
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name", ["pl-2"]),
-                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price", ["pr-2"]),
+                    new SortableHeaderView(options, SortOptions.NAME, ["pl-2"]),
+                    new SortableHeaderView(options, SortOptions.NAME),
+                    new SortableHeaderView(options, SortOptions.PRICE),
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["pr - 2"]),
                 ])
             });
         } catch (error) {

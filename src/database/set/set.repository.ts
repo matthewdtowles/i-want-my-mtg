@@ -26,7 +26,12 @@ export class SetRepository implements SetRepositoryPort {
             });
         }
         qb.skip((options.page - 1) * options.limit).take(options.limit);
-        qb.orderBy("set.releaseDate", "DESC").addOrderBy("set.name", "ASC");
+        if (options.sort) {
+            const ascend = options.ascend ? "ASC" : "DESC";
+            qb.orderBy(`set.${options.sort}`, ascend)
+        } else {
+            qb.orderBy("set.releaseDate", "DESC").addOrderBy("set.name", "ASC");
+        }
         const setMetaList: SetOrmEntity[] = await qb.getMany();
         return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
@@ -42,11 +47,17 @@ export class SetRepository implements SetRepositoryPort {
 
     async totalSets(options: SafeQueryOptions): Promise<number> {
         const qb = this.setRepository.createQueryBuilder("set").where("set.baseSize > 0");
+        // TODO: create function for this with the set.name part parameterized
         if (options.filter) {
-            const fragments = options.filter.split(" ").filter(f => f.length > 0);
-            fragments.forEach((fragment, i) => {
-                qb.andWhere(`set.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
-            });
+            options.filter
+                .split(" ")
+                .filter(f => f.length > 0)
+                .forEach((fragment, i) =>
+                    qb.andWhere(
+                        `set.name ILIKE :fragment${i}`,
+                        { [`fragment${i}`]: `%${fragment}%` }
+                    )
+                )
         }
         return await qb.getCount();
     }

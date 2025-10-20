@@ -15,6 +15,7 @@ import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
+import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
@@ -35,16 +36,15 @@ export class SetOrchestrator {
     async findSetList(
         req: AuthenticatedRequest,
         breadcrumbs: Breadcrumb[],
-        query: SafeQueryOptions
+        options: SafeQueryOptions
     ): Promise<SetListViewDto> {
         try {
             const [sets, totalSets] = await Promise.all([
-                this.setService.findSets(query),
-                this.setService.totalSetsCount(query)
+                this.setService.findSets(options),
+                this.setService.totalSetsCount(options)
             ]);
             const baseUrl = "/sets";
-            const pagination = new PaginationView(query, baseUrl, totalSets);
-
+            const pagination = new PaginationView(options, baseUrl, totalSets);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -52,16 +52,12 @@ export class SetOrchestrator {
                 setList: sets.map((set: Set) => SetPresenter.toSetMetaDto(set, 0)),
                 status: ActionStatus.SUCCESS,
                 pagination,
-                filter: new FilterView(query, baseUrl),
+                filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView({ ...query, sort: SortOptions.NAME }, "Name", ["pl-2"]),
-                    new SortableHeaderView({ ...query, sort: SortOptions.SET_VALUE }, "Set Value"),
-                    new SortableHeaderView({ ...query, sort: SortOptions.OWNED_VALUE }, "Owned Value"),
-                    new SortableHeaderView(
-                        { ...query, sort: SortOptions.RELEASE_DATE },
-                        "Release Date",
-                        ["xs-hide", "pr-2"]
-                    ),
+                    new SortableHeaderView(options, SortOptions.NAME, ["pl-2"]),
+                    new TableHeaderView("Set Value"), // TODO: make sortable after set value calc impl
+                    new TableHeaderView("Owned Value"), // TODO: ? make sortable ?
+                    new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]),
                 ])
             });
         } catch (error) {
@@ -108,11 +104,13 @@ export class SetOrchestrator {
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView({ ...options, sort: SortOptions.OWNED_QUANTITY }, "Owned"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.NUMBER }, "Number"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE_FOIL }, "Foil Price"),
+                    new SortableHeaderView(options, SortOptions.OWNED_QUANTITY),
+                    new SortableHeaderView(options, SortOptions.NUMBER),
+                    new SortableHeaderView(options, SortOptions.NAME),
+                    new TableHeaderView("Mana Cost"),
+                    new TableHeaderView("Rarity"),
+                    new SortableHeaderView(options, SortOptions.PRICE),
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL),
                 ])
             });
         } catch (error) {

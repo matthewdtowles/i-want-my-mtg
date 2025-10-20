@@ -42,15 +42,21 @@ export class CardRepository implements CardRepositoryPort {
             .leftJoinAndSelect("card.prices", "prices")
             .where("card.setCode = :code", { code });
         if (options.filter) {
-            const fragments = options.filter.split(" ").filter(f => f.length > 0);
-            fragments.forEach((fragment, i) => {
-                qb.andWhere(`card.name ILIKE :fragment${i}`, { [`fragment${i}`]: `%${fragment}%` });
-            });
+            options.filter
+                .split(" ")
+                .filter(f => f.length > 0)
+                .forEach((fragment, i) =>
+                    qb.andWhere(
+                        `card.name ILIKE :fragment${i}`,
+                        { [`fragment${i}`]: `%${fragment}%` }
+                    )
+                );
         }
         qb.skip((options.page - 1) * options.limit).take(options.limit);
-        qb.orderBy("card.order", "ASC");
-        const items = await qb.getMany();
-        return items.map((item: CardOrmEntity) => (CardMapper.toCore(item)));
+        options.sort
+            ? qb.orderBy(`card.${options.sort}`, options.ascend ? "ASC" : "DESC")
+            : qb.orderBy("card.order", "ASC");
+        return (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {

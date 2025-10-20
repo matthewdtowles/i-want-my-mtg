@@ -1,11 +1,19 @@
 export enum SortOptions {
     NAME = "name",
-    NUMBER = "number",
+    NUMBER = "order",
     RELEASE_DATE = "releaseDate",
     OWNED_QUANTITY = "quantity",
-    OWNED_VALUE = "ownedValue",
-    PRICE = "price",
-    PRICE_FOIL = "foilPrice",
+    PRICE = "price.normal",
+    PRICE_FOIL = "price.foil",
     SET = "set",
-    SET_VALUE = "setValue",
 }
+
+export const SortOptionLabels: Record<SortOptions, string> = {
+    [SortOptions.NAME]: "Name",
+    [SortOptions.NUMBER]: "Set Number",
+    [SortOptions.RELEASE_DATE]: "Release Date",
+    [SortOptions.OWNED_QUANTITY]: "Owned",
+    [SortOptions.PRICE]: "Price",
+    [SortOptions.PRICE_FOIL]: "Foil Price",
+    [SortOptions.SET]: "Set",
+};

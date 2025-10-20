@@ -51,11 +51,11 @@ export class InventoryOrchestrator {
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView({ ...options, sort: SortOptions.OWNED_QUANTITY }, "Owned", ["pl-2"]),
-                    new SortableHeaderView({ ...options, sort: SortOptions.NAME }, "Name"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.SET }, "Set"),
-                    new SortableHeaderView({ ...options, sort: SortOptions.PRICE }, "Price"),
-                    new TableHeaderView("", ["pr-2", "xs-hide"])
+                    new SortableHeaderView(options, SortOptions.OWNED_QUANTITY, ["pl-2"]),
+                    new SortableHeaderView(options, SortOptions.NAME),
+                    new SortableHeaderView(options, SortOptions.SET),
+                    new SortableHeaderView(options, SortOptions.PRICE),
+                    new TableHeaderView("", ["pr-2", "xs-hide"]),
                 ])
             });
         } catch (error) {

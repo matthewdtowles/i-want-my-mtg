@@ -31,8 +31,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
             : qb.orderBy(`${SortOptions.RELEASE_DATE}`, this.DESC)
                 .addOrderBy(`${SortOptions.SET}`, this.ASC);
-        const setMetaList: SetOrmEntity[] = await qb.getMany();
-        return setMetaList.map((set: SetOrmEntity) => SetMapper.toCore(set));
+        return (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
     }
 
     async findByCode(code: string): Promise<Set | null> {

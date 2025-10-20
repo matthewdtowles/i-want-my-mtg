@@ -53,7 +53,7 @@ export class InventoryOrchestrator {
                 tableHeadersRow: new TableHeadersRowView([
                     new SortableHeaderView(options, SortOptions.OWNED_QUANTITY, ["pl-2"]),
                     new SortableHeaderView(options, SortOptions.CARD),
-                    new SortableHeaderView(options, SortOptions.SET),
+                    new SortableHeaderView(options, SortOptions.CARD_SET),
                     new SortableHeaderView(options, SortOptions.PRICE),
                     new TableHeaderView("", ["pr-2", "xs-hide"]),
                 ])

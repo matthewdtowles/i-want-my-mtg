@@ -14,11 +14,11 @@ import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
+import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
-import { TableHeaderView } from "../list/table-header.view";
 
 @Injectable()
 export class CardOrchestrator {

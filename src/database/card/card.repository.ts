@@ -4,6 +4,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { Format } from "src/core/card/format.enum";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SortOptions } from "src/core/query/sort-options.enum";
 import { BaseRepository } from "src/database/base.repository";
 import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
@@ -27,8 +28,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async save(cards: Card[]): Promise<number> {
         const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
-        const saved: CardOrmEntity[] = await this.cardRepository.save(ormCards);
-        return saved.length ?? 0;
+        return (await this.cardRepository.save(ormCards)).length ?? 0;
     }
 
     async findById(uuid: string, _relations: string[]): Promise<Card | null> {
@@ -47,7 +47,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         qb.skip((options.page - 1) * options.limit).take(options.limit);
         options.sort
             ? qb.orderBy(`${options.sort}`, options.ascend ? this.ASC : this.DESC)
-            : qb.orderBy(`${this.TABLE}.order`, this.ASC);
+            : qb.orderBy(`${SortOptions.NUMBER}`, this.ASC);
         return (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
     }
 
@@ -58,7 +58,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             relations: this.DEFAULT_RELATIONS,
             skip: (options.page - 1) * options.limit,
             take: options.limit,
-        }) ?? []
+        }) ?? [];
         return ormCards.map((card: CardOrmEntity) => CardMapper.toCore(card));
     }
 

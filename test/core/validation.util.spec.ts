@@ -36,8 +36,22 @@ describe("validateInit", () => {
 
 describe("isEnumValue", () => {
     it("should return true for a valid enum value", () => {
-        expect(isEnumValue(SortOptions, "name")).toBe(true);
-        expect(isEnumValue(SortOptions, "number")).toBe(true);
+        expect(isEnumValue(SortOptions, "card.name")).toBe(true);
+        expect(isEnumValue(SortOptions, "card.setCode")).toBe(true);
+        expect(isEnumValue(SortOptions, "card.order")).toBe(true);
+        expect(isEnumValue(SortOptions, "set.releaseDate")).toBe(true);
+        expect(isEnumValue(SortOptions, "inventory.quantity")).toBe(true);
+        expect(isEnumValue(SortOptions, "prices.normal")).toBe(true);
+        expect(isEnumValue(SortOptions, "prices.foil")).toBe(true);
+        expect(isEnumValue(SortOptions, "set.name")).toBe(true);
+        expect(isEnumValue(SortOptions, "set.code")).toBe(true);
+    });
+
+    it("should return false for a string that is not an enum value", () => {
+        expect(isEnumValue(SortOptions, "name")).toBe(false);
+        expect(isEnumValue(SortOptions, "card")).toBe(false);
+        expect(isEnumValue(SortOptions, "set")).toBe(false);
+        expect(isEnumValue(SortOptions, "quantity")).toBe(false);
     });
 
     it("should return false for null", () => {

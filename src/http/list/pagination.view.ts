@@ -28,7 +28,7 @@ export class PaginationView {
 
     private buildPrevious(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage() ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: this.current - 1
             })}`, "<")
@@ -37,7 +37,7 @@ export class PaginationView {
 
     private buildFirst(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage() ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: 1
             })}`, "1")
@@ -46,7 +46,7 @@ export class PaginationView {
 
     private buildNext(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage() ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: this.current + 1
             })}`, ">")
@@ -55,7 +55,7 @@ export class PaginationView {
 
     private buildLast(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage() ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: this.total
             })}`, String(this.total))
@@ -65,7 +65,7 @@ export class PaginationView {
     private buildSkipBack(options: SafeQueryOptions): PaginationLink | undefined {
         const skipBackValue = this.current - Math.floor(this.total / 3);
         return skipBackValue > 1 && skipBackValue < this.current ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: skipBackValue
             })}`, String(skipBackValue))
@@ -75,7 +75,7 @@ export class PaginationView {
     private buildSkipForward(options: SafeQueryOptions): PaginationLink | undefined {
         const skipForwardValue = this.current + Math.floor(this.total / 3);
         return skipForwardValue < this.total && skipForwardValue > this.current ?
-            new PaginationLink(`${this.baseUrl}/${buildQueryString({
+            new PaginationLink(`${this.baseUrl}${buildQueryString({
                 ...options,
                 page: skipForwardValue
             })}`, String(skipForwardValue))

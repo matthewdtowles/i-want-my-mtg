@@ -43,7 +43,7 @@ export class InventoryOrchestrator {
                 message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
-                totalValue: "0,00",
+                totalValue: "0.00",
                 pagination: new PaginationView(
                     options,
                     baseUrl,

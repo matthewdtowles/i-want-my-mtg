@@ -22,7 +22,7 @@ export function buildQueryString(options: SafeQueryOptions): string {
     if (options.page) params.push(`page=${options.page}`);
     if (options.limit) params.push(`limit=${options.limit}`);
     if (options.filter) params.push(`filter=${options.filter}`);
-    if (typeof options.ascend === "boolean") params.push(`ascend=${options.ascend}`)
+    if (typeof options.ascend === "boolean") params.push(`ascend=${options.ascend}`);
     if (options.sort) params.push(`sort=${options.sort}`);
     return params.length > 0 ? `?${params.join("&")}` : "";
 }

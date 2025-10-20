@@ -57,7 +57,7 @@ export class CardOrchestrator {
                     await this.getPrintingsLastPage(singleCard.name, rawQuery)
                 )
             });
-            this.LOGGER.debug(`options: ${JSON.stringify(options)}`)
+            this.LOGGER.debug(`options: ${JSON.stringify(options)}`);
 
             const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, options);
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;

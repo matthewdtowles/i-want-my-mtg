@@ -1,6 +1,5 @@
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Set } from "./set.entity";
-import { Query } from "typeorm/driver/Query";
 
 export const SetRepositoryPort = "SetRepositoryPort";
 

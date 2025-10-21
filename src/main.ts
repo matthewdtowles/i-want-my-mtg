@@ -10,7 +10,7 @@ import { HttpExceptionFilter } from "./http/http.exception.filter";
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === "production" && !process.env.DEBUG_MODE
         ? app.useLogger(["error", "warn", "log"])
         : app.useLogger(["error", "warn", "log", "debug"])
 

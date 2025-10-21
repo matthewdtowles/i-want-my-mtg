@@ -107,10 +107,11 @@ export class SetOrchestrator {
                     new TableHeaderView("Owned"),
                     new SortableHeaderView(options, SortOptions.NUMBER),
                     new SortableHeaderView(options, SortOptions.CARD),
-                    new TableHeaderView("Mana Cost"),
-                    new TableHeaderView("Rarity"),
-                    new SortableHeaderView(options, SortOptions.PRICE),
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL),
+                    new TableHeaderView("Mana Cost", ["xs-hide"]),
+                    new TableHeaderView("Rarity", ["xs-hide"]),
+                    new SortableHeaderView(options, SortOptions.PRICE, ["xs-hide"]),
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["xs-hide", "pr-2"]),
+                    new SortableHeaderView(options, SortOptions.PRICE, ["xs-show", "pr-2"]),
                 ])
             });
         } catch (error) {

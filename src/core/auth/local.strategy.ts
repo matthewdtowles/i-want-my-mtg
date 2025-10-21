@@ -14,7 +14,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
             usernameField: "email",
             passwordField: "password",
         });
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 
     async validate(email: string, password: string): Promise<User> {

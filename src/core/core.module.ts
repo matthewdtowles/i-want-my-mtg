@@ -26,6 +26,6 @@ export class CoreModule {
     private readonly LOGGER: Logger = new Logger(CoreModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

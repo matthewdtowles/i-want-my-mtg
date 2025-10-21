@@ -35,6 +35,6 @@ export class AuthModule {
     private readonly LOGGER: Logger = new Logger(AuthModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

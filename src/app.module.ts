@@ -77,6 +77,6 @@ export class AppModule {
     private readonly LOGGER: Logger = new Logger(AppModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

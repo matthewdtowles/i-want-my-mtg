@@ -11,6 +11,6 @@ export class InventoryModule {
     private readonly LOGGER: Logger = new Logger(InventoryModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

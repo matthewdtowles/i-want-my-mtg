@@ -47,6 +47,6 @@ export class DatabaseModule {
     private readonly LOGGER: Logger = new Logger(DatabaseModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

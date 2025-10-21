@@ -11,6 +11,6 @@ export class CardModule {
     private readonly LOGGER: Logger = new Logger(CardModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

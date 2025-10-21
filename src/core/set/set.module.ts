@@ -11,6 +11,6 @@ export class SetModule {
     private readonly LOGGER: Logger = new Logger(SetModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

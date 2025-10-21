@@ -12,6 +12,6 @@ export class PriceModule {
     private readonly LOGGER = new Logger(PriceModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

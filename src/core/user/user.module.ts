@@ -12,6 +12,6 @@ export class UserModule {
     private readonly LOGGER: Logger = new Logger(UserModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

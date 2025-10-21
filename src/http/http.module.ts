@@ -41,6 +41,6 @@ export class HttpModule {
     private readonly LOGGER: Logger = new Logger(HttpModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

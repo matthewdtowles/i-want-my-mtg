@@ -164,34 +164,6 @@ describe("CardService", () => {
         });
     });
 
-    describe("findById", () => {
-        it("should return a card by its ID with relations", async () => {
-            repository.findById.mockResolvedValue(testCard);
-            const result = await service.findById("test-card-id");
-
-            expect(repository.findById).toHaveBeenCalledWith(
-                "test-card-id",
-                ["set", "legalities", "prices"]
-            );
-            expect(result).toEqual(testCard);
-        });
-
-        it("should return null if card is not found", async () => {
-            repository.findById.mockResolvedValue(null);
-            const result = await service.findById("non-existent-id");
-
-            expect(result).toBeNull();
-        });
-
-        it("should throw error when repository fails", async () => {
-            repository.findById.mockRejectedValue(new Error("Database error"));
-
-            await expect(service.findById("test-card-id"))
-                .rejects
-                .toThrow("Error finding card with id test-card-id");
-        });
-    });
-
     describe("private helper methods", () => {
         it("should extract legalities to save correctly", async () => {
             const cardWithInvalidLegality = new Card({

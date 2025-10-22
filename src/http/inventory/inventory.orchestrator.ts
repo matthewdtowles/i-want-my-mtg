@@ -82,7 +82,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Saved ${updatedItems.length} inventory items for user ${req.user.id}`);
             return updatedItems;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error saving inventory: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "save");
         }
     }

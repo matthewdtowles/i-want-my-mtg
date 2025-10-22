@@ -29,7 +29,7 @@ export class CardController {
         this.LOGGER.log(`Find set card ${setCode}/${setNumber}.`);
         const options = new SafeQueryOptions(req.query);
         const card = await this.cardOrchestrator.findSetCard(req, setCode, setNumber, options);
-        this.LOGGER.log(`Found set card ${setCode}/${setNumber} -> ${card?.card?.setCode}/${card?.card?.number}.`);
+        this.LOGGER.log(`Found set card ${setCode}/${setNumber} -> ID: ${card?.card?.cardId}.`);
         return card;
     }
 }

@@ -16,7 +16,7 @@ import { LegalityOrmEntity } from "./legality.orm-entity";
 export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
 
     readonly TABLE = "card";
-    private readonly LOGGER: Logger = new Logger(CardRepository.name);
+    private readonly LOGGER = new Logger(CardRepository.name);
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(
@@ -24,42 +24,55 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         @InjectRepository(LegalityOrmEntity) private readonly legalityRepository: Repository<LegalityOrmEntity>,
     ) {
         super();
+        this.LOGGER.debug(`Instantiated.`);
     }
 
     async save(cards: Card[]): Promise<number> {
+        this.LOGGER.debug(`Saving ${cards?.length ?? 0} cards.`);
         const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
-        return (await this.cardRepository.save(ormCards)).length ?? 0;
+        const saved = await this.cardRepository.save(ormCards);
+        const count = saved?.length ?? 0;
+        this.LOGGER.debug(`Saved ${count} cards.`);
+        return count;
     }
 
     async findById(uuid: string, _relations: string[]): Promise<Card | null> {
+        this.LOGGER.debug(`Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
         const ormCard: CardOrmEntity = await this.cardRepository.findOne({
             where: { id: uuid },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
+        this.LOGGER.debug(`Card ${ormCard ? "found" : "not found"} for id: ${uuid}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`);
         const qb = this.cardRepository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.setCode = :code`, { code });
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.NUMBER);
-        return (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
+        const results = (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
+        this.LOGGER.debug(`Found ${results.length} cards for set ${code}.`);
+        return results;
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Find with name: ${name}, options: ${JSON.stringify(options)}`)
+        this.LOGGER.debug(`Finding cards with name: ${name}, options: ${JSON.stringify(options)}.`);
         const qb = this.cardRepository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.name = :name`, { name });
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.PRICE, true);
-        return (await qb.getMany()).map((card: CardOrmEntity) => CardMapper.toCore(card));
+        const cards = (await qb.getMany()).map((card: CardOrmEntity) => CardMapper.toCore(card));
+        this.LOGGER.debug(`Found ${cards.length} cards with name: ${name}.`);
+        return cards;
     }
 
     async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {
+        this.LOGGER.debug(`Finding card by set code ${code} and number ${number}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
         const ormCard: CardOrmEntity = await this.cardRepository.findOne({
             where: {
                 set: { code, },
@@ -67,38 +80,55 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
+        this.LOGGER.debug(`Card ${ormCard ? "found" : "not found"} for set ${code} number ${number}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`);
         const qb = this.cardRepository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
         this.addFilters(qb, options.filter);
-        return qb.getCount();
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total cards in set ${code}: ${count}.`);
+        return count;
     }
 
     async totalWithName(name: string): Promise<number> {
-        return await this.cardRepository.count({
+        this.LOGGER.debug(`Counting total cards with name: ${name}.`);
+        const count = await this.cardRepository.count({
             where: { name }
         });
+        this.LOGGER.debug(`Total cards with name ${name}: ${count}.`);
+        return count;
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
-        if (0 === cardIds.length) return new Set();
+        this.LOGGER.debug(`Verifying existence of ${cardIds?.length ?? 0} card ids.`);
+        if (0 === cardIds.length) {
+            this.LOGGER.debug(`No card ids provided to verify.`);
+            return new Set();
+        }
         const ormCards: CardOrmEntity[] = await this.cardRepository
             .createQueryBuilder(this.TABLE)
             .select(`${this.TABLE}.id`)
             .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
             .getMany();
-        return new Set(ormCards.map((c: CardOrmEntity) => c.id));
+        const found = new Set(ormCards.map((c: CardOrmEntity) => c.id));
+        this.LOGGER.debug(`Verified ${found.size} existing cards out of ${cardIds.length} provided.`);
+        return found;
     }
 
     async delete(id: string): Promise<void> {
+        this.LOGGER.debug(`Deleting card with id: ${id}.`);
         await this.cardRepository.delete(id);
+        this.LOGGER.debug(`Deleted card with id: ${id}.`);
     }
 
     async deleteLegality(cardId: string, format: Format): Promise<void> {
+        this.LOGGER.debug(`Deleting legality for card ${cardId} format ${format}.`);
         await this.legalityRepository.delete({ cardId, format });
+        this.LOGGER.debug(`Deleted legality for card ${cardId} format ${format}.`);
     }
 }

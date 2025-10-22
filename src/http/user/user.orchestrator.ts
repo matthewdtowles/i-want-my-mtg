@@ -26,7 +26,9 @@ export class UserOrchestrator {
     constructor(
         @Inject(UserService) private readonly userService: UserService,
         @Inject(AuthService) private readonly authService: AuthService,
-    ) { }
+    ) {
+        this.LOGGER.debug(`Initialized`);
+    }
 
     async create(createUserDto: CreateUserRequestDto): Promise<AuthToken> {
         this.LOGGER.debug(`Creating user with email: ${createUserDto.email}.`);

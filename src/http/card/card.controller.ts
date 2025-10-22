@@ -26,8 +26,10 @@ export class CardController {
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
     ): Promise<CardViewDto> {
-        const rawQuery = new SafeQueryOptions(req.query);
-        this.LOGGER.debug(`Set listing options object: ${JSON.stringify(rawQuery)}`);
-        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, rawQuery);
+        this.LOGGER.log(`Find set card ${setCode}/${setNumber}.`);
+        const options = new SafeQueryOptions(req.query);
+        const card = await this.cardOrchestrator.findSetCard(req, setCode, setNumber, options);
+        this.LOGGER.log(`Found set card ${setCode}/${setNumber} -> ${card?.card?.setCode}/${card?.card?.number}.`);
+        return card;
     }
 }

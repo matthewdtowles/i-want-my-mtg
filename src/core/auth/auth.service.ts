@@ -16,21 +16,25 @@ export class AuthService {
     ) { }
 
     async validateUser(email: string, password: string): Promise<User | null> {
-        this.LOGGER.debug(`Attempt to authenticate ${email}`);
+        this.LOGGER.debug(`Attempt to authenticate ${email}.`);
         const encPwd: string = await this.userService.findSavedPassword(email);
         let user: User = null;
         if (encPwd && (await bcrypt.compare(password, encPwd))) {
             user = await this.userService.findByEmail(email);
+            this.LOGGER.debug(`Authenticated user ${user.id}.`);
+        } else {
+            this.LOGGER.warn(`Authentication failed for ${email}.`);
         }
         return user;
     }
 
     async login(user: User): Promise<AuthToken> {
+        this.LOGGER.debug(`Logging is user ${user?.id}.`)
         if (!user) {
-            throw new Error(`Login failure: user not found`);
+            throw new Error(`Login failure. User not found.`);
         }
         if (!user.id) {
-            throw new Error(`Login failure: user ID not found`);
+            throw new Error(`Login failure. User ID not found.`);
         }
         const payload: JwtPayload = {
             email: user.email,
@@ -40,6 +44,7 @@ export class AuthService {
         const authToken: AuthToken = {
             access_token: await this.jwtService.signAsync(payload),
         };
+        this.LOGGER.debug(`Login successful for user ${user.id}.`)
         return authToken;
     }
 }

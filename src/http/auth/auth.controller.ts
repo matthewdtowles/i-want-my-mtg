@@ -1,6 +1,6 @@
 import {
     Controller,
-    Get, Inject, Post,
+    Get, Inject, Logger, Post,
     Render,
     Req,
     Res,
@@ -17,18 +17,23 @@ import { LocalAuthGuard } from "./local.auth.guard";
 @Controller("auth")
 export class AuthController {
 
+    private readonly LOGGER: Logger = new Logger(AuthController.name);
+
     constructor(@Inject(AuthOrchestrator) private readonly authOrchestrator: AuthOrchestrator) { }
 
     @Get("login")
     @Render("login")
     async loginForm(): Promise<LoginFormViewDto> {
+        this.LOGGER.log(`Fetch login form.`);
         return new LoginFormViewDto();
     }
 
     @UseGuards(LocalAuthGuard)
     @Post("login")
     async login(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
-        const result: AuthResult = await this.authOrchestrator.login(req.user);
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Login attempt for user ${userId ?? "\"\""}.`);
+        const result: AuthResult = await this.authOrchestrator.login(req?.user);
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, {
                 httpOnly: true,
@@ -38,17 +43,22 @@ export class AuthController {
                 path: "/",
                 domain: undefined,
             });
-            return res.redirect("/user");
+            res.redirect("/user");
+            this.LOGGER.log(`Login successful for user ${userId}.`);
         } else {
             // TODO: remove the query param for error in favor of flash messages ??
-            return res.redirect("/auth/login?error=Invalid credentials");
+            res.redirect("/auth/login?error=Invalid credentials");
+            this.LOGGER.warn(`Login failed for user ${userId}.`);
         }
     }
 
     @Get("logout")
-    async logout(@Res() res: Response): Promise<void> {
+    async logout(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Logging out user ${userId ?? "\"\""}...`);
         const result = await this.authOrchestrator.logout();
         res.clearCookie(AUTH_TOKEN_NAME);
         res.redirect(result.redirectTo);
+        this.LOGGER.log(`Logged out user ${userId ?? "\"\""}.`);
     }
 }

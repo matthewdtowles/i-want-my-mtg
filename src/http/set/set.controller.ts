@@ -2,6 +2,7 @@ import {
     Controller,
     Get,
     Inject,
+    Logger,
     Param,
     Render,
     Req,
@@ -17,6 +18,8 @@ import { SetOrchestrator } from "./set.orchestrator";
 @Controller("sets")
 export class SetController {
 
+    private readonly LOGGER = new Logger(SetController.name);
+
     private readonly breadcrumbs = [
         { label: "Home", url: "/" },
         { label: "Sets", url: "/sets" }
@@ -28,25 +31,31 @@ export class SetController {
     @Get()
     @Render("setListPage")
     async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        const rawQuery = new SafeQueryOptions(req.query);
-        const lastPage = await this.setOrchestrator.getLastPage(rawQuery);
+        this.LOGGER.log(`Find list of sets.`);
+        const rawOptions = new SafeQueryOptions(req.query);
+        const lastPage = await this.setOrchestrator.getLastPage(rawOptions);
         const options = new SafeQueryOptions({
-            ...rawQuery,
-            page: Math.min(rawQuery.page, lastPage)
+            ...rawOptions,
+            page: Math.min(rawOptions.page, lastPage)
         });
-        return this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
+        const setList = await this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
+        this.LOGGER.log(`Found list of ${setList?.setList?.length} sets.`);
+        return setList;
     }
 
     @UseGuards(OptionalAuthGuard)
     @Get(":setCode")
     @Render("set")
     async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
-        const rawQuery = new SafeQueryOptions(req.query);
-        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawQuery);
+        this.LOGGER.log(`Find set and cards for set ${setCode}.`);
+        const rawOptions = new SafeQueryOptions(req.query);
+        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawOptions);
         const options = new SafeQueryOptions({
-            ...rawQuery,
-            page: Math.min(rawQuery.page, lastPage)
+            ...rawOptions,
+            page: Math.min(rawOptions.page, lastPage)
         });
-        return this.setOrchestrator.findBySetCode(req, setCode, options);
+        const set = await this.setOrchestrator.findBySetCode(req, setCode, options);
+        this.LOGGER.log(`Found set ${setCode} with ${set?.set?.cards?.length} cards.`);
+        return set;
     }
 }

@@ -14,7 +14,7 @@ import { CardViewDto } from "./dto/card.view.dto";
 @Controller("card")
 export class CardController {
 
-    private readonly LOGGER: Logger = new Logger(CardController.name);
+    private readonly LOGGER = new Logger(CardController.name);
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 

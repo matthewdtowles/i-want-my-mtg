@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get, Inject,
+    Logger,
     Patch,
     Post,
     Render,
@@ -21,23 +22,28 @@ import { InventoryOrchestrator } from "./inventory.orchestrator";
 @Controller("inventory")
 export class InventoryController {
 
+    private readonly LOGGER = new Logger(InventoryController.name)
+
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render("inventory")
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
-        const userId = req.user?.id;
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Find inventory for user ${userId}.`);
         if (!userId) {
             throw new Error("User ID not found in request");
         }
-        const rawOptions = new SafeQueryOptions(req.query);
+        const rawOptions = new SafeQueryOptions(req?.query);
         const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
         const options = new SafeQueryOptions({
             ...rawOptions,
             page: Math.min(rawOptions.page, lastPage)
         });
-        return this.inventoryOrchestrator.findByUser(req, options);
+        const inventory = await this.inventoryOrchestrator.findByUser(req, options);
+        this.LOGGER.log(`Found inventory for user ${userId} with ${inventory?.cards?.length ?? 0} items.`);
+        return inventory;
     }
 
     @UseGuards(JwtAuthGuard)
@@ -46,10 +52,14 @@ export class InventoryController {
         @Body() createInventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest,
     ): Promise<ApiResult<Inventory[]>> {
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Create inventory items for user ${userId}. Count: ${createInventoryDtos?.length ?? 0}`);
         try {
             const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
+            this.LOGGER.log(`Added ${createdItems?.length ?? 0} inventory items for user ${userId}.`);
             return createSuccessResult(createdItems, `Added inventory items`);
         } catch (error) {
+            this.LOGGER.error(`Error adding inventory items for user ${userId}: ${error}`);
             return createErrorResult(`Error adding inventory items: ${error}`);
         }
     }
@@ -60,10 +70,14 @@ export class InventoryController {
         @Body() updateInventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest,
     ): Promise<ApiResult<Inventory[]>> {
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Update inventory items for user ${userId}. Count: ${updateInventoryDtos?.length ?? 0}`);
         try {
             const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
+            this.LOGGER.log(`Updated ${updatedInventory?.length ?? 0} inventory items for user ${userId}.`);
             return createSuccessResult(updatedInventory, `Updated inventory items`);
         } catch (error) {
+            this.LOGGER.error(`Error updating inventory items for user ${userId}: ${error}`);
             return createErrorResult(`Error updating inventory items: ${error}`);
         }
     }
@@ -75,13 +89,17 @@ export class InventoryController {
         @Body('isFoil') isFoil: boolean,
         @Req() req: AuthenticatedRequest,
     ): Promise<ApiResult<{ cardId: string, isFoil: boolean }>> {
+        const userId = req?.user?.id;
+        this.LOGGER.log(`Delete inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`);
         try {
             await this.inventoryOrchestrator.delete(req, cardId, isFoil);
+            this.LOGGER.log(`Deleted inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`);
             return createSuccessResult(
                 { cardId, isFoil },
                 `Deleted inventory item`
             );
         } catch (error) {
+            this.LOGGER.error(`Error deleting inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}. Error: ${error}`);
             return createErrorResult(`Error deleting inventory item: ${error}`);
         }
     }

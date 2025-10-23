@@ -21,9 +21,12 @@ export class InventoryOrchestrator {
 
     private readonly LOGGER: Logger = new Logger(InventoryOrchestrator.name);
 
-    constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) { }
+    constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {
+        this.LOGGER.debug(`Initialized`);
+    }
 
     async findByUser(req: AuthenticatedRequest, options: SafeQueryOptions): Promise<InventoryViewDto> {
+        this.LOGGER.debug(`Find inventory for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, options);
@@ -32,6 +35,8 @@ export class InventoryOrchestrator {
             );
             const username: string = req.user.name;
             const baseUrl = "/inventory";
+
+            this.LOGGER.debug(`Found ${cards.length} inventory items for user ${req.user?.id}.`);
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -59,22 +64,26 @@ export class InventoryOrchestrator {
                 ])
             });
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error finding inventory for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "findByUserWithPagination");
         }
     }
 
     async getLastPage(userId: number, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Find last page for inventory pagination for user ${userId}.`);
         try {
             const totalItems: number = await this.inventoryService.totalInventoryItemsForUser(userId, options);
-            return Math.max(1, Math.ceil(totalItems / options.limit));
+            const lastPage = Math.max(1, Math.ceil(totalItems / options.limit));
+            this.LOGGER.debug(`Last page for user ${userId}: ${lastPage}`);
+            return lastPage;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error finding last page for user ${userId}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "getLastPage");
         }
     }
 
     async save(updateInventoryDtos: InventoryRequestDto[], req: AuthenticatedRequest): Promise<Inventory[]> {
+        this.LOGGER.debug(`Save inventory items for user ${req.user?.id}. Count: ${updateInventoryDtos?.length ?? 0}`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const inputInvItems: Inventory[] = InventoryPresenter.toEntities(updateInventoryDtos, req.user.id);
@@ -82,12 +91,13 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Saved ${updatedItems.length} inventory items for user ${req.user.id}`);
             return updatedItems;
         } catch (error) {
-            this.LOGGER.debug(`Error saving inventory: ${error?.message}`);
+            this.LOGGER.debug(`Error saving inventory for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "save");
         }
     }
 
     async delete(req: AuthenticatedRequest, cardId: string, isFoil: boolean): Promise<boolean> {
+        this.LOGGER.debug(`Delete inventory item for user ${req.user?.id}. CardId: ${cardId}, isFoil: ${isFoil}`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             if (!cardId) throw new BadRequestException("Card ID is required for deletion");
@@ -95,7 +105,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Deleted inventory item for user ${req.user.id}, cardId: ${cardId}, isFoil: ${isFoil}`);
             return true;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error deleting inventory item for user ${req.user?.id}, cardId: ${cardId}, isFoil: ${isFoil}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "delete");
         }
     }

@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Render, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "./auth/optional-auth.guard";
 import { AuthenticatedRequest } from "./base/authenticated.request";
@@ -8,13 +8,19 @@ import { SetOrchestrator } from "./set/set.orchestrator";
 
 @Controller()
 export class HomeController {
+
+    private readonly LOGGER = new Logger(HomeController.name);
+
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) { }
 
     @UseGuards(OptionalAuthGuard)
     @Get("/")
     @Render("home")
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        const query: SafeQueryOptions = new SafeQueryOptions(req.query);
-        return await this.setOrchestrator.findSetList(req, [], query);
+        this.LOGGER.log(`Home page - find initial set list.`);
+        const options: SafeQueryOptions = new SafeQueryOptions(req.query);
+        const setListView = await this.setOrchestrator.findSetList(req, [], options);
+        this.LOGGER.log(`Found initial set list with ${setListView?.setList?.length} sets on Home page.`);
+        return setListView;
     }
 }

@@ -5,6 +5,7 @@ import { SetRepositoryPort } from "./set.repository.port";
 
 @Injectable()
 export class SetService {
+
     private readonly LOGGER: Logger = new Logger(SetService.name);
 
     constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }

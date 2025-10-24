@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
@@ -6,13 +7,13 @@ import { create } from "express-handlebars";
 import { join } from "path";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./http/http.exception.filter";
+import { GlobalAppLogger } from "./logger/global-app-logger";
+import { CorrelationIdMiddleware } from "./logger/correlation-id.middleware";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    process.env.NODE_ENV === "production" && !process.env.DEBUG_MODE
-        ? app.useLogger(["error", "warn", "log"])
-        : app.useLogger(["error", "warn", "log", "debug"])
+    app.useLogger(GlobalAppLogger);
 
     app.useStaticAssets(join(__dirname, ".", "http/public"), {
         prefix: '/public/',
@@ -48,6 +49,7 @@ async function bootstrap() {
             }
         }),
     );
+    app.use(new CorrelationIdMiddleware().use);
     await app.listen(3000);
 }
 

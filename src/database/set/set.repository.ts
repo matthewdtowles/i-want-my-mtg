@@ -1,10 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { BaseRepository } from "src/database/base.repository";
+import { getLogger } from "src/logger/global-app-logger";
 import { Repository, SelectQueryBuilder } from "typeorm";
 import { SetMapper } from "./set.mapper";
 import { SetOrmEntity } from "./set.orm-entity";
@@ -12,7 +13,7 @@ import { SetOrmEntity } from "./set.orm-entity";
 @Injectable()
 export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRepositoryPort {
 
-    private readonly LOGGER = new Logger(SetRepository.name);
+    private readonly LOGGER = getLogger(SetRepository.name);
 
     readonly TABLE = "set";
 

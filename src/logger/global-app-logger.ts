@@ -2,10 +2,8 @@ import { LoggerService } from "@nestjs/common";
 import { AppLogger } from "./app-logger";
 
 export const GlobalAppLogger = new AppLogger(
-    process.env.NODE_ENV === "production" && !process.env.DEBUG_MODE
-        ? ["error", "warn", "log"]
-        : ["error", "warn", "log", "debug"],
-    process.env.LOG_FORMAT === "json" || process.env.NODE_ENV === "production"
+    process.env.DEBUG_MODE ? true : false,
+    process.env.LOG_FORMAT === "json"
 );
 
 export function getLogger(context: string): LoggerService {

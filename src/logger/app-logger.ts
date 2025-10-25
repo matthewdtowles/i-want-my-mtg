@@ -1,5 +1,4 @@
 import { LoggerService, LogLevel } from "@nestjs/common";
-import * as os from "os";
 import { getRequestContext } from "./request-context";
 
 export class AppLogger implements LoggerService {
@@ -52,8 +51,8 @@ export class AppLogger implements LoggerService {
             `${contextColor}${context ?? "-"}${levelColor} | ${colors.RESET}` +
             `${requestId} ${levelColor} | ` +
             `${levelColor}${userId} | ${colors.RESET}` +
-            `"${message}"` +
-            (trace ? ` | trace="${trace}"` : "");
+            `${message}` +
+            (trace ? ` | ${levelColor}${trace}` : "");
 
         if (this.useJson) {
             const logObj: Record<string, any> = {

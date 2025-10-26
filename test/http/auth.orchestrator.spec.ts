@@ -1,9 +1,10 @@
-import { HttpStatus, Logger } from "@nestjs/common";
+import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { AuthService } from "src/core/auth/auth.service";
 import { AuthOrchestrator } from "src/http/auth/auth.orchestrator";
 import { AuthResult } from "src/http/auth/dto/auth.result";
 import { UserResponseDto } from "src/http/user/dto/user.response.dto";
-import { AuthService } from "src/core/auth/auth.service";
+import { AppLogger } from "src/logger/app-logger";
 
 
 describe("AuthOrchestrator", () => {
@@ -37,7 +38,7 @@ describe("AuthOrchestrator", () => {
             ],
         }).compile();
 
-        module.useLogger(new Logger());
+        module.useLogger(new AppLogger());
         orchestrator = module.get<AuthOrchestrator>(AuthOrchestrator);
         authService = module.get<AuthService>(AuthService);
     });

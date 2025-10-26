@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { AppLogger } from "src/logger/app-logger";
 import { Timing } from "src/shared/decorators/timing.decorator";
 
 
@@ -6,7 +6,7 @@ describe("Timing Decorator", () => {
     let loggerSpy: jest.SpyInstance;
 
     beforeEach(() => {
-        loggerSpy = jest.spyOn(Logger.prototype, "log").mockImplementation(() => { });
+        loggerSpy = jest.spyOn(AppLogger.prototype, "log").mockImplementation(() => { });
     });
 
     afterEach(() => {

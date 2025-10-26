@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get, Inject, Logger, Param,
+    Get, Inject,
+    Param,
     Render,
     Req,
     UseGuards
@@ -8,13 +9,14 @@ import {
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardOrchestrator } from "./card.orchestrator";
 import { CardViewDto } from "./dto/card.view.dto";
 
 @Controller("card")
 export class CardController {
 
-    private readonly LOGGER: Logger = new Logger(CardController.name);
+    private readonly LOGGER = getLogger(CardController.name);
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 
@@ -26,8 +28,10 @@ export class CardController {
         @Param("setCode") setCode: string,
         @Param("setNumber") setNumber: string,
     ): Promise<CardViewDto> {
-        const rawQuery = new SafeQueryOptions(req.query);
-        this.LOGGER.debug(`Set listing options object: ${JSON.stringify(rawQuery)}`);
-        return this.cardOrchestrator.findSetCard(req, setCode, setNumber, rawQuery);
+        this.LOGGER.log(`Find set card ${setCode}/${setNumber}.`);
+        const options = new SafeQueryOptions(req.query);
+        const card = await this.cardOrchestrator.findSetCard(req, setCode, setNumber, options);
+        this.LOGGER.log(`Found set card ${setCode}/${setNumber} -> ID: ${card?.card?.cardId}.`);
+        return card;
     }
 }

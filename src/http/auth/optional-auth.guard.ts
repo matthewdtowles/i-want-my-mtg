@@ -1,11 +1,12 @@
-import { ExecutionContext, Injectable, Logger } from "@nestjs/common";
+import { ExecutionContext, Injectable } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
+import { getLogger } from "src/logger/global-app-logger";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
 
 @Injectable()
 export class OptionalAuthGuard extends AuthGuard("jwt") {
-    private readonly LOGGER: Logger = new Logger(OptionalAuthGuard.name);
+    private readonly LOGGER = getLogger(OptionalAuthGuard.name);
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         try {

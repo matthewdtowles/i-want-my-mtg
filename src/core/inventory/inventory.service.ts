@@ -1,6 +1,7 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { Set } from "src/core/set/set.entity";
+import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { Set } from "src/core/set/set.entity";
+import { getLogger } from "src/logger/global-app-logger";
 import { Inventory } from "./inventory.entity";
 import { InventoryRepositoryPort } from "./inventory.repository.port";
 
@@ -8,7 +9,7 @@ import { InventoryRepositoryPort } from "./inventory.repository.port";
 @Injectable()
 export class InventoryService {
 
-    private readonly LOGGER: Logger = new Logger(InventoryService.name);
+    private readonly LOGGER = getLogger(InventoryService.name);
 
     constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
 

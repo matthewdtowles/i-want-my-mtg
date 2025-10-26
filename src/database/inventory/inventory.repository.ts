@@ -1,10 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { BaseRepository } from "src/database/base.repository";
+import { getLogger } from "src/logger/global-app-logger";
 import { In, Repository } from "typeorm";
 import { InventoryMapper } from "./inventory.mapper";
 import { InventoryOrmEntity } from "./inventory.orm-entity";
@@ -13,65 +14,76 @@ import { InventoryOrmEntity } from "./inventory.orm-entity";
 export class InventoryRepository extends BaseRepository<InventoryOrmEntity> implements InventoryRepositoryPort {
 
     readonly TABLE = "inventory";
-    private readonly LOGGER = new Logger(InventoryRepository.name);
+    private readonly LOGGER = getLogger(InventoryRepository.name);
 
     constructor(@InjectRepository(InventoryOrmEntity) private readonly repository: Repository<InventoryOrmEntity>) {
         super();
+        this.LOGGER.debug(`Instantiated.`);
     }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`Saving ${inventoryItems.length} inventory items`);
+        this.LOGGER.debug(`Saving ${inventoryItems?.length ?? 0} inventory items.`);
         const ormItems: InventoryOrmEntity[] = inventoryItems.map((item: Inventory) => InventoryMapper.toOrmEntity(item));
-        return (await this.repository.save(ormItems)).map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
+        const saved = await this.repository.save(ormItems);
+        const count = saved?.length ?? 0;
+        this.LOGGER.debug(`Saved ${count} inventory items.`);
+        return saved.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null> {
-        this.LOGGER.debug(`Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}`);
+        this.LOGGER.debug(`Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`);
         const item: InventoryOrmEntity = await this.repository.findOne({
             where: { userId, cardId, isFoil },
         });
+        this.LOGGER.debug(`Inventory item ${item ? "found" : "not found"} for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`);
         return item ? InventoryMapper.toCore(item) : null;
     }
 
     async findByCard(userId: number, cardId: string): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardId: ${cardId}`);
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardId: ${cardId}.`);
         const items = await this.repository.find({
             where: { userId, cardId },
         });
-        return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
+        this.LOGGER.debug(`Found ${items.length} inventory items for userId: ${userId}, cardId: ${cardId}.`);
+        return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, ${cardIds.length} cardIds`);
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, ${cardIds.length} cardIds.`);
         const items = await this.repository.find({
             where: { userId, cardId: In(cardIds) },
         });
-        return items.map((item: InventoryOrmEntity) => (InventoryMapper.toCore(item)));
+        this.LOGGER.debug(`Found ${items.length} inventory items for userId: ${userId}, ${cardIds.length} cardIds.`);
+        return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async findByUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
+        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`);
         const qb = this.repository.createQueryBuilder("inventory")
             .leftJoinAndSelect(`${this.TABLE}.card`, "card")
             .leftJoinAndSelect("card.prices", "prices")
             .where(`${this.TABLE}.userId = :userId`, { userId });
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
-        this.addOrdering(qb, options, SortOptions.NUMBER)
-        return (await qb.getMany()).map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
+        this.addOrdering(qb, options, SortOptions.NUMBER);
+        const results = await qb.getMany();
+        this.LOGGER.debug(`Found ${results.length} inventory items for userId: ${userId}.`);
+        return results.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
     async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}`);
+        this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoin(`${this.TABLE}.card`, "card")
             .where(`${this.TABLE}.userId = :userId`, { userId });
         this.addFilters(qb, options.filter);
-        return await qb.getCount();
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total inventory items for userId: ${userId}: ${count}.`);
+        return count;
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
-        this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`);
+        this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`);
         try {
             await this.repository
                 .createQueryBuilder()
@@ -81,10 +93,10 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
                 .andWhere("cardId = :cardId", { cardId })
                 .andWhere("foil = :foil", { foil })
                 .execute();
+            this.LOGGER.debug(`Deleted inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`);
         } catch (error) {
-            this.LOGGER.error(`Failed to delete inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`, error);
+            this.LOGGER.error(`Failed to delete inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}. Error: ${error}`);
             throw new Error(`Failed to delete inventory: ${error.message}`);
         }
-        this.LOGGER.debug(`Deleted inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}`);
     }
 }

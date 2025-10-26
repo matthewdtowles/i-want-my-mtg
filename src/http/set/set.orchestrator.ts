@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -17,6 +17,7 @@ import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
+import { getLogger } from "src/logger/global-app-logger";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
@@ -25,7 +26,7 @@ import { SetPresenter } from "./set.presenter";
 @Injectable()
 export class SetOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(SetOrchestrator.name);
+    private readonly LOGGER = getLogger(SetOrchestrator.name);
 
     constructor(
         @Inject(SetService) private readonly setService: SetService,
@@ -38,6 +39,7 @@ export class SetOrchestrator {
         breadcrumbs: Breadcrumb[],
         options: SafeQueryOptions
     ): Promise<SetListViewDto> {
+        this.LOGGER.debug(`Find list of sets.`);
         try {
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(options),
@@ -45,6 +47,7 @@ export class SetOrchestrator {
             ]);
             const baseUrl = "/sets";
             const pagination = new PaginationView(options, baseUrl, totalSets);
+            this.LOGGER.debug(`Found ${sets?.length} of ${totalSets} total sets.`);
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -61,7 +64,7 @@ export class SetOrchestrator {
                 ])
             });
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "findSetListPaginated");
         }
     }
@@ -71,6 +74,7 @@ export class SetOrchestrator {
         setCode: string,
         options: SafeQueryOptions
     ): Promise<SetViewDto> {
+        this.LOGGER.debug(`Find set and cards for set ${setCode}.`);
         try {
             const userId: number = req.user ? req.user.id : 0;
             const set: Set | null = await this.setService.findByCode(setCode);
@@ -86,7 +90,7 @@ export class SetOrchestrator {
             }
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
             const baseUrl = `/sets/${setCode}`;
-
+            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -115,27 +119,33 @@ export class SetOrchestrator {
                 ])
             });
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
             return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
         }
     }
 
     async getLastPage(query: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Fetch last page number for list of all sets pagination.`);
         try {
             const totalSets = await this.setService.totalSetsCount(query);
-            return Math.max(1, Math.ceil(totalSets / query.limit));
+            const lastPage = Math.max(1, Math.ceil(totalSets / query.limit));
+            this.LOGGER.debug(`Last page for list of all sets is ${lastPage}.`);
+            return lastPage;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error getting last page number: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastPage");
         }
     }
 
     async getLastCardPage(setCode: string, query: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
             const totalCards = await this.cardService.totalCardsInSet(setCode, query);
-            return Math.max(1, Math.ceil(totalCards / query.limit));
+            const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
+            this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
+            return lastPage;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");
         }
     }

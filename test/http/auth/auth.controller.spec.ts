@@ -95,23 +95,32 @@ describe("AuthController", () => {
             expect(authOrchestrator.login).toHaveBeenCalledWith(userDto);
             expect(mockRes.cookie).not.toHaveBeenCalled();
             expect(mockRes.redirect).toHaveBeenCalledWith("/auth/login?error=Invalid credentials");
-        });
+        }); const mockRes = {
+            clearCookie: jest.fn(),
+            redirect: jest.fn(),
+        } as unknown as Response;
     });
 
     describe("logout", () => {
         it("should clear the auth cookie and redirect", async () => {
+            const userDto = {
+                id: 1,
+                name: "Test User",
+                email: "testuser@example.com",
+                role: UserRole.User,
+            };
             const mockRes = {
                 clearCookie: jest.fn(),
                 redirect: jest.fn(),
             } as unknown as Response;
-
+            const mockReq = { user: userDto } as any;
             mockAuthOrchestrator.logout.mockResolvedValue({
                 success: true,
                 redirectTo: "/?action=logout&status=200&message=Logged%20out",
                 statusCode: 200,
             });
 
-            await controller.logout(mockRes);
+            await controller.logout(mockReq, mockRes);
 
             expect(authOrchestrator.logout).toHaveBeenCalled();
             expect(mockRes.clearCookie).toHaveBeenCalledWith(AUTH_TOKEN_NAME);

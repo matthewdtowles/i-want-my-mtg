@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
 import { Format } from "./format.enum";
@@ -9,11 +10,12 @@ import { LegalityStatus } from "./legality.status.enum";
 @Injectable()
 export class CardService {
 
-    private readonly LOGGER = new Logger(CardService.name);
+    private readonly LOGGER = getLogger(CardService.name);
 
     constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
     async save(inputCards: Card[]): Promise<number> {
+        this.LOGGER.debug(`Save cards.`);
         let savedEntities: number = 0;
         try {
             const cardsToSave: Card[] = [];
@@ -33,61 +35,69 @@ export class CardService {
                 savedEntities += await this.repository.save(cardsToSave);
             }
         } catch (error) {
-            const msg = `Error saving cards: ${error.message}`;
-            this.LOGGER.error(msg);
+            this.LOGGER.error(`Error saving cards: ${error.message}.`);
         }
+        this.LOGGER.debug(`Saved ${savedEntities} cards.`);
         return savedEntities;
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Find cards with name ${name}.`);
         try {
-            return await this.repository.findWithName(name, options);
+            const cards = await this.repository.findWithName(name, options);
+            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`);
+            return cards;
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
         }
     }
 
     async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Find cards in set ${code}.`);
         try {
-            return await this.repository.findBySet(code, query);
+            const cards = await this.repository.findBySet(code, query);
+            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
+            return cards;
         } catch (error) {
             throw new Error(`Error finding cards in set ${code}: ${error.message}`);
         }
     }
 
-    async findById(id: string): Promise<Card | null> {
-        try {
-            return await this.repository.findById(id, ["set", "legalities", "prices"]);
-        } catch (error) {
-            throw new Error(`Error finding card with id ${id}: ${error.message}`);
-        }
-    }
-
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
+        this.LOGGER.debug(`Find card no. ${number} in set ${code}.`);
         try {
-            return await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
+            const card = await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
+            this.LOGGER.debug(`Card no. ${number} in set ${code}: ${card ? card.id : "Not found"}.`);
+            return card;
         } catch (error) {
             throw new Error(`Error finding card with set code ${code} and number ${number}: ${error.message}`);
         }
     }
 
     async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Find total number of cards in set ${setCode}.`)
         try {
-            return await this.repository.totalInSet(setCode, options);
+            const total = await this.repository.totalInSet(setCode, options);
+            this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
+            return total;
         } catch (error) {
             throw new Error(`Error counting cards in set ${setCode} with filter ${options.filter}: ${error.message}`);
         }
     }
 
     async totalWithName(name: string): Promise<number> {
+        this.LOGGER.debug(`Find total number of cards with name ${name}.`);
         try {
-            return await this.repository.totalWithName(name);
+            const total = await this.repository.totalWithName(name);
+            this.LOGGER.debug(`Total cards with name ${name}: ${total}.`);
+            return total;
         } catch (error) {
             throw new Error(`Error counting cards with name ${name}: ${error.message}`);
         }
     }
 
     private extractLegalitiesToSave(card: Card): Legality[] {
+        this.LOGGER.debug(`Extracting legalities to save for card ${card?.id}.`);
         return card?.legalities?.map((leg: Legality) => {
             if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)
                 && Object.values(LegalityStatus).includes(leg.status?.toLowerCase() as LegalityStatus)) {
@@ -97,6 +107,7 @@ export class CardService {
     }
 
     private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
+        this.LOGGER.debug(`Extracting obsolete legalities from ${oldCard?.id}.`);
         if (Array.isArray(newLegalities)) {
             return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
                 !newLegalities.some(l => l.format === existingLegality.format)
@@ -106,6 +117,7 @@ export class CardService {
     }
 
     private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
+        this.LOGGER.debug(`Deleting ${legalitiesToDelete?.length} obsolete legalities.`);
         if (Array.isArray(legalitiesToDelete)) {
             const legalityDeletionPromises = legalitiesToDelete.map((l: Legality) => {
                 return this.repository.deleteLegality(l.cardId, l.format);

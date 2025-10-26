@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
@@ -16,6 +16,7 @@ import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
@@ -23,19 +24,22 @@ import { SingleCardResponseDto } from "./dto/single-card.response.dto";
 @Injectable()
 export class CardOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(CardOrchestrator.name);
+    private readonly LOGGER = getLogger(CardOrchestrator.name);
 
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService
-    ) { }
+    ) {
+        this.LOGGER.debug(`Initialized`);
+    }
 
     async findSetCard(
         req: AuthenticatedRequest,
         setCode: string,
         setNumber: string,
-        rawQuery: SafeQueryOptions
+        rawOptions: SafeQueryOptions
     ): Promise<CardViewDto> {
+        this.LOGGER.debug(`Find set card ${setCode}/${setNumber}.`);
         try {
             const userId: number = req.user ? req.user.id : 0;
             const coreCard: Card | null = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
@@ -50,14 +54,13 @@ export class CardOrchestrator {
                     InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id), CardImgType.NORMAL
                 );
 
+            const totalPrintings = await this.cardService.totalWithName(singleCard.name);
+            const lastPage = Math.max(1, Math.ceil(totalPrintings / rawOptions.limit));
             const options = new SafeQueryOptions({
-                ...rawQuery,
-                page: Math.min(
-                    rawQuery.page,
-                    await this.getPrintingsLastPage(singleCard.name, rawQuery)
-                )
+                ...rawOptions,
+                page: Math.min(rawOptions.page, lastPage)
             });
-            this.LOGGER.debug(`options: ${JSON.stringify(options)}`);
+            this.LOGGER.debug(`Options: ${JSON.stringify(options)}`);
 
             const allPrintings: Card[] = await this.cardService.findWithName(singleCard.name, options);
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
@@ -79,7 +82,7 @@ export class CardOrchestrator {
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    await this.cardService.totalWithName(singleCard.name)
+                    totalPrintings
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
@@ -90,17 +93,20 @@ export class CardOrchestrator {
                 ])
             });
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "findSetCard");
         }
     }
 
     async getPrintingsLastPage(name: string, query: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Find last page for other printings paginationi for ${name}.`);
         try {
-            const totalCards: number = await this.cardService.totalWithName(name);
-            return Math.max(1, Math.ceil(totalCards / query.limit));
+            const totalCards = await this.cardService.totalWithName(name);
+            const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
+            this.LOGGER.debug(`Last page for ${name}: ${lastPage}`);
+            return lastPage;
         } catch (error) {
-            this.LOGGER.error(error.message);
+            this.LOGGER.debug(`Error finding last page for ${name}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, "getPrintingsLastPage");
         }
     }

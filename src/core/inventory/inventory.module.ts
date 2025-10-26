@@ -1,5 +1,6 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { DatabaseModule } from "src/database/database.module";
+import { getLogger } from "src/logger/global-app-logger";
 import { InventoryService } from "./inventory.service";
 
 @Module({
@@ -8,9 +9,9 @@ import { InventoryService } from "./inventory.service";
     exports: [InventoryService],
 })
 export class InventoryModule {
-    private readonly LOGGER: Logger = new Logger(InventoryModule.name);
+    private readonly LOGGER = getLogger(InventoryModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

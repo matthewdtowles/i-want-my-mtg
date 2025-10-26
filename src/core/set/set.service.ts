@@ -1,11 +1,13 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { Set } from "./set.entity";
 import { SetRepositoryPort } from "./set.repository.port";
 
 @Injectable()
 export class SetService {
-    private readonly LOGGER: Logger = new Logger(SetService.name);
+
+    private readonly LOGGER = getLogger(SetService.name);
 
     constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }
 

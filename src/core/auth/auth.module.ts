@@ -1,8 +1,9 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { UserModule } from "src/core/user/user.module";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "./jwt.strategy";
 import { LocalStrategy } from "./local.strategy";
@@ -32,9 +33,9 @@ import { LocalStrategy } from "./local.strategy";
     ],
 })
 export class AuthModule {
-    private readonly LOGGER: Logger = new Logger(AuthModule.name);
+    private readonly LOGGER = getLogger(AuthModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

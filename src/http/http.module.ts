@@ -1,5 +1,6 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { CoreModule } from "src/core/core.module";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthController } from "./auth/auth.controller";
 import { AuthOrchestrator } from "./auth/auth.orchestrator";
 import { CardController } from "./card/card.controller";
@@ -38,9 +39,9 @@ import { UserOrchestrator } from "./user/user.orchestrator";
     ],
 })
 export class HttpModule {
-    private readonly LOGGER: Logger = new Logger(HttpModule.name);
+    private readonly LOGGER = getLogger(HttpModule.name);
 
     constructor() {
-        this.LOGGER.debug(`Initialized`);
+        this.LOGGER.log(`Initialized`);
     }
 }

@@ -143,6 +143,7 @@ export class SetOrchestrator {
             const totalCards = await this.cardService.totalCardsInSet(setCode, query);
             const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
+            return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");

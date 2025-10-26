@@ -42,10 +42,10 @@ export class CardService {
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Find cards with name ${name}.`)
+        this.LOGGER.debug(`Find cards with name ${name}.`);
         try {
             const cards = await this.repository.findWithName(name, options);
-            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`)
+            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`);
             return cards;
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
@@ -53,10 +53,10 @@ export class CardService {
     }
 
     async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Find cards in set ${code}.`)
+        this.LOGGER.debug(`Find cards in set ${code}.`);
         try {
             const cards = await this.repository.findBySet(code, query);
-            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`)
+            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
             return cards;
         } catch (error) {
             throw new Error(`Error finding cards in set ${code}: ${error.message}`);

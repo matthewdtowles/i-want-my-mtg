@@ -22,12 +22,12 @@ export class UserService {
     }
 
     async findById(id: number): Promise<User | null> {
-        this.LOGGER.debug(`Find user ID ${id}.`)
+        this.LOGGER.debug(`Find user ID ${id}.`);
         return await this.repository.findById(id);
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        this.LOGGER.debug(`Find user with email ${email}.`)
+        this.LOGGER.debug(`Find user with email ${email}.`);
         return await this.repository.findByEmail(email);
     }
 

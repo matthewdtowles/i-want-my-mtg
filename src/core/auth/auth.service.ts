@@ -30,7 +30,7 @@ export class AuthService {
     }
 
     async login(user: User): Promise<AuthToken> {
-        this.LOGGER.debug(`Logging is user ${user?.id}.`)
+        this.LOGGER.debug(`Logging in user ${user?.id}.`);
         if (!user) {
             throw new Error(`Login failure. User not found.`);
         }
@@ -45,7 +45,7 @@ export class AuthService {
         const authToken: AuthToken = {
             access_token: await this.jwtService.signAsync(payload),
         };
-        this.LOGGER.debug(`Login successful for user ${user.id}.`)
+        this.LOGGER.debug(`Login successful for user ${user.id}.`);
         return authToken;
     }
 }

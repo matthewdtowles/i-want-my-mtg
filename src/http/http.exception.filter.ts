@@ -5,19 +5,19 @@ import {
     ForbiddenException,
     HttpException,
     HttpStatus,
-    Logger,
     NotFoundException,
     UnauthorizedException
 } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ActionStatus } from "./base/action-status.enum";
+import { getLogger } from "src/logger/global-app-logger";
 import { LoginFormViewDto } from "./auth/dto/login-form.view.dto";
+import { ActionStatus } from "./base/action-status.enum";
 import { CreateUserViewDto } from "./user/dto/create-user.view.dto";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
 
-    private readonly LOGGER = new Logger(HttpExceptionFilter.name);
+    private readonly LOGGER = getLogger(HttpExceptionFilter.name);
 
     catch(exception: any, host: ArgumentsHost) {
         this.LOGGER.error(`Exception ${exception.message}`, exception.stack);

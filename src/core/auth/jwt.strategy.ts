@@ -1,15 +1,16 @@
-import { Inject, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-jwt";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
 import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
+import { getLogger } from "src/logger/global-app-logger";
 import { JwtPayload } from "./auth.types";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    private readonly LOGGER = new Logger(JwtStrategy.name);
+    private readonly LOGGER = getLogger(JwtStrategy.name);
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,

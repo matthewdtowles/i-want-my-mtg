@@ -1,15 +1,15 @@
 import {
     BadRequestException,
     ForbiddenException, InternalServerErrorException,
-    Logger,
     NotFoundException,
     UnauthorizedException
 } from "@nestjs/common";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthenticatedRequest } from "./base/authenticated.request";
 
 
 export class HttpErrorHandler {
-    private static readonly LOGGER: Logger = new Logger(HttpErrorHandler.name);
+    private static readonly LOGGER = getLogger(HttpErrorHandler.name);
 
     /**
      * Handles errors by logging them and throwing standardized HTTP exceptions.

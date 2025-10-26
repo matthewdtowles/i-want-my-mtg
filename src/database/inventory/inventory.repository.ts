@@ -1,10 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { BaseRepository } from "src/database/base.repository";
+import { getLogger } from "src/logger/global-app-logger";
 import { In, Repository } from "typeorm";
 import { InventoryMapper } from "./inventory.mapper";
 import { InventoryOrmEntity } from "./inventory.orm-entity";
@@ -13,7 +14,7 @@ import { InventoryOrmEntity } from "./inventory.orm-entity";
 export class InventoryRepository extends BaseRepository<InventoryOrmEntity> implements InventoryRepositoryPort {
 
     readonly TABLE = "inventory";
-    private readonly LOGGER = new Logger(InventoryRepository.name);
+    private readonly LOGGER = getLogger(InventoryRepository.name);
 
     constructor(@InjectRepository(InventoryOrmEntity) private readonly repository: Repository<InventoryOrmEntity>) {
         super();

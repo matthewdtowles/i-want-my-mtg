@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
 import { Format } from "./format.enum";
@@ -9,7 +10,7 @@ import { LegalityStatus } from "./legality.status.enum";
 @Injectable()
 export class CardService {
 
-    private readonly LOGGER = new Logger(CardService.name);
+    private readonly LOGGER = getLogger(CardService.name);
 
     constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
@@ -41,10 +42,10 @@ export class CardService {
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Find cards with name ${name}.`)
+        this.LOGGER.debug(`Find cards with name ${name}.`);
         try {
             const cards = await this.repository.findWithName(name, options);
-            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`)
+            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`);
             return cards;
         } catch (error) {
             throw new Error(`Error finding cards with name ${name}: ${error.message}`);
@@ -52,10 +53,10 @@ export class CardService {
     }
 
     async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Find cards in set ${code}.`)
+        this.LOGGER.debug(`Find cards in set ${code}.`);
         try {
             const cards = await this.repository.findBySet(code, query);
-            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`)
+            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
             return cards;
         } catch (error) {
             throw new Error(`Error finding cards in set ${code}: ${error.message}`);

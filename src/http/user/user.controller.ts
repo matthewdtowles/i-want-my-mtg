@@ -2,7 +2,8 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject, Logger, Patch,
+    Get, Inject,
+    Patch,
     Post,
     Render,
     Req,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { BaseViewDto } from "src/http/base/base.view.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { CreateUserViewDto } from "./dto/create-user.view.dto";
 import { UpdateUserRequestDto } from "./dto/update-user.request.dto";
@@ -26,14 +28,14 @@ import { UserOrchestrator } from "./user.orchestrator";
 @Controller("user")
 export class UserController {
 
-    private readonly LOGGER = new Logger(UserController.name);
+    private readonly LOGGER = getLogger(UserController.name);
 
     constructor(@Inject(UserOrchestrator) private readonly userOrchestrator: UserOrchestrator) { }
 
     @Get("create")
     @Render("createUser")
     createForm(): CreateUserViewDto {
-        this.LOGGER.log(`Fetch create user form.`)
+        this.LOGGER.log(`Fetch create user form.`);
         return new CreateUserViewDto();
     }
 
@@ -41,7 +43,7 @@ export class UserController {
     @Get()
     @Render("user")
     async profile(@Req() req: AuthenticatedRequest): Promise<UserViewDto> {
-        this.LOGGER.log(`Get user profile.`)
+        this.LOGGER.log(`Get user profile.`);
         const user = await this.userOrchestrator.findUser(req);
         this.LOGGER.log(`Profile found for user ${user?.user?.id}.`);
         return user;
@@ -49,7 +51,7 @@ export class UserController {
 
     @Post("create")
     async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
-        this.LOGGER.log(`Create new user ${createUserDto?.email}.`)
+        this.LOGGER.log(`Create new user ${createUserDto?.email}.`);
         try {
             const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
             res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
@@ -60,7 +62,7 @@ export class UserController {
                 path: "/",
             });
             res.redirect("/user?welcome=true");
-            this.LOGGER.log(`New user created ${createUserDto?.email}.`)
+            this.LOGGER.log(`New user created ${createUserDto?.email}.`);
         } catch (error) {
             this.LOGGER.error(`Error creating user ${createUserDto?.email}: ${error}.`);
             if (error?.message?.includes("already exists")) {
@@ -86,9 +88,9 @@ export class UserController {
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResult<UserViewDto>> {
         try {
-            this.LOGGER.log(`Update user ${httpUserDto?.email}.`)
+            this.LOGGER.log(`Update user ${httpUserDto?.email}.`);
             const updatedUser: UserViewDto = await this.userOrchestrator.updateUser(httpUserDto, req);
-            this.LOGGER.log(`Update user success for ${updatedUser?.user?.email} [${updatedUser?.user?.id}].`)
+            this.LOGGER.log(`Update user success for ${updatedUser?.user?.email} [${updatedUser?.user?.id}].`);
             return createSuccessResult<UserViewDto>(updatedUser, "User udpated");
         } catch (error) {
             const msg = `Error updating user ${httpUserDto?.email}: ${error?.message}`;
@@ -125,7 +127,7 @@ export class UserController {
             this.LOGGER.log(`Delete account successful for user ${userId}.`);
             return createSuccessResult<BaseViewDto>(response, "User deleted");
         } catch (error) {
-            const msg = `Error deleting user ${userId}.`
+            const msg = `Error deleting user ${userId}.`;
             this.LOGGER.error(msg);
             return createErrorResult(msg);
         }

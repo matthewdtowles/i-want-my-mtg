@@ -1,14 +1,15 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthToken, JwtPayload } from "./auth.types";
 
 
 @Injectable()
 export class AuthService {
-    private readonly LOGGER: Logger = new Logger(AuthService.name);
+    private readonly LOGGER = getLogger(AuthService.name);
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
@@ -29,7 +30,7 @@ export class AuthService {
     }
 
     async login(user: User): Promise<AuthToken> {
-        this.LOGGER.debug(`Logging is user ${user?.id}.`)
+        this.LOGGER.debug(`Logging in user ${user?.id}.`);
         if (!user) {
             throw new Error(`Login failure. User not found.`);
         }
@@ -44,7 +45,7 @@ export class AuthService {
         const authToken: AuthToken = {
             access_token: await this.jwtService.signAsync(payload),
         };
-        this.LOGGER.debug(`Login successful for user ${user.id}.`)
+        this.LOGGER.debug(`Login successful for user ${user.id}.`);
         return authToken;
     }
 }

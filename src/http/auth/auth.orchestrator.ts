@@ -1,8 +1,9 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
 import { UserResponseDto } from "src/http/user/dto/user.response.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { AuthResult } from "./dto/auth.result";
 
@@ -10,7 +11,7 @@ import { AuthResult } from "./dto/auth.result";
 @Injectable()
 export class AuthOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(AuthOrchestrator.name);
+    private readonly LOGGER = getLogger(AuthOrchestrator.name);
 
     constructor(@Inject(AuthService) private readonly authService: AuthService) { }
 

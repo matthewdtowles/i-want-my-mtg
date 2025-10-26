@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { AuthService } from "src/core/auth/auth.service";
 import { AuthToken } from "src/core/auth/auth.types";
 import { User } from "src/core/user/user.entity";
@@ -7,6 +7,7 @@ import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { BaseViewDto } from "src/http/base/base.view.dto";
 import { HttpErrorHandler } from "src/http/http.error.handler";
+import { getLogger } from "src/logger/global-app-logger";
 import { UserRole } from "src/shared/constants/user.role.enum";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { UpdateUserRequestDto } from "./dto/update-user.request.dto";
@@ -16,7 +17,7 @@ import { UserViewDto } from "./dto/user.view.dto";
 @Injectable()
 export class UserOrchestrator {
 
-    private readonly LOGGER = new Logger(UserOrchestrator.name);
+    private readonly LOGGER = getLogger(UserOrchestrator.name);
 
     private readonly breadCrumbs = [
         { label: "Home", url: "/" },
@@ -49,7 +50,7 @@ export class UserOrchestrator {
             }
             return authToken;
         } catch (error) {
-            this.LOGGER.debug(`Error creating user with email: ${createUserDto.email}.`)
+            this.LOGGER.debug(`Error creating user with email: ${createUserDto.email}.`);
             return HttpErrorHandler.toHttpException(error, "create");
         }
     }
@@ -65,7 +66,7 @@ export class UserOrchestrator {
                 req.query &&
                 req.query.status === HttpStatus.OK.toString() &&
                 req.query.action === "login";
-            this.LOGGER.debug(`User ${userId} login ${login ? "success" : "failed"}.`)
+            this.LOGGER.debug(`User ${userId} login ${login ? "success" : "failed"}.`);
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
@@ -74,7 +75,7 @@ export class UserOrchestrator {
                 user,
             };
         } catch (error) {
-            this.LOGGER.debug(`Error finding user ${userId}.`)
+            this.LOGGER.debug(`Error finding user ${userId}.`);
             return HttpErrorHandler.toHttpException(error, "findUser");
         }
     }

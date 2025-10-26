@@ -11,6 +11,7 @@ import {
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { getLogger } from "src/logger/global-app-logger";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetOrchestrator } from "./set.orchestrator";
@@ -18,7 +19,7 @@ import { SetOrchestrator } from "./set.orchestrator";
 @Controller("sets")
 export class SetController {
 
-    private readonly LOGGER = new Logger(SetController.name);
+    private readonly LOGGER = getLogger(SetController.name);
 
     private readonly breadcrumbs = [
         { label: "Home", url: "/" },

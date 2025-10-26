@@ -1,4 +1,4 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -7,6 +7,7 @@ import { DataSource } from "typeorm";
 import { CoreModule } from "./core/core.module";
 import { DatabaseModule } from "./database/database.module";
 import { HttpModule } from "./http/http.module";
+import { getLogger } from "./logger/global-app-logger";
 
 @Module({
     imports: [
@@ -74,7 +75,7 @@ import { HttpModule } from "./http/http.module";
     ],
 })
 export class AppModule {
-    private readonly LOGGER: Logger = new Logger(AppModule.name);
+    private readonly LOGGER = getLogger(AppModule.name);
 
     constructor() {
         this.LOGGER.log(`Initialized`);

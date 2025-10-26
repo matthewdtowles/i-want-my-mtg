@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardService } from "src/core/card/card.service";
 import { Inventory } from "src/core/inventory/inventory.entity";
@@ -17,6 +17,7 @@ import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
+import { getLogger } from "src/logger/global-app-logger";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
@@ -25,7 +26,7 @@ import { SetPresenter } from "./set.presenter";
 @Injectable()
 export class SetOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(SetOrchestrator.name);
+    private readonly LOGGER = getLogger(SetOrchestrator.name);
 
     constructor(
         @Inject(SetService) private readonly setService: SetService,
@@ -142,6 +143,7 @@ export class SetOrchestrator {
             const totalCards = await this.cardService.totalCardsInSet(setCode, query);
             const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
+            return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");

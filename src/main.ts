@@ -2,17 +2,19 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import * as cookieParser from "cookie-parser";
+import "dotenv/config";
 import { create } from "express-handlebars";
 import { join } from "path";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./http/http.exception.filter";
+import { CorrelationIdMiddleware } from "./logger/correlation-id.middleware";
+import { GlobalAppLogger } from "./logger/global-app-logger";
+import { UserContextInterceptor } from "./logger/user-context.interceptor";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    process.env.NODE_ENV === "production" && !process.env.DEBUG_MODE
-        ? app.useLogger(["error", "warn", "log"])
-        : app.useLogger(["error", "warn", "log", "debug"])
+    app.useLogger(GlobalAppLogger);
 
     app.useStaticAssets(join(__dirname, ".", "http/public"), {
         prefix: '/public/',
@@ -48,6 +50,8 @@ async function bootstrap() {
             }
         }),
     );
+    app.use(new CorrelationIdMiddleware().use);
+    app.useGlobalInterceptors(new UserContextInterceptor());
     await app.listen(3000);
 }
 

@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get, Inject, Logger, Post,
+    Get, Inject,
+    Post,
     Render,
     Req,
     Res,
@@ -8,6 +9,7 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthOrchestrator } from "./auth.orchestrator";
 import { AuthResult } from "./dto/auth.result";
 import { AUTH_TOKEN_NAME } from "./dto/auth.types";
@@ -17,7 +19,7 @@ import { LocalAuthGuard } from "./local.auth.guard";
 @Controller("auth")
 export class AuthController {
 
-    private readonly LOGGER: Logger = new Logger(AuthController.name);
+    private readonly LOGGER = getLogger(AuthController.name);
 
     constructor(@Inject(AuthOrchestrator) private readonly authOrchestrator: AuthOrchestrator) { }
 

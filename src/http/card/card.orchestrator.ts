@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
@@ -16,6 +16,7 @@ import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardPresenter } from "./card.presenter";
 import { CardViewDto } from "./dto/card.view.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
@@ -23,7 +24,7 @@ import { SingleCardResponseDto } from "./dto/single-card.response.dto";
 @Injectable()
 export class CardOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(CardOrchestrator.name);
+    private readonly LOGGER = getLogger(CardOrchestrator.name);
 
     constructor(
         @Inject(CardService) private readonly cardService: CardService,

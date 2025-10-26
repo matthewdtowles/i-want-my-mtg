@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get, Inject,
-    Logger,
     Patch,
     Post,
     Render,
@@ -14,6 +13,7 @@ import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { getLogger } from "src/logger/global-app-logger";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
 import { InventoryOrchestrator } from "./inventory.orchestrator";
@@ -22,7 +22,7 @@ import { InventoryOrchestrator } from "./inventory.orchestrator";
 @Controller("inventory")
 export class InventoryController {
 
-    private readonly LOGGER = new Logger(InventoryController.name)
+    private readonly LOGGER = getLogger(InventoryController.name)
 
     constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
 

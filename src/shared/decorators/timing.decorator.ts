@@ -1,8 +1,8 @@
-import { Logger } from "@nestjs/common";
+import { getLogger } from "src/logger/global-app-logger";
 
 export function Timing(): MethodDecorator {
 
-    const logger = new Logger("TimingDecorator");
+    const logger = getLogger("TimingDecorator");
 
     return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const originalMethod = descriptor.value;

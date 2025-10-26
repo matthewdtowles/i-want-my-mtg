@@ -1,9 +1,10 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
 import { InventoryRepositoryPort } from "src/core/inventory/inventory.repository.port";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { UserRepositoryPort } from "src/core/user/user.repository.port";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardOrmEntity } from "./card/card.orm-entity";
 import { CardRepository } from "./card/card.repository";
 import { LegalityOrmEntity } from "./card/legality.orm-entity";
@@ -40,7 +41,7 @@ import { UserRepository } from "./user/user.repository";
     ],
 })
 export class DatabaseModule {
-    private readonly LOGGER: Logger = new Logger(DatabaseModule.name);
+    private readonly LOGGER = getLogger(DatabaseModule.name);
 
     constructor() {
         this.LOGGER.log(`Initialized`);

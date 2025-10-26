@@ -2,7 +2,8 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject, Logger, Patch,
+    Get, Inject,
+    Patch,
     Post,
     Render,
     Req,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
 import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { BaseViewDto } from "src/http/base/base.view.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { CreateUserRequestDto } from "./dto/create-user.request.dto";
 import { CreateUserViewDto } from "./dto/create-user.view.dto";
 import { UpdateUserRequestDto } from "./dto/update-user.request.dto";
@@ -26,7 +28,7 @@ import { UserOrchestrator } from "./user.orchestrator";
 @Controller("user")
 export class UserController {
 
-    private readonly LOGGER = new Logger(UserController.name);
+    private readonly LOGGER = getLogger(UserController.name);
 
     constructor(@Inject(UserOrchestrator) private readonly userOrchestrator: UserOrchestrator) { }
 

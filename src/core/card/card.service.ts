@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { getLogger } from "src/logger/global-app-logger";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
 import { Format } from "./format.enum";
@@ -9,7 +10,7 @@ import { LegalityStatus } from "./legality.status.enum";
 @Injectable()
 export class CardService {
 
-    private readonly LOGGER = new Logger(CardService.name);
+    private readonly LOGGER = getLogger(CardService.name);
 
     constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 

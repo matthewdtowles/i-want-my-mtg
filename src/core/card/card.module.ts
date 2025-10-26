@@ -1,5 +1,6 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { DatabaseModule } from "src/database/database.module";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardService } from "./card.service";
 
 @Module({
@@ -8,7 +9,7 @@ import { CardService } from "./card.service";
     exports: [CardService]
 })
 export class CardModule {
-    private readonly LOGGER: Logger = new Logger(CardModule.name);
+    private readonly LOGGER = getLogger(CardModule.name);
 
     constructor() {
         this.LOGGER.log(`Initialized`);

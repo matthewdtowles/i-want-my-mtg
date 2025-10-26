@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
+import { getLogger } from "src/logger/global-app-logger";
 import { User } from "./user.entity";
 import { UserRepositoryPort } from "./user.repository.port";
 
@@ -7,7 +8,7 @@ import { UserRepositoryPort } from "./user.repository.port";
 @Injectable()
 export class UserService {
 
-    private readonly LOGGER = new Logger(UserService.name);
+    private readonly LOGGER = getLogger(UserService.name);
 
     constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) { }
 

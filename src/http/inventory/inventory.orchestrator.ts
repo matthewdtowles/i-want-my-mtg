@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
@@ -11,6 +11,7 @@ import { PaginationView } from "src/http/list/pagination.view";
 import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
+import { getLogger } from "src/logger/global-app-logger";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryViewDto } from "./dto/inventory.view.dto";
@@ -19,7 +20,7 @@ import { InventoryPresenter } from "./inventory.presenter";
 @Injectable()
 export class InventoryOrchestrator {
 
-    private readonly LOGGER: Logger = new Logger(InventoryOrchestrator.name);
+    private readonly LOGGER = getLogger(InventoryOrchestrator.name);
 
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {
         this.LOGGER.debug(`Initialized`);

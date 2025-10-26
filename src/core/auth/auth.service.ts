@@ -1,14 +1,15 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { User } from "src/core/user/user.entity";
 import { UserService } from "src/core/user/user.service";
+import { getLogger } from "src/logger/global-app-logger";
 import { AuthToken, JwtPayload } from "./auth.types";
 
 
 @Injectable()
 export class AuthService {
-    private readonly LOGGER: Logger = new Logger(AuthService.name);
+    private readonly LOGGER = getLogger(AuthService.name);
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,

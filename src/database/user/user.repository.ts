@@ -1,7 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/core/user/user.entity";
 import { UserRepositoryPort } from "src/core/user/user.repository.port";
+import { getLogger } from "src/logger/global-app-logger";
 import { InsertResult, Repository } from "typeorm";
 import { UserMapper } from "./user.mapper";
 import { UserOrmEntity } from "./user.orm-entity";
@@ -9,7 +10,7 @@ import { UserOrmEntity } from "./user.orm-entity";
 @Injectable()
 export class UserRepository implements UserRepositoryPort {
 
-    private readonly LOGGER = new Logger(UserRepository.name);
+    private readonly LOGGER = getLogger(UserRepository.name);
 
     constructor(@InjectRepository(UserOrmEntity) private readonly userRepository: Repository<UserOrmEntity>) {
         this.LOGGER.debug(`Instantiated.`);

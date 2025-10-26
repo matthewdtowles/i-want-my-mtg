@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "src/core/card/card.entity";
 import { CardRepositoryPort } from "src/core/card/card.repository.port";
@@ -6,6 +6,7 @@ import { Format } from "src/core/card/format.enum";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { BaseRepository } from "src/database/base.repository";
+import { getLogger } from "src/logger/global-app-logger";
 import { Repository } from "typeorm";
 import { CardMapper } from "./card.mapper";
 import { CardOrmEntity } from "./card.orm-entity";
@@ -16,7 +17,7 @@ import { LegalityOrmEntity } from "./legality.orm-entity";
 export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
 
     readonly TABLE = "card";
-    private readonly LOGGER = new Logger(CardRepository.name);
+    private readonly LOGGER = getLogger(CardRepository.name);
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(

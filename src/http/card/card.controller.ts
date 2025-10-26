@@ -1,6 +1,7 @@
 import {
     Controller,
-    Get, Inject, Logger, Param,
+    Get, Inject,
+    Param,
     Render,
     Req,
     UseGuards
@@ -8,13 +9,14 @@ import {
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { getLogger } from "src/logger/global-app-logger";
 import { CardOrchestrator } from "./card.orchestrator";
 import { CardViewDto } from "./dto/card.view.dto";
 
 @Controller("card")
 export class CardController {
 
-    private readonly LOGGER = new Logger(CardController.name);
+    private readonly LOGGER = getLogger(CardController.name);
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
 

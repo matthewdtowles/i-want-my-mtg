@@ -55,6 +55,7 @@ cat > .env <<'EOF'
 APP_NAME=i-want-my-mtg
 DB_HOST=postgres
 DB_PORT=5432
+LOG_FORMAT=json
 EOF
 
 # Add variables with proper escaping

@@ -50,6 +50,13 @@ export class InventoryService {
         return await this.repository.totalInventoryItemsForUser(userId, options);
     }
 
+    async totalValueForUser(userId: number): Promise<number> {
+        this.LOGGER.debug(`Calculate total value for user ${userId}`);
+        const totalValue = await this.repository.totalInventoryValueForUser(userId);
+        this.LOGGER.debug(`User ${userId} inventory value ${totalValue}`);
+        return totalValue;
+    }
+
     /**
      * Calculate the completion rate of a set based on the user's inventory.
      * Normal cards are counted, foils are not.

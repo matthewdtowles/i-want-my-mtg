@@ -62,6 +62,12 @@ export interface InventoryRepositoryPort {
     totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
+     * @param {number} userId 
+     * @returns total value of user's inventory items
+     */
+    totalInventoryValueForUser(userId: number): Promise<number>;
+
+    /**
      * Delete inventory entity
      * Use when quantity is < 1
      *

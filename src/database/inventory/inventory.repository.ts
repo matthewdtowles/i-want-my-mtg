@@ -82,6 +82,24 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         return count;
     }
 
+    async totalInventoryValueForUser(userId: number): Promise<number> {
+        this.LOGGER.debug(`Calculate total value for user inventory items.`);
+        const totalInventorValue = await this.repository.query(`
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN i.foil THEN p.foil
+                    ELSE p.normal
+                END * i.quantity
+            ), 0) AS total_value
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            JOIN price p ON p.card_id = c.id
+            WHERE i.user_id = $1
+            `, [userId]);
+        this.LOGGER.debug(`User inventory value: ${totalInventorValue}.`);
+        return Number(totalInventorValue[0]?.total_value ?? 0);
+    }
+
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
         this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`);
         try {

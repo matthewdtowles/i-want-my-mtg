@@ -30,6 +30,7 @@ describe("InventoryOrchestrator", () => {
                     provide: InventoryService, useValue: {
                         findAllForUser: jest.fn(),
                         totalInventoryItemsForUser: jest.fn(),
+                        totalValueForUser: jest.fn(),
                         save: jest.fn(),
                         delete: jest.fn(),
                     }

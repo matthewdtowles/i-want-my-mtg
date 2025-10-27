@@ -59,13 +59,13 @@ export interface InventoryRepositoryPort {
      * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns total number of inventory items
      */
-    totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number>;
+    totalInventoryCards(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
      * @param {number} userId 
      * @returns total value of user's inventory items
      */
-    totalInventoryValueForUser(userId: number): Promise<number>;
+    totalInventoryValue(userId: number): Promise<number>;
 
     /**
      * @param {number} userId

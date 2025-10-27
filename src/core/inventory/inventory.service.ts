@@ -47,12 +47,12 @@ export class InventoryService {
 
     async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}`);
-        return await this.repository.totalInventoryItemsForUser(userId, options);
+        return await this.repository.totalInventoryCards(userId, options);
     }
 
     async totalValueForUser(userId: number): Promise<number> {
         this.LOGGER.debug(`Calculate total value for user ${userId}`);
-        const totalValue = await this.repository.totalInventoryValueForUser(userId);
+        const totalValue = await this.repository.totalInventoryValue(userId);
         this.LOGGER.debug(`User ${userId} inventory value ${totalValue}`);
         return totalValue;
     }

@@ -71,7 +71,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         return results.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
-    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
+    async totalInventoryCards(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoin(`${this.TABLE}.card`, "card")
@@ -82,7 +82,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         return count;
     }
 
-    async totalInventoryValueForUser(userId: number): Promise<number> {
+    async totalInventoryValue(userId: number): Promise<number> {
         this.LOGGER.debug(`Calculate total value for user inventory items.`);
         const totalInventorValue = await this.repository.query(`
             SELECT COALESCE(SUM(

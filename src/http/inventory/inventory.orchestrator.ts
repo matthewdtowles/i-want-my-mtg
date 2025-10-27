@@ -38,8 +38,8 @@ export class InventoryOrchestrator {
             );
             const username: string = req.user.name;
             const baseUrl = "/inventory";
-
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
+            const ownedTotal = await this.inventoryService.totalInventoryItemsForUser(userId, options);
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -52,10 +52,11 @@ export class InventoryOrchestrator {
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
                 ownedValue: toDollar(await this.inventoryService.totalValueForUser(userId)),
+                ownedTotal,
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    await this.inventoryService.totalInventoryItemsForUser(req.user.id, options)
+                    ownedTotal,
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([

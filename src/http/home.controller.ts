@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Render, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, Render, Req, UseGuards } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { getLogger } from "src/logger/global-app-logger";
 import { OptionalAuthGuard } from "./auth/optional-auth.guard";

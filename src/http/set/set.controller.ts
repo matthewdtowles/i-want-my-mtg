@@ -2,7 +2,6 @@ import {
     Controller,
     Get,
     Inject,
-    Logger,
     Param,
     Render,
     Req,

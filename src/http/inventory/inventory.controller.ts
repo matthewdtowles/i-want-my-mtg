@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get, Inject,
-    Logger,
     Patch,
     Post,
     Render,

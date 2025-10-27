@@ -109,15 +109,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Calculating total ${foil ? "foil" : "normal"} value for set: ${code}.`);
         const priceColumn = foil ? "foil" : "normal";
         const result = await this.cardRepository.query(`
-            SELECT COALESCE(SUM(p.${priceColumn}), 0) AS total_value
+            SELECT COALESCE(SUM(p.${priceColumn}), 0)
+                AS total_value
             FROM card c
             JOIN price p ON p.card_id = c.id
-            WHERE c.setCode = $1
-              AND p.date = (
-                SELECT MAX(p2.date)
-                FROM price p2
-                WHERE p2.card_id = c.id
-              )
+            WHERE c.set_code = $1
         `, [code]);
         const total = Number(result[0]?.total_value ?? 0);
         this.LOGGER.debug(`Total ${foil ? "foil" : "normal"} value for set ${code}: ${total}.`);

@@ -88,7 +88,7 @@ export class SetOrchestrator {
                 const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
-            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
+            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory, (await this.getSetTotalValue(setCode)), (await this.inventoryService.totalValueForUser(userId)));
             const baseUrl = `/sets/${setCode}`;
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
             return new SetViewDto({
@@ -147,6 +147,18 @@ export class SetOrchestrator {
         } catch (error) {
             this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");
+        }
+    }
+
+    async getSetTotalValue(setCode: string): Promise<number> {
+        this.LOGGER.debug(`Get total value for set: ${setCode}.`);
+        try {
+            const totalValue = await this.cardService.totalValueForSet(setCode);
+            this.LOGGER.debug(`Total value for set ${setCode}: ${totalValue}.`);
+            return totalValue;
+        } catch (error) {
+            this.LOGGER.debug(`Error getting set ${setCode} total value: ${error.message}.`);
+            return HttpErrorHandler.toHttpException(error, "getSetTotalValue");
         }
     }
 }

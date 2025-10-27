@@ -4,26 +4,26 @@ import { Inventory } from "src/core/inventory/inventory.entity";
 import { Set } from "src/core/set/set.entity";
 import { CardPresenter } from "src/http/card/card.presenter";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
-import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
+import { toDollar } from "../base/http.util";
 
 export class SetPresenter {
 
-    static toSetResponseDto(set: Set, inventory: Inventory[]): SetResponseDto {
+    static toSetResponseDto(set: Set, inventory: Inventory[], setValue: number, ownedValue: number): SetResponseDto {
         if (!set) {
             throw new Error("Set is required to create SetResponseDto");
         }
-        const inventoryQuantities: Map<string, InventoryQuantities> = InventoryPresenter.toQuantityMap(inventory);
+        const inventoryQuantities = InventoryPresenter.toQuantityMap(inventory);
         return new SetResponseDto({
             block: set.block,
             code: set.code,
             keyruneCode: set.keyruneCode,
             name: set.name,
             ownedPercentage: SetPresenter.ownedPercentage(set.baseSize, inventory.length),
-            ownedValue: this.calculateOwnedValue(set.cards, inventory),
+            ownedValue: toDollar(ownedValue),
             releaseDate: set.releaseDate,
-            totalValue: this.calculateTotalValue(set.cards),
+            totalValue: toDollar(setValue),
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards ? set.cards.map(card => {
                 return CardPresenter.toCardResponse(card, inventoryQuantities.get(card.id), CardImgType.SMALL)

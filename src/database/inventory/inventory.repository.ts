@@ -100,6 +100,36 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         return Number(totalInventorValue[0]?.total_value ?? 0);
     }
 
+    async totalInventoryValueForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Get total value for user inventory items in set: ${setCode}.`);
+        const totalinventoryvalue = await this.repository.query(`
+             SELECT COALESCE(SUM(
+                CASE
+                    WHEN i.foil THEN p.foil
+                    ELSE p.normal
+                END * i.quantity
+            ), 0) AS total_value
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            JOIN price p ON p.card_id = c.id
+            WHERE i.user_id = $1
+            AND c.setCode = $2
+            `, [userId, setCode]);
+        this.LOGGER.debug(`User inventory value for set ${setCode}: ${totalinventoryvalue}.`);
+        return Number(totalinventoryvalue[0]?.total_value ?? 0);
+    }
+
+    async totalInventoryCardsForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for user ${userId} in set ${setCode}.`);
+        const qb = this.repository.createQueryBuilder(this.TABLE)
+            .leftJoin(`${this.TABLE}.card`, "card")
+            .where(`${this.TABLE}.userId = :userId`, { userId })
+            .andWhere(`${this.TABLE}.card = :setCode`, { setCode });
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total inventory items for userId: ${userId}: ${count}.`);
+        return count;
+    }
+
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
         this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`);
         try {

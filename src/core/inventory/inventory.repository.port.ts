@@ -68,6 +68,20 @@ export interface InventoryRepositoryPort {
     totalInventoryValueForUser(userId: number): Promise<number>;
 
     /**
+     * @param {number} userId
+     * @param {string} setCode
+     * @returns total value for user's inventory items in given set
+     */
+    totalInventoryValueForSet(userId: number, setCode: string): Promise<number>;
+
+    /**
+     * @param {number} userId
+     * @param {string} setCode
+     * @returns total number of cards user owns for given set
+     */
+    totalInventoryCardsForSet(userId: number, setCode: string): Promise<number>;
+
+    /**
      * Delete inventory entity
      * Use when quantity is < 1
      *

@@ -46,10 +46,12 @@ export class InventoryService {
     }
 
     async ownedPercentage(userId: number): Promise<number> {
+        // TODO: you are here
         this.LOGGER.debug(`Get owned % for all cards.`);
     }
 
     async ownedPercentageForSet(userId: number, setCode: string): Promise<number> {
+        // TODO: you are here
         this.LOGGER.debug(`Get owned % for cards in set ${setCode}.`);
 
     }

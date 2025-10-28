@@ -1,5 +1,6 @@
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
+import { Repository } from "typeorm";
 import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
 export abstract class BaseRepository<T> {
@@ -7,6 +8,8 @@ export abstract class BaseRepository<T> {
     readonly ASC = "ASC";
     readonly DESC = "DESC";
     readonly NULLS_LAST = "NULLS LAST";
+
+    protected repository!: Repository<T>;
     protected abstract readonly TABLE: string;
 
     protected addFilters(qb: SelectQueryBuilder<T>, filter?: string) {
@@ -42,4 +45,10 @@ export abstract class BaseRepository<T> {
                 .orderBy(alias, direction, this.NULLS_LAST);
         else qb.orderBy(`${options.sort}`, direction, this.NULLS_LAST);
     }
+
+    protected async totalCards(): Promise<number> {
+        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM card`);
+        return Number(result[0]?.total ?? 0);
+    }
+
 }

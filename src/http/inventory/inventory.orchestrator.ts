@@ -39,7 +39,7 @@ export class InventoryOrchestrator {
             const username: string = req.user.name;
             const baseUrl = "/inventory";
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
-            const ownedTotal = await this.inventoryService.totalInventoryItemsForUser(userId, options);
+            const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -51,7 +51,7 @@ export class InventoryOrchestrator {
                 message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
-                ownedValue: toDollar(await this.inventoryService.totalValueForUser(userId)),
+                ownedValue: toDollar(await this.inventoryService.totalValue(userId)),
                 ownedTotal,
                 pagination: new PaginationView(
                     options,
@@ -76,7 +76,7 @@ export class InventoryOrchestrator {
     async getLastPage(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find last page for inventory pagination for user ${userId}.`);
         try {
-            const totalItems: number = await this.inventoryService.totalInventoryItemsForUser(userId, options);
+            const totalItems: number = await this.inventoryService.totalInventoryItems(userId, options);
             const lastPage = Math.max(1, Math.ceil(totalItems / options.limit));
             this.LOGGER.debug(`Last page for user ${userId}: ${lastPage}`);
             return lastPage;

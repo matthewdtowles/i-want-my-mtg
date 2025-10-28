@@ -14,7 +14,7 @@ export class InventoryService {
     constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`create ${inventoryItems.length} inventory items`);
+        this.LOGGER.debug(`create ${inventoryItems.length} inventory items.`);
         const toSave: Inventory[] = [];
         for (const item of inventoryItems) {
             if (item.quantity > 0) {
@@ -28,34 +28,51 @@ export class InventoryService {
     }
 
     async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
-        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}`);
+        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`);
         return userId ? await this.repository.findByUser(userId, options) : [];
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
-        this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}`);
+        this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}.`);
         return userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`findByCards for user: ${userId}`);
+        this.LOGGER.debug(`findByCards for user: ${userId}.`);
         if (!userId || !cardIds || cardIds.length === 0) {
             return [];
         }
         return await this.repository.findByCards(userId, cardIds);
     }
 
-    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}`);
+    async ownedPercentage(userId: number): Promise<number> {
+        this.LOGGER.debug(`Get owned % for all cards.`);
+    }
+
+    async ownedPercentageForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Get owned % for cards in set ${setCode}.`);
+
+    }
+
+    async totalInventoryItems(userId: number, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}.`);
         return await this.repository.totalInventoryCards(userId, options);
     }
 
-    async totalValueForUser(userId: number): Promise<number> {
-        this.LOGGER.debug(`Calculate total value for user ${userId}`);
+    async totalValue(userId: number): Promise<number> {
+        this.LOGGER.debug(`Calculate total value for user ${userId}.`);
         const totalValue = await this.repository.totalInventoryValue(userId);
-        this.LOGGER.debug(`User ${userId} inventory value ${totalValue}`);
+        this.LOGGER.debug(`User ${userId} inventory value ${totalValue}.`);
         return totalValue;
     }
+
+    async totalValueForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Calculate total value for user ${userId} in set ${setCode}.`);
+        const totalValue = await this.repository.totalInventoryValueForSet(userId, setCode);
+        this.LOGGER.debug(`User ${userId} inventory value ${totalValue} for set ${setCode}.`);
+        return totalValue;
+    }
+
 
     /**
      * Calculate the completion rate of a set based on the user's inventory.

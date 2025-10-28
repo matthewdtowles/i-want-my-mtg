@@ -16,7 +16,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
     readonly TABLE = "inventory";
     private readonly LOGGER = getLogger(InventoryRepository.name);
 
-    constructor(@InjectRepository(InventoryOrmEntity) private readonly repository: Repository<InventoryOrmEntity>) {
+    constructor(@InjectRepository(InventoryOrmEntity) protected readonly repository: Repository<InventoryOrmEntity>) {
         super();
         this.LOGGER.debug(`Instantiated.`);
     }
@@ -113,7 +113,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
             JOIN card c ON i.card_id = c.id
             JOIN price p ON p.card_id = c.id
             WHERE i.user_id = $1
-            AND c.setCode = $2
+            AND c.set_code = $2
             `, [userId, setCode]);
         this.LOGGER.debug(`User inventory value for set ${setCode}: ${totalinventoryvalue}.`);
         return Number(totalinventoryvalue[0]?.total_value ?? 0);

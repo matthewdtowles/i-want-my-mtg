@@ -2,11 +2,11 @@ import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { Inventory } from "src/core/inventory/inventory.entity";
 import { Set } from "src/core/set/set.entity";
+import { toDollar } from "src/http/base/http.util";
 import { CardPresenter } from "src/http/card/card.presenter";
 import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
-import { toDollar } from "../base/http.util";
 
 export class SetPresenter {
 
@@ -16,7 +16,7 @@ export class SetPresenter {
         }
         const inventoryQuantities = InventoryPresenter.toQuantityMap(inventory);
         return new SetResponseDto({
-            block: set.block,
+            block: set.block ?? set.name,
             code: set.code,
             keyruneCode: set.keyruneCode,
             name: set.name,
@@ -34,7 +34,7 @@ export class SetPresenter {
     // TODO: get unique owned count for all sets
     static toSetMetaDto(set: Set, uniqueOwned: number): SetMetaResponseDto {
         return new SetMetaResponseDto({
-            block: set.block,
+            block: set.block ?? set.name,
             code: set.code,
             keyruneCode: set.keyruneCode,
             name: set.name,

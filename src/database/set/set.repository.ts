@@ -17,14 +17,14 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     readonly TABLE = "set";
 
-    constructor(@InjectRepository(SetOrmEntity) private readonly setRepository: Repository<SetOrmEntity>) {
+    constructor(@InjectRepository(SetOrmEntity) protected readonly repository: Repository<SetOrmEntity>) {
         super();
         this.LOGGER.debug(`Instantiated.`);
     }
 
     async save(sets: Set[]): Promise<number> {
         this.LOGGER.debug(`Saving ${sets?.length ?? 0} sets.`);
-        const savedSets: SetOrmEntity[] = await this.setRepository.save(sets) ?? [];
+        const savedSets: SetOrmEntity[] = await this.repository.save(sets) ?? [];
         const count = savedSets.length ?? 0;
         this.LOGGER.debug(`Saved ${count} sets.`);
         return count;
@@ -45,7 +45,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async findByCode(code: string): Promise<Set | null> {
         this.LOGGER.debug(`Finding set by code: ${code}.`);
-        const set: SetOrmEntity = await this.setRepository.findOne({
+        const set: SetOrmEntity = await this.repository.findOne({
             where: { code },
         });
         this.LOGGER.debug(`Set ${set ? "found" : "not found"} for code: ${code}.`);
@@ -63,12 +63,12 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async delete(set: Set): Promise<void> {
         this.LOGGER.debug(`Deleting set with code: ${set.code}.`);
-        await this.setRepository.delete(set);
+        await this.repository.delete(set);
         this.LOGGER.debug(`Deleted set with code: ${set.code}.`);
     }
 
     private createBaseQuery(): SelectQueryBuilder<SetOrmEntity> {
-        return this.setRepository
+        return this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.baseSize > 0`);
     }

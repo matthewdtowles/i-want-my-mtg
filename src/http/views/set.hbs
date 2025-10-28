@@ -6,8 +6,10 @@
         </h3>
         <ul clas="mt-4 space-y-2 text-left">
             <li class="text-gray-700">Block: {{set.block}}</li>
-            <li class="text-gray-700">Code: {{set.code}}</li>
+            <li class="text-gray-700">Code: {{toUpperCase set.code}}</li>
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
+            <li class="text-gray-700">Set Value: {{#if set.totalValue}}{{set.totalValue}}{{else}}$0.00{{/if}}</li>
+            <li class="text-gray-700">Owned Value: {{#if set.ownedValue}}{{set.ownedValue}}{{else}}$0.00{{/if}}</li>
         </ul>
     </section>
 </div>

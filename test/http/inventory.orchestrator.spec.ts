@@ -73,7 +73,7 @@ describe("InventoryOrchestrator", () => {
                     card: mockCard,
                 } as Inventory,
             ]);
-            inventoryService.totalInventoryItemsForUser.mockResolvedValue(1);
+            inventoryService.totalInventoryItems.mockResolvedValue(1);
 
             const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 
@@ -85,7 +85,7 @@ describe("InventoryOrchestrator", () => {
 
         it("returns empty inventory view when user has no items", async () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForUser.mockResolvedValue(0);
+            inventoryService.totalInventoryItems.mockResolvedValue(0);
 
             const result: InventoryViewDto = await orchestrator.findByUser(mockAuthenticatedRequest, mockQueryOptions);
 

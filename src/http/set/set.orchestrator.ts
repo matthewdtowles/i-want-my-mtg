@@ -88,7 +88,12 @@ export class SetOrchestrator {
                 const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
                 inventory = await this.inventoryService.findByCards(userId, cardIds);
             }
-            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory, (await this.getSetTotalValue(setCode)), (await this.inventoryService.totalValueForUser(userId)));
+            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(
+                set,
+                inventory,
+                (await this.getSetTotalValue(setCode)),
+                (await this.inventoryService.totalValueForSet(userId, setCode))
+            );
             const baseUrl = `/sets/${setCode}`;
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
             return new SetViewDto({

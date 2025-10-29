@@ -155,6 +155,7 @@ export class SetOrchestrator {
         }
     }
 
+    // TODO: need non-foil and foil versions of this and then one for total together
     async getSetTotalValue(setCode: string): Promise<number> {
         this.LOGGER.debug(`Get total value for set: ${setCode}.`);
         try {

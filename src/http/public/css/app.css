@@ -25,6 +25,21 @@ input[type="number"] {
   background-color: rgb(173 216 230);
 }
 
+.completion-bar-container {
+  width: 100%;
+  background: #e0e0e0;
+  border-radius: 8px;
+  height: 18px;
+  margin-bottom: 1em;
+  overflow: hidden;
+}
+
+.completion-bar {
+  height: 100%;
+  background: #14b8a6;
+  transition: width 0.4s;
+}
+
 @media (max-width: 450px) {
 
   table,

@@ -103,7 +103,7 @@ export class InventoryService {
     private completionRate(totalOwned: number, totalCards: number): number {
         if (totalCards === 0 || totalOwned === 0) return 0;
         if (totalOwned === totalCards) return 100;
-        const completionRate = Math.round((totalOwned / totalCards) * 100);
-        return completionRate > 100 ? 99 : completionRate;
+        const completionRate = (totalOwned / totalCards) * 100;
+        return Math.round(completionRate * 100) / 100;
     }
 }

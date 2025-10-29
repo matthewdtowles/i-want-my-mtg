@@ -34,6 +34,8 @@ describe("SetService", () => {
         delete: jest.fn(),
         findAllSetsMeta: jest.fn(),
         totalSets: jest.fn().mockResolvedValue(mockSets.length),
+        totalCards: jest.fn().mockResolvedValue(3), 
+        totalCardsInSet: jest.fn().mockResolvedValue(3),
     };
 
     beforeEach(async () => {

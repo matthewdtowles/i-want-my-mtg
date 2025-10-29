@@ -66,12 +66,14 @@ describe("SetOrchestrator", () => {
                     provide: InventoryService, useValue: {
                         findByCards: jest.fn(),
                         getUniqueOwnedCountByUserId: jest.fn(),
+                        totalValueForSet: jest.fn(),
                     }
                 },
                 {
                     provide: CardService, useValue: {
                         findBySet: jest.fn(),
                         totalCardsInSet: jest.fn(),
+                        totalValueForSet: jest.fn(),
                     }
                 },
             ],

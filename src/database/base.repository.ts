@@ -1,9 +1,10 @@
+import { BaseRepositoryPort } from "src/core/base.repository.port";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { Repository } from "typeorm";
 import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
-export abstract class BaseRepository<T> {
+export abstract class BaseRepository<T> implements BaseRepositoryPort {
 
     readonly ASC = "ASC";
     readonly DESC = "DESC";
@@ -12,18 +13,28 @@ export abstract class BaseRepository<T> {
     protected repository!: Repository<T>;
     protected abstract readonly TABLE: string;
 
+    async totalCards(): Promise<number> {
+        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM card`);
+        return Number(result[0]?.total ?? 0);
+    }
+
+    async totalCardsInSet(setCode: string): Promise<number> {
+        return Number(await this.repository.query(`
+            SELECT COUNT(*) AS total_cards FROM card WHERE set_code = $1`,
+            [setCode]
+        )[0]?.total_cards ?? 0);
+    }
+
     protected addFilters(qb: SelectQueryBuilder<T>, filter?: string) {
         if (filter) {
             const filterCol = this.TABLE === "inventory" ? "card.name" : `${this.TABLE}.name`;
             filter
                 .split(" ")
                 .filter(f => f.length > 0)
-                .forEach((fragment, i) =>
-                    qb.andWhere(
-                        `${filterCol} ILIKE :fragment${i}`,
-                        { [`fragment${i}`]: `%${fragment}%` }
-                    )
-                );
+                .forEach((fragment, i) => qb.andWhere(
+                    `${filterCol} ILIKE :fragment${i}`,
+                    { [`fragment${i}`]: `%${fragment}%` }
+                ));
         }
     }
 
@@ -45,10 +56,4 @@ export abstract class BaseRepository<T> {
                 .orderBy(alias, direction, this.NULLS_LAST);
         else qb.orderBy(`${options.sort}`, direction, this.NULLS_LAST);
     }
-
-    protected async totalCards(): Promise<number> {
-        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM card`);
-        return Number(result[0]?.total ?? 0);
-    }
-
 }

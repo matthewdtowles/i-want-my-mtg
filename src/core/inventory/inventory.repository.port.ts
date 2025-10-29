@@ -1,3 +1,4 @@
+import { BaseRepositoryPort } from "src/core/base.repository.port";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { Inventory } from "./inventory.entity";
 
@@ -7,7 +8,7 @@ export const InventoryRepositoryPort = "InventoryRepositoryPort";
 /**
  * Persistence layer for inventory entity
  */
-export interface InventoryRepositoryPort {
+export interface InventoryRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Create inventory entities, update if they exist

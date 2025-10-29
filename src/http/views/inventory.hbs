@@ -3,7 +3,7 @@
         <h3 class="page-title">{{this.username}}'s Inventory</h3>
         <p>Value: {{#if this.ownedValue}}{{this.ownedValue}}{{else}}$0.00{{/if}}</p>
         <p>Total Cards: {{#if this.ownedTotal}}{{this.ownedTotal}}{{else}}0{{/if}}</p>
-        <p>Owned % - All Cards: {{#if this.ownedTotal}}{{this.ownedTotal}}{{else}}0{{/if}}</p>
+        <p>Owned % - All Cards: {{#if this.completionRate}}{{this.completionRate}}{{else}}0{{/if}}%</p>
     </section>
     <div class="w-full mx-auto">
         {{>filter}}

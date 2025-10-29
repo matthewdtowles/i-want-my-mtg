@@ -7,6 +7,7 @@ export class InventoryViewDto extends ListView {
     readonly username: string;
     readonly ownedValue: string;
     readonly ownedTotal: number;
+    readonly completionRate: number;
 
     constructor(init: Partial<InventoryViewDto>) {
         super(init);
@@ -14,5 +15,6 @@ export class InventoryViewDto extends ListView {
         this.username = init.username || "";
         this.ownedValue = init.ownedValue || "0.00";
         this.ownedTotal = init.ownedTotal || 0;
+        this.completionRate = init.completionRate || 0;
     }
 }

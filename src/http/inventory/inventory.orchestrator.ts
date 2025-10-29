@@ -41,6 +41,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
             const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
 
+
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
@@ -53,6 +54,7 @@ export class InventoryOrchestrator {
                 username,
                 ownedValue: toDollar(await this.inventoryService.totalValue(userId)),
                 ownedTotal,
+                completionRate: await this.inventoryService.completionRateAll(userId),
                 pagination: new PaginationView(
                     options,
                     baseUrl,

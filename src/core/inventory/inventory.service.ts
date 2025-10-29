@@ -45,15 +45,22 @@ export class InventoryService {
         return await this.repository.findByCards(userId, cardIds);
     }
 
-    async ownedPercentage(userId: number): Promise<number> {
-        // TODO: you are here
+    async completionRateAll(userId: number): Promise<number> {
         this.LOGGER.debug(`Get owned % for all cards.`);
+        const totalOwned = await this.repository.totalInventoryCards(userId, new SafeQueryOptions({}));
+        const totalCards = await this.repository.totalCards();
+        const completionRate = this.completionRate(totalOwned, totalCards);
+        this.LOGGER.debug(`Completion rate for all cards: ${completionRate}%.`);
+        return completionRate;
     }
 
-    async ownedPercentageForSet(userId: number, setCode: string): Promise<number> {
-        // TODO: you are here
+    async completionRateForSet(userId: number, setCode: string): Promise<number> {
         this.LOGGER.debug(`Get owned % for cards in set ${setCode}.`);
-
+        const totalOwned = await this.repository.totalInventoryCardsForSet(userId, setCode);
+        const totalCards = await this.repository.totalCardsInSet(setCode);
+        const completionRate = this.completionRate(totalOwned, totalCards);
+        this.LOGGER.debug(`Completion rate for set ${setCode} ${completionRate}%.`);
+        return completionRate;
     }
 
     async totalInventoryItems(userId: number, options: SafeQueryOptions): Promise<number> {
@@ -75,67 +82,6 @@ export class InventoryService {
         return totalValue;
     }
 
-
-    /**
-     * Calculate the completion rate of a set based on the user's inventory.
-     * Normal cards are counted, foils are not.
-     * For foil completion rate, @see calcSetFoilCompletionRate.
-     * 
-     * @param set 
-     * @param inventoryItems 
-     * @returns 
-     */
-    async calcSetCompletionRate(set: Set, inventoryItems: Inventory[]): Promise<number> {
-        this.LOGGER.debug(`calcSetCompletionRate for set: ${set.code}`);
-        if (!set || !set.cards || set.cards.length === 0 || !inventoryItems || inventoryItems.length === 0) {
-            return 0;
-        }
-        const totalCards: number = set.cards.filter(card => card.hasNonFoil).length;
-        const totalOwned: number = inventoryItems.filter(item => item.isFoil === false
-            && set.cards.some(card => card.id === item.cardId)).length;
-        if (totalCards === 0 || totalOwned === 0) {
-            return 0;
-        }
-        if (totalOwned === totalCards) {
-            return 100;
-        }
-        const completionRate: number = Math.round((totalOwned / totalCards) * 100);
-        if (completionRate >= 100) {
-            return 99;
-        }
-        return completionRate;
-    }
-
-    /**
-     * Calculate the foil completion rate of a set based on the user's inventory.
-     * Normal cards are not counted, foils are.
-     * For normal completion rate, @see calcSetCompletionRate.
-     *
-     * @param set
-     * @param inventoryItems
-     * @returns
-     */
-    async calcSetFoilCompletionRate(set: Set, inventoryItems: Inventory[]): Promise<number> {
-        this.LOGGER.debug(`calcSetFoilCompletionRate for set: ${set.code}`);
-        if (!set || !set.cards || set.cards.length === 0 || !inventoryItems || inventoryItems.length === 0) {
-            return 0;
-        }
-        const totalFoilCards: number = set.cards.filter(card => card.hasFoil).length;
-        const totalFoilOwned: number = inventoryItems.filter(item => item.isFoil === true
-            && set.cards.some(card => card.id === item.cardId)).length;
-        if (totalFoilCards === 0 || totalFoilOwned === 0) {
-            return 0;
-        }
-        if (totalFoilOwned === totalFoilCards) {
-            return 100;
-        }
-        const completionRate: number = Math.round((totalFoilOwned / totalFoilCards) * 100);
-        if (completionRate >= 100) {
-            return 99;
-        }
-        return completionRate;
-    }
-
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {
         this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
         let result = false;
@@ -152,5 +98,12 @@ export class InventoryService {
             }
         }
         return result;
+    }
+
+    private completionRate(totalOwned: number, totalCards: number): number {
+        if (totalCards === 0 || totalOwned === 0) return 0;
+        if (totalOwned === totalCards) return 100;
+        const completionRate = Math.round((totalOwned / totalCards) * 100);
+        return completionRate > 100 ? 99 : completionRate;
     }
 }

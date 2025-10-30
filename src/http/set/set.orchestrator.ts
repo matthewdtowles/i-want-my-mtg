@@ -41,6 +41,7 @@ export class SetOrchestrator {
     ): Promise<SetListViewDto> {
         this.LOGGER.debug(`Find list of sets.`);
         try {
+            const userId = req.user?.id ?? 0;
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(options),
                 this.setService.totalSetsCount(options)
@@ -76,7 +77,7 @@ export class SetOrchestrator {
     ): Promise<SetViewDto> {
         this.LOGGER.debug(`Find set and cards for set ${setCode}.`);
         try {
-            const userId: number = req.user ? req.user.id : 0;
+            const userId = req.user?.id ?? 0;
             const set: Set | null = await this.setService.findByCode(setCode);
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);

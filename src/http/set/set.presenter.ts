@@ -20,7 +20,7 @@ export class SetPresenter {
             code: set.code,
             keyruneCode: set.keyruneCode,
             name: set.name,
-            ownedPercentage: SetPresenter.ownedPercentage(set.baseSize, inventory.length),
+            completionRate: SetPresenter.ownedPercentage(set.baseSize, inventory.length),
             ownedValue: toDollar(ownedValue),
             releaseDate: set.releaseDate,
             totalValue: toDollar(setValue),
@@ -38,7 +38,7 @@ export class SetPresenter {
             code: set.code,
             keyruneCode: set.keyruneCode,
             name: set.name,
-            ownedPercentage: SetPresenter.ownedPercentage(set.baseSize, uniqueOwned),
+            completionRate: SetPresenter.ownedPercentage(set.baseSize, uniqueOwned),
             ownedValue: "0.00", // TODO: impl setValue dto and new repo, svc methods to calculate
             releaseDate: set.releaseDate,
             totalValue: "0.00", // TODO: impl setValue dto and new repo, svc methods to calculate

@@ -92,7 +92,7 @@ export class SetOrchestrator {
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(
                 set,
                 inventory,
-                (await this.getSetValue(setCode)),
+                (await this.getSetValue(setCode, SetVariant.Normal, false)),
                 (await this.inventoryService.totalValueForSet(userId, setCode))
             );
             const baseUrl = `/sets/${setCode}`;

@@ -85,14 +85,13 @@ export class CardService {
         }
     }
 
-    async totalValueForSet(setCode: string, foil: boolean = false): Promise<number> {
-        const cardVariant = foil ? "foil" : "non-foil";
-        this.LOGGER.debug(`Get total value of ${cardVariant} cards in set ${setCode}.`);
+    async totalValueForSet(setCode: string, priceType: "normal" | "foil" | "both" = "normal"): Promise<number> {
+        this.LOGGER.debug(`Get total value of ${priceType} cards in set ${setCode}.`);
         try {
-            const total = await this.repository.totalValueForSet(setCode, foil);
-            this.LOGGER.debug(`Total ${cardVariant} value for set ${setCode}: ${total}.`);
+            const total = await this.repository.totalValueForSet(setCode, priceType);
+            this.LOGGER.debug(`Total ${priceType} value for set ${setCode}: ${total}.`);
             return total;
-        } catch(error) {
+        } catch (error) {
             throw new Error(`Error getting total value of non-foil cards for set ${setCode}: ${error.message}.`);
         }
     }

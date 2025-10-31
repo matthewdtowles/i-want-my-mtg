@@ -92,7 +92,7 @@ export class SetOrchestrator {
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(
                 set,
                 inventory,
-                (await this.getSetTotalValue(setCode)),
+                (await this.getSetValue(setCode)),
                 (await this.inventoryService.totalValueForSet(userId, setCode))
             );
             const baseUrl = `/sets/${setCode}`;
@@ -156,16 +156,29 @@ export class SetOrchestrator {
         }
     }
 
-    // TODO: need non-foil and foil versions of this and then one for total together
-    async getSetTotalValue(setCode: string): Promise<number> {
-        this.LOGGER.debug(`Get total value for set: ${setCode}.`);
+
+    async getSetValue(setCode: string, variant: SetVariant, baseSet: boolean = false): Promise<number> {
+        this.LOGGER.debug(`Get value for set (${variant}): ${setCode} ${baseSet ? "base set" : ""}`);
         try {
-            const totalValue = await this.cardService.totalValueForSet(setCode);
-            this.LOGGER.debug(`Total value for set ${setCode}: ${totalValue}.`);
-            return totalValue;
+            const setValue = await this.cardService.totalValueForSet(setCode, variant);
+            this.LOGGER.debug(`Value for set ${variant} cards ${setCode}: ${setValue}.`);
+            return setValue;
         } catch (error) {
-            this.LOGGER.debug(`Error getting set ${setCode} total value: ${error.message}.`);
-            return HttpErrorHandler.toHttpException(error, "getSetTotalValue");
+            this.LOGGER.debug(`Error getting set ${setCode} ${variant} value: ${error?.message}.`);
+            return HttpErrorHandler.toHttpException(error, "getSetValue");
         }
     }
+}
+
+export const SetVariant = {
+    Normal: "normal",
+    Foil: "foil",
+} as const
+
+export type SetVariant = typeof SetVariant[keyof typeof SetVariant]
+
+
+export interface SetAggregateOptions {
+    variant: SetVariant;
+    baseSet: boolean;
 }

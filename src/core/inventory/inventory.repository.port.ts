@@ -78,7 +78,7 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
     /**
      * @param {number} userId
      * @param {string} setCode
-     * @returns total number of cards user owns for given set
+     * @returns total number of cards in set owned by user
      */
     totalInventoryCardsForSet(userId: number, setCode: string): Promise<number>;
 

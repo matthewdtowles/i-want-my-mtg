@@ -54,6 +54,7 @@ export class InventoryService {
         return completionRate;
     }
 
+    // TODO: differentiate for completion rate of main set vs whole set and variants
     async completionRateForSet(userId: number, setCode: string): Promise<number> {
         this.LOGGER.debug(`Get owned % for cards in set ${setCode}.`);
         const totalOwned = await this.repository.totalInventoryCardsForSet(userId, setCode);
@@ -68,36 +69,33 @@ export class InventoryService {
         return await this.repository.totalInventoryCards(userId, options);
     }
 
-    async totalValue(userId: number): Promise<number> {
+    async totalOwnedValue(userId: number): Promise<number> {
         this.LOGGER.debug(`Calculate total value for user ${userId}.`);
         const totalValue = await this.repository.totalInventoryValue(userId);
         this.LOGGER.debug(`User ${userId} inventory value ${totalValue}.`);
         return totalValue;
     }
 
-    async totalValueForSet(userId: number, setCode: string): Promise<number> {
-        this.LOGGER.debug(`Calculate total value for user ${userId} in set ${setCode}.`);
-        const totalValue = await this.repository.totalInventoryValueForSet(userId, setCode);
-        this.LOGGER.debug(`User ${userId} inventory value ${totalValue} for set ${setCode}.`);
-        return totalValue;
+    async ownedValueForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Calculate owned value for user ${userId} in set ${setCode}.`);
+        const ownedValue = await this.repository.totalInventoryValueForSet(userId, setCode);
+        this.LOGGER.debug(`User ${userId} inventory value ${ownedValue} for set ${setCode}.`);
+        return ownedValue;
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {
         this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
-        let result = false;
         if (userId && cardId) {
             try {
                 await this.repository.delete(userId, cardId, isFoil);
                 const foundItem: Inventory | null = await this.repository.findOne(userId, cardId, isFoil);
-                if (!foundItem) {
-                    result = true;
-                }
+                return foundItem ? false : true;
             }
             catch (error) {
                 this.LOGGER.error(`Failed to delete inventory: ${error.message}`);
             }
         }
-        return result;
+        return false;
     }
 
     private completionRate(totalOwned: number, totalCards: number): number {

@@ -105,11 +105,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return count;
     }
 
-    async totalValueForSet(code: string, priceType: "normal" | "foil" | "both" = "normal"): Promise<number> {
-        this.LOGGER.debug(`Calculating total ${priceType} value for set: ${code}.`);
-        let selectExpr = "p.normal";
-        if (priceType === "foil") selectExpr = "p.foil";
-        if (priceType === "both") selectExpr = "(COALESCE(p.normal,0) + COALESCE(p.foil,0))";
+    async totalValueForSet(code: string, includeFoil: boolean): Promise<number> {
+        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
+        const selectExpr = includeFoil
+            ? "(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))"
+            : "COALESCE(p.normal, 0)";
         const result = await this.repository.query(`
             SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
             FROM card c
@@ -117,7 +117,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             WHERE c.set_code = $1
         `, [code]);
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`Total ${priceType} value for set ${code}: ${total}.`);
+        this.LOGGER.debug(`Total ${includeFoil} value for set ${code}: ${total}.`);
         return total;
     }
 

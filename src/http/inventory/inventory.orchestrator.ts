@@ -52,7 +52,7 @@ export class InventoryOrchestrator {
                 message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
-                ownedValue: toDollar(await this.inventoryService.totalValue(userId)),
+                ownedValue: toDollar(await this.inventoryService.totalOwnedValue(userId)),
                 ownedTotal,
                 completionRate: await this.inventoryService.completionRateAll(userId),
                 pagination: new PaginationView(

@@ -92,8 +92,8 @@ export class SetOrchestrator {
             const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(
                 set,
                 inventory,
-                (await this.getSetValue(setCode, SetVariant.Normal, false)),
-                (await this.inventoryService.totalValueForSet(userId, setCode))
+                (await this.getSetValue(setCode, false)),
+                (await this.inventoryService.ownedValueForSet(userId, setCode))
             );
             const baseUrl = `/sets/${setCode}`;
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
@@ -157,28 +157,15 @@ export class SetOrchestrator {
     }
 
 
-    async getSetValue(setCode: string, variant: SetVariant, baseSet: boolean = false): Promise<number> {
-        this.LOGGER.debug(`Get value for set (${variant}): ${setCode} ${baseSet ? "base set" : ""}`);
+    async getSetValue(setCode: string, includeFoil: boolean): Promise<number> {
+        this.LOGGER.debug(`Get value for set ${setCode} ${includeFoil ? "with foils" : ""}`);
         try {
-            const setValue = await this.cardService.totalValueForSet(setCode, variant);
-            this.LOGGER.debug(`Value for set ${variant} cards ${setCode}: ${setValue}.`);
+            const setValue = await this.cardService.totalValueForSet(setCode, includeFoil);
+            this.LOGGER.debug(`Value for set ${includeFoil} cards ${setCode}: ${setValue}.`);
             return setValue;
         } catch (error) {
-            this.LOGGER.debug(`Error getting set ${setCode} ${variant} value: ${error?.message}.`);
+            this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);
             return HttpErrorHandler.toHttpException(error, "getSetValue");
         }
     }
-}
-
-export const SetVariant = {
-    Normal: "normal",
-    Foil: "foil",
-} as const
-
-export type SetVariant = typeof SetVariant[keyof typeof SetVariant]
-
-
-export interface SetAggregateOptions {
-    variant: SetVariant;
-    baseSet: boolean;
 }

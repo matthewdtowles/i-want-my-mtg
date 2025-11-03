@@ -85,12 +85,12 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+    async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
-        this.addFilters(qb, options.filter);
+        this.addFilters(qb, options?.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total cards in set ${code}: ${count}.`);
         return count;

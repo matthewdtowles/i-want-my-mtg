@@ -26,6 +26,10 @@ input[type="number"] {
 }
 
 .completion-bar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   background: #e0e0e0;
   border-radius: 4px;
@@ -35,10 +39,20 @@ input[type="number"] {
 }
 
 .completion-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   background: #14b8a6;
   transition: width 0.4s;
-  line-height: normal;
+  z-index: 1;
+}
+
+.completion-bar-container span {
+  z-index: 10;
+  width: 100%;
+  text-align: center;
+  position: relative;
 }
 
 @media (max-width: 450px) {

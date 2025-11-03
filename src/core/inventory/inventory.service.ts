@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { Set } from "src/core/set/set.entity";
 import { getLogger } from "src/logger/global-app-logger";
 import { Inventory } from "./inventory.entity";
 import { InventoryRepositoryPort } from "./inventory.repository.port";
@@ -29,44 +28,45 @@ export class InventoryService {
 
     async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
         this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`);
-        return userId ? await this.repository.findByUser(userId, options) : [];
+        const inventoryList = userId ? await this.repository.findByUser(userId, options) : [];
+        this.LOGGER.debug(`Found ${inventoryList.length} cards for user ${userId} with pagination.`);
+        return inventoryList;
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}.`);
-        return userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
+        const inventoryList = userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
+        this.LOGGER.debug(`Found ${inventoryList.length} cards for user ${userId}.`);
+        return inventoryList;
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
         this.LOGGER.debug(`findByCards for user: ${userId}.`);
-        if (!userId || !cardIds || cardIds.length === 0) {
-            return [];
-        }
-        return await this.repository.findByCards(userId, cardIds);
+        const inventoryList = userId && cardIds && cardIds.length > 0
+            ? await this.repository.findByCards(userId, cardIds) : [];
+        this.LOGGER.debug(`Found ${inventoryList.length} cards by cards given for user ${userId}.`);
+        return inventoryList;
     }
 
-    async completionRateAll(userId: number): Promise<number> {
-        this.LOGGER.debug(`Get owned % for all cards.`);
-        const totalOwned = await this.repository.totalInventoryCards(userId, new SafeQueryOptions({}));
-        const totalCards = await this.repository.totalCards();
-        const completionRate = this.completionRate(totalOwned, totalCards);
-        this.LOGGER.debug(`Completion rate for all cards: ${completionRate}%.`);
-        return completionRate;
-    }
-
-    // TODO: differentiate for completion rate of main set vs whole set and variants
-    async completionRateForSet(userId: number, setCode: string): Promise<number> {
-        this.LOGGER.debug(`Get owned % for cards in set ${setCode}.`);
-        const totalOwned = await this.repository.totalInventoryCardsForSet(userId, setCode);
-        const totalCards = await this.repository.totalCardsInSet(setCode);
-        const completionRate = this.completionRate(totalOwned, totalCards);
-        this.LOGGER.debug(`Completion rate for set ${setCode} ${completionRate}%.`);
-        return completionRate;
+    async totalCards(): Promise<number> {
+        this.LOGGER.debug(`Get total number of cards in existence.`);
+        const result = await this.repository.totalCards();
+        this.LOGGER.debug(`Total number of existing cards is ${result}`);
+        return result;
     }
 
     async totalInventoryItems(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}.`);
-        return await this.repository.totalInventoryCards(userId, options);
+        const result = await this.repository.totalInventoryCards(userId, options);
+        this.LOGGER.debug(`Total inventory items for user ${userId} is ${result}.`);
+        return result;
+    }
+
+    async totalInventoryItemsForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Get total inventory items for ${userId} in set ${setCode}.`);
+        const result = await this.repository.totalInventoryCardsForSet(userId, setCode);
+        this.LOGGER.debug(`Total inventory items for user ${userId} in set ${setCode} is ${result}.`);
+        return result;
     }
 
     async totalOwnedValue(userId: number): Promise<number> {

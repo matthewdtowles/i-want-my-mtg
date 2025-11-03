@@ -4,9 +4,7 @@
         <p>Value: {{this.ownedValue}}</p>
         <p>Total Cards: {{this.ownedTotal}}</p>
         <p>All Cards: {{this.completionRate}}%</p>
-        <div class="completion-bar-container">
-            <div class="completion-bar" style="width: {{this.completionRate}}%;"></div>
-        </div>
+        {{>completionRate}}
     </section>
     <div class="w-full mx-auto">
         {{>filter}}

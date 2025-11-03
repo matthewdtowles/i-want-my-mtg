@@ -10,7 +10,7 @@ import { SetService } from "src/core/set/set.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { Breadcrumb } from "src/http/base/breadcrumb";
-import { isAuthenticated } from "src/http/base/http.util";
+import { completionRate, isAuthenticated, toDollar } from "src/http/base/http.util";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
@@ -22,6 +22,10 @@ import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
+import { todo } from "node:test";
+import { CardPresenter } from "../card/card.presenter";
+import { InventoryPresenter } from "../inventory/inventory.presenter";
+import { CardImgType } from "src/core/card/card.img.type.enum";
 
 @Injectable()
 export class SetOrchestrator {
@@ -79,24 +83,16 @@ export class SetOrchestrator {
         try {
             const userId = req.user?.id ?? 0;
             const set: Set | null = await this.setService.findByCode(setCode);
+            const setSize = await this.cardService.totalCardsInSet(set.code);
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
-            let inventory: Inventory[] = [];
-            if (userId && set.cards?.length) {
-                const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
-                inventory = await this.inventoryService.findByCards(userId, cardIds);
-            }
-            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(
-                set,
-                inventory,
-                (await this.getSetValue(setCode, false)),
-                (await this.inventoryService.ownedValueForSet(userId, setCode))
-            );
-            const baseUrl = `/sets/${setCode}`;
-            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
+            const setResonse = await this.createSetResponseDto(userId, set, setSize);
+            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`)
+            const baseUrl = `/sets/${set.code}`;
+
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -110,7 +106,7 @@ export class SetOrchestrator {
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    await this.cardService.totalCardsInSet(setCode, options)
+                    set.cards?.length ?? 0
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
@@ -167,5 +163,35 @@ export class SetOrchestrator {
             this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);
             return HttpErrorHandler.toHttpException(error, "getSetValue");
         }
+    }
+
+    private async createSetResponseDto(userId: number, set: Set, setSize: number): Promise<SetResponseDto> {
+        const setPayloadSize = set.cards?.length || 0;
+        const inventory = userId && setPayloadSize > 0
+            ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
+            : [];
+        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        return new SetResponseDto({
+            block: set.block ?? set.name,
+            code: set.code,
+            completionRate: completionRate(
+                ownedTotal,
+                setSize
+            ),
+            keyruneCode: set.keyruneCode ?? set.code,
+            name: set.name,
+            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
+            ownedTotal,
+            releaseDate: set.releaseDate,
+            setSize,
+            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            url: `/sets/${set.code.toLowerCase()}`,
+            cards: set.cards
+                ? set.cards.map(card => CardPresenter.toCardResponse(
+                    card,
+                    InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
+                    CardImgType.SMALL))
+                : []
+        });
     }
 }

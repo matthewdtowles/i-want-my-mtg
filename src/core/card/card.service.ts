@@ -74,7 +74,7 @@ export class CardService {
         }
     }
 
-    async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
+    async totalCardsInSet(setCode: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
         try {
             const total = await this.repository.totalInSet(setCode, options);

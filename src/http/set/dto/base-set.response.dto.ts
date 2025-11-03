@@ -6,6 +6,10 @@ export class BaseSetResponseDto {
     readonly name: string;
     readonly ownedValue: string;
     readonly releaseDate: string;
+    // TODO after set meta reponse dto is ready:
+    // readonly ownedTotal: number
+    // readonly setSize: number
+    // readonly baseSetSize: number
     readonly totalValue: string;
     readonly url: string;
 

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
+import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
-import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
@@ -18,14 +18,13 @@ import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { getLogger } from "src/logger/global-app-logger";
+import { CardPresenter } from "../card/card.presenter";
+import { InventoryPresenter } from "../inventory/inventory.presenter";
 import { SetListViewDto } from "./dto/set-list.view.dto";
+import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
-import { todo } from "node:test";
-import { CardPresenter } from "../card/card.presenter";
-import { InventoryPresenter } from "../inventory/inventory.presenter";
-import { CardImgType } from "src/core/card/card.img.type.enum";
 
 @Injectable()
 export class SetOrchestrator {
@@ -57,7 +56,7 @@ export class SetOrchestrator {
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.total}`,
-                setList: sets.map((set: Set) => SetPresenter.toSetMetaDto(set, 0)),
+                setList: await this.createSetMetaResponseDtos(userId, sets),
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(options, baseUrl),
@@ -83,13 +82,12 @@ export class SetOrchestrator {
         try {
             const userId = req.user?.id ?? 0;
             const set: Set | null = await this.setService.findByCode(setCode);
-            const setSize = await this.cardService.totalCardsInSet(set.code);
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
-            const setResonse = await this.createSetResponseDto(userId, set, setSize);
+            const setResonse = await this.createSetResponseDto(userId, set);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`)
             const baseUrl = `/sets/${set.code}`;
 
@@ -165,19 +163,38 @@ export class SetOrchestrator {
         }
     }
 
-    private async createSetResponseDto(userId: number, set: Set, setSize: number): Promise<SetResponseDto> {
+    private async createSetMetaResponseDtos(userId: number, sets: Set[]): Promise<SetMetaResponseDto[]> {
+        return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set)));
+    }
+
+    private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
+        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        const setSize = await this.cardService.totalCardsInSet(set.code);
+        return new SetMetaResponseDto({
+            block: set.block ?? set.name,
+            code: set.code,
+            completionRate: completionRate(ownedTotal, setSize),
+            keyruneCode: set.keyruneCode ?? set.code,
+            name: set.name,
+            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
+            ownedTotal,
+            releaseDate: set.releaseDate,
+            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            url: `/sets/${set.code.toLowerCase()}`
+        });
+    }
+
+    private async createSetResponseDto(userId: number, set: Set): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory = userId && setPayloadSize > 0
             ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
             : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        const setSize = await this.cardService.totalCardsInSet(set.code);
         return new SetResponseDto({
             block: set.block ?? set.name,
             code: set.code,
-            completionRate: completionRate(
-                ownedTotal,
-                setSize
-            ),
+            completionRate: completionRate(ownedTotal, setSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),

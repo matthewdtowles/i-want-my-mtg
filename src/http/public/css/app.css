@@ -38,6 +38,7 @@ input[type="number"] {
   height: 100%;
   background: #14b8a6;
   transition: width 0.4s;
+  line-height: normal;
 }
 
 @media (max-width: 450px) {

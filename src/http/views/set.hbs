@@ -10,6 +10,11 @@
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
             <li class="text-gray-700">Set Value: {{#if set.totalValue}}{{set.totalValue}}{{else}}$0.00{{/if}}</li>
             <li class="text-gray-700">Owned Value: {{#if set.ownedValue}}{{set.ownedValue}}{{else}}$0.00{{/if}}</li>
+            <li class="text-gray-700">
+                <div class="completion-bar-container">
+                    <div class="completion-bar" style="width: {{this.completionRate}}%;">{{this.completionRate}}%</div>
+                </div>
+            </li>
         </ul>
     </section>
 </div>

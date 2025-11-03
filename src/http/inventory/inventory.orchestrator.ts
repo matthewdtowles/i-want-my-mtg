@@ -42,6 +42,7 @@ export class InventoryOrchestrator {
             // owned total is always the entire amount of cards owned
             // cards.length is the number of those cards that are part of current payload
             const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
+            // total cards in existence
             const totalCards = await this.inventoryService.totalCards();
 
             return new InventoryViewDto({

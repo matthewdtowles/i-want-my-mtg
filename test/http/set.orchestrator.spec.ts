@@ -67,6 +67,8 @@ describe("SetOrchestrator", () => {
                         findByCards: jest.fn(),
                         getUniqueOwnedCountByUserId: jest.fn(),
                         totalValueForSet: jest.fn(),
+                        totalInventoryItemsForSet: jest.fn(),
+                        ownedValueForSet: jest.fn(),
                     }
                 },
                 {

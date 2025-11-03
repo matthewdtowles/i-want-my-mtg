@@ -35,6 +35,8 @@ describe("InventoryOrchestrator", () => {
                         completionRateAll: jest.fn(),
                         save: jest.fn(),
                         delete: jest.fn(),
+                        totalCards: jest.fn(),
+                        totalOwnedValue: jest.fn(),
                     }
                 },
             ],

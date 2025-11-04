@@ -89,6 +89,7 @@ export class SetOrchestrator {
             const setResonse = await this.createSetResponseDto(userId, set);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
+            const setSize = await this.cardService.totalCardsInSet(set.code);
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
@@ -103,7 +104,7 @@ export class SetOrchestrator {
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    set.cards?.length ?? 0
+                    setSize
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([

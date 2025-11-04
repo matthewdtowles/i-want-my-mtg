@@ -88,7 +88,7 @@ export class SetOrchestrator {
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             const setResonse = await this.createSetResponseDto(userId, set);
-            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`)
+            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
 
             return new SetViewDto({

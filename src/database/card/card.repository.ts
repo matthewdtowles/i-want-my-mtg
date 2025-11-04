@@ -117,7 +117,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             WHERE c.set_code = $1
         `, [code]);
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`Total ${includeFoil} value for set ${code}: ${total}.`);
+        this.LOGGER.debug(`Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`);
         return total;
     }
 

@@ -21,8 +21,8 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
 
     constructor(
-        @InjectRepository(CardOrmEntity) private readonly cardRepository: Repository<CardOrmEntity>,
-        @InjectRepository(LegalityOrmEntity) private readonly legalityRepository: Repository<LegalityOrmEntity>,
+        @InjectRepository(CardOrmEntity) protected readonly repository: Repository<CardOrmEntity>,
+        @InjectRepository(LegalityOrmEntity) protected readonly legalityRepository: Repository<LegalityOrmEntity>,
     ) {
         super();
         this.LOGGER.debug(`Instantiated.`);
@@ -31,7 +31,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     async save(cards: Card[]): Promise<number> {
         this.LOGGER.debug(`Saving ${cards?.length ?? 0} cards.`);
         const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
-        const saved = await this.cardRepository.save(ormCards);
+        const saved = await this.repository.save(ormCards);
         const count = saved?.length ?? 0;
         this.LOGGER.debug(`Saved ${count} cards.`);
         return count;
@@ -39,7 +39,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async findById(uuid: string, _relations: string[]): Promise<Card | null> {
         this.LOGGER.debug(`Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
-        const ormCard: CardOrmEntity = await this.cardRepository.findOne({
+        const ormCard: CardOrmEntity = await this.repository.findOne({
             where: { id: uuid },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
@@ -49,7 +49,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`);
-        const qb = this.cardRepository.createQueryBuilder(this.TABLE)
+        const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.setCode = :code`, { code });
         this.addFilters(qb, options.filter);
@@ -62,7 +62,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Finding cards with name: ${name}, options: ${JSON.stringify(options)}.`);
-        const qb = this.cardRepository.createQueryBuilder(this.TABLE)
+        const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
             .where(`${this.TABLE}.name = :name`, { name });
         this.addPagination(qb, options);
@@ -74,7 +74,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {
         this.LOGGER.debug(`Finding card by set code ${code} and number ${number}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
-        const ormCard: CardOrmEntity = await this.cardRepository.findOne({
+        const ormCard: CardOrmEntity = await this.repository.findOne({
             where: {
                 set: { code, },
                 number,
@@ -85,12 +85,12 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+    async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`);
-        const qb = this.cardRepository
+        const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
-        this.addFilters(qb, options.filter);
+        this.addFilters(qb, options?.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total cards in set ${code}: ${count}.`);
         return count;
@@ -98,11 +98,27 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async totalWithName(name: string): Promise<number> {
         this.LOGGER.debug(`Counting total cards with name: ${name}.`);
-        const count = await this.cardRepository.count({
+        const count = await this.repository.count({
             where: { name }
         });
         this.LOGGER.debug(`Total cards with name ${name}: ${count}.`);
         return count;
+    }
+
+    async totalValueForSet(code: string, includeFoil: boolean): Promise<number> {
+        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
+        const selectExpr = includeFoil
+            ? "(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))"
+            : "COALESCE(p.normal, 0)";
+        const result = await this.repository.query(`
+            SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
+            FROM card c
+            JOIN price p ON p.card_id = c.id
+            WHERE c.set_code = $1
+        `, [code]);
+        const total = Number(result[0]?.total_value ?? 0);
+        this.LOGGER.debug(`Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`);
+        return total;
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
@@ -111,7 +127,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             this.LOGGER.debug(`No card ids provided to verify.`);
             return new Set();
         }
-        const ormCards: CardOrmEntity[] = await this.cardRepository
+        const ormCards: CardOrmEntity[] = await this.repository
             .createQueryBuilder(this.TABLE)
             .select(`${this.TABLE}.id`)
             .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
@@ -123,7 +139,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async delete(id: string): Promise<void> {
         this.LOGGER.debug(`Deleting card with id: ${id}.`);
-        await this.cardRepository.delete(id);
+        await this.repository.delete(id);
         this.LOGGER.debug(`Deleted card with id: ${id}.`);
     }
 

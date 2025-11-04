@@ -5,6 +5,7 @@ import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
+import { completionRate, toDollar } from "src/http/base/http.util";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
@@ -27,7 +28,8 @@ export class InventoryOrchestrator {
     }
 
     async findByUser(req: AuthenticatedRequest, options: SafeQueryOptions): Promise<InventoryViewDto> {
-        this.LOGGER.debug(`Find inventory for user ${req.user?.id}.`);
+        const userId = req.user?.id;
+        this.LOGGER.debug(`Find inventory for user ${userId}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(req.user.id, options);
@@ -36,8 +38,12 @@ export class InventoryOrchestrator {
             );
             const username: string = req.user.name;
             const baseUrl = "/inventory";
-
-            this.LOGGER.debug(`Found ${cards.length} inventory items for user ${req.user?.id}.`);
+            this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
+            // owned total is always the entire amount of cards owned
+            // cards.length is the number of those cards that are part of current payload
+            const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
+            // total cards in existence
+            const totalCards = await this.inventoryService.totalCards();
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
@@ -49,11 +55,13 @@ export class InventoryOrchestrator {
                 message: cards ? `Inventory for ${username} found` : `Inventory not found for ${username}`,
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 username,
-                totalValue: "0.00",
+                ownedValue: toDollar(await this.inventoryService.totalOwnedValue(userId)),
+                ownedTotal,
+                completionRate: completionRate(ownedTotal, totalCards),
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    await this.inventoryService.totalInventoryItemsForUser(req.user.id, options)
+                    ownedTotal,
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
@@ -73,7 +81,7 @@ export class InventoryOrchestrator {
     async getLastPage(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find last page for inventory pagination for user ${userId}.`);
         try {
-            const totalItems: number = await this.inventoryService.totalInventoryItemsForUser(userId, options);
+            const totalItems: number = await this.inventoryService.totalInventoryItems(userId, options);
             const lastPage = Math.max(1, Math.ceil(totalItems / options.limit));
             this.LOGGER.debug(`Last page for user ${userId}: ${lastPage}`);
             return lastPage;

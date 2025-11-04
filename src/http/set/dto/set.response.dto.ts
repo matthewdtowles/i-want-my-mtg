@@ -8,5 +8,5 @@ export class SetResponseDto extends BaseSetResponseDto {
     constructor(init: Partial<SetResponseDto>) {
         super(init);
         this.cards = init.cards || [];
-    }
+   }
 }

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Card } from "src/core/card/card.entity";
+import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardService } from "src/core/card/card.service";
-import { Inventory } from "src/core/inventory/inventory.entity";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
@@ -10,7 +10,7 @@ import { SetService } from "src/core/set/set.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
 import { AuthenticatedRequest } from "src/http/base/authenticated.request";
 import { Breadcrumb } from "src/http/base/breadcrumb";
-import { isAuthenticated } from "src/http/base/http.util";
+import { completionRate, isAuthenticated, toDollar } from "src/http/base/http.util";
 import { HttpErrorHandler } from "src/http/http.error.handler";
 import { FilterView } from "src/http/list/filter.view";
 import { PaginationView } from "src/http/list/pagination.view";
@@ -18,7 +18,10 @@ import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { getLogger } from "src/logger/global-app-logger";
+import { CardPresenter } from "../card/card.presenter";
+import { InventoryPresenter } from "../inventory/inventory.presenter";
 import { SetListViewDto } from "./dto/set-list.view.dto";
+import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPresenter } from "./set.presenter";
@@ -41,6 +44,7 @@ export class SetOrchestrator {
     ): Promise<SetListViewDto> {
         this.LOGGER.debug(`Find list of sets.`);
         try {
+            const userId = req.user?.id ?? 0;
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(options),
                 this.setService.totalSetsCount(options)
@@ -52,7 +56,7 @@ export class SetOrchestrator {
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.total}`,
-                setList: sets.map((set: Set) => SetPresenter.toSetMetaDto(set, 0)),
+                setList: await this.createSetMetaResponseDtos(userId, sets),
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(options, baseUrl),
@@ -76,21 +80,17 @@ export class SetOrchestrator {
     ): Promise<SetViewDto> {
         this.LOGGER.debug(`Find set and cards for set ${setCode}.`);
         try {
-            const userId: number = req.user ? req.user.id : 0;
+            const userId = req.user?.id ?? 0;
             const set: Set | null = await this.setService.findByCode(setCode);
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
-            let inventory: Inventory[] = [];
-            if (userId && set.cards?.length) {
-                const cardIds: string[] = set && set.cards ? set.cards.map((c: Card) => c.id) : [];
-                inventory = await this.inventoryService.findByCards(userId, cardIds);
-            }
-            const setResonse: SetResponseDto = SetPresenter.toSetResponseDto(set, inventory);
-            const baseUrl = `/sets/${setCode}`;
-            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${setCode}.`)
+            const setResonse = await this.createSetResponseDto(userId, set);
+            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
+            const baseUrl = `/sets/${set.code}`;
+
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -104,7 +104,7 @@ export class SetOrchestrator {
                 pagination: new PaginationView(
                     options,
                     baseUrl,
-                    await this.cardService.totalCardsInSet(setCode, options)
+                    set.cards?.length ?? 0
                 ),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
@@ -148,5 +148,67 @@ export class SetOrchestrator {
             this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
             return HttpErrorHandler.toHttpException(error, "getLastCardPage");
         }
+    }
+
+
+    async getSetValue(setCode: string, includeFoil: boolean): Promise<number> {
+        this.LOGGER.debug(`Get value for set ${setCode} ${includeFoil ? "with foils" : ""}`);
+        try {
+            const setValue = await this.cardService.totalValueForSet(setCode, includeFoil);
+            this.LOGGER.debug(`Value for set ${setCode} ${includeFoil ? "with foils" : "without foils"}: ${setValue}.`);
+            return setValue;
+        } catch (error) {
+            this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);
+            return HttpErrorHandler.toHttpException(error, "getSetValue");
+        }
+    }
+
+    private async createSetMetaResponseDtos(userId: number, sets: Set[]): Promise<SetMetaResponseDto[]> {
+        return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set)));
+    }
+
+    private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
+        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        const setSize = await this.cardService.totalCardsInSet(set.code);
+        return new SetMetaResponseDto({
+            block: set.block ?? set.name,
+            code: set.code,
+            completionRate: completionRate(ownedTotal, setSize),
+            keyruneCode: set.keyruneCode ?? set.code,
+            name: set.name,
+            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
+            ownedTotal,
+            releaseDate: set.releaseDate,
+            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            url: `/sets/${set.code.toLowerCase()}`
+        });
+    }
+
+    private async createSetResponseDto(userId: number, set: Set): Promise<SetResponseDto> {
+        const setPayloadSize = set.cards?.length || 0;
+        const inventory = userId && setPayloadSize > 0
+            ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
+            : [];
+        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        const setSize = await this.cardService.totalCardsInSet(set.code);
+        return new SetResponseDto({
+            block: set.block ?? set.name,
+            code: set.code,
+            completionRate: completionRate(ownedTotal, setSize),
+            keyruneCode: set.keyruneCode ?? set.code,
+            name: set.name,
+            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
+            ownedTotal,
+            releaseDate: set.releaseDate,
+            setSize,
+            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            url: `/sets/${set.code.toLowerCase()}`,
+            cards: set.cards
+                ? set.cards.map(card => CardPresenter.toCardResponse(
+                    card,
+                    InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
+                    CardImgType.SMALL))
+                : []
+        });
     }
 }

@@ -16,7 +16,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
     readonly TABLE = "inventory";
     private readonly LOGGER = getLogger(InventoryRepository.name);
 
-    constructor(@InjectRepository(InventoryOrmEntity) private readonly repository: Repository<InventoryOrmEntity>) {
+    constructor(@InjectRepository(InventoryOrmEntity) protected readonly repository: Repository<InventoryOrmEntity>) {
         super();
         this.LOGGER.debug(`Instantiated.`);
     }
@@ -71,7 +71,7 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         return results.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
 
-    async totalInventoryItemsForUser(userId: number, options: SafeQueryOptions): Promise<number> {
+    async totalInventoryCards(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total inventory items for userId: ${userId}, filter: ${options.filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoin(`${this.TABLE}.card`, "card")
@@ -79,6 +79,59 @@ export class InventoryRepository extends BaseRepository<InventoryOrmEntity> impl
         this.addFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total inventory items for userId: ${userId}: ${count}.`);
+        return count;
+    }
+
+    async totalInventoryValue(userId: number): Promise<number> {
+        this.LOGGER.debug(`Calculate total value for user inventory items.`);
+        const queryResult = await this.repository.query(`
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN i.foil THEN p.foil
+                    ELSE p.normal
+                END * i.quantity
+            ), 0) AS total_value
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            JOIN price p ON p.card_id = c.id
+            WHERE i.user_id = $1
+            `, [userId]);
+        const totalInventoryValue = Number(queryResult[0]?.total_value ?? 0);
+        this.LOGGER.debug(`User inventory value: ${totalInventoryValue}.`);
+        return totalInventoryValue;
+    }
+
+    async totalInventoryValueForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Get total value for user inventory items in set: ${setCode}.`);
+        const queryResult = await this.repository.query(`
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN i.foil THEN p.foil
+                    ELSE p.normal
+                END * i.quantity
+            ), 0) AS total_value
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            JOIN price p ON p.card_id = c.id
+            WHERE i.user_id = $1
+            AND c.set_code = $2
+            `, [userId, setCode]);
+        const totalInventoryCardsForSet = Number(queryResult[0]?.total_value ?? 0);
+        this.LOGGER.debug(`User inventory value for set ${setCode}: ${totalInventoryCardsForSet}.`);
+        return totalInventoryCardsForSet;
+    }
+
+    async totalInventoryCardsForSet(userId: number, setCode: string): Promise<number> {
+        this.LOGGER.debug(`Counting total inventory items for user ${userId} in set ${setCode}.`);
+        const queryResult = await this.repository.query(`
+            SELECT COUNT(*) AS total
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            WHERE i.user_id = $1
+            AND c.set_code = $2
+            `, [userId, setCode]);
+        const count = Number(queryResult[0]?.total ?? 0);
+        this.LOGGER.debug(`Total inventory items for userId: ${userId} in set ${setCode} is ${count}.`);
         return count;
     }
 

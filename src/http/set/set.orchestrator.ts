@@ -155,7 +155,7 @@ export class SetOrchestrator {
         this.LOGGER.debug(`Get value for set ${setCode} ${includeFoil ? "with foils" : ""}`);
         try {
             const setValue = await this.cardService.totalValueForSet(setCode, includeFoil);
-            this.LOGGER.debug(`Value for set ${includeFoil} cards ${setCode}: ${setValue}.`);
+            this.LOGGER.debug(`Value for set ${setCode} ${includeFoil ? "with foils" : "without foils"}: ${setValue}.`);
             return setValue;
         } catch (error) {
             this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);

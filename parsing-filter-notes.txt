@@ -1,30 +1,86 @@
+0. Foreach s in Set: Filter s.isOnlineOnly
+1. Foreach c in each s in Sets: Filter c.isOnlineOnly
+
+1. Filter by Set Type in JSON PARSING
+    FILTER_SET_TYPES = [ 'alchemy', 'minigame', 'token', 'treasure_chest' ];
+
+    ALLOWED_SET_TYPE = [
+        'archenemy',
+        'arsenal',
+        'box',
+        'commander',
+        'core',
+        'draft_innovation',
+        'dual_deck',
+        'eternal',
+        'expansion',
+        'from_the_vault',
+        'funny',
+        'masterpiece',
+        'masters',
+        'memorabilia',
+        'planechase',
+        'premium_deck',
+        'promo',
+        'spellbook',
+        'starter',
+        'vanguard'
+    ];
+
+2. Filter by Set in JSON PARSING
+    FILTER_SETS = [ 'oarc', 'oe01', 'g17', 'aa1', 'aa2', 'aa3', 'aa4', 'past', 
+        'q01', 'q02', 'q03', 'q04', 'q05', 'q06', 'q07', 'q08', 'ea1', 'ea2', 
+        'ea3', 'phuk', 'ha1', 'ha2', 'ha3', 'ha4', 'ha5', 'ha6', 'ha7', 'g18', 
+        'td0', 'mgb', 'pa1', 'rqs', 'psal', 'ps11', 'psdg']
+
+4. Cleanup after PARSING
+    -- will remove ~99 sets (pre-filter)
+    DELETE FROM set s WHERE s.code NOT IN (SELECT DISTINCT set_code FROM card);
+
 FILTER FOR SETS
-       type       | count  | action | set codes | card nums |
-------------------+--------+--------+-----------+-----------+
- alchemy          |    16  | remove | NA        | NA
- archenemy        |     4  | TBD    | AlphaNum  | NON-ASCII
- arsenal          |     3  | TBD    | AlphaNum  | NUM
- box              |    49  | TBD    | 
- commander        |    40  |     |
- core             |    26  |     |
- draft_innovation |    18  | Keep   | AlphaNum  | NUM
- duel_deck        |    28  | Keep   | AlphaNum  | NUM
- eternal          |     3  | TBD    | AlphaNum  | NUM
- expansion        |   114  | Keep   | AlphaNum  | NUM
- from_the_vault   |    10  |     |
- funny            |    21  |     |
- masterpiece      |    19  |     |
- masters          |    33  |     |
- memorabilia      |    89  |     |
- minigame         |    15  |     |
- planechase       |     6  |     |
- premium_deck     |     3  |     |
- promo            |   292  |     |
- spellbook        |     3  |     |
- starter          |    15  |     |
- token            |    24  |     |
- treasure_chest   |     2  |     |
- vanguard         |     2  |     |
+       type       | count  | filter sets
+------------------+--------+-------
+ archenemy        |     4  | 2
+ arsenal          |     3  | 0
+ box              |    49  | 33
+ commander        |    40  | 
+ core             |    26
+ draft_innovation |    18
+ duel_deck        |    28
+ eternal          |     3
+ expansion        |   114
+ from_the_vault   |    10
+ funny            |    21
+ masterpiece      |    19
+ masters          |    33
+ memorabilia      |    89
+ planechase       |     6
+ premium_deck     |     3
+ promo            |   292
+ spellbook        |     3
+ starter          |    15
+ vanguard         |     2
+
+BOX SETS 
+ code | name                          | set numbers
+------+-------------------------------+---------------
+ ath  | Anthologies                   | NUMBER
+ brb  | Battle Royale Box Set         | NUMBER
+ btd  | Beatdown Box Set              | NUMBER 
+ cst  | Coldsnap Theme Decks          | NUMBER + NUMBER with letter >> Clean up required
+ dkm  | Deckmasters                   | NUMBER + NUMBER+letter >> Keep or clean?
+ dpa  | Duels of the Planeswalkers    | NUMBER
+ e02  | Explorers of Ixalan           | NUMBER
+ gk1  | GRN Guild Kit                 | NUMBER
+ gnt  | Game Night                    | NUMBER
+ gn2  | Game Night 2019               | NUMBER
+ gn3  | Game Night: Free-for-All      | NUMBER
+ md1  | Modern Event Deck 2014        | NUMBER
+ gk2  | RNA Guild Kit                 | NUMBER
+ slc  | Secret Lair Countdown         | NUMBER
+ sld  | Secret Lair Drop              | NUMBER, NUMBER+NON-ASCII Star for FOIL
+ slu  | Secret Lair: Ultimate Edition | NUMBER
+
 
 EXPANSION CARD LIST WITH IRREGULAR SET NUMBER
 select distinct(number), set_code from card join set on set.code = card.set_code where set.type='expansion' and card.number
@@ -737,3 +793,42 @@ select distinct(number), set_code from card join set on set.code = card.set_code
 
 
 FILTER FOR CARDS
+i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left join card c on
+ c.set_code = s.code where s.base_size > 0 GROUP BY s.code HAVING COUNT(c.id) = 0 order by type;
+ code |                     name                     |    type     | release_date 
+------+----------------------------------------------+-------------+--------------
+ mb1  | Mystery Booster                              | masters     | 2019-11-07
+ amh1 | Modern Horizons Art Series                   | memorabilia | 2019-06-05
+ mkhm | Kaldheim Minigames                           | minigame    | 2021-02-05
+ mznr | Zendikar Rising Minigames                    | minigame    | 2020-09-25
+ mafr | Adventures in the Forgotten Realms Minigames | minigame    | 2021-07-23
+ mstx | Strixhaven: School of Mages Minigames        | minigame    | 2021-04-23
+ mmh2 | Modern Horizons 2 Minigames                  | minigame    | 2021-06-18
+ plny | Lunar New Year 2018                          | promo       | 2018-02-16
+ f18  | Friday Night Magic 2018                      | promo       | 2017-12-27
+ pr2  | Magic Player Rewards 2002                    | promo       | 2002-01-01
+ l14  | League Tokens 2014                           | token       | 2014-01-01
+ l17  | League Tokens 2017                           | token       | 2017-01-01
+ l13  | League Tokens 2013                           | token       | 2013-01-01
+ l12  | League Tokens 2012                           | token       | 2012-01-01
+ l16  | League Tokens 2016                           | token       | 2016-01-01
+ l15  | League Tokens 2015                           | token       | 2015-01-01
+(16 rows)
+
+i_want_my_mtg=# select s.code, s.name, s.type, s.release_date, s.base_size, count(*) from set joi
+i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left join card c on c.set_code = s.code where s.base_size = 0 GROUP BY s.code HAVING COUNT(c.id) > 1 order by type;
+ code |                 name                  |       type       | release_date 
+------+---------------------------------------+------------------+--------------
+ h2r  | Modern Horizons 2 Timeshifts          | draft_innovation | 2024-06-07
+ tmc  | Teenage Mutant Ninja Turtles Eternal  | eternal          | 2026-03-06
+ spg  | Special Guests                        | masterpiece      | 2023-11-17
+ eos  | Edge of Eternities: Stellar Sights    | masterpiece      | 2025-08-01
+ wot  | Wilds of Eldraine: Enchanting Tales   | masterpiece      | 2023-09-08
+ fca  | Final Fantasy: Through the Ages       | masterpiece      | 2025-06-13
+ otp  | Breaking News                         | masterpiece      | 2024-04-19
+ mar  | Marvel Universe                       | masterpiece      | 2025-09-26
+ rex  | Jurassic World Collection             | masterpiece      | 2023-11-17
+ lmar | Marvel Legends Series Inserts         | promo            | 2025-09-30
+ prcq | Regional Championship Qualifiers 2022 | promo            | 2022-10-01
+ pw25 | Wizards Play Network 2025             | promo            | 2025-01-01
+(12 rows)

@@ -34,6 +34,7 @@
         'td0', 'mgb', 'pa1', 'rqs', 'psal', 'ps11', 'psdg']
 
 4. Cleanup after PARSING
+    -- delete all sets without any cards
     -- will remove ~99 sets (pre-filter)
     DELETE FROM set s WHERE s.code NOT IN (SELECT DISTINCT set_code FROM card);
 

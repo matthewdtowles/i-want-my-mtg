@@ -1,7 +1,7 @@
 use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
+use crate::utils::json;
 use anyhow::Result;
 use serde_json::Value;
-use crate::utils::json;
 
 pub struct CardMapper;
 
@@ -15,6 +15,11 @@ impl CardMapper {
 
         cards_array
             .iter()
+            .filter(|c| {
+                !c.get("isOnlineOnly")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
+            })
             .map(|card_data| CardMapper::map_json_to_card(card_data))
             .collect()
     }

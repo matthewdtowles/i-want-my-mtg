@@ -5,7 +5,6 @@ use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
 use tracing::{debug, info, warn};
 
-
 pub struct CardEventProcessor {
     batch: Vec<Card>,
     batch_size: usize,

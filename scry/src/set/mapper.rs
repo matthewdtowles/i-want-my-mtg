@@ -13,6 +13,11 @@ impl SetMapper {
 
         sets_array
             .iter()
+            .filter(|s| {
+                !s.get("isOnlineOnly")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
+            })
             .map(|set_data| Self::map_mtg_json_to_set(set_data))
             .collect()
     }

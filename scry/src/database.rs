@@ -50,4 +50,16 @@ impl ConnectionPool {
             .await
             .map_err(Into::into)
     }
+
+    pub async fn row_exists(&self, table: &str, column: &str, value: &str) -> Result<bool> {
+        let query = format!(
+            r#"SELECT EXISTS(SELECT 1 FROM "{}" WHERE "{}" = $1)"#,
+            table, column
+        );
+        let exists: bool = sqlx::query_scalar(&query)
+            .bind(value)
+            .fetch_one(self.pool.as_ref())
+            .await?;
+        Ok(exists)
+    }
 }

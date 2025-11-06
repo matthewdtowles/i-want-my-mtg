@@ -1,6 +1,7 @@
 use crate::{card::models::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
+use std::collections::HashSet;
 use std::sync::Arc;
 use tracing::{debug, error, info, warn};
 
@@ -58,13 +59,26 @@ impl CardRepository {
             return Ok(0);
         }
         debug!("Saving {} cards", cards.len());
-        // TODO: evaluate: can we encapsulate INSERT INTO <table> (<model attrs.key>) (<model attrs.value>)
+
+        let set_code = &cards[0].set_code;
+        match self.db.row_exists("set", "code", set_code).await {
+            Ok(false) => {
+                warn!("Skipping {} cards for set {}", cards.len(), set_code);
+                return Ok(0);
+            }
+            Err(e) => {
+                error!("Failed to check existence of set {}: {}", set_code, e);
+                return Err(e);
+            }
+            Ok(true) => {}
+        }
+
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
-                    id, artist, has_foil, has_non_foil, img_src, 
-                    is_reserved, mana_cost, name, number, oracle_text,
-                    rarity, set_code, type
-                )",
+                id, artist, has_foil, has_non_foil, img_src, 
+                is_reserved, mana_cost, name, number, oracle_text,
+                rarity, set_code, type
+            )",
         );
         query_builder.push_values(cards, |mut b, card| {
             b.push_bind(&card.id)
@@ -119,36 +133,65 @@ impl CardRepository {
     }
 
     async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
+        // collect all legalities and the card ids referenced in this batch
         let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
+        let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
 
-        if all_legalities.is_empty() {
-            // Delete all legalities for these cards since they have none
-            let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
-            if !card_ids.is_empty() {
-                let mut delete_query =
-                    QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
-                delete_query.push_bind(card_ids);
-                delete_query.push(")");
-                self.db.execute_query_builder(delete_query).await?;
-            }
+        if card_ids.is_empty() {
+            // nothing to do
             return Ok(0);
         }
 
-        // Delete all existing legalities for these cards
-        let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
+        // Find which of the provided card ids actually exist in the DB.
+        let existing_ids = self.filter_existing_card_ids(&card_ids).await?;
+        if existing_ids.is_empty() {
+            // No cards exist for this batch -> nothing to delete/insert.
+            return Ok(0);
+        }
+
+        // Delete legalities only for existing cards
+        let existing_ids_vec: Vec<String> = existing_ids.iter().cloned().collect();
         let mut delete_query = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
-        delete_query.push_bind(card_ids);
+        delete_query.push_bind(existing_ids_vec.clone());
         delete_query.push(")");
         self.db.execute_query_builder(delete_query).await?;
 
-        // Insert all new legalities
-        let mut query_builder = QueryBuilder::new("INSERT INTO legality (card_id, format, status)");
-        query_builder.push_values(&all_legalities, |mut b, legality| {
+        // If there are no legalities to insert for existing cards, we're done
+        let mut legalities_for_existing: Vec<&_> = Vec::new();
+        for l in all_legalities.iter() {
+            if existing_ids.contains(&l.card_id) {
+                legalities_for_existing.push(*l);
+            }
+        }
+
+        if legalities_for_existing.is_empty() {
+            return Ok(0);
+        }
+
+        // Insert legalities but only for existing cards
+        let mut insert_qb = QueryBuilder::new("INSERT INTO legality (card_id, format, status)");
+        insert_qb.push_values(legalities_for_existing.iter(), |mut b, legality| {
             b.push_bind(&legality.card_id)
                 .push_bind(&legality.format)
                 .push_bind(&legality.status);
         });
 
-        self.db.execute_query_builder(query_builder).await
+        self.db.execute_query_builder(insert_qb).await
+    }
+
+    /// Helper to find which of the provided ids exist in `card`.
+    async fn filter_existing_card_ids(&self, ids: &[String]) -> Result<HashSet<String>> {
+        if ids.is_empty() {
+            return Ok(HashSet::new());
+        }
+
+        let mut qb = QueryBuilder::new("SELECT id FROM card WHERE id = ANY(");
+        qb.push_bind(ids.to_vec());
+        qb.push(")");
+
+        // map into tuple (String,) which implements FromRow for fetch_all_query_builder
+        let rows: Vec<(String,)> = self.db.fetch_all_query_builder(qb).await?;
+        let set: HashSet<String> = rows.into_iter().map(|r| r.0).collect();
+        Ok(set)
     }
 }

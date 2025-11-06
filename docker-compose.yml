@@ -44,6 +44,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    volumes:
+      - ./scry:/app
+      - ./scry/target:/app/target
+    command: [ "cargo", "run", "--", "ingest" ]
 
   # PostgreSQL Database (shared by web and etl)
   postgres:

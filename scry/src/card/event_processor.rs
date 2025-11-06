@@ -85,6 +85,7 @@ impl JsonEventProcessor<Card> for CardEventProcessor {
             _ => Ok(0),
         }
     }
+
     fn take_batch(&mut self) -> Vec<Card> {
         std::mem::take(&mut self.batch)
     }
@@ -179,6 +180,10 @@ impl CardEventProcessor {
     fn handle_end_array(&mut self) -> Result<usize> {
         if self.in_cards_array && self.json_depth == 4 {
             self.in_cards_array = false;
+            // return batch len to trigger json_stream_parser to call on_batch fn per set
+            if !self.batch.is_empty() {
+                return Ok(self.batch.len());
+            }
         } else if self.in_card_object {
             self.current_card_json.push(']');
         }

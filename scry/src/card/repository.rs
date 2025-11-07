@@ -15,64 +15,12 @@ impl CardRepository {
         Self { db }
     }
 
-    pub async fn count(&self) -> Result<u64> {
-        let count = self.db.count("SELECT COUNT(*) FROM card").await?;
-        Ok(count as u64)
-    }
-
-    pub async fn legality_count(&self) -> Result<u64> {
-        let count = self.db.count("SELECT COUNT(*) FROM legality").await?;
-        Ok(count as u64)
-    }
-
-    pub async fn save(&self, cards: &[Card]) -> Result<u64> {
-        if cards.is_empty() {
-            warn!("0 cards given, 0 cards saved.");
-            return Ok(0);
-        }
-        let card_count = self.save_cards(cards).await?;
-        let legality_count = self.save_legalities(cards).await?;
-        info!(
-            "Saved {} cards and {} legalities",
-            card_count, legality_count
-        );
-        Ok(card_count)
-    }
-
-    pub async fn delete_all(&self) -> Result<u64> {
-        self.delete_table(String::from("legality")).await?;
-        let cards_deleted = self.delete_table(String::from("card")).await?;
-        info!("{} cards deleted.", cards_deleted);
-        Ok(cards_deleted)
-    }
-
-    async fn delete_table(&self, table: String) -> Result<u64> {
-        let qb = QueryBuilder::new(format!("DELETE FROM {} CASCADE", table));
-        let total_deleted = self.db.execute_query_builder(qb).await?;
-        info!("{} {} entities deleted.", total_deleted, table);
-        Ok(total_deleted)
-    }
-
-    async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
+    pub async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");
             return Ok(0);
         }
         debug!("Saving {} cards", cards.len());
-
-        let set_code = &cards[0].set_code;
-        match self.db.row_exists("set", "code", set_code).await {
-            Ok(false) => {
-                warn!("Skipping {} cards for set {}", cards.len(), set_code);
-                return Ok(0);
-            }
-            Err(e) => {
-                error!("Failed to check existence of set {}: {}", set_code, e);
-                return Err(e);
-            }
-            Ok(true) => {}
-        }
-
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
                 id, artist, has_foil, has_non_foil, img_src, 
@@ -132,66 +80,94 @@ impl CardRepository {
         }
     }
 
-    async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
-        // collect all legalities and the card ids referenced in this batch
-        let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
+    pub async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
         let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
-
         if card_ids.is_empty() {
-            // nothing to do
             return Ok(0);
         }
-
-        // Find which of the provided card ids actually exist in the DB.
+        let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
         let existing_ids = self.filter_existing_card_ids(&card_ids).await?;
         if existing_ids.is_empty() {
-            // No cards exist for this batch -> nothing to delete/insert.
             return Ok(0);
         }
-
-        // Delete legalities only for existing cards
         let existing_ids_vec: Vec<String> = existing_ids.iter().cloned().collect();
-        let mut delete_query = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
-        delete_query.push_bind(existing_ids_vec.clone());
-        delete_query.push(")");
-        self.db.execute_query_builder(delete_query).await?;
-
-        // If there are no legalities to insert for existing cards, we're done
-        let mut legalities_for_existing: Vec<&_> = Vec::new();
-        for l in all_legalities.iter() {
-            if existing_ids.contains(&l.card_id) {
-                legalities_for_existing.push(*l);
-            }
-        }
-
+        let mut delete_qb = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
+        delete_qb.push_bind(existing_ids_vec.clone());
+        delete_qb.push(")");
+        self.db.execute_query_builder(delete_qb).await?;
+        let legalities_for_existing: Vec<_> = all_legalities
+            .into_iter()
+            .filter(|l| existing_ids.contains(&l.card_id))
+            .cloned()
+            .collect();
         if legalities_for_existing.is_empty() {
             return Ok(0);
         }
-
-        // Insert legalities but only for existing cards
-        let mut insert_qb = QueryBuilder::new("INSERT INTO legality (card_id, format, status)");
-        insert_qb.push_values(legalities_for_existing.iter(), |mut b, legality| {
-            b.push_bind(&legality.card_id)
-                .push_bind(&legality.format)
-                .push_bind(&legality.status);
-        });
-
-        self.db.execute_query_builder(insert_qb).await
+        let mut ids: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
+        let mut formats: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
+        let mut statuses: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
+        for l in &legalities_for_existing {
+            ids.push(l.card_id.clone());
+            // to_string() covers both String and enum-with-Display cases
+            formats.push(l.format.to_string());
+            statuses.push(l.status.to_string());
+        }
+        let mut qb = QueryBuilder::new(
+            "INSERT INTO legality (card_id, format, status) \
+             SELECT u.card_id, u.format::format_enum, u.status::legality_status_enum \
+             FROM UNNEST(",
+        );
+        qb.push_bind(ids);
+        qb.push(", ");
+        qb.push_bind(formats);
+        qb.push(", ");
+        qb.push_bind(statuses);
+        qb.push(") AS u(card_id, format, status) JOIN card c ON c.id = u.card_id");
+        let inserted = self.db.execute_query_builder(qb).await?;
+        Ok(inserted)
     }
 
-    /// Helper to find which of the provided ids exist in `card`.
+    pub async fn count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM card").await?;
+        Ok(count as u64)
+    }
+
+    pub async fn legality_count(&self) -> Result<u64> {
+        let count = self.db.count("SELECT COUNT(*) FROM legality").await?;
+        Ok(count as u64)
+    }
+
+    pub async fn set_exists(&self, code: &str) -> Result<bool> {
+        if code.is_empty() {
+            return Ok(false);
+        }
+        let exists = self.db.row_exists("set", "code", code).await?;
+        Ok(exists)
+    }
+
+    pub async fn delete_all(&self) -> Result<u64> {
+        self.delete_table(String::from("legality")).await?;
+        let cards_deleted = self.delete_table(String::from("card")).await?;
+        info!("{} cards deleted.", cards_deleted);
+        Ok(cards_deleted)
+    }
+
     async fn filter_existing_card_ids(&self, ids: &[String]) -> Result<HashSet<String>> {
         if ids.is_empty() {
             return Ok(HashSet::new());
         }
-
         let mut qb = QueryBuilder::new("SELECT id FROM card WHERE id = ANY(");
         qb.push_bind(ids.to_vec());
         qb.push(")");
-
-        // map into tuple (String,) which implements FromRow for fetch_all_query_builder
         let rows: Vec<(String,)> = self.db.fetch_all_query_builder(qb).await?;
         let set: HashSet<String> = rows.into_iter().map(|r| r.0).collect();
         Ok(set)
+    }
+
+    async fn delete_table(&self, table: String) -> Result<u64> {
+        let qb = QueryBuilder::new(format!("DELETE FROM {} CASCADE", table));
+        let total_deleted = self.db.execute_query_builder(qb).await?;
+        info!("{} {} entities deleted.", total_deleted, table);
+        Ok(total_deleted)
     }
 }

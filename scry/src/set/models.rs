@@ -12,4 +12,7 @@ pub struct Set {
     pub parent_code: Option<String>,
     pub release_date: NaiveDate,
     pub set_type: String,
+
+    #[sqlx(skip)]
+    pub is_online_only: bool, // transient only
 }

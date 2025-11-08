@@ -20,4 +20,8 @@ pub struct Card {
 
     #[sqlx(skip)]
     pub legalities: Vec<Legality>,
+
+    // transient flag from soure JSON
+    // not persisted to DB!
+    pub is_online_only: bool,
 }

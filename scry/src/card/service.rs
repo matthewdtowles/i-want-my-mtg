@@ -4,6 +4,7 @@ use crate::{
     utils::{HttpClient, JsonStreamParser},
 };
 use anyhow::Result;
+use serde_json::Value;
 use std::{collections::HashSet, sync::Arc};
 use tokio::sync::{Mutex, Semaphore};
 use tracing::{debug, info, warn};
@@ -32,23 +33,48 @@ impl CardService {
         self.repository.legality_count().await
     }
 
-    pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
+    pub async fn ingest_set_cards(&self, set_code: &str, cleanup_online: bool) -> Result<u64> {
         info!("Starting card ingestion for set: {}", set_code);
-        match self.repository.set_exists(set_code).await {
-            Ok(false) => {
-                warn!("Skipping card ingestion for set {}", set_code);
+        let raw_data: Value = self.client.fetch_set_cards(&set_code).await?;
+        if cleanup_online {
+            if raw_data
+                .get("isOnlineOnly")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false)
+            {
+                info!(
+                    "Cleanup enabled and source set {} is online-only; deleting DB rows",
+                    set_code
+                );
+                let _deleted = self
+                    .repository
+                    .delete_set_and_dependents(set_code, Self::BATCH_SIZE as i64)
+                    .await?;
                 return Ok(0);
             }
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(true) => {}
         }
-        let raw_data = self.client.fetch_set_cards(&set_code).await?;
-        let cards = CardMapper::map_to_cards(raw_data)?;
+        let cards = CardMapper::map_to_cards(raw_data, cleanup_online)?;
         if cards.is_empty() {
             warn!("No cards found for set: {}", set_code);
             return Ok(0);
+        }
+        if cleanup_online {
+            let (online_only, keep): (Vec<_>, Vec<_>) =
+                cards.into_iter().partition(|c| c.is_online_only);
+            if !online_only.is_empty() {
+                let ids: Vec<String> = online_only.iter().map(|c| c.id.clone()).collect();
+                let _ = self
+                    .repository
+                    .delete_cards_by_ids_batched(&ids, 500)
+                    .await?;
+            }
+            if keep.is_empty() {
+                return Ok(0);
+            }
+            let count = self.repository.save_cards(&keep).await?;
+            let _ = self.repository.save_legalities(&keep).await?;
+            info!("Successfully ingested {} cards for set {}", count, set_code);
+            return Ok(count);
         }
         let count = self.repository.save_cards(&cards).await?;
         let _ = self.repository.save_legalities(&cards).await?;
@@ -56,7 +82,7 @@ impl CardService {
         Ok(count)
     }
 
-    pub async fn ingest_all(&self) -> Result<()> {
+    pub async fn ingest_all(&self, cleanup_online: bool) -> Result<()> {
         info!("Start ingestion of all cards");
         let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for all cards");
@@ -98,8 +124,23 @@ impl CardService {
                                 }
                             }
                         }
-                        repo.save_cards(&batch_owned).await?;
-                        repo.save_legalities(&batch_owned).await?;
+                        // If cleanup run is requested, partition and delete online-only cards in this batch
+                        if cleanup_online {
+                            let (online_only, keep): (Vec<_>, Vec<_>) =
+                                batch_owned.into_iter().partition(|c| c.is_online_only);
+                            if !online_only.is_empty() {
+                                let ids: Vec<String> =
+                                    online_only.into_iter().map(|c| c.id).collect();
+                                let _ = repo.delete_cards_by_ids_batched(&ids, 500).await?;
+                            }
+                            if !keep.is_empty() {
+                                repo.save_cards(&keep).await?;
+                                repo.save_legalities(&keep).await?;
+                            }
+                        } else {
+                            repo.save_cards(&batch_owned).await?;
+                            repo.save_legalities(&batch_owned).await?;
+                        }
                         Ok::<(), anyhow::Error>(())
                     });
                     match handle.await {

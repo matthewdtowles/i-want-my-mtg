@@ -36,9 +36,10 @@ impl CliController {
                 prices,
                 set_cards,
                 reset,
+                cleanup_online,
             } => {
                 if let Err(e) = self
-                    .handle_ingest(sets, cards, prices, set_cards, reset)
+                    .handle_ingest(sets, cards, prices, set_cards, reset, cleanup_online)
                     .await
                 {
                     error!("Ingestion failed: {}", e);
@@ -62,6 +63,7 @@ impl CliController {
         prices: bool,
         set_cards: Option<String>,
         reset: bool,
+        cleanup_online: bool,
     ) -> Result<()> {
         if reset {
             match self.reset_data().await {
@@ -75,34 +77,28 @@ impl CliController {
         }
         let do_all = !sets && !cards && !prices && set_cards.is_none();
         if do_all || sets {
-            match self.update_sets().await {
-                Ok(()) => {
-                    info!("Successfully updated sets.");
-                }
-                Err(e) => {
-                    error!("Failed to update sets: {}", e);
-                }
+            match self.update_sets(cleanup_online).await {
+                Ok(()) => info!("Successfully updated sets."),
+                Err(e) => error!("Failed to update sets: {}", e),
             }
         }
         if do_all || cards {
-            match self.update_cards().await {
-                Ok(()) => {
-                    info!("Card update completed successfully.");
-                }
-                Err(e) => {
-                    error!("Card udpate failure: {}", e);
-                }
+            match self.update_cards(cleanup_online).await {
+                Ok(()) => info!("Card update completed successfully."),
+                Err(e) => error!("Card udpate failure: {}", e),
             }
         }
         if !cards {
             if let Some(set_code) = &set_cards {
-                match self.card_service.ingest_set_cards(set_code).await {
+                match self
+                    .card_service
+                    .ingest_set_cards(set_code, cleanup_online)
+                    .await
+                {
                     Ok(ingested) => {
-                        info!("Updated {} cards for set code '{}'.", ingested, set_code);
+                        info!("Updated {} cards for set code '{}'.", ingested, set_code)
                     }
-                    Err(e) => {
-                        error!("Error updating cards for set code '{}': {}", set_code, e);
-                    }
+                    Err(e) => error!("Error updating cards for set code '{}': {}", set_code, e),
                 }
             }
         }
@@ -150,25 +146,25 @@ impl CliController {
         Ok(())
     }
 
-    async fn update_cards(&self) -> Result<()> {
+    async fn update_sets(&self, cleanup_online: bool) -> Result<()> {
+        let total_sets_before = self.set_service.fetch_count().await?;
+        self.set_service.ingest_all(cleanup_online).await?;
+        let total_sets_after = self.set_service.fetch_count().await?;
+        info!("Total sets before: {}", total_sets_before);
+        info!("Total sets after: {}", total_sets_after);
+        Ok(())
+    }
+
+    async fn update_cards(&self, cleanup_online: bool) -> Result<()> {
         let total_cards_before = self.card_service.fetch_count().await?;
         let total_legalities_before = self.card_service.fetch_legality_count().await?;
-        self.card_service.ingest_all().await?;
+        self.card_service.ingest_all(cleanup_online).await?;
         let total_cards_after = self.card_service.fetch_count().await?;
         let total_legalities_after = self.card_service.fetch_legality_count().await?;
         info!("Total cards before {}", total_cards_before);
         info!("Total cards after {}", total_cards_after);
         info!("Total legalities before {}", total_legalities_before);
         info!("Total legalities after {}", total_legalities_after);
-        Ok(())
-    }
-
-    async fn update_sets(&self) -> Result<()> {
-        let total_sets_before = self.set_service.fetch_count().await?;
-        self.set_service.ingest_all().await?;
-        let total_sets_after = self.set_service.fetch_count().await?;
-        info!("Total sets before: {}", total_sets_before);
-        info!("Total sets after: {}", total_sets_after);
         Ok(())
     }
 

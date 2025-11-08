@@ -6,19 +6,26 @@ use serde_json::Value;
 pub struct CardMapper;
 
 impl CardMapper {
-    pub fn map_to_cards(set_data: Value) -> Result<Vec<Card>> {
+    /// Parse cards from set JSON.
+    /// ::include_online_only:: when true, the returned Vec<Card> will include cards whose
+    /// source JSON has isOnlineOnly=true (these are NOT persisted; used for cleanup runs).
+    /// Default ingestion should call with include_online_only=false so online-only cards are excluded.
+    pub fn map_to_cards(set_data: Value, include_online_only: bool) -> Result<Vec<Card>> {
         let cards_array = set_data
             .get("data")
             .and_then(|d| d.get("cards"))
             .and_then(|c| c.as_array())
             .ok_or_else(|| anyhow::anyhow!("Invalid MTG JSON set structure"))?;
-
         cards_array
             .iter()
             .filter(|c| {
-                !c.get("isOnlineOnly")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false)
+                if include_online_only {
+                    true
+                } else {
+                    !c.get("isOnlineOnly")
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false)
+                }
             })
             .map(|card_data| CardMapper::map_json_to_card(card_data))
             .collect()
@@ -31,17 +38,14 @@ impl CardMapper {
         let number =
             json::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
         let type_line = json::extract_optional_string(card_data, "type").unwrap_or_default();
-
         let rarity_str = json::extract_optional_string(card_data, "rarity")
             .unwrap_or_else(|| "common".to_string());
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
-
         let mana_cost = json::extract_optional_string(card_data, "manaCost");
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
-
         let has_foil = card_data
             .get("hasFoil")
             .and_then(|v| v.as_bool())
@@ -55,13 +59,15 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
-
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
             Vec::new()
         };
-
+        let is_online_only = card_data
+            .get("isOnlineOnly")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         Ok(Card {
             id,
             artist,
@@ -77,6 +83,7 @@ impl CardMapper {
             set_code,
             type_line,
             legalities,
+            is_online_only,
         })
     }
 

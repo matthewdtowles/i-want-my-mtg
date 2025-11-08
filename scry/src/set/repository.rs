@@ -65,4 +65,68 @@ impl SetRepository {
         let qb = QueryBuilder::new("DELETE FROM set CASCADE");
         self.db.execute_query_builder(qb).await
     }
+
+    pub async fn delete_set_and_dependents_batched(
+        &self,
+        set_code: &str,
+        batch_size: i64,
+    ) -> Result<u64> {
+        if set_code.is_empty() {
+            return Ok(0);
+        }
+        let mut total_deleted = 0u64;
+        loop {
+            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
+            qb.push_bind(set_code);
+            qb.push(" LIMIT ");
+            qb.push_bind(batch_size);
+            qb.push(") DELETE FROM legality WHERE card_id IN (SELECT id FROM to_del)");
+            let deleted = self.db.execute_query_builder(qb).await?;
+            total_deleted += deleted;
+            if deleted == 0 {
+                break;
+            }
+        }
+        loop {
+            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
+            qb.push_bind(set_code);
+            qb.push(" LIMIT ");
+            qb.push_bind(batch_size);
+            qb.push(") DELETE FROM price WHERE card_id IN (SELECT id FROM to_del)");
+            let deleted = self.db.execute_query_builder(qb).await?;
+            total_deleted += deleted;
+            if deleted == 0 {
+                break;
+            }
+        }
+        loop {
+            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
+            qb.push_bind(set_code);
+            qb.push(" LIMIT ");
+            qb.push_bind(batch_size);
+            qb.push(") DELETE FROM inventory WHERE card_id IN (SELECT id FROM to_del)");
+            let deleted = self.db.execute_query_builder(qb).await?;
+            total_deleted += deleted;
+            if deleted == 0 {
+                break;
+            }
+        }
+        loop {
+            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
+            qb.push_bind(set_code);
+            qb.push(" LIMIT ");
+            qb.push_bind(batch_size);
+            qb.push(") DELETE FROM card WHERE id IN (SELECT id FROM to_del)");
+            let deleted = self.db.execute_query_builder(qb).await?;
+            total_deleted += deleted;
+            if deleted == 0 {
+                break;
+            }
+        }
+        let mut qb = QueryBuilder::new("DELETE FROM \"set\" WHERE code = ");
+        qb.push_bind(set_code);
+        let deleted = self.db.execute_query_builder(qb).await?;
+        total_deleted += deleted;
+        Ok(total_deleted)
+    }
 }

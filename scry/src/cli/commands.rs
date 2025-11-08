@@ -13,18 +13,10 @@ pub struct Cli {
 pub enum Commands {
     /// Ingest MTG Data - default: all
     Ingest {
-        #[arg(
-            short,
-            long,
-            help = "Ingest all sets."
-        )]
+        #[arg(short, long, help = "Ingest all sets.")]
         sets: bool,
 
-        #[arg(
-            short,
-            long,
-            help = "Ingest all cards."
-        )]
+        #[arg(short, long, help = "Ingest all cards.")]
         cards: bool,
 
         #[arg(
@@ -35,18 +27,21 @@ pub enum Commands {
         prices: bool,
 
         #[arg(
-            short = 'k', 
+            short = 'k',
             long,
             help = "Ingest all cards for given set. E.g.: `ingest -c -k abc` for cards in set `abc`."
         )]
         set_cards: Option<String>,
 
-        #[arg(
-            short,
-            long,
-            help = "Reset all data prior to ingestion."
-        )]
+        #[arg(short, long, help = "Reset all data prior to ingestion.")]
         reset: bool,
+
+        #[arg(
+            short = 'o',
+            long,
+            help = "When true, run one-off cleanup of online-only sets/cards instead of inserting them."
+        )]
+        cleanup_online: bool,
     },
 
     /// Check system health and data integrity

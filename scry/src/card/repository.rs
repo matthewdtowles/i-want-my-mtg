@@ -108,7 +108,6 @@ impl CardRepository {
         let mut statuses: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
         for l in &legalities_for_existing {
             ids.push(l.card_id.clone());
-            // to_string() covers both String and enum-with-Display cases
             formats.push(l.format.to_string());
             statuses.push(l.status.to_string());
         }

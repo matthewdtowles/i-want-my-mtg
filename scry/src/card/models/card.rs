@@ -2,7 +2,7 @@ use crate::card::models::{CardRarity, Legality};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-#[derive(Debug, FromRow, Serialize, Deserialize)]
+#[derive(Clone, Debug, FromRow, Serialize, Deserialize)]
 pub struct Card {
     pub id: String,
     pub artist: Option<String>,

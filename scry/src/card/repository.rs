@@ -1,7 +1,6 @@
 use crate::{card::models::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
-use std::collections::HashSet;
 use std::sync::Arc;
 use tracing::{debug, error, info, warn};
 
@@ -85,28 +84,21 @@ impl CardRepository {
         if card_ids.is_empty() {
             return Ok(0);
         }
-        let all_legalities: Vec<_> = cards.iter().flat_map(|c| &c.legalities).collect();
-        let existing_ids = self.filter_existing_card_ids(&card_ids).await?;
-        if existing_ids.is_empty() {
-            return Ok(0);
+        let legalities: Vec<_> = cards.iter().flat_map(|c| c.legalities.clone()).collect();
+        if legalities.is_empty() {
+            let mut delete_qb = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
+            delete_qb.push_bind(card_ids);
+            delete_qb.push(")");
+            return self.db.execute_query_builder(delete_qb).await;
         }
-        let existing_ids_vec: Vec<String> = existing_ids.iter().cloned().collect();
         let mut delete_qb = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
-        delete_qb.push_bind(existing_ids_vec.clone());
+        delete_qb.push_bind(card_ids.clone());
         delete_qb.push(")");
         self.db.execute_query_builder(delete_qb).await?;
-        let legalities_for_existing: Vec<_> = all_legalities
-            .into_iter()
-            .filter(|l| existing_ids.contains(&l.card_id))
-            .cloned()
-            .collect();
-        if legalities_for_existing.is_empty() {
-            return Ok(0);
-        }
-        let mut ids: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
-        let mut formats: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
-        let mut statuses: Vec<String> = Vec::with_capacity(legalities_for_existing.len());
-        for l in &legalities_for_existing {
+        let mut ids: Vec<String> = Vec::with_capacity(legalities.len());
+        let mut formats: Vec<String> = Vec::with_capacity(legalities.len());
+        let mut statuses: Vec<String> = Vec::with_capacity(legalities.len());
+        for l in &legalities {
             ids.push(l.card_id.clone());
             formats.push(l.format.to_string());
             statuses.push(l.status.to_string());
@@ -122,6 +114,7 @@ impl CardRepository {
         qb.push(", ");
         qb.push_bind(statuses);
         qb.push(") AS u(card_id, format, status) JOIN card c ON c.id = u.card_id");
+
         let inserted = self.db.execute_query_builder(qb).await?;
         Ok(inserted)
     }
@@ -149,18 +142,6 @@ impl CardRepository {
         let cards_deleted = self.delete_table(String::from("card")).await?;
         info!("{} cards deleted.", cards_deleted);
         Ok(cards_deleted)
-    }
-
-    async fn filter_existing_card_ids(&self, ids: &[String]) -> Result<HashSet<String>> {
-        if ids.is_empty() {
-            return Ok(HashSet::new());
-        }
-        let mut qb = QueryBuilder::new("SELECT id FROM card WHERE id = ANY(");
-        qb.push_bind(ids.to_vec());
-        qb.push(")");
-        let rows: Vec<(String,)> = self.db.fetch_all_query_builder(qb).await?;
-        let set: HashSet<String> = rows.into_iter().map(|r| r.0).collect();
-        Ok(set)
     }
 
     async fn delete_table(&self, table: String) -> Result<u64> {

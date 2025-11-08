@@ -4,8 +4,8 @@ use crate::{
     utils::{HttpClient, JsonStreamParser},
 };
 use anyhow::Result;
-use tokio::sync::{Mutex, Semaphore};
 use std::{collections::HashSet, sync::Arc};
+use tokio::sync::{Mutex, Semaphore};
 use tracing::{debug, info, warn};
 
 pub struct CardService {
@@ -65,7 +65,6 @@ impl CardService {
         let event_processor = CardEventProcessor::new(Self::BATCH_SIZE);
         let mut json_stream_parser = JsonStreamParser::new(event_processor);
         let repo = self.repository.clone();
-        // let mut handles = Vec::new();
         json_stream_parser
             .parse_stream(byte_stream, move |batch| {
                 let repo = repo.clone();
@@ -99,7 +98,6 @@ impl CardService {
                                 }
                             }
                         }
-
                         repo.save_cards(&batch_owned).await?;
                         repo.save_legalities(&batch_owned).await?;
                         Ok::<(), anyhow::Error>(())
@@ -109,20 +107,6 @@ impl CardService {
                         Ok(Err(e)) => Err(e),
                         Err(join_err) => Err(anyhow::anyhow!("Task join error: {}", join_err)),
                     }
-                    // let set_code = &batch[0].set_code;
-                    // match repo.set_exists(set_code).await {
-                    //     Ok(false) => {
-                    //         warn!("Skipping cards for missing set {}", set_code);
-                    //         return Ok(());
-                    //     }
-                    //     Err(e) => {
-                    //         return Err(e);
-                    //     }
-                    //     Ok(true) => {}
-                    // }
-                    // repo.save_cards(&batch).await?;
-                    // repo.save_legalities(&batch).await?;
-                    // Ok(())
                 })
             })
             .await?;

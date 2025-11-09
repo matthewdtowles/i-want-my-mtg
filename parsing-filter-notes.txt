@@ -83,36 +83,13 @@ BOX SETS
  slu  | Secret Lair: Ultimate Edition | NUMBER
 
 
-EXPANSION CARD LIST WITH IRREGULAR SET NUMBER
-select distinct(number), set_code from card join set on set.code = card.set_code where set.type='expansion' and card.number
+i_want_my_mtg=# select distinct(number), set_code from card join set on set.code = card.set_code where set.type='expansion' and card.number
 ~ '[^0-9]' order by set_code;
  number | set_code 
 --------+----------
  101†   | aer
  14†    | aer
  52†    | aer
- A-102  | afr
- A-115  | afr
- A-118  | afr
- A-130  | afr
- A-14   | afr
- A-180  | afr
- A-181  | afr
- A-183  | afr
- A-196  | afr
- A-219  | afr
- A-226  | afr
- A-231  | afr
- A-233  | afr
- A-237  | afr
- A-255  | afr
- A-32   | afr
- A-53   | afr
- A-7    | afr
- A-81   | afr
- A-87   | afr
- A-9    | afr
- A-95   | afr
  100a   | all
  100b   | all
  102a   | all
@@ -284,47 +261,15 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  272a   | bfz
  273a   | bfz
  274a   | bfz
- A-138  | blb
  163b   | bro
  238b   | bro
  256b   | bro
- A-132  | bro
- A-140  | bro
- A-156  | bro
- A-199  | bro
- A-219  | bro
- A-254  | bro
- A-263  | bro
- A-289  | bro
- A-58   | bro
- A-63   | bro
- A-69   | bro
- A-70   | bro
  160a   | chk
  160b   | chk
- A-1    | dmu
- A-138  | dmu
- A-141  | dmu
- A-145  | dmu
- A-169  | dmu
- A-170  | dmu
- A-176  | dmu
- A-181  | dmu
- A-207  | dmu
- A-211  | dmu
- A-217  | dmu
- A-220  | dmu
- A-222  | dmu
- A-225  | dmu
- A-227  | dmu
- A-259  | dmu
- A-286  | dmu
  103†   | drk
  107†   | drk
  77†    | drk
- A-143  | dsk
  A-125  | eld
- A-81   | eld
  130b   | emn
  15b    | emn
  96b    | emn
@@ -515,76 +460,21 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  97b    | hml
  99a    | hml
  99b    | hml
- 275y   | iko
- 373A   | iko
- A-216  | iko
  124s   | inv
  124★   | inv
  134s   | inv
  134★   | inv
- A-106  | khm
- A-109  | khm
- A-165  | khm
- A-166  | khm
- A-198  | khm
- A-208  | khm
- A-212  | khm
- A-213  | khm
- A-224  | khm
- A-233  | khm
- A-237  | khm
- A-253  | khm
- A-268  | khm
- A-378  | khm
- A-385  | khm
- A-387  | khm
- A-40   | khm
- A-41   | khm
- A-51   | khm
  107†   | kld
  142†   | kld
  272†   | kld
  70†    | kld
- 106y   | ktk
- 115y   | ktk
- 16y    | ktk
- 192y   | ktk
- 193y   | ktk
- 198y   | ktk
- 199y   | ktk
- 201y   | ktk
- 203y   | ktk
- 211y   | ktk
- 218y   | ktk
- 236y   | ktk
- 237y   | ktk
- 45y    | ktk
- 71y    | ktk
- 72y    | ktk
- 73y    | ktk
- 81y    | ktk
- 84y    | ktk
- 86y    | ktk
- 89y    | ktk
- 92y    | ktk
- 95y    | ktk
- 97y    | ktk
  410a   | lci
  410b   | lci
  410c   | lci
  410d   | lci
  410e   | lci
  410f   | lci
- A-150e | lci
- 57†    | mid
- A-106  | mid
  A-112  | mid
- A-218  | mid
- A-52   | mid
- A-59   | mid
- A-69   | mid
- A-70   | mid
- A-74   | mid
  120†   | mir
  280†   | mir
  87†    | mir
@@ -606,23 +496,6 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  79†    | mkm
  7†     | mkm
  82†    | mkm
- A-1    | neo
- A-10   | neo
- A-114  | neo
- A-116  | neo
- A-131  | neo
- A-156  | neo
- A-19   | neo
- A-215  | neo
- A-232  | neo
- A-234  | neo
- A-236  | neo
- A-242  | neo
- A-53   | neo
- A-67   | neo
- A-73   | neo
- A-86   | neo
- A-95   | neo
  171†   | ody
  325†   | ody
  72†    | ody
@@ -635,67 +508,12 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  133★   | pls
  74★    | pls
  278★   | shm
- A-106  | snc
- A-111  | snc
- A-118  | snc
- A-119  | snc
- A-120  | snc
- A-123  | snc
- A-139  | snc
- A-149  | snc
- A-150  | snc
- A-153  | snc
- A-157  | snc
- A-164  | snc
- A-173  | snc
- A-174  | snc
- A-176  | snc
- A-189  | snc
- A-190  | snc
- A-20   | snc
- A-201  | snc
- A-203  | snc
- A-204  | snc
- A-212  | snc
- A-214  | snc
- A-220  | snc
- A-221  | snc
- A-224  | snc
- A-225  | snc
- A-226  | snc
- A-241  | snc
- A-242  | snc
- A-32   | snc
- A-37   | snc
- A-53   | snc
- A-55   | snc
- A-6    | snc
- A-60   | snc
- A-7    | snc
- A-74   | snc
- A-75   | snc
- A-81   | snc
- A-84   | snc
- A-87   | snc
- A-91   | snc
- A-98   | snc
  265†a  | soi
  265†b  | soi
  265†c  | soi
  265†d  | soi
  265†e  | soi
  33★    | stx
- A-117  | stx
- A-15   | stx
- A-156  | stx
- A-202  | stx
- A-240  | stx
- A-258  | stx
- A-46   | stx
- A-56   | stx
- A-88   | stx
- A-92   | stx
- A-103  | tdm
  347★   | thb
  119s   | usg
  130s   | usg
@@ -704,17 +522,6 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  163s   | usg
  164s   | usg
  187s   | usg
- A-233  | vow
- A-235  | vow
- A-247  | vow
- A-248  | vow
- A-48   | vow
- A-52   | vow
- A-58   | vow
- A-62   | vow
- A-66   | vow
- A-69   | vow
- A-81   | vow
  100★   | war
  119★   | war
  135★   | war
@@ -751,7 +558,6 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  61★    | war
  83★    | war
  97★    | war
- A-221  | war
  230a   | zen
  231a   | zen
  232a   | zen
@@ -772,29 +578,12 @@ select distinct(number), set_code from card join set on set.code = card.set_code
  247a   | zen
  248a   | zen
  249a   | zen
- 288†   | znr
- A-105  | znr
- A-126  | znr
- A-141  | znr
- A-145  | znr
- A-154  | znr
- A-185  | znr
- A-187  | znr
- A-198  | znr
- A-224  | znr
- A-228  | znr
- A-230  | znr
- A-232  | znr
- A-234  | znr
- A-238  | znr
- A-257  | znr
- A-68   | znr
-(701 rows)
+(491 rows)
 
 
 
 FILTER FOR CARDS
-i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left join card c on
+select s.code, s.name, s.type, s.release_date from set s left join card c on
  c.set_code = s.code where s.base_size > 0 GROUP BY s.code HAVING COUNT(c.id) = 0 order by type;
  code |                     name                     |    type     | release_date 
 ------+----------------------------------------------+-------------+--------------
@@ -816,8 +605,7 @@ i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left jo
  l15  | League Tokens 2015                           | token       | 2015-01-01
 (16 rows)
 
-i_want_my_mtg=# select s.code, s.name, s.type, s.release_date, s.base_size, count(*) from set joi
-i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left join card c on c.set_code = s.code where s.base_size = 0 GROUP BY s.code HAVING COUNT(c.id) > 1 order by type;
+select s.code, s.name, s.type, s.release_date from set s left join card c on c.set_code = s.code where s.base_size = 0 GROUP BY s.code HAVING COUNT(c.id) > 1 order by type;
  code |                 name                  |       type       | release_date 
 ------+---------------------------------------+------------------+--------------
  h2r  | Modern Horizons 2 Timeshifts          | draft_innovation | 2024-06-07
@@ -833,3 +621,14 @@ i_want_my_mtg=# select s.code, s.name, s.type, s.release_date from set s left jo
  prcq | Regional Championship Qualifiers 2022 | promo            | 2022-10-01
  pw25 | Wizards Play Network 2025             | promo            | 2025-01-01
 (12 rows)
+
+card.layout: [
+    "adventure", "aftermath", "art_series", "augment", "case", "class", "double_faced_token", "emblem", "flip", "host", "leveler", "meld", "modal_dfc", "mutate", "normal", "planar", "prototype", "reversible_card", "saga", "scheme", "split", "token", "transform", "vanguard"
+]
+
+card.isAlternative? : bool - indicates if card is not in main set?
+
+card.variations: str[] - list of card UUIDs with alt printings in SAME SET
+
+card.availability: if contains "paper" keep, otherwise toss 
+

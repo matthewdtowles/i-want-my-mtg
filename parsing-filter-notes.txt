@@ -632,3 +632,232 @@ card.variations: str[] - list of card UUIDs with alt printings in SAME SET
 
 card.availability: if contains "paper" keep, otherwise toss 
 
+{
+  "artist": "Clint Cearley",
+  "artistIds": [
+    "03b75350-d5a0-4e3a-b3b4-8d4a5554385b"
+  ],
+  "availability": [
+    "mtgo",
+    "paper"
+  ],
+  "borderColor": "black",
+  "colorIdentity": [
+    "W"
+  ],
+  "colors": [
+    "W"
+  ],
+  "convertedManaCost": 7,
+  "edhrecRank": 2332,
+  "edhrecSaltiness": 0.28,
+  "faceConvertedManaCost": 7,
+  "faceManaValue": 7,
+  "faceName": "Bruna, the Fading Light",
+  "finishes": [
+    "foil"
+  ],
+  "flavorText": "She now sees only Emrakul's visions.",
+  "foreignData": [],
+  "frameEffects": [
+    "mooneldrazidfc"
+  ],
+  "frameVersion": "2015",
+  "hasFoil": true,
+  "hasNonFoil": false,
+  "identifiers": {
+    "cardKingdomFoilId": "215241",
+    "cardsphereFoilId": "52596",
+    "deckboxId": "37481",
+    "mcmId": "312684",
+    "mcmMetaId": "222994",
+    "mtgjsonV4Id": "d7e29b43-cff5-5d48-a56b-303991800b62",
+    "mtgoId": "66409",
+    "multiverseId": "439322",
+    "scryfallCardBackId": "7ca70503-7e97-4db0-99f9-4b9820f879f5",
+    "scryfallId": "2b45fb19-450d-40bd-91c7-b5ace4a77f2a",
+    "scryfallIllustrationId": "4c8cee4a-a9a4-42eb-9cbf-fcc6c6344d00",
+    "scryfallOracleId": "bce7e45d-b2c5-43aa-91a6-3a3c24f30850",
+    "tcgplayerProductId": "151636"
+  },
+  "isReprint": true,
+  "isStarter": true,
+  "keywords": [
+    "Flying",
+    "Vigilance"
+  ],
+  "language": "English",
+  "layout": "meld",
+  "leadershipSkills": {
+    "brawl": false,
+    "commander": true,
+    "oathbreaker": false
+  },
+  "legalities": {
+    "brawl": "Legal",
+    "commander": "Legal",
+    "duel": "Legal",
+    "gladiator": "Legal",
+    "historic": "Legal",
+    "legacy": "Legal",
+    "modern": "Legal",
+    "oathbreaker": "Legal",
+    "penny": "Legal",
+    "pioneer": "Legal",
+    "timeless": "Legal",
+    "vintage": "Legal"
+  },
+  "manaCost": "{5}{W}{W}",
+  "manaValue": 7,
+  "name": "Bruna, the Fading Light // Brisela, Voice of Nightmares",
+  "number": "5",
+  "originalText": "When you cast Bruna, the Fading Light, you may return target Angel or Human creature card from your graveyard to the battlefield.\nFlying, vigilance\n(Melds with Gisela, the Broken Blade.)",
+  "otherFaceIds": [
+    "b3dc9b70-fe64-5370-841b-5282d00fb1a9"
+  ],
+  "power": "5",
+  "printings": [
+    "EMN",
+    "INR",
+    "PEMN",
+    "SIR",
+    "SLD",
+    "V17"
+  ],
+  "purchaseUrls": {
+    "cardKingdomFoil": "https://mtgjson.com/links/81def4ea6ff04775",
+    "cardmarket": "https://mtgjson.com/links/517eda6703caf95c",
+    "tcgplayer": "https://mtgjson.com/links/1e061e31f4b71707"
+  },
+  "rarity": "mythic",
+  "rulings": [
+    {
+      "date": "2016-07-13",
+      "text": "For more information on meld cards, see the Eldritch Moon mechanics article (https://magic.wizards.com/en/articles/archive/feature/eldritch-moon-mechanics-2016-06-27)."
+    }
+  ],
+  "securityStamp": "oval",
+  "setCode": "V17",
+  "side": "a",
+  "sourceProducts": {
+    "foil": [
+      "295c7d1a-c80b-5f09-a032-79d8e54f8453"
+    ]
+  },
+  "subtypes": [
+    "Angel",
+    "Horror"
+  ],
+  "supertypes": [
+    "Legendary"
+  ],
+  "text": "When you cast this spell, you may return target Angel or Human creature card from your graveyard to the battlefield.\nFlying, vigilance\n(Melds with Gisela, the Broken Blade.)",
+  "toughness": "7",
+  "type": "Legendary Creature — Angel Horror",
+  "types": [
+    "Creature"
+  ],
+  "uuid": "3d12f898-11fb-52c3-bbed-e76c8a9f199d"
+}
+{
+  "artist": "Clint Cearley",
+  "artistIds": [
+    "03b75350-d5a0-4e3a-b3b4-8d4a5554385b"
+  ],
+  "availability": [
+    "mtgo",
+    "paper"
+  ],
+  "borderColor": "black",
+  "colorIdentity": [
+    "W"
+  ],
+  "colors": [],
+  "convertedManaCost": 11,
+  "faceConvertedManaCost": 11,
+  "faceManaValue": 11,
+  "faceName": "Brisela, Voice of Nightmares",
+  "finishes": [
+    "foil"
+  ],
+  "flavorText": "Upon discovering what had become of her sisters, Sigarda could only weep.",
+  "foreignData": [],
+  "frameEffects": [
+    "mooneldrazidfc"
+  ],
+  "frameVersion": "2015",
+  "hasFoil": true,
+  "hasNonFoil": false,
+  "identifiers": {
+    "mtgjsonV4Id": "458663a7-b298-5d84-a441-49c06608a536",
+    "multiverseId": "439323",
+    "scryfallCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "scryfallId": "eba8bb03-6093-4e2b-99a2-a3fc5d8eb659",
+    "scryfallIllustrationId": "9528e065-5297-4d91-bf75-3c175b54f0d4",
+    "scryfallOracleId": "b23587e0-9fb7-492e-8bb4-f218e8e4ce6c"
+  },
+  "isReprint": true,
+  "isStarter": true,
+  "keywords": [
+    "First strike",
+    "Flying",
+    "Lifelink",
+    "Vigilance"
+  ],
+  "language": "English",
+  "layout": "meld",
+  "legalities": {
+    "brawl": "Legal",
+    "commander": "Legal",
+    "duel": "Legal",
+    "gladiator": "Legal",
+    "historic": "Legal",
+    "legacy": "Legal",
+    "modern": "Legal",
+    "oathbreaker": "Legal",
+    "pioneer": "Legal",
+    "timeless": "Legal",
+    "vintage": "Legal"
+  },
+  "manaValue": 11,
+  "name": "Brisela, Voice of Nightmares",
+  "number": "5b",
+  "originalText": "Flying, first strike, vigilance, lifelink\nYour opponents can't cast spells with converted mana cost 3 or less.",
+  "otherFaceIds": [
+    "3d12f898-11fb-52c3-bbed-e76c8a9f199d",
+    "f0c70297-7170-5d45-a279-3685f9f0e3ad"
+  ],
+  "power": "9",
+  "printings": [
+    "EMN",
+    "INR",
+    "PEMN",
+    "SIR",
+    "SLD",
+    "V17"
+  ],
+  "purchaseUrls": {},
+  "rarity": "mythic",
+  "rulings": [
+    {
+      "date": "2016-07-13",
+      "text": "For more information on meld cards, see the Eldritch Moon mechanics article (https://magic.wizards.com/en/articles/archive/feature/eldritch-moon-mechanics-2016-06-27)."
+    }
+  ],
+  "setCode": "V17",
+  "side": "b",
+  "subtypes": [
+    "Eldrazi",
+    "Angel"
+  ],
+  "supertypes": [
+    "Legendary"
+  ],
+  "text": "Flying, first strike, vigilance, lifelink\nYour opponents can't cast spells with mana value 3 or less.",
+  "toughness": "10",
+  "type": "Legendary Creature — Eldrazi Angel",
+  "types": [
+    "Creature"
+  ],
+  "uuid": "b3dc9b70-fe64-5370-841b-5282d00fb1a9"
+}

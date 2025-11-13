@@ -6,10 +6,6 @@ use serde_json::Value;
 pub struct CardMapper;
 
 impl CardMapper {
-    /// Parse cards from set JSON.
-    /// ::include_online_only:: when true, the returned Vec<Card> will include cards whose
-    /// source JSON has isOnlineOnly=true (these are NOT persisted; used for cleanup runs).
-    /// Default ingestion should call with include_online_only=false so online-only cards are excluded.
     pub fn map_to_cards(set_data: Value, include_online_only: bool) -> Result<Vec<Card>> {
         let cards_array = set_data
             .get("data")
@@ -64,6 +60,23 @@ impl CardMapper {
         } else {
             Vec::new()
         };
+        let layout = card_data
+            .get("layout")
+            .and_then(|v| v.as_str())
+            .unwrap_or("normal")
+            .to_string();
+        let side = card_data
+            .get("side")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        let other_face_ids = card_data
+            .get("otherFaceIds")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                    .collect::<Vec<String>>()
+            });
         let is_online_only = card_data
             .get("isOnlineOnly")
             .and_then(|v| v.as_bool())
@@ -83,7 +96,10 @@ impl CardMapper {
             set_code,
             type_line,
             legalities,
+            layout,
             is_online_only,
+            side,
+            other_face_ids,
         })
     }
 

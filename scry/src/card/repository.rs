@@ -24,7 +24,7 @@ impl CardRepository {
             "INSERT INTO card (
                 id, artist, has_foil, has_non_foil, img_src, 
                 is_reserved, mana_cost, name, number, oracle_text,
-                rarity, set_code, type
+                rarity, set_code, type, layout
             )",
         );
         query_builder.push_values(cards, |mut b, card| {
@@ -40,7 +40,8 @@ impl CardRepository {
                 .push_bind(&card.oracle_text)
                 .push_bind(&card.rarity)
                 .push_bind(&card.set_code)
-                .push_bind(&card.type_line);
+                .push_bind(&card.type_line)
+                .push_bind(&card.layout);
         });
         query_builder.push(
             " ON CONFLICT (id) DO UPDATE SET
@@ -55,7 +56,8 @@ impl CardRepository {
             oracle_text = EXCLUDED.oracle_text,
             rarity = EXCLUDED.rarity,
             set_code = EXCLUDED.set_code,
-            type = EXCLUDED.type
+            type = EXCLUDED.type,
+            layout = EXCLUDED.layout
         WHERE
             card.artist IS DISTINCT FROM EXCLUDED.artist OR
             card.has_foil IS DISTINCT FROM EXCLUDED.has_foil OR
@@ -68,7 +70,8 @@ impl CardRepository {
             card.oracle_text IS DISTINCT FROM EXCLUDED.oracle_text OR
             card.rarity IS DISTINCT FROM EXCLUDED.rarity OR
             card.set_code IS DISTINCT FROM EXCLUDED.set_code OR
-            card.type IS DISTINCT FROM EXCLUDED.type",
+            card.type IS DISTINCT FROM EXCLUDED.type OR
+            card.layout IS DISTINCT FROM EXCLUDED.layout",
         );
         match self.db.execute_query_builder(query_builder).await {
             Ok(rows_affected) => Ok(rows_affected),
@@ -151,11 +154,7 @@ impl CardRepository {
         Ok(total_deleted)
     }
 
-    pub async fn delete_set_and_dependents(
-        &self,
-        set_code: &str,
-        batch_size: i64,
-    ) -> Result<u64> {
+    pub async fn delete_set_and_dependents(&self, set_code: &str, batch_size: i64) -> Result<u64> {
         if set_code.is_empty() {
             return Ok(0);
         }

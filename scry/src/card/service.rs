@@ -1,5 +1,8 @@
 use crate::{
-    card::{event_processor::CardEventProcessor, mapper::CardMapper, repository::CardRepository},
+    card::{
+        event_processor::CardEventProcessor, mapper::CardMapper, models::Card,
+        repository::CardRepository,
+    },
     database::ConnectionPool,
     utils::{HttpClient, JsonStreamParser},
 };
@@ -33,56 +36,25 @@ impl CardService {
         self.repository.legality_count().await
     }
 
-    pub async fn ingest_set_cards(&self, set_code: &str, cleanup_online: bool) -> Result<u64> {
+    pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
         info!("Starting card ingestion for set: {}", set_code);
         let raw_data: Value = self.client.fetch_set_cards(&set_code).await?;
-        if cleanup_online {
-            if raw_data
-                .get("isOnlineOnly")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false)
-            {
-                info!(
-                    "Cleanup enabled and source set {} is online-only; deleting DB rows",
-                    set_code
-                );
-                let _deleted = self
-                    .repository
-                    .delete_set_and_dependents(set_code, Self::BATCH_SIZE as i64)
-                    .await?;
-                return Ok(0);
-            }
-        }
-        let cards = CardMapper::map_to_cards(raw_data, cleanup_online)?;
-        if cards.is_empty() {
+        let parsed = CardMapper::map_to_cards(raw_data, /* include_online_only */ false)?;
+        if parsed.is_empty() {
             warn!("No cards found for set: {}", set_code);
             return Ok(0);
         }
-        if cleanup_online {
-            let (online_only, keep): (Vec<_>, Vec<_>) =
-                cards.into_iter().partition(|c| c.is_online_only);
-            if !online_only.is_empty() {
-                let ids: Vec<String> = online_only.iter().map(|c| c.id.clone()).collect();
-                let _ = self
-                    .repository
-                    .delete_cards_by_ids_batched(&ids, 500)
-                    .await?;
-            }
-            if keep.is_empty() {
-                return Ok(0);
-            }
-            let count = self.repository.save_cards(&keep).await?;
-            let _ = self.repository.save_legalities(&keep).await?;
-            info!("Successfully ingested {} cards for set {}", count, set_code);
-            return Ok(count);
+        let final_cards = Self::merge_and_filter_cards(parsed);
+        if final_cards.is_empty() {
+            return Ok(0);
         }
-        let count = self.repository.save_cards(&cards).await?;
-        let _ = self.repository.save_legalities(&cards).await?;
+        let count = self.repository.save_cards(&final_cards).await?;
+        let _ = self.repository.save_legalities(&final_cards).await?;
         info!("Successfully ingested {} cards for set {}", count, set_code);
         Ok(count)
     }
 
-    pub async fn ingest_all(&self, cleanup_online: bool) -> Result<()> {
+    pub async fn ingest_all(&self) -> Result<()> {
         info!("Start ingestion of all cards");
         let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for all cards");
@@ -122,77 +94,10 @@ impl CardService {
                                 }
                             }
                         }
-                        // --- NEW: merge multi-face cards and drop non-'a' sides before saving ---
-                        {
-                            use std::collections::HashMap;
-                            let mut id_index: HashMap<String, usize> = HashMap::new();
-                            for (i, c) in batch_owned.iter().enumerate() {
-                                id_index.insert(c.id.clone(), i);
-                            }
-
-                            let mut keep_mask = vec![true; batch_owned.len()];
-                            // iterate and mark non-'a' side cards to be removed; merge mana for split/aftermath
-                            for i in 0..batch_owned.len() {
-                                // if side exists and not "a" -> drop (and continue)
-                                if let Some(side) = batch_owned[i].side.as_deref() {
-                                    if side != "a" {
-                                        keep_mask[i] = false;
-                                        continue;
-                                    }
-                                }
-                                // if layout requires merging, collect mana_cost from referenced faces
-                                let layout_lower = batch_owned[i].layout.to_lowercase();
-                                if layout_lower == "split" || layout_lower == "aftermath" {
-                                    let mut parts: Vec<String> = Vec::new();
-                                    if let Some(mc) = &batch_owned[i].mana_cost {
-                                        parts.push(mc.clone());
-                                    }
-                                    if let Some(ref other_ids) = batch_owned[i].other_face_ids {
-                                        for oid in other_ids.iter() {
-                                            if let Some(&other_idx) = id_index.get(oid) {
-                                                if let Some(m) = &batch_owned[other_idx].mana_cost {
-                                                    if !parts.contains(m) {
-                                                        parts.push(m.clone());
-                                                    }
-                                                    // ensure other faces are not saved
-                                                    keep_mask[other_idx] = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if !parts.is_empty() {
-                                        batch_owned[i].mana_cost = Some(parts.join(" / "));
-                                    }
-                                }
-                            }
-                            // filter batch_owned down to keep items
-                            let filtered: Vec<_> = batch_owned
-                                .into_iter()
-                                .enumerate()
-                                .filter(|(idx, _)| keep_mask[*idx])
-                                .map(|(_, c)| c)
-                                .collect();
-                            batch_owned = filtered;
-                        }
-                        // --- END merge/drop logic ---
-                        // If cleanup run is requested, partition and delete online-only cards in this batch
-                        if cleanup_online {
-                            let (online_only, keep): (Vec<_>, Vec<_>) =
-                                batch_owned.into_iter().partition(|c| c.is_online_only);
-                            if !online_only.is_empty() {
-                                let ids: Vec<String> =
-                                    online_only.into_iter().map(|c| c.id).collect();
-                                let _ = repo.delete_cards_by_ids_batched(&ids, 500).await?;
-                            }
-                            if !keep.is_empty() {
-                                repo.save_cards(&keep).await?;
-                                repo.save_legalities(&keep).await?;
-                            }
-                        } else {
-                            if !batch_owned.is_empty() {
-                                repo.save_cards(&batch_owned).await?;
-                                repo.save_legalities(&batch_owned).await?;
-                            }
+                        batch_owned = CardService::merge_and_filter_cards(batch_owned);
+                        if !batch_owned.is_empty() {
+                            repo.save_cards(&batch_owned).await?;
+                            repo.save_legalities(&batch_owned).await?;
                         }
                         Ok::<(), anyhow::Error>(())
                     });
@@ -207,8 +112,152 @@ impl CardService {
         Ok(())
     }
 
+    pub async fn delete_other_sides_from_set(
+        &self,
+        set_code: &str,
+        batch_size: i64,
+    ) -> Result<u64> {
+        let raw: Value = self.client.fetch_set_cards(set_code).await?;
+        let parsed = CardMapper::map_to_cards(raw, /* include_online_only */ true)?;
+        let ids: Vec<String> = Self::collect_non_a_ids(&parsed);
+        if ids.is_empty() {
+            info!("No non-'a' faces found for set {}", set_code);
+            return Ok(0);
+        }
+        let deleted = self
+            .repository
+            .delete_cards_by_ids_batched(&ids, batch_size)
+            .await?;
+        info!("Deleted {} non-'a' faces for set {}", deleted, set_code);
+        Ok(deleted)
+    }
+
+    pub async fn delete_other_side_cards(&self, batch_size: i64) -> Result<u64> {
+        info!("Starting cleanup: delete non-'a' faces across all sets");
+        let sets_json: Value = self.client.fetch_all_sets().await?;
+        let mut total_deleted = 0u64;
+        if let Some(arr) = sets_json.get("data").and_then(|d| d.as_array()) {
+            for set_obj in arr {
+                if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
+                    let code = code.to_lowercase();
+                    match self.delete_other_sides_from_set(&code, batch_size).await {
+                        Ok(n) => total_deleted += n,
+                        Err(e) => warn!("Cleanup for set {} failed: {}", code, e),
+                    }
+                }
+            }
+        }
+        info!(
+            "Cleanup (non-'a') complete; total deleted: {}",
+            total_deleted
+        );
+        Ok(total_deleted)
+    }
+
+    pub async fn delete_online_cards_for_set(
+        &self,
+        set_code: &str,
+        batch_size: i64,
+    ) -> Result<u64> {
+        let raw: Value = self.client.fetch_set_cards(set_code).await?;
+        let parsed = CardMapper::map_to_cards(raw, /* include_online_only */ true)?;
+        let ids: Vec<String> = parsed
+            .into_iter()
+            .filter(|c| c.is_online_only)
+            .map(|c| c.id)
+            .collect();
+        if ids.is_empty() {
+            info!("No online-only cards found for set {}", set_code);
+            return Ok(0);
+        }
+        let deleted = self
+            .repository
+            .delete_cards_by_ids_batched(&ids, batch_size)
+            .await?;
+        info!("Deleted {} online-only cards for set {}", deleted, set_code);
+        Ok(deleted)
+    }
+
+    pub async fn delete_online_cards(&self, batch_size: i64) -> Result<u64> {
+        info!("Starting cleanup: delete online-only cards across all sets");
+        let sets_json: Value = self.client.fetch_all_sets().await?;
+        let mut total_deleted = 0u64;
+        if let Some(arr) = sets_json.get("data").and_then(|d| d.as_array()) {
+            for set_obj in arr {
+                if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
+                    let code = code.to_lowercase();
+                    match self.delete_online_cards_for_set(&code, batch_size).await {
+                        Ok(n) => total_deleted += n,
+                        Err(e) => warn!("Cleanup for set {} failed: {}", code, e),
+                    }
+                }
+            }
+        }
+        info!(
+            "Cleanup (online-only cards) complete; total deleted: {}",
+            total_deleted
+        );
+        Ok(total_deleted)
+    }
+
     pub async fn delete_all(&self) -> Result<u64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
+    }
+
+    fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {
+        use std::collections::HashMap;
+        let mut id_index: HashMap<String, usize> = HashMap::new();
+        for (i, c) in cards.iter().enumerate() {
+            id_index.insert(c.id.clone(), i);
+        }
+        let mut keep_mask = vec![true; cards.len()];
+        for i in 0..cards.len() {
+            if let Some(side) = cards[i].side.as_deref() {
+                if side != "a" {
+                    keep_mask[i] = false;
+                    continue;
+                }
+            }
+            let layout = cards[i].layout.to_lowercase();
+            if layout == "split" || layout == "aftermath" {
+                let mut parts: Vec<String> = Vec::new();
+                if let Some(mc) = &cards[i].mana_cost {
+                    parts.push(mc.clone());
+                }
+                if let Some(ref other_ids) = cards[i].other_face_ids {
+                    for oid in other_ids.iter() {
+                        if let Some(&other_idx) = id_index.get(oid) {
+                            if let Some(m) = &cards[other_idx].mana_cost {
+                                if !parts.contains(m) {
+                                    parts.push(m.clone());
+                                }
+                                keep_mask[other_idx] = false;
+                            }
+                        }
+                    }
+                }
+                if !parts.is_empty() {
+                    cards[i].mana_cost = Some(parts.join(" // "));
+                }
+            }
+        }
+        cards
+            .into_iter()
+            .enumerate()
+            .filter(|(idx, _)| keep_mask[*idx])
+            .map(|(_, c)| c)
+            .collect()
+    }
+
+    fn collect_non_a_ids(cards: &[Card]) -> Vec<String> {
+        cards
+            .iter()
+            .filter_map(|c| {
+                c.side
+                    .as_deref()
+                    .and_then(|s| if s != "a" { Some(c.id.clone()) } else { None })
+            })
+            .collect()
     }
 }

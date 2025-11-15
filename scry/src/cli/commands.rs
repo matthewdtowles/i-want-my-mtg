@@ -15,38 +15,52 @@ pub enum Commands {
     Ingest {
         #[arg(short, long, help = "Ingest all sets.")]
         sets: bool,
-
         #[arg(short, long, help = "Ingest all cards.")]
         cards: bool,
-
         #[arg(
             short,
             long,
             help = "Archive previous prices and ingest all prices for today."
         )]
         prices: bool,
-
         #[arg(
             short = 'k',
             long,
             help = "Ingest all cards for given set. E.g.: `ingest -c -k abc` for cards in set `abc`."
         )]
         set_cards: Option<String>,
-
         #[arg(short, long, help = "Reset all data prior to ingestion.")]
         reset: bool,
-
-        #[arg(
-            short = 'o',
-            long,
-            help = "When true, run one-off cleanup of online-only sets/cards instead of inserting them."
-        )]
-        cleanup_online: bool,
     },
 
     /// Check system health and data integrity
     Health {
         #[arg(long, help = "Perform detailed health check")]
         detailed: bool,
+    },
+
+    /// Run cleanup operations (separate from ingestion)
+    Cleanup {
+        #[arg(short, long, help = "Run cleanup for cards")]
+        cards: bool,
+        #[arg(short, long, help = "Run cleanup for sets (online-only sets)")]
+        sets: bool,
+        #[arg(
+            short = 'b',
+            long = "other-sides",
+            help = "Delete non-'a' side card faces"
+        )]
+        other_sides: bool,
+        #[arg(short, long = "online", help = "Delete online-only cards/sets")]
+        online: bool,
+        #[arg(long = "set-code", help = "Target a single set code for cleanup")]
+        set_code: Option<String>,
+        #[arg(
+            short = 'n',
+            long = "batch-size",
+            help = "Batch size for deletes",
+            default_value_t = 500
+        )]
+        batch_size: i64,
     },
 }

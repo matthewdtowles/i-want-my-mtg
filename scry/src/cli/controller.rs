@@ -36,13 +36,29 @@ impl CliController {
                 prices,
                 set_cards,
                 reset,
-                cleanup_online,
             } => {
                 if let Err(e) = self
-                    .handle_ingest(sets, cards, prices, set_cards, reset, cleanup_online)
+                    .handle_ingest(sets, cards, prices, set_cards, reset)
                     .await
                 {
                     error!("Ingestion failed: {}", e);
+                }
+                Ok(())
+            }
+
+            Commands::Cleanup {
+                cards,
+                sets,
+                other_sides,
+                online,
+                set_code,
+                batch_size,
+            } => {
+                if let Err(e) = self
+                    .handle_cleanup(cards, sets, other_sides, online, set_code, batch_size)
+                    .await
+                {
+                    error!("Cleanup failed: {}", e);
                 }
                 Ok(())
             }
@@ -63,53 +79,94 @@ impl CliController {
         prices: bool,
         set_cards: Option<String>,
         reset: bool,
-        cleanup_online: bool,
     ) -> Result<()> {
         if reset {
             match self.reset_data().await {
-                Ok(()) => {
-                    info!("Successfully reset data.");
-                }
-                Err(e) => {
-                    error!("Failed to reset data: {}", e);
-                }
+                Ok(()) => info!("Successfully reset data."),
+                Err(e) => error!("Failed to reset data: {}", e),
             }
         }
         let do_all = !sets && !cards && !prices && set_cards.is_none();
         if do_all || sets {
-            match self.update_sets(cleanup_online).await {
+            match self.update_sets().await {
                 Ok(()) => info!("Successfully updated sets."),
                 Err(e) => error!("Failed to update sets: {}", e),
             }
         }
         if do_all || cards {
-            match self.update_cards(cleanup_online).await {
+            match self.update_cards().await {
                 Ok(()) => info!("Card update completed successfully."),
                 Err(e) => error!("Card udpate failure: {}", e),
             }
         }
         if !cards {
             if let Some(set_code) = &set_cards {
-                match self
-                    .card_service
-                    .ingest_set_cards(set_code, cleanup_online)
-                    .await
-                {
-                    Ok(ingested) => {
-                        info!("Updated {} cards for set code '{}'.", ingested, set_code)
-                    }
+                match self.card_service.ingest_set_cards(set_code).await {
+                    Ok(ingested) => info!("{} cards for set code '{}'.", ingested, set_code),
                     Err(e) => error!("Error updating cards for set code '{}': {}", set_code, e),
                 }
             }
         }
         if do_all || prices {
             match self.update_prices().await {
-                Ok(()) => {
-                    info!("Price update completed successfully.");
+                Ok(()) => info!("Price update completed successfully."),
+                Err(e) => error!("Price update failure: {}", e),
+            }
+        }
+        Ok(())
+    }
+
+    async fn handle_cleanup(
+        &self,
+        cards: bool,
+        sets: bool,
+        other_sides: bool,
+        online: bool,
+        set_code: Option<String>,
+        batch_size: i64,
+    ) -> Result<()> {
+        if !cards && !sets {
+            return Ok(());
+        }
+        if cards {
+            if let Some(code) = set_code.as_deref() {
+                if other_sides {
+                    let n = self
+                        .card_service
+                        .delete_other_sides_from_set(code, batch_size)
+                        .await?;
+                    info!("Deleted {} non-'a' faces for set {}", n, code);
                 }
-                Err(e) => {
-                    error!("Price update failure: {}", e);
+                if online {
+                    let n = self
+                        .card_service
+                        .delete_online_cards_for_set(code, batch_size)
+                        .await?;
+                    info!("Deleted {} online-only cards for set {}", n, code);
                 }
+            } else {
+                if other_sides {
+                    let n = self
+                        .card_service
+                        .delete_other_side_cards(batch_size)
+                        .await?;
+                    info!("Deleted {} non-'a' faces across all sets", n);
+                }
+                if online {
+                    let n = self.card_service.delete_online_cards(batch_size).await?;
+                    info!("Deleted {} online-only cards across all sets", n);
+                }
+            }
+        }
+        if sets {
+            if online {
+                let n = self
+                    .set_service
+                    .cleanup_delete_online_sets(batch_size)
+                    .await?;
+                info!("Deleted {} online-only sets (and dependents)", n);
+            } else {
+                warn!("No set cleanup action selected. Use --online to remove online-only sets.");
             }
         }
         Ok(())
@@ -146,19 +203,19 @@ impl CliController {
         Ok(())
     }
 
-    async fn update_sets(&self, cleanup_online: bool) -> Result<()> {
+    async fn update_sets(&self) -> Result<()> {
         let total_sets_before = self.set_service.fetch_count().await?;
-        self.set_service.ingest_all(cleanup_online).await?;
+        self.set_service.ingest_all().await?;
         let total_sets_after = self.set_service.fetch_count().await?;
         info!("Total sets before: {}", total_sets_before);
         info!("Total sets after: {}", total_sets_after);
         Ok(())
     }
 
-    async fn update_cards(&self, cleanup_online: bool) -> Result<()> {
+    async fn update_cards(&self) -> Result<()> {
         let total_cards_before = self.card_service.fetch_count().await?;
         let total_legalities_before = self.card_service.fetch_legality_count().await?;
-        self.card_service.ingest_all(cleanup_online).await?;
+        self.card_service.ingest_all().await?;
         let total_cards_after = self.card_service.fetch_count().await?;
         let total_legalities_after = self.card_service.fetch_legality_count().await?;
         info!("Total cards before {}", total_cards_before);

@@ -1,0 +1,8 @@
+ALTER TABLE card
+  ADD COLUMN IF NOT EXISTS layout TEXT;
+
+UPDATE card SET layout = 'normal' WHERE layout IS NULL;
+
+ALTER TABLE card
+  ALTER COLUMN layout SET DEFAULT 'normal',
+  ALTER COLUMN layout SET NOT NULL;

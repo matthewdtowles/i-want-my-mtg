@@ -77,6 +77,19 @@ services:
     depends_on:
       - postgres
 
+  migrate:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./docker/postgres/migrations:/migrations:ro
+    entrypoint: [ "/migrations/run_migrations.sh" ]
+    profiles: [ "migrate" ]
+    restart: "no"
+
 volumes:
   postgres_dev_data:
   etl_target:

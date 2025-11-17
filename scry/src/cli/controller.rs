@@ -129,6 +129,13 @@ impl CliController {
             return Ok(());
         }
         if cards {
+            let total_cards_before = self.card_service.fetch_count().await?;
+            let total_legalities_before = self.card_service.fetch_legality_count().await?;
+            info!(
+                "Card cleanup starting: before -> {} cards | {} legalities",
+                total_cards_before, total_legalities_before
+            );
+
             if let Some(code) = set_code.as_deref() {
                 if other_sides {
                     let n = self
@@ -157,8 +164,16 @@ impl CliController {
                     info!("Deleted {} online-only cards across all sets", n);
                 }
             }
+            let total_cards_after = self.card_service.fetch_count().await?;
+            let total_legalities_after = self.card_service.fetch_legality_count().await?;
+            info!(
+                "Card cleanup complete: after -> {} cards | {} legalities",
+                total_cards_after, total_legalities_after
+            );
         }
         if sets {
+            let total_sets_before = self.set_service.fetch_count().await?;
+            info!("Set cleanup starting: before -> {} sets", total_sets_before);
             if online {
                 let n = self
                     .set_service
@@ -168,6 +183,8 @@ impl CliController {
             } else {
                 warn!("No set cleanup action selected. Use --online to remove online-only sets.");
             }
+            let total_sets_after = self.set_service.fetch_count().await?;
+            info!("Set cleanup complete: after -> {} sets", total_sets_after);
         }
         Ok(())
     }

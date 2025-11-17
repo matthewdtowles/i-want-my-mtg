@@ -112,46 +112,25 @@ impl CardService {
         Ok(())
     }
 
+    // wrappers that use the generic streaming cleanup
+    pub async fn delete_other_side_cards(&self, batch_size: i64) -> Result<u64> {
+        let pred = Arc::new(|c: &Card| c.side.as_deref().map_or(false, |s| s != "a"));
+        self.cleanup_stream_and_delete(pred, batch_size, None).await
+    }
+
+    pub async fn delete_online_cards(&self, batch_size: i64) -> Result<u64> {
+        let pred = Arc::new(|c: &Card| c.is_online_only);
+        self.cleanup_stream_and_delete(pred, batch_size, None).await
+    }
+
     pub async fn delete_other_sides_from_set(
         &self,
         set_code: &str,
         batch_size: i64,
     ) -> Result<u64> {
-        let raw: Value = self.client.fetch_set_cards(set_code).await?;
-        let parsed = CardMapper::map_to_cards(raw, /* include_online_only */ true)?;
-        let ids: Vec<String> = Self::collect_non_a_ids(&parsed);
-        if ids.is_empty() {
-            info!("No non-'a' faces found for set {}", set_code);
-            return Ok(0);
-        }
-        let deleted = self
-            .repository
-            .delete_cards_by_ids_batched(&ids, batch_size)
-            .await?;
-        info!("Deleted {} non-'a' faces for set {}", deleted, set_code);
-        Ok(deleted)
-    }
-
-    pub async fn delete_other_side_cards(&self, batch_size: i64) -> Result<u64> {
-        info!("Starting cleanup: delete non-'a' faces across all sets");
-        let sets_json: Value = self.client.fetch_all_sets().await?;
-        let mut total_deleted = 0u64;
-        if let Some(arr) = sets_json.get("data").and_then(|d| d.as_array()) {
-            for set_obj in arr {
-                if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
-                    let code = code.to_lowercase();
-                    match self.delete_other_sides_from_set(&code, batch_size).await {
-                        Ok(n) => total_deleted += n,
-                        Err(e) => warn!("Cleanup for set {} failed: {}", code, e),
-                    }
-                }
-            }
-        }
-        info!(
-            "Cleanup (non-'a') complete; total deleted: {}",
-            total_deleted
-        );
-        Ok(total_deleted)
+        let pred = Arc::new(|c: &Card| c.side.as_deref().map_or(false, |s| s != "a"));
+        self.cleanup_stream_and_delete(pred, batch_size, Some(set_code))
+            .await
     }
 
     pub async fn delete_online_cards_for_set(
@@ -159,50 +138,73 @@ impl CardService {
         set_code: &str,
         batch_size: i64,
     ) -> Result<u64> {
-        let raw: Value = self.client.fetch_set_cards(set_code).await?;
-        let parsed = CardMapper::map_to_cards(raw, /* include_online_only */ true)?;
-        let ids: Vec<String> = parsed
-            .into_iter()
-            .filter(|c| c.is_online_only)
-            .map(|c| c.id)
-            .collect();
-        if ids.is_empty() {
-            info!("No online-only cards found for set {}", set_code);
-            return Ok(0);
-        }
-        let deleted = self
-            .repository
-            .delete_cards_by_ids_batched(&ids, batch_size)
-            .await?;
-        info!("Deleted {} online-only cards for set {}", deleted, set_code);
-        Ok(deleted)
-    }
-
-    pub async fn delete_online_cards(&self, batch_size: i64) -> Result<u64> {
-        info!("Starting cleanup: delete online-only cards across all sets");
-        let sets_json: Value = self.client.fetch_all_sets().await?;
-        let mut total_deleted = 0u64;
-        if let Some(arr) = sets_json.get("data").and_then(|d| d.as_array()) {
-            for set_obj in arr {
-                if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
-                    let code = code.to_lowercase();
-                    match self.delete_online_cards_for_set(&code, batch_size).await {
-                        Ok(n) => total_deleted += n,
-                        Err(e) => warn!("Cleanup for set {} failed: {}", code, e),
-                    }
-                }
-            }
-        }
-        info!(
-            "Cleanup (online-only cards) complete; total deleted: {}",
-            total_deleted
-        );
-        Ok(total_deleted)
+        let pred = Arc::new(|c: &Card| c.is_online_only);
+        self.cleanup_stream_and_delete(pred, batch_size, Some(set_code))
+            .await
     }
 
     pub async fn delete_all(&self) -> Result<u64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
+    }
+
+    /// Generic streaming cleanup: iterate the all-cards stream, apply `predicate` to each card,
+    /// optionally restrict to `target_set_code`, and delete matching card ids in batches.
+    async fn cleanup_stream_and_delete(
+        &self,
+        predicate: Arc<dyn Fn(&Card) -> bool + Send + Sync>,
+        batch_size: i64,
+        target_set_code: Option<&str>,
+    ) -> Result<u64> {
+        info!("Starting streaming cleanup");
+        let byte_stream = self.client.all_cards_stream().await?;
+        let sem = Arc::new(Semaphore::new(Self::CONCURRENCY));
+        let event_processor = CardEventProcessor::new(Self::BATCH_SIZE);
+        let mut json_stream_parser = JsonStreamParser::new(event_processor);
+        let repo = self.repository.clone();
+        let total = Arc::new(tokio::sync::Mutex::new(0u64));
+        let total_for_closure = total.clone();
+        json_stream_parser
+            .parse_stream(byte_stream, move |batch| {
+                let repo = repo.clone();
+                let sem = sem.clone();
+                let pred = predicate.clone();
+                let total = total_for_closure.clone();
+                let target = target_set_code.map(|s| s.to_string());
+                Box::pin(async move {
+                    if batch.is_empty() {
+                        return Ok(());
+                    }
+                    let _permit = sem.clone().acquire_owned().await;
+                    let mut ids_to_delete: Vec<String> = Vec::new();
+                    for c in batch.iter() {
+                        if let Some(ref t) = target {
+                            if &c.set_code != t {
+                                continue;
+                            }
+                        }
+                        if (pred)(c) {
+                            ids_to_delete.push(c.id.clone());
+                        }
+                    }
+                    if ids_to_delete.is_empty() {
+                        return Ok(());
+                    }
+                    let deleted = repo
+                        .delete_cards_by_ids_batched(&ids_to_delete, batch_size)
+                        .await?;
+                    let mut lock = total.lock().await;
+                    *lock += deleted;
+                    Ok(())
+                })
+            })
+            .await?;
+        let final_total = *total.lock().await;
+        info!(
+            "Streaming cleanup complete; total affected: {}",
+            final_total
+        );
+        Ok(final_total)
     }
 
     fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {

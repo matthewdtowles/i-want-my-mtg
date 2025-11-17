@@ -1205,14 +1205,14 @@ i_want_my_mtg=# select set_code, count(*) as count from card where card.order > 
  snc      |    44 | 44
  ktk      |    24 | 24
  afr      |    22 | 22
- khm      |    19 | 20
+ khm      |    19 | 20 * Kaldheim (2021-02)
  dmu      |    17 | 17
  neo      |    17 | 17
- znr      |    17 | 18
+ znr      |    17 | 18 * Zendikar Rising (2020-09)
  bro      |    12 | 12
- vow      |    11 | 17
- stx      |    10 | 11
- mid      |     8 | 9
+ vow      |    11 | 17 * Innistrad: Crimson Vow (2021-11)
+ stx      |    10 | 11 * Strixhaven: School of Mages (2021-04)
+ mid      |     8 | 9  * Innistrad: Midnight Hunt (2021-09)
  mh3      |     4 | 4
  iko      |     3 | 3
  mh2      |     2 | 2
@@ -1240,3 +1240,5 @@ Some of those 29 sets have more total online_only cards than were reingested.
 
 sets that did not re-ingest ALL online only cards:
 khm, znr, vow, stx, mid
+->> all 5 of these sets are expansions released between 2020-09-25 and 2021-11-19
+-->> only afr, adventure in the forgotten realms did not include this anomaly

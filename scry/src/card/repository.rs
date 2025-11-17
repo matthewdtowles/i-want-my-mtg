@@ -228,21 +228,21 @@ impl CardRepository {
             let mut qb = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
             qb.push_bind(chunk.to_vec());
             qb.push(")");
-            total_deleted += self.db.execute_query_builder(qb).await?;
+            self.db.execute_query_builder(qb).await?;
             let mut qb = QueryBuilder::new("DELETE FROM price WHERE card_id = ANY(");
             qb.push_bind(chunk.to_vec());
             qb.push(")");
-            total_deleted += self.db.execute_query_builder(qb).await?;
+            self.db.execute_query_builder(qb).await?;
             let mut qb = QueryBuilder::new("DELETE FROM inventory WHERE card_id = ANY(");
             qb.push_bind(chunk.to_vec());
             qb.push(")");
-            total_deleted += self.db.execute_query_builder(qb).await?;
+            self.db.execute_query_builder(qb).await?;
             let mut qb = QueryBuilder::new("DELETE FROM card WHERE id = ANY(");
             qb.push_bind(chunk.to_vec());
             qb.push(")");
             total_deleted += self.db.execute_query_builder(qb).await?;
         }
-        info!("Deleted {} rows for {} card ids", total_deleted, ids.len());
+        info!("Deleted {} cards for {} card ids", total_deleted, ids.len());
         Ok(total_deleted)
     }
 }

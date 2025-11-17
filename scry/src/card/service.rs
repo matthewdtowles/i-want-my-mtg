@@ -215,6 +215,10 @@ impl CardService {
         }
         let mut keep_mask = vec![true; cards.len()];
         for i in 0..cards.len() {
+            if cards[i].is_online_only {
+                keep_mask[i] = false;
+                continue;
+            }
             if let Some(side) = cards[i].side.as_deref() {
                 if side != "a" {
                     keep_mask[i] = false;
@@ -249,17 +253,6 @@ impl CardService {
             .enumerate()
             .filter(|(idx, _)| keep_mask[*idx])
             .map(|(_, c)| c)
-            .collect()
-    }
-
-    fn collect_non_a_ids(cards: &[Card]) -> Vec<String> {
-        cards
-            .iter()
-            .filter_map(|c| {
-                c.side
-                    .as_deref()
-                    .and_then(|s| if s != "a" { Some(c.id.clone()) } else { None })
-            })
             .collect()
     }
 }

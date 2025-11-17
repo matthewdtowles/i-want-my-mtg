@@ -1202,16 +1202,16 @@ i_want_my_mtg=# select set_code, count(*) as count from card where card.order > 
 
  set_code | count | online?
 ----------+-------+---------
- snc      |    44 | 
+ snc      |    44 | 44
  ktk      |    24 | 24
  afr      |    22 | 22
  khm      |    19 | 20
  dmu      |    17 | 17
- neo      |    17
- znr      |    17
+ neo      |    17 | 17
+ znr      |    17 | 18
  bro      |    12 | 12
- vow      |    11
- stx      |    10
+ vow      |    11 | 17
+ stx      |    10 | 11
  mid      |     8 | 9
  mh3      |     4 | 4
  iko      |     3 | 3
@@ -1228,194 +1228,15 @@ i_want_my_mtg=# select set_code, count(*) as count from card where card.order > 
  8ed      |     1 | 1
  m20      |     1 | 1
  mul      |     1 | 1
- tdm      |     1
- unf      |     1
- war      |     1
+ tdm      |     1 | 1
+ unf      |     1 | 1
+ war      |     1 | 1
 (29 rows)
 
+==> 226 sets have re-ingested cleaned up cards that should be filtered out. 
+all of the online only cards were reingested for 29 sets. 
+Some of those 29 sets have more total online_only cards than were reingested.
+--> TODO: need to find out if they were never cleaned up or if they were not reingested.
 
-  {
-    "set": "MH2",
-    "onlineOnlyCount": 2
-  },
-  {
-    "set": "MH3",
-    "onlineOnlyCount": 4
-  },
-  {
-    "set": "MID",
-    "onlineOnlyCount": 9
-  },
-  {
-    "set": "MUL",
-    "onlineOnlyCount": 1
-  },
-  {
-    "set": "NEO",
-    "onlineOnlyCount": 17
-  },
-  {
-    "set": "OANA",
-    "onlineOnlyCount": 14
-  },
-  {
-    "set": "OM1",
-    "onlineOnlyCount": 193
-  },
-  {
-    "set": "OMB",
-    "onlineOnlyCount": 40
-  },
-  {
-    "set": "PA1",
-    "onlineOnlyCount": 11
-  },
-  {
-    "set": "PANA",
-    "onlineOnlyCount": 78
-  },
-  {
-    "set": "PAST",
-    "onlineOnlyCount": 12
-  },
-  {
-    "set": "PIO",
-    "onlineOnlyCount": 425
-  },
-  {
-    "set": "PMOA",
-    "onlineOnlyCount": 85
-  },
-  {
-    "set": "PRM",
-    "onlineOnlyCount": 3225
-  },
-  {
-    "set": "PSDG",
-    "onlineOnlyCount": 10
-  },
-  {
-    "set": "PZ1",
-    "onlineOnlyCount": 149
-  },
-  {
-    "set": "PZ2",
-    "onlineOnlyCount": 282
-  },
-  {
-    "set": "SIR",
-    "onlineOnlyCount": 320
-  },
-  {
-    "set": "SIS",
-    "onlineOnlyCount": 81
-  },
-  {
-    "set": "SNC",
-    "onlineOnlyCount": 44
-  },
-  {
-    "set": "STX",
-    "onlineOnlyCount": 11
-  },
-  {
-    "set": "TD0",
-    "onlineOnlyCount": 198
-  },
-  {
-    "set": "TD2",
-    "onlineOnlyCount": 88
-  },
-  {
-    "set": "TDM",
-    "onlineOnlyCount": 1
-  },
-  {
-    "set": "TPR",
-    "onlineOnlyCount": 269
-  },
-  {
-    "set": "UNF",
-    "onlineOnlyCount": 1
-  },
-  {
-    "set": "VMA",
-    "onlineOnlyCount": 325
-  },
-  {
-    "set": "VOW",
-    "onlineOnlyCount": 17
-  },
-  {
-    "set": "WAR",
-    "onlineOnlyCount": 1
-  },
-  {
-    "set": "XANA",
-    "onlineOnlyCount": 20
-  },
-  {
-    "set": "YBLB",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YBRO",
-    "onlineOnlyCount": 31
-  },
-  {
-    "set": "YDFT",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YDMU",
-    "onlineOnlyCount": 39
-  },
-  {
-    "set": "YDSK",
-    "onlineOnlyCount": 32
-  },
-  {
-    "set": "YEOE",
-    "onlineOnlyCount": 40
-  },
-  {
-    "set": "YLCI",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YMID",
-    "onlineOnlyCount": 64
-  },
-  {
-    "set": "YMKM",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YNEO",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YONE",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YOTJ",
-    "onlineOnlyCount": 31
-  },
-  {
-    "set": "YSNC",
-    "onlineOnlyCount": 30
-  },
-  {
-    "set": "YTDM",
-    "onlineOnlyCount": 33
-  },
-  {
-    "set": "YWOE",
-    "onlineOnlyCount": 34
-  },
-  {
-    "set": "ZNR",
-    "onlineOnlyCount": 18
-  }
-]
+sets that did not re-ingest ALL online only cards:
+khm, znr, vow, stx, mid

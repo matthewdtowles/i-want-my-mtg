@@ -49,13 +49,10 @@ impl CliController {
             Commands::Cleanup {
                 cards,
                 sets,
-                other_sides,
-                online,
-                set_code,
                 batch_size,
             } => {
                 if let Err(e) = self
-                    .handle_cleanup(cards, sets, other_sides, online, set_code, batch_size)
+                    .handle_cleanup(cards, sets, batch_size)
                     .await
                 {
                     error!("Cleanup failed: {}", e);
@@ -120,9 +117,6 @@ impl CliController {
         &self,
         cards: bool,
         sets: bool,
-        other_sides: bool,
-        online: bool,
-        set_code: Option<String>,
         batch_size: i64,
     ) -> Result<()> {
         if !cards && !sets {
@@ -136,34 +130,13 @@ impl CliController {
                 total_cards_before, total_legalities_before
             );
 
-            if let Some(code) = set_code.as_deref() {
-                if other_sides {
-                    let n = self
-                        .card_service
-                        .delete_other_sides_from_set(code, batch_size)
-                        .await?;
-                    info!("Deleted {} non-'a' faces for set {}", n, code);
-                }
-                if online {
-                    let n = self
-                        .card_service
-                        .delete_online_cards_for_set(code, batch_size)
-                        .await?;
-                    info!("Deleted {} online-only cards for set {}", n, code);
-                }
-            } else {
-                if other_sides {
-                    let n = self
-                        .card_service
-                        .delete_other_side_cards(batch_size)
-                        .await?;
-                    info!("Deleted {} non-'a' faces across all sets", n);
-                }
-                if online {
-                    let n = self.card_service.delete_online_cards(batch_size).await?;
-                    info!("Deleted {} online-only cards across all sets", n);
-                }
-            }
+            // Always perform both "other-sides" and "online-only" cleanup in a single pass.
+            let n = self
+                .card_service
+                .cleanup_cards(batch_size)
+                .await?;
+            info!("Deleted {} cards (other-sides + online-only).", n);
+
             let total_cards_after = self.card_service.fetch_count().await?;
             let total_legalities_after = self.card_service.fetch_legality_count().await?;
             info!(
@@ -174,15 +147,12 @@ impl CliController {
         if sets {
             let total_sets_before = self.set_service.fetch_count().await?;
             info!("Set cleanup starting: before -> {} sets", total_sets_before);
-            if online {
-                let n = self
-                    .set_service
-                    .cleanup_delete_online_sets(batch_size)
-                    .await?;
-                info!("Deleted {} online-only sets (and dependents)", n);
-            } else {
-                warn!("No set cleanup action selected. Use --online to remove online-only sets.");
-            }
+            // keep existing behavior for set cleanup (online-only delete controlled by flag here)
+            let n = self
+                .set_service
+                .cleanup_delete_online_sets(batch_size)
+                .await?;
+            info!("Deleted {} online-only sets (and dependents)", n);
             let total_sets_after = self.set_service.fetch_count().await?;
             info!("Set cleanup complete: after -> {} sets", total_sets_after);
         }

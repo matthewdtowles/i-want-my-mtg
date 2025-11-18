@@ -112,50 +112,12 @@ impl CardService {
         Ok(())
     }
 
-    // wrappers that use the generic streaming cleanup
-    pub async fn delete_other_side_cards(&self, batch_size: i64) -> Result<u64> {
-        let pred = Arc::new(|c: &Card| c.side.as_deref().map_or(false, |s| s != "a"));
-        self.cleanup_stream_and_delete(pred, batch_size, None).await
-    }
-
-    pub async fn delete_online_cards(&self, batch_size: i64) -> Result<u64> {
-        let pred = Arc::new(|c: &Card| c.is_online_only);
-        self.cleanup_stream_and_delete(pred, batch_size, None).await
-    }
-
-    pub async fn delete_other_sides_from_set(
-        &self,
-        set_code: &str,
-        batch_size: i64,
-    ) -> Result<u64> {
-        let pred = Arc::new(|c: &Card| c.side.as_deref().map_or(false, |s| s != "a"));
-        self.cleanup_stream_and_delete(pred, batch_size, Some(set_code))
-            .await
-    }
-
-    pub async fn delete_online_cards_for_set(
-        &self,
-        set_code: &str,
-        batch_size: i64,
-    ) -> Result<u64> {
-        let pred = Arc::new(|c: &Card| c.is_online_only);
-        self.cleanup_stream_and_delete(pred, batch_size, Some(set_code))
-            .await
-    }
-
     pub async fn delete_all(&self) -> Result<u64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
     }
 
-    /// Generic streaming cleanup: iterate the all-cards stream, apply `predicate` to each card,
-    /// optionally restrict to `target_set_code`, and delete matching card ids in batches.
-    async fn cleanup_stream_and_delete(
-        &self,
-        predicate: Arc<dyn Fn(&Card) -> bool + Send + Sync>,
-        batch_size: i64,
-        target_set_code: Option<&str>,
-    ) -> Result<u64> {
+    pub async fn cleanup_cards(&self, batch_size: i64) -> Result<u64> {
         info!("Starting streaming cleanup");
         let byte_stream = self.client.all_cards_stream().await?;
         let sem = Arc::new(Semaphore::new(Self::CONCURRENCY));
@@ -168,9 +130,7 @@ impl CardService {
             .parse_stream(byte_stream, move |batch| {
                 let repo = repo.clone();
                 let sem = sem.clone();
-                let pred = predicate.clone();
                 let total = total_for_closure.clone();
-                let target = target_set_code.map(|s| s.to_string());
                 Box::pin(async move {
                     if batch.is_empty() {
                         return Ok(());
@@ -178,12 +138,7 @@ impl CardService {
                     let _permit = sem.clone().acquire_owned().await;
                     let mut ids_to_delete: Vec<String> = Vec::new();
                     for c in batch.iter() {
-                        if let Some(ref t) = target {
-                            if &c.set_code != t {
-                                continue;
-                            }
-                        }
-                        if (pred)(c) {
+                        if self.should_delete(c) {
                             ids_to_delete.push(c.id.clone());
                         }
                     }
@@ -252,5 +207,15 @@ impl CardService {
             .filter(|(idx, _)| keep_mask[*idx])
             .map(|(_, c)| c)
             .collect()
+    }
+
+    fn should_delete(&self, card: &Card) -> bool {
+        if card.is_online_only {
+            return true;
+        }
+        if let Some(side) = card.side.as_deref() {
+            return side != "a";
+        }
+        false
     }
 }

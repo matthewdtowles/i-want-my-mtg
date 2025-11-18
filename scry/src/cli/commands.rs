@@ -46,16 +46,6 @@ pub enum Commands {
         #[arg(short, long, help = "Run cleanup for sets (online-only sets)")]
         sets: bool,
         #[arg(
-            short = 'b',
-            long = "other-sides",
-            help = "Delete non-'a' side card faces"
-        )]
-        other_sides: bool,
-        #[arg(short, long = "online", help = "Delete online-only cards/sets")]
-        online: bool,
-        #[arg(long = "set-code", help = "Target a single set code for cleanup")]
-        set_code: Option<String>,
-        #[arg(
             short = 'n',
             long = "batch-size",
             help = "Batch size for deletes",

@@ -39,7 +39,7 @@ impl CardService {
     pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
         info!("Starting card ingestion for set: {}", set_code);
         let raw_data: Value = self.client.fetch_set_cards(&set_code).await?;
-        let parsed = CardMapper::map_to_cards(raw_data, /* include_online_only */ false)?;
+        let parsed = CardMapper::map_to_cards(raw_data)?;
         if parsed.is_empty() {
             warn!("No cards found for set: {}", set_code);
             return Ok(0);

@@ -6,7 +6,7 @@ use serde_json::Value;
 pub struct CardMapper;
 
 impl CardMapper {
-    pub fn map_to_cards(set_data: Value, include_online_only: bool) -> Result<Vec<Card>> {
+    pub fn map_to_cards(set_data: Value) -> Result<Vec<Card>> {
         let cards_array = set_data
             .get("data")
             .and_then(|d| d.get("cards"))
@@ -15,13 +15,9 @@ impl CardMapper {
         cards_array
             .iter()
             .filter(|c| {
-                if include_online_only {
-                    true
-                } else {
-                    !c.get("isOnlineOnly")
-                        .and_then(|v| v.as_bool())
-                        .unwrap_or(false)
-                }
+                !c.get("isOnlineOnly")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
             })
             .map(|card_data| CardMapper::map_json_to_card(card_data))
             .collect()
@@ -29,13 +25,12 @@ impl CardMapper {
 
     pub fn map_json_to_card(card_data: &Value) -> Result<Card> {
         let id = json::extract_string(card_data, "uuid")?;
-        let name = json::extract_string(card_data, "name")?;
+        let raw_name = json::extract_string(card_data, "name")?;
+        let raw_face_name = json::extract_optional_string(card_data, "faceName");
         let set_code = json::extract_string(card_data, "setCode")?.to_lowercase();
-        let number =
-            json::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
-        let type_line = json::extract_optional_string(card_data, "type").unwrap_or_default();
-        let rarity_str = json::extract_optional_string(card_data, "rarity")
-            .unwrap_or_else(|| "common".to_string());
+        let number = json::extract_string(card_data, "number")?;
+        let type_line = json::extract_string(card_data, "type")?;
+        let rarity_str = json::extract_string(card_data, "rarity")?;
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
@@ -65,6 +60,13 @@ impl CardMapper {
             .and_then(|v| v.as_str())
             .unwrap_or("normal")
             .to_string();
+        let name = if layout == "aftermath" || layout == "split" {
+            raw_name.clone()
+        } else if let Some(face_name) = &raw_face_name {
+            face_name.clone()
+        } else {
+            raw_name.clone()
+        };
         let side = card_data
             .get("side")
             .and_then(|v| v.as_str())

@@ -1,6 +1,11 @@
-<link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.css" rel="stylesheet" type="text/css" />
 <span class="mana-cost">
+    {{#if card.manaCost}}
     {{#each card.manaCost}}
-        <i class="ms ms-cost ms-shadow ms-{{this}}"></i>
+    {{#if this.symbol}}
+    <i class="ms ms-cost ms-shadow ms-{{this.symbol}}"></i>
+    {{else}}
+    <span class="mana-sep">{{this.sep}}</span>
+    {{/if}}
     {{/each}}
+    {{/if}}
 </span>

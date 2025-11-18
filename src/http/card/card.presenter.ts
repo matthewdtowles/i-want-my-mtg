@@ -5,7 +5,7 @@ import { Format } from "src/core/card/format.enum";
 import { Price } from "src/core/price/price.entity";
 import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
-import { CardResponseDto } from "./dto/card.response.dto";
+import { CardResponseDto, ManaToken } from "./dto/card.response.dto";
 import { LegalityResponseDto } from "./dto/legality.response.dto";
 import { SingleCardResponseDto } from "./dto/single-card.response.dto";
 
@@ -26,7 +26,8 @@ export class CardPresenter {
             hasNormal: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, imageType),
             isReserved: card.isReserved,
-            manaCost: card.manaCost ? this.manaForView(card.manaCost) : [],
+            // manaForView always returns an array (possibly empty)
+            manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
             rarity: this.convertToCardRarity(card.rarity).toLowerCase(),
@@ -56,27 +57,34 @@ export class CardPresenter {
 
     private static fillMissingFormats(card: Card): LegalityResponseDto[] {
         const existingLegalities: LegalityResponseDto[] = card.legalities || [];
-        const formats: Format[] = Object.values(Format);
-        const filledLegalities: LegalityResponseDto[] = formats.map(format => {
-            const existingLegality: LegalityResponseDto | undefined = existingLegalities.find(l => l.format === format);
-            return existingLegality ? existingLegality : new LegalityResponseDto({
+        const formats = Object.values(Format) as Format[];
+        return formats.map((format) => {
+            const existing = existingLegalities.find(l => l.format === format);
+            return existing ?? new LegalityResponseDto({
                 cardId: card.id,
-                format: format,
+                format,
                 status: "Not Legal"
             });
         });
-        return filledLegalities;
     }
 
-    private static manaForView(manaCost: string): string[] | null {
-        return typeof manaCost === "string" ? manaCost
-            .toLowerCase()
-            .trim()
-            .replaceAll("/", "")
-            .replace("{", "")
-            .replaceAll("}", "")
-            .split("{")
-            : null;
+    private static manaForView(manaCost?: string): Array<ManaToken> {
+        if (!manaCost || typeof manaCost !== "string") return [];
+        const raw = manaCost.trim();
+        if (raw === "") return [];
+        const faceParts = raw.split(" // ");
+        const tokens: Array<{ symbol?: string; sep?: string }> = [];
+        for (let i = 0; i < faceParts.length; ++i) {
+            const part = faceParts[i].trim();
+            const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1].toLowerCase());
+            for (const sym of matches) {
+                tokens.push({ symbol: sym });
+            }
+            if (i + 1 < faceParts.length) {
+                tokens.push({ sep: " // " });
+            }
+        }
+        return tokens;
     }
 
     private static buildCardUrl(card: Card): string {

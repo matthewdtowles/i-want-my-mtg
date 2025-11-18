@@ -1,4 +1,10 @@
 // Base card response DTO for HBS views
+
+export interface ManaToken {
+    readonly symbol?: string;
+    readonly sep?: string;
+}
+
 export class CardResponseDto {
 
     readonly cardId: string;
@@ -6,7 +12,7 @@ export class CardResponseDto {
     readonly hasNormal: boolean;
     readonly imgSrc: string;
     readonly isReserved: boolean;
-    readonly manaCost: string[];
+    readonly manaCost: ManaToken[];
     readonly name: string;
     readonly number: string;
     readonly rarity: string;

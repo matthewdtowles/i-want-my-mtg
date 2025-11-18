@@ -235,9 +235,7 @@ impl CardService {
                     for oid in other_ids.iter() {
                         if let Some(&other_idx) = id_index.get(oid) {
                             if let Some(m) = &cards[other_idx].mana_cost {
-                                if !parts.contains(m) {
-                                    parts.push(m.clone());
-                                }
+                                parts.push(m.clone());
                                 keep_mask[other_idx] = false;
                             }
                         }

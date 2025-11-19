@@ -11,6 +11,8 @@ pub struct Set {
     pub name: String,
     pub parent_code: Option<String>,
     pub release_date: NaiveDate,
+
+    #[sqlx(rename = "type")]
     pub set_type: String,
 
     #[sqlx(skip)]

@@ -2,7 +2,7 @@ use crate::{database::ConnectionPool, set::models::Set};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-use tracing::warn;
+use tracing::{debug, warn};
 
 #[derive(Clone)]
 pub struct SetRepository {
@@ -19,6 +19,17 @@ impl SetRepository {
         Ok(count as u64)
     }
 
+    pub async fn fetch_empty_sets(&self) -> Result<Vec<Set>> {
+        let qb = QueryBuilder::new(
+            "SELECT * FROM set s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM card c WHERE c.set_code = s.code
+            ) ORDER BY s.code",
+        );
+        let result: Vec<Set> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(result)
+    }
+
     pub async fn save_sets(&self, sets: &[Set]) -> Result<u64> {
         if sets.is_empty() {
             warn!("0 sets given, 0 sets saved.");
@@ -26,9 +37,9 @@ impl SetRepository {
         }
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO set (
-                    code, base_size, block, keyrune_code,
-                    name, parent_code, release_date, type 
-                )",
+                code, base_size, block, keyrune_code,
+                name, parent_code, release_date, type 
+            )",
         );
         query_builder.push_values(sets, |mut b, set| {
             b.push_bind(&set.code)
@@ -87,6 +98,8 @@ impl SetRepository {
                 break;
             }
         }
+        debug!("Deleted {} legalities", total_deleted);
+        total_deleted = 0u64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -99,6 +112,8 @@ impl SetRepository {
                 break;
             }
         }
+        debug!("Deleted {} prices", total_deleted);
+        total_deleted = 0u64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -111,6 +126,8 @@ impl SetRepository {
                 break;
             }
         }
+        debug!("Deleted {} inventory items", total_deleted);
+        total_deleted = 0u64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -123,10 +140,10 @@ impl SetRepository {
                 break;
             }
         }
+        debug!("Deleted {} cards", total_deleted);
         let mut qb = QueryBuilder::new("DELETE FROM \"set\" WHERE code = ");
         qb.push_bind(set_code);
         let deleted = self.db.execute_query_builder(qb).await?;
-        total_deleted += deleted;
-        Ok(total_deleted)
+        Ok(deleted)
     }
 }

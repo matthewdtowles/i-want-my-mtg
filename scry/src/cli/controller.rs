@@ -43,6 +43,9 @@ impl CliController {
                 {
                     error!("Ingestion failed: {}", e);
                 }
+                if let Err(e) = self.post_ingest_cleanup().await {
+                    error!("Post ingestion processing failed: {}", e);
+                }
                 Ok(())
             }
 
@@ -51,10 +54,7 @@ impl CliController {
                 sets,
                 batch_size,
             } => {
-                if let Err(e) = self
-                    .handle_cleanup(cards, sets, batch_size)
-                    .await
-                {
+                if let Err(e) = self.handle_cleanup(cards, sets, batch_size).await {
                     error!("Cleanup failed: {}", e);
                 }
                 Ok(())
@@ -113,12 +113,7 @@ impl CliController {
         Ok(())
     }
 
-    async fn handle_cleanup(
-        &self,
-        cards: bool,
-        sets: bool,
-        batch_size: i64,
-    ) -> Result<()> {
+    async fn handle_cleanup(&self, cards: bool, sets: bool, batch_size: i64) -> Result<()> {
         if !cards && !sets {
             return Ok(());
         }
@@ -129,12 +124,7 @@ impl CliController {
                 "Card cleanup starting: before -> {} cards | {} legalities",
                 total_cards_before, total_legalities_before
             );
-
-            // Always perform both "other-sides" and "online-only" cleanup in a single pass.
-            let n = self
-                .card_service
-                .cleanup_cards(batch_size)
-                .await?;
+            let n = self.card_service.cleanup_cards(batch_size).await?;
             info!("Deleted {} cards (other-sides + online-only).", n);
 
             let total_cards_after = self.card_service.fetch_count().await?;
@@ -147,7 +137,6 @@ impl CliController {
         if sets {
             let total_sets_before = self.set_service.fetch_count().await?;
             info!("Set cleanup starting: before -> {} sets", total_sets_before);
-            // keep existing behavior for set cleanup (online-only delete controlled by flag here)
             let n = self
                 .set_service
                 .cleanup_delete_online_sets(batch_size)
@@ -229,6 +218,16 @@ impl CliController {
             "All MTG data deleted: {} sets | {} cards | {} prices",
             sets_deleted, cards_deleted, prices_deleted
         );
+        Ok(())
+    }
+
+    async fn post_ingest_cleanup(&self) -> Result<()> {
+        // delete all sets without any cards
+        let total_sets_before = self.set_service.fetch_count().await?;
+        let sets_deleted = self.set_service.delete_empty().await?;
+        info!("Deleted {} sets without any cards.", sets_deleted);
+        let total_sets_after = self.set_service.fetch_count().await?;
+        info!("Total sets before {} | after {}", total_sets_before, total_sets_after);
         Ok(())
     }
 }

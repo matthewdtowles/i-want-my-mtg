@@ -26,7 +26,6 @@ export class CardPresenter {
             hasNormal: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, imageType),
             isReserved: card.isReserved,
-            // manaForView always returns an array (possibly empty)
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
@@ -73,7 +72,7 @@ export class CardPresenter {
         const raw = manaCost.trim();
         if (raw === "") return [];
         const faceParts = raw.split(" // ");
-        const tokens: Array<{ symbol?: string; sep?: string }> = [];
+        const tokens: Array<ManaToken> = [];
         for (let i = 0; i < faceParts.length; ++i) {
             const part = faceParts[i].trim();
             const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1].toLowerCase());

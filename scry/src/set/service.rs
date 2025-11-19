@@ -4,7 +4,7 @@ use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use serde_json::Value;
 use std::sync::Arc;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 pub struct SetService {
     client: Arc<HttpClient>,
@@ -47,11 +47,11 @@ impl SetService {
             }
         }
         if to_save.is_empty() {
-            info!("No sets to save.");
+            debug!("No sets to save.");
             return Ok(0);
         }
         let count = self.repository.save_sets(&to_save).await?;
-        info!("Successfully ingested {} sets", count);
+        debug!("Successfully ingested {} sets", count);
         Ok(count)
     }
 
@@ -77,15 +77,31 @@ impl SetService {
                 }
             }
         }
-        info!(
-            "Cleanup deleted {} rows for online-only sets",
-            total_deleted
-        );
         Ok(total_deleted)
     }
 
     pub async fn delete_all(&self) -> Result<u64> {
-        info!("Deleting all sets.");
+        debug!("Deleting all sets.");
         self.repository.delete_all().await
+    }
+
+    pub async fn delete_empty(&self) -> Result<u64> {
+        debug!("Deleting sets that do not have any cards.");
+        let empty_sets: Vec<Set> = self.repository.fetch_empty_sets().await?;
+        debug!("Found {} empty sets", empty_sets.len());
+        if empty_sets.is_empty() {
+            return Ok(0);
+        }
+        let mut total_deleted = 0u64;
+        for set in empty_sets {
+            let code = set.code.to_lowercase();
+            let n = self
+                .repository
+                .delete_set_and_dependents_batched(&code, 100)
+                .await?;
+            total_deleted += n;
+        }
+        debug!("Deleted {} rows for empty sets", total_deleted);
+        Ok(total_deleted)
     }
 }

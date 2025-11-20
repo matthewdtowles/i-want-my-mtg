@@ -8,6 +8,7 @@ pub struct Card {
     pub has_foil: bool,
     pub has_non_foil: bool,
     pub img_src: String,
+    pub is_alternative: bool,
     pub is_reserved: bool,
     pub layout: String,
     pub mana_cost: Option<String>,

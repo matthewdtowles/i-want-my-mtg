@@ -861,3 +861,158 @@ card.availability: if contains "paper" keep, otherwise toss
   ],
   "uuid": "b3dc9b70-fe64-5370-841b-5282d00fb1a9"
 }
+
++--------------------------------+
++--------------------------------+
+| SETS WITH CARDS WITHOUT PRICES |
++--------------------------------+
++--------------------------------+
+i_want_my_mtg=# select set_code, count(*) from card where id not in(select card_id from price) group by set_code order by set_code;
+ set_code | count 
+----------+-------
+ 10e      |     1
+ 2ed      |     1
+ 2x2      |   160
+ 30a      |    32
+ 3ed      |     1
+ 40k      |     4
+ 4bb      |   378 *
+ 4ed      |     3
+ 5ed      |     7
+ 6ed      |     3
+ 7ed      |     4
+ acr      |    96
+ arn      |     3
+ atq      |     1
+ bchr     |   125 *
+ brr      |    23
+ ced      |     1
+ cei      |     1
+ clb      |    86
+ cmm      |   174
+ cmr      |   101
+ dci      |     1
+ ddf      |     1
+ dmc      |    20
+ ecl      |     9
+ eld      |     1
+ fbb      |   307 *
+ fic      |    27
+ fin      |     9
+ frf      |     6
+ gpt      |     1
+ hho      |     1
+ inv      |     4
+ itp      |    43
+ jp1      |     5
+ lci      |     1
+ lea      |     1
+ leb      |     1
+ leg      |     4
+ ltc      |    33
+ ltr      |    21
+ m3c      |    12
+ mat      |    50
+ mgb      |    10
+ mh3      |    24
+ mir      |     3
+ mkm      |     6
+ mom      |     4
+ mul      |    91
+ neo      |     1
+ o90p     |    10 *
+ oafc     |     1
+ oc21     |     1
+ ody      |     2
+ ogw      |     1
+ olep     |    83 *
+ olgc     |    27 *
+ omic     |     1
+ onc      |     1
+ ons      |     1
+ ovnt     |    35 *
+ ovoc     |     1
+ p09      |     4
+ p10      |     4
+ p11      |     2
+ p30a     |     2
+ p30m     |     1
+ p30t     |     2
+ p9ed     |     1
+ pal99    |     1
+ pcel     |     9 *
+ pcy      |     1
+ pdom     |     1
+ pewk     |     4
+ pfin     |     1
+ pgpx     |     1
+ ph17     |     3
+ ph18     |     5
+ ph19     |     7
+ ph20     |     3
+ ph21     |     4
+ ph22     |     5
+ ph23     |     1
+ phel     |     1
+ phtr     |     3
+ phuk     |    60 *
+ pip      |     3
+ pjas     |     6
+ pjjt     |    12 *
+ pjsc     |     2
+ pjse     |     1
+ pkhm     |     2
+ plg21    |     2
+ plg24    |     4
+ plst     |     7
+ pm11     |     2
+ pmda     |     4
+ pmei     |    50
+ pmps08   |     1
+ pncc     |     1
+ por      |    28
+ ppro     |     1
+ pred     |     1
+ proe     |     1
+ ps11     |   224 *
+ psal     |   720 *
+ pspl     |     3
+ pssc     |    10
+ psus     |     1
+ psvc     |     3
+ ptor     |     2
+ punk     |    52
+ purl     |     4
+ pw23     |     1
+ pw25     |     4
+ pwar     |     4
+ pwcs     |    39
+ pwwk     |     2
+ pza      |     1
+ pzen     |     2
+ ren      |   122 *
+ rex      |     1
+ rin      |    69 *
+ rqs      |    65 *
+ rvr      |    21
+ scd      |     5
+ sld      |    71
+ slp      |     5
+ snc      |    11
+ spg      |     1
+ stx      |     1
+ sum      |   303 *
+ tdm      |     1
+ tla      |     5
+ tle      |    31
+ tmc      |     7
+ tmt      |    16
+ unk      |   464 *
+ usg      |     5
+ vow      |     5
+ wc02     |     6
+ wc03     |     1
+ wc04     |     1
+ who      |     5
+(144 rows)
+* entire set

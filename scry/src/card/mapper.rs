@@ -45,6 +45,10 @@ impl CardMapper {
             .get("hasNonFoil")
             .and_then(|v| v.as_bool())
             .unwrap_or(true);
+        let is_alternative = card_data
+            .get("isAlternative")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         let is_reserved = card_data
             .get("isReserved")
             .and_then(|v| v.as_bool())
@@ -89,6 +93,7 @@ impl CardMapper {
             has_foil,
             has_non_foil,
             img_src,
+            is_alternative,
             is_reserved,
             mana_cost,
             name,

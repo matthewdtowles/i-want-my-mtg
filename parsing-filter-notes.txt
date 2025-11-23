@@ -1912,7 +1912,9 @@ ORDER BY pct_with_price, c.set_code;
  pal06    |           9 |                9 |                   0 |         100.00 d
  pala     |           2 |                2 |                   0 |         100.00 d
  palp     |          15 |               15 |                   0 |         100.00 d
- papc     |           1 |                1 |                   0 |         100.00 d
+ papc     |           1 |                1 |             
+LEFT JOIN price p ON p.card_id = c.id
+GROUP BY c.set_code      0 |         100.00 d
  parb     |           3 |                3 |                   0 |         100.00 d
  pavr     |           6 |                6 |                   0 |         100.00 d
  pbbd     |          22 |               22 |                   0 |         100.00 d
@@ -2124,4 +2126,19 @@ ORDER BY card_count DESC;
  premium_deck     |        105
  arsenal          |         34
  vanguard         |         32
- spellbook        |         24
+ spellbook        |         2
+LEFT JOIN price p ON p.card_id = c.id
+GROUP BY c.set_code;
+
+-- Get all sets base_size and number of cards in set 
+SELECT
+s.code,
+s.name,
+s.base_size,
+COUNT(c.id) AS card_count,
+s.release_date,
+s.type
+FROM "set" s
+LEFT JOIN card c ON c.set_code = s.code
+GROUP BY s.code, s.name, s.base_size, s.release_date, s.type
+ORDER BY s.code;

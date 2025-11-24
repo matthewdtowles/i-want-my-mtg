@@ -279,64 +279,64 @@
  nem    | Nemesis                                       |       143 |        143 | 2000-02-14   | expansion
  neo    | Kamigawa: Neon Dynasty                        |       302 |        514 | 2022-02-18   | expansion
  nph    | New Phyrexia                                  |       175 |        175 | 2011-05-13   | expansion
- [-] o90p   | Oversized 90's Promos                         |        10 |         10 | 1996-04-01   | memorabilia
- [-] oafc   | Forgotten Realms Commander Display Commanders |         4 |          4 | 2021-07-23   | memorabilia
- [-] oarc   | Archenemy Schemes                             |        45 |         45 | 2010-06-18   | archenemy
- [-] oc13   | Commander 2013 Oversized                      |        15 |         15 | 2013-11-01   | memorabilia
- [-] oc14   | Commander 2014 Oversized                      |         5 |          5 | 2014-11-07   | memorabilia
- [-] oc15   | Commander 2015 Oversized                      |         5 |          5 | 2015-11-13   | memorabilia
- [-] oc16   | Commander 2016 Oversized                      |         5 |          5 | 2016-11-11   | memorabilia
- [-] oc17   | Commander 2017 Oversized                      |         4 |          4 | 2017-08-25   | memorabilia
- [-] oc18   | Commander 2018 Oversized                      |         4 |          4 | 2018-08-09   | memorabilia
- [-] oc19   | Commander 2019 Oversized                      |         4 |          4 | 2019-08-31   | memorabilia
- [-] oc20   | Commander 2020 Oversized                      |         5 |          5 | 2020-04-17   | memorabilia
- [-] oc21   | Commander 2021 Display Commanders             |         5 |          5 | 2021-04-23   | memorabilia
- [-] ocm1   | Commander's Arsenal Oversized                 |        10 |         10 | 2012-11-02   | memorabilia
- [-] ocmd   | Commander 2011 Oversized                      |        15 |         15 | 2011-06-17   | memorabilia
+ [--] o90p   | Oversized 90's Promos                         |        10 |         10 | 1996-04-01   | memorabilia
+ [--] oafc   | Forgotten Realms Commander Display Commanders |         4 |          4 | 2021-07-23   | memorabilia
+ [-1] oarc   | Archenemy Schemes                             |        45 |         45 | 2010-06-18   | archenemy
+ [--] oc13   | Commander 2013 Oversized                      |        15 |         15 | 2013-11-01   | memorabilia
+ [--] oc14   | Commander 2014 Oversized                      |         5 |          5 | 2014-11-07   | memorabilia
+ [--] oc15   | Commander 2015 Oversized                      |         5 |          5 | 2015-11-13   | memorabilia
+ [--] oc16   | Commander 2016 Oversized                      |         5 |          5 | 2016-11-11   | memorabilia
+ [--] oc17   | Commander 2017 Oversized                      |         4 |          4 | 2017-08-25   | memorabilia
+ [--] oc18   | Commander 2018 Oversized                      |         4 |          4 | 2018-08-09   | memorabilia
+ [--] oc19   | Commander 2019 Oversized                      |         4 |          4 | 2019-08-31   | memorabilia
+ [--] oc20   | Commander 2020 Oversized                      |         5 |          5 | 2020-04-17   | memorabilia
+ [--] oc21   | Commander 2021 Display Commanders             |         5 |          5 | 2021-04-23   | memorabilia
+ [--] ocm1   | Commander's Arsenal Oversized                 |        10 |         10 | 2012-11-02   | memorabilia
+ [--] ocmd   | Commander 2011 Oversized                      |        15 |         15 | 2011-06-17   | memorabilia
  ody    | Odyssey                                       |       350 |        353 | 2001-10-01   | expansion
- [-] oe01   | Archenemy: Nicol Bolas Schemes                |        20 |         20 | 2017-06-16   | archenemy
+ [-1] oe01   | Archenemy: Nicol Bolas Schemes                |        20 |         20 | 2017-06-16   | archenemy
  ogw    | Oath of the Gatewatch                         |       184 |        187 | 2016-01-22   | expansion
- [-] ohop   | Planechase Planes                             |        40 |         40 | 2009-09-04   | planechase
- [-] olep   | Oversized League Prizes                       |        83 |         83 | 1997-05-30   | memorabilia
- [-] olgc   | Legacy Championship                           |        27 |         27 | 2011-01-01   | memorabilia
- [-] omic   | Midnight Hunt Commander Display Commanders    |         2 |          2 | 2021-09-24   | memorabilia
+ [-1] ohop   | Planechase Planes                             |        40 |         40 | 2009-09-04   | planechase
+ [--] olep   | Oversized League Prizes                       |        83 |         83 | 1997-05-30   | memorabilia
+ [--] olgc   | Legacy Championship                           |        27 |         27 | 2011-01-01   | memorabilia
+ [--] omic   | Midnight Hunt Commander Display Commanders    |         2 |          2 | 2021-09-24   | memorabilia
  onc    | Phyrexia: All Will Be One Commander           |        28 |        174 | 2023-02-10   | commander
  one    | Phyrexia: All Will Be One                     |       271 |        479 | 2023-02-10   | expansion
  ons    | Onslaught                                     |       350 |        351 | 2002-10-07   | expansion
- [-] opc2   | Planechase 2012 Planes                        |        40 |         40 | 2012-06-01   | planechase
- [-] opca   | Planechase Anthology Planes                   |        86 |         86 | 2016-11-25   | planechase
- [+ oph Open House Promos]
+ [-1 see PC2 156] opc2   | Planechase 2012 Planes                        |        40 |         40 | 2012-06-01   | planechase
+ [-1 see PCA 242] opca   | Planechase Anthology Planes                   |        86 |         86 | 2016-11-25   | planechase
+ [+1 oph Open House Promos 8]
  ori    | Magic Origins                                 |       272 |        288 | 2015-07-17   | core
  otc    | Outlaws of Thunder Junction Commander         |        40 |        342 | 2024-04-19   | commander
  otj    | Outlaws of Thunder Junction                   |       286 |        374 | 2024-04-19   | expansion
  otp    | Breaking News                                 |         0 |         80 | 2024-04-19   | masterpiece
- [-] ovnt   | Vintage Championship                          |        35 |         35 | 2003-01-01   | memorabilia
- [-] ovoc   | Crimson Vow Commander Display Commanders      |         2 |          2 | 2021-11-19   | memorabilia
- [-] p02    | Portal Second Age                             |       165 |        165 | 1998-06-24   | starter
- [-] p03    | Magic Player Rewards 2003                     |         1 |          1 | 2003-01-01   | promo
- [-] p04    | Magic Player Rewards 2004                     |         1 |          1 | 2004-01-01   | promo
- [-] p05    | Magic Player Rewards 2005                     |         6 |          6 | 2005-01-01   | promo
- [-] p06    | Magic Player Rewards 2006                     |         7 |          7 | 2006-01-01   | promo
- [-] p07    | Magic Player Rewards 2007                     |         7 |          7 | 2007-01-01   | promo
- [-] p08    | Magic Player Rewards 2008                     |         7 |          7 | 2008-01-01   | promo
- [-] p09    | Magic Player Rewards 2009                     |         7 |         13 | 2009-01-01   | promo
- [-] p10    | Magic Player Rewards 2010                     |         9 |         13 | 2010-01-01   | promo
- [-] p10e   | Tenth Edition Promos                          |         3 |          3 | 2007-07-13   | promo
- [-] p11    | Magic Player Rewards 2011                     |         9 |          7 | 2011-01-01   | promo
+ [--] ovnt   | Vintage Championship                          |        35 |         35 | 2003-01-01   | memorabilia
+ [--] ovoc   | Crimson Vow Commander Display Commanders      |         2 |          2 | 2021-11-19   | memorabilia
+ p02    | Portal Second Age                             |       165 |        165 | 1998-06-24   | starter
+ p03    | Magic Player Rewards 2003                     |         1 |          1 | 2003-01-01   | promo
+ p04    | Magic Player Rewards 2004                     |         1 |          1 | 2004-01-01   | promo
+ p05    | Magic Player Rewards 2005                     |         6 |          6 | 2005-01-01   | promo
+ p06    | Magic Player Rewards 2006                     |         7 |          7 | 2006-01-01   | promo
+ p07    | Magic Player Rewards 2007                     |         7 |          7 | 2007-01-01   | promo
+ p08    | Magic Player Rewards 2008                     |         7 |          7 | 2008-01-01   | promo
+ p09    | Magic Player Rewards 2009                     |         7 |         13 | 2009-01-01   | promo
+ p10    | Magic Player Rewards 2010                     |         9 |         13 | 2010-01-01   | promo
+ [-1] p10e   | Tenth Edition Promos                          |         3 |          3 | 2007-07-13   | promo
+ p11    | Magic Player Rewards 2011                     |         9 |          7 | 2011-01-01   | promo
  p15a   | 15th Anniversary Cards                        |         2 |          2 | 2008-04-01   | promo
  p22    | Judge Gift Cards 2022                         |        11 |         10 | 2022-01-01   | promo
  p23    | Judge Gift Cards 2023                         |        10 |         10 | 2023-01-01   | promo
  p2hg   | Two-Headed Giant Tournament                   |         1 |          1 | 2005-12-09   | promo
- [-] p30a   | 30th Anniversary Play Promos                  |        30 |         30 | 2022-09-02   | promo
+ p30a   | 30th Anniversary Play Promos                  |        30 |         30 | 2022-09-02   | promo
  p30h   | 30th Anniversary History Promos               |        10 |         10 | 2022-09-09   | promo
  p30m   | 30th Anniversary Misc Promos                  |         5 |          5 | 2022-09-02   | promo
- [-] p30t   | 30th Anniversary Celebration Tokyo            |         2 |          2 | 2023-09-01   | promo
- [-] p5dn   | Fifth Dawn Promos                             |         1 |          1 | 2004-06-04   | promo
- [-] p8ed   | Eighth Edition Promos                         |         1 |          1 | 2003-07-28   | promo
- [-] p9ed   | Ninth Edition Promos                          |         2 |          2 | 2005-07-29   | promo
- [-] paer   | Aether Revolt Promos                          |        65 |         65 | 2017-01-20   | promo
- [-] pafr   | Adventures in the Forgotten Realms Promos     |       241 |        241 | 2021-07-23   | promo
- [-] pakh   | Amonkhet Promos                               |        77 |         77 | 2017-04-28   | promo
+ [--] p30t   | 30th Anniversary Celebration Tokyo            |         2 |          2 | 2023-09-01   | promo
+ [-1] p5dn   | Fifth Dawn Promos                             |         1 |          1 | 2004-06-04   | promo
+ [-1] p8ed   | Eighth Edition Promos                         |         1 |          1 | 2003-07-28   | promo
+ [-1] p9ed   | Ninth Edition Promos                          |         2 |          2 | 2005-07-29   | promo
+ [-1] paer   | Aether Revolt Promos                          |        65 |         65 | 2017-01-20   | promo
+ [-1] pafr   | Adventures in the Forgotten Realms Promos     |       241 |        241 | 2021-07-23   | promo
+ [-1] pakh   | Amonkhet Promos                               |        77 |         77 | 2017-04-28   | promo
  pal00  | Arena League 2000                             |        11 |         11 | 2000-01-01   | promo
  pal01  | Arena League 2001                             |        12 |         12 | 2001-01-01   | promo
  pal02  | Arena League 2002                             |         5 |          5 | 2002-01-01   | promo
@@ -347,167 +347,167 @@
  pal99  | Arena League 1999                             |       350 |         10 | 1999-01-01   | promo
  pala   | Shards of Alara Promos                        |         2 |          2 | 2008-10-03   | promo
  palp   | Asia Pacific Land Program                     |        15 |         15 | 1998-09-01   | promo
- [-] papc   | Apocalypse Promos                             |         1 |          1 | 2001-06-04   | promo
- [-] parb   | Alara Reborn Promos                           |         3 |          3 | 2009-04-30   | promo
+ [-1] papc   | Apocalypse Promos                             |         1 |          1 | 2001-06-04   | promo
+ [-1] parb   | Alara Reborn Promos                           |         3 |          3 | 2009-04-30   | promo
  parl   | Arena League 1996                             |         7 |          7 | 1996-08-02   | promo
- [-] pavr   | Avacyn Restored Promos                        |         6 |          6 | 2012-04-28   | promo
- [-] pbbd   | Battlebond Promos                             |        22 |         22 | 2018-06-08   | promo
- [-] pbfz   | Battle for Zendikar Promos                    |        90 |         90 | 2015-10-02   | promo
- [-] pbig   | The Big Score Promos                          |         5 |          5 | 2025-08-01   | promo
- [-] pblb   | Bloomburrow Promos                            |       160 |        160 | 2024-08-02   | promo
- [-] pbng   | Born of the Gods Promos                       |         9 |          9 | 2014-02-01   | promo
- [-] pbok   | Betrayers of Kamigawa Promos                  |         2 |          2 | 2005-02-04   | promo
- [-] pbro   | The Brothers' War Promos                      |       169 |        166 | 2022-11-18   | promo
+ [-1] pavr   | Avacyn Restored Promos                        |         6 |          6 | 2012-04-28   | promo
+ [-1] pbbd   | Battlebond Promos                             |        22 |         22 | 2018-06-08   | promo
+ [-1] pbfz   | Battle for Zendikar Promos                    |        90 |         90 | 2015-10-02   | promo
+ [-1] pbig   | The Big Score Promos                          |         5 |          5 | 2025-08-01   | promo
+ [-1] pblb   | Bloomburrow Promos                            |       160 |        160 | 2024-08-02   | promo
+ [-1] pbng   | Born of the Gods Promos                       |         9 |          9 | 2014-02-01   | promo
+ [-1] pbok   | Betrayers of Kamigawa Promos                  |         2 |          2 | 2005-02-04   | promo
+ [-1] pbro   | The Brothers' War Promos                      |       169 |        166 | 2022-11-18   | promo
  pc2    | Planechase 2012                               |       156 |        156 | 2012-06-01   | planechase
  pca    | Planechase Anthology                          |       156 |        156 | 2016-11-25   | planechase
- [+ pcar CardZ Magazine Promos]
- [-] pcbb   | Cowboy Bebop                                  |         5 |          5 | 2024-08-02   | promo
- [-] pcel   | Celebration Cards                             |         9 |          9 | 1996-08-14   | memorabilia
- [-] pchk   | Champions of Kamigawa Promos                  |         1 |          1 | 2004-10-01   | promo
- [-] pclb   | Battle for Baldur's Gate Promos               |       108 |        104 | 2022-06-10   | promo
- [-] pcmd   | Commander 2011 Launch Party                   |         5 |          5 | 2011-06-17   | memorabilia
+ [+1 pcar CardZ Magazine Promos 4 1999-12-31]
+ [-1] pcbb   | Cowboy Bebop                                  |         5 |          5 | 2024-08-02   | promo
+ [--] pcel   | Celebration Cards                             |         9 |          9 | 1996-08-14   | memorabilia
+ [-1] pchk   | Champions of Kamigawa Promos                  |         1 |          1 | 2004-10-01   | promo
+ [-1] pclb   | Battle for Baldur's Gate Promos               |       108 |        104 | 2022-06-10   | promo
+ [--] pcmd   | Commander 2011 Launch Party                   |         5 |          5 | 2011-06-17   | memorabilia
  pcmp   | Champs and States                             |        12 |         12 | 2006-03-18   | promo
- [-] pcmr   | Commander Legends Promos                      |         6 |          6 | 2020-11-20   | promo
- [-] pcns   | Conspiracy Promos                             |         1 |          1 | 2014-06-06   | promo
- [-] pcon   | Conflux Promos                                |         2 |          2 | 2009-02-06   | promo
- [-] pcsp   | Coldsnap Promos                               |         1 |          1 | 2006-07-21   | promo
- [+ pctb From Cute to Brute]
+ pcmr   | Commander Legends Promos                      |         6 |          6 | 2020-11-20   | promo
+ [-1] pcns   | Conspiracy Promos                             |         1 |          1 | 2014-06-06   | promo
+ [-1] pcon   | Conflux Promos                                |         2 |          2 | 2009-02-06   | promo
+ [-1] pcsp   | Coldsnap Promos                               |         1 |          1 | 2006-07-21   | promo
+ [+ pctb From Cute to Brute 95 (commander) 2023-05-14]
  pcy    | Prophecy                                      |       143 |        144 | 2000-06-05   | expansion
  pd2    | Premium Deck Series: Fire and Lightning       |        34 |         34 | 2010-11-19   | premium_deck
  pd3    | Premium Deck Series: Graveborn                |        50 |         30 | 2011-11-18   | premium_deck
- [-] pdft   | Aetherdrift Promos                            |       160 |        160 | 2025-02-14   | promo
- [-] pdgm   | Dragon's Maze Promos                          |         6 |          6 | 2013-04-27   | promo
- [-] pdis   | Dissension Promos                             |         2 |          2 | 2006-05-05   | promo
- [-] pdka   | Dark Ascension Promos                         |         5 |          5 | 2012-01-28   | promo
- [-] pdmu   | Dominaria United Promos                       |       161 |        161 | 2022-09-09   | promo
- [-] pdom   | Dominaria Promos                              |       118 |        118 | 2018-04-27   | promo
+ pdft   | Aetherdrift Promos                            |       160 |        160 | 2025-02-14   | promo
+ [-1] pdgm   | Dragon's Maze Promos                          |         6 |          6 | 2013-04-27   | promo
+ [-1] pdis   | Dissension Promos                             |         2 |          2 | 2006-05-05   | promo
+ [-1] pdka   | Dark Ascension Promos                         |         5 |          5 | 2012-01-28   | promo
+ [-1] pdmu   | Dominaria United Promos                       |       161 |        161 | 2022-09-09   | promo
+ [-1] pdom   | Dominaria Promos                              |       118 |        118 | 2018-04-27   | promo
  pdp10  | Duels of the Planeswalkers 2010 Promos        |         2 |          2 | 2010-01-01   | promo
  pdp12  | Duels of the Planeswalkers 2012 Promos        |         3 |          3 | 2011-01-01   | promo
  pdp13  | Duels of the Planeswalkers 2013 Promos        |         3 |          3 | 2012-01-01   | promo
  pdp14  | Duels of the Planeswalkers 2014 Promos        |         3 |          3 | 2013-01-01   | promo
  pdp15  | Duels of the Planeswalkers 2015 Promos        |       269 |          2 | 2014-07-09   | promo
- [-] pdrc   | Dragon Con                                    |         1 |          1 | 1994-07-15   | promo
- [-] pdsk   | Duskmourn: House of Horror Promos             |       180 |        160 | 2024-09-27   | promo
- [-] pdst   | Darksteel Promos                              |         1 |          1 | 2004-02-06   | promo
- [-] pdtk   | Dragons of Tarkir Promos                      |        51 |         51 | 2015-03-27   | promo
+ [-1] pdrc   | Dragon Con                                    |         1 |          1 | 1994-07-15   | promo
+ [-1] pdsk   | Duskmourn: House of Horror Promos             |       180 |        160 | 2024-09-27   | promo
+ [-1] pdst   | Darksteel Promos                              |         1 |          1 | 2004-02-06   | promo
+ [-1] pdtk   | Dragons of Tarkir Promos                      |        51 |         51 | 2015-03-27   | promo
  pdtp   | Duels of the Planeswalkers 2009 Promos        |         1 |          1 | 2009-01-01   | promo
- [-] peld   | Throne of Eldraine Promos                     |       152 |        138 | 2019-10-04   | promo
+ [-1] peld   | Throne of Eldraine Promos                     |       152 |        138 | 2019-10-04   | promo
  pelp   | European Land Program                         |        15 |         15 | 2000-02-05   | promo
- [-] pemn   | Eldritch Moon Promos                          |        77 |         74 | 2016-07-22   | promo
- [-] peoe   | Edge of Eternities Promos                     |       160 |        160 | 2025-08-01   | promo
- [-] peve   | Eventide Promos                               |         2 |          2 | 2008-07-25   | promo
- [-] pewk   | Eternal Weekend                               |         8 |          8 | 2022-11-26   | promo
- [-] pexo   | Exodus Promos                                 |         1 |          1 | 1998-06-15   | promo
+ [-1] pemn   | Eldritch Moon Promos                          |        77 |         74 | 2016-07-22   | promo
+ [-1] peoe   | Edge of Eternities Promos                     |       160 |        160 | 2025-08-01   | promo
+ [-1] peve   | Eventide Promos                               |         2 |          2 | 2008-07-25   | promo
+ [-1] pewk   | Eternal Weekend                               |         8 |          8 | 2022-11-26   | promo
+ [-1] pexo   | Exodus Promos                                 |         1 |          1 | 1998-06-15   | promo
  pf19   | MagicFest 2019                                |         6 |          7 | 2019-01-01   | promo
- [-] pf20   | MagicFest 2020                                |         6 |          6 | 2020-01-01   | promo
- [-] pf23   | MagicFest 2023                                |         4 |          4 | 2023-07-01   | promo
- [-] pf24   | MagicFest 2024                                |         2 |          2 | 2024-01-01   | promo
- [-] pf25   | MagicFest 2025                                |        19 |         19 | 2025-02-03   | promo
- [-] pfdn   | Foundations Promos                            |        93 |         93 | 2024-11-15   | promo
- [-] pfin   | Final Fantasy Promos                          |       116 |         94 | 2025-06-13   | promo
- [-] pfrf   | Fate Reforged Promos                          |        43 |         43 | 2015-01-23   | promo
- [-] pfut   | Future Sight Promos                           |         2 |          2 | 2007-05-04   | promo
- [-] pgpt   | Guildpact Promos                              |         2 |          2 | 2006-02-03   | promo
+ pf20   | MagicFest 2020                                |         6 |          6 | 2020-01-01   | promo
+ pf23   | MagicFest 2023                                |         4 |          4 | 2023-07-01   | promo
+ pf24   | MagicFest 2024                                |         2 |          2 | 2024-01-01   | promo
+ pf25   | MagicFest 2025                                |        19 |         19 | 2025-02-03   | promo
+ [-1] pfdn   | Foundations Promos                            |        93 |         93 | 2024-11-15   | promo
+ [-1] pfin   | Final Fantasy Promos                          |       116 |         94 | 2025-06-13   | promo
+ [-1] pfrf   | Fate Reforged Promos                          |        43 |         43 | 2015-01-23   | promo
+ [-1] pfut   | Future Sight Promos                           |         2 |          2 | 2007-05-04   | promo
+ [-1] pgpt   | Guildpact Promos                              |         2 |          2 | 2006-02-03   | promo
  pgpx   | Grand Prix Promos                             |        20 |         20 | 2007-02-24   | promo
- [-] pgrn   | Guilds of Ravnica Promos                      |        84 |         84 | 2018-10-05   | promo
+ [-1] pgrn   | Guilds of Ravnica Promos                      |        84 |         84 | 2018-10-05   | promo
  pgru   | Guru                                          |         5 |          5 | 1999-07-12   | promo
- [-] pgtc   | Gatecrash Promos                              |        10 |         10 | 2013-01-26   | promo
- [-] ph17   | 2017 Heroes of the Realm                      |         3 |          3 | 2018-08-01   | funny
- [-] ph18   | 2018 Heroes of the Realm                      |         4 |          5 | 2019-08-01   | funny
- [-] ph19   | 2019 Heroes of the Realm                      |         9 |          7 | 2020-08-01   | funny
- [-] ph20   | 2020 Heroes of the Realm                      |         3 |          3 | 2021-08-01   | funny
- [-] ph21   | 2021 Heroes of the Realm                      |         4 |          4 | 2022-08-01   | funny
- [-] ph22   | 2022 Heroes of the Realm                      |         5 |          5 | 2023-08-01   | funny
- [-] ph23   | 2023 Heroes of the Realm                      |         1 |          1 | 2025-08-24   | funny
- [+ phed Heads I Win, Tails You Lose]
- [-] phel   | Open the Helvault                             |         6 |          5 | 2012-04-28   | memorabilia
- [-] phop   | Planechase Promos                             |         1 |          1 | 2009-09-04   | promo
- [-] phou   | Hour of Devastation Promos                    |        62 |         62 | 2017-07-14   | promo
- [-] phpr   | HarperPrism Book Promos                       |         5 |          5 | 1994-09-01   | promo
- [-] phtr   | 2016 Heroes of the Realm                      |         3 |          3 | 2017-09-20   | funny
- [-] phuk   | Hachette UK                                   |        60 |         60 | 2006-01-01   | box
+ [-1] pgtc   | Gatecrash Promos                              |        10 |         10 | 2013-01-26   | promo
+ [--] ph17   | 2017 Heroes of the Realm                      |         3 |          3 | 2018-08-01   | funny
+ [--] ph18   | 2018 Heroes of the Realm                      |         4 |          5 | 2019-08-01   | funny
+ [--] ph19   | 2019 Heroes of the Realm                      |         9 |          7 | 2020-08-01   | funny
+ [--] ph20   | 2020 Heroes of the Realm                      |         3 |          3 | 2021-08-01   | funny
+ [--] ph21   | 2021 Heroes of the Realm                      |         4 |          4 | 2022-08-01   | funny
+ [--] ph22   | 2022 Heroes of the Realm                      |         5 |          5 | 2023-08-01   | funny
+ [--] ph23   | 2023 Heroes of the Realm                      |         1 |          1 | 2025-08-24   | funny
+ [+1 phed Heads I Win, Tails You Lose]
+ [--] phel   | Open the Helvault                             |         6 |          5 | 2012-04-28   | memorabilia
+ [-1] phop   | Planechase Promos                             |         1 |          1 | 2009-09-04   | promo
+ [-1] phou   | Hour of Devastation Promos                    |        62 |         62 | 2017-07-14   | promo
+ [-1] phpr   | HarperPrism Book Promos                       |         5 |          5 | 1994-09-01   | promo
+ [--] phtr   | 2016 Heroes of the Realm                      |         3 |          3 | 2017-09-20   | funny
+ [--] phuk   | Hachette UK                                   |        60 |         60 | 2006-01-01   | box
  pidw   | IDW Comics Inserts                            |         9 |         17 | 2012-01-01   | promo
- [-] piko   | Ikoria: Lair of Behemoths Promos              |       137 |        137 | 2020-04-24   | promo
- [-] pinv   | Invasion Promos                               |         1 |          1 | 2000-10-02   | promo
+ [-1] piko   | Ikoria: Lair of Behemoths Promos              |       137 |        137 | 2020-04-24   | promo
+ [-1] pinv   | Invasion Promos                               |         1 |          1 | 2000-10-02   | promo
  pip    | Fallout                                       |      1076 |       1068 | 2024-03-08   | commander
- [-] pisd   | Innistrad Promos                              |         5 |          5 | 2011-09-24   | promo
+ [-1] pisd   | Innistrad Promos                              |         5 |          5 | 2011-09-24   | promo
  pj21   | Judge Gift Cards 2021                         |        10 |         10 | 2021-01-01   | promo
  pjas   | Junior APAC Series                            |         6 |          6 | 2006-01-01   | promo
- [-] pjjt   | Japan Junior Tournament                       |        12 |         12 | 2003-01-01   | promo
- [-] pjou   | Journey into Nyx Promos                       |        10 |         10 | 2014-04-26   | promo
- [-] pjsc   | Japan Standard Cup                            |         2 |          2 | 2025-02-09   | promo
+ [--] pjjt   | Japan Junior Tournament                       |        12 |         12 | 2003-01-01   | promo
+ [-1] pjou   | Journey into Nyx Promos                       |        10 |         10 | 2014-04-26   | promo
+ [--] pjsc   | Japan Standard Cup                            |         2 |          2 | 2025-02-09   | promo
  pjse   | Junior Series Europe                          |         8 |          8 | 2005-01-01   | promo
- [-] pjud   | Judgment Promos                               |         1 |          1 | 2002-05-27   | promo
- [-] pkhm   | Kaldheim Promos                               |         1 |        158 | 2021-02-05   | promo
- [-] pkld   | Kaladesh Promos                               |        83 |         83 | 2016-09-30   | promo
- [-] pktk   | Khans of Tarkir Promos                        |        56 |         56 | 2014-09-26   | promo
- [+ pl18 2018 Lunar New Year]
+ [-1] pjud   | Judgment Promos                               |         1 |          1 | 2002-05-27   | promo
+ [-1] pkhm   | Kaldheim Promos                               |         1 |        158 | 2021-02-05   | promo
+ [-1] pkld   | Kaladesh Promos                               |        83 |         83 | 2016-09-30   | promo
+ [-1] pktk   | Khans of Tarkir Promos                        |        56 |         56 | 2014-09-26   | promo
+ [+1 pl18 2018 Lunar New Year 2018-02-15  1]
  pl21   | Year of the Ox 2021                           |         4 |          5 | 2021-01-25   | promo
  pl22   | Year of the Tiger 2022                        |         5 |          5 | 2022-02-25   | promo
  pl23   | Year of the Rabbit 2023                       |         5 |          5 | 2023-02-10   | promo
  pl24   | Year of the Dragon 2024                       |         6 |          6 | 2024-02-08   | promo
  pl25   | Year of the Snake 2025                        |         5 |          5 | 2025-02-14   | promo
  plc    | Planar Chaos                                  |       165 |        165 | 2007-02-02   | expansion
- [-] plci   | The Lost Caverns of Ixalan Promos             |       138 |        136 | 2023-11-17   | promo
- [-] plg20  | Love Your LGS 2020                            |         1 |          2 | 2020-05-18   | promo
- [-] plg21  | Love Your LGS 2021                            |         5 |         11 | 2021-06-22   | promo
- [-] plg22  | Love Your LGS 2022                            |         2 |          2 | 2022-07-01   | promo
- [-] plg24  | Love Your LGS 2024                            |         5 |          5 | 2024-08-06   | promo
- [-] plg25  | Love Your LGS 2025                            |         2 |          2 | 2025-03-26   | promo
+ [-1] plci   | The Lost Caverns of Ixalan Promos             |       138 |        136 | 2023-11-17   | promo
+ plg20  | Love Your LGS 2020                            |         1 |          2 | 2020-05-18   | promo
+ plg21  | Love Your LGS 2021                            |         5 |         11 | 2021-06-22   | promo
+ plg22  | Love Your LGS 2022                            |         2 |          2 | 2022-07-01   | promo
+ plg24  | Love Your LGS 2024                            |         5 |          5 | 2024-08-06   | promo
+ plg25  | Love Your LGS 2025                            |         2 |          2 | 2025-03-26   | promo
  plgm   | DCI Legend Membership                         |         2 |          2 | 1996-07-01   | promo
- [-] plgn   | Legions Promos                                |         1 |          1 | 2003-02-03   | promo
- [-] plrw   | Lorwyn Promos                                 |         3 |          3 | 2007-10-12   | promo
- [+ plgs Love Your LGS]
+ [-1] plgn   | Legions Promos                                |         1 |          1 | 2003-02-03   | promo
+ [-1] plrw   | Lorwyn Promos                                 |         3 |          3 | 2007-10-12   | promo
  pls    | Planeshift                                    |       143 |        146 | 2001-02-05   | expansion
- plst   | The List                                      |      5075 |       4985 | 2020-09-26   | masters
- [-] pltc   | Tales of Middle-earth Deluxe Commander Kit    |         4 |          4 | 2024-10-16   | promo
- [-] pltr   | Tales of Middle-earth Promos                  |        86 |         86 | 2023-06-23   | promo
- [-] pm10   | Magic 2010 Promos                             |         3 |          3 | 2009-07-16   | promo
- [-] pm11   | Magic 2011 Promos                             |         6 |          6 | 2010-07-15   | promo
- [-] pm12   | Magic 2012 Promos                             |         3 |          3 | 2011-07-14   | promo
- [-] pm13   | Magic 2013 Promos                             |         6 |          6 | 2012-07-12   | promo
- [-] pm14   | Magic 2014 Promos                             |         6 |          6 | 2013-07-18   | promo
- [-] pm15   | Magic 2015 Promos                             |        14 |         14 | 2014-07-17   | promo
- [-] pm19   | Core Set 2019 Promos                          |        95 |         95 | 2018-07-13   | promo
- [-] pm20   | Core Set 2020 Promos                          |       144 |        144 | 2019-07-12   | promo
- [-] pm21   | Core Set 2021 Promos                          |       137 |        137 | 2020-07-03   | promo
- [-] pmat   | March of the Machine: The Aftermath Promos    |         8 |          8 | 2023-11-17   | promo
- [-] pmbs   | Mirrodin Besieged Promos                      |         4 |          4 | 2011-02-03   | promo
- [-] pmda   | Magic × Duel Masters Promos                   |         4 |          4 | 2023-09-08   | promo
- [-] pmei   | Media and Collaboration Promos                |        80 |         80 | 1995-01-01   | promo
- [-] pmh1   | Modern Horizons Promos                        |         2 |          2 | 2019-06-14   | promo
- [-] pmh2   | Modern Horizons 2 Promos                      |        86 |         86 | 2021-06-18   | promo
- [-] pmh3   | Modern Horizons 3 Promos                      |        90 |         85 | 2024-06-14   | promo
- [-] pmic   | MicroProse Promos                             |         1 |          1 | 1997-04-01   | memorabilia
- [-] pmid   | Innistrad: Midnight Hunt Promos               |       171 |        155 | 2021-09-24   | promo
- [-] pmkm   | Murders at Karlov Manor Promos                |       182 |        180 | 2024-02-09   | promo
- [+ pmlg Magic League Promos]
- [-] pmmq   | Mercadian Masques Promos                      |         1 |          1 | 1999-10-04   | promo
- [-] pmom   | March of the Machine Promos                   |       160 |        134 | 2023-04-21   | promo
- [-] pmor   | Morningtide Promos                            |         2 |          2 | 2008-02-01   | promo
- [-] pmps   | Magic Premiere Shop 2005                      |        20 |         20 | 2005-10-07   | promo
- [-] pmps06 | Magic Premiere Shop 2006                      |         5 |          5 | 2006-01-01   | promo
- [-] pmps07 | Magic Premiere Shop 2007                      |         5 |          5 | 2007-01-01   | promo
- [-] pmps08 | Magic Premiere Shop 2008                      |         5 |          6 | 2008-01-01   | promo
- [-] pmps09 | Magic Premiere Shop 2009                      |         5 |          5 | 2009-01-01   | promo
- [-] pmps10 | Magic Premiere Shop 2010                      |         5 |          5 | 2010-01-01   | promo
- [-] pmps11 | Magic Premiere Shop 2011                      |         5 |          5 | 2011-01-01   | promo
- [-] pmrd   | Mirrodin Promos                               |         1 |          1 | 2004-06-04   | promo
+ [? LOOK INTO THIS] plst   | The List                                      |      5075 |       4985 | 2020-09-26   | masters
+ [-1] pltc   | Tales of Middle-earth Deluxe Commander Kit    |         4 |          4 | 2024-10-16   | promo
+ [-1] pltr   | Tales of Middle-earth Promos                  |        86 |         86 | 2023-06-23   | promo
+ [-1] pm10   | Magic 2010 Promos                             |         3 |          3 | 2009-07-16   | promo
+ [-1] pm11   | Magic 2011 Promos                             |         6 |          6 | 2010-07-15   | promo
+ [-1] pm12   | Magic 2012 Promos                             |         3 |          3 | 2011-07-14   | promo
+ [-1] pm13   | Magic 2013 Promos                             |         6 |          6 | 2012-07-12   | promo
+ [-1] pm14   | Magic 2014 Promos                             |         6 |          6 | 2013-07-18   | promo
+ [-1] pm15   | Magic 2015 Promos                             |        14 |         14 | 2014-07-17   | promo
+ [-1] pm19   | Core Set 2019 Promos                          |        95 |         95 | 2018-07-13   | promo
+ [-1] pm20   | Core Set 2020 Promos                          |       144 |        144 | 2019-07-12   | promo
+ [-1] pm21   | Core Set 2021 Promos                          |       137 |        137 | 2020-07-03   | promo
+ [-1] pmat   | March of the Machine: The Aftermath Promos    |         8 |          8 | 2023-11-17   | promo
+ [-1] pmbs   | Mirrodin Besieged Promos                      |         4 |          4 | 2011-02-03   | promo
+ [--?] pmda   | Magic × Duel Masters Promos                   |         4 |          4 | 2023-09-08   | promo
+ [-1 ?] pmei   | Media and Collaboration Promos                |        80 |         80 | 1995-01-01   | promo
+ [-1] pmh1   | Modern Horizons Promos                        |         2 |          2 | 2019-06-14   | promo
+ [-1] pmh2   | Modern Horizons 2 Promos                      |        86 |         86 | 2021-06-18   | promo
+ [-1] pmh3   | Modern Horizons 3 Promos                      |        90 |         85 | 2024-06-14   | promo
+ [--] pmic   | MicroProse Promos                             |         1 |          1 | 1997-04-01   | memorabilia
+ [-1] pmid   | Innistrad: Midnight Hunt Promos               |       171 |        155 | 2021-09-24   | promo
+ [-1] pmkm   | Murders at Karlov Manor Promos                |       182 |        180 | 2024-02-09   | promo
+ [+1 pmlg Magic League Promos 2012-07-12   19]
+ [-1] pmmq   | Mercadian Masques Promos                      |         1 |          1 | 1999-10-04   | promo
+ [-1] pmom   | March of the Machine Promos                   |       160 |        134 | 2023-04-21   | promo
+ [-1] pmor   | Morningtide Promos                            |         2 |          2 | 2008-02-01   | promo
+ [-1 ?] pmps   | Magic Premiere Shop 2005                      |        20 |         20 | 2005-10-07   | promo
+ [-1 ?] pmps06 | Magic Premiere Shop 2006                      |         5 |          5 | 2006-01-01   | promo
+ [-1 ?] pmps07 | Magic Premiere Shop 2007                      |         5 |          5 | 2007-01-01   | promo
+ [-1 ?] pmps08 | Magic Premiere Shop 2008                      |         5 |          6 | 2008-01-01   | promo
+ [-1 ?] pmps09 | Magic Premiere Shop 2009                      |         5 |          5 | 2009-01-01   | promo
+ [-1 ?] pmps10 | Magic Premiere Shop 2010                      |         5 |          5 | 2010-01-01   | promo
+ [-1 ?] pmps11 | Magic Premiere Shop 2011                      |         5 |          5 | 2011-01-01   | promo
+ [-1] pmrd   | Mirrodin Promos                               |         1 |          1 | 2004-06-04   | promo
  pnat   | Nationals Promos                              |         1 |          1 | 2018-01-25   | promo
- [-] pncc   | New Capenna Commander Promos                  |        76 |         75 | 2022-04-29   | promo
- [-] pnem   | Nemesis Promos                                |         1 |          1 | 2000-02-14   | promo
- [-] pneo   | Kamigawa: Neon Dynasty Promos                 |       157 |        148 | 2022-02-18   | promo
- [-] pnph   | New Phyrexia Promos                           |         4 |          4 | 2011-05-12   | promo
- [-] pody   | Odyssey Promos                                |         1 |          1 | 2001-10-01   | promo
- [-] pogw   | Oath of the Gatewatch Promos                  |        65 |         65 | 2016-01-22   | promo
- [-] pone   | Phyrexia: All Will Be One Promos              |       160 |        160 | 2023-02-10   | promo
- [-] pons   | Onslaught Promos                              |         1 |          1 | 2002-09-28   | promo
+ [-1] pncc   | New Capenna Commander Promos                  |        76 |         75 | 2022-04-29   | promo
+ [-1] pnem   | Nemesis Promos                                |         1 |          1 | 2000-02-14   | promo
+ [-1] pneo   | Kamigawa: Neon Dynasty Promos                 |       157 |        148 | 2022-02-18   | promo
+ [-1] pnph   | New Phyrexia Promos                           |         4 |          4 | 2011-05-12   | promo
+ [-1] pody   | Odyssey Promos                                |         1 |          1 | 2001-10-01   | promo
+ [-1] pogw   | Oath of the Gatewatch Promos                  |        65 |         65 | 2016-01-22   | promo
+ [-1] pone   | Phyrexia: All Will Be One Promos              |       160 |        160 | 2023-02-10   | promo
+ [-1] pons   | Onslaught Promos                              |         1 |          1 | 2002-09-28   | promo
  por    | Portal                                        |       243 |        257 | 1997-05-01   | starter
- [-] pori   | Magic Origins Promos                          |        54 |         54 | 2015-07-17   | promo
- [-] potj   | Outlaws of Thunder Junction Promos            |       160 |        160 | 2024-04-19   | promo
- [-] ppc1   | M15 Prerelease Challenge                      |         2 |          1 | 2014-07-12   | memorabilia
- [-] ppcy   | Prophecy Promos                               |         1 |          1 | 2000-06-05   | promo
- [-] pplc   | Planar Chaos Promos                           |         2 |          2 | 2007-02-02   | promo
+ [-1] pori   | Magic Origins Promos                          |        54 |         54 | 2015-07-17   | promo
+ [-1] potj   | Outlaws of Thunder Junction Promos            |       160 |        160 | 2024-04-19   | promo
+ [--] ppc1   | M15 Prerelease Challenge                      |         2 |          1 | 2014-07-12   | memorabilia
+ [-1] ppcy   | Prophecy Promos                               |         1 |          1 | 2000-06-05   | promo
+ [-1] pplc   | Planar Chaos Promos                           |         2 |          2 | 2007-02-02   | promo
+ **** YOUR ARE HERE ****
  [+ ppclb Promo Pack: Battle for Baldur's Gate]
  [+ ppcmr Promo Pack: Commander Legends]
  [+ ppdft Promo Pack: Aetherdrift]

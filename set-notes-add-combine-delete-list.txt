@@ -161,22 +161,22 @@
  fnm    | Friday Night Magic 2000                       |       350 |         11 | 2000-01-01   | promo
  frf    | Fate Reforged                                 |       185 |        191 | 2015-01-23   | expansion
  fut    | Future Sight                                  |       180 |        180 | 2007-05-04   | expansion
- [-] g00    | Judge Gift Cards 2000                         |         2 |          2 | 2000-01-01   | promo
- [-] g01    | Judge Gift Cards 2001                         |         2 |          2 | 2001-01-01   | promo
- [-] g02    | Judge Gift Cards 2002                         |         2 |          2 | 2002-01-01   | promo
- [-] g03    | Judge Gift Cards 2003                         |         3 |          3 | 2003-01-01   | promo
- [-] g04    | Judge Gift Cards 2004                         |         6 |          6 | 2004-01-01   | promo
- [-] g05    | Judge Gift Cards 2005                         |         4 |          4 | 2005-01-01   | promo
- [-] g06    | Judge Gift Cards 2006                         |         4 |          4 | 2006-01-01   | promo
- [-] g07    | Judge Gift Cards 2007                         |         5 |          5 | 2007-01-01   | promo
- [-] g08    | Judge Gift Cards 2008                         |         5 |          5 | 2008-01-01   | promo
- [-] g09    | Judge Gift Cards 2009                         |        10 |         10 | 2009-01-01   | promo
- [-] g10    | Judge Gift Cards 2010                         |         8 |          8 | 2010-01-01   | promo
- [-] g11    | Judge Gift Cards 2011                         |         8 |          8 | 2011-01-01   | promo
- [-] g17    | 2017 Gift Pack                                |         5 |          5 | 2017-10-20   | box
- [?] g18    | M19 Gift Pack                                 |         5 |          5 | 2018-11-16   | box
- [-] g99    | Judge Gift Cards 1999                         |       350 |          1 | 1999-01-01   | promo
- [+ gbp Gift Box Promos]
+ g00    | Judge Gift Cards 2000                         |         2 |          2 | 2000-01-01   | promo
+ g01    | Judge Gift Cards 2001                         |         2 |          2 | 2001-01-01   | promo
+ g02    | Judge Gift Cards 2002                         |         2 |          2 | 2002-01-01   | promo
+ g03    | Judge Gift Cards 2003                         |         3 |          3 | 2003-01-01   | promo
+ g04    | Judge Gift Cards 2004                         |         6 |          6 | 2004-01-01   | promo
+ g05    | Judge Gift Cards 2005                         |         4 |          4 | 2005-01-01   | promo
+ g06    | Judge Gift Cards 2006                         |         4 |          4 | 2006-01-01   | promo
+ g07    | Judge Gift Cards 2007                         |         5 |          5 | 2007-01-01   | promo
+ g08    | Judge Gift Cards 2008                         |         5 |          5 | 2008-01-01   | promo
+ g09    | Judge Gift Cards 2009                         |        10 |         10 | 2009-01-01   | promo
+ g10    | Judge Gift Cards 2010                         |         8 |          8 | 2010-01-01   | promo
+ g11    | Judge Gift Cards 2011                         |         8 |          8 | 2011-01-01   | promo
+ g17    | 2017 Gift Pack                                |         5 |          5 | 2017-10-20   | box
+ g18    | M19 Gift Pack                                 |         5 |          5 | 2018-11-16   | box
+ g99    | Judge Gift Cards 1999                         |       350 |          1 | 1999-01-01   | promo
+ [+1 gbp Gift Box Promos]
  gdy    | Game Day Promos                               |         9 |          9 | 2022-04-08   | promo
  gk1    | GRN Guild Kit                                 |       127 |        127 | 2018-11-02   | box
  gk2    | RNA Guild Kit                                 |       133 |        133 | 2019-02-15   | box
@@ -184,12 +184,10 @@
  gn3    | Game Night: Free-for-All                      |       135 |        135 | 2022-10-14   | box
  gnt    | Game Night                                    |        68 |         68 | 2018-11-16   | box
  gpt    | Guildpact                                     |       165 |        167 | 2006-02-03   | expansion
- [+ gpx Grand Prix Promos]
  grn    | Guilds of Ravnica                             |       259 |        273 | 2018-10-05   | expansion
  gs1    | Global Series Jiang Yanggu & Mu Yanling       |        40 |         40 | 2018-06-22   | duel_deck
  gtc    | Gatecrash                                     |       249 |        249 | 2013-02-01   | expansion
- [+ gtw Gateway Promos]
- [+ gur guru lands]
+ [+1 gtw Gateway Promos]
  gvl    | Duel Decks Anthology: Garruk vs. Liliana      |        63 |         63 | 2014-12-05   | duel_deck
  h09    | Premium Deck Series: Slivers                  |        41 |         41 | 2009-11-20   | premium_deck
  h17    | HasCon 2017                                   |         4 |          3 | 2017-09-20   | funny
@@ -204,27 +202,24 @@
  ima    | Iconic Masters                                |       249 |        249 | 2017-11-17   | masters
  inr    | Innistrad Remastered                          |       287 |        492 | 2025-01-24   | masters
  inv    | Invasion                                      |       350 |        354 | 2000-10-02   | expansion
- [+ ipp Intro Pack Promos]
+ [+1 ipp Intro Pack Promos]
  isd    | Innistrad                                     |       264 |        264 | 2011-09-30   | expansion
  itp    | Introductory Two-Player Set                   |        67 |         67 | 1996-12-31   | starter
- [-] j12    | Judge Gift Cards 2012                         |         8 |          8 | 2012-01-01   | promo
- [-] j13    | Judge Gift Cards 2013                         |         8 |          8 | 2013-01-01   | promo
- [-] j14    | Judge Gift Cards 2014                         |         9 |         14 | 2014-01-01   | promo
- [-] j15    | Judge Gift Cards 2015                         |         8 |          8 | 2015-01-01   | promo
- [-] j16    | Judge Gift Cards 2016                         |         8 |          8 | 2016-01-01   | promo
- [-] j17    | Judge Gift Cards 2017                         |         8 |          9 | 2017-01-01   | promo
- [-] j18    | Judge Gift Cards 2018                         |         8 |          8 | 2018-01-01   | promo
- [-] j19    | Judge Gift Cards 2019                         |         8 |          8 | 2019-04-10   | promo
- [-] j20    | Judge Gift Cards 2020                         |        10 |         10 | 2020-01-01   | promo
+ j12    | Judge Gift Cards 2012                         |         8 |          8 | 2012-01-01   | promo
+ j13    | Judge Gift Cards 2013                         |         8 |          8 | 2013-01-01   | promo
+ j14    | Judge Gift Cards 2014                         |         9 |         14 | 2014-01-01   | promo
+ j15    | Judge Gift Cards 2015                         |         8 |          8 | 2015-01-01   | promo
+ j16    | Judge Gift Cards 2016                         |         8 |          8 | 2016-01-01   | promo
+ j17    | Judge Gift Cards 2017                         |         8 |          9 | 2017-01-01   | promo
+ j18    | Judge Gift Cards 2018                         |         8 |          8 | 2018-01-01   | promo
+ j19    | Judge Gift Cards 2019                         |         8 |          8 | 2019-04-10   | promo
+ j20    | Judge Gift Cards 2020                         |        10 |         10 | 2020-01-01   | promo
  j22    | Jumpstart 2022                                |       834 |        835 | 2022-12-02   | draft_innovation
  j25    | Foundations Jumpstart                         |       779 |        779 | 2024-11-15   | draft_innovation
- [+ jas Junior APAC Series]
  jgp    | Judge Gift Cards 1998                         |         3 |          3 | 1998-01-01   | promo
  jmp    | Jumpstart                                     |        78 |        496 | 2020-07-17   | draft_innovation
  jou    | Journey into Nyx                              |       165 |        165 | 2014-05-02   | expansion
- [-] jp1    | Hobby Japan Promos                            |         5 |          5 | 2002-07-01   | promo
- [+ js Junior Series]
- [+ js Junior Super Series]
+ [-1] jp1    | Hobby Japan Promos                            |         5 |          5 | 2002-07-01   | promo
  jud    | Judgment                                      |       143 |        143 | 2002-05-27   | expansion
  jvc    | Duel Decks Anthology: Jace vs. Chandra        |        62 |         62 | 2014-12-05   | duel_deck
  khc    | Kaldheim Commander                            |         1 |        119 | 2021-02-05   | commander
@@ -237,7 +232,7 @@
  leb    | Limited Edition Beta                          |       302 |        302 | 1993-10-04   | core
  leg    | Legends                                       |       310 |        310 | 1994-06-01   | expansion
  lgn    | Legions                                       |       145 |        145 | 2003-02-03   | expansion
- [-] lmar   | Marvel Legends Series Inserts                 |         0 |          4 | 2025-09-30   | promo
+ lmar   | Marvel Legends Series Inserts                 |         0 |          4 | 2025-09-30   | promo
  lrw    | Lorwyn                                        |       301 |        301 | 2007-10-12   | expansion
  ltc    | Tales of Middle-earth Commander               |        84 |        591 | 2023-06-23   | commander
  ltr    | The Lord of the Rings: Tales of Middle-earth  |       281 |        854 | 2023-06-23   | draft_innovation
@@ -277,7 +272,7 @@
  mpr    | Magic Player Rewards 2001                     |         8 |          1 | 2001-01-01   | promo
  mps    | Kaladesh Inventions                           |        54 |         54 | 2016-09-30   | masterpiece
  mrd    | Mirrodin                                      |       306 |        306 | 2003-10-02   | expansion
- [+ mss Magic Scholarship Series]
+ [+1 mss Magic Scholarship Series]
  mul    | Multiverse Legends                            |       261 |        260 | 2023-04-21   | masterpiece
  ncc    | New Capenna Commander                         |        93 |        447 | 2022-04-29   | commander
  nec    | Neon Dynasty Commander                        |        38 |        179 | 2022-02-18   | commander
@@ -329,8 +324,8 @@
  [-] p10e   | Tenth Edition Promos                          |         3 |          3 | 2007-07-13   | promo
  [-] p11    | Magic Player Rewards 2011                     |         9 |          7 | 2011-01-01   | promo
  p15a   | 15th Anniversary Cards                        |         2 |          2 | 2008-04-01   | promo
- [-] p22    | Judge Gift Cards 2022                         |        11 |         10 | 2022-01-01   | promo
- [-] p23    | Judge Gift Cards 2023                         |        10 |         10 | 2023-01-01   | promo
+ p22    | Judge Gift Cards 2022                         |        11 |         10 | 2022-01-01   | promo
+ p23    | Judge Gift Cards 2023                         |        10 |         10 | 2023-01-01   | promo
  p2hg   | Two-Headed Giant Tournament                   |         1 |          1 | 2005-12-09   | promo
  [-] p30a   | 30th Anniversary Play Promos                  |        30 |         30 | 2022-09-02   | promo
  p30h   | 30th Anniversary History Promos               |        10 |         10 | 2022-09-09   | promo
@@ -412,11 +407,10 @@
  [-] pfin   | Final Fantasy Promos                          |       116 |         94 | 2025-06-13   | promo
  [-] pfrf   | Fate Reforged Promos                          |        43 |         43 | 2015-01-23   | promo
  [-] pfut   | Future Sight Promos                           |         2 |          2 | 2007-05-04   | promo
- [+ pgp17 Gift pack 2017 Promos]
  [-] pgpt   | Guildpact Promos                              |         2 |          2 | 2006-02-03   | promo
- [-] pgpx   | Grand Prix Promos                             |        20 |         20 | 2007-02-24   | promo
+ pgpx   | Grand Prix Promos                             |        20 |         20 | 2007-02-24   | promo
  [-] pgrn   | Guilds of Ravnica Promos                      |        84 |         84 | 2018-10-05   | promo
- [-] pgru   | Guru                                          |         5 |          5 | 1999-07-12   | promo
+ pgru   | Guru                                          |         5 |          5 | 1999-07-12   | promo
  [-] pgtc   | Gatecrash Promos                              |        10 |         10 | 2013-01-26   | promo
  [-] ph17   | 2017 Heroes of the Realm                      |         3 |          3 | 2018-08-01   | funny
  [-] ph18   | 2018 Heroes of the Realm                      |         4 |          5 | 2019-08-01   | funny
@@ -437,12 +431,12 @@
  [-] pinv   | Invasion Promos                               |         1 |          1 | 2000-10-02   | promo
  pip    | Fallout                                       |      1076 |       1068 | 2024-03-08   | commander
  [-] pisd   | Innistrad Promos                              |         5 |          5 | 2011-09-24   | promo
- [-] pj21   | Judge Gift Cards 2021                         |        10 |         10 | 2021-01-01   | promo
- [-] pjas   | Junior APAC Series                            |         6 |          6 | 2006-01-01   | promo
+ pj21   | Judge Gift Cards 2021                         |        10 |         10 | 2021-01-01   | promo
+ pjas   | Junior APAC Series                            |         6 |          6 | 2006-01-01   | promo
  [-] pjjt   | Japan Junior Tournament                       |        12 |         12 | 2003-01-01   | promo
  [-] pjou   | Journey into Nyx Promos                       |        10 |         10 | 2014-04-26   | promo
  [-] pjsc   | Japan Standard Cup                            |         2 |          2 | 2025-02-09   | promo
- [-] pjse   | Junior Series Europe                          |         8 |          8 | 2005-01-01   | promo
+ pjse   | Junior Series Europe                          |         8 |          8 | 2005-01-01   | promo
  [-] pjud   | Judgment Promos                               |         1 |          1 | 2002-05-27   | promo
  [-] pkhm   | Kaldheim Promos                               |         1 |        158 | 2021-02-05   | promo
  [-] pkld   | Kaladesh Promos                               |        83 |         83 | 2016-09-30   | promo

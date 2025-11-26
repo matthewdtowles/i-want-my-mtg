@@ -1730,15 +1730,6 @@ GROUP BY c.set_code
 ORDER BY pct_with_price, c.set_code;
  set_code | total_cards | cards_with_price | cards_without_price | pct_with_price 
 ----------+-------------+------------------+---------------------+----------------
- 4bb      |         378 |                0 |                 378 |           0.00 d
- bchr     |         125 |                0 |                 125 |           0.00 d
- fbb      |         307 |                0 |                 307 |           0.00 **
- jp1      |           5 |                0 |                   5 |           0.00 d
- mgb      |          10 |                0 |                  10 |           0.00 d
- o90p     |          10 |                0 |                  10 |           0.00 d
- olep     |          83 |                0 |                  83 |           0.00 d
- olgc     |          27 |                0 |                  27 |           0.00 d
- ovnt     |          35 |                0 |                  35 |           0.00 d
  p30t     |           2 |                0 |                   2 |           0.00 d
  pcel     |           9 |                0 |                   9 |           0.00 d
  ph17     |           3 |                0 |                   3 |           0.00 d
@@ -1884,7 +1875,6 @@ ORDER BY pct_with_price, c.set_code;
  ocm1     |          10 |               10 |                   0 |         100.00 d
  ocmd     |          15 |               15 |                   0 |         100.00 d
  oe01     |          20 |               20 |                   0 |         100.00 d
- ohop     |          40 |               40 |                   0 |         100.00 d
  opc2     |          40 |               40 |                   0 |         100.00 d
  opca     |          86 |               86 |                   0 |         100.00 d
  p03      |           1 |                1 |                   0 |         100.00 d

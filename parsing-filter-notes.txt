@@ -1730,6 +1730,15 @@ GROUP BY c.set_code
 ORDER BY pct_with_price, c.set_code;
  set_code | total_cards | cards_with_price | cards_without_price | pct_with_price 
 ----------+-------------+------------------+---------------------+----------------
+ 4bb      |         378 |                0 |                 378 |           0.00 d
+ bchr     |         125 |                0 |                 125 |           0.00 d
+ fbb      |         307 |                0 |                 307 |           0.00 **
+ jp1      |           5 |                0 |                   5 |           0.00 d
+ mgb      |          10 |                0 |                  10 |           0.00 d
+ o90p     |          10 |                0 |                  10 |           0.00 d
+ olep     |          83 |                0 |                  83 |           0.00 d
+ olgc     |          27 |                0 |                  27 |           0.00 d
+ ovnt     |          35 |                0 |                  35 |           0.00 d
  p30t     |           2 |                0 |                   2 |           0.00 d
  pcel     |           9 |                0 |                   9 |           0.00 d
  ph17     |           3 |                0 |                   3 |           0.00 d
@@ -1755,6 +1764,7 @@ ORDER BY pct_with_price, c.set_code;
  ren      |         122 |                0 |                 122 |           0.00 d
  rin      |          69 |                0 |                  69 |           0.00 **
  rqs      |          65 |                0 |                  65 |           0.00 d
+
  unk      |         467 |                3 |                 464 |           0.64 d
  sum      |         306 |                3 |                 303 |           0.98 **
  pwcs     |          42 |                3 |                  39 |           7.14 d
@@ -1762,6 +1772,7 @@ ORDER BY pct_with_price, c.set_code;
  tmt      |          20 |                4 |                  16 |          20.00 d
  ptor     |           3 |                1 |                   2 |          33.33 d
  itp      |          67 |               24 |                  43 |          35.82 **
+
  pmei     |          80 |               30 |                  50 |          37.50 **
  tmc      |          12 |                5 |                   7 |          41.67 d
  omic     |           2 |                1 |                   1 |          50.00 d
@@ -1875,6 +1886,7 @@ ORDER BY pct_with_price, c.set_code;
  ocm1     |          10 |               10 |                   0 |         100.00 d
  ocmd     |          15 |               15 |                   0 |         100.00 d
  oe01     |          20 |               20 |                   0 |         100.00 d
+ ohop     |          40 |               40 |                   0 |         100.00 d
  opc2     |          40 |               40 |                   0 |         100.00 d
  opca     |          86 |               86 |                   0 |         100.00 d
  p03      |           1 |                1 |                   0 |         100.00 d

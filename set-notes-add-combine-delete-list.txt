@@ -1,15 +1,30 @@
- code   |                     name                      | base_size | card_count | release_date | type        | status
- 30a    | 30th Anniversary Edition                      |       302 |        302 | 1993-12-10   | memorabilia | [--]
+1. RULE: DELETE IF isForeignOnly == true 
  4bb    | Fourth Edition Foreign Black Border           |       378 |        378 | 1995-04-01   | core        | [Prices, Foreign, Reprint]
- bchr   | Chronicles Foreign Black Border               |       125 |        125 | 1995-07-01   | masters     | [Prices, Foreign, Reprint of Reprint Set]
+ fbb    | Foreign Black Border                          |       306 |        307 | 1994-04-11   | core        | [Prices, Foreign, Reprint]
+ pjjt   | Japan Junior Tournament                       |        12 |         12 | 2003-01-01   | promo       | [-- Prices, Foreign]
+ pmps
+ pmps06
+ pmps07
+ pmps08
+ pmps09
+ pmps10
+ pmps11
+ pred   | Redemption Program                            |         1 |          1 | 1996-10-01   | promo       | [-- Prices, Foreign]
+ ps11   | Salvat 2011                                   |       224 |        224 | 2011-01-01   | box         | [-- Prices, Foreign]
+ psal   | Salvat 2005                                   |       720 |        720 | 2005-08-22   | box         | [-- Prices, Foreign]
+ ren    | Renaissance                                   |       122 |        122 | 1995-08-01   | masters     | [-- Prices, Foreign]
+ rin    | Rinascimento                                  |        69 |         69 | 1995-08-01   | masters     | [-- Prices, Foreign]
+-------
+-------
+-------
+-------
+
+2. RULE: DELETE IF TYPE == 'memorabilia'
+ 30a    | 30th Anniversary Edition                      |       302 |        302 | 1993-12-10   | memorabilia | [--]
  ced    | Collectors' Edition                           |       302 |        302 | 1993-12-10   | memorabilia | [--]
  cei    | Intl. Collectors' Edition                     |       302 |        302 | 1993-12-10   | memorabilia | [--]
- fbb    | Foreign Black Border                          |       306 |        307 | 1994-04-11   | core        | [Prices, Foreign, Reprint]
- itp    | Introductory Two-Player Set                   |        67 |         67 | 1996-12-31   | starter     | [-- Prices, Reprints]
- jp1    | Hobby Japan Promos                            |         5 |          5 | 2002-07-01   | promo       | [-- Prices, Foreign]
  o90p   | Oversized 90's Promos                         |        10 |         10 | 1996-04-01   | memorabilia | [--]
  oafc   | Forgotten Realms Commander Display Commanders |         4 |          4 | 2021-07-23   | memorabilia | [--]
- oarc   | Archenemy Schemes                             |        45 |         45 | 2010-06-18   | archenemy   | [-- Schemes]
  oc13   | Commander 2013 Oversized                      |        15 |         15 | 2013-11-01   | memorabilia | [--]
  oc14   | Commander 2014 Oversized                      |         5 |          5 | 2014-11-07   | memorabilia | [--]
  oc15   | Commander 2015 Oversized                      |         5 |          5 | 2015-11-13   | memorabilia | [--]
@@ -21,53 +36,24 @@
  oc21   | Commander 2021 Display Commanders             |         5 |          5 | 2021-04-23   | memorabilia | [--]
  ocm1   | Commander's Arsenal Oversized                 |        10 |         10 | 2012-11-02   | memorabilia | [--]
  ocmd   | Commander 2011 Oversized                      |        15 |         15 | 2011-06-17   | memorabilia | [--]
- oe01   | Archenemy: Nicol Bolas Schemes                |        20 |         20 | 2017-06-16   | archenemy   | [-- Schemes]
  olep   | Oversized League Prizes                       |        83 |         83 | 1997-05-30   | memorabilia | [--] 
  olgc   | Legacy Championship                           |        27 |         27 | 2011-01-01   | memorabilia | [--] 
  omic   | Midnight Hunt Commander Display Commanders    |         2 |          2 | 2021-09-24   | memorabilia | [--] 
  ovnt   | Vintage Championship                          |        35 |         35 | 2003-01-01   | memorabilia | [--]
  ovoc   | Crimson Vow Commander Display Commanders      |         2 |          2 | 2021-11-19   | memorabilia | [--]
- p30t   | 30th Anniversary Celebration Tokyo            |         2 |          2 | 2023-09-01   | promo       | [-- Prices, Foreign]
  pcel   | Celebration Cards                             |         9 |          9 | 1996-08-14   | memorabilia | [--] 
  pcmd   | Commander 2011 Launch Party                   |         5 |          5 | 2011-06-17   | memorabilia | [--] 
- ph17   | 2017 Heroes of the Realm                      |         3 |          3 | 2018-08-01   | funny       | [-- Prices] 
- ph18   | 2018 Heroes of the Realm                      |         4 |          5 | 2019-08-01   | funny       | [-- Prices] 
- ph19   | 2019 Heroes of the Realm                      |         9 |          7 | 2020-08-01   | funny       | [-- Prices] 
- ph20   | 2020 Heroes of the Realm                      |         3 |          3 | 2021-08-01   | funny       | [-- Prices] 
- ph21   | 2021 Heroes of the Realm                      |         4 |          4 | 2022-08-01   | funny       | [-- Prices] 
- ph22   | 2022 Heroes of the Realm                      |         5 |          5 | 2023-08-01   | funny       | [-- Prices] 
- ph23   | 2023 Heroes of the Realm                      |         1 |          1 | 2025-08-24   | funny       | [-- Prices] 
  phel   | Open the Helvault                             |         6 |          5 | 2012-04-28   | memorabilia | [--] 
- phtr   | 2016 Heroes of the Realm                      |         3 |          3 | 2017-09-20   | funny       | [-- Prices]
- phuk   | Hachette UK                                   |        60 |         60 | 2006-01-01   | box         | [-- Prices]
- pjjt   | Japan Junior Tournament                       |        12 |         12 | 2003-01-01   | promo       | [-- Prices, Foreign]
- pjsc   | Japan Standard Cup                            |         2 |          2 | 2025-02-09   | promo       | [-- Prices, Foreign]
- plst   | The List                                      |      5075 |       4985 | 2020-09-26   | masters     | Filter Foreign?
- pmda   | Magic × Duel Masters Promos                   |         4 |          4 | 2023-09-08   | promo       | [-- Prices, Foreign]
- pmei   | Media and Collaboration Promos                |        80 |         80 | 1995-01-01   | promo       | Filter foreign?
  pmic   | MicroProse Promos                             |         1 |          1 | 1997-04-01   | memorabilia | [--]
  ppc1   | M15 Prerelease Challenge                      |         2 |          1 | 2014-07-12   | memorabilia | [--]
- pred   | Redemption Program                            |         1 |          1 | 1996-10-01   | promo       | [-- Prices, Foreign]
- ps11   | Salvat 2011                                   |       224 |        224 | 2011-01-01   | box         | [-- Prices, Foreign]
- psal   | Salvat 2005                                   |       720 |        720 | 2005-08-22   | box         | [-- Prices, Foreign]
- pssc   | Secret Lair Showcase Planes                   |        10 |         10 | 2025-02-21   | memorabilia | [-- Prices]
- psvc   | Summer Vacation Promos 2022                   |         3 |          3 | 2022-08-01   | promo       | [-- Prices, Foreign]
+ pssc   | Secret Lair Showcase Planes                   |        10 |         10 | 2025-02-21   | memorabilia | [--]
  ptc    | Pro Tour Collector Set                        |       308 |        307 | 1996-05-01   | memorabilia | [--]
- punk   | Black Lotus Unknown Planechase                |        52 |         52 | 2024-02-24   | funny       | [-- Prices, Not Legal]
- purl   | URL/Convention Promos                         |         9 |         15 | 2009-02-08   | promo       | + But - Foreign/Prices ?
- pvan   | Vanguard Series                               |        32 |         32 | 1997-05-01   | vanguard    | [-- Vanguard]
- pwcs   | Planeswalker Championship Promos              |        42 |         42 | 2019-10-01   | promo       | [-- Prices, Foreign]
- ren    | Renaissance                                   |       122 |        122 | 1995-08-01   | masters     | [-- Prices, Foreign]
- rin    | Rinascimento                                  |        69 |         69 | 1995-08-01   | masters     | [-- Prices, Foreign]
- rqs    | Rivals Quick Start Set                        |        65 |         65 | 1996-07-01   | box         | [-- Prices, Reprint]
- sum    | Summer Magic / Edgar                          |       306 |        306 | 1994-06-21   | core        | [-- Prices, Reprints]
  tbth   | Battle the Horde                              |        15 |         10 | 2014-03-01   | memorabilia | [--]
  tdag   | Defeat a God                                  |        15 |          8 | 2014-05-25   | memorabilia | [--]
  tfth   | Face the Hydra                                |        15 |         10 | 2013-10-19   | memorabilia | [--]
  thp1   | Theros Hero's Path                            |         7 |          7 | 2013-09-27   | memorabilia | [--]
  thp2   | Born of the Gods Hero's Path                  |         7 |          7 | 2014-02-07   | memorabilia | [--]
  thp3   | Journey into Nyx Hero's Path                  |         8 |          7 | 2014-05-02   | memorabilia | [--]
- unk    | Unknown Event                                 |       473 |        467 | 2023-02-15   | funny       | [-- Prices, Missing Info]
  wc00   | World Championship Decks 2000                 |       117 |        107 | 2000-08-02   | memorabilia | [--]
  wc01   | World Championship Decks 2001                 |       138 |        128 | 2001-08-08   | memorabilia | [--]
  wc02   | World Championship Decks 2002                 |       153 |        143 | 2002-12-01   | memorabilia | [--]
@@ -76,3 +62,64 @@
  wc97   | World Championship Decks 1997                 |       131 |        121 | 1997-08-13   | memorabilia | [--]
  wc98   | World Championship Decks 1998                 |       117 |        107 | 1998-08-12   | memorabilia | [--]
  wc99   | World Championship Decks 1999                 |       111 |        100 | 1999-08-04   | memorabilia | [--]
+
+------- 
+------- 
+------- 
+------- 
+ 
+3. RULE: IF card.isOversized
+ 
+ oarc   | Archenemy Schemes - ALL
+ oe01   | Archenemy: Nicol Bolas Schemes - ALL
+ ohop   | Planechase Planes - ALL
+ opc2   | Planechase 2012 Planes - ALL 
+ opca   | Planechase Anthology Planes - ALL 
+ phop   | Planechase Promos - ALL
+ punk   | Black Lotus Unknown Planechase - ALL 
+ pvan   | Vanguard Series - ALL 
+ dci - 10/80
+ dsc - 40/379 
+ moc - 50/457 
+ p09    | Magic Player Rewards 2009 - 4/13
+ p10    | Magic Player Rewards 2010 - 4/13
+ p11    | Magic Player Rewards 2011 - 2/7
+ who    | Doctor Who - 40/1186
+ 
+------- 
+------- 
+------- 
+------- 
+
+4. RULE: IF set has 0 prices for any of its cards 
+ bchr   | Chronicles Foreign Black Border               |       125 |        125 | 1995-07-01   | masters     | [Prices, Foreign, Reprint of Reprint Set]
+ jp1    | Hobby Japan Promos                            |         5 |          5 | 2002-07-01   | promo       | [-- Prices, Foreign]
+ p30t   | 30th Anniversary Celebration Tokyo            |         2 |          2 | 2023-09-01   | promo       | [-- Prices, Foreign]
+ phuk   | Hachette UK                                   |        60 |         60 | 2006-01-01   | box         | [-- Prices]
+ ph17   | 2017 Heroes of the Realm                      |         3 |          3 | 2018-08-01   | funny       | [-- Prices] 
+ ph18   | 2018 Heroes of the Realm                      |         4 |          5 | 2019-08-01   | funny       | [-- Prices] 
+ ph19   | 2019 Heroes of the Realm                      |         9 |          7 | 2020-08-01   | funny       | [-- Prices] 
+ ph20   | 2020 Heroes of the Realm                      |         3 |          3 | 2021-08-01   | funny       | [-- Prices] 
+ ph21   | 2021 Heroes of the Realm                      |         4 |          4 | 2022-08-01   | funny       | [-- Prices] 
+ ph22   | 2022 Heroes of the Realm                      |         5 |          5 | 2023-08-01   | funny       | [-- Prices] 
+ ph23   | 2023 Heroes of the Realm                      |         1 |          1 | 2025-08-24   | funny       | [-- Prices]
+ phtr   | 2016 Heroes of the Realm                      |         3 |          3 | 2017-09-20   | funny       | [-- Prices]
+ pjsc   | Japan Standard Cup                            |         2 |          2 | 2025-02-09   | promo       | [-- Prices, Foreign]
+ pmda   | Magic × Duel Masters Promos                   |         4 |          4 | 2023-09-08   | promo       | [-- Prices, Foreign]
+ psvc   | Summer Vacation Promos 2022                   |         3 |          3 | 2022-08-01   | promo       | [-- Prices, Foreign]
+ rqs    | Rivals Quick Start Set                        |        65 |         65 | 1996-07-01   | box         | [-- Prices, Reprint]
+4.1. RULE: IF set has < 36% of the prices for its cards
+ itp    | Introductory Two-Player Set                   |        67 |         67 | 1996-12-31   | starter     | [33.33%]
+ pwcs   | Planeswalker Championship Promos              |        42 |         42 | 2019-10-01   | promo       | [7.14%]
+ sum    | Summer Magic / Edgar                          |       306 |        306 | 1994-06-21   | core        | [0.98%]
+ unk    | Unknown Event                                 |       473 |        467 | 2023-02-15   | funny       | [0.64%]
+------- 
+------- 
+------- 
+------- 
+5. RULE: IF card.language != English && card.price.normal == null && card.price.foil == null
+ pmei   | Media and Collaboration Promos                |        80 |         80 | 1995-01-01   | promo       | Filter foreign?
+ plst   | The List                                      |      5075 |       4985 | 2020-09-26   | masters     | Filter Foreign?
+ ptor
+ purl   | URL/Convention Promos                         |         9 |         15 | 2009-02-08   | promo       | + But - Foreign/Prices ?
+

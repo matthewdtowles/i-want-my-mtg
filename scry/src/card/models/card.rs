@@ -21,12 +21,14 @@ pub struct Card {
 
     #[sqlx(skip)]
     pub legalities: Vec<super::Legality>,
-
-    // transient - not persisted to DB!
     #[sqlx(skip)]
     pub is_online_only: bool,
     #[sqlx(skip)]
     pub side: Option<String>,
     #[sqlx(skip)]
     pub other_face_ids: Option<Vec<String>>,
+    #[sqlx(skip)]
+    pub is_oversized: bool,
+    #[sqlx(skip)]
+    pub language: String,
 }

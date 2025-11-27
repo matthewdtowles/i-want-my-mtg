@@ -17,4 +17,6 @@ pub struct Set {
 
     #[sqlx(skip)]
     pub is_online_only: bool, // transient only
+    #[sqlx(skip)]
+    pub is_foreign_only: bool,
 }

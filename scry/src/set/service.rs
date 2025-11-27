@@ -31,16 +31,12 @@ impl SetService {
         if let Some(arr) = raw_data.get("data").and_then(|d| d.as_array()) {
             for set_obj in arr {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
-                    let code = code.to_lowercase();
-                    let is_online = set_obj
-                        .get("isOnlineOnly")
-                        .and_then(|v| v.as_bool())
-                        .unwrap_or(false);
-                    if is_online {
-                        continue;
-                    }
                     match SetMapper::map_mtg_json_to_set(set_obj) {
-                        Ok(set) => to_save.push(set),
+                        Ok(set) => {
+                            if Self::should_ingest(&set) {
+                                to_save.push(set);
+                            }
+                        }
                         Err(e) => warn!("Failed to map set {}: {}", code, e),
                     }
                 }
@@ -63,16 +59,13 @@ impl SetService {
             for set_obj in arr {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     let code = code.to_lowercase();
-                    let is_online = set_obj
-                        .get("isOnlineOnly")
-                        .and_then(|v| v.as_bool())
-                        .unwrap_or(false);
-                    if is_online {
-                        let n = self
-                            .repository
-                            .delete_set_and_dependents_batched(&code, batch_size)
-                            .await?;
-                        total_deleted += n;
+                    if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
+                        if !Self::should_ingest(&set) {
+                            total_deleted += self
+                                .repository
+                                .delete_set_and_dependents_batched(&code, batch_size)
+                                .await?;
+                        }
                     }
                 }
             }
@@ -103,5 +96,12 @@ impl SetService {
         }
         debug!("Deleted {} rows for empty sets", total_deleted);
         Ok(total_deleted)
+    }
+
+    fn should_ingest(set: &Set) -> bool {
+        if set.is_online_only || set.is_foreign_only || set.set_type == "memorabilia" {
+            return false;
+        }
+        true
     }
 }

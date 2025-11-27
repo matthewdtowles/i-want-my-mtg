@@ -21,6 +21,10 @@ impl SetMapper {
             .get("isOnlineOnly")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
+        let is_foreign_only = set_data
+            .get("isForeignOnly")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         Ok(Set {
             code,
             base_size,
@@ -31,6 +35,7 @@ impl SetMapper {
             release_date,
             set_type,
             is_online_only,
+            is_foreign_only,
         })
     }
 }

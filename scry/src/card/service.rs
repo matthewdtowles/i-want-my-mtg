@@ -174,6 +174,10 @@ impl CardService {
                 keep_mask[i] = false;
                 continue;
             }
+            if cards[i].is_oversized {
+                keep_mask[i] = false;
+                continue;
+            }
             if let Some(side) = cards[i].side.as_deref() {
                 if side != "a" {
                     keep_mask[i] = false;

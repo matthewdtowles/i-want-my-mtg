@@ -87,6 +87,15 @@ impl CardMapper {
             .get("isOnlineOnly")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
+        let is_oversized = card_data
+            .get("isOversized")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let language = card_data
+            .get("language")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_default();
         Ok(Card {
             id,
             artist,
@@ -107,6 +116,8 @@ impl CardMapper {
             is_online_only,
             side,
             other_face_ids,
+            is_oversized,
+            language,
         })
     }
 

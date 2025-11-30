@@ -1,5 +1,5 @@
 use crate::{database::ConnectionPool, set::models::Set};
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use sqlx::QueryBuilder;
 use std::sync::Arc;
 use tracing::{debug, warn};
@@ -26,6 +26,22 @@ impl SetRepository {
                 SELECT 1 FROM card c WHERE c.set_code = s.code
             ) ORDER BY s.code",
         );
+        let result: Vec<Set> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(result)
+    }
+
+    pub async fn fetch_missing_prices(&self, threshold_pct: f64) -> Result<Vec<Set>> {
+        let mut qb = QueryBuilder::new(
+            "SELECT * FROM set s
+            WHERE s.code IN (
+                SELECT c.set_code 
+                FROM card c
+                LEFT JOIN price p ON p.card_id = c.id
+                GROUP BY c.set_code
+                HAVING (COUNT(DISTINCT p.card_id)::float / NULLIF(COUNT(*), 0)) < ",
+        );
+        qb.push_bind(threshold_pct);
+        qb.push(")");
         let result: Vec<Set> = self.db.fetch_all_query_builder(qb).await?;
         Ok(result)
     }
@@ -141,21 +157,5 @@ impl SetRepository {
         qb.push_bind(set_code);
         let deleted = self.db.execute_query_builder(qb).await?;
         Ok(deleted)
-    }
-
-    pub async fn prune_missing_prices(&self, threshold_pct: i64) -> Result<u64> {
-        let mut qb = QueryBuilder::new(
-            "DELETE FROM set s WHERE s.code IN (
-                SELECT c.set_code
-                FROM card c
-                LEFT JOIN price p ON p.card_id = c.id
-                GROUP BY c.set_code
-                HAVING (COUNT(DISTINCT p.card_id)::float / NULLIF(COUNT(*), 0)) < ",
-        );
-        let threshold_frac = (threshold_pct as f64) / 100.0;
-        qb.push_bind(threshold_frac);
-        qb.push(")");
-        let result = self.db.execute_query_builder(qb).await?;
-        Ok(result)
     }
 }

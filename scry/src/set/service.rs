@@ -90,24 +90,32 @@ impl SetService {
             let n = self.repository.delete_set_batch(&code, 100).await?;
             total_deleted += n;
         }
-        debug!("Deleted {} rows for empty sets", total_deleted);
+        debug!("Pruned {} rows for empty sets", total_deleted);
         Ok(total_deleted)
     }
 
-    pub async fn prune_missing_prices(&self, missing_limit_pct: i64) -> Result<u64> {
+    pub async fn prune_missing_prices(&self, missing_limit_pct: f64) -> Result<u64> {
+        // TODO: validate missing limit pct is from 0 to 1
+        // convert to a printable arg
+        let printable_arg = 100.0 * missing_limit_pct;
         debug!(
             "Pruning sets with price data for less than {}% of its cards.",
-            missing_limit_pct
+            printable_arg
         );
-        let sets_pruned = self
+        let sets_missing_prices = self
             .repository
-            .prune_missing_prices(missing_limit_pct)
+            .fetch_missing_prices(missing_limit_pct)
             .await?;
+        let mut total_deleted = 0u64;
+        for set in sets_missing_prices {
+            let code = set.code.to_lowercase();
+            total_deleted += self.repository.delete_set_batch(&code, 100).await?;
+        }
         debug!(
-            "Pruned {} sets with price data for less than {}% of its cards.",
-            sets_pruned, missing_limit_pct
+            "Pruned {} rows with price data for less than {}% of its cards.",
+            total_deleted, printable_arg
         );
-        Ok(sets_pruned)
+        Ok(total_deleted)
     }
 
     fn should_filter(&self, set: &Set) -> bool {

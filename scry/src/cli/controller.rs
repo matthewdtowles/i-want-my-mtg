@@ -217,7 +217,7 @@ impl CliController {
         let sets_deleted = self.set_service.prune_empty_sets().await?;
         info!("Deleted {} sets without any cards.", sets_deleted);
 
-        let min_price_pct = 36;
+        let min_price_pct = 0.36;
         let sets_deleted = self.set_service.prune_missing_prices(min_price_pct).await?;
         info!(
             "Deleted {} sets with prices on less than {}% of its cards.",

@@ -77,11 +77,7 @@ impl SetRepository {
         self.db.execute_query_builder(qb).await
     }
 
-    pub async fn delete_set_and_dependents_batched(
-        &self,
-        set_code: &str,
-        batch_size: i64,
-    ) -> Result<u64> {
+    pub async fn delete_set_batch(&self, set_code: &str, batch_size: i64) -> Result<u64> {
         if set_code.is_empty() {
             return Ok(0);
         }

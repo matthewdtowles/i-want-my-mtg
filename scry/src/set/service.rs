@@ -61,10 +61,8 @@ impl SetService {
                     let code = code.to_lowercase();
                     if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
                         if Self::should_filter(&set) {
-                            total_deleted += self
-                                .repository
-                                .delete_set_and_dependents_batched(&code, batch_size)
-                                .await?;
+                            total_deleted +=
+                                self.repository.delete_set_batch(&code, batch_size).await?;
                         }
                     }
                 }
@@ -79,7 +77,7 @@ impl SetService {
         self.repository.delete_all().await
     }
 
-    pub async fn delete_empty(&self) -> Result<u64> {
+    pub async fn prune_empty_sets(&self) -> Result<u64> {
         debug!("Deleting sets that do not have any cards.");
         let empty_sets: Vec<Set> = self.repository.fetch_empty_sets().await?;
         debug!("Found {} empty sets", empty_sets.len());
@@ -89,10 +87,7 @@ impl SetService {
         let mut total_deleted = 0u64;
         for set in empty_sets {
             let code = set.code.to_lowercase();
-            let n = self
-                .repository
-                .delete_set_and_dependents_batched(&code, 100)
-                .await?;
+            let n = self.repository.delete_set_batch(&code, 100).await?;
             total_deleted += n;
         }
         debug!("Deleted {} rows for empty sets", total_deleted);

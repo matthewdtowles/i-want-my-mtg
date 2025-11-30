@@ -43,8 +43,8 @@ impl CliController {
                 {
                     error!("Ingestion failed: {}", e);
                 }
-                if let Err(e) = self.post_ingest_cleanup().await {
-                    error!("Post ingestion processing failed: {}", e);
+                if let Err(e) = self.post_ingest_prune().await {
+                    error!("Post ingestion pruning failed: {}", e);
                 }
                 Ok(())
             }
@@ -211,13 +211,16 @@ impl CliController {
         Ok(())
     }
 
-    async fn post_ingest_cleanup(&self) -> Result<()> {
+    async fn post_ingest_prune(&self) -> Result<()> {
+        info!("Begin post-ingestion pruning of sets and cards.");
         let total_sets_before = self.set_service.fetch_count().await?;
-        let sets_deleted = self.set_service.delete_empty().await?;
+        // delete empty sets
+        let sets_deleted = self.set_service.prune_empty_sets().await?;
         info!("Deleted {} sets without any cards.", sets_deleted);
+        // delete sets where < 36% of cards in the set have prices
         let total_sets_after = self.set_service.fetch_count().await?;
         info!(
-            "Total sets before {} | after {}",
+            "Post-ingestion pruning complete. Total sets before {} | after {}",
             total_sets_before, total_sets_after
         );
         Ok(())

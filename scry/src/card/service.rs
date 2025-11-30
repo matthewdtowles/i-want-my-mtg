@@ -138,16 +138,14 @@ impl CardService {
                     let _permit = sem.clone().acquire_owned().await;
                     let mut ids_to_delete: Vec<String> = Vec::new();
                     for c in batch.iter() {
-                        if self.should_delete(c) {
+                        if Self::should_filter(c) {
                             ids_to_delete.push(c.id.clone());
                         }
                     }
                     if ids_to_delete.is_empty() {
                         return Ok(());
                     }
-                    let deleted = repo
-                        .delete_cards_by_ids_batched(&ids_to_delete, batch_size)
-                        .await?;
+                    let deleted = repo.delete_cards_batch(&ids_to_delete, batch_size).await?;
                     let mut lock = total.lock().await;
                     *lock += deleted;
                     Ok(())
@@ -170,19 +168,9 @@ impl CardService {
         }
         let mut keep_mask = vec![true; cards.len()];
         for i in 0..cards.len() {
-            if cards[i].is_online_only {
+            if Self::should_filter(&cards[i]) {
                 keep_mask[i] = false;
                 continue;
-            }
-            if cards[i].is_oversized {
-                keep_mask[i] = false;
-                continue;
-            }
-            if let Some(side) = cards[i].side.as_deref() {
-                if side != "a" {
-                    keep_mask[i] = false;
-                    continue;
-                }
             }
             let layout = cards[i].layout.to_lowercase();
             if layout == "split" || layout == "aftermath" {
@@ -213,8 +201,8 @@ impl CardService {
             .collect()
     }
 
-    fn should_delete(&self, card: &Card) -> bool {
-        if card.is_online_only {
+    fn should_filter(card: &Card) -> bool {
+        if card.is_online_only || card.is_oversized {
             return true;
         }
         if let Some(side) = card.side.as_deref() {

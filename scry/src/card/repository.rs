@@ -2,7 +2,7 @@ use crate::{card::models::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, warn};
 
 #[derive(Clone)]
 pub struct CardRepository {
@@ -146,15 +146,11 @@ impl CardRepository {
     pub async fn delete_all(&self) -> Result<u64> {
         self.delete_table(String::from("legality")).await?;
         let cards_deleted = self.delete_table(String::from("card")).await?;
-        info!("{} cards deleted.", cards_deleted);
+        debug!("{} cards deleted.", cards_deleted);
         Ok(cards_deleted)
     }
 
-    pub async fn delete_cards_by_ids_batched(
-        &self,
-        ids: &[String],
-        batch_size: i64,
-    ) -> Result<u64> {
+    pub async fn delete_cards_batch(&self, ids: &[String], batch_size: i64) -> Result<u64> {
         if ids.is_empty() {
             return Ok(0);
         }
@@ -177,14 +173,14 @@ impl CardRepository {
             qb.push(")");
             total_deleted += self.db.execute_query_builder(qb).await?;
         }
-        info!("Deleted {} cards for {} card ids", total_deleted, ids.len());
+        debug!("Deleted {} cards for {} card ids", total_deleted, ids.len());
         Ok(total_deleted)
     }
 
     async fn delete_table(&self, table: String) -> Result<u64> {
         let qb = QueryBuilder::new(format!("DELETE FROM {} CASCADE", table));
         let total_deleted = self.db.execute_query_builder(qb).await?;
-        info!("{} {} entities deleted.", total_deleted, table);
+        debug!("{} {} entities deleted.", total_deleted, table);
         Ok(total_deleted)
     }
 }

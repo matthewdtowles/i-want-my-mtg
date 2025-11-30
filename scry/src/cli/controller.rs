@@ -214,10 +214,16 @@ impl CliController {
     async fn post_ingest_prune(&self) -> Result<()> {
         info!("Begin post-ingestion pruning of sets and cards.");
         let total_sets_before = self.set_service.fetch_count().await?;
-        // delete empty sets
         let sets_deleted = self.set_service.prune_empty_sets().await?;
         info!("Deleted {} sets without any cards.", sets_deleted);
-        // delete sets where < 36% of cards in the set have prices
+
+        let min_price_pct = 36;
+        let sets_deleted = self.set_service.prune_missing_prices(min_price_pct).await?;
+        info!(
+            "Deleted {} sets with prices on less than {}% of its cards.",
+            sets_deleted, min_price_pct
+        );
+
         let total_sets_after = self.set_service.fetch_count().await?;
         info!(
             "Post-ingestion pruning complete. Total sets before {} | after {}",

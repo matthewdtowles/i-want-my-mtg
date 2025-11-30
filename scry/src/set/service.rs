@@ -33,7 +33,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     match SetMapper::map_mtg_json_to_set(set_obj) {
                         Ok(set) => {
-                            if !Self::should_filter(&set) {
+                            if !self.should_filter(&set) {
                                 to_save.push(set);
                             }
                         }
@@ -60,7 +60,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     let code = code.to_lowercase();
                     if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
-                        if Self::should_filter(&set) {
+                        if self.should_filter(&set) {
                             total_deleted +=
                                 self.repository.delete_set_batch(&code, batch_size).await?;
                         }
@@ -94,7 +94,23 @@ impl SetService {
         Ok(total_deleted)
     }
 
-    fn should_filter(set: &Set) -> bool {
+    pub async fn prune_missing_prices(&self, missing_limit_pct: i64) -> Result<u64> {
+        debug!(
+            "Pruning sets with price data for less than {}% of its cards.",
+            missing_limit_pct
+        );
+        let sets_pruned = self
+            .repository
+            .prune_missing_prices(missing_limit_pct)
+            .await?;
+        debug!(
+            "Pruned {} sets with price data for less than {}% of its cards.",
+            sets_pruned, missing_limit_pct
+        );
+        Ok(sets_pruned)
+    }
+
+    fn should_filter(&self, set: &Set) -> bool {
         if set.is_online_only || set.is_foreign_only || set.set_type == "memorabilia" {
             return true;
         }

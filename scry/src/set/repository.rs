@@ -142,4 +142,20 @@ impl SetRepository {
         let deleted = self.db.execute_query_builder(qb).await?;
         Ok(deleted)
     }
+
+    pub async fn prune_missing_prices(&self, threshold_pct: i64) -> Result<u64> {
+        let mut qb = QueryBuilder::new(
+            "DELETE FROM set s WHERE s.code IN (
+                SELECT c.set_code
+                FROM card c
+                LEFT JOIN price p ON p.card_id = c.id
+                GROUP BY c.set_code
+                HAVING (COUNT(DISTINCT p.card_id)::float / NULLIF(COUNT(*), 0)) < ",
+        );
+        let threshold_frac = (threshold_pct as f64) / 100.0;
+        qb.push_bind(threshold_frac);
+        qb.push(")");
+        let result = self.db.execute_query_builder(qb).await?;
+        Ok(result)
+    }
 }

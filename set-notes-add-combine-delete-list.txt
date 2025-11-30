@@ -3,13 +3,8 @@ DONE! 1. isForeignOnly
 
 DONE! 2. 'memorabilia'
  ('30a', 'ced', 'cei', 'o90p', 'oafc', 'oc13', 'oc14', 'oc15', 'oc16', 'oc17', 'oc18', 'oc19', 'oc20', 'oc21', 'ocm1', 'ocmd', 'olep', 'olgc', 'omic', 'ovnt', 'ovoc', 'pcel', 'pcmd', 'phel', 'pmic', 'ppc1', 'pssc', 'ptc ', 'tbth', 'tdag', 'tfth', 'thp1', 'thp2', 'thp3', 'wc00', 'wc01', 'wc02', 'wc03', 'wc04', 'wc97', 'wc98', 'wc99')
-------- 
-------- 
-------- 
-------- 
 
-TODO:  
-3. card.isOversized
+DONE! 3. card.isOversized
 ('oarc', 'oe01', 'ohop', 'opc2', 'opca', 'phop', 'punk', 'pvan') - ALL
  'dci' - 10/80    -> 70
  'dsc' - 40/379   -> 339

@@ -114,7 +114,9 @@ impl CliController {
     }
 
     async fn handle_cleanup(&self, cards: bool, sets: bool, batch_size: i64) -> Result<()> {
+        info!("Handle cleanup called.");
         if !cards && !sets {
+            info!("Cards bool arg {}. Sets bool arg {}", cards, sets);
             return Ok(());
         }
         if cards {
@@ -137,10 +139,7 @@ impl CliController {
         if sets {
             let total_sets_before = self.set_service.fetch_count().await?;
             info!("Set cleanup starting: before -> {} sets", total_sets_before);
-            let n = self
-                .set_service
-                .cleanup_delete_online_sets(batch_size)
-                .await?;
+            let n = self.set_service.cleanup_sets(batch_size).await?;
             info!("Deleted {} online-only sets (and dependents)", n);
             let total_sets_after = self.set_service.fetch_count().await?;
             info!("Set cleanup complete: after -> {} sets", total_sets_after);
@@ -227,7 +226,10 @@ impl CliController {
         let sets_deleted = self.set_service.delete_empty().await?;
         info!("Deleted {} sets without any cards.", sets_deleted);
         let total_sets_after = self.set_service.fetch_count().await?;
-        info!("Total sets before {} | after {}", total_sets_before, total_sets_after);
+        info!(
+            "Total sets before {} | after {}",
+            total_sets_before, total_sets_after
+        );
         Ok(())
     }
 }

@@ -4,7 +4,7 @@ use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use serde_json::Value;
 use std::sync::Arc;
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 pub struct SetService {
     client: Arc<HttpClient>,
@@ -33,7 +33,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     match SetMapper::map_mtg_json_to_set(set_obj) {
                         Ok(set) => {
-                            if Self::should_ingest(&set) {
+                            if !Self::should_filter(&set) {
                                 to_save.push(set);
                             }
                         }
@@ -51,8 +51,8 @@ impl SetService {
         Ok(count)
     }
 
-    pub async fn cleanup_delete_online_sets(&self, batch_size: i64) -> Result<u64> {
-        debug!("Starting cleanup: delete online-only sets");
+    pub async fn cleanup_sets(&self, batch_size: i64) -> Result<u64> {
+        info!("Starting cleanup for sets");
         let raw_data: Value = self.client.fetch_all_sets().await?;
         let mut total_deleted = 0u64;
         if let Some(arr) = raw_data.get("data").and_then(|d| d.as_array()) {
@@ -60,7 +60,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     let code = code.to_lowercase();
                     if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
-                        if !Self::should_ingest(&set) {
+                        if Self::should_filter(&set) {
                             total_deleted += self
                                 .repository
                                 .delete_set_and_dependents_batched(&code, batch_size)
@@ -70,6 +70,7 @@ impl SetService {
                 }
             }
         }
+        info!("Total sets deleted: {}", total_deleted);
         Ok(total_deleted)
     }
 
@@ -98,10 +99,10 @@ impl SetService {
         Ok(total_deleted)
     }
 
-    fn should_ingest(set: &Set) -> bool {
+    fn should_filter(set: &Set) -> bool {
         if set.is_online_only || set.is_foreign_only || set.set_type == "memorabilia" {
-            return false;
+            return true;
         }
-        true
+        false
     }
 }

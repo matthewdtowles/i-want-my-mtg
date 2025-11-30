@@ -33,6 +33,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - SCRY_LOG=${SCRY_LOG}
+      - CARGO_NET_GIT_FETCH_WITH_CLI=true
+      - CARGO_HTTP_MULTIPLEXING=false
     env_file:
       - .env
     depends_on:
@@ -47,6 +49,8 @@ services:
     volumes:
       - ./scry:/app
       - ./scry/target:/app/target
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_git:/usr/local/cargo/git
     command: [ "cargo", "run", "--", "ingest" ]
 
   # PostgreSQL Database (shared by web and etl)
@@ -93,3 +97,5 @@ services:
 volumes:
   postgres_dev_data:
   etl_target:
+  cargo_registry:
+  cargo_git:

@@ -10,7 +10,7 @@ use anyhow::Result;
 use serde_json::Value;
 use std::{collections::HashSet, sync::Arc};
 use tokio::sync::{Mutex, Semaphore};
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 pub struct CardService {
     client: Arc<HttpClient>,
@@ -37,7 +37,7 @@ impl CardService {
     }
 
     pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
-        info!("Starting card ingestion for set: {}", set_code);
+        debug!("Starting card ingestion for set: {}", set_code);
         let raw_data: Value = self.client.fetch_set_cards(&set_code).await?;
         let parsed = CardMapper::map_to_cards(raw_data)?;
         if parsed.is_empty() {
@@ -50,12 +50,12 @@ impl CardService {
         }
         let count = self.repository.save_cards(&final_cards).await?;
         let _ = self.repository.save_legalities(&final_cards).await?;
-        info!("Successfully ingested {} cards for set {}", count, set_code);
+        debug!("Successfully ingested {} cards for set {}", count, set_code);
         Ok(count)
     }
 
     pub async fn ingest_all(&self) -> Result<()> {
-        info!("Start ingestion of all cards");
+        debug!("Start ingestion of all cards");
         let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for all cards");
         let existing_set_cache: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
@@ -113,12 +113,12 @@ impl CardService {
     }
 
     pub async fn delete_all(&self) -> Result<u64> {
-        info!("Deleting all prices.");
+        debug!("Deleting all prices.");
         self.repository.delete_all().await
     }
 
     pub async fn cleanup_cards(&self, batch_size: i64) -> Result<u64> {
-        info!("Starting streaming cleanup");
+        debug!("Starting streaming cleanup");
         let byte_stream = self.client.all_cards_stream().await?;
         let sem = Arc::new(Semaphore::new(Self::CONCURRENCY));
         let event_processor = CardEventProcessor::new(Self::BATCH_SIZE);
@@ -155,7 +155,7 @@ impl CardService {
             })
             .await?;
         let final_total = *total.lock().await;
-        info!(
+        debug!(
             "Streaming cleanup complete; total affected: {}",
             final_total
         );

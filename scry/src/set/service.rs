@@ -4,7 +4,7 @@ use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use serde_json::Value;
 use std::sync::Arc;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 pub struct SetService {
     client: Arc<HttpClient>,
@@ -52,7 +52,7 @@ impl SetService {
     }
 
     pub async fn cleanup_sets(&self, batch_size: i64) -> Result<u64> {
-        info!("Starting cleanup for sets");
+        debug!("Starting cleanup for sets");
         let raw_data: Value = self.client.fetch_all_sets().await?;
         let mut total_deleted = 0u64;
         if let Some(arr) = raw_data.get("data").and_then(|d| d.as_array()) {
@@ -70,7 +70,7 @@ impl SetService {
                 }
             }
         }
-        info!("Total sets deleted: {}", total_deleted);
+        debug!("Total sets deleted: {}", total_deleted);
         Ok(total_deleted)
     }
 

@@ -39,12 +39,15 @@ pub enum Commands {
         detailed: bool,
     },
 
-    /// Run cleanup operations (separate from ingestion)
+    /// Run cleanup operations
+    /// Only necessary if filtering rules updated to remove previously saved sets/cards
     Cleanup {
-        #[arg(short, long, help = "Run cleanup for cards")]
+        #[arg(
+            short,
+            long,
+            help = "Uses stream parser to remove individual cards based on individual card filtering rules."
+        )]
         cards: bool,
-        #[arg(short, long, help = "Run cleanup for sets (online-only sets)")]
-        sets: bool,
         #[arg(
             short = 'n',
             long = "batch-size",

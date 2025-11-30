@@ -49,12 +49,8 @@ impl CliController {
                 Ok(())
             }
 
-            Commands::Cleanup {
-                cards,
-                sets,
-                batch_size,
-            } => {
-                if let Err(e) = self.handle_cleanup(cards, sets, batch_size).await {
+            Commands::Cleanup { cards, batch_size } => {
+                if let Err(e) = self.handle_cleanup(cards, batch_size).await {
                     error!("Cleanup failed: {}", e);
                 }
                 Ok(())
@@ -113,36 +109,31 @@ impl CliController {
         Ok(())
     }
 
-    async fn handle_cleanup(&self, cards: bool, sets: bool, batch_size: i64) -> Result<()> {
+    async fn handle_cleanup(&self, cards: bool, batch_size: i64) -> Result<()> {
         info!("Handle cleanup called.");
-        if !cards && !sets {
-            info!("Cards bool arg {}. Sets bool arg {}", cards, sets);
-            return Ok(());
-        }
+        let total_sets_before = self.set_service.fetch_count().await?;
+        let total_cards_before = self.card_service.fetch_count().await?;
+        info!(
+            "Set cleanup starting: before -> {} sets | {} cards",
+            total_sets_before, total_cards_before
+        );
+        let total_sets_deleted = self.set_service.cleanup_sets(batch_size).await?;
+        info!("Deleted {} total sets", total_sets_deleted);
+        let total_sets_after = self.set_service.fetch_count().await?;
+        let total_cards_after = self.card_service.fetch_count().await?;
+        info!(
+            "Set cleanup complete: after -> {} sets | {} cards",
+            total_sets_after, total_cards_after
+        );
         if cards {
-            let total_cards_before = self.card_service.fetch_count().await?;
-            let total_legalities_before = self.card_service.fetch_legality_count().await?;
-            info!(
-                "Card cleanup starting: before -> {} cards | {} legalities",
-                total_cards_before, total_legalities_before
-            );
-            let n = self.card_service.cleanup_cards(batch_size).await?;
-            info!("Deleted {} cards (other-sides + online-only).", n);
-
+            info!("Begin cleanup of individual cards.");
+            let total_deleted = self.card_service.cleanup_cards(batch_size).await?;
+            info!("Deleted {} total cards", total_deleted);
             let total_cards_after = self.card_service.fetch_count().await?;
-            let total_legalities_after = self.card_service.fetch_legality_count().await?;
             info!(
-                "Card cleanup complete: after -> {} cards | {} legalities",
-                total_cards_after, total_legalities_after
+                "Card cleanup complete: after -> {} cards",
+                total_cards_after
             );
-        }
-        if sets {
-            let total_sets_before = self.set_service.fetch_count().await?;
-            info!("Set cleanup starting: before -> {} sets", total_sets_before);
-            let n = self.set_service.cleanup_sets(batch_size).await?;
-            info!("Deleted {} online-only sets (and dependents)", n);
-            let total_sets_after = self.set_service.fetch_count().await?;
-            info!("Set cleanup complete: after -> {} sets", total_sets_after);
         }
         Ok(())
     }
@@ -221,7 +212,6 @@ impl CliController {
     }
 
     async fn post_ingest_cleanup(&self) -> Result<()> {
-        // delete all sets without any cards
         let total_sets_before = self.set_service.fetch_count().await?;
         let sets_deleted = self.set_service.delete_empty().await?;
         info!("Deleted {} sets without any cards.", sets_deleted);

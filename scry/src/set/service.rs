@@ -95,8 +95,6 @@ impl SetService {
     }
 
     pub async fn prune_missing_prices(&self, missing_limit_pct: f64) -> Result<u64> {
-        // TODO: validate missing limit pct is from 0 to 1
-        // convert to a printable arg
         let printable_arg = 100.0 * missing_limit_pct;
         debug!(
             "Pruning sets with price data for less than {}% of its cards.",

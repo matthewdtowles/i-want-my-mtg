@@ -214,20 +214,27 @@ impl CliController {
     async fn post_ingest_prune(&self) -> Result<()> {
         info!("Begin post-ingestion pruning of sets and cards.");
         let total_sets_before = self.set_service.fetch_count().await?;
-        let sets_deleted = self.set_service.prune_empty_sets().await?;
-        info!("Deleted {} sets without any cards.", sets_deleted);
+        let total_cards_before = self.card_service.fetch_count().await?;
+
+        let cards_deleted = self.card_service.prune_foreign_unpriced().await?;
+        info!("Pruned {} foreign cards without prices.", cards_deleted);
 
         let min_price_pct = 0.36;
         let sets_deleted = self.set_service.prune_missing_prices(min_price_pct).await?;
-        info!(
-            "Deleted {} sets with prices on less than {}% of its cards.",
-            sets_deleted, min_price_pct
-        );
+        info!("Pruned {} sets missing prices.", sets_deleted);
+
+        let sets_deleted = self.set_service.prune_empty_sets().await?;
+        info!("Pruned {} sets without any cards.", sets_deleted);
 
         let total_sets_after = self.set_service.fetch_count().await?;
+        let total_cards_after = self.card_service.fetch_count().await?;
         info!(
             "Post-ingestion pruning complete. Total sets before {} | after {}",
             total_sets_before, total_sets_after
+        );
+        info!(
+            "Total cards before {} | after {}",
+            total_cards_before, total_cards_after
         );
         Ok(())
     }

@@ -14,19 +14,13 @@ DONE! 3. card.isOversized
  'p11' - 2/7      -> 5
  'who' - 40/1186  -> 1146
 
-------- 
-------- 
-------- 
-------- 
-
-4. set has < 36% of prices for its cards 
+DONE! 4. set has < 36% of prices for its cards 
  ('bchr', 'jp1', 'p30t', 'phuk', 'ph17', 'ph18', 'ph19', 'ph20', 'ph21', 'ph22', 'ph23', 'phtr', 'pjsc', 'pmda', 'psvc', 'rqs', 'itp', 'pwcs', 'sum', 'unk')
 ------- 
-------- 
-------- 
+-------
+
 5. card.language != English && card.price.normal == null && card.price.foil == null
- pmei        80 |         80 --> 
- plst      5075 |       4985 --> 
- ptor         1 |          3 --> 1
- purl         9 |         15 --> 
+ pmei        81 --> 
+ plst      4985 --> 
+ purl        15 --> 
 

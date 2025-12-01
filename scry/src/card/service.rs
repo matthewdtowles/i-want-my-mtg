@@ -15,6 +15,7 @@ use tracing::{debug, warn};
 pub struct CardService {
     client: Arc<HttpClient>,
     repository: CardRepository,
+    foreign_cards: Arc<Mutex<Vec<String>>>,
 }
 
 impl CardService {
@@ -25,6 +26,7 @@ impl CardService {
         Self {
             client: http_client,
             repository: CardRepository::new(db),
+            foreign_cards: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -56,6 +58,11 @@ impl CardService {
 
     pub async fn ingest_all(&self) -> Result<()> {
         debug!("Start ingestion of all cards");
+        {
+            // TODO: Why do we have to do this?
+            let mut lock = self.foreign_cards.lock().await;
+            lock.clear();
+        }
         let byte_stream = self.client.all_cards_stream().await?;
         debug!("Received byte stream for all cards");
         let existing_set_cache: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
@@ -63,11 +70,13 @@ impl CardService {
         let event_processor = CardEventProcessor::new(Self::BATCH_SIZE);
         let mut json_stream_parser = JsonStreamParser::new(event_processor);
         let repo = self.repository.clone();
+        let foreign_cards = self.foreign_cards.clone();
         json_stream_parser
             .parse_stream(byte_stream, move |batch| {
                 let repo = repo.clone();
                 let sem = sem.clone();
                 let cache = existing_set_cache.clone();
+                let foreign_cards = foreign_cards.clone();
                 Box::pin(async move {
                     if batch.is_empty() {
                         return Ok(());
@@ -95,6 +104,17 @@ impl CardService {
                             }
                         }
                         batch_owned = CardService::merge_and_filter_cards(batch_owned);
+                        let mut foreign_ids = Vec::new();
+                        for c in &batch_owned {
+                            if !c.language.is_empty() && c.language != "English" {
+                                foreign_ids.push(c.id.clone());
+                            }
+                        }
+                        // save foreign card IDs to shared list
+                        if !foreign_ids.is_empty() {
+                            let mut lock = foreign_cards.lock().await;
+                            lock.extend(foreign_ids);
+                        }
                         if !batch_owned.is_empty() {
                             repo.save_cards(&batch_owned).await?;
                             repo.save_legalities(&batch_owned).await?;
@@ -158,6 +178,37 @@ impl CardService {
             final_total
         );
         Ok(final_total)
+    }
+
+    pub async fn prune_foreign_unpriced(&self) -> Result<u64> {
+        let card_candidates = {
+            let lock = self.foreign_cards.lock().await;
+            lock.clone()
+        };
+        if card_candidates.is_empty() {
+            debug!("No foreign card candidates found to prune.");
+            return Ok(0);
+        }
+        debug!(
+            "Checking {} foreign card candidates for pricing.",
+            card_candidates.len()
+        );
+        let ids_to_delete = self.repository.fetch_unpriced_ids(&card_candidates).await?;
+        if ids_to_delete.is_empty() {
+            debug!("Found 0 unpriced foreign cards to delete.");
+            return Ok(0);
+        }
+        debug!(
+            "Found {} unpriced foreign cards to delete.",
+            ids_to_delete.len()
+        );
+        let total_deleted = self
+            .repository
+            .delete_cards_batch(&ids_to_delete, Self::BATCH_SIZE as i64)
+            .await?;
+        let mut lock = self.foreign_cards.lock().await;
+        lock.clear();
+        Ok(total_deleted)
     }
 
     fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {

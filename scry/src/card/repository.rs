@@ -14,6 +14,21 @@ impl CardRepository {
         Self { db }
     }
 
+    pub async fn fetch_unpriced_ids(&self, candidate_ids: &[String]) -> Result<Vec<String>> {
+        if candidate_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut qb = QueryBuilder::new(
+            "SELECT c.id FROM card c
+            LEFT JOIN price p ON p.card_id = c.id
+            WHERE p.id IS NULL and c.id = ANY("
+        );
+        qb.push_bind(candidate_ids);
+        qb.push(")");
+        let rows: Vec<(String,)> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows.into_iter().map(|r| r.0).collect())
+    }
+
     pub async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");

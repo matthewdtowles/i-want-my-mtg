@@ -10,6 +10,7 @@ export class Card {
     readonly hasFoil: boolean;
     readonly hasNonFoil: boolean;
     readonly imgSrc: string;
+    readonly isAlternative: boolean;
     readonly isReserved: boolean;
     legalities: Legality[];
     readonly manaCost?: string;
@@ -40,6 +41,7 @@ export class Card {
         this.hasFoil = init.hasFoil ?? false;
         this.hasNonFoil = init.hasNonFoil ?? false;
         this.imgSrc = init.imgSrc;
+        this.isAlternative = init.isAlternative ?? false;
         this.isReserved = init.isReserved ?? false;
         this.legalities = init.legalities;
         this.name = init.name;

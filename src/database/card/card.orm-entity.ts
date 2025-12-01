@@ -30,6 +30,9 @@ export class CardOrmEntity {
     @Column({ name: "img_src" })
     imgSrc: string;
 
+    @Column({ name: "is_alternative" })
+    isAlternative: boolean;
+
     @Column({ default: false, name: "is_reserved" })
     isReserved: boolean;
 

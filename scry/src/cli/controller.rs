@@ -43,6 +43,16 @@ impl CliController {
                 {
                     error!("Ingestion failed: {}", e);
                 }
+                if let Err(e) = self.post_ingest_prune().await {
+                    error!("Post ingestion pruning failed: {}", e);
+                }
+                Ok(())
+            }
+
+            Commands::Cleanup { cards, batch_size } => {
+                if let Err(e) = self.handle_cleanup(cards, batch_size).await {
+                    error!("Cleanup failed: {}", e);
+                }
                 Ok(())
             }
 
@@ -65,56 +75,65 @@ impl CliController {
     ) -> Result<()> {
         if reset {
             match self.reset_data().await {
-                Ok(()) => {
-                    info!("Successfully reset data.");
-                }
-                Err(e) => {
-                    error!("Failed to reset data: {}", e);
-                }
+                Ok(()) => info!("Successfully reset data."),
+                Err(e) => error!("Failed to reset data: {}", e),
             }
         }
         let do_all = !sets && !cards && !prices && set_cards.is_none();
         if do_all || sets {
             match self.update_sets().await {
-                Ok(()) => {
-                    info!("Successfully updated sets.");
-                }
-                Err(e) => {
-                    error!("Failed to update sets: {}", e);
-                }
+                Ok(()) => info!("Successfully updated sets."),
+                Err(e) => error!("Failed to update sets: {}", e),
             }
         }
         if do_all || cards {
             match self.update_cards().await {
-                Ok(()) => {
-                    info!("Card update completed successfully.");
-                }
-                Err(e) => {
-                    error!("Card udpate failure: {}", e);
-                }
+                Ok(()) => info!("Card update completed successfully."),
+                Err(e) => error!("Card udpate failure: {}", e),
             }
         }
         if !cards {
             if let Some(set_code) = &set_cards {
                 match self.card_service.ingest_set_cards(set_code).await {
-                    Ok(ingested) => {
-                        info!("Updated {} cards for set code '{}'.", ingested, set_code);
-                    }
-                    Err(e) => {
-                        error!("Error updating cards for set code '{}': {}", set_code, e);
-                    }
+                    Ok(ingested) => info!("{} cards for set code '{}'.", ingested, set_code),
+                    Err(e) => error!("Error updating cards for set code '{}': {}", set_code, e),
                 }
             }
         }
         if do_all || prices {
             match self.update_prices().await {
-                Ok(()) => {
-                    info!("Price update completed successfully.");
-                }
-                Err(e) => {
-                    error!("Price update failure: {}", e);
-                }
+                Ok(()) => info!("Price update completed successfully."),
+                Err(e) => error!("Price update failure: {}", e),
             }
+        }
+        Ok(())
+    }
+
+    async fn handle_cleanup(&self, cards: bool, batch_size: i64) -> Result<()> {
+        info!("Handle cleanup called.");
+        let total_sets_before = self.set_service.fetch_count().await?;
+        let total_cards_before = self.card_service.fetch_count().await?;
+        info!(
+            "Set cleanup starting: before -> {} sets | {} cards",
+            total_sets_before, total_cards_before
+        );
+        let total_sets_deleted = self.set_service.cleanup_sets(batch_size).await?;
+        info!("Deleted {} total sets", total_sets_deleted);
+        let total_sets_after = self.set_service.fetch_count().await?;
+        let total_cards_after = self.card_service.fetch_count().await?;
+        info!(
+            "Set cleanup complete: after -> {} sets | {} cards",
+            total_sets_after, total_cards_after
+        );
+        if cards {
+            info!("Begin cleanup of individual cards.");
+            let total_deleted = self.card_service.cleanup_cards(batch_size).await?;
+            info!("Deleted {} total cards", total_deleted);
+            let total_cards_after = self.card_service.fetch_count().await?;
+            info!(
+                "Card cleanup complete: after -> {} cards",
+                total_cards_after
+            );
         }
         Ok(())
     }
@@ -150,6 +169,15 @@ impl CliController {
         Ok(())
     }
 
+    async fn update_sets(&self) -> Result<()> {
+        let total_sets_before = self.set_service.fetch_count().await?;
+        self.set_service.ingest_all().await?;
+        let total_sets_after = self.set_service.fetch_count().await?;
+        info!("Total sets before: {}", total_sets_before);
+        info!("Total sets after: {}", total_sets_after);
+        Ok(())
+    }
+
     async fn update_cards(&self) -> Result<()> {
         let total_cards_before = self.card_service.fetch_count().await?;
         let total_legalities_before = self.card_service.fetch_legality_count().await?;
@@ -160,15 +188,6 @@ impl CliController {
         info!("Total cards after {}", total_cards_after);
         info!("Total legalities before {}", total_legalities_before);
         info!("Total legalities after {}", total_legalities_after);
-        Ok(())
-    }
-
-    async fn update_sets(&self) -> Result<()> {
-        let total_sets_before = self.set_service.fetch_count().await?;
-        self.set_service.ingest_all().await?;
-        let total_sets_after = self.set_service.fetch_count().await?;
-        info!("Total sets before: {}", total_sets_before);
-        info!("Total sets after: {}", total_sets_after);
         Ok(())
     }
 
@@ -188,6 +207,34 @@ impl CliController {
         info!(
             "All MTG data deleted: {} sets | {} cards | {} prices",
             sets_deleted, cards_deleted, prices_deleted
+        );
+        Ok(())
+    }
+
+    async fn post_ingest_prune(&self) -> Result<()> {
+        info!("Begin post-ingestion pruning of sets and cards.");
+        let total_sets_before = self.set_service.fetch_count().await?;
+        let total_cards_before = self.card_service.fetch_count().await?;
+
+        let cards_deleted = self.card_service.prune_foreign_unpriced().await?;
+        info!("Pruned {} foreign cards without prices.", cards_deleted);
+
+        let min_price_pct = 0.36;
+        let sets_deleted = self.set_service.prune_missing_prices(min_price_pct).await?;
+        info!("Pruned {} sets missing prices.", sets_deleted);
+
+        let sets_deleted = self.set_service.prune_empty_sets().await?;
+        info!("Pruned {} sets without any cards.", sets_deleted);
+
+        let total_sets_after = self.set_service.fetch_count().await?;
+        let total_cards_after = self.card_service.fetch_count().await?;
+        info!(
+            "Post-ingestion pruning complete. Total sets before {} | after {}",
+            total_sets_before, total_sets_after
+        );
+        info!(
+            "Total cards before {} | after {}",
+            total_cards_before, total_cards_after
         );
         Ok(())
     }

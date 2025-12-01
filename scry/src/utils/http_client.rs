@@ -3,6 +3,7 @@ use bytes::Bytes;
 use futures::Stream;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
+use tracing::{debug, info};
 
 #[derive(Clone)]
 pub struct HttpClient {
@@ -25,6 +26,7 @@ impl HttpClient {
         &self,
     ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
         let url = format!("{}{}", Self::BASE_INGESTION_URL, Self::ALL_CARDS_URL);
+        info!("Stream all cards from: {}", url);
         self.fetch_json_bytes_stream(url.as_str()).await
     }
 
@@ -32,6 +34,7 @@ impl HttpClient {
         &self,
     ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
         let url = format!("{}{}", Self::BASE_INGESTION_URL, Self::TODAY_PRICES_URL);
+        info!("Stream all prices from: {}", url);
         self.fetch_json_bytes_stream(url.as_str()).await
     }
 
@@ -55,8 +58,11 @@ impl HttpClient {
         &self,
         url: &str,
     ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
+        debug!("Fetch JSON Bytes Stream.");
         let response = self.client.get(url).send().await?.error_for_status()?;
+        debug!("Received response from: {}", url);
         let byte_stream = response.bytes_stream();
+        debug!("Returning response byte stream.");
         Ok(byte_stream)
     }
 

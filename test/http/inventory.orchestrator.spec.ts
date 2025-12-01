@@ -67,6 +67,7 @@ describe("InventoryOrchestrator", () => {
                 type: "Test",
                 legalities: [],
                 prices: [],
+                isAlternative: false
             };
             inventoryService.findAllForUser.mockResolvedValue([
                 {

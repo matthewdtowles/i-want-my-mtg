@@ -1,7 +1,7 @@
 use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
+use crate::utils::json;
 use anyhow::Result;
 use serde_json::Value;
-use crate::utils::json;
 
 pub struct CardMapper;
 
@@ -12,31 +12,31 @@ impl CardMapper {
             .and_then(|d| d.get("cards"))
             .and_then(|c| c.as_array())
             .ok_or_else(|| anyhow::anyhow!("Invalid MTG JSON set structure"))?;
-
         cards_array
             .iter()
+            .filter(|c| {
+                !c.get("isOnlineOnly")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
+            })
             .map(|card_data| CardMapper::map_json_to_card(card_data))
             .collect()
     }
 
     pub fn map_json_to_card(card_data: &Value) -> Result<Card> {
         let id = json::extract_string(card_data, "uuid")?;
-        let name = json::extract_string(card_data, "name")?;
+        let raw_name = json::extract_string(card_data, "name")?;
+        let raw_face_name = json::extract_optional_string(card_data, "faceName");
         let set_code = json::extract_string(card_data, "setCode")?.to_lowercase();
-        let number =
-            json::extract_optional_string(card_data, "number").unwrap_or_else(|| "0".to_string());
-        let type_line = json::extract_optional_string(card_data, "type").unwrap_or_default();
-
-        let rarity_str = json::extract_optional_string(card_data, "rarity")
-            .unwrap_or_else(|| "common".to_string());
+        let number = json::extract_string(card_data, "number")?;
+        let type_line = json::extract_string(card_data, "type")?;
+        let rarity_str = json::extract_string(card_data, "rarity")?;
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
-
         let mana_cost = json::extract_optional_string(card_data, "manaCost");
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
-
         let has_foil = card_data
             .get("hasFoil")
             .and_then(|v| v.as_bool())
@@ -45,24 +45,64 @@ impl CardMapper {
             .get("hasNonFoil")
             .and_then(|v| v.as_bool())
             .unwrap_or(true);
+        let is_alternative = card_data
+            .get("isAlternative")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         let is_reserved = card_data
             .get("isReserved")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
-
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
             Vec::new()
         };
-
+        let layout = card_data
+            .get("layout")
+            .and_then(|v| v.as_str())
+            .unwrap_or("normal")
+            .to_string();
+        let name = if layout == "aftermath" || layout == "split" {
+            raw_name.clone()
+        } else if let Some(face_name) = &raw_face_name {
+            face_name.clone()
+        } else {
+            raw_name.clone()
+        };
+        let side = card_data
+            .get("side")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        let other_face_ids = card_data
+            .get("otherFaceIds")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                    .collect::<Vec<String>>()
+            });
+        let is_online_only = card_data
+            .get("isOnlineOnly")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let is_oversized = card_data
+            .get("isOversized")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let language = card_data
+            .get("language")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_default();
         Ok(Card {
             id,
             artist,
             has_foil,
             has_non_foil,
             img_src,
+            is_alternative,
             is_reserved,
             mana_cost,
             name,
@@ -72,6 +112,12 @@ impl CardMapper {
             set_code,
             type_line,
             legalities,
+            layout,
+            is_online_only,
+            side,
+            other_face_ids,
+            is_oversized,
+            language,
         })
     }
 

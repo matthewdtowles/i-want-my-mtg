@@ -13,39 +13,23 @@ pub struct Cli {
 pub enum Commands {
     /// Ingest MTG Data - default: all
     Ingest {
-        #[arg(
-            short,
-            long,
-            help = "Ingest all sets."
-        )]
+        #[arg(short, long, help = "Ingest all sets.")]
         sets: bool,
-
-        #[arg(
-            short,
-            long,
-            help = "Ingest all cards."
-        )]
+        #[arg(short, long, help = "Ingest all cards.")]
         cards: bool,
-
         #[arg(
             short,
             long,
             help = "Archive previous prices and ingest all prices for today."
         )]
         prices: bool,
-
         #[arg(
-            short = 'k', 
+            short = 'k',
             long,
-            help = "Ingest all cards for given set. E.g.: `ingest -c -k abc` for cards in set `abc`."
+            help = "Ingest all cards for given set. E.g.: `ingest -k abc` for cards in set `abc`."
         )]
         set_cards: Option<String>,
-
-        #[arg(
-            short,
-            long,
-            help = "Reset all data prior to ingestion."
-        )]
+        #[arg(short, long, help = "Reset all data prior to ingestion.")]
         reset: bool,
     },
 
@@ -53,5 +37,23 @@ pub enum Commands {
     Health {
         #[arg(long, help = "Perform detailed health check")]
         detailed: bool,
+    },
+
+    /// Run cleanup operations
+    /// Only necessary if filtering rules updated to remove previously saved sets/cards
+    Cleanup {
+        #[arg(
+            short,
+            long,
+            help = "Uses stream parser to remove individual cards based on individual card filtering rules."
+        )]
+        cards: bool,
+        #[arg(
+            short = 'n',
+            long = "batch-size",
+            help = "Batch size for deletes",
+            default_value_t = 500
+        )]
+        batch_size: i64,
     },
 }

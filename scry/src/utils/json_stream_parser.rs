@@ -1,10 +1,9 @@
-use std::marker::PhantomData;
-
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
 use bytes::Bytes;
 use futures::StreamExt;
+use std::marker::PhantomData;
 use tokio::io::BufReader;
 use tokio_util::io::StreamReader;
 use tracing::{debug, error, warn};
@@ -68,9 +67,10 @@ where
     async fn get_next_event<R: tokio::io::AsyncRead + Unpin>(
         &self,
         parser: &mut JsonParser<AsyncBufReaderJsonFeeder<R>>,
-    ) -> Result<Option<JsonEvent>, String> {  // Return Result to handle errors
+    ) -> Result<Option<JsonEvent>, String> {
+        // Return Result to handle errors
         let mut event_result = parser.next_event();
-        
+
         if let Ok(Some(JsonEvent::NeedMoreInput)) = event_result {
             let mut fill_attempts = 0;
             loop {
@@ -92,14 +92,14 @@ where
             }
             event_result = parser.next_event();
         }
-        
+
         // Convert ParserError to String for easier handling
         event_result.map_err(|e| format!("Parser error: {}", e))
     }
 
     async fn handle_parse_event<'a, R, F>(
         &mut self,
-        event_result: Result<Option<JsonEvent>, String>,  // Handle the Result
+        event_result: Result<Option<JsonEvent>, String>, // Handle the Result
         parser: &JsonParser<AsyncBufReaderJsonFeeder<R>>,
         on_batch: &mut F,
         error_count: &mut usize,
@@ -109,22 +109,20 @@ where
         F: FnMut(Vec<T>) -> futures::future::BoxFuture<'a, Result<()>>,
     {
         match event_result {
-            Ok(Some(event)) => {
-                match event {
-                    JsonEvent::NeedMoreInput => Ok(true),
-                    _ => {
-                        *error_count = 0;
-                        let processed_count = self.event_processor.process_event(event, parser).await?;
-                        if processed_count > 0 {
-                            let batch = self.event_processor.take_batch();
-                            if !batch.is_empty() {
-                                on_batch(batch).await?;
-                            }
+            Ok(Some(event)) => match event {
+                JsonEvent::NeedMoreInput => Ok(true),
+                _ => {
+                    *error_count = 0;
+                    let processed_count = self.event_processor.process_event(event, parser).await?;
+                    if processed_count > 0 {
+                        let batch = self.event_processor.take_batch();
+                        if !batch.is_empty() {
+                            on_batch(batch).await?;
                         }
-                        Ok(true)
                     }
+                    Ok(true)
                 }
-            }
+            },
             Ok(None) => {
                 // End of document (what used to be Eof)
                 let remaining = self.event_processor.take_batch();
@@ -140,7 +138,10 @@ where
                 *error_count += 1;
                 if *error_count > 10 {
                     error!("Parser error limit (10) exceeded. Aborting stream.");
-                    return Err(anyhow::anyhow!("JSON streaming parse failed: {}", error_msg));
+                    return Err(anyhow::anyhow!(
+                        "JSON streaming parse failed: {}",
+                        error_msg
+                    ));
                 }
                 Ok(true)
             }

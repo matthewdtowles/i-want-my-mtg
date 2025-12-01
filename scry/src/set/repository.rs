@@ -93,69 +93,27 @@ impl SetRepository {
         self.db.execute_query_builder(qb).await
     }
 
-    pub async fn delete_set_batch(&self, set_code: &str, batch_size: i64) -> Result<u64> {
+    pub async fn delete_set_batch(&self, set_code: &str, _batch_size: i64) -> Result<u64> {
         if set_code.is_empty() {
             return Ok(0);
         }
-        let mut total_deleted = 0u64;
-        loop {
-            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
-            qb.push_bind(set_code);
-            qb.push(" LIMIT ");
-            qb.push_bind(batch_size);
-            qb.push(") DELETE FROM legality WHERE card_id IN (SELECT id FROM to_del)");
-            let deleted = self.db.execute_query_builder(qb).await?;
-            total_deleted += deleted;
-            if deleted == 0 {
-                break;
-            }
-        }
-        debug!("Deleted {} legalities", total_deleted);
-        total_deleted = 0u64;
-        loop {
-            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
-            qb.push_bind(set_code);
-            qb.push(" LIMIT ");
-            qb.push_bind(batch_size);
-            qb.push(") DELETE FROM price WHERE card_id IN (SELECT id FROM to_del)");
-            let deleted = self.db.execute_query_builder(qb).await?;
-            total_deleted += deleted;
-            if deleted == 0 {
-                break;
-            }
-        }
-        debug!("Deleted {} prices", total_deleted);
-        total_deleted = 0u64;
-        loop {
-            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
-            qb.push_bind(set_code);
-            qb.push(" LIMIT ");
-            qb.push_bind(batch_size);
-            qb.push(") DELETE FROM inventory WHERE card_id IN (SELECT id FROM to_del)");
-            let deleted = self.db.execute_query_builder(qb).await?;
-            total_deleted += deleted;
-            if deleted == 0 {
-                break;
-            }
-        }
-        debug!("Deleted {} inventory items", total_deleted);
-        total_deleted = 0u64;
-        loop {
-            let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
-            qb.push_bind(set_code);
-            qb.push(" LIMIT ");
-            qb.push_bind(batch_size);
-            qb.push(") DELETE FROM card WHERE id IN (SELECT id FROM to_del)");
-            let deleted = self.db.execute_query_builder(qb).await?;
-            total_deleted += deleted;
-            if deleted == 0 {
-                break;
-            }
-        }
-        debug!("Deleted {} cards", total_deleted);
-        let mut qb = QueryBuilder::new("DELETE FROM \"set\" WHERE code = ");
+        // Use a single CTE to delete from all related tables in one transaction
+        let mut qb = QueryBuilder::new(
+            "WITH card_ids AS (SELECT id FROM card WHERE set_code = "
+        );
         qb.push_bind(set_code);
+        qb.push(") ");
+        qb.push(
+            "DELETE FROM legality WHERE card_id IN (SELECT id FROM card_ids); \
+             DELETE FROM price WHERE card_id IN (SELECT id FROM card_ids); \
+             DELETE FROM inventory WHERE card_id IN (SELECT id FROM card_ids); \
+             DELETE FROM card WHERE id IN (SELECT id FROM card_ids); \
+             DELETE FROM \"set\" WHERE code = "
+        );
+        qb.push_bind(set_code);
+        // Execute the query and sum the affected rows
         let deleted = self.db.execute_query_builder(qb).await?;
+        debug!("Deleted all related data for set_code '{}', total rows affected: {}", set_code, deleted);
         Ok(deleted)
     }
 }

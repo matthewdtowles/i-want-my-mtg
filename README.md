@@ -142,6 +142,12 @@ docker compose exec web npm run migration:run
 docker compose exec postgres psql -U postgres -d i_want_my_mtg
 ```
 
+#### Execute Migrations
+
+```Docker
+docker compose run --rm migrate
+```
+
 #### Clean Up/Reset
 
 ```Docker

@@ -54,6 +54,7 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
+        let sort_number = Self::normalize_sort_number(&number);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -110,6 +111,7 @@ impl CardMapper {
             oracle_text,
             rarity,
             set_code,
+            sort_number,
             type_line,
             legalities,
             layout,
@@ -119,6 +121,38 @@ impl CardMapper {
             is_oversized,
             language,
         })
+    }
+
+    fn normalize_sort_number(input: &str) -> String {
+        let s = input.trim();
+        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+        if let Some(idx) = s.find('-') {
+            let (left, right) = s.split_at(idx);
+            let right = &right[1..]; // remove '-'
+            let digits_end = right
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(right.len());
+            let (right_digits, right_rest) = right.split_at(digits_end);
+            let padded_right = if right_digits.is_empty() {
+                right.to_string()
+            } else {
+                format!("{:0>4}{}", right_digits, right_rest)
+            };
+            if starts_with_digit {
+                format!("{}-{}", left, padded_right)
+            } else {
+                format!("~{}-{}", left, padded_right)
+            }
+        } else {
+            if starts_with_digit {
+                let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+                let (digits, rest) = s.split_at(digits_end);
+                let padded_left = format!("{:0>6}", digits);
+                format!("{}{}", padded_left, rest)
+            } else {
+                format!("~{}", s)
+            }
+        }
     }
 
     fn extract_legalities(

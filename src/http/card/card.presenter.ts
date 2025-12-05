@@ -67,6 +67,7 @@ export class CardPresenter {
         });
     }
 
+    // TODO: FIX for two mana cost set symbols (wastes?) and phyrexian mana
     private static manaForView(manaCost?: string): Array<ManaToken> {
         if (!manaCost || typeof manaCost !== "string") return [];
         const raw = manaCost.trim();

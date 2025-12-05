@@ -19,6 +19,7 @@ export class Card {
     readonly oracleText?: string;
     readonly rarity: CardRarity;
     readonly setCode: string;
+    readonly sortNumber: string;
     readonly type: string;
     // For read operations
     readonly order?: number;
@@ -34,7 +35,8 @@ export class Card {
             "number",
             "rarity",
             "setCode",
-            "type"
+            "sortNumber",
+            "type",
         ];
         validateInit(init, requiredFields);
         this.id = init.id;
@@ -48,6 +50,7 @@ export class Card {
         this.number = init.number;
         this.rarity = init.rarity;
         this.setCode = init.setCode;
+        this.sortNumber = init.sortNumber;
         this.type = init.type;
         // Optional fields
         this.artist = init.artist;

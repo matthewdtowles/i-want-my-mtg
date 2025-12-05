@@ -22,6 +22,7 @@ export class CardMapper {
             oracleText: ormCard.oracleText,
             rarity: ormCard.rarity,
             setCode: ormCard.setCode,
+            sortNumber: ormCard.sortNumber,
             type: ormCard.type,
             // For read operations
             order: ormCard.order,

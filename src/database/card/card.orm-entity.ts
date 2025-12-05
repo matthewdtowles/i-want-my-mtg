@@ -11,6 +11,7 @@ import {
     PrimaryColumn
 } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
+import { deprecate } from "util";
 
 @Entity("card")
 export class CardOrmEntity {
@@ -51,6 +52,7 @@ export class CardOrmEntity {
     @Column({ name: "oracle_text", nullable: true, type: "text" })
     oracleText?: string;
 
+    // TODO: REMOVE
     @Column({ type: 'integer', generated: 'increment' })
     order: number;
 
@@ -70,6 +72,9 @@ export class CardOrmEntity {
 
     @Column({ name: "set_code" })
     setCode: string;
+
+    @Column({ name: "sort_number" })
+    sortNumber: string;
 
     @Column()
     type: string;

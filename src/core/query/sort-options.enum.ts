@@ -1,7 +1,7 @@
 export enum SortOptions {
     CARD = "card.name",
     CARD_SET = "card.setCode",
-    NUMBER = "card.order",
+    NUMBER = "card.sortNumber",
     RELEASE_DATE = "set.releaseDate",
     OWNED_QUANTITY = "inventory.quantity",
     PRICE = "prices.normal",

@@ -22,7 +22,6 @@ export class Card {
     readonly sortNumber: string;
     readonly type: string;
     // For read operations
-    readonly order?: number;
     readonly prices?: Price[];
     readonly set?: Set;
 
@@ -56,7 +55,6 @@ export class Card {
         this.artist = init.artist;
         this.manaCost = init.manaCost;
         this.oracleText = init.oracleText;
-        this.order = init.order;
         this.prices = init.prices;
         this.set = init.set;
     }

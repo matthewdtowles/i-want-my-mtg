@@ -52,10 +52,6 @@ export class CardOrmEntity {
     @Column({ name: "oracle_text", nullable: true, type: "text" })
     oracleText?: string;
 
-    // TODO: REMOVE
-    @Column({ type: 'integer', generated: 'increment' })
-    order: number;
-
     @OneToMany(() => PriceOrmEntity, (price) => price.card, { cascade: true })
     prices: PriceOrmEntity[];
 

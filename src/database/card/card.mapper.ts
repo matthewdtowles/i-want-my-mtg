@@ -25,7 +25,6 @@ export class CardMapper {
             sortNumber: ormCard.sortNumber,
             type: ormCard.type,
             // For read operations
-            order: ormCard.order,
             prices: ormCard.prices ? ormCard.prices.map(p => (PriceMapper.toCore(p))) : undefined,
             set: ormCard.set ? SetMapper.toCore(ormCard.set) : undefined,
         });

@@ -102,33 +102,11 @@ CREATE TABLE public.card (
     name character varying NOT NULL,
     number character varying NOT NULL,
     oracle_text text,
-    "order" integer NOT NULL,
     rarity public.card_rarity_enum NOT NULL,
     set_code character varying NOT NULL,
     type character varying NOT NULL
 );
 
-
-
---
--- Name: card_order_seq; Type: SEQUENCE; Schema: public
---
-
-CREATE SEQUENCE public.card_order_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-
---
--- Name: card_order_seq; Type: SEQUENCE OWNED BY; Schema: public
---
-
-ALTER SEQUENCE public.card_order_seq OWNED BY public.card."order";
 
 
 --

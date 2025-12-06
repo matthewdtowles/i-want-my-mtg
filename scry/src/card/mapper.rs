@@ -148,10 +148,20 @@ impl CardMapper {
                 let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (digits, rest) = s.split_at(digits_end);
                 let padded_left = format!("{:0>6}", digits);
-                format!("{}{}", padded_left, rest)
-            } else {
-                format!("~{}", s)
+                return format!("{}{}", padded_left, rest);
             }
+            // Starts with letter, find first digit after letters
+            let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
+            if let Some(idx) = first_digit_idx {
+                let (letters, digits_and_rest) = s.split_at(idx);
+                let digits_end = digits_and_rest
+                    .find(|c: char| !c.is_ascii_digit())
+                    .unwrap_or(digits_and_rest.len());
+                let (digits, rest) = digits_and_rest.split_at(digits_end);
+                let padded_digits = format!("{:0>4}", digits);
+                return format!("~{}{}{}", letters, padded_digits, rest);
+            }
+            format!("~{}", s)
         }
     }
 

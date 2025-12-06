@@ -11,7 +11,6 @@ import {
     PrimaryColumn
 } from "typeorm";
 import { LegalityOrmEntity } from "./legality.orm-entity";
-import { deprecate } from "util";
 
 @Entity("card")
 export class CardOrmEntity {

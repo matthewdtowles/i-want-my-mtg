@@ -21,7 +21,7 @@ impl CardRepository {
         let mut qb = QueryBuilder::new(
             "SELECT c.id FROM card c
             LEFT JOIN price p ON p.card_id = c.id
-            WHERE p.id IS NULL and c.id = ANY("
+            WHERE p.id IS NULL and c.id = ANY(",
         );
         qb.push_bind(candidate_ids);
         qb.push(")");
@@ -39,7 +39,8 @@ impl CardRepository {
             "INSERT INTO card (
                 id, artist, has_foil, has_non_foil, img_src,
                 is_alternative, is_reserved, mana_cost, name, number,
-                oracle_text, rarity, set_code, type, layout
+                oracle_text, rarity, set_code, sort_number, type,
+                layout
             )",
         );
         query_builder.push_values(cards, |mut b, card| {
@@ -56,6 +57,7 @@ impl CardRepository {
                 .push_bind(&card.oracle_text)
                 .push_bind(&card.rarity)
                 .push_bind(&card.set_code)
+                .push_bind(&card.sort_number)
                 .push_bind(&card.type_line)
                 .push_bind(&card.layout);
         });
@@ -73,6 +75,7 @@ impl CardRepository {
             oracle_text = EXCLUDED.oracle_text,
             rarity = EXCLUDED.rarity,
             set_code = EXCLUDED.set_code,
+            sort_number = EXCLUDED.sort_number,
             type = EXCLUDED.type,
             layout = EXCLUDED.layout
         WHERE
@@ -88,6 +91,7 @@ impl CardRepository {
             card.oracle_text IS DISTINCT FROM EXCLUDED.oracle_text OR
             card.rarity IS DISTINCT FROM EXCLUDED.rarity OR
             card.set_code IS DISTINCT FROM EXCLUDED.set_code OR
+            card.sort_number IS DISTINCT FROM EXCLUDED.sort_number OR
             card.type IS DISTINCT FROM EXCLUDED.type OR
             card.layout IS DISTINCT FROM EXCLUDED.layout",
         );

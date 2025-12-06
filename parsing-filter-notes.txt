@@ -2297,3 +2297,50 @@ Sets/Cards not getting filtered that are non-english only:
  pwcs
  rfin
 (14 rows)
+
+i_want_my_mtg=# SELECT DISTINCT
+    regexp_replace(number, '[\x00-\x7F]', '', 'g') AS non_ascii_chars
+FROM card
+WHERE number ~ '[^\x00-\x7F]'
+  AND regexp_replace(number, '[\x00-\x7F]', '', 'g') <> '';
+ non_ascii_chars 
+-----------------
+ Φ
+ †
+ ★
+
+WITH non_ascii_chars AS (
+    SELECT
+        c.id,
+        c.set_code,
+        unnest(string_to_array(regexp_replace(c.number, '[\x00-\x7F]', '', 'g'), '')) AS ch
+    FROM card c
+    WHERE c.number ~ '[^\x00-\x7F]'
+),
+filtered AS (
+    SELECT DISTINCT id, set_code, ch
+    FROM non_ascii_chars
+)
+SELECT
+    ch AS non_ascii_character,
+    COUNT(DISTINCT id) AS card_count,
+    COUNT(DISTINCT set_code) AS set_count
+FROM filtered
+GROUP BY ch
+ORDER BY ch;
+ non_ascii_character | card_count | set_count 
+---------------------+------------+-----------
+ Φ                   |          4 |         1
+ †                   |         72 |        20
+ ★                   |       1878 |        90
+(3 rows)
+
+
+QUERY TO SORT NUMERICALLY THEN LEXICALLY:
+SELECT DISTINCT
+  number,
+  COALESCE((regexp_match(number, '^[0-9]+'))[1]::int, 2147483647) AS numkey
+FROM card
+ORDER BY
+  numkey,
+  number;

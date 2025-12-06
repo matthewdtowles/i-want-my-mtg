@@ -38,7 +38,6 @@ describe("isEnumValue", () => {
     it("should return true for a valid enum value", () => {
         expect(isEnumValue(SortOptions, "card.name")).toBe(true);
         expect(isEnumValue(SortOptions, "card.setCode")).toBe(true);
-        expect(isEnumValue(SortOptions, "card.order")).toBe(true);
         expect(isEnumValue(SortOptions, "set.releaseDate")).toBe(true);
         expect(isEnumValue(SortOptions, "inventory.quantity")).toBe(true);
         expect(isEnumValue(SortOptions, "prices.normal")).toBe(true);

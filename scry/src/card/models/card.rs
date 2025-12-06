@@ -18,6 +18,7 @@ pub struct Card {
     pub rarity: super::CardRarity,
     pub set_code: String,
     pub type_line: String,
+    pub sort_number: String,
 
     #[sqlx(skip)]
     pub legalities: Vec<super::Legality>,

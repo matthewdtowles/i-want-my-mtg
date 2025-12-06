@@ -24,6 +24,7 @@ describe("CardService", () => {
         isReserved: false,
         hasFoil: true,
         hasNonFoil: true,
+        sortNumber: "000123",
         type: "Creature",
         legalities: [
             new Legality({ format: Format.Standard, status: LegalityStatus.Legal, cardId: "test-card-id" }),

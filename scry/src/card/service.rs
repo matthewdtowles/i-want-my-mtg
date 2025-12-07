@@ -59,7 +59,6 @@ impl CardService {
     pub async fn ingest_all(&self) -> Result<()> {
         debug!("Start ingestion of all cards");
         {
-            // TODO: Why do we have to do this?
             let mut lock = self.foreign_cards.lock().await;
             lock.clear();
         }
@@ -110,7 +109,6 @@ impl CardService {
                                 foreign_ids.push(c.id.clone());
                             }
                         }
-                        // save foreign card IDs to shared list
                         if !foreign_ids.is_empty() {
                             let mut lock = foreign_cards.lock().await;
                             lock.extend(foreign_ids);

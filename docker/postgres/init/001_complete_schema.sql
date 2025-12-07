@@ -131,6 +131,7 @@ CREATE SEQUENCE public.card_order_seq
 ALTER SEQUENCE public.card_order_seq OWNED BY public.card."order";
 
 
+
 --
 -- Name: inventory; Type: TABLE; Schema: public
 --

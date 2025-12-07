@@ -49,7 +49,8 @@ describe("SetOrchestrator", () => {
         oracleText: "Test oracle text",
         type: "Test",
         legalities: [],
-        isAlternative: false
+        isAlternative: false,
+        sortNumber: "000001",
     };
 
     beforeEach(async () => {

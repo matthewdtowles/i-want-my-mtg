@@ -2361,117 +2361,233 @@ WHERE c.number ~ '[^\x00-\x7F]'
 GROUP BY s.code, s.name
 HAVING COUNT(c.id) > 0
 ORDER BY non_ascii_count DESC, s.code;
- code  |               name               | base_size | non_ascii_count | dupes action  
--------+----------------------------------+-----------+---------------- +------------
- 7ed   | Seventh Edition                  |       350 |             350 | delete
- 8ed   | Eighth Edition                   |       350 |             350 | delete
- 9ed   | Ninth Edition                    |       350 |             350 | delete
- 40k   | Warhammer 40,000 Commander       |       617 |             296 | delete
- 10e   | Tenth Edition                    |       383 |             125 | delete
- sld   | Secret Lair Drop                 |         1 |             123 | ?
- war   | War of the Spark                 |       264 |              36 | keep
- pwar  | War of the Spark Promos          |       176 |              33 | keep
- unh   | Unhinged                         |       140 |              27 | merge, delete
- arn   | Arabian Nights                   |        78 |              14 | keep (cross - means 'light')
- mkm   | Murders at Karlov Manor          |       286 |              11 | keep
- pbng  | Born of the Gods Promos          |         9 |               7 | 
- pgtc  | Gatecrash Promos                 |        10 |               7 | 
- pjou  | Journey into Nyx Promos          |        10 |               7 | 
- por   | Portal                           |       243 |               7 | 
- prtr  | Return to Ravnica Promos         |        10 |               7 | 
- pths  | Theros Promos                    |        10 |               7 | 
- frf   | Fate Reforged                    |       185 |               6 | 
- 5ed   | Fifth Edition                    |       455 |               5 | 
- j14   | Judge Gift Cards 2014            |         9 |               5 | 
- p30h  | 30th Anniversary History Promos  |        10 |               5 | 
- pkhm  | Kaldheim Promos                  |         1 |               5 | 
- pm13  | Magic 2013 Promos                |         6 |               5 | 
- pm14  | Magic 2014 Promos                |         6 |               5 | 
- psdc  | San Diego Comic-Con 2013         |         5 |               5 | 
- soi   | Shadows over Innistrad           |       297 |               5 | 
- fin   | Final Fantasy                    |       309 |               4 | 
- kld   | Kaladesh                         |       264 |               4 | 
- pdgm  | Dragon's Maze Promos             |         6 |               4 | 
- pmbs  | Mirrodin Besieged Promos         |         4 |               4 | 
- aer   | Aether Revolt                    |       184 |               3 | 
- drk   | The Dark                         |       119 |               3 | 
- pavr  | Avacyn Restored Promos           |         6 |               3 | 
- pdka  | Dark Ascension Promos            |         5 |               3 | 
- pls   | Planeshift                       |       143 |               3 | 
- plst  | The List                         |      5075 |               3 | 
- pm10  | Magic 2010 Promos                |         3 |               3 | 
- pm11  | Magic 2011 Promos                |         6 |               3 | 
- pm12  | Magic 2012 Promos                |         3 |               3 | 
- pmid  | Innistrad: Midnight Hunt Promos  |       171 |               3 | 
- pnph  | New Phyrexia Promos              |         4 |               3 | 
- proe  | Rise of the Eldrazi Promos       |         4 |               3 | 
- psom  | Scars of Mirrodin Promos         |         4 |               3 | 
- pzen  | Zendikar Promos                  |         5 |               3 | 
- atq   | Antiquities                      |       100 |               2 | 
- dd2   | Duel Decks: Jace vs. Chandra     |        62 |               2 | 
- dkm   | Deckmasters                      |        50 |               2 | 
- gpt   | Guildpact                        |       165 |               2 | 
- hho   | Happy Holidays                   |        21 |               2 | 
- inv   | Invasion                         |       350 |               2 | 
- ody   | Odyssey                          |       350 |               2 | 
- p30m  | 30th Anniversary Misc Promos     |         5 |               2 | 
- parb  | Alara Reborn Promos              |         3 |               2 | 
- pbok  | Betrayers of Kamigawa Promos     |         2 |               2 | 
- pcon  | Conflux Promos                   |         2 |               2 | 
- pdis  | Dissension Promos                |         2 |               2 | 
- peld  | Throne of Eldraine Promos        |       152 |               2 | 
- peve  | Eventide Promos                  |         2 |               2 | 
- pfut  | Future Sight Promos              |         2 |               2 | 
- pgpt  | Guildpact Promos                 |         2 |               2 | 
- pisd  | Innistrad Promos                 |         5 |               2 | 
- plrw  | Lorwyn Promos                    |         3 |               2 | 
- pmor  | Morningtide Promos               |         2 |               2 | 
- pneo  | Kamigawa: Neon Dynasty Promos    |       157 |               2 | 
- pplc  | Planar Chaos Promos              |         2 |               2 | 
- prav  | Ravnica: City of Guilds Promos   |         2 |               2 | 
- pshm  | Shadowmoor Promos                |         2 |               2 | 
- psok  | Saviors of Kamigawa Promos       |         2 |               2 | 
- ptsp  | Time Spiral Promos               |         3 |               2 | 
- pvow  | Innistrad: Crimson Vow Promos    |       137 |               2 | 
- pwwk  | Worldwake Promos                 |         6 |               2 | 
- 4ed   | Fourth Edition                   |       378 |               1 | 
- fca   | Final Fantasy: Through the Ages  |         0 |               1 | 
- m20   | Core Set 2020                    |       280 |               1 | 
- mir   | Mirage                           |       350 |               1 | 
- ogw   | Oath of the Gatewatch            |       184 |               1 | 
- ons   | Onslaught                        |       350 |               1 | 
- p5dn  | Fifth Dawn Promos                |         1 |               1 | 
- p8ed  | Eighth Edition Promos            |         1 |               1 | 
- p9ed  | Ninth Edition Promos             |         2 |               1 | 
- pakh  | Amonkhet Promos                  |        77 |               1 | 
- pal99 | Arena League 1999                |       350 |               1 | 
- pala  | Shards of Alara Promos           |         2 |               1 | 
- pbfz  | Battle for Zendikar Promos       |        90 |               1 | 
- pchk  | Champions of Kamigawa Promos     |         1 |               1 | 
- pcns  | Conspiracy Promos                |         1 |               1 | 
- pcsp  | Coldsnap Promos                  |         1 |               1 | 
- pdmu  | Dominaria United Promos          |       161 |               1 | 
- pdst  | Darksteel Promos                 |         1 |               1 | 
- pemn  | Eldritch Moon Promos             |        77 |               1 | 
- pfrf  | Fate Reforged Promos             |        43 |               1 | 
- pgrn  | Guilds of Ravnica Promos         |        84 |               1 | 
- piko  | Ikoria: Lair of Behemoths Promos |       137 |               1 | 
- pkld  | Kaladesh Promos                  |        83 |               1 | 
- pl21  | Year of the Ox 2021              |         4 |               1 | 
- pm15  | Magic 2015 Promos                |        14 |               1 | 
- pm19  | Core Set 2019 Promos             |        95 |               1 | 
- pm21  | Core Set 2021 Promos             |       137 |               1 | 
- pmrd  | Mirrodin Promos                  |         1 |               1 | 
- pori  | Magic Origins Promos             |        54 |               1 | 
- prix  | Rivals of Ixalan Promos          |        98 |               1 | 
- prna  | Ravnica Allegiance Promos        |        81 |               1 | 
- psnc  | Streets of New Capenna Promos    |       161 |               1 | 
- psoi  | Shadows over Innistrad Promos    |        89 |               1 | 
- pthb  | Theros Beyond Death Promos       |       137 |               1 | 
- pulg  | Urza's Legacy Promos             |         1 |               1 | 
- punh  | Unhinged Promos                  |         1 |               1 | 
- pznr  | Zendikar Rising Promos           |       169 |               1 | 
- shm   | Shadowmoor                       |       301 |               1 | 
- stx   | Strixhaven: School of Mages      |       275 |               1 | 
- thb   | Theros Beyond Death              |       254 |               1 | 
+ code  |               name               | base_size | non_ascii_count 
+-------+----------------------------------+-----------+---------------- 
+ 7ed   | Seventh Edition                  |       350 |             350 
+ 8ed   | Eighth Edition                   |       350 |             350 
+ 9ed   | Ninth Edition                    |       350 |             350 
+ 40k   | Warhammer 40,000 Commander       |       617 |             296 
+ 10e   | Tenth Edition                    |       383 |             125 
+ sld   | Secret Lair Drop                 |         1 |             123 
+ war   | War of the Spark                 |       264 |              36 
+ pwar  | War of the Spark Promos          |       176 |              33 
+ unh   | Unhinged                         |       140 |              27 
+ arn   | Arabian Nights                   |        78 |              14 
+ mkm   | Murders at Karlov Manor          |       286 |              11 
+ pbng  | Born of the Gods Promos          |         9 |               7 
+ pgtc  | Gatecrash Promos                 |        10 |               7 
+ pjou  | Journey into Nyx Promos          |        10 |               7 
+ por   | Portal                           |       243 |               7 
+ prtr  | Return to Ravnica Promos         |        10 |               7 
+ pths  | Theros Promos                    |        10 |               7 
+ frf   | Fate Reforged                    |       185 |               6 
+ 5ed   | Fifth Edition                    |       455 |               5 
+ j14   | Judge Gift Cards 2014            |         9 |               5 
+ p30h  | 30th Anniversary History Promos  |        10 |               5 
+ pkhm  | Kaldheim Promos                  |         1 |               5 
+ pm13  | Magic 2013 Promos                |         6 |               5 
+ pm14  | Magic 2014 Promos                |         6 |               5 
+ psdc  | San Diego Comic-Con 2013         |         5 |               5 
+ soi   | Shadows over Innistrad           |       297 |               5 
+ fin   | Final Fantasy                    |       309 |               4 
+ kld   | Kaladesh                         |       264 |               4 
+ pdgm  | Dragon's Maze Promos             |         6 |               4 
+ pmbs  | Mirrodin Besieged Promos         |         4 |               4 
+ aer   | Aether Revolt                    |       184 |               3 
+ drk   | The Dark                         |       119 |               3 
+ pavr  | Avacyn Restored Promos           |         6 |               3 
+ pdka  | Dark Ascension Promos            |         5 |               3 
+ pls   | Planeshift                       |       143 |               3 
+ plst  | The List                         |      5075 |               3 
+ pm10  | Magic 2010 Promos                |         3 |               3 
+ pm11  | Magic 2011 Promos                |         6 |               3 
+ pm12  | Magic 2012 Promos                |         3 |               3 
+ pmid  | Innistrad: Midnight Hunt Promos  |       171 |               3 
+ pnph  | New Phyrexia Promos              |         4 |               3 
+ proe  | Rise of the Eldrazi Promos       |         4 |               3 
+ psom  | Scars of Mirrodin Promos         |         4 |               3 
+ pzen  | Zendikar Promos                  |         5 |               3 
+ atq   | Antiquities                      |       100 |               2 
+ dd2   | Duel Decks: Jace vs. Chandra     |        62 |               2 
+ dkm   | Deckmasters                      |        50 |               2 
+ gpt   | Guildpact                        |       165 |               2 
+ hho   | Happy Holidays                   |        21 |               2 
+ inv   | Invasion                         |       350 |               2 
+ ody   | Odyssey                          |       350 |               2 
+ p30m  | 30th Anniversary Misc Promos     |         5 |               2 
+ parb  | Alara Reborn Promos              |         3 |               2 
+ pbok  | Betrayers of Kamigawa Promos     |         2 |               2 
+ pcon  | Conflux Promos                   |         2 |               2 
+ pdis  | Dissension Promos                |         2 |               2 
+ peld  | Throne of Eldraine Promos        |       152 |               2 
+ peve  | Eventide Promos                  |         2 |               2 
+ pfut  | Future Sight Promos              |         2 |               2 
+ pgpt  | Guildpact Promos                 |         2 |               2 
+ pisd  | Innistrad Promos                 |         5 |               2 
+ plrw  | Lorwyn Promos                    |         3 |               2 
+ pmor  | Morningtide Promos               |         2 |               2 
+ pneo  | Kamigawa: Neon Dynasty Promos    |       157 |               2 
+ pplc  | Planar Chaos Promos              |         2 |               2 
+ prav  | Ravnica: City of Guilds Promos   |         2 |               2 
+ pshm  | Shadowmoor Promos                |         2 |               2 
+ psok  | Saviors of Kamigawa Promos       |         2 |               2 
+ ptsp  | Time Spiral Promos               |         3 |               2 
+ pvow  | Innistrad: Crimson Vow Promos    |       137 |               2 
+ pwwk  | Worldwake Promos                 |         6 |               2 
+ 4ed   | Fourth Edition                   |       378 |               1 
+ fca   | Final Fantasy: Through the Ages  |         0 |               1 
+ m20   | Core Set 2020                    |       280 |               1 
+ mir   | Mirage                           |       350 |               1 
+ ogw   | Oath of the Gatewatch            |       184 |               1 
+ ons   | Onslaught                        |       350 |               1 
+ p5dn  | Fifth Dawn Promos                |         1 |               1 
+ p8ed  | Eighth Edition Promos            |         1 |               1 
+ p9ed  | Ninth Edition Promos             |         2 |               1 
+ pakh  | Amonkhet Promos                  |        77 |               1 
+ pal99 | Arena League 1999                |       350 |               1 
+ pala  | Shards of Alara Promos           |         2 |               1 
+ pbfz  | Battle for Zendikar Promos       |        90 |               1 
+ pchk  | Champions of Kamigawa Promos     |         1 |               1 
+ pcns  | Conspiracy Promos                |         1 |               1 
+ pcsp  | Coldsnap Promos                  |         1 |               1 
+ pdmu  | Dominaria United Promos          |       161 |               1 
+ pdst  | Darksteel Promos                 |         1 |               1 
+ pemn  | Eldritch Moon Promos             |        77 |               1 
+ pfrf  | Fate Reforged Promos             |        43 |               1 
+ pgrn  | Guilds of Ravnica Promos         |        84 |               1 
+ piko  | Ikoria: Lair of Behemoths Promos |       137 |               1 
+ pkld  | Kaladesh Promos                  |        83 |               1 
+ pl21  | Year of the Ox 2021              |         4 |               1 
+ pm15  | Magic 2015 Promos                |        14 |               1 
+ pm19  | Core Set 2019 Promos             |        95 |               1 
+ pm21  | Core Set 2021 Promos             |       137 |               1 
+ pmrd  | Mirrodin Promos                  |         1 |               1 
+ pori  | Magic Origins Promos             |        54 |               1 
+ prix  | Rivals of Ixalan Promos          |        98 |               1 
+ prna  | Ravnica Allegiance Promos        |        81 |               1 
+ psnc  | Streets of New Capenna Promos    |       161 |               1 
+ psoi  | Shadows over Innistrad Promos    |        89 |               1 
+ pthb  | Theros Beyond Death Promos       |       137 |               1 
+ pulg  | Urza's Legacy Promos             |         1 |               1 
+ punh  | Unhinged Promos                  |         1 |               1 
+ pznr  | Zendikar Rising Promos           |       169 |               1 
+ shm   | Shadowmoor                       |       301 |               1 
+ stx   | Strixhaven: School of Mages      |       275 |               1 
+ thb   | Theros Beyond Death              |       254 |               1 
 (111 rows)
+
+
+ code  |               name               | base_size | non_ascii_count |    type       | dupes action  
+-------+----------------------------------+-----------+-----------------+-------------  +------------
+ sld   | Secret Lair Drop                 |         1 |             123 | box           | * * * TODO * * *
+ plst  | The List                         |      5075 |               3 | masters       | * * * TODO * * *
+ 4ed   | Fourth Edition                   |       378 |               1 | core          | (check with JQ - reorder if legit [misprint])
+ fin   | Final Fantasy                    |       309 |               4 | expansion     | delete or reorder cross 
+ 40k   | Warhammer 40,000 Commander       |       617 |             296 | commander     | delete
+ 7ed   | Seventh Edition                  |       350 |             350 | core          | delete
+ 8ed   | Eighth Edition                   |       350 |             350 | core          | delete
+ 9ed   | Ninth Edition                    |       350 |             350 | core          | delete
+ 10e   | Tenth Edition                    |       383 |             125 | core          | delete
+ dkm   | Deckmasters                      |        50 |               2 | box           | merge delete (star)
+ unh   | Unhinged                         |       140 |              27 | funny         | merge delete
+ frf   | Fate Reforged                    |       185 |               6 | expansion     | merge delete
+ ons   | Onslaught                        |       350 |               1 | expansion     | merge delete (star)
+ shm   | Shadowmoor                       |       301 |               1 | expansion     | merge delete (star)
+ stx   | Strixhaven: School of Mages      |       275 |               1 | expansion     | merge delete (star)
+ thb   | Theros Beyond Death              |       254 |               1 | expansion     | merge delete (star)
+ war   | War of the Spark                 |       264 |              36 | expansion     | reorder
+ arn   | Arabian Nights                   |        78 |              14 | expansion     | reorder (cross)
+ mkm   | Murders at Karlov Manor          |       286 |              11 | expansion     | reorder (cross)
+ soi   | Shadows over Innistrad           |       297 |               5 | expansion     | reorder (cross with [a|b|c|d|e])
+ kld   | Kaladesh                         |       264 |               4 | expansion     | reorder
+ aer   | Aether Revolt                    |       184 |               3 | expansion     | reorder (cross)
+ drk   | The Dark                         |       119 |               3 | expansion     | reorder (cross)
+ pls   | Planeshift                       |       143 |               3 | expansion     | reorder (star)
+ atq   | Antiquities                      |       100 |               2 | expansion     | reorder (cross)
+ mir   | Mirage                           |       350 |               1 | expansion     | reorder (cross - misprint)
+ ogw   | Oath of the Gatewatch            |       184 |               1 | expansion     | reorder (cross) (keep a)
+ gpt   | Guildpact                        |       165 |               2 | expansion     | reorder (star)
+ inv   | Invasion                         |       350 |               2 | expansion     | reorder (star)
+ ody   | Odyssey                          |       350 |               2 | expansion     | reorder (cross - misprints)
+ dd2   | Duel Decks: Jace vs. Chandra     |        62 |               2 | duel_deck     | reorder (star)
+ hho   | Happy Holidays                   |        21 |               2 | funny         | reorder (cross)
+ fca   | Final Fantasy: Through the Ages  |         0 |               1 | masterpiece   | reorder (cross - misprint)
+ por   | Portal                           |       243 |               7 | starter       | reorder (d|s|cross)
+ 5ed   | Fifth Edition                    |       455 |               5 | core          | reorder 
+ m20   | Core Set 2020                    |       280 |               1 | core          | reorder (cross - misprint)
+ j14   | Judge Gift Cards 2014            |         9 |               5 | promo         | reorder (looks like 2 different sets in one)
+ p30h  | 30th Anniversary History Promos  |        10 |               5 | promo         | reorder
+ pwar  | War of the Spark Promos          |       176 |              33 | promo         | keep | reorder
+ pwwk  | Worldwake Promos                 |         6 |               2 | promo         | keep | reorder
+ pbng  | Born of the Gods Promos          |         9 |               7 | promo         | keep 
+ pgtc  | Gatecrash Promos                 |        10 |               7 | promo         | keep
+ pjou  | Journey into Nyx Promos          |        10 |               7 | promo         | keep
+ prtr  | Return to Ravnica Promos         |        10 |               7 | promo         | keep
+ pths  | Theros Promos                    |        10 |               7 | promo         | keep
+ pkhm  | Kaldheim Promos                  |         1 |               5 | promo         | keep
+ pm13  | Magic 2013 Promos                |         6 |               5 | promo         | keep
+ pm14  | Magic 2014 Promos                |         6 |               5 | promo         | keep
+ psdc  | San Diego Comic-Con 2013         |         5 |               5 | promo         | keep
+ pdgm  | Dragon's Maze Promos             |         6 |               4 | promo         | keep
+ pmbs  | Mirrodin Besieged Promos         |         4 |               4 | promo         | keep
+ pavr  | Avacyn Restored Promos           |         6 |               3 | promo         | keep
+ pdka  | Dark Ascension Promos            |         5 |               3 | promo         | keep
+ pm10  | Magic 2010 Promos                |         3 |               3 | promo         | keep
+ pm11  | Magic 2011 Promos                |         6 |               3 | promo         | keep
+ pm12  | Magic 2012 Promos                |         3 |               3 | promo         | keep
+ pmid  | Innistrad: Midnight Hunt Promos  |       171 |               3 | promo         | keep
+ pnph  | New Phyrexia Promos              |         4 |               3 | promo         | keep
+ proe  | Rise of the Eldrazi Promos       |         4 |               3 | promo         | keep
+ psom  | Scars of Mirrodin Promos         |         4 |               3 | promo         | keep
+ pzen  | Zendikar Promos                  |         5 |               3 | promo         | keep
+ p30m  | 30th Anniversary Misc Promos     |         5 |               2 | promo         | keep
+ parb  | Alara Reborn Promos              |         3 |               2 | promo         | keep
+ pbok  | Betrayers of Kamigawa Promos     |         2 |               2 | promo         | keep
+ pcon  | Conflux Promos                   |         2 |               2 | promo         | keep
+ pdis  | Dissension Promos                |         2 |               2 | promo         | keep
+ peld  | Throne of Eldraine Promos        |       152 |               2 | promo         | keep
+ peve  | Eventide Promos                  |         2 |               2 | promo         | keep
+ pfut  | Future Sight Promos              |         2 |               2 | promo         | keep
+ pgpt  | Guildpact Promos                 |         2 |               2 | promo         | keep
+ pisd  | Innistrad Promos                 |         5 |               2 | promo         | keep
+ plrw  | Lorwyn Promos                    |         3 |               2 | promo         | keep
+ pmor  | Morningtide Promos               |         2 |               2 | promo         | keep
+ pneo  | Kamigawa: Neon Dynasty Promos    |       157 |               2 | promo         | keep
+ pplc  | Planar Chaos Promos              |         2 |               2 | promo         | keep
+ prav  | Ravnica: City of Guilds Promos   |         2 |               2 | promo         | keep
+ pshm  | Shadowmoor Promos                |         2 |               2 | promo         | keep
+ psok  | Saviors of Kamigawa Promos       |         2 |               2 | promo         | keep
+ ptsp  | Time Spiral Promos               |         3 |               2 | promo         | keep
+ pvow  | Innistrad: Crimson Vow Promos    |       137 |               2 | promo         | keep
+ p5dn  | Fifth Dawn Promos                |         1 |               1 | promo         | keep
+ p8ed  | Eighth Edition Promos            |         1 |               1 | promo         | keep
+ p9ed  | Ninth Edition Promos             |         2 |               1 | promo         | keep
+ pakh  | Amonkhet Promos                  |        77 |               1 | promo         | keep
+ pal99 | Arena League 1999                |       350 |               1 | promo         | keep
+ pala  | Shards of Alara Promos           |         2 |               1 | promo         | keep
+ pbfz  | Battle for Zendikar Promos       |        90 |               1 | promo         | keep
+ pchk  | Champions of Kamigawa Promos     |         1 |               1 | promo         | keep
+ pcns  | Conspiracy Promos                |         1 |               1 | promo         | keep
+ pcsp  | Coldsnap Promos                  |         1 |               1 | promo         | keep
+ pdmu  | Dominaria United Promos          |       161 |               1 | promo         | keep
+ pdst  | Darksteel Promos                 |         1 |               1 | promo         | keep
+ pemn  | Eldritch Moon Promos             |        77 |               1 | promo         | keep
+ pfrf  | Fate Reforged Promos             |        43 |               1 | promo         | keep
+ pgrn  | Guilds of Ravnica Promos         |        84 |               1 | promo         | keep
+ piko  | Ikoria: Lair of Behemoths Promos |       137 |               1 | promo         | keep
+ pkld  | Kaladesh Promos                  |        83 |               1 | promo         | keep
+ pl21  | Year of the Ox 2021              |         4 |               1 | promo         | keep
+ pm15  | Magic 2015 Promos                |        14 |               1 | promo         | keep
+ pm19  | Core Set 2019 Promos             |        95 |               1 | promo         | keep
+ pm21  | Core Set 2021 Promos             |       137 |               1 | promo         | keep
+ pmrd  | Mirrodin Promos                  |         1 |               1 | promo         | keep
+ pori  | Magic Origins Promos             |        54 |               1 | promo         | keep
+ prix  | Rivals of Ixalan Promos          |        98 |               1 | promo         | keep
+ prna  | Ravnica Allegiance Promos        |        81 |               1 | promo         | keep
+ psnc  | Streets of New Capenna Promos    |       161 |               1 | promo         | keep
+ psoi  | Shadows over Innistrad Promos    |        89 |               1 | promo         | keep
+ pthb  | Theros Beyond Death Promos       |       137 |               1 | promo         | keep
+ pulg  | Urza's Legacy Promos             |         1 |               1 | promo         | keep
+ punh  | Unhinged Promos                  |         1 |               1 | promo         | keep
+ pznr  | Zendikar Rising Promos           |       169 |               1 | promo         | keep
+ 

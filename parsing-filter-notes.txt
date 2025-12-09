@@ -2482,12 +2482,14 @@ ORDER BY non_ascii_count DESC, s.code;
  sld   | Secret Lair Drop                 |         1 |             123 | box           | * * * TODO * * *
  plst  | The List                         |      5075 |               3 | masters       | * * * TODO * * *
  4ed   | Fourth Edition                   |       378 |               1 | core          | (check with JQ - reorder if legit [misprint])
+
  fin   | Final Fantasy                    |       309 |               4 | expansion     | delete or reorder cross 
  40k   | Warhammer 40,000 Commander       |       617 |             296 | commander     | delete
  7ed   | Seventh Edition                  |       350 |             350 | core          | delete
  8ed   | Eighth Edition                   |       350 |             350 | core          | delete
  9ed   | Ninth Edition                    |       350 |             350 | core          | delete
  10e   | Tenth Edition                    |       383 |             125 | core          | delete
+
  dkm   | Deckmasters                      |        50 |               2 | box           | merge delete (star)
  unh   | Unhinged                         |       140 |              27 | funny         | merge delete
  frf   | Fate Reforged                    |       185 |               6 | expansion     | merge delete
@@ -2495,6 +2497,7 @@ ORDER BY non_ascii_count DESC, s.code;
  shm   | Shadowmoor                       |       301 |               1 | expansion     | merge delete (star)
  stx   | Strixhaven: School of Mages      |       275 |               1 | expansion     | merge delete (star)
  thb   | Theros Beyond Death              |       254 |               1 | expansion     | merge delete (star)
+
  war   | War of the Spark                 |       264 |              36 | expansion     | reorder
  arn   | Arabian Nights                   |        78 |              14 | expansion     | reorder (cross)
  mkm   | Murders at Karlov Manor          |       286 |              11 | expansion     | reorder (cross)
@@ -2517,6 +2520,7 @@ ORDER BY non_ascii_count DESC, s.code;
  m20   | Core Set 2020                    |       280 |               1 | core          | reorder (cross - misprint)
  j14   | Judge Gift Cards 2014            |         9 |               5 | promo         | reorder (looks like 2 different sets in one)
  p30h  | 30th Anniversary History Promos  |        10 |               5 | promo         | reorder
+ 
  pwar  | War of the Spark Promos          |       176 |              33 | promo         | keep | reorder
  pwwk  | Worldwake Promos                 |         6 |               2 | promo         | keep | reorder
  pbng  | Born of the Gods Promos          |         9 |               7 | promo         | keep 

@@ -186,6 +186,7 @@ ORDER BY non_ascii_count DESC, s.code;
 ---------------------------------------------------------------------------------------------------------------
  code  |               name               | base_size | non_ascii_count |    type       | dupes action
 -------+----------------------------------+-----------+-----------------+-------------  +------------
+-- For the 'merge' sets: check 
  40k   | Warhammer 40,000 Commander       |       617 |             296 | commander     | merge
  7ed   | Seventh Edition                  |       350 |             350 | core          | merge
  8ed   | Eighth Edition                   |       350 |             350 | core          | merge
@@ -300,3 +301,15 @@ ORDER BY non_ascii_count DESC, s.code;
  punh  | Unhinged Promos                  |         1 |               1 | promo         | reorder
  pznr  | Zendikar Rising Promos           |       169 |               1 | promo         | reorder
  por   | Portal                           |       243 |               7 | starter       | reorder
+
+"40k",
+"7ed",
+"8ed",
+"9ed",
+"10e",
+"frf",
+"ons",
+"shm",
+"stx",
+"thb",
+"unh"

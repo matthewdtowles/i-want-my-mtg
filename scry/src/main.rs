@@ -39,10 +39,18 @@ async fn main() -> Result<()> {
     let http_client = Arc::new(HttpClient::new());
 
     // Create CLI controller with feature services
+    let price_service = Arc::new(price::service::PriceService::new(
+        connection_pool.clone(),
+        http_client.clone(),
+    ));
     let cli_controller = CliController::new(
-        card::service::CardService::new(connection_pool.clone(), http_client.clone()),
+        card::service::CardService::new(
+            connection_pool.clone(),
+            http_client.clone(),
+            price_service.clone(),
+        ),
         set::service::SetService::new(connection_pool.clone(), http_client.clone()),
-        price::service::PriceService::new(connection_pool.clone(), http_client.clone()),
+        price_service.clone(),
         health_check::service::HealthCheckService::new(connection_pool),
     );
 

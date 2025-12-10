@@ -1,24 +1,22 @@
-use crate::{
-    card::CardService, cli::Commands, health_check::HealthCheckService, price::PriceService,
-    set::SetService,
-};
+use crate::{cli::Commands, price::PriceService};
 use anyhow::Result;
 use dialoguer::Confirm;
+use std::sync::Arc;
 use tracing::{error, info, warn};
 
 pub struct CliController {
-    card_service: CardService,
-    set_service: SetService,
-    price_service: PriceService,
-    health_service: HealthCheckService,
+    card_service: crate::card::service::CardService,
+    set_service: crate::set::service::SetService,
+    price_service: Arc<PriceService>,
+    health_service: crate::health_check::service::HealthCheckService,
 }
 
 impl CliController {
     pub fn new(
-        card_service: CardService,
-        set_service: SetService,
-        price_service: PriceService,
-        health_service: HealthCheckService,
+        card_service: crate::card::service::CardService,
+        set_service: crate::set::service::SetService,
+        price_service: Arc<PriceService>,
+        health_service: crate::health_check::service::HealthCheckService,
     ) -> Self {
         Self {
             card_service,
@@ -225,6 +223,9 @@ impl CliController {
 
         let sets_deleted = self.set_service.prune_empty_sets().await?;
         info!("Pruned {} sets without any cards.", sets_deleted);
+
+        let cards_deleted = self.card_service.prune_duplicate_foils().await?;
+        info!("Pruned {} duplicate foil cards.", cards_deleted);
 
         let total_sets_after = self.set_service.fetch_count().await?;
         let total_cards_after = self.card_service.fetch_count().await?;

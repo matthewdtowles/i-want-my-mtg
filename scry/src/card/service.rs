@@ -4,11 +4,12 @@ use crate::{
         repository::CardRepository,
     },
     database::ConnectionPool,
+    price::service::PriceService,
     utils::{HttpClient, JsonStreamParser},
 };
 use anyhow::Result;
 use serde_json::Value;
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::{HashMap, HashSet}, sync::Arc};
 use tokio::sync::{Mutex, Semaphore};
 use tracing::{debug, warn};
 
@@ -16,17 +17,25 @@ pub struct CardService {
     client: Arc<HttpClient>,
     repository: CardRepository,
     foreign_cards: Arc<Mutex<Vec<String>>>,
+    // NEW: use the service (keeps repo private)
+    price_service: Arc<PriceService>,
 }
 
 impl CardService {
     const BATCH_SIZE: usize = 500;
     const CONCURRENCY: usize = 6;
 
-    pub fn new(db: Arc<ConnectionPool>, http_client: Arc<HttpClient>) -> Self {
+    // UPDATED: accept price_service
+    pub fn new(
+        db: Arc<ConnectionPool>,
+        http_client: Arc<HttpClient>,
+        price_service: Arc<PriceService>,
+    ) -> Self {
         Self {
             client: http_client,
             repository: CardRepository::new(db),
             foreign_cards: Arc::new(Mutex::new(Vec::new())),
+            price_service,
         }
     }
 
@@ -206,6 +215,76 @@ impl CardService {
             .await?;
         let mut lock = self.foreign_cards.lock().await;
         lock.clear();
+        Ok(total_deleted)
+    }
+
+    pub async fn prune_duplicate_foils(&self) -> Result<u64> {
+        let dup_foil_sets: Vec<&str> = vec![
+            "40k", "7ed", "8ed", "9ed", "10e", "frf", "ons", "shm", "stx", "thb", "unh",
+        ];
+        let mut total_deleted = 0u64;
+        for set_code in dup_foil_sets {
+            let non_ascii_cards = self
+                .repository
+                .fetch_non_ascii_numbers_in_set(set_code)
+                .await?;
+            if non_ascii_cards.is_empty() {
+                continue;
+            }
+            let names: Vec<String> = non_ascii_cards.iter().map(|c| c.name.clone()).collect();
+            let ascii_cards = self
+                .repository
+                .fetch_ascii_cards_by_set_and_names(set_code, &names)
+                .await?;
+            let mut ascii_by_name: HashMap<&str, &crate::card::models::Card> = HashMap::new();
+            for ac in &ascii_cards {
+                ascii_by_name.entry(ac.name.as_str()).or_insert(ac);
+            }
+            let mut price_ids: Vec<String> = Vec::new();
+            for c in &non_ascii_cards {
+                price_ids.push(c.id.clone());
+                if let Some(a) = ascii_by_name.get(c.name.as_str()) {
+                    price_ids.push(a.id.clone());
+                }
+            }
+            price_ids.sort();
+            price_ids.dedup();
+            let prices = self
+                .price_service
+                .fetch_prices_for_card_ids(&price_ids)
+                .await?;
+            for non_ascii in non_ascii_cards {
+                if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
+                    let non_price = prices.get(&non_ascii.id);
+                    let ascii_price = prices.get(&ascii.id);
+
+                    if let Some((_, Some(src_foil))) = non_price {
+                        match ascii_price {
+                            Some((_, None)) => {
+                                let _ = self
+                                    .price_service
+                                    .update_price_foil_if_null(&ascii.id, src_foil)
+                                    .await?;
+                            }
+                            None => {
+                                let normal_opt = non_price.and_then(|p| p.0.clone());
+                                let foil_opt = Some(src_foil.clone());
+                                let _ = self
+                                    .price_service
+                                    .insert_price_for_card(&ascii.id, normal_opt, foil_opt)
+                                    .await?;
+                            }
+                            _ => {}
+                        }
+                        let deleted = self
+                            .repository
+                            .delete_cards_batch(&[non_ascii.id.clone()], Self::BATCH_SIZE as i64)
+                            .await?;
+                        total_deleted += deleted;
+                    }
+                }
+            }
+        }
         Ok(total_deleted)
     }
 

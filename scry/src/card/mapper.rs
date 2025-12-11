@@ -54,7 +54,7 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
-        let sort_number = Self::normalize_sort_number(&number);
+        let sort_number = Self::normalize_sort_number(&number, is_alternative);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -123,9 +123,10 @@ impl CardMapper {
         })
     }
 
-    fn normalize_sort_number(input: &str) -> String {
+    fn normalize_sort_number(input: &str, is_alternative: bool) -> String {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
             let right = &right[1..]; // remove '-'
@@ -148,9 +149,11 @@ impl CardMapper {
                 let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (digits, rest) = s.split_at(digits_end);
                 let padded_left = format!("{:0>6}", digits);
+                if s.contains(|c: char| !c.is_ascii()) || is_alternative {
+                    return format!("~{}{}", padded_left, rest);
+                }
                 return format!("{}{}", padded_left, rest);
             }
-            // Starts with letter, find first digit after letters
             let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
             if let Some(idx) = first_digit_idx {
                 let (letters, digits_and_rest) = s.split_at(idx);

@@ -258,8 +258,6 @@ impl CardService {
                 .await?;
             for non_ascii in non_ascii_cards {
                 if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
-                    // If the non-ascii card itself is a foil, mark the ascii card as having a foil
-                    // even if we don't have price rows for it.
                     if non_ascii.has_foil {
                         let mut ascii_clone = (*ascii).clone();
                         if !ascii_clone.has_foil {

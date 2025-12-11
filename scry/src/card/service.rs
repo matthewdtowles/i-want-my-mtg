@@ -9,7 +9,10 @@ use crate::{
 };
 use anyhow::Result;
 use serde_json::Value;
-use std::{collections::{HashMap, HashSet}, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 use tokio::sync::{Mutex, Semaphore};
 use tracing::{debug, warn};
 
@@ -257,7 +260,6 @@ impl CardService {
                 if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
                     let non_price = prices.get(&non_ascii.id);
                     let ascii_price = prices.get(&ascii.id);
-
                     if let Some((_, Some(src_foil))) = non_price {
                         match ascii_price {
                             Some((_, None)) => {
@@ -265,6 +267,11 @@ impl CardService {
                                     .price_service
                                     .update_price_foil_if_null(&ascii.id, src_foil)
                                     .await?;
+                                let mut ascii_clone = (*ascii).clone();
+                                if !ascii_clone.has_foil {
+                                    ascii_clone.has_foil = true;
+                                    let _ = self.repository.save_cards(&[ascii_clone]).await?;
+                                }
                             }
                             None => {
                                 let normal_opt = non_price.and_then(|p| p.0.clone());
@@ -273,15 +280,20 @@ impl CardService {
                                     .price_service
                                     .insert_price_for_card(&ascii.id, normal_opt, foil_opt)
                                     .await?;
+                                let mut ascii_clone = (*ascii).clone();
+                                if !ascii_clone.has_foil {
+                                    ascii_clone.has_foil = true;
+                                    let _ = self.repository.save_cards(&[ascii_clone]).await?;
+                                }
                             }
                             _ => {}
                         }
-                        let deleted = self
-                            .repository
-                            .delete_cards_batch(&[non_ascii.id.clone()], Self::BATCH_SIZE as i64)
-                            .await?;
-                        total_deleted += deleted;
                     }
+                    let deleted = self
+                        .repository
+                        .delete_cards_batch(&[non_ascii.id.clone()], Self::BATCH_SIZE as i64)
+                        .await?;
+                    total_deleted += deleted;
                 }
             }
         }

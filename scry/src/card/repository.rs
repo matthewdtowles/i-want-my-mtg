@@ -37,16 +37,6 @@ impl CardRepository {
         Ok(rows)
     }
 
-    pub async fn fetch_ascii_card(&self, set_code: &str, name: &str) -> Result<Option<Card>> {
-        let mut qb = QueryBuilder::new("SELECT * FROM card WHERE set_code = ");
-        qb.push_bind(set_code);
-        qb.push(" AND name = ");
-        qb.push_bind(name);
-        qb.push(" AND number !~ '[^\\x00-\\x7F]' ORDER BY sort_number LIMIT 1");
-        let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
-        Ok(rows.into_iter().next())
-    }
-
     pub async fn fetch_ascii_cards_by_set_and_names(
         &self,
         set_code: &str,

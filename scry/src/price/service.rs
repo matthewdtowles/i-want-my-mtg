@@ -6,6 +6,8 @@ use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use chrono::{Duration, NaiveDate, Timelike};
 use chrono_tz::America::New_York;
+use rust_decimal::Decimal;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{debug, info, warn};
 
@@ -22,6 +24,37 @@ impl PriceService {
             client: http_client,
             repository: PriceRepository::new(db),
         }
+    }
+
+    // NEW: batch price fetch passthrough
+    pub async fn fetch_prices_for_card_ids(
+        &self,
+        card_ids: &[String],
+    ) -> Result<HashMap<String, (Option<Decimal>, Option<Decimal>)>> {
+        self.repository.fetch_prices_for_card_ids(card_ids).await
+    }
+
+    // NEW: update foil if null passthrough
+    pub async fn update_price_foil_if_null(
+        &self,
+        card_id: &str,
+        new_foil: &Decimal,
+    ) -> Result<u64> {
+        self.repository
+            .update_price_foil_if_null(card_id, new_foil)
+            .await
+    }
+
+    // NEW: insert price passthrough
+    pub async fn insert_price_for_card(
+        &self,
+        card_id: &str,
+        normal: Option<Decimal>,
+        foil: Option<Decimal>,
+    ) -> Result<u64> {
+        self.repository
+            .insert_price_for_card(card_id, normal, foil)
+            .await
     }
 
     pub async fn fetch_price_count(&self) -> Result<u64> {

@@ -1,7 +1,5 @@
-pub mod service;
+mod event_processor;
 mod mapper;
 mod models;
 mod repository;
-mod event_processor;
-
-pub use service::CardService;
+pub mod service;

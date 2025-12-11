@@ -3,8 +3,11 @@ use crate::price::models::Price;
 use anyhow::Result;
 use chrono::NaiveDate;
 use sqlx::QueryBuilder;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::error;
+
+use rust_decimal::Decimal;
 
 #[derive(Clone)]
 pub struct PriceRepository {
@@ -35,7 +38,10 @@ impl PriceRepository {
     }
 
     pub async fn fetch_price_dates(&self) -> Result<Vec<NaiveDate>> {
-        let query = format!("SELECT DISTINCT(date) FROM {} ORDER BY date DESC", Self::PRICE_TABLE);
+        let query = format!(
+            "SELECT DISTINCT(date) FROM {} ORDER BY date DESC",
+            Self::PRICE_TABLE
+        );
         let query_builder = QueryBuilder::new(query);
         let rows: Vec<(NaiveDate,)> = self.db.fetch_all_query_builder(query_builder).await?;
         Ok(rows.into_iter().map(|(date,)| date).collect())
@@ -60,6 +66,59 @@ impl PriceRepository {
         let mut query_builder = QueryBuilder::new(query);
         query_builder.push_bind(date);
         self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn fetch_prices_for_card_ids(
+        &self,
+        card_ids: &[String],
+    ) -> Result<HashMap<String, (Option<Decimal>, Option<Decimal>)>> {
+        if card_ids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let mut qb = QueryBuilder::new(
+            "SELECT p.card_id, p.normal, p.foil FROM price p WHERE p.card_id = ANY(",
+        );
+        qb.push_bind(card_ids);
+        qb.push(")");
+        let rows: Vec<(String, Option<Decimal>, Option<Decimal>)> =
+            self.db.fetch_all_query_builder(qb).await?;
+        let mut map = HashMap::with_capacity(rows.len());
+        for (id, normal, foil) in rows {
+            map.insert(id, (normal, foil));
+        }
+        Ok(map)
+    }
+
+    pub async fn update_price_foil_if_null(
+        &self,
+        card_id: &str,
+        new_foil: &Decimal,
+    ) -> Result<u64> {
+        let mut qb = QueryBuilder::new("UPDATE price SET foil = ");
+        qb.push_bind(new_foil);
+        qb.push(" WHERE card_id = ");
+        qb.push_bind(card_id);
+        qb.push(" AND foil IS NULL");
+        let n = self.db.execute_query_builder(qb).await?;
+        Ok(n)
+    }
+
+    pub async fn insert_price_for_card(
+        &self,
+        card_id: &str,
+        normal: Option<Decimal>,
+        foil: Option<Decimal>,
+    ) -> Result<u64> {
+        let mut qb = QueryBuilder::new("INSERT INTO price (card_id, normal, foil, date) VALUES (");
+        qb.push_bind(card_id)
+            .push(", ")
+            .push_bind(normal)
+            .push(", ")
+            .push_bind(foil)
+            .push(", CURRENT_DATE)");
+        qb.push(" ON CONFLICT (card_id, date) DO UPDATE SET normal = COALESCE(price.normal, EXCLUDED.normal), foil = COALESCE(price.foil, EXCLUDED.foil)");
+        let n = self.db.execute_query_builder(qb).await?;
+        Ok(n)
     }
 
     async fn save(&self, prices: &[Price], table: &str) -> Result<u64> {

@@ -17,8 +17,10 @@ pub struct Card {
     pub oracle_text: Option<String>,
     pub rarity: super::CardRarity,
     pub set_code: String,
-    pub type_line: String,
     pub sort_number: String,
+
+    #[sqlx(rename = "type")]
+    pub type_line: String,
 
     #[sqlx(skip)]
     pub legalities: Vec<super::Legality>,

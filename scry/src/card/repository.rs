@@ -29,6 +29,31 @@ impl CardRepository {
         Ok(rows.into_iter().map(|r| r.0).collect())
     }
 
+    pub async fn fetch_non_ascii_numbers_in_set(&self, set_code: &str) -> Result<Vec<Card>> {
+        let mut qb = QueryBuilder::new("SELECT * FROM card WHERE set_code = ");
+        qb.push_bind(set_code);
+        qb.push(" AND number ~ '[^\\x00-\\x7F]' ORDER BY sort_number");
+        let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows)
+    }
+
+    pub async fn fetch_ascii_cards_by_set_and_names(
+        &self,
+        set_code: &str,
+        names: &[String],
+    ) -> Result<Vec<Card>> {
+        if names.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut qb = QueryBuilder::new("SELECT * FROM card WHERE set_code = ");
+        qb.push_bind(set_code);
+        qb.push(" AND name = ANY(");
+        qb.push_bind(names);
+        qb.push(") AND number !~ '[^\\x00-\\x7F]' ORDER BY name, sort_number");
+        let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows)
+    }
+
     pub async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");

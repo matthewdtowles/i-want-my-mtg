@@ -258,6 +258,15 @@ impl CardService {
                 .await?;
             for non_ascii in non_ascii_cards {
                 if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
+                    // If the non-ascii card itself is a foil, mark the ascii card as having a foil
+                    // even if we don't have price rows for it.
+                    if non_ascii.has_foil {
+                        let mut ascii_clone = (*ascii).clone();
+                        if !ascii_clone.has_foil {
+                            ascii_clone.has_foil = true;
+                            let _ = self.repository.save_cards(&[ascii_clone]).await?;
+                        }
+                    }
                     let non_price = prices.get(&non_ascii.id);
                     let ascii_price = prices.get(&ascii.id);
                     if let Some((_, Some(src_foil))) = non_price {
@@ -267,11 +276,6 @@ impl CardService {
                                     .price_service
                                     .update_price_foil_if_null(&ascii.id, src_foil)
                                     .await?;
-                                let mut ascii_clone = (*ascii).clone();
-                                if !ascii_clone.has_foil {
-                                    ascii_clone.has_foil = true;
-                                    let _ = self.repository.save_cards(&[ascii_clone]).await?;
-                                }
                             }
                             None => {
                                 let normal_opt = non_price.and_then(|p| p.0.clone());
@@ -280,11 +284,6 @@ impl CardService {
                                     .price_service
                                     .insert_price_for_card(&ascii.id, normal_opt, foil_opt)
                                     .await?;
-                                let mut ascii_clone = (*ascii).clone();
-                                if !ascii_clone.has_foil {
-                                    ascii_clone.has_foil = true;
-                                    let _ = self.repository.save_cards(&[ascii_clone]).await?;
-                                }
                             }
                             _ => {}
                         }

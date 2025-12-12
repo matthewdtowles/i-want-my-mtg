@@ -180,6 +180,16 @@ docker compose -f docker compose.prod.yml pull web
 docker compose -f docker compose.prod.yml up -d web
 ```
 
+### Build & Deploy Scry Release
+
+```bash
+cd scry
+cargo build --release
+strip target/release/scry || true
+./target/release/scry --version
+scp target/release/scry lightsail-iwmm:~/
+```
+
 ## Getting Started Checklist
 
 - [ ] Clone repository

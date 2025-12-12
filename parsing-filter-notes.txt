@@ -1,3 +1,72 @@
+-- INCLUDE DIGITS and DIGITS WITH LETTER OR DIGIT SUFFIX 
+-- with MAIN SET if DIGITS <= SET.BASE_SIZE
+SELECT c.*
+FROM card c
+JOIN set s ON c.set_code = s.code
+WHERE c.set_code = $1
+  AND c.number !~ '[^\\x00-\\x7F]'
+  AND (
+    (c.number ~ '^[0-9]+' AND (regexp_match(c.number, '^([0-9]+)'))[1]::int BETWEEN 1 AND s.base_set_size)
+    OR (
+        c.number ~ '^[0-9]+-[0-9]'
+        AND (regexp_match(split_part(c.number,'-',1), '^([0-9]+)'))[1]::int BETWEEN 1 AND s.base_set_size
+      )
+  );
+
+Current behavior
+
+A main-set card like number "112b" gets a ~ → pushed after the real set into the “bonus section.”
+
+✔ Needed behavior
+
+Only prepend ~ when:
+
+card is NOT a main-set card
+
+
+Definition of main-set card:
+
+leading_digits BETWEEN 1 AND base_set_size
+
+So in Rust you must check:
+fn is_main_set_card(number: &str, base_size: i32) -> bool {
+    if let Some(caps) = LEADING_DIGITS_REGEX.captures(number) {
+        if let Ok(n) = caps.get(1).unwrap().as_str().parse::<i32>() {
+            return n >= 1 && n <= base_size;
+        }
+    }
+    false
+}
+
+
+SELECT name, set_code, number, sort_number, is_alternative
+FROM card
+WHERE number !~ '[^\x00-\x7F]'
+AND number ~ '^[0-9]+$'
+-- AND is_alternative = false
+AND sort_number LIKE '~%'
+ORDER BY set_code, sort_number;
+
+SELECT c.set_code, s.base_size, COUNT(*)
+FROM card c
+JOIN set s ON s.code=c.set_code
+WHERE c.number !~ '[^\x00-\x7F]'
+AND c.number ~ '^[0-9]+$'
+-- AND is_alternative = false
+AND c.sort_number LIKE '~%'
+GROUP BY c.set_code, s.base_size
+ORDER BY c.set_code;
+
+
+SELECT c.name, number, sort_number
+FROM card c
+JOIN set s ON c.set_code = s.code
+WHERE c.set_code = '4ed'
+  AND c.number ~ '^[0-9]+'
+  AND c.number !~ '[^\\x00-\\x7F]'
+  AND (regexp_match(c.number, '^([0-9]+)'))[1]::int BETWEEN 1 AND s.base_size;
+
+
 
  -- counts per set: total cards, cards with >=1 price row, cards with no price rows
  SELECT

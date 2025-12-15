@@ -1,0 +1,8 @@
+ALTER TABLE card
+  ADD COLUMN IF NOT EXISTS in_main BOOLEAN;
+
+UPDATE card SET in_main = false WHERE in_main IS NULL;
+
+ALTER TABLE card
+  ALTER COLUMN in_main SET DEFAULT false,
+  ALTER COLUMN in_main SET NOT NULL;

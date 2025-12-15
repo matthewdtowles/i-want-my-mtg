@@ -14,19 +14,13 @@ WHERE c.set_code = $1
   );
 
 Current behavior
-
-A main-set card like number "112b" gets a ~ → pushed after the real set into the “bonus section.”
+  A main-set card like number "112b" gets a ~ → pushed after the real set into the “bonus section.”
 
 ✔ Needed behavior
 
-Only prepend ~ when:
+Only prepend ~ when: card is NOT a main-set card
 
-card is NOT a main-set card
-
-
-Definition of main-set card:
-
-leading_digits BETWEEN 1 AND base_set_size
+Definition of main-set card: leading_digits BETWEEN 1 AND base_set_size
 
 So in Rust you must check:
 fn is_main_set_card(number: &str, base_size: i32) -> bool {

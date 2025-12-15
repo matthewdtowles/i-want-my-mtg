@@ -54,6 +54,7 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
+        let in_main = Self::in_main(card_data);
         let sort_number = Self::normalize_sort_number(&number, is_alternative);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
@@ -103,6 +104,7 @@ impl CardMapper {
             has_foil,
             has_non_foil,
             img_src,
+            in_main,
             is_alternative,
             is_reserved,
             mana_cost,
@@ -121,6 +123,25 @@ impl CardMapper {
             is_oversized,
             language,
         })
+    }
+
+    fn in_main(card_data: &Value) -> bool {
+        if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
+            if !promo_types.is_empty() {
+                return false;
+            }
+        }
+        if let Some(availability) = card_data.get("availability").and_then(|v| v.as_array()) {
+            let has_booster = availability
+                .iter()
+                .any(|v| v.as_str().map(|s| s == "booster").unwrap_or(false));
+            if !has_booster {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        return true;
     }
 
     fn normalize_sort_number(input: &str, is_alternative: bool) -> String {

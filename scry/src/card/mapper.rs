@@ -170,7 +170,7 @@ impl CardMapper {
                 let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (digits, rest) = s.split_at(digits_end);
                 let padded_left = format!("{:0>6}", digits);
-                if s.contains(|c: char| !c.is_ascii()) || is_alternative {
+                if s.contains(|c: char| !c.is_ascii()) && is_alternative {
                     return format!("~{}{}", padded_left, rest);
                 }
                 return format!("{}{}", padded_left, rest);

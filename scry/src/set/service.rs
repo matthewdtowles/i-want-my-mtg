@@ -19,11 +19,11 @@ impl SetService {
         }
     }
 
-    pub async fn fetch_count(&self) -> Result<u64> {
+    pub async fn fetch_count(&self) -> Result<i64> {
         self.repository.count().await
     }
 
-    pub async fn ingest_all(&self) -> Result<u64> {
+    pub async fn ingest_all(&self) -> Result<i64> {
         debug!("Starting MTG set ingestion");
         let raw_data: Value = self.client.fetch_all_sets().await?;
         debug!("Raw data fetched.");
@@ -51,10 +51,10 @@ impl SetService {
         Ok(count)
     }
 
-    pub async fn cleanup_sets(&self, batch_size: i64) -> Result<u64> {
+    pub async fn cleanup_sets(&self, batch_size: i64) -> Result<i64> {
         debug!("Starting cleanup for sets");
         let raw_data: Value = self.client.fetch_all_sets().await?;
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         if let Some(arr) = raw_data.get("data").and_then(|d| d.as_array()) {
             for set_obj in arr {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
@@ -72,19 +72,19 @@ impl SetService {
         Ok(total_deleted)
     }
 
-    pub async fn delete_all(&self) -> Result<u64> {
+    pub async fn delete_all(&self) -> Result<i64> {
         debug!("Deleting all sets.");
         self.repository.delete_all().await
     }
 
-    pub async fn prune_empty_sets(&self) -> Result<u64> {
+    pub async fn prune_empty_sets(&self) -> Result<i64> {
         debug!("Deleting sets that do not have any cards.");
         let empty_sets: Vec<Set> = self.repository.fetch_empty_sets().await?;
         debug!("Found {} empty sets", empty_sets.len());
         if empty_sets.is_empty() {
             return Ok(0);
         }
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         for set in empty_sets {
             let code = set.code.to_lowercase();
             let n = self.repository.delete_set_batch(&code, 100).await?;
@@ -94,7 +94,7 @@ impl SetService {
         Ok(total_deleted)
     }
 
-    pub async fn prune_missing_prices(&self, missing_limit_pct: f64) -> Result<u64> {
+    pub async fn prune_missing_prices(&self, missing_limit_pct: f64) -> Result<i64> {
         let printable_arg = 100.0 * missing_limit_pct;
         debug!(
             "Pruning sets with price data for less than {}% of its cards.",
@@ -104,7 +104,7 @@ impl SetService {
             .repository
             .fetch_missing_prices(missing_limit_pct)
             .await?;
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         for set in sets_missing_prices {
             let code = set.code.to_lowercase();
             total_deleted += self.repository.delete_set_batch(&code, 100).await?;
@@ -114,6 +114,18 @@ impl SetService {
             total_deleted, printable_arg
         );
         Ok(total_deleted)
+    }
+
+    pub async fn update_sizes(
+        &self,
+        base_sizes: Vec<(String, i64)>,
+        total_sizes: Vec<(String, i64)>,
+    ) -> Result<i64> {
+        let updated = self
+            .repository
+            .update_sizes(&base_sizes, &total_sizes)
+            .await?;
+        Ok(updated)
     }
 
     fn should_filter(&self, set: &Set) -> bool {

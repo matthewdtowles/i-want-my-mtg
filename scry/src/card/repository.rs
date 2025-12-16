@@ -54,7 +54,7 @@ impl CardRepository {
         Ok(rows)
     }
 
-    pub async fn save_cards(&self, cards: &[Card]) -> Result<u64> {
+    pub async fn save_cards(&self, cards: &[Card]) -> Result<i64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");
             return Ok(0);
@@ -129,7 +129,7 @@ impl CardRepository {
         }
     }
 
-    pub async fn save_legalities(&self, cards: &[Card]) -> Result<u64> {
+    pub async fn save_legalities(&self, cards: &[Card]) -> Result<i64> {
         let card_ids: Vec<String> = cards.iter().map(|c| c.id.clone()).collect();
         if card_ids.is_empty() {
             return Ok(0);
@@ -174,6 +174,16 @@ impl CardRepository {
         Ok(count as u64)
     }
 
+    pub async fn count_for_sets(&self, main_only: bool) -> Result<Vec<(String, i64)>> {
+        let mut qb = QueryBuilder::new("SELECT set_code, COUNT(*)::bigint AS total FROM card");
+        if main_only {
+            qb.push(" WHERE in_main = true");
+        }
+        qb.push(" GROUP BY set_code");
+        let rows: Vec<(String, i64)> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows)
+    }
+
     pub async fn legality_count(&self) -> Result<u64> {
         let count = self.db.count("SELECT COUNT(*) FROM legality").await?;
         Ok(count as u64)
@@ -187,18 +197,18 @@ impl CardRepository {
         Ok(exists)
     }
 
-    pub async fn delete_all(&self) -> Result<u64> {
+    pub async fn delete_all(&self) -> Result<i64> {
         self.delete_table(String::from("legality")).await?;
         let cards_deleted = self.delete_table(String::from("card")).await?;
         debug!("{} cards deleted.", cards_deleted);
         Ok(cards_deleted)
     }
 
-    pub async fn delete_cards_batch(&self, ids: &[String], batch_size: i64) -> Result<u64> {
+    pub async fn delete_cards_batch(&self, ids: &[String], batch_size: i64) -> Result<i64> {
         if ids.is_empty() {
             return Ok(0);
         }
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         for chunk in ids.chunks(batch_size as usize) {
             let mut qb = QueryBuilder::new("DELETE FROM legality WHERE card_id = ANY(");
             qb.push_bind(chunk.to_vec());
@@ -221,7 +231,7 @@ impl CardRepository {
         Ok(total_deleted)
     }
 
-    async fn delete_table(&self, table: String) -> Result<u64> {
+    async fn delete_table(&self, table: String) -> Result<i64> {
         let qb = QueryBuilder::new(format!("DELETE FROM {} CASCADE", table));
         let total_deleted = self.db.execute_query_builder(qb).await?;
         debug!("{} {} entities deleted.", total_deleted, table);

@@ -7,7 +7,6 @@ pub struct SetMapper;
 impl SetMapper {
     pub fn map_mtg_json_to_set(set_data: &Value) -> Result<Set> {
         let code = json::extract_string(set_data, "code")?.to_lowercase();
-        let base_size: i32 = json::extract_int(set_data, "baseSetSize")?;
         let block = json::extract_optional_string(set_data, "block");
         let keyrune_code = json::extract_string(set_data, "keyruneCode")?.to_lowercase();
         let name = json::extract_string(set_data, "name")?;
@@ -27,15 +26,16 @@ impl SetMapper {
             .unwrap_or(false);
         Ok(Set {
             code,
-            base_size,
+            base_size: 0,
             block,
+            is_foreign_only,
+            is_online_only,
             keyrune_code,
             name,
             parent_code,
             release_date,
             set_type,
-            is_online_only,
-            is_foreign_only,
+            total_size: 0,
         })
     }
 }

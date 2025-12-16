@@ -18,6 +18,7 @@ describe("SetService", () => {
         name: "Test Set" + i,
         parentCode: "SET",
         releaseDate: "2022-01-01",
+        totalSize: 3,
         type: "expansion",
         url: "sets/" + setCodes[i],
     }));

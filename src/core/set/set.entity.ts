@@ -7,6 +7,7 @@ export class Set {
     readonly keyruneCode: string;
     readonly name: string;
     readonly releaseDate: string;
+    readonly totalSize: number;
     readonly type: string;
     // Optional fields
     readonly block?: string;
@@ -14,13 +15,16 @@ export class Set {
     readonly parentCode?: string;
 
     constructor(init: Partial<Set>) {
-        const requiredFields: (keyof Set)[] = ["code", "baseSize", "keyruneCode", "name", "releaseDate", "type"];
+        const requiredFields: (keyof Set)[] = [
+            "code", "baseSize", "keyruneCode", "name", "releaseDate", "totalSize", "type"
+        ];
         validateInit(init, requiredFields);
         this.code = init.code;
         this.baseSize = init.baseSize;
         this.keyruneCode = init.keyruneCode;
         this.name = init.name;
         this.releaseDate = init.releaseDate;
+        this.totalSize = init.totalSize;
         this.type = init.type;
         // Optional fields
         this.block = init.block;

@@ -19,7 +19,7 @@ describe("CardOrchestrator", () => {
 
     const mockCardService = {
         findBySetCodeAndNumber: jest.fn(),
-        findWithName: jest.fn(), // FIX: was findAllWithName
+        findWithName: jest.fn(),
         totalWithName: jest.fn(),
     };
 
@@ -52,6 +52,7 @@ describe("CardOrchestrator", () => {
         artist: "Christopher Rush",
         prices: [],
         sortNumber: "000001",
+        inMain: true
     });
 
     const mockOtherPrintingCard: Card = new Card({
@@ -67,6 +68,7 @@ describe("CardOrchestrator", () => {
         artist: "Christopher Rush",
         prices: [],
         sortNumber: "000149",
+        inMain: true,
     });
 
     const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10 });

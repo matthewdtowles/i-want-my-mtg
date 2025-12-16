@@ -30,6 +30,7 @@ describe("SetOrchestrator", () => {
         name: "Test Set",
         releaseDate: String(new Date()),
         cards: [],
+        totalSize: 2,
         type: "test",
     };
 
@@ -51,6 +52,7 @@ describe("SetOrchestrator", () => {
         legalities: [],
         isAlternative: false,
         sortNumber: "000001",
+        inMain: true,
     };
 
     beforeEach(async () => {

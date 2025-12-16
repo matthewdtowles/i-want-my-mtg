@@ -9,7 +9,6 @@ pub struct Card {
     pub has_non_foil: bool,
     pub img_src: String,
     pub in_main: bool,
-    // TODO: do we still need this?
     pub is_alternative: bool,
     pub is_reserved: bool,
     pub layout: String,

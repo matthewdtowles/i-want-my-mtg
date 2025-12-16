@@ -15,6 +15,7 @@ export class SetMapper {
             block: ormSet.block,
             baseSize: ormSet.baseSize,
             keyruneCode: ormSet.keyruneCode,
+            totalSize: ormSet.totalSize,
             cards: ormSet.cards && Array.isArray(ormSet.cards) ?
                 ormSet.cards.map((c: CardOrmEntity) => CardMapper.toCore(c)) : [],
         });
@@ -29,6 +30,7 @@ export class SetMapper {
             block: coreSet.block,
             baseSize: coreSet.baseSize,
             keyruneCode: coreSet.keyruneCode,
+            totalSize: coreSet.totalSize,
             cards: coreSet.cards ? coreSet.cards.map((c: Card) => CardMapper.toOrmEntity(c)) : [],
         };
     }

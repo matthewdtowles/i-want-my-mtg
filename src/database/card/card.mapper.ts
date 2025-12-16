@@ -13,6 +13,7 @@ export class CardMapper {
             hasFoil: ormCard.hasFoil,
             hasNonFoil: ormCard.hasNonFoil,
             imgSrc: ormCard.imgSrc,
+            inMain: ormCard.inMain,
             isAlternative: ormCard.isAlternative,
             isReserved: ormCard.isReserved,
             legalities: ormCard.legalities ? ormCard.legalities.map(legality => (LegalityMapper.toCore(legality))) : [],
@@ -37,6 +38,7 @@ export class CardMapper {
         ormEntity.hasFoil = coreCard.hasFoil;
         ormEntity.hasNonFoil = coreCard.hasNonFoil;
         ormEntity.imgSrc = coreCard.imgSrc;
+        ormEntity.inMain = coreCard.inMain;
         ormEntity.isAlternative = coreCard.isAlternative;
         ormEntity.isReserved = coreCard.isReserved;
         ormEntity.legalities = coreCard.legalities.map(legality => (LegalityMapper.toOrmEntity(legality)));

@@ -2,7 +2,7 @@
 
 ## Overview
 
-"I Want My MTG" is a project for managing and viewing Magic: The Gathering collections. This project uses NestJS, TypeORM, and other modern web technologies.
+"I Want My MTG" is a project for managing and viewing Magic: The Gathering collections.
 
 ## Development Workflow
 
@@ -22,15 +22,13 @@
 
 `docker compose logs -f web`
 
-### Example Dev Workflow
-
-#### Start Web App + Database
-
-`docker compose up web postgres`
-
 #### Run ETL Process to Get All Data
 
 `docker compose run --rm etl cargo run -- ingest`
+
+#### Run ETL Process One-time Cleanup For Everything
+
+`docker compose run --rm etl cargo run -- cleanup -c`
 
 #### Run Tests
 
@@ -38,10 +36,6 @@
 docker compose exec web npm test
 docker compose exec etl cargo test
 ```
-
-#### Check Database
-
-`docker compose exec postgres psql -U postgres -d i_want_my_mtg`
 
 #### Rebuild (For Dependency Changes)
 
@@ -51,14 +45,6 @@ docker compose up -d web
 ```
 
 ### Database Management
-
-#### Run Migrations
-
-`docker compose exec web npm run migration:run`
-
-#### Seed Database
-
-`docker compose exec web npm run seed`
 
 #### Database Backup
 
@@ -71,25 +57,9 @@ docker compose down -v
 docker compose up -d postgres
 ```
 
-## Example Dev Workflow 2
-
-### Daily development
-
-#### Start everything
-
-`docker compose up -d`
-
-#### Watch web app logs
-
-`docker compose logs -f web`
-
-#### Run ETL
-
-`docker compose run --rm etl cargo run -- ingest`
-
 ### Database operations
 
-`docker compose exec postgres psql -U -d i_want_my_mtg`
+`docker exec -it i-want-my-mtg-postgres-1 psql -U iwmm_pg_user -d i_want_my_mtg`
 
 ### Debugging
 
@@ -105,8 +75,6 @@ docker compose up -d postgres
 
 `docker compose down -v`
 
-### Cleanup
-
 #### Stop Everything
 
 `docker compose down`
@@ -115,38 +83,9 @@ docker compose up -d postgres
 
 `docker system prune`
 
-## Command Cheat Sheet
-
-### Development
-
-#### Start Everything
-
-`docker compose up`
-
-#### Start Web App
-
-`docker compose up web postgres`
-
-#### Run ETL (Dev)
-
-`docker compose run --rm etl`
-
-#### View Logs for Web
-
-`docker compose logs -f web`
-
-#### Execute Commands
-
-```Docker
-docker compose exec web npm run migration:run
-docker compose exec postgres psql -U postgres -d i_want_my_mtg
-```
-
 #### Execute Migrations
 
-```Docker
-docker compose run --rm migrate
-```
+`docker compose run --rm migrate`
 
 #### Clean Up/Reset
 
@@ -189,15 +128,3 @@ strip target/release/scry || true
 ./target/release/scry --version
 scp target/release/scry lightsail-iwmm:~/
 ```
-
-## Getting Started Checklist
-
-- [ ] Clone repository
-- [ ] Copy .env.example to .env
-- [ ] Run docker compose up
-- [ ] Visit localhost:3000 (web app)
-- [ ] Visit localhost:8080 (database admin)
-- [ ] Make code changes and see hot reload
-- [ ] Run ETL: docker compose run --rm etl
-- [ ] Commit changes to trigger CI/CD
-- [ ] Deploy to production server

@@ -165,7 +165,6 @@ impl SetRepository {
         total_sizes: &[(String, i64)],
     ) -> Result<i64> {
         let mut total_updated = 0i64;
-
         if !base_sizes.is_empty() {
             let mut qb = QueryBuilder::new("WITH vals(code, size) AS (VALUES ");
             qb.push_values(base_sizes, |mut b, pair| {

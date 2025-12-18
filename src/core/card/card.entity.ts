@@ -10,7 +10,7 @@ export class Card {
     readonly hasFoil: boolean;
     readonly hasNonFoil: boolean;
     readonly imgSrc: string;
-    readonly inMain: boolean;
+    readonly inMain?: boolean;
     readonly isAlternative: boolean;
     readonly isReserved: boolean;
     legalities: Legality[];
@@ -30,7 +30,6 @@ export class Card {
         const requiredFields: (keyof Card)[] = [
             "id",
             "imgSrc",
-            "inMain",
             "legalities",
             "name",
             "number",
@@ -44,7 +43,7 @@ export class Card {
         this.hasFoil = init.hasFoil ?? false;
         this.hasNonFoil = init.hasNonFoil ?? false;
         this.imgSrc = init.imgSrc;
-        this.inMain = init.inMain;
+        this.inMain = init.inMain ?? false;
         this.isAlternative = init.isAlternative ?? false;
         this.isReserved = init.isReserved ?? false;
         this.legalities = init.legalities;

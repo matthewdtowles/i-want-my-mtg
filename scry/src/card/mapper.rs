@@ -125,6 +125,19 @@ impl CardMapper {
         })
     }
 
+    /*
+    DO NOT EXCLUDE THE FOLLOWING PROMO TYPES:
+        beginnerbox
+        startercollection
+        themepack
+        intropack
+        starterdeck
+        welcome
+        openhouse
+        draftweekend
+        league
+        release
+     */
     fn in_main(card_data: &Value) -> bool {
         if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
             if !promo_types.is_empty() {
@@ -142,6 +155,24 @@ impl CardMapper {
             return false;
         }
         return true;
+    }
+
+    fn is_canon(promo_types: &Vec<Value>) -> bool {
+        // IS CANON IF PROMO TYPES DOES NOT CONTAIN ANYTHING OUTSIDE OF THE FOLLOWING:
+        // beginnerbox
+        // startercollection
+        // themepack
+        // intropack
+        // starterdeck
+        // welcome
+        // openhouse
+        // draftweekend
+        // league
+        // release
+        if promo_types.is_empty() || promo_types.contains() {
+            return true;
+        }
+        return false;
     }
 
     fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {

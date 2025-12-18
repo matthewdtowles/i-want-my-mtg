@@ -55,7 +55,7 @@ impl CardMapper {
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
         let in_main = Self::in_main(card_data);
-        let sort_number = Self::normalize_sort_number(&number, is_alternative);
+        let sort_number = Self::normalize_sort_number(&number, is_alternative, in_main);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -144,9 +144,12 @@ impl CardMapper {
         return true;
     }
 
-    fn normalize_sort_number(input: &str, is_alternative: bool) -> String {
+    fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+
+        // Apply ~ prefix for cards not in main
+        let prefix = if !in_main { "~" } else { "" };
 
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
@@ -161,7 +164,7 @@ impl CardMapper {
                 format!("{:0>4}{}", right_digits, right_rest)
             };
             if starts_with_digit {
-                format!("{}-{}", left, padded_right)
+                format!("{}{}-{}", prefix, left, padded_right)
             } else {
                 format!("~{}-{}", left, padded_right)
             }
@@ -173,7 +176,7 @@ impl CardMapper {
                 if s.contains(|c: char| !c.is_ascii()) && is_alternative {
                     return format!("~{}{}", padded_left, rest);
                 }
-                return format!("{}{}", padded_left, rest);
+                return format!("{}{}{}", prefix, padded_left, rest);
             }
             let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
             if let Some(idx) = first_digit_idx {

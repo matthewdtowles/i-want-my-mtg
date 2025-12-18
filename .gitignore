@@ -51,6 +51,3 @@ Cargo.toml.orig
 rustfmt.toml
 .clippy.toml
 **vendor**
-
-# Ignore compiled binaries
-scry

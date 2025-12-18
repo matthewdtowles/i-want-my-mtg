@@ -131,10 +131,10 @@ impl CardMapper {
                 return false;
             }
         }
-        if let Some(availability) = card_data.get("availability").and_then(|v| v.as_array()) {
-            let has_booster = availability
+        if let Some(booster_types) = card_data.get("boosterTypes").and_then(|v| v.as_array()) {
+            let has_booster = booster_types
                 .iter()
-                .any(|v| v.as_str().map(|s| s == "booster").unwrap_or(false));
+                .any(|v| v.as_str().map(|s| s == "default").unwrap_or(false));
             if !has_booster {
                 return false;
             }

@@ -165,8 +165,9 @@ impl SetRepository {
         total_sizes: &[(String, i64)],
     ) -> Result<i64> {
         let mut total_updated = 0i64;
+
         if !base_sizes.is_empty() {
-            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (VALUES ");
+            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (");
             qb.push_values(base_sizes, |mut b, pair| {
                 b.push_bind(&pair.0).push_bind(&pair.1);
             });
@@ -177,7 +178,7 @@ impl SetRepository {
         }
 
         if !total_sizes.is_empty() {
-            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (VALUES ");
+            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (");
             qb.push_values(total_sizes, |mut b, pair| {
                 b.push_bind(&pair.0).push_bind(&pair.1);
             });
@@ -186,7 +187,6 @@ impl SetRepository {
             );
             total_updated += self.db.execute_query_builder(qb).await?;
         }
-
         Ok(total_updated)
     }
 }

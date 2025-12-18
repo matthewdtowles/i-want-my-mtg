@@ -63,9 +63,8 @@ impl CardRepository {
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
                 id, artist, has_foil, has_non_foil, img_src,
-                is_alternative, is_reserved, mana_cost, name, number,
-                oracle_text, rarity, set_code, sort_number, type,
-                layout
+                in_main, is_alternative, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, sort_number,
+                type, layout
             )",
         );
         query_builder.push_values(cards, |mut b, card| {
@@ -74,6 +73,7 @@ impl CardRepository {
                 .push_bind(&card.has_foil)
                 .push_bind(&card.has_non_foil)
                 .push_bind(&card.img_src)
+                .push_bind(&card.in_main)
                 .push_bind(&card.is_alternative)
                 .push_bind(&card.is_reserved)
                 .push_bind(&card.mana_cost)
@@ -92,6 +92,7 @@ impl CardRepository {
             has_foil = EXCLUDED.has_foil,
             has_non_foil = EXCLUDED.has_non_foil,
             img_src = EXCLUDED.img_src,
+            in_main = EXCLUDED.in_main,
             is_alternative = EXCLUDED.is_alternative,
             is_reserved = EXCLUDED.is_reserved,
             mana_cost = EXCLUDED.mana_cost,
@@ -108,6 +109,7 @@ impl CardRepository {
             card.has_foil IS DISTINCT FROM EXCLUDED.has_foil OR
             card.has_non_foil IS DISTINCT FROM EXCLUDED.has_non_foil OR
             card.img_src IS DISTINCT FROM EXCLUDED.img_src OR
+            card.in_main IS DISTINCT FROM EXCLUDED.in_main OR
             card.is_alternative IS DISTINCT FROM EXCLUDED.is_alternative OR
             card.is_reserved IS DISTINCT FROM EXCLUDED.is_reserved OR
             card.mana_cost IS DISTINCT FROM EXCLUDED.mana_cost OR

@@ -140,7 +140,7 @@ impl CardMapper {
      */
     fn in_main(card_data: &Value) -> bool {
         if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
-            if !promo_types.is_empty() {
+            if !Self::is_canon(promo_types) {
                 return false;
             }
         }
@@ -158,21 +158,25 @@ impl CardMapper {
     }
 
     fn is_canon(promo_types: &Vec<Value>) -> bool {
-        // IS CANON IF PROMO TYPES DOES NOT CONTAIN ANYTHING OUTSIDE OF THE FOLLOWING:
-        // beginnerbox
-        // startercollection
-        // themepack
-        // intropack
-        // starterdeck
-        // welcome
-        // openhouse
-        // draftweekend
-        // league
-        // release
-        if promo_types.is_empty() || promo_types.contains() {
-            return true;
-        }
-        return false;
+        let allowed_promos = [
+            "beginnerbox",
+            "startercollection",
+            "themepack",
+            "intropack",
+            "starterdeck",
+            "welcome",
+            "openhouse",
+            "draftweekend",
+            "league",
+            "release",
+        ];
+
+        promo_types.iter().all(|promo| {
+            promo
+                .as_str()
+                .map(|s| allowed_promos.contains(&s))
+                .unwrap_or(false)
+        })
     }
 
     fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {

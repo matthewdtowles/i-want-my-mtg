@@ -141,7 +141,7 @@ impl CardMapper {
         } else {
             return false;
         }
-        return true;
+        true
     }
 
     fn is_canon(promo_types: &Vec<Value>) -> bool {

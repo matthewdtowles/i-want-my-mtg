@@ -39,7 +39,7 @@ impl PriceService {
         &self,
         card_id: &str,
         new_foil: &Decimal,
-    ) -> Result<u64> {
+    ) -> Result<i64> {
         self.repository
             .update_price_foil_if_null(card_id, new_foil)
             .await
@@ -51,17 +51,17 @@ impl PriceService {
         card_id: &str,
         normal: Option<Decimal>,
         foil: Option<Decimal>,
-    ) -> Result<u64> {
+    ) -> Result<i64> {
         self.repository
             .insert_price_for_card(card_id, normal, foil)
             .await
     }
 
-    pub async fn fetch_price_count(&self) -> Result<u64> {
+    pub async fn fetch_price_count(&self) -> Result<i64> {
         self.repository.price_count().await
     }
 
-    pub async fn fetch_price_history_count(&self) -> Result<u64> {
+    pub async fn fetch_price_history_count(&self) -> Result<i64> {
         self.repository.price_history_count().await
     }
 
@@ -80,7 +80,7 @@ impl PriceService {
         Ok(())
     }
 
-    pub async fn delete_all(&self) -> Result<u64> {
+    pub async fn delete_all(&self) -> Result<i64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
     }

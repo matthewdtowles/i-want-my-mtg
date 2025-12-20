@@ -27,6 +27,9 @@ export class SetOrmEntity {
     @Column({ name: "release_date", type: "date" })
     releaseDate: string;
 
+    @Column({ name: "total_size" })
+    totalSize: number;
+
     @Column()
     type: string;
 }

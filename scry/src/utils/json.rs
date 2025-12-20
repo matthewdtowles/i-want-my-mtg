@@ -1,6 +1,5 @@
 use anyhow::Result;
 use chrono::NaiveDate;
-use rust_decimal::prelude::ToPrimitive;
 use serde_json::Value;
 
 pub fn extract_string(value: &Value, key: &str) -> Result<String> {
@@ -16,14 +15,6 @@ pub fn extract_optional_string(value: &Value, key: &str) -> Option<String> {
         .get(key)
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
-}
-
-pub fn extract_int(value: &Value, key: &str) -> Result<i32> {
-    value
-        .get(key)
-        .and_then(|v| v.as_i64())
-        .and_then(|i| i.to_i32())
-        .ok_or_else(|| anyhow::anyhow!("Missing or invalid '{}' field", key))
 }
 
 pub fn extract_date(value: &Value, key: &str) -> Result<NaiveDate> {

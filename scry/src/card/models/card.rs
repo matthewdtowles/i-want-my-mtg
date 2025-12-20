@@ -8,6 +8,7 @@ pub struct Card {
     pub has_foil: bool,
     pub has_non_foil: bool,
     pub img_src: String,
+    pub in_main: bool,
     pub is_alternative: bool,
     pub is_reserved: bool,
     pub layout: String,
@@ -23,15 +24,15 @@ pub struct Card {
     pub type_line: String,
 
     #[sqlx(skip)]
-    pub legalities: Vec<super::Legality>,
-    #[sqlx(skip)]
     pub is_online_only: bool,
-    #[sqlx(skip)]
-    pub side: Option<String>,
-    #[sqlx(skip)]
-    pub other_face_ids: Option<Vec<String>>,
     #[sqlx(skip)]
     pub is_oversized: bool,
     #[sqlx(skip)]
     pub language: String,
+    #[sqlx(skip)]
+    pub legalities: Vec<super::Legality>,
+    #[sqlx(skip)]
+    pub other_face_ids: Option<Vec<String>>,
+    #[sqlx(skip)]
+    pub side: Option<String>,
 }

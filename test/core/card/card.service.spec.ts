@@ -21,6 +21,7 @@ describe("CardService", () => {
         number: "123",
         rarity: CardRarity.Common,
         imgSrc: "test-image.jpg",
+        inMain: true,
         isReserved: false,
         hasFoil: true,
         hasNonFoil: true,

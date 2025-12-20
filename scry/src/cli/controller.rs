@@ -44,6 +44,9 @@ impl CliController {
                 if let Err(e) = self.post_ingest_prune().await {
                     error!("Post ingestion pruning failed: {}", e);
                 }
+                if let Err(e) = self.post_ingest_updates().await {
+                    error!("Post ingestion updates failed: {}", e);
+                }
                 Ok(())
             }
 
@@ -237,6 +240,17 @@ impl CliController {
             "Total cards before {} | after {}",
             total_cards_before, total_cards_after
         );
+        Ok(())
+    }
+
+    async fn post_ingest_updates(&self) -> Result<()> {
+        info!("Begin post-ingestion updates.");
+        let base_sizes = self.card_service.count_per_all_sets(true).await?;
+        info!("Found {} base_sizes for all sets.", base_sizes.len());
+        let total_sizes = self.card_service.count_per_all_sets(false).await?;
+        info!("Found {} total_sizes for all sets.", total_sizes.len());
+        let total_updated = self.set_service.update_sizes(base_sizes, total_sizes).await?;
+        info!("Total updated rows after updates: {}", total_updated);
         Ok(())
     }
 }

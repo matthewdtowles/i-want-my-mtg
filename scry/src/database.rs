@@ -26,9 +26,9 @@ impl ConnectionPool {
     pub async fn execute_query_builder(
         &self,
         mut builder: QueryBuilder<'_, sqlx::Postgres>,
-    ) -> Result<u64> {
+    ) -> Result<i64> {
         let result = builder.build().execute(&*self.pool).await?;
-        Ok(result.rows_affected())
+        Ok(result.rows_affected() as i64)
     }
 
     pub async fn count(&self, query: &str) -> Result<i64> {

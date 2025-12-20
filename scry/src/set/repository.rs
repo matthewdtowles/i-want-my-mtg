@@ -14,14 +14,14 @@ impl SetRepository {
         Self { db }
     }
 
-    pub async fn count(&self) -> Result<u64> {
-        let count = self.db.count("SELECT COUNT(*) FROM set").await?;
-        Ok(count as u64)
+    pub async fn count(&self) -> Result<i64> {
+        let count = self.db.count("SELECT COUNT(*) FROM \"set\"").await?;
+        Ok(count)
     }
 
     pub async fn fetch_empty_sets(&self) -> Result<Vec<Set>> {
         let qb = QueryBuilder::new(
-            "SELECT * FROM set s
+            "SELECT * FROM \"set\" s
             WHERE NOT EXISTS (
                 SELECT 1 FROM card c WHERE c.set_code = s.code
             ) ORDER BY s.code",
@@ -32,7 +32,7 @@ impl SetRepository {
 
     pub async fn fetch_missing_prices(&self, threshold_pct: f64) -> Result<Vec<Set>> {
         let mut qb = QueryBuilder::new(
-            "SELECT * FROM set s
+            "SELECT * FROM \"set\" s
             WHERE s.code IN (
                 SELECT c.set_code 
                 FROM card c
@@ -46,13 +46,13 @@ impl SetRepository {
         Ok(result)
     }
 
-    pub async fn save_sets(&self, sets: &[Set]) -> Result<u64> {
+    pub async fn save_sets(&self, sets: &[Set]) -> Result<i64> {
         if sets.is_empty() {
             warn!("0 sets given, 0 sets saved.");
             return Ok(0);
         }
         let mut query_builder = QueryBuilder::new(
-            "INSERT INTO set (
+            "INSERT INTO \"set\" (
                 code, base_size, block, keyrune_code,
                 name, parent_code, release_date, type 
             )",
@@ -88,16 +88,16 @@ impl SetRepository {
         self.db.execute_query_builder(query_builder).await
     }
 
-    pub async fn delete_all(&self) -> Result<u64> {
+    pub async fn delete_all(&self) -> Result<i64> {
         let qb = QueryBuilder::new("DELETE FROM set CASCADE");
         self.db.execute_query_builder(qb).await
     }
 
-    pub async fn delete_set_batch(&self, set_code: &str, batch_size: i64) -> Result<u64> {
+    pub async fn delete_set_batch(&self, set_code: &str, batch_size: i64) -> Result<i64> {
         if set_code.is_empty() {
             return Ok(0);
         }
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -111,7 +111,7 @@ impl SetRepository {
             }
         }
         debug!("Deleted {} legalities", total_deleted);
-        total_deleted = 0u64;
+        total_deleted = 0i64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -125,7 +125,7 @@ impl SetRepository {
             }
         }
         debug!("Deleted {} prices", total_deleted);
-        total_deleted = 0u64;
+        total_deleted = 0i64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -139,7 +139,7 @@ impl SetRepository {
             }
         }
         debug!("Deleted {} inventory items", total_deleted);
-        total_deleted = 0u64;
+        total_deleted = 0i64;
         loop {
             let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
             qb.push_bind(set_code);
@@ -157,5 +157,36 @@ impl SetRepository {
         qb.push_bind(set_code);
         let deleted = self.db.execute_query_builder(qb).await?;
         Ok(deleted)
+    }
+
+    pub async fn update_sizes(
+        &self,
+        base_sizes: &[(String, i64)],
+        total_sizes: &[(String, i64)],
+    ) -> Result<i64> {
+        let mut total_updated = 0i64;
+
+        if !base_sizes.is_empty() {
+            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (");
+            qb.push_values(base_sizes, |mut b, pair| {
+                b.push_bind(&pair.0).push_bind(&pair.1);
+            });
+            qb.push(
+                ") UPDATE \"set\" s SET base_size = v.size FROM vals v WHERE s.code = v.code AND (s.base_size IS DISTINCT FROM v.size)",
+            );
+            total_updated += self.db.execute_query_builder(qb).await?;
+        }
+
+        if !total_sizes.is_empty() {
+            let mut qb = QueryBuilder::new("WITH vals(code, size) AS (");
+            qb.push_values(total_sizes, |mut b, pair| {
+                b.push_bind(&pair.0).push_bind(&pair.1);
+            });
+            qb.push(
+                ") UPDATE \"set\" s SET total_size = v.size FROM vals v WHERE s.code = v.code AND (s.total_size IS DISTINCT FROM v.size)",
+            );
+            total_updated += self.db.execute_query_builder(qb).await?;
+        }
+        Ok(total_updated)
     }
 }

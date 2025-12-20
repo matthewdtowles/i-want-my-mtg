@@ -20,7 +20,6 @@ pub struct CardService {
     client: Arc<HttpClient>,
     repository: CardRepository,
     foreign_cards: Arc<Mutex<Vec<String>>>,
-    // NEW: use the service (keeps repo private)
     price_service: Arc<PriceService>,
 }
 
@@ -28,7 +27,6 @@ impl CardService {
     const BATCH_SIZE: usize = 500;
     const CONCURRENCY: usize = 6;
 
-    // UPDATED: accept price_service
     pub fn new(
         db: Arc<ConnectionPool>,
         http_client: Arc<HttpClient>,
@@ -46,11 +44,15 @@ impl CardService {
         self.repository.count().await
     }
 
+    pub async fn count_per_all_sets(&self, main_only: bool) -> Result<Vec<(String, i64)>> {
+        self.repository.count_for_sets(main_only).await
+    }
+
     pub async fn fetch_legality_count(&self) -> Result<u64> {
         self.repository.legality_count().await
     }
 
-    pub async fn ingest_set_cards(&self, set_code: &str) -> Result<u64> {
+    pub async fn ingest_set_cards(&self, set_code: &str) -> Result<i64> {
         debug!("Starting card ingestion for set: {}", set_code);
         let raw_data: Value = self.client.fetch_set_cards(&set_code).await?;
         let parsed = CardMapper::map_to_cards(raw_data)?;
@@ -142,7 +144,7 @@ impl CardService {
         Ok(())
     }
 
-    pub async fn delete_all(&self) -> Result<u64> {
+    pub async fn delete_all(&self) -> Result<i64> {
         debug!("Deleting all prices.");
         self.repository.delete_all().await
     }
@@ -177,7 +179,7 @@ impl CardService {
                     }
                     let deleted = repo.delete_cards_batch(&ids_to_delete, batch_size).await?;
                     let mut lock = total.lock().await;
-                    *lock += deleted;
+                    *lock += deleted as u64;
                     Ok(())
                 })
             })
@@ -190,7 +192,7 @@ impl CardService {
         Ok(final_total)
     }
 
-    pub async fn prune_foreign_unpriced(&self) -> Result<u64> {
+    pub async fn prune_foreign_unpriced(&self) -> Result<i64> {
         let card_candidates = {
             let lock = self.foreign_cards.lock().await;
             lock.clone()
@@ -221,11 +223,11 @@ impl CardService {
         Ok(total_deleted)
     }
 
-    pub async fn prune_duplicate_foils(&self) -> Result<u64> {
+    pub async fn prune_duplicate_foils(&self) -> Result<i64> {
         let dup_foil_sets: Vec<&str> = vec![
             "40k", "7ed", "8ed", "9ed", "10e", "frf", "ons", "shm", "stx", "thb", "unh",
         ];
-        let mut total_deleted = 0u64;
+        let mut total_deleted = 0i64;
         for set_code in dup_foil_sets {
             let non_ascii_cards = self
                 .repository

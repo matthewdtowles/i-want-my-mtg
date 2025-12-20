@@ -69,6 +69,7 @@ describe("InventoryOrchestrator", () => {
                 prices: [],
                 isAlternative: false,
                 sortNumber: "000001",
+                inMain: true,
             };
             inventoryService.findAllForUser.mockResolvedValue([
                 {

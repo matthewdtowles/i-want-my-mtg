@@ -54,7 +54,8 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
-        let sort_number = Self::normalize_sort_number(&number, is_alternative);
+        let in_main = Self::in_main(card_data);
+        let sort_number = Self::normalize_sort_number(&number, is_alternative, in_main);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -103,6 +104,7 @@ impl CardMapper {
             has_foil,
             has_non_foil,
             img_src,
+            in_main,
             is_alternative,
             is_reserved,
             mana_cost,
@@ -123,9 +125,70 @@ impl CardMapper {
         })
     }
 
-    fn normalize_sort_number(input: &str, is_alternative: bool) -> String {
+    fn in_main(card_data: &Value) -> bool {
+        if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
+            if !Self::is_canon(promo_types) {
+                return false;
+            }
+        }
+        if let Some(booster_types) = card_data.get("boosterTypes").and_then(|v| v.as_array()) {
+            let has_booster = booster_types
+                .iter()
+                .any(|v| v.as_str().map(|s| s == "default").unwrap_or(false));
+            if !has_booster {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        true
+    }
+
+    fn is_canon(promo_types: &[Value]) -> bool {
+        let allowed_promos = [
+            "beginnerbox",
+            "startercollection",
+            "themepack",
+            "intropack",
+            "starterdeck",
+            "welcome",
+            "openhouse",
+            "draftweekend",
+            "league",
+            "release",
+            "universesbeyond",
+            "ffi",
+            "ffii",
+            "ffiii",
+            "ffiv",
+            "ffix",
+            "ffv",
+            "ffvi",
+            "ffvii",
+            "ffviii",
+            "ffx",
+            "ffxi",
+            "ffxii",
+            "ffxiii",
+            "ffxiv",
+            "ffxv",
+            "ffxvi",
+        ];
+
+        promo_types.iter().all(|promo| {
+            promo
+                .as_str()
+                .map(|s| allowed_promos.contains(&s))
+                .unwrap_or(false)
+        })
+    }
+
+    fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+
+        // Apply ~ prefix for cards not in main
+        let prefix = if !in_main { "~" } else { "" };
 
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
@@ -140,7 +203,7 @@ impl CardMapper {
                 format!("{:0>4}{}", right_digits, right_rest)
             };
             if starts_with_digit {
-                format!("{}-{}", left, padded_right)
+                format!("{}{}-{}", prefix, left, padded_right)
             } else {
                 format!("~{}-{}", left, padded_right)
             }
@@ -149,10 +212,10 @@ impl CardMapper {
                 let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (digits, rest) = s.split_at(digits_end);
                 let padded_left = format!("{:0>6}", digits);
-                if s.contains(|c: char| !c.is_ascii()) || is_alternative {
+                if s.contains(|c: char| !c.is_ascii()) && is_alternative {
                     return format!("~{}{}", padded_left, rest);
                 }
-                return format!("{}{}", padded_left, rest);
+                return format!("{}{}{}", prefix, padded_left, rest);
             }
             let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
             if let Some(idx) = first_digit_idx {

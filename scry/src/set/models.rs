@@ -14,9 +14,10 @@ pub struct Set {
 
     #[sqlx(rename = "type")]
     pub set_type: String,
+    pub total_size: i32,
 
     #[sqlx(skip)]
-    pub is_online_only: bool, // transient only
+    pub is_online_only: bool,
     #[sqlx(skip)]
     pub is_foreign_only: bool,
 }

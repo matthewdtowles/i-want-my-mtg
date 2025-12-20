@@ -21,7 +21,7 @@ export abstract class BaseRepository<T> implements BaseRepositoryPort {
     async totalCardsInSet(setCode: string): Promise<number> {
         return Number(await this.repository.query(`
             SELECT COUNT(*) AS total_cards FROM card WHERE set_code = $1`,
-            [setCode]
+        [setCode]
         )[0]?.total_cards ?? 0);
     }
 

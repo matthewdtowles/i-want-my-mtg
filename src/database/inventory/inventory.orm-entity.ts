@@ -5,16 +5,16 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 @Entity("inventory")
 export class InventoryOrmEntity {
     @PrimaryColumn({ name: "card_id" })
-    cardId: string
+        cardId: string
 
     @PrimaryColumn({ name: "user_id" })
-    userId: number;
+        userId: number;
 
     @PrimaryColumn({ name: "foil", type: "boolean" })
-    isFoil: boolean;
+        isFoil: boolean;
 
     @Column({ type: "int", default: 1 })
-    quantity: number;
+        quantity: number;
 
     @ManyToOne(() => CardOrmEntity, { onDelete: "CASCADE" })
     @JoinColumn({
@@ -22,7 +22,7 @@ export class InventoryOrmEntity {
         referencedColumnName: "id",
         foreignKeyConstraintName: "FK_Inventory_Card",
     })
-    card: CardOrmEntity;
+        card: CardOrmEntity;
 
     @ManyToOne(() => UserOrmEntity, { onDelete: "CASCADE" })
     @JoinColumn({
@@ -30,5 +30,5 @@ export class InventoryOrmEntity {
         referencedColumnName: "id",
         foreignKeyConstraintName: "FK_Inventory_User",
     })
-    user: UserOrmEntity;
+        user: UserOrmEntity;
 }

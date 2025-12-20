@@ -52,7 +52,7 @@ describe("CardOrchestrator", () => {
         artist: "Christopher Rush",
         prices: [],
         sortNumber: "000001",
-        inMain: true
+        inMain: true,
     });
 
     const mockOtherPrintingCard: Card = new Card({

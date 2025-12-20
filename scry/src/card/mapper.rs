@@ -125,19 +125,6 @@ impl CardMapper {
         })
     }
 
-    /*
-    DO NOT EXCLUDE THE FOLLOWING PROMO TYPES:
-        beginnerbox
-        startercollection
-        themepack
-        intropack
-        starterdeck
-        welcome
-        openhouse
-        draftweekend
-        league
-        release
-     */
     fn in_main(card_data: &Value) -> bool {
         if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
             if !Self::is_canon(promo_types) {
@@ -169,6 +156,23 @@ impl CardMapper {
             "draftweekend",
             "league",
             "release",
+            "universesbeyond",
+            "ffi",
+            "ffii",
+            "ffiii",
+            "ffiv",
+            "ffix",
+            "ffv",
+            "ffvi",
+            "ffvii",
+            "ffviii",
+            "ffx",
+            "ffxi",
+            "ffxii",
+            "ffxiii",
+            "ffxiv",
+            "ffxv",
+            "ffxvi",
         ];
 
         promo_types.iter().all(|promo| {

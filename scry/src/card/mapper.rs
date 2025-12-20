@@ -144,7 +144,7 @@ impl CardMapper {
         true
     }
 
-    fn is_canon(promo_types: &Vec<Value>) -> bool {
+    fn is_canon(promo_types: &[Value]) -> bool {
         let allowed_promos = [
             "beginnerbox",
             "startercollection",

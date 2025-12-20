@@ -150,6 +150,6 @@ impl PriceRepository {
     async fn count(&self, table: &str) -> Result<i64> {
         let query = format!("SELECT COUNT(*) FROM {}", table);
         let count = self.db.count(query.as_str()).await?;
-        Ok(count as i64)
+        Ok(count)
     }
 }

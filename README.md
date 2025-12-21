@@ -127,4 +127,7 @@ cargo build --release
 strip target/release/scry || true
 ./target/release/scry --version
 scp target/release/scry lightsail-iwmm:~/
+# Run ETL:
+ssh lightsail-iwmm
+./scry.sh
 ```

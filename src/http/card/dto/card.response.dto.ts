@@ -3,6 +3,7 @@
 export interface ManaToken {
     readonly symbol?: string;
     readonly sep?: string;
+    readonly isHalf?: boolean;
 }
 
 export class CardResponseDto {

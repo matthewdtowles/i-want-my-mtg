@@ -67,23 +67,33 @@ export class CardPresenter {
         });
     }
 
-    // TODO: FIX for two mana cost set symbols (wastes?) and phyrexian mana
     private static manaForView(manaCost?: string): Array<ManaToken> {
-        if (!manaCost || typeof manaCost !== "string") return [];
+        console.log("manaCost input:", manaCost, "type:", typeof manaCost); // DEBUG
+        if (!manaCost || typeof manaCost !== "string") {
+            console.log("Early return - manaCost is not a string"); // DEBUG
+            return [];
+        }
         const raw = manaCost.trim();
         if (raw === "") return [];
         const faceParts = raw.split(" // ");
         const tokens: Array<ManaToken> = [];
         for (let i = 0; i < faceParts.length; ++i) {
             const part = faceParts[i].trim();
-            const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1].toLowerCase());
+            const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1]);
             for (const sym of matches) {
-                tokens.push({ symbol: sym });
+                console.log(`Processing symbol: "${sym}"`); // DEBUG
+                if (sym.startsWith("h")) {
+                    console.log(`Half mana detected: ${sym.substring(1)}`); // DEBUG
+                    tokens.push({ symbol: sym.substring(1), isHalf: true });
+                } else {
+                    tokens.push({ symbol: sym });
+                }
             }
             if (i + 1 < faceParts.length) {
                 tokens.push({ sep: " // " });
             }
         }
+        console.log("Final tokens:", tokens); // DEBUG
         return tokens;
     }
 

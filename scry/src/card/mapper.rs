@@ -34,7 +34,8 @@ impl CardMapper {
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
-        let mana_cost = json::extract_optional_string(card_data, "manaCost");
+        let mana_cost_str = json::extract_optional_string(card_data, "manaCost");
+        let mana_cost = Self::build_mana_cost(mana_cost_str);
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
         let has_foil = card_data
@@ -174,7 +175,6 @@ impl CardMapper {
             "ffxv",
             "ffxvi",
         ];
-
         promo_types.iter().all(|promo| {
             promo
                 .as_str()
@@ -187,7 +187,6 @@ impl CardMapper {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
 
-        // Apply ~ prefix for cards not in main
         let prefix = if !in_main { "~" } else { "" };
 
         if let Some(idx) = s.find('-') {
@@ -231,6 +230,26 @@ impl CardMapper {
         }
     }
 
+    fn build_mana_cost(raw_mana_cost: Option<String>) -> Option<String> {
+        raw_mana_cost.map(|cost| {
+            let mut result = String::new();
+            let mut chars = cost.chars().peekable();
+
+            while let Some(ch) = chars.next() {
+                if ch == '/' {
+                    if chars.peek() == Some(&'/') {
+                        result.push('/');
+                        result.push('/');
+                        chars.next();
+                    }
+                } else {
+                    result.push(ch.to_ascii_lowercase());
+                }
+            }
+            result
+        })
+    }
+
     fn extract_legalities(
         legalities_dto: &serde_json::Value,
         card_id: &str,
@@ -267,5 +286,23 @@ impl CardMapper {
         } else {
             Err(anyhow::anyhow!("ScryfallId too short: {}", scryfall_id))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_build_mana_cost_with_slashes_and_phyrexian() {
+        let input = Some("{2/W}{W/G/P} // {U/R}{U/G/P}".to_string());
+        let result = CardMapper::build_mana_cost(input);
+        assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()));
+    }
+
+    #[test]
+    fn test_build_mana_cost_none() {
+        let result = CardMapper::build_mana_cost(None);
+        assert_eq!(result, None);
     }
 }

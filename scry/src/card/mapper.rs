@@ -38,6 +38,9 @@ impl CardMapper {
         let mana_cost = Self::build_mana_cost(mana_cost_str);
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
+        // TODO: replace use of hasFoil with finishes: 
+        // ["etched", "foil", "nonfoil", "signed"]
+        // if "etched" -> has_foil true
         let has_foil = card_data
             .get("hasFoil")
             .and_then(|v| v.as_bool())

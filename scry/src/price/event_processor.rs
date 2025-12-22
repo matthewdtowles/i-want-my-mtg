@@ -17,6 +17,7 @@ pub struct PriceEventProcessor {
     in_data_object: bool,
     json_depth: usize,
     path: Vec<String>,
+    card_foil_status: std::collections::HashMap<String, (bool, bool)>,
 }
 
 impl JsonEventProcessor<Price> for PriceEventProcessor {
@@ -74,7 +75,15 @@ impl PriceEventProcessor {
             in_data_object: false,
             json_depth: 0,
             path: Vec::new(),
+            card_foil_status: std::collections::HashMap::new(),
         }
+    }
+
+    pub fn set_card_foil_status(
+        &mut self,
+        status: std::collections::HashMap<String, (bool, bool)>,
+    ) {
+        self.card_foil_status = status;
     }
 
     fn handle_start_object(&mut self) -> Result<usize> {
@@ -144,10 +153,19 @@ impl PriceEventProcessor {
                 let provider = &self.path[3];
                 if ALLOWED_PROVIDERS.contains(&provider.as_str()) {
                     if let Ok(price) = value.parse::<f64>() {
-                        if self.path[5] == "foil" {
+                        let price_type = &self.path[5];
+
+                        let (has_foil, has_non_foil) = self
+                            .current_card_uuid
+                            .as_ref()
+                            .and_then(|uuid| self.card_foil_status.get(uuid))
+                            .copied()
+                            .unwrap_or((false, false));
+
+                        if price_type == "foil" && has_foil {
                             acc.add_foil(price);
                             acc.date = Some(self.path[6].clone());
-                        } else if self.path[5] == "normal" {
+                        } else if price_type == "normal" && has_non_foil {
                             acc.add_normal(price);
                             acc.date = Some(self.path[6].clone());
                         }

@@ -122,25 +122,6 @@ impl PriceRepository {
         Ok(n)
     }
 
-    pub async fn fetch_card_foil_status(
-        &self,
-        card_ids: &std::collections::HashSet<String>,
-    ) -> Result<std::collections::HashMap<String, (bool, bool)>> {
-        if card_ids.is_empty() {
-            return Ok(std::collections::HashMap::new());
-        }
-        let mut qb =
-            QueryBuilder::new("SELECT id, has_foil, has_non_foil FROM card WHERE id = ANY(");
-        qb.push_bind(card_ids.iter().collect::<Vec<_>>());
-        qb.push(")");
-        let rows: Vec<(String, bool, bool)> = self.db.fetch_all_query_builder(qb).await?;
-        let map = rows
-            .into_iter()
-            .map(|(id, has_foil, has_non_foil)| (id, (has_foil, has_non_foil)))
-            .collect();
-        Ok(map)
-    }
-
     async fn save(&self, prices: &[Price], table: &str) -> Result<i64> {
         if prices.is_empty() {
             return Ok(0);

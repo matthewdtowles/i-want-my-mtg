@@ -70,13 +70,7 @@ impl PriceService {
         debug!("Received byte stream for today's prices.");
         let valid_card_ids = self.repository.fetch_all_card_ids().await?;
 
-        let card_foil_status = self
-            .repository
-            .fetch_card_foil_status(&valid_card_ids)
-            .await?;
-
-        let mut event_processor = PriceEventProcessor::new(BATCH_SIZE);
-        event_processor.set_card_foil_status(card_foil_status);
+        let event_processor = PriceEventProcessor::new(BATCH_SIZE);
 
         let mut json_stream_parser = JsonStreamParser::new(event_processor);
         json_stream_parser

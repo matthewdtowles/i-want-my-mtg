@@ -38,17 +38,8 @@ impl CardMapper {
         let mana_cost = Self::build_mana_cost(mana_cost_str);
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
-        // TODO: replace use of hasFoil with finishes: 
-        // ["etched", "foil", "nonfoil", "signed"]
-        // if "etched" -> has_foil true
-        let has_foil = card_data
-            .get("hasFoil")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
-        let has_non_foil = card_data
-            .get("hasNonFoil")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(true);
+        let has_foil = Self::has_foil(card_data);
+        let has_non_foil = !has_foil || Self::has_non_foil(card_data);
         let is_alternative = card_data
             .get("isAlternative")
             .and_then(|v| v.as_bool())
@@ -127,6 +118,33 @@ impl CardMapper {
             is_oversized,
             language,
         })
+    }
+
+    fn get_finishes(card_data: &Value) -> Option<Vec<&str>> {
+        card_data
+            .get("finishes")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(|f| f.as_str()).collect::<Vec<&str>>())
+    }
+
+    fn has_foil(card_data: &Value) -> bool {
+        if let Some(finishes) = Self::get_finishes(card_data) {
+            return finishes.contains(&"foil") || finishes.contains(&"etched");
+        }
+        return card_data
+            .get("hasFoil")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+    }
+
+    fn has_non_foil(card_data: &Value) -> bool {
+        if let Some(finishes) = Self::get_finishes(card_data) {
+            return finishes.contains(&"nonfoil");
+        }
+        return card_data
+            .get("hasNonFoil")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
     }
 
     fn in_main(card_data: &Value) -> bool {

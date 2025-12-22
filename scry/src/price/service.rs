@@ -26,7 +26,6 @@ impl PriceService {
         }
     }
 
-    // NEW: batch price fetch passthrough
     pub async fn fetch_prices_for_card_ids(
         &self,
         card_ids: &[String],
@@ -34,7 +33,8 @@ impl PriceService {
         self.repository.fetch_prices_for_card_ids(card_ids).await
     }
 
-    // NEW: update foil if null passthrough
+    /// This is meant to update only if null
+    /// Used to help merge split foil and normal cards
     pub async fn update_price_foil_if_null(
         &self,
         card_id: &str,
@@ -45,7 +45,6 @@ impl PriceService {
             .await
     }
 
-    // NEW: insert price passthrough
     pub async fn insert_price_for_card(
         &self,
         card_id: &str,

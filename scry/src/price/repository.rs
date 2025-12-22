@@ -89,6 +89,7 @@ impl PriceRepository {
         Ok(map)
     }
 
+    /// Used to help merge split foil and normal cards
     pub async fn update_price_foil_if_null(
         &self,
         card_id: &str,

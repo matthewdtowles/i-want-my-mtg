@@ -310,6 +310,7 @@ impl CardMapper {
     }
 }
 
+/// UNIT TESTS
 #[cfg(test)]
 mod tests {
     use super::*;

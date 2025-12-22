@@ -148,7 +148,7 @@ impl PriceEventProcessor {
                 && self.path[0] == "data"
                 && self.path[2] == "paper"
                 && self.path[4] == "retail"
-                && (self.path[5] == "normal" || self.path[5] == "foil");
+                && (self.path[5] == "normal" || self.path[5] == "foil" || self.path[5] == "etched");
             if at_price_value {
                 let provider = &self.path[3];
                 if ALLOWED_PROVIDERS.contains(&provider.as_str()) {
@@ -162,7 +162,7 @@ impl PriceEventProcessor {
                             .copied()
                             .unwrap_or((false, true));
 
-                        if price_type == "foil" && has_foil {
+                        if (price_type == "foil" || price_type == "etched") && has_foil {
                             acc.add_foil(price);
                             acc.date = Some(self.path[6].clone());
                         } else if price_type == "normal" && has_non_foil {

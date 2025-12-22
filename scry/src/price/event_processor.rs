@@ -160,7 +160,7 @@ impl PriceEventProcessor {
                             .as_ref()
                             .and_then(|uuid| self.card_foil_status.get(uuid))
                             .copied()
-                            .unwrap_or((false, false));
+                            .unwrap_or((false, true));
 
                         if price_type == "foil" && has_foil {
                             acc.add_foil(price);

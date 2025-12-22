@@ -39,7 +39,7 @@ impl CardMapper {
         let oracle_text = json::extract_optional_string(card_data, "text");
         let artist = json::extract_optional_string(card_data, "artist");
         let has_foil = Self::has_foil(card_data);
-        let has_non_foil = !has_foil || Self::has_non_foil(card_data);
+        let has_non_foil = Self::has_non_foil(card_data) || !has_foil;
         let is_alternative = card_data
             .get("isAlternative")
             .and_then(|v| v.as_bool())

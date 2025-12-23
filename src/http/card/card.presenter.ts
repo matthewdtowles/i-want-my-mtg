@@ -68,9 +68,7 @@ export class CardPresenter {
     }
 
     private static manaForView(manaCost?: string): Array<ManaToken> {
-        console.log("manaCost input:", manaCost, "type:", typeof manaCost); // DEBUG
         if (!manaCost || typeof manaCost !== "string") {
-            console.log("Early return - manaCost is not a string"); // DEBUG
             return [];
         }
         const raw = manaCost.trim();
@@ -81,9 +79,7 @@ export class CardPresenter {
             const part = faceParts[i].trim();
             const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1]);
             for (const sym of matches) {
-                console.log(`Processing symbol: "${sym}"`); // DEBUG
                 if (sym.startsWith("h")) {
-                    console.log(`Half mana detected: ${sym.substring(1)}`); // DEBUG
                     tokens.push({ symbol: sym.substring(1), isHalf: true });
                 } else {
                     tokens.push({ symbol: sym });
@@ -93,7 +89,6 @@ export class CardPresenter {
                 tokens.push({ sep: " // " });
             }
         }
-        console.log("Final tokens:", tokens); // DEBUG
         return tokens;
     }
 

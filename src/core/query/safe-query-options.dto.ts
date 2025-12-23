@@ -7,6 +7,7 @@ export class SafeQueryOptions {
     readonly ascend?: boolean;
     readonly filter?: string;
     readonly sort?: SortOptions;
+    readonly baseOnly: boolean;
 
     constructor(init?: Partial<SafeQueryOptions>) {
         init = init || {};
@@ -15,5 +16,6 @@ export class SafeQueryOptions {
         this.ascend = safeBoolean(init.ascend);
         this.filter = safeAlphaNumeric(init.filter);
         this.sort = safeSort(init.sort);
+        this.baseOnly = safeBoolean(init.baseOnly) || true;
     }
 }

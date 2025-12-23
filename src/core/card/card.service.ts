@@ -85,10 +85,10 @@ export class CardService {
         }
     }
 
-    async totalValueForSet(setCode: string, includeFoil: boolean): Promise<number> {
+    async totalValueForSet(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
         this.LOGGER.debug(`Get total value of cards in set ${setCode} ${includeFoil ? "with foils" : ""}.`);
         try {
-            const total = await this.repository.totalValueForSet(setCode, includeFoil, true);
+            const total = await this.repository.totalValueForSet(setCode, includeFoil, baseOnly);
             this.LOGGER.debug(`Total value for set ${setCode} ${includeFoil ? "with foils" : ""} ${total}.`);
             return total;
         } catch (error) {

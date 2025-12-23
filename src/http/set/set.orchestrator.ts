@@ -55,7 +55,7 @@ export class SetOrchestrator {
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.total}`,
-                setList: await this.createSetMetaResponseDtos(userId, sets),
+                setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(options, baseUrl),
@@ -86,7 +86,7 @@ export class SetOrchestrator {
             }
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
-            const setResonse = await this.createSetResponseDto(userId, set);
+            const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
             const setSize = await this.cardService.totalCardsInSet(set.code, options);
@@ -151,11 +151,13 @@ export class SetOrchestrator {
     }
 
 
-    async getSetValue(setCode: string, includeFoil: boolean): Promise<number> {
-        this.LOGGER.debug(`Get value for set ${setCode} ${includeFoil ? "with foils" : ""}`);
+    async getSetValue(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
+        const setType = baseOnly ? "main" : "";
+        const withFoils = includeFoil ? "with foils" : "";
+        this.LOGGER.debug(`Get value for ${setType} set ${setCode} ${withFoils}`);
         try {
-            const setValue = await this.cardService.totalValueForSet(setCode, includeFoil);
-            this.LOGGER.debug(`Value for set ${setCode} ${includeFoil ? "with foils" : "without foils"}: ${setValue}.`);
+            const setValue = await this.cardService.totalValueForSet(setCode, includeFoil, baseOnly);
+            this.LOGGER.debug(`Value for ${setType} set ${setCode} ${withFoils}: ${setValue}.`);
             return setValue;
         } catch (error) {
             this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);
@@ -163,11 +165,11 @@ export class SetOrchestrator {
         }
     }
 
-    private async createSetMetaResponseDtos(userId: number, sets: Set[]): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set)));
+    private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
+        return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }
 
-    private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
+    private async createSetMetaResponseDto(userId: number, set: Set, baseOnly: boolean): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
         const setSize = await this.cardService.totalCardsInSet(set.code);
         return new SetMetaResponseDto({
@@ -179,12 +181,12 @@ export class SetOrchestrator {
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
             ownedTotal,
             releaseDate: set.releaseDate,
-            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            totalValue: toDollar(await this.getSetValue(set.code, false, baseOnly)),
             url: `/sets/${set.code.toLowerCase()}`
         });
     }
 
-    private async createSetResponseDto(userId: number, set: Set): Promise<SetResponseDto> {
+    private async createSetResponseDto(userId: number, set: Set, baseOnly: boolean): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory = userId && setPayloadSize > 0
             ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
@@ -201,7 +203,7 @@ export class SetOrchestrator {
             ownedTotal,
             releaseDate: set.releaseDate,
             setSize,
-            totalValue: toDollar(await this.getSetValue(set.code, false)),
+            totalValue: toDollar(await this.getSetValue(set.code, false, baseOnly)),
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards
                 ? set.cards.map(card => CardPresenter.toCardResponse(

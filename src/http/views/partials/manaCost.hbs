@@ -2,7 +2,7 @@
     {{#if card.manaCost}}
     {{#each card.manaCost}}
     {{#if this.symbol}}
-    <i class="ms ms-cost ms-shadow ms-{{this.symbol}}"></i>
+    <i class="ms ms-cost ms-shadow ms-{{this.symbol}} {{#if this.isHalf}}ms-half{{/if}}"></i>
     {{else}}
     <span class="mana-sep">{{this.sep}}</span>
     {{/if}}

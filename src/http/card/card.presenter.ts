@@ -67,18 +67,23 @@ export class CardPresenter {
         });
     }
 
-    // TODO: FIX for two mana cost set symbols (wastes?) and phyrexian mana
     private static manaForView(manaCost?: string): Array<ManaToken> {
-        if (!manaCost || typeof manaCost !== "string") return [];
+        if (!manaCost || typeof manaCost !== "string") {
+            return [];
+        }
         const raw = manaCost.trim();
         if (raw === "") return [];
         const faceParts = raw.split(" // ");
         const tokens: Array<ManaToken> = [];
         for (let i = 0; i < faceParts.length; ++i) {
             const part = faceParts[i].trim();
-            const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1].toLowerCase());
+            const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map(m => m[1]);
             for (const sym of matches) {
-                tokens.push({ symbol: sym });
+                if (sym.startsWith("h")) {
+                    tokens.push({ symbol: sym.substring(1), isHalf: true });
+                } else {
+                    tokens.push({ symbol: sym });
+                }
             }
             if (i + 1 < faceParts.length) {
                 tokens.push({ sep: " // " });

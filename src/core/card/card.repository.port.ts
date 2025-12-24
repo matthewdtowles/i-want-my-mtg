@@ -51,23 +51,6 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
 
     /**
-     * Gets the total number of cards in a set.
-     * @param code Set code.
-     * @param options Optional query options for filtering.
-     * @returns Promise resolving to the total number of cards in the set.
-     */
-    totalInSet(code: string, options?: SafeQueryOptions): Promise<number>;
-
-    /**
-     * Gets the total value of all foil|non-foil cards in a set.
-     * @param code Set code.
-     * @param includeFoil Include foil prices if true.
-     * @param baseOnly Include only the base set if true. Entire set if false.
-     * @returns Promise resolving to the total value of foil|non-foil cards in the set.
-     */
-    totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number>;
-
-    /**
      * Gets the total number of cards with a given name.
      * @param name Name of the cards to count.
      * @returns Promise resolving to the total number of cards with the given name.

@@ -61,6 +61,38 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return count;
     }
 
+    async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting total cards in set: ${code}.`);
+        const set = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .select(`${this.TABLE}.totalSize`)
+            .where(`${this.TABLE}.code = :code`, { code })
+            .getOne();
+        if (!set) {
+            this.LOGGER.debug(`Set not found: ${code}.`);
+            return 0;
+        }
+        return set.totalSize ?? 0;
+    }
+
+    async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
+        // TODO: replace with entity lookup
+        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
+        const selectExpr = includeFoil
+            ? "(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))"
+            : "COALESCE(p.normal, p.foil, 0)";
+        const result = await this.repository.query(`
+            SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
+            FROM card c
+            JOIN price p ON p.card_id = c.id
+            WHERE c.set_code = $1
+            AND c.in_main = $2
+        `, [code, baseOnly]);
+        const total = Number(result[0]?.total_value ?? 0);
+        this.LOGGER.debug(`Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`);
+        return total;
+    }
+
     async delete(set: Set): Promise<void> {
         this.LOGGER.debug(`Deleting set with code: ${set.code}.`);
         await this.repository.delete(set);

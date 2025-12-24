@@ -11,7 +11,6 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Creates or updates Set entities.
-     *
      * @param {Set[]} set - The array of Set entities to save.
      * @returns {Promise<number>} A promise that resolves to the number of saved Set entities.
      */
@@ -19,7 +18,6 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Retrieves metadata for Set entities with pagination.
-     *
      * @param {SafeQueryOptions} options - The query options for pagination and filtering.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
      */
@@ -27,7 +25,6 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Finds a Set entity by its unique three-letter code.
-     *
      * @param {string} code - The unique three-letter set code (primary key).
      * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.
      */
@@ -35,15 +32,30 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Counts the total number of Set entities.
-     *
      * @param {SafeQueryOptions} [options] - Optional criteria to search sets.
      * @returns {Promise<number>} A promise that resolves to the total count of Set entities.
      */
     totalSets(options: SafeQueryOptions): Promise<number>;
 
     /**
+     * Gets the total number of cards in a set.
+     * @param code Set code.
+     * @param options Optional query options for filtering.
+     * @returns Promise resolving to the total number of cards in the set.
+     */
+    totalInSet(code: string, options?: SafeQueryOptions): Promise<number>;
+
+    /**
+     * Gets the total value of all foil|non-foil cards in a set.
+     * @param code Set code.
+     * @param includeFoil Include foil prices if true.
+     * @param baseOnly Include only the base set if true. Entire set if false.
+     * @returns Promise resolving to the total value of foil|non-foil cards in the set.
+     */
+    totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number>;
+
+    /**
      * Removes a Set entity.
-     *
      * @param {Set} set - The Set entity to remove.
      * @returns {Promise<void>} A promise that resolves when the Set entity is removed.
      */

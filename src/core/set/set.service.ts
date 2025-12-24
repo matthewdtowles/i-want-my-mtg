@@ -32,4 +32,28 @@ export class SetService {
         this.LOGGER.debug(`Total sets: ${result}`);
         return result;
     }
+
+    async totalCardsInSet(setCode: string, options?: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
+        try {
+            const total = await this.repository.totalInSet(setCode, options);
+            this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
+            return total;
+        } catch (error) {
+            throw new Error(`Error counting cards in set ${setCode} with filter ${options.filter}: ${error.message}`);
+        }
+    }
+
+    async totalValueForSet(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
+        this.LOGGER.debug(`Get total value of cards in set ${setCode} ${includeFoil ? "with foils" : ""}.`);
+        try {
+            const total = await this.repository.totalValueForSet(setCode, includeFoil, baseOnly);
+            this.LOGGER.debug(`Total value for set ${setCode} ${includeFoil ? "with foils" : ""} ${total}.`);
+            return total;
+        } catch (error) {
+            throw new Error(`Error getting total value of non-foil cards for set ${setCode}: ${error.message}.`);
+        }
+    }
+
+
 }

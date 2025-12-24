@@ -35,9 +35,12 @@ describe("SetService", () => {
         delete: jest.fn(),
         findAllSetsMeta: jest.fn(),
         totalSets: jest.fn().mockResolvedValue(mockSets.length),
-        totalCards: jest.fn().mockResolvedValue(3), 
+        totalCards: jest.fn().mockResolvedValue(3),
         totalCardsInSet: jest.fn().mockResolvedValue(3),
-    };
+        totalInSet: jest.fn().mockResolvedValue(3),
+        totalValueForSet: jest.fn().mockResolvedValue(100)
+    }
+
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

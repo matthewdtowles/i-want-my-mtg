@@ -64,6 +64,8 @@ describe("SetOrchestrator", () => {
                         findSets: jest.fn(),
                         totalSetsCount: jest.fn(),
                         findByCode: jest.fn(),
+                        totalCardsInSet: jest.fn(),
+                        totalValueForSet: jest.fn(),
                     }
                 },
                 {
@@ -131,7 +133,7 @@ describe("SetOrchestrator", () => {
         it("returns set details and paginated cards", async () => {
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            cardService.totalCardsInSet.mockResolvedValue(1);
+            setService.totalCardsInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
 
             const result = await orchestrator.findBySetCode(mockAuthenticatedRequest, "TST", mockQueryOptions);
@@ -154,7 +156,7 @@ describe("SetOrchestrator", () => {
             const unauthReq = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            cardService.totalCardsInSet.mockResolvedValue(1);
+            setService.totalCardsInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
 
             const result = await orchestrator.findBySetCode(unauthReq, "TST", mockQueryOptions);

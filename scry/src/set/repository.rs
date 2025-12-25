@@ -1,4 +1,7 @@
-use crate::{database::ConnectionPool, set::models::Set};
+use crate::{
+    database::ConnectionPool,
+    set::models::{Set, SetPrice},
+};
 use anyhow::{Ok, Result};
 use sqlx::QueryBuilder;
 use std::sync::Arc;
@@ -86,6 +89,37 @@ impl SetRepository {
             set.type IS DISTINCT FROM EXCLUDED.type",
         );
         self.db.execute_query_builder(query_builder).await
+    }
+
+    pub async fn update_prices(&self, set_prices: Vec<SetPrice>) -> Result<i64> {
+        if set_prices.is_empty() {
+            warn!("0 set prices given, 0 prices saved.");
+            return Ok(0);
+        }
+        let mut qb = QueryBuilder::new(
+            "INSERT INTO \"set_price\" (set_code, base_price, total_price, base_price_all, total_price_all, date)",
+        );
+        qb.push_values(&set_prices, |mut b, sp| {
+            b.push_bind(&sp.set_code)
+                .push_bind(&sp.base_price)
+                .push_bind(&sp.total_price)
+                .push_bind(&sp.base_price_all)
+                .push_bind(&sp.total_price_all)
+                .push_bind(&sp.date);
+        });
+        qb.push(
+            " ON CONFLICT (set_code, date) DO UPDATE SET
+                base_price = EXCLUDED.base_price,
+                total_price = EXCLUDED.total_price,
+                base_price_all = EXCLUDED.base_price_all,
+                total_price_all = EXCLUDED.total_price_all
+            WHERE
+                set_price.base_price IS DISTINCT FROM EXCLUDED.base_price OR
+                set_price.total_price IS DISTINCT FROM EXCLUDED.total_price OR
+                set_price.base_price_all IS DISTINCT FROM EXCLUDED.base_price_all OR
+                set_price.total_price_all IS DISTINCT FROM EXCLUDED.total_price_all",
+        );
+        self.db.execute_query_builder(qb).await
     }
 
     pub async fn delete_all(&self) -> Result<i64> {

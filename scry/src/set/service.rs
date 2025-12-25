@@ -1,4 +1,4 @@
-use crate::set::models::Set;
+use crate::set::models::{Set, SetPrice};
 use crate::set::{mapper::SetMapper, repository::SetRepository};
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
@@ -125,6 +125,11 @@ impl SetService {
             .repository
             .update_sizes(&base_sizes, &total_sizes)
             .await?;
+        Ok(updated)
+    }
+
+    pub async fn update_prices(&self, set_prices: Vec<SetPrice>) -> Result<i64> {
+        let updated = self.repository.update_prices(set_prices).await?;
         Ok(updated)
     }
 

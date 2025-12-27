@@ -63,9 +63,10 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total cards in set: ${code}.`);
+        const sizeSelection = options?.baseOnly ? "base_size" : "total_size";
         const set = await this.repository
             .createQueryBuilder(this.TABLE)
-            .select(`${this.TABLE}.totalSize`)
+            .select(`${this.TABLE}.${sizeSelection}`)
             .where(`${this.TABLE}.code = :code`, { code })
             .getOne();
         if (!set) {
@@ -76,20 +77,14 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     }
 
     async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
-        // TODO: replace with entity lookup
         this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
-        const selectExpr = includeFoil
-            ? "(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))"
-            : "COALESCE(p.normal, p.foil, 0)";
-        const result = await this.repository.query(`
-            SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
-            FROM card c
-            JOIN price p ON p.card_id = c.id
-            WHERE c.set_code = $1
-            AND c.in_main = $2
-        `, [code, baseOnly]);
+        const select_price = this.determineWhichPrice(includeFoil, baseOnly);
+        const result = await this.repository.query(
+            `SELECT ${select_price} AS total_value FROM set_price WHERE set_code = $1`,
+            [code]
+        );
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`);
+        this.LOGGER.debug(`${code.toUpperCase} ${select_price} is \$${total}`)
         return total;
     }
 
@@ -97,6 +92,18 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Deleting set with code: ${set.code}.`);
         await this.repository.delete(set);
         this.LOGGER.debug(`Deleted set with code: ${set.code}.`);
+    }
+
+    private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): String {
+        if (!includeFoil && baseOnly) {
+            return "base_price";
+        } else if (includeFoil && baseOnly) {
+            return "total_price";
+        } else if (!includeFoil && !baseOnly) {
+            return "base_price_all";
+        } else {
+            return "total_price_all";
+        }
     }
 
     private createBaseQuery(): SelectQueryBuilder<SetOrmEntity> {

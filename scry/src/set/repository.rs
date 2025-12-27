@@ -97,7 +97,7 @@ impl SetRepository {
             return Ok(0);
         }
         let mut qb = QueryBuilder::new(
-            "INSERT INTO \"set_price\" (set_code, base_price, total_price, base_price_all, total_price_all, date)",
+            "INSERT INTO set_price (set_code, base_price, total_price, base_price_all, total_price_all, date)",
         );
         qb.push_values(&set_prices, |mut b, sp| {
             b.push_bind(&sp.set_code)
@@ -108,16 +108,18 @@ impl SetRepository {
                 .push_bind(&sp.date);
         });
         qb.push(
-            " ON CONFLICT (set_code, date) DO UPDATE SET
+            " ON CONFLICT (set_code) DO UPDATE SET
                 base_price = EXCLUDED.base_price,
                 total_price = EXCLUDED.total_price,
                 base_price_all = EXCLUDED.base_price_all,
-                total_price_all = EXCLUDED.total_price_all
+                total_price_all = EXCLUDED.total_price_all,
+                date = EXCLUDED.date
             WHERE
                 set_price.base_price IS DISTINCT FROM EXCLUDED.base_price OR
                 set_price.total_price IS DISTINCT FROM EXCLUDED.total_price OR
                 set_price.base_price_all IS DISTINCT FROM EXCLUDED.base_price_all OR
-                set_price.total_price_all IS DISTINCT FROM EXCLUDED.total_price_all",
+                set_price.total_price_all IS DISTINCT FROM EXCLUDED.total_price_all OR
+                set_price.date IS DISTINCT FROM EXCLUDED.date",
         );
         self.db.execute_query_builder(qb).await
     }

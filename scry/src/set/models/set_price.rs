@@ -5,7 +5,6 @@ use sqlx::FromRow;
 
 #[derive(Clone, Debug, FromRow, Serialize, Deserialize)]
 pub struct SetPrice {
-    pub id: Option<i32>,
     pub set_code: String,
     pub base_price: Decimal,
     pub total_price: Decimal,

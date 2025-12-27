@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public."set_price" (
     base_price numeric,
     -- total_price = in_main + !in_main
     total_price numeric,
-    -- in_mail normal + foil
+    -- in_main normal + foil
     base_price_all numeric,
     -- normal + foil
     total_price_all numeric,

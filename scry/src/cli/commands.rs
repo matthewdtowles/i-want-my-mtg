@@ -33,11 +33,12 @@ pub enum Commands {
         reset: bool,
     },
 
-    /// Check system health and data integrity
-    Health {
-        #[arg(long, help = "Perform detailed health check")]
-        detailed: bool,
-    },
+    /// Prune unwanted ingested data
+    PostIngestPrune {},
+
+    /// Save calculations for set sizes and set prices
+    /// Prices rely on accurate sizes
+    PostIngestUpdates {},
 
     /// Run cleanup operations
     /// Only necessary if filtering rules updated to remove previously saved sets/cards
@@ -55,5 +56,11 @@ pub enum Commands {
             default_value_t = 500
         )]
         batch_size: i64,
+    },
+
+    /// Check system health and data integrity
+    Health {
+        #[arg(long, help = "Perform detailed health check")]
+        detailed: bool,
     },
 }

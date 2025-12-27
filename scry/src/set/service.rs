@@ -1,21 +1,29 @@
-use crate::set::models::Set;
+use crate::set::models::{Set, SetPrice};
 use crate::set::{mapper::SetMapper, repository::SetRepository};
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
 use serde_json::Value;
+use sqlx::{FromRow, QueryBuilder};
 use std::sync::Arc;
 use tracing::{debug, warn};
 
 pub struct SetService {
     client: Arc<HttpClient>,
     repository: SetRepository,
+    db: Arc<ConnectionPool>,
+}
+
+#[derive(Debug, FromRow)]
+struct SetCodeRow {
+    pub set_code: String,
 }
 
 impl SetService {
     pub fn new(db: Arc<ConnectionPool>, http_client: Arc<HttpClient>) -> Self {
         Self {
             client: http_client,
-            repository: SetRepository::new(db),
+            repository: SetRepository::new(db.clone()),
+            db,
         }
     }
 
@@ -49,6 +57,25 @@ impl SetService {
         let count = self.repository.save_sets(&to_save).await?;
         debug!("Successfully ingested {} sets", count);
         Ok(count)
+    }
+
+    pub async fn update_set_prices(&self) -> Result<i64> {
+        debug!("Starting update set prices (batched)");
+        let codes = self.fetch_set_codes_with_prices().await?;
+        if codes.is_empty() {
+            warn!("No set codes with prices");
+            return Ok(0);
+        }
+        let batch_size = 200usize;
+        let mut total_updated = 0i64;
+        for chunk in codes.chunks(batch_size) {
+            let set_prices = self.calculate_set_prices(chunk).await?;
+            if !set_prices.is_empty() {
+                total_updated += self.save_set_prices(set_prices).await?;
+            }
+        }
+        debug!("Successfully updated {} set prices", total_updated);
+        Ok(total_updated)
     }
 
     pub async fn cleanup_sets(&self, batch_size: i64) -> Result<i64> {
@@ -126,6 +153,53 @@ impl SetService {
             .update_sizes(&base_sizes, &total_sizes)
             .await?;
         Ok(updated)
+    }
+
+    async fn fetch_set_codes_with_prices(&self) -> Result<Vec<String>> {
+        let qb = QueryBuilder::new(
+            "SELECT DISTINCT c.set_code FROM card c
+             JOIN price p ON p.card_id = c.id",
+        );
+        let rows: Vec<SetCodeRow> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows.into_iter().map(|r| r.set_code).collect())
+    }
+
+    async fn calculate_set_prices(&self, codes: &[String]) -> Result<Vec<SetPrice>> {
+        if codes.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut qb = QueryBuilder::new(
+            "SELECT c.set_code AS set_code,
+                COALESCE(SUM(COALESCE(p.normal, 0)) FILTER (WHERE c.in_main), 0) AS base_price,
+                COALESCE(SUM(COALESCE(p.normal, 0)), 0) AS total_price,
+                COALESCE(SUM(COALESCE(p.normal, 0) + COALESCE(p.foil, 0)) FILTER (WHERE c.in_main), 0) AS base_price_all,
+                COALESCE(SUM(COALESCE(p.normal, 0) + COALESCE(p.foil, 0)), 0) AS total_price_all,
+                MAX(p.date) AS date
+            FROM card c
+            JOIN price p ON p.card_id = c.id
+            WHERE c.set_code IN ("
+        );
+        for (i, code) in codes.iter().enumerate() {
+            if i > 0 {
+                qb.push(",");
+            }
+            qb.push_bind(code);
+        }
+        qb.push(") GROUP BY c.set_code");
+        let set_prices: Vec<SetPrice> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(set_prices)
+    }
+
+    async fn save_set_prices(&self, set_prices: Vec<SetPrice>) -> Result<i64> {
+        if set_prices.is_empty() {
+            return Ok(0);
+        }
+        let mut total = 0i64;
+        let batch_size = 200usize;
+        for chunk in set_prices.chunks(batch_size) {
+            total += self.repository.update_prices(chunk.to_vec()).await?;
+        }
+        Ok(total)
     }
 
     fn should_filter(&self, set: &Set) -> bool {

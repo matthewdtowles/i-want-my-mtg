@@ -61,10 +61,47 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return count;
     }
 
+    async totalInSet(code: string, baseOnly: boolean): Promise<number> {
+        this.LOGGER.debug(`Get total cards in set: ${code}.`);
+        const set = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.code = :code`, { code })
+            .getOne();
+        if (!set) {
+            this.LOGGER.debug(`Set not found: ${code}.`);
+            return 0;
+        }
+        return baseOnly ? (set.baseSize ?? 0) : (set.totalSize ?? 0);
+    }
+
+    async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
+        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
+        const select_price = this.determineWhichPrice(includeFoil, baseOnly);
+        const result = await this.repository.query(
+            `SELECT ${select_price} AS total_value FROM set_price WHERE set_code = $1`,
+            [code]
+        );
+        const total = Number(result[0]?.total_value ?? 0);
+        this.LOGGER.debug(`${code.toUpperCase()} ${select_price} is \$${total}`)
+        return total;
+    }
+
     async delete(set: Set): Promise<void> {
         this.LOGGER.debug(`Deleting set with code: ${set.code}.`);
         await this.repository.delete(set);
         this.LOGGER.debug(`Deleted set with code: ${set.code}.`);
+    }
+
+    private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): string {
+        if (!includeFoil && baseOnly) {
+            return "base_price";
+        } else if (includeFoil && baseOnly) {
+            return "total_price";
+        } else if (!includeFoil && !baseOnly) {
+            return "base_price_all";
+        } else {
+            return "total_price_all";
+        }
     }
 
     private createBaseQuery(): SelectQueryBuilder<SetOrmEntity> {

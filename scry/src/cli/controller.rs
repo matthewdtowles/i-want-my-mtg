@@ -50,6 +50,20 @@ impl CliController {
                 Ok(())
             }
 
+            Commands::PostIngestPrune {} => {
+                if let Err(e) = self.post_ingest_prune().await {
+                    error!("Pruning failed: {}", e);
+                }
+                Ok(())
+            }
+
+            Commands::PostIngestUpdates {} => {
+                if let Err(e) = self.post_ingest_updates().await {
+                    error!("Set updates failed: {}", e);
+                }
+                Ok(())
+            }
+
             Commands::Cleanup { cards, batch_size } => {
                 if let Err(e) = self.handle_cleanup(cards, batch_size).await {
                     error!("Cleanup failed: {}", e);
@@ -249,8 +263,13 @@ impl CliController {
         info!("Found {} base_sizes for all sets.", base_sizes.len());
         let total_sizes = self.card_service.count_per_all_sets(false).await?;
         info!("Found {} total_sizes for all sets.", total_sizes.len());
-        let total_updated = self.set_service.update_sizes(base_sizes, total_sizes).await?;
-        info!("Total updated rows after updates: {}", total_updated);
+        let total_updated = self
+            .set_service
+            .update_sizes(base_sizes, total_sizes)
+            .await?;
+        info!("Total set sizes updated: {}", total_updated);
+        let total_set_prices_updated = self.set_service.update_set_prices().await?;
+        info!("Total set prices rows updated: {}", total_set_prices_updated);
         Ok(())
     }
 }

@@ -40,10 +40,10 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
     /**
      * Gets the total number of cards in a set.
      * @param code Set code.
-     * @param options Optional query options for filtering.
+     * @param baseOnly if true, base_size. Otherwise, total_size.
      * @returns Promise resolving to the total number of cards in the set.
      */
-    totalInSet(code: string, options?: SafeQueryOptions): Promise<number>;
+    totalInSet(code: string, baseOnly: boolean): Promise<number>;
 
     /**
      * Gets the total value of all foil|non-foil cards in a set.

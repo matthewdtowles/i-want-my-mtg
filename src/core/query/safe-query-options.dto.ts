@@ -16,6 +16,6 @@ export class SafeQueryOptions {
         this.ascend = safeBoolean(init.ascend);
         this.filter = safeAlphaNumeric(init.filter);
         this.sort = safeSort(init.sort);
-        this.baseOnly = safeBoolean(init.baseOnly) || true;
+        this.baseOnly = safeBoolean(init.baseOnly) ?? true;
     }
 }

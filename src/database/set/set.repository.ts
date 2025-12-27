@@ -61,19 +61,17 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return count;
     }
 
-    async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`Counting total cards in set: ${code}.`);
-        const sizeSelection = options?.baseOnly ? "base_size" : "total_size";
+    async totalInSet(code: string, baseOnly: boolean): Promise<number> {
+        this.LOGGER.debug(`Get total cards in set: ${code}.`);
         const set = await this.repository
             .createQueryBuilder(this.TABLE)
-            .select(`${this.TABLE}.${sizeSelection}`)
             .where(`${this.TABLE}.code = :code`, { code })
             .getOne();
         if (!set) {
             this.LOGGER.debug(`Set not found: ${code}.`);
             return 0;
         }
-        return set.totalSize ?? 0;
+        return baseOnly ? (set.baseSize ?? 0) : (set.totalSize ?? 0);
     }
 
     async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
@@ -84,7 +82,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             [code]
         );
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`${code.toUpperCase} ${select_price} is \$${total}`)
+        this.LOGGER.debug(`${code.toUpperCase()} ${select_price} is \$${total}`)
         return total;
     }
 
@@ -94,7 +92,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Deleted set with code: ${set.code}.`);
     }
 
-    private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): String {
+    private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): string {
         if (!includeFoil && baseOnly) {
             return "base_price";
         } else if (includeFoil && baseOnly) {

@@ -8,7 +8,6 @@ export class SafeQueryOptions {
     readonly filter?: string;
     readonly sort?: SortOptions;
     readonly baseOnly: boolean;
-    readonly includeFoils: boolean;
 
     constructor(init?: Partial<SafeQueryOptions>) {
         init = init || {};
@@ -18,6 +17,5 @@ export class SafeQueryOptions {
         this.filter = safeAlphaNumeric(init.filter);
         this.sort = safeSort(init.sort);
         this.baseOnly = safeBoolean(init.baseOnly) || true;
-        this.includeFoils = safeBoolean(init.includeFoils) || false;
     }
 }

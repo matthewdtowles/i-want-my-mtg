@@ -52,7 +52,7 @@ export class SetService {
             this.LOGGER.debug(`Total value for set ${setCode} ${includeFoil ? "with foils" : ""} ${total}.`);
             return total;
         } catch (error) {
-            throw new Error(`Error getting total value of non-foil cards for set ${setCode}: ${error.message}.`);
+            throw new Error(`Error getting total value of ${includeFoil ? "" : "non-foil "}cards for set ${setCode}: ${error.message}.`);
         }
     }
 

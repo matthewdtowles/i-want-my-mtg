@@ -22,14 +22,6 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Instantiated.`);
     }
 
-    async save(sets: Set[]): Promise<number> {
-        this.LOGGER.debug(`Saving ${sets?.length ?? 0} sets.`);
-        const savedSets: SetOrmEntity[] = await this.repository.save(sets) ?? [];
-        const count = savedSets.length ?? 0;
-        this.LOGGER.debug(`Saved ${count} sets.`);
-        return count;
-    }
-
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Finding all sets meta.`);
         const qb = this.createBaseQuery();
@@ -84,12 +76,6 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const total = Number(result[0]?.total_value ?? 0);
         this.LOGGER.debug(`${code.toUpperCase()} ${select_price} is \$${total}`)
         return total;
-    }
-
-    async delete(set: Set): Promise<void> {
-        this.LOGGER.debug(`Deleting set with code: ${set.code}.`);
-        await this.repository.delete(set);
-        this.LOGGER.debug(`Deleted set with code: ${set.code}.`);
     }
 
     private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): string {

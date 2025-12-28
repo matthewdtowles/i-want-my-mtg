@@ -14,33 +14,6 @@ export class CardService {
 
     constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
 
-    async save(inputCards: Card[]): Promise<number> {
-        this.LOGGER.debug(`Save cards.`);
-        let savedEntities: number = 0;
-        try {
-            const cardsToSave: Card[] = [];
-            for (const inCard of inputCards) {
-                const oldCard: Card = await this.repository.findById(inCard.id, ["legalities"]);
-                const card: Card = oldCard ? { ...oldCard, ...inCard } : inCard;
-                if (null === card || undefined === card) {
-                    continue;
-                }
-                const legalitiesToSave: Legality[] = this.extractLegalitiesToSave(card);
-                const legalitiesToDelete: Legality[] = this.extractObsoleteLegalities(legalitiesToSave, oldCard);
-                this.deleteObsoleteLegalities(legalitiesToDelete);
-                card.legalities = legalitiesToSave;
-                cardsToSave.push(card);
-            }
-            if (cardsToSave.length > 0) {
-                savedEntities += await this.repository.save(cardsToSave);
-            }
-        } catch (error) {
-            this.LOGGER.error(`Error saving cards: ${error.message}.`);
-        }
-        this.LOGGER.debug(`Saved ${savedEntities} cards.`);
-        return savedEntities;
-    }
-
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
         try {
@@ -82,36 +55,6 @@ export class CardService {
             return total;
         } catch (error) {
             throw new Error(`Error counting cards with name ${name}: ${error.message}`);
-        }
-    }
-
-    private extractLegalitiesToSave(card: Card): Legality[] {
-        this.LOGGER.debug(`Extracting legalities to save for card ${card?.id}.`);
-        return card?.legalities?.map((leg: Legality) => {
-            if (leg && Object.values(Format).includes(leg.format?.toLowerCase() as Format)
-                && Object.values(LegalityStatus).includes(leg.status?.toLowerCase() as LegalityStatus)) {
-                return new Legality({ ...leg, cardId: card.id });
-            }
-        });
-    }
-
-    private extractObsoleteLegalities(newLegalities: Legality[], oldCard: Card): Legality[] {
-        this.LOGGER.debug(`Extracting obsolete legalities from ${oldCard?.id}.`);
-        if (Array.isArray(newLegalities)) {
-            return oldCard && oldCard.legalities ? oldCard.legalities.filter(existingLegality =>
-                !newLegalities.some(l => l.format === existingLegality.format)
-            ) : [];
-        }
-        return [];
-    }
-
-    private async deleteObsoleteLegalities(legalitiesToDelete: Legality[]): Promise<void> {
-        this.LOGGER.debug(`Deleting ${legalitiesToDelete?.length} obsolete legalities.`);
-        if (Array.isArray(legalitiesToDelete)) {
-            const legalityDeletionPromises = legalitiesToDelete.map((l: Legality) => {
-                return this.repository.deleteLegality(l.cardId, l.format);
-            });
-            await Promise.all(legalityDeletionPromises);
         }
     }
 }

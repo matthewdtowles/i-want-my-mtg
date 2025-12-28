@@ -10,13 +10,6 @@ export const SetRepositoryPort = "SetRepositoryPort";
 export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
-     * Creates or updates Set entities.
-     * @param {Set[]} set - The array of Set entities to save.
-     * @returns {Promise<number>} A promise that resolves to the number of saved Set entities.
-     */
-    save(set: Set[]): Promise<number>;
-
-    /**
      * Retrieves metadata for Set entities with pagination.
      * @param {SafeQueryOptions} options - The query options for pagination and filtering.
      * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
@@ -53,11 +46,4 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
      * @returns Promise resolving to the total value of foil|non-foil cards in the set.
      */
     totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number>;
-
-    /**
-     * Removes a Set entity.
-     * @param {Set} set - The Set entity to remove.
-     * @returns {Promise<void>} A promise that resolves when the Set entity is removed.
-     */
-    delete(set: Set): Promise<void>;
 }

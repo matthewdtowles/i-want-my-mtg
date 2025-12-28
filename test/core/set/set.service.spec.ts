@@ -30,9 +30,7 @@ describe("SetService", () => {
     }));
 
     const mockSetRepository: SetRepositoryPort = {
-        save: jest.fn().mockResolvedValue(mockSets.length),
         findByCode: jest.fn().mockResolvedValue(mockSets[0]),
-        delete: jest.fn(),
         findAllSetsMeta: jest.fn(),
         totalSets: jest.fn().mockResolvedValue(mockSets.length),
         totalCards: jest.fn().mockResolvedValue(3),
@@ -58,12 +56,6 @@ describe("SetService", () => {
 
     afterEach(() => {
         jest.clearAllMocks()
-    });
-
-    it("should save sets and return saved sets", async () => {
-        const savedSets: number = await service.save(mockCreateSetDtos);
-        expect(repository.save).toHaveBeenCalledTimes(1);
-        expect(savedSets).toBe(mockCreateSetDtos.length);
     });
 
     it("should find set with cards by given set code", async () => {

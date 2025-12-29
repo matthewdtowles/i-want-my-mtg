@@ -7,14 +7,14 @@ use sqlx::{FromRow, QueryBuilder};
 use std::sync::Arc;
 use tracing::warn;
 
-#[derive(Clone)]
-pub struct SetRepository {
-    db: Arc<ConnectionPool>,
-}
-
 #[derive(Debug, FromRow)]
 struct SetCodeRow {
     pub set_code: String,
+}
+
+#[derive(Clone)]
+pub struct SetRepository {
+    db: Arc<ConnectionPool>,
 }
 
 impl SetRepository {
@@ -169,11 +169,10 @@ impl SetRepository {
         self.db.execute_query_builder(qb).await
     }
 
-    pub async fn delete_set_batch(&self, set_code: &str, _batch_size: i64) -> Result<i64> {
+    pub async fn delete_set_batch(&self, set_code: &str) -> Result<i64> {
         if set_code.is_empty() {
             return Ok(0);
         }
-
         let mut qb = QueryBuilder::new("WITH to_del AS (SELECT id FROM card WHERE set_code = ");
         qb.push_bind(set_code);
         qb.push(
@@ -193,7 +192,6 @@ impl SetRepository {
             DELETE FROM \"set\" WHERE code = ",
         );
         qb.push_bind(set_code);
-
         let deleted = self.db.execute_query_builder(qb).await?;
         Ok(deleted)
     }
@@ -206,8 +204,8 @@ impl SetRepository {
         let mut total_updated = 0i64;
         let update_stmt = |col: &str| {
             format!(
-                ") UPDATE \"set\" s SET {col} = v.size FROM vals v WHERE s.code = v.code AND (s.{col} IS DISTINCT FROM v.size)",
-                col = col
+                ") UPDATE \"set\" s SET {col} = v.size FROM vals v
+                WHERE s.code = v.code AND (s.{col} IS DISTINCT FROM v.size)"
             )
         };
         if !base_sizes.is_empty() {

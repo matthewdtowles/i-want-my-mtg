@@ -80,8 +80,7 @@ impl SetService {
                     let code = code.to_lowercase();
                     if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
                         if self.should_filter(&set) {
-                            total_deleted +=
-                                self.repository.delete_set_batch(&code, batch_size).await?;
+                            total_deleted += self.repository.delete_set_batch(&code).await?;
                         }
                     }
                 }
@@ -106,7 +105,7 @@ impl SetService {
         let mut total_deleted = 0i64;
         for set in empty_sets {
             let code = set.code.to_lowercase();
-            let n = self.repository.delete_set_batch(&code, 100).await?;
+            let n = self.repository.delete_set_batch(&code).await?;
             total_deleted += n;
         }
         debug!("Pruned {} rows for empty sets", total_deleted);
@@ -126,7 +125,7 @@ impl SetService {
         let mut total_deleted = 0i64;
         for set in sets_missing_prices {
             let code = set.code.to_lowercase();
-            total_deleted += self.repository.delete_set_batch(&code, 100).await?;
+            total_deleted += self.repository.delete_set_batch(&code).await?;
         }
         debug!(
             "Pruned {} rows with price data for less than {}% of its cards.",

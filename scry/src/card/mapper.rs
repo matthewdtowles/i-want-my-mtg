@@ -177,8 +177,10 @@ impl CardMapper {
             "openhouse",
             "draftweekend",
             "league",
+            "playtest",
             "release",
             "universesbeyond",
+            "upsidedown",
             "ffi",
             "ffii",
             "ffiii",
@@ -207,8 +209,15 @@ impl CardMapper {
     fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
-
-        let prefix = if !in_main { "~" } else { "" };
+        // accumulate prefix markers — more markers push it later in sort order
+        let mut prefix = String::new();
+        if !in_main {
+            prefix.push('~');
+        }
+        // non-ascii / misprint demotion
+        if !s.is_ascii() {
+            prefix.push('~');
+        } 
 
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
@@ -247,7 +256,7 @@ impl CardMapper {
                 let padded_digits = format!("{:0>4}", digits);
                 return format!("~{}{}{}", letters, padded_digits, rest);
             }
-            format!("~{}", s)
+            format!("{}{}", prefix, s)
         }
     }
 

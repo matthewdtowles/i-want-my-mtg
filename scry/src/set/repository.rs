@@ -226,4 +226,14 @@ impl SetRepository {
         }
         Ok(total_updated)
     }
+
+    pub async fn normalize_integer_in_main_for_set(&self, set_code: &str) -> Result<i64> {
+        // 1) load (number::int, in_main) for rows where number ~ '^[0-9]+$'
+        // 2) sort by number, scan for contiguous ranges, decide majority in_main per range
+        // 3) for ranges where majority != minority, issue single UPDATE to set in_main = majority for those numbers
+        // returns count of rows updated
+        //
+        // (Implement in Rust using fetch_all_query + building batched UPDATE statements)
+        unimplemented!()
+    }
 }

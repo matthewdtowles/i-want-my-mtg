@@ -132,7 +132,7 @@ impl CliController {
             "Set cleanup starting: before -> {} sets | {} cards",
             total_sets_before, total_cards_before
         );
-        let total_sets_deleted = self.set_service.cleanup_sets(batch_size).await?;
+        let total_sets_deleted = self.set_service.cleanup_sets().await?;
         info!("Deleted {} total sets", total_sets_deleted);
         let total_sets_after = self.set_service.fetch_count().await?;
         let total_cards_after = self.card_service.fetch_count().await?;

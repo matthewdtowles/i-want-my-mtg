@@ -70,7 +70,7 @@ impl SetService {
         Ok(total_updated)
     }
 
-    pub async fn cleanup_sets(&self, batch_size: i64) -> Result<i64> {
+    pub async fn cleanup_sets(&self) -> Result<i64> {
         debug!("Starting cleanup for sets");
         let raw_data: Value = self.client.fetch_all_sets().await?;
         let mut total_deleted = 0i64;

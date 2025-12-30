@@ -109,14 +109,6 @@
         "nonPromo_withPromoTypes": 136
     },
     {
-        "setCode": "AKR",
-        "setName": "Amonkhet Remastered",
-        "setType": "masters",
-        "totalCards": 364,
-        "promoCards": 1,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "ALA",
         "setName": "Shards of Alara",
         "setType": "expansion",
@@ -837,14 +829,6 @@
         "nonPromo_withPromoTypes": 1
     },
     {
-        "setCode": "JP1",
-        "setName": "Hobby Japan Promos",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "KHM",
         "setName": "Kaldheim",
         "setType": "expansion",
@@ -859,14 +843,6 @@
         "totalCards": 278,
         "promoCards": 0,
         "nonPromo_withPromoTypes": 4
-    },
-    {
-        "setCode": "KLR",
-        "setName": "Kaladesh Remastered",
-        "setType": "masters",
-        "totalCards": 302,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 1
     },
     {
         "setCode": "LCC",
@@ -1085,30 +1061,6 @@
         "nonPromo_withPromoTypes": 240
     },
     {
-        "setCode": "OAFC",
-        "setName": "Forgotten Realms Commander Display Commanders",
-        "setType": "memorabilia",
-        "totalCards": 4,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 4
-    },
-    {
-        "setCode": "OC21",
-        "setName": "Commander 2021 Display Commanders",
-        "setType": "memorabilia",
-        "totalCards": 5,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 5
-    },
-    {
-        "setCode": "OMIC",
-        "setName": "Midnight Hunt Commander Display Commanders",
-        "setType": "memorabilia",
-        "totalCards": 2,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 2
-    },
-    {
         "setCode": "ONC",
         "setName": "Phyrexia: All Will Be One Commander",
         "setType": "commander",
@@ -1155,14 +1107,6 @@
         "totalCards": 82,
         "promoCards": 0,
         "nonPromo_withPromoTypes": 82
-    },
-    {
-        "setCode": "OVOC",
-        "setName": "Crimson Vow Commander Display Commanders",
-        "setType": "memorabilia",
-        "totalCards": 2,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 2
     },
     {
         "setCode": "P03",
@@ -1301,14 +1245,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "P30T",
-        "setName": "30th Anniversary Celebration Tokyo",
-        "setType": "promo",
-        "totalCards": 2,
-        "promoCards": 2,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "P5DN",
         "setName": "Fifth Dawn Promos",
         "setType": "promo",
@@ -1437,14 +1373,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PANA",
-        "setName": "MTG Arena Promos",
-        "setType": "promo",
-        "totalCards": 78,
-        "promoCards": 78,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PAPC",
         "setName": "Apocalypse Promos",
         "setType": "promo",
@@ -1533,22 +1461,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PCBB",
-        "setName": "Cowboy Bebop",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PCEL",
-        "setName": "Celebration Cards",
-        "setType": "memorabilia",
-        "totalCards": 9,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 9
-    },
-    {
         "setCode": "PCHK",
         "setName": "Champions of Kamigawa Promos",
         "setType": "promo",
@@ -1562,14 +1474,6 @@
         "setType": "promo",
         "totalCards": 108,
         "promoCards": 108,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PCMD",
-        "setName": "Commander 2011 Launch Party",
-        "setType": "memorabilia",
-        "totalCards": 5,
-        "promoCards": 5,
         "nonPromo_withPromoTypes": 0
     },
     {
@@ -1917,30 +1821,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PH21",
-        "setName": "2021 Heroes of the Realm",
-        "setType": "funny",
-        "totalCards": 4,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 1
-    },
-    {
-        "setCode": "PHEL",
-        "setName": "Open the Helvault",
-        "setType": "memorabilia",
-        "totalCards": 5,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 5
-    },
-    {
-        "setCode": "PHOP",
-        "setName": "Planechase Promos",
-        "setType": "promo",
-        "totalCards": 1,
-        "promoCards": 1,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PHOU",
         "setName": "Hour of Devastation Promos",
         "setType": "promo",
@@ -1955,14 +1835,6 @@
         "totalCards": 5,
         "promoCards": 5,
         "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PHUK",
-        "setName": "Hachette UK",
-        "setType": "box",
-        "totalCards": 62,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 62
     },
     {
         "setCode": "PIDW",
@@ -2013,35 +1885,11 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PJAS",
-        "setName": "Junior APAC Series",
-        "setType": "promo",
-        "totalCards": 6,
-        "promoCards": 6,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PJJT",
-        "setName": "Japan Junior Tournament",
-        "setType": "promo",
-        "totalCards": 12,
-        "promoCards": 12,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PJOU",
         "setName": "Journey into Nyx Promos",
         "setType": "promo",
         "totalCards": 10,
         "promoCards": 10,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PJSC",
-        "setName": "Japan Standard Cup",
-        "setType": "promo",
-        "totalCards": 2,
-        "promoCards": 2,
         "nonPromo_withPromoTypes": 0
     },
     {
@@ -2389,62 +2237,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PMPS",
-        "setName": "Magic Premiere Shop 2005",
-        "setType": "promo",
-        "totalCards": 20,
-        "promoCards": 20,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS06",
-        "setName": "Magic Premiere Shop 2006",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS07",
-        "setName": "Magic Premiere Shop 2007",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS08",
-        "setName": "Magic Premiere Shop 2008",
-        "setType": "promo",
-        "totalCards": 6,
-        "promoCards": 6,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS09",
-        "setName": "Magic Premiere Shop 2009",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS10",
-        "setName": "Magic Premiere Shop 2010",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PMPS11",
-        "setName": "Magic Premiere Shop 2011",
-        "setType": "promo",
-        "totalCards": 5,
-        "promoCards": 5,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PMRD",
         "setName": "Mirrodin Promos",
         "setType": "promo",
@@ -2621,27 +2413,11 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PRED",
-        "setName": "Redemption Program",
-        "setType": "promo",
-        "totalCards": 1,
-        "promoCards": 1,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PRIX",
         "setName": "Rivals of Ixalan Promos",
         "setType": "promo",
         "totalCards": 105,
         "promoCards": 105,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PRM",
-        "setName": "Magic Online Promos",
-        "setType": "promo",
-        "totalCards": 3225,
-        "promoCards": 3225,
         "nonPromo_withPromoTypes": 0
     },
     {
@@ -2683,14 +2459,6 @@
         "totalCards": 10,
         "promoCards": 10,
         "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PS11",
-        "setName": "Salvat 2011",
-        "setType": "box",
-        "totalCards": 224,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 224
     },
     {
         "setCode": "PS14",
@@ -2739,14 +2507,6 @@
         "totalCards": 5,
         "promoCards": 5,
         "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PSAL",
-        "setName": "Salvat 2005",
-        "setType": "box",
-        "totalCards": 725,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 725
     },
     {
         "setCode": "PSCG",
@@ -2885,14 +2645,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PSVC",
-        "setName": "Summer Vacation Promos 2022",
-        "setType": "promo",
-        "totalCards": 3,
-        "promoCards": 3,
-        "nonPromo_withPromoTypes": 0
-    },
-    {
         "setCode": "PTDM",
         "setName": "Tarkir: Dragonstorm Promos",
         "setType": "promo",
@@ -2997,14 +2749,6 @@
         "nonPromo_withPromoTypes": 0
     },
     {
-        "setCode": "PUNK",
-        "setName": "Black Lotus Unknown Planechase",
-        "setType": "funny",
-        "totalCards": 52,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 52
-    },
-    {
         "setCode": "PURL",
         "setName": "URL/Convention Promos",
         "setType": "promo",
@@ -3027,14 +2771,6 @@
         "totalCards": 1,
         "promoCards": 1,
         "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PVAN",
-        "setName": "Vanguard Series",
-        "setType": "vanguard",
-        "totalCards": 32,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 32
     },
     {
         "setCode": "PVOW",
@@ -3163,14 +2899,6 @@
         "totalCards": 20,
         "promoCards": 20,
         "nonPromo_withPromoTypes": 0
-    },
-    {
-        "setCode": "PZA",
-        "setName": "Teenage Mutant Hero Turtles Source Material",
-        "setType": "masterpiece",
-        "totalCards": 1,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 1
     },
     {
         "setCode": "PZEN",
@@ -3317,22 +3045,6 @@
         "nonPromo_withPromoTypes": 117
     },
     {
-        "setCode": "TBTH",
-        "setName": "Battle the Horde",
-        "setType": "memorabilia",
-        "totalCards": 10,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 10
-    },
-    {
-        "setCode": "TDAG",
-        "setName": "Defeat a God",
-        "setType": "memorabilia",
-        "totalCards": 8,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 8
-    },
-    {
         "setCode": "TDC",
         "setName": "Tarkir: Dragonstorm Commander",
         "setType": "commander",
@@ -3349,44 +3061,12 @@
         "nonPromo_withPromoTypes": 145
     },
     {
-        "setCode": "TFTH",
-        "setName": "Face the Hydra",
-        "setType": "memorabilia",
-        "totalCards": 10,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 10
-    },
-    {
         "setCode": "THB",
         "setName": "Theros Beyond Death",
         "setType": "expansion",
         "totalCards": 358,
         "promoCards": 7,
         "nonPromo_withPromoTypes": 79
-    },
-    {
-        "setCode": "THP1",
-        "setName": "Theros Hero's Path",
-        "setType": "memorabilia",
-        "totalCards": 7,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 7
-    },
-    {
-        "setCode": "THP2",
-        "setName": "Born of the Gods Hero's Path",
-        "setType": "memorabilia",
-        "totalCards": 7,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 7
-    },
-    {
-        "setCode": "THP3",
-        "setName": "Journey into Nyx Hero's Path",
-        "setType": "memorabilia",
-        "totalCards": 7,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 7
     },
     {
         "setCode": "TLA",
@@ -3459,14 +3139,6 @@
         "totalCards": 173,
         "promoCards": 0,
         "nonPromo_withPromoTypes": 2
-    },
-    {
-        "setCode": "UNK",
-        "setName": "Unknown Event",
-        "setType": "funny",
-        "totalCards": 473,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 473
     },
     {
         "setCode": "USG",
@@ -3557,46 +3229,6 @@
         "nonPromo_withPromoTypes": 103
     },
     {
-        "setCode": "YBRO",
-        "setName": "Alchemy: The Brothers' War",
-        "setType": "alchemy",
-        "totalCards": 31,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 1
-    },
-    {
-        "setCode": "YDMU",
-        "setName": "Alchemy: Dominaria",
-        "setType": "alchemy",
-        "totalCards": 39,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 30
-    },
-    {
-        "setCode": "YMID",
-        "setName": "Alchemy: Innistrad",
-        "setType": "alchemy",
-        "totalCards": 64,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 64
-    },
-    {
-        "setCode": "YMKM",
-        "setName": "Alchemy: Murders at Karlov Manor",
-        "setType": "alchemy",
-        "totalCards": 30,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 30
-    },
-    {
-        "setCode": "YNEO",
-        "setName": "Alchemy: Kamigawa",
-        "setType": "alchemy",
-        "totalCards": 30,
-        "promoCards": 0,
-        "nonPromo_withPromoTypes": 30
-    },
-    {
         "setCode": "ZNC",
         "setName": "Zendikar Rising Commander",
         "setType": "commander",
@@ -3611,5 +3243,5 @@
         "totalCards": 461,
         "promoCards": 7,
         "nonPromo_withPromoTypes": 133
-    },
+    }
 ]

@@ -463,11 +463,19 @@ mod tests {
     }
 
     #[test]
-    fn test_normalize_sort_number_non_ascii() {
+    fn test_normalize_sort_number_non_ascii_in_main() {
         let out = CardMapper::normalize_sort_number("232†", false, true);
         println!("test normalize_sort_number with input: '232†' -> result: {}", out);
         assert_eq!(out, "~000232†");
     }
+
+    #[test]
+    fn test_normalize_sort_number_non_ascii_non_main() {
+        let out = CardMapper::normalize_sort_number("232†", false, false);
+        println!("test normalize_sort_number with input: '232†' -> result: {}", out);
+        assert_eq!(out, "~~000232†");
+    }
+
 
     #[test]
     fn test_build_img_src_ok_and_error() {

@@ -163,6 +163,18 @@ impl CardMapper {
         } else {
             return false;
         }
+        let set_code = match json::extract_string(card_data, "setCode") {
+            Ok(code) => code.to_lowercase(),
+            Err(_) => return false,
+        };
+        let num = json::extract_string(card_data, "number");
+        if let Ok(num_str) = num {
+            if !num_str.is_ascii() && set_code != "arn" {
+                return false;
+            }
+        } else {
+            return false;
+        }
         true
     }
 
@@ -217,7 +229,7 @@ impl CardMapper {
         // non-ascii / misprint demotion
         if !s.is_ascii() {
             prefix.push('~');
-        } 
+        }
 
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
@@ -323,17 +335,150 @@ impl CardMapper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn test_build_mana_cost_with_slashes_and_phyrexian() {
         let input = Some("{2/W}{W/G/P} // {U/R}{U/G/P}".to_string());
         let result = CardMapper::build_mana_cost(input);
+        println!(
+            "test_build_mana_cost_with_slashes_and_phyrexian -> {:?}",
+            result
+        );
         assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()));
     }
 
     #[test]
     fn test_build_mana_cost_none() {
         let result = CardMapper::build_mana_cost(None);
+        println!("test_build_mana_cost_none -> {:?}", result);
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_get_finishes() {
+        let v = json!({ "finishes": ["foil", "nonfoil"] });
+        let arr = CardMapper::get_finishes(&v).unwrap();
+        println!("test_get_finishes -> {:?}", arr);
+        assert!(arr.contains(&"foil"));
+        assert!(arr.contains(&"nonfoil"));
+    }
+
+    #[test]
+    fn test_has_foil_with_finishes() {
+        let v = json!({ "finishes": ["etched"] });
+        let out = CardMapper::has_foil(&v);
+        println!("test_has_foil_with_finishes -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_foil_with_flag_fallback() {
+        let v = json!({ "hasFoil": true });
+        let out = CardMapper::has_foil(&v);
+        println!("test_has_foil_with_flag_fallback -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_non_foil_with_finishes() {
+        let v = json!({ "finishes": ["nonfoil"] });
+        let out = CardMapper::has_non_foil(&v);
+        println!("test_has_non_foil_with_finishes -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_non_foil_with_flag_fallback() {
+        let v = json!({ "hasNonFoil": true });
+        let out = CardMapper::has_non_foil(&v);
+        println!("test_has_non_foil_with_flag_fallback -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_is_canon_true_and_false() {
+        let allowed = vec![json!("upsidedown"), json!("playtest")];
+        let a = CardMapper::is_canon(&allowed);
+        println!("test_is_canon_true -> {}", a);
+        assert!(a);
+        let disallowed = vec![json!("weirdpromo")];
+        let d = CardMapper::is_canon(&disallowed);
+        println!("test_is_canon_false -> {}", d);
+        assert!(!d);
+    }
+
+    #[test]
+    fn test_in_main_requires_booster_default() {
+        let v = json!({
+            "promoTypes": ["upsidedown"],
+            "setCode": "UNH",
+            "number": "1"
+        });
+        let out = CardMapper::in_main(&v);
+        println!(
+            "test_in_main_requires_booster_default (no boosters) -> {}",
+            out
+        );
+        assert!(!out);
+
+        let v2 = json!({
+            "promoTypes": ["upsidedown"],
+            "boosterTypes": ["default"],
+            "setCode": "UNH",
+            "number": "1"
+        });
+        let out2 = CardMapper::in_main(&v2);
+        println!(
+            "test_in_main_requires_booster_default (with default) -> {}",
+            out2
+        );
+        assert!(out2);
+    }
+
+    #[test]
+    fn test_in_main_non_ascii_number_demoted() {
+        let v = json!({
+            "boosterTypes": ["default"],
+            "setCode": "XYZ",
+            "number": "Ⅸ"
+        });
+        let out = CardMapper::in_main(&v);
+        println!("test_in_main_non_ascii_number_demoted -> {}", out);
+        assert!(!out);
+    }
+
+    #[test]
+    fn test_normalize_sort_number_simple_digit() {
+        let out = CardMapper::normalize_sort_number("1", false, true);
+        println!("test_normalize_sort_number_simple_digit -> {}", out);
+        assert_eq!(out, "000001");
+    }
+
+    #[test]
+    fn test_normalize_sort_number_hyphen() {
+        let out = CardMapper::normalize_sort_number("2-3", false, true);
+        println!("test_normalize_sort_number_hyphen -> {}", out);
+        assert_eq!(out, "2-0003");
+    }
+
+    #[test]
+    fn test_normalize_sort_number_non_ascii() {
+        let out = CardMapper::normalize_sort_number("232†", false, true);
+        println!("test normalize_sort_number with input: '232†' -> result: {}", out);
+        assert_eq!(out, "~000232†");
+    }
+
+    #[test]
+    fn test_build_img_src_ok_and_error() {
+        let v = json!({ "identifiers": { "scryfallId": "ab123" } });
+        let path = CardMapper::build_img_src(&v).unwrap();
+        println!("test_build_img_src_ok -> {}", path);
+        assert_eq!(path, "a/b/ab123.jpg");
+
+        let v2 = json!({ "identifiers": {} });
+        let err = CardMapper::build_img_src(&v2).is_err();
+        println!("test_build_img_src_error -> {}", err);
+        assert!(err);
     }
 }

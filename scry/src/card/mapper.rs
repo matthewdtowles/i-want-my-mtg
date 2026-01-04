@@ -218,17 +218,6 @@ impl CardMapper {
         })
     }
 
-    fn build_sort_number_prefix(input: &str, in_main: bool) -> String {
-        let mut prefix = String::new();
-        if !in_main {
-            prefix.push('~');
-        }
-        if !input.is_ascii() {
-            prefix.push('~');
-        }
-        prefix
-    }
-
     fn normalize_sort_number(input: &str, in_main: bool) -> String {
         let s = input.trim();
         let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
@@ -265,6 +254,17 @@ impl CardMapper {
             }
             format!("{}{}", prefix, s)
         }
+    }
+
+    fn build_sort_number_prefix(input: &str, in_main: bool) -> String {
+        let mut prefix = String::new();
+        if !in_main {
+            prefix.push('~');
+        }
+        if !input.is_ascii() {
+            prefix.push('~');
+        }
+        prefix
     }
 
     fn build_mana_cost(raw_mana_cost: Option<String>) -> Option<String> {

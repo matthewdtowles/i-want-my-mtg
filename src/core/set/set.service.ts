@@ -28,15 +28,14 @@ export class SetService {
         return result;
     }
 
-    async totalCardsInSet(setCode: string, options?: SafeQueryOptions): Promise<number> {
+    async totalCardsInSet(setCode: string, baseOnly?: boolean): Promise<number> {
         this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
         try {
-            const baseOnly = options?.baseOnly ?? true;
             const total = await this.repository.totalInSet(setCode, baseOnly);
-            this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
+            this.LOGGER.debug(`Total cards in${baseOnly ? " main " : " "}set ${setCode}: ${total}.`);
             return total;
         } catch (error) {
-            throw new Error(`Error counting cards in set ${setCode} with filter ${options.filter}: ${error.message}`);
+            throw new Error(`Error counting cards in set ${setCode}: ${error.message}`);
         }
     }
 

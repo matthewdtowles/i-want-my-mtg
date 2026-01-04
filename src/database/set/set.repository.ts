@@ -54,7 +54,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     }
 
     async totalInSet(code: string, baseOnly: boolean): Promise<number> {
-        this.LOGGER.debug(`Get total cards in set: ${code}.`);
+        this.LOGGER.debug(`Get total cards in${baseOnly ? " main " : " "}set: ${code}.`);
         const set = await this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.code = :code`, { code })

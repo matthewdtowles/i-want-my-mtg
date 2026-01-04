@@ -50,7 +50,7 @@ impl CardMapper {
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
         let in_main = Self::in_main(card_data);
-        let sort_number = Self::normalize_sort_number(&number, is_alternative, in_main);
+        let sort_number = Self::normalize_sort_number(&number, in_main);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -181,18 +181,7 @@ impl CardMapper {
     fn is_canon(promo_types: &[Value]) -> bool {
         let allowed_promos = [
             "beginnerbox",
-            "startercollection",
-            "themepack",
-            "intropack",
-            "starterdeck",
-            "welcome",
-            "openhouse",
             "draftweekend",
-            "league",
-            "playtest",
-            "release",
-            "universesbeyond",
-            "upsidedown",
             "ffi",
             "ffii",
             "ffiii",
@@ -209,6 +198,17 @@ impl CardMapper {
             "ffxiv",
             "ffxv",
             "ffxvi",
+            "intropack",
+            "league",
+            "openhouse",
+            "playtest",
+            "release",
+            "startercollection",
+            "starterdeck",
+            "themepack",
+            "universesbeyond",
+            "upsidedown",
+            "welcome",
         ];
         promo_types.iter().all(|promo| {
             promo
@@ -218,19 +218,21 @@ impl CardMapper {
         })
     }
 
-    fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {
-        let s = input.trim();
-        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
-        // accumulate prefix markers — more markers push it later in sort order
+    fn build_sort_number_prefix(input: &str, in_main: bool) -> String {
         let mut prefix = String::new();
         if !in_main {
             prefix.push('~');
         }
-        // non-ascii / misprint demotion
-        if !s.is_ascii() {
+        if !input.is_ascii() {
             prefix.push('~');
         }
+        prefix
+    }
 
+    fn normalize_sort_number(input: &str, in_main: bool) -> String {
+        let s = input.trim();
+        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+        let prefix = Self::build_sort_number_prefix(input, in_main);
         if let Some(idx) = s.find('-') {
             let (left, right) = s.split_at(idx);
             let right = &right[1..]; // remove '-'
@@ -243,19 +245,12 @@ impl CardMapper {
             } else {
                 format!("{:0>4}{}", right_digits, right_rest)
             };
-            if starts_with_digit {
-                format!("{}{}-{}", prefix, left, padded_right)
-            } else {
-                format!("~{}-{}", left, padded_right)
-            }
+            format!("{}{}-{}", prefix, left, padded_right)
         } else {
             if starts_with_digit {
                 let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (digits, rest) = s.split_at(digits_end);
                 let padded_left = format!("{:0>6}", digits);
-                if s.contains(|c: char| !c.is_ascii()) && is_alternative {
-                    return format!("~{}{}", padded_left, rest);
-                }
                 return format!("{}{}{}", prefix, padded_left, rest);
             }
             let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
@@ -266,7 +261,7 @@ impl CardMapper {
                     .unwrap_or(digits_and_rest.len());
                 let (digits, rest) = digits_and_rest.split_at(digits_end);
                 let padded_digits = format!("{:0>4}", digits);
-                return format!("~{}{}{}", letters, padded_digits, rest);
+                return format!("{}{}{}{}", prefix, letters, padded_digits, rest);
             }
             format!("{}{}", prefix, s)
         }
@@ -341,17 +336,12 @@ mod tests {
     fn test_build_mana_cost_with_slashes_and_phyrexian() {
         let input = Some("{2/W}{W/G/P} // {U/R}{U/G/P}".to_string());
         let result = CardMapper::build_mana_cost(input);
-        println!(
-            "test_build_mana_cost_with_slashes_and_phyrexian -> {:?}",
-            result
-        );
-        assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()));
+        assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()),);
     }
 
     #[test]
     fn test_build_mana_cost_none() {
         let result = CardMapper::build_mana_cost(None);
-        println!("test_build_mana_cost_none -> {:?}", result);
         assert_eq!(result, None);
     }
 
@@ -450,32 +440,37 @@ mod tests {
 
     #[test]
     fn test_normalize_sort_number_simple_digit() {
-        let out = CardMapper::normalize_sort_number("1", false, true);
-        println!("test_normalize_sort_number_simple_digit -> {}", out);
+        let out = CardMapper::normalize_sort_number("1", true);
+        println!("normalize_sort_number input: '1' -> output: {}", out);
         assert_eq!(out, "000001");
     }
 
     #[test]
     fn test_normalize_sort_number_hyphen() {
-        let out = CardMapper::normalize_sort_number("2-3", false, true);
+        let out = CardMapper::normalize_sort_number("2-3", true);
         println!("test_normalize_sort_number_hyphen -> {}", out);
         assert_eq!(out, "2-0003");
     }
 
     #[test]
     fn test_normalize_sort_number_non_ascii_in_main() {
-        let out = CardMapper::normalize_sort_number("232†", false, true);
-        println!("test normalize_sort_number with input: '232†' -> result: {}", out);
+        let out = CardMapper::normalize_sort_number("232†", true);
+        println!(
+            "test normalize_sort_number with input: '232†' -> output: {}",
+            out
+        );
         assert_eq!(out, "~000232†");
     }
 
     #[test]
     fn test_normalize_sort_number_non_ascii_non_main() {
-        let out = CardMapper::normalize_sort_number("232†", false, false);
-        println!("test normalize_sort_number with input: '232†' -> result: {}", out);
+        let out = CardMapper::normalize_sort_number("232†", false);
+        println!(
+            "test normalize_sort_number with input: '232†' -> output: {}",
+            out
+        );
         assert_eq!(out, "~~000232†");
     }
-
 
     #[test]
     fn test_build_img_src_ok_and_error() {

@@ -431,7 +431,7 @@ mod tests {
         let v = json!({
             "boosterTypes": ["default"],
             "setCode": "XYZ",
-            "number": "Ⅸ"
+            "number": "232†",
         });
         let out = CardMapper::in_main(&v);
         println!("test_in_main_non_ascii_number_demoted -> {}", out);

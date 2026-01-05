@@ -1,3 +1,79 @@
+-- Get cards that should not be in main based on number
+WITH nums AS (
+  SELECT
+    id,
+    set_code,
+    in_main,
+    number,
+    CASE WHEN number ~ '^\d+$' THEN number::int ELSE NULL END AS n
+  FROM card
+),
+min_non_main AS (
+  SELECT
+    set_code,
+    COALESCE(MIN(n) FILTER (WHERE n > 0), MIN(n)) AS min_n
+  FROM nums
+  WHERE in_main = false AND n IS NOT NULL
+  GROUP BY set_code
+)
+SELECT
+  n.id,
+  n.set_code,
+  n.number,
+  n.n AS number_int,
+  m.min_n,
+  n.in_main
+FROM nums n
+JOIN min_non_main m USING (set_code)
+WHERE n.n IS NOT NULL
+  AND n.n > m.min_n
+  AND n.in_main = true
+ORDER BY n.set_code, n.n;
+                  id                  | set_code | number | number_int | min_n | in_main 
+--------------------------------------+----------+--------+------------+-------+---------
+ 0debfcd6-f09c-5d01-87d9-62db4ec6a0a6 | lci      | 393    |        393 |   292 | t
+ ea6de305-b334-532f-8a8b-083227c886f6 | lci      | 394    |        394 |   292 | t
+ dd273d2e-9bcb-5e58-afac-91bfcc8b4621 | lci      | 395    |        395 |   292 | t
+ 7acde3a9-8029-5876-87b7-e0fb903f417e | lci      | 396    |        396 |   292 | t
+ db27fc4f-d97d-50ef-a942-d11f205bb537 | lci      | 397    |        397 |   292 | t
+ 1b193b42-8ab7-5f25-b2b9-63aeb10e7e31 | lci      | 398    |        398 |   292 | t
+ 8dff7df4-2465-57cf-a655-b080fa7569b5 | lci      | 399    |        399 |   292 | t
+ 4b6a107d-dffc-583f-b095-ba0c2173b8e1 | lci      | 400    |        400 |   292 | t
+ c45f48f7-49a7-58eb-b756-dc059692c30c | lci      | 401    |        401 |   292 | t
+ e724da3a-fd41-5cdb-b639-b03449261da2 | lci      | 402    |        402 |   292 | t
+ 236de2ae-b43c-51a2-bba1-b5ec76335b0c | ltr      | 332    |        332 |   282 | t
+ efbc5975-04b1-5c32-a07f-0f3757e2985b | ltr      | 333    |        333 |   282 | t
+ b7176c76-1079-5d73-8137-d2211affa5a9 | ltr      | 334    |        334 |   282 | t
+ 20b42ebf-64dd-56e4-9b65-f22c3f513b2a | ltr      | 335    |        335 |   282 | t
+ 77692ee1-fa24-5db8-8651-97c29fa2146f | ltr      | 336    |        336 |   282 | t
+ 73b1bcfe-e9a9-5b75-920e-42472e8b3047 | ltr      | 337    |        337 |   282 | t
+ 8f93542f-670f-5707-8432-3d31f0defe5f | ltr      | 338    |        338 |   282 | t
+ 354190b4-0cd5-5093-8134-c2ef297eb1d0 | ltr      | 339    |        339 |   282 | t
+ 663a508e-294f-5fae-857d-d865c3d10929 | stx      | 366    |        366 |   276 | t
+ a91545ec-1a4c-5846-8065-bd364a0d490d | stx      | 367    |        367 |   276 | t
+ 79fc1f2b-9bbc-54df-8059-c3951a4eccb5 | stx      | 368    |        368 |   276 | t
+ 790c241b-3c46-5389-b6ef-70aaed263f6b | stx      | 369    |        369 |   276 | t
+ 4f1b0270-be24-5887-88a1-f2ff9e25e636 | stx      | 370    |        370 |   276 | t
+ 163e1402-4a2d-5029-ba3b-3ca2841caa74 | stx      | 371    |        371 |   276 | t
+ 07be00b8-3035-52e4-9288-f7db23c14522 | stx      | 372    |        372 |   276 | t
+ b1919663-4074-5309-b395-f1425bd5b705 | stx      | 373    |        373 |   276 | t
+ 399ca0f2-1540-5465-b38e-67d25f670e3c | stx      | 374    |        374 |   276 | t
+ 2f78811e-e99e-5d44-a78d-211f92c1c635 | stx      | 375    |        375 |   276 | t
+ 3a01461a-7551-5c35-821a-6bacf996c687 | ulst     | 60     |         60 |     1 | t
+ b7991eeb-75bc-5c7a-a2ea-5ae822f8754a | ulst     | 62     |         62 |     1 | t
+ 45260a6a-bb6a-521c-98c3-cd6643ac4f46 | znr      | 380    |        380 |   281 | t
+ bc649741-e3df-531f-b52c-b3634cb80c7b | znr      | 381    |        381 |   281 | t
+ 8148c863-ee4b-5204-b115-3f172931e08c | znr      | 382    |        382 |   281 | t
+ 6c9650e9-4b6c-5954-94eb-dc6c0418a760 | znr      | 383    |        383 |   281 | t
+ 2f8a3f3d-3b11-5f26-b766-0b0bbda0a5bb | znr      | 384    |        384 |   281 | t
+
+LCI, STX, ZNR - all regular basic lands where the full arts are in main set and contiguous with main set
+LTR - Nazgul alternate art cards 
+ULST - 60 and 62 are fluke cards with "default" boosterType
+
+
+
+
 -- INCLUDE DIGITS and DIGITS WITH LETTER OR DIGIT SUFFIX 
 -- with MAIN SET if DIGITS <= SET.BASE_SIZE
 SELECT c.*

@@ -29,6 +29,32 @@ WHERE n.n IS NOT NULL
   AND n.n > m.min_n
   AND n.in_main = true
 ORDER BY n.set_code, n.n;
+
+-- Same, but refined from above -- 
+WITH nums AS (
+  SELECT id, set_code, in_main, number, number::int AS n
+  FROM card
+  WHERE number ~ '^\d+$'
+),
+min_non_main AS (
+  SELECT set_code, CASE WHEN MIN(n)= 0 THEN MIN(n) FILTER (WHERE n> 0) ELSE MIN(n) END AS min_n
+  FROM nums
+  WHERE in_main = false and n is not null
+  GROUP BY set_code HAVING CASE WHEN MIN(n) = 0 THEN MIN(n) FILTER (WHERE n>0) ELSE MIN(n) END IS NOT NULL
+)
+SELECT
+  n.id,
+  n.set_code,
+  n.number,
+  n.n AS number_int,
+  m.min_n,
+  n.in_main
+FROM nums n
+JOIN min_non_main m USING (set_code)
+WHERE n.n > m.min_n
+  AND n.in_main = true
+ORDER BY n.set_code, n.n;
+
                   id                  | set_code | number | number_int | min_n | in_main 
 --------------------------------------+----------+--------+------------+-------+---------
  0debfcd6-f09c-5d01-87d9-62db4ec6a0a6 | lci      | 393    |        393 |   292 | t

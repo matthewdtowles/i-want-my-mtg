@@ -54,6 +54,26 @@ impl CardRepository {
         Ok(rows)
     }
 
+    pub async fn find_cards_misclassified_as_in_main(&self) -> Result<Vec<String>> {
+        // WITH nums AS (
+        //   SELECT id, set_code, in_main, number, number::int AS n
+        //   FROM card
+        //   WHERE number ~ '^\d+$'
+        // ),
+        // min_non_main AS (
+        //   SELECT set_code, CASE WHEN MIN(n)= 0 THEN MIN(n) FILTER (WHERE n> 0) ELSE MIN(n) END AS min_n
+        //   FROM nums
+        //   WHERE in_main = false and n is not null
+        //   GROUP BY set_code HAVING CASE WHEN MIN(n) = 0 THEN MIN(n) FILTER (WHERE n>0) ELSE MIN(n) END IS NOT NULL
+        // )
+        // SELECT n.id
+        // FROM nums n
+        // JOIN min_non_main m USING (set_code)
+        // WHERE n.n > m.min_n
+        //   AND n.in_main = true
+        // ORDER BY n.set_code, n.n;
+    }
+
     pub async fn save_cards(&self, cards: &[Card]) -> Result<i64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");

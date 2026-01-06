@@ -306,9 +306,8 @@ impl CardService {
             return Ok(0);
         }
         for c in &mut cards {
-            // need to give to mapper to ensure proper conversions after we update in_main to false
             c.in_main = false;
-            c.sort_number = CardMapper::normalize_sort_number(&c.number, c.in_main)
+            c.sort_number = CardMapper::normalize_sort_number(&c.number, c.in_main);
         }
         let total_updated = self.repository.save_cards(&cards).await?;
         debug!("Moved {} cards from main set.", total_updated);

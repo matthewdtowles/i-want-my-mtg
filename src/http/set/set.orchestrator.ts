@@ -89,6 +89,7 @@ export class SetOrchestrator {
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
+            // TODO: remove call and use setResponse.size?
             const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
 
             return new SetViewDto({

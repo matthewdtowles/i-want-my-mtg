@@ -24,6 +24,7 @@ impl SetMapper {
             .get("isForeignOnly")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
+        // sizes updated after ingestion, during transformation
         Ok(Set {
             code,
             base_size: 0,

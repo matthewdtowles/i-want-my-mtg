@@ -54,6 +54,40 @@ impl CardRepository {
         Ok(rows)
     }
 
+    pub async fn fetch_misclassified_as_in_main(&self) -> Result<Vec<Card>> {
+        let qb = QueryBuilder::new(
+            "WITH nums AS (
+                SELECT *, number::int AS n
+                FROM card
+                WHERE number ~ '^\\d+$'
+            ),
+            min_non_main AS (
+                SELECT set_code, 
+                    CASE 
+                        WHEN MIN(n)= 0 THEN MIN(n) FILTER (WHERE n> 0) 
+                        ELSE MIN(n) 
+                    END AS min_n
+                FROM nums
+                WHERE in_main = false \
+                AND n IS NOT NULL
+                GROUP BY set_code 
+                HAVING CASE 
+                    WHEN MIN(n) = 0 THEN MIN(n) FILTER (WHERE n > 0) 
+                    ELSE MIN(n) 
+                END IS NOT NULL
+            )
+            SELECT *
+            FROM nums n
+            JOIN min_non_main m USING (set_code)
+            WHERE n.n > m.min_n
+            AND n.in_main = true
+            ORDER BY n.set_code, n.n"
+        );
+        let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
+        debug!("Found {} cards misclassified as being in the main set.", rows.len());
+        Ok(rows)
+    }
+
     pub async fn save_cards(&self, cards: &[Card]) -> Result<i64> {
         if cards.is_empty() {
             warn!("0 cards given, 0 cards saved.");
@@ -63,7 +97,8 @@ impl CardRepository {
         let mut query_builder = QueryBuilder::new(
             "INSERT INTO card (
                 id, artist, has_foil, has_non_foil, img_src,
-                in_main, is_alternative, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, sort_number,
+                in_main, is_alternative, is_reserved, mana_cost, name,
+                number, oracle_text, rarity, set_code, sort_number,
                 type, layout
             )",
         );
@@ -166,7 +201,6 @@ impl CardRepository {
         qb.push(", ");
         qb.push_bind(statuses);
         qb.push(") AS u(card_id, format, status) JOIN card c ON c.id = u.card_id");
-
         let inserted = self.db.execute_query_builder(qb).await?;
         Ok(inserted)
     }

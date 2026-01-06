@@ -3,9 +3,6 @@ import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { getLogger } from "src/logger/global-app-logger";
 import { Card } from "./card.entity";
 import { CardRepositoryPort } from "./card.repository.port";
-import { Format } from "./format.enum";
-import { Legality } from "./legality.entity";
-import { LegalityStatus } from "./legality.status.enum";
 
 @Injectable()
 export class CardService {

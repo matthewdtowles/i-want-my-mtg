@@ -89,7 +89,8 @@ export class SetOrchestrator {
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
-            const setSize = await this.setService.totalCardsInSet(set.code, options);
+            // TODO: remove call and use setResponse.size?
+            const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
@@ -140,7 +141,7 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, query: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, query);
+            const totalCards = await this.setService.totalCardsInSet(setCode, query.baseOnly);
             const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;
@@ -171,7 +172,7 @@ export class SetOrchestrator {
 
     private async createSetMetaResponseDto(userId: number, set: Set, baseOnly: boolean): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code);
+        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
         return new SetMetaResponseDto({
             block: set.block ?? set.name,
             code: set.code,
@@ -192,7 +193,7 @@ export class SetOrchestrator {
             ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
             : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code);
+        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
         return new SetResponseDto({
             block: set.block ?? set.name,
             code: set.code,

@@ -48,7 +48,10 @@ export class SetController {
     @Render("set")
     async findBySetCode(@Req() req: AuthenticatedRequest, @Param("setCode") setCode: string): Promise<SetViewDto> {
         this.LOGGER.log(`Find set and cards for set ${setCode}.`);
-        const rawOptions = new SafeQueryOptions(req.query);
+        const rawOptions = new SafeQueryOptions({
+            ...req.query,
+            baseOnly: false, // do not filter out non-main cards
+        });
         const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawOptions);
         const options = new SafeQueryOptions({
             ...rawOptions,

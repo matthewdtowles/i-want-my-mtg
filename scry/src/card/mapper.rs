@@ -50,7 +50,7 @@ impl CardMapper {
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
         let in_main = Self::in_main(card_data);
-        let sort_number = Self::normalize_sort_number(&number, is_alternative, in_main);
+        let sort_number = Self::normalize_sort_number(&number, in_main);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
         } else {
@@ -120,6 +120,44 @@ impl CardMapper {
         })
     }
 
+    pub fn normalize_sort_number(input: &str, in_main: bool) -> String {
+        let s = input.trim();
+        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+        let prefix = Self::build_sort_number_prefix(input, in_main);
+        if let Some(idx) = s.find('-') {
+            let (left, right) = s.split_at(idx);
+            let right = &right[1..]; // remove '-'
+            let digits_end = right
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(right.len());
+            let (right_digits, right_rest) = right.split_at(digits_end);
+            let padded_right = if right_digits.is_empty() {
+                right.to_string()
+            } else {
+                format!("{:0>4}{}", right_digits, right_rest)
+            };
+            format!("{}{}-{}", prefix, left, padded_right)
+        } else {
+            if starts_with_digit {
+                let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+                let (digits, rest) = s.split_at(digits_end);
+                let padded_left = format!("{:0>6}", digits);
+                return format!("{}{}{}", prefix, padded_left, rest);
+            }
+            let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
+            if let Some(idx) = first_digit_idx {
+                let (letters, digits_and_rest) = s.split_at(idx);
+                let digits_end = digits_and_rest
+                    .find(|c: char| !c.is_ascii_digit())
+                    .unwrap_or(digits_and_rest.len());
+                let (digits, rest) = digits_and_rest.split_at(digits_end);
+                let padded_digits = format!("{:0>4}", digits);
+                return format!("{}{}{}{}", prefix, letters, padded_digits, rest);
+            }
+            format!("{}{}", prefix, s)
+        }
+    }
+
     fn get_finishes(card_data: &Value) -> Option<Vec<&str>> {
         card_data
             .get("finishes")
@@ -163,22 +201,25 @@ impl CardMapper {
         } else {
             return false;
         }
+        let set_code = match json::extract_string(card_data, "setCode") {
+            Ok(code) => code.to_lowercase(),
+            Err(_) => return false,
+        };
+        let num = json::extract_string(card_data, "number");
+        if let Ok(num_str) = num {
+            if !num_str.is_ascii() && set_code != "arn" {
+                return false;
+            }
+        } else {
+            return false;
+        }
         true
     }
 
     fn is_canon(promo_types: &[Value]) -> bool {
         let allowed_promos = [
             "beginnerbox",
-            "startercollection",
-            "themepack",
-            "intropack",
-            "starterdeck",
-            "welcome",
-            "openhouse",
             "draftweekend",
-            "league",
-            "release",
-            "universesbeyond",
             "ffi",
             "ffii",
             "ffiii",
@@ -195,6 +236,17 @@ impl CardMapper {
             "ffxiv",
             "ffxv",
             "ffxvi",
+            "intropack",
+            "league",
+            "openhouse",
+            "playtest",
+            "release",
+            "startercollection",
+            "starterdeck",
+            "themepack",
+            "universesbeyond",
+            "upsidedown",
+            "welcome",
         ];
         promo_types.iter().all(|promo| {
             promo
@@ -204,51 +256,15 @@ impl CardMapper {
         })
     }
 
-    fn normalize_sort_number(input: &str, is_alternative: bool, in_main: bool) -> String {
-        let s = input.trim();
-        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
-
-        let prefix = if !in_main { "~" } else { "" };
-
-        if let Some(idx) = s.find('-') {
-            let (left, right) = s.split_at(idx);
-            let right = &right[1..]; // remove '-'
-            let digits_end = right
-                .find(|c: char| !c.is_ascii_digit())
-                .unwrap_or(right.len());
-            let (right_digits, right_rest) = right.split_at(digits_end);
-            let padded_right = if right_digits.is_empty() {
-                right.to_string()
-            } else {
-                format!("{:0>4}{}", right_digits, right_rest)
-            };
-            if starts_with_digit {
-                format!("{}{}-{}", prefix, left, padded_right)
-            } else {
-                format!("~{}-{}", left, padded_right)
-            }
-        } else {
-            if starts_with_digit {
-                let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                let (digits, rest) = s.split_at(digits_end);
-                let padded_left = format!("{:0>6}", digits);
-                if s.contains(|c: char| !c.is_ascii()) && is_alternative {
-                    return format!("~{}{}", padded_left, rest);
-                }
-                return format!("{}{}{}", prefix, padded_left, rest);
-            }
-            let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
-            if let Some(idx) = first_digit_idx {
-                let (letters, digits_and_rest) = s.split_at(idx);
-                let digits_end = digits_and_rest
-                    .find(|c: char| !c.is_ascii_digit())
-                    .unwrap_or(digits_and_rest.len());
-                let (digits, rest) = digits_and_rest.split_at(digits_end);
-                let padded_digits = format!("{:0>4}", digits);
-                return format!("~{}{}{}", letters, padded_digits, rest);
-            }
-            format!("~{}", s)
+    fn build_sort_number_prefix(input: &str, in_main: bool) -> String {
+        let mut prefix = String::new();
+        if !in_main {
+            prefix.push('~');
         }
+        if !input.is_ascii() {
+            prefix.push('~');
+        }
+        prefix
     }
 
     fn build_mana_cost(raw_mana_cost: Option<String>) -> Option<String> {
@@ -314,17 +330,158 @@ impl CardMapper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn test_build_mana_cost_with_slashes_and_phyrexian() {
         let input = Some("{2/W}{W/G/P} // {U/R}{U/G/P}".to_string());
         let result = CardMapper::build_mana_cost(input);
-        assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()));
+        assert_eq!(result, Some("{2w}{wgp} // {ur}{ugp}".to_string()),);
     }
 
     #[test]
     fn test_build_mana_cost_none() {
         let result = CardMapper::build_mana_cost(None);
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_get_finishes() {
+        let v = json!({ "finishes": ["foil", "nonfoil"] });
+        let arr = CardMapper::get_finishes(&v).unwrap();
+        println!("test_get_finishes -> {:?}", arr);
+        assert!(arr.contains(&"foil"));
+        assert!(arr.contains(&"nonfoil"));
+    }
+
+    #[test]
+    fn test_has_foil_with_finishes() {
+        let v = json!({ "finishes": ["etched"] });
+        let out = CardMapper::has_foil(&v);
+        println!("test_has_foil_with_finishes -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_foil_with_flag_fallback() {
+        let v = json!({ "hasFoil": true });
+        let out = CardMapper::has_foil(&v);
+        println!("test_has_foil_with_flag_fallback -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_non_foil_with_finishes() {
+        let v = json!({ "finishes": ["nonfoil"] });
+        let out = CardMapper::has_non_foil(&v);
+        println!("test_has_non_foil_with_finishes -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_has_non_foil_with_flag_fallback() {
+        let v = json!({ "hasNonFoil": true });
+        let out = CardMapper::has_non_foil(&v);
+        println!("test_has_non_foil_with_flag_fallback -> {}", out);
+        assert!(out);
+    }
+
+    #[test]
+    fn test_is_canon_true_and_false() {
+        let allowed = vec![json!("upsidedown"), json!("playtest")];
+        let a = CardMapper::is_canon(&allowed);
+        println!("test_is_canon_true -> {}", a);
+        assert!(a);
+        let disallowed = vec![json!("weirdpromo")];
+        let d = CardMapper::is_canon(&disallowed);
+        println!("test_is_canon_false -> {}", d);
+        assert!(!d);
+    }
+
+    #[test]
+    fn test_in_main_requires_booster_default() {
+        let v = json!({
+            "promoTypes": ["upsidedown"],
+            "setCode": "UNH",
+            "number": "1"
+        });
+        let out = CardMapper::in_main(&v);
+        println!(
+            "test_in_main_requires_booster_default (no boosters) -> {}",
+            out
+        );
+        assert!(!out);
+
+        let v2 = json!({
+            "promoTypes": ["upsidedown"],
+            "boosterTypes": ["default"],
+            "setCode": "UNH",
+            "number": "1"
+        });
+        let out2 = CardMapper::in_main(&v2);
+        println!(
+            "test_in_main_requires_booster_default (with default) -> {}",
+            out2
+        );
+        assert!(out2);
+    }
+
+    #[test]
+    fn test_in_main_non_ascii_number_demoted() {
+        let v = json!({
+            "boosterTypes": ["default"],
+            "setCode": "XYZ",
+            "number": "232†",
+        });
+        let out = CardMapper::in_main(&v);
+        println!("test_in_main_non_ascii_number_demoted -> {}", out);
+        assert!(!out);
+    }
+
+    #[test]
+    fn test_normalize_sort_number_simple_digit() {
+        let out = CardMapper::normalize_sort_number("1", true);
+        println!("normalize_sort_number input: '1' -> output: {}", out);
+        assert_eq!(out, "000001");
+    }
+
+    #[test]
+    fn test_normalize_sort_number_hyphen() {
+        let out = CardMapper::normalize_sort_number("2-3", true);
+        println!("test_normalize_sort_number_hyphen -> {}", out);
+        assert_eq!(out, "2-0003");
+    }
+
+    #[test]
+    fn test_normalize_sort_number_non_ascii_in_main() {
+        let out = CardMapper::normalize_sort_number("232†", true);
+        println!(
+            "test normalize_sort_number with input: '232†' -> output: {}",
+            out
+        );
+        assert_eq!(out, "~000232†");
+    }
+
+    #[test]
+    fn test_normalize_sort_number_non_ascii_non_main() {
+        let out = CardMapper::normalize_sort_number("232†", false);
+        println!(
+            "test normalize_sort_number with input: '232†' -> output: {}",
+            out
+        );
+        assert_eq!(out, "~~000232†");
+    }
+
+    #[test]
+    fn test_build_img_src_ok_and_error() {
+        let v = json!({ "identifiers": { "scryfallId": "ab123" } });
+        let path = CardMapper::build_img_src(&v).unwrap();
+        println!("test_build_img_src_ok -> {}", path);
+        assert_eq!(path, "a/b/ab123.jpg");
+
+        let v2 = json!({ "identifiers": {} });
+        let err = CardMapper::build_img_src(&v2).is_err();
+        println!("test_build_img_src_error -> {}", err);
+        assert!(err);
     }
 }

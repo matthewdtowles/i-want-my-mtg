@@ -120,6 +120,44 @@ impl CardMapper {
         })
     }
 
+    pub fn normalize_sort_number(input: &str, in_main: bool) -> String {
+        let s = input.trim();
+        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
+        let prefix = Self::build_sort_number_prefix(input, in_main);
+        if let Some(idx) = s.find('-') {
+            let (left, right) = s.split_at(idx);
+            let right = &right[1..]; // remove '-'
+            let digits_end = right
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(right.len());
+            let (right_digits, right_rest) = right.split_at(digits_end);
+            let padded_right = if right_digits.is_empty() {
+                right.to_string()
+            } else {
+                format!("{:0>4}{}", right_digits, right_rest)
+            };
+            format!("{}{}-{}", prefix, left, padded_right)
+        } else {
+            if starts_with_digit {
+                let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+                let (digits, rest) = s.split_at(digits_end);
+                let padded_left = format!("{:0>6}", digits);
+                return format!("{}{}{}", prefix, padded_left, rest);
+            }
+            let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
+            if let Some(idx) = first_digit_idx {
+                let (letters, digits_and_rest) = s.split_at(idx);
+                let digits_end = digits_and_rest
+                    .find(|c: char| !c.is_ascii_digit())
+                    .unwrap_or(digits_and_rest.len());
+                let (digits, rest) = digits_and_rest.split_at(digits_end);
+                let padded_digits = format!("{:0>4}", digits);
+                return format!("{}{}{}{}", prefix, letters, padded_digits, rest);
+            }
+            format!("{}{}", prefix, s)
+        }
+    }
+
     fn get_finishes(card_data: &Value) -> Option<Vec<&str>> {
         card_data
             .get("finishes")
@@ -216,44 +254,6 @@ impl CardMapper {
                 .map(|s| allowed_promos.contains(&s))
                 .unwrap_or(false)
         })
-    }
-
-    fn normalize_sort_number(input: &str, in_main: bool) -> String {
-        let s = input.trim();
-        let starts_with_digit = s.starts_with(|c: char| c.is_ascii_digit());
-        let prefix = Self::build_sort_number_prefix(input, in_main);
-        if let Some(idx) = s.find('-') {
-            let (left, right) = s.split_at(idx);
-            let right = &right[1..]; // remove '-'
-            let digits_end = right
-                .find(|c: char| !c.is_ascii_digit())
-                .unwrap_or(right.len());
-            let (right_digits, right_rest) = right.split_at(digits_end);
-            let padded_right = if right_digits.is_empty() {
-                right.to_string()
-            } else {
-                format!("{:0>4}{}", right_digits, right_rest)
-            };
-            format!("{}{}-{}", prefix, left, padded_right)
-        } else {
-            if starts_with_digit {
-                let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                let (digits, rest) = s.split_at(digits_end);
-                let padded_left = format!("{:0>6}", digits);
-                return format!("{}{}{}", prefix, padded_left, rest);
-            }
-            let first_digit_idx = s.find(|c: char| c.is_ascii_digit());
-            if let Some(idx) = first_digit_idx {
-                let (letters, digits_and_rest) = s.split_at(idx);
-                let digits_end = digits_and_rest
-                    .find(|c: char| !c.is_ascii_digit())
-                    .unwrap_or(digits_and_rest.len());
-                let (digits, rest) = digits_and_rest.split_at(digits_end);
-                let padded_digits = format!("{:0>4}", digits);
-                return format!("{}{}{}{}", prefix, letters, padded_digits, rest);
-            }
-            format!("{}{}", prefix, s)
-        }
     }
 
     fn build_sort_number_prefix(input: &str, in_main: bool) -> String {

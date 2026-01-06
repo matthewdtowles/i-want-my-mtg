@@ -299,6 +299,22 @@ impl CardService {
         Ok(total_deleted)
     }
 
+    pub async fn fix_main_classification(&self) -> Result<i64> {
+        debug!("Fix main set classification for all cards.");
+        let mut cards = self.repository.fetch_misclassified_as_in_main().await?;
+        if cards.is_empty() {
+            return Ok(0);
+        }
+        for c in &mut cards {
+            // need to give to mapper to ensure proper conversions after we update in_main to false
+            c.in_main = false;
+            c.sort_number = CardMapper::normalize_sort_number(&c.number, c.in_main)
+        }
+        let total_updated = self.repository.save_cards(&cards).await?;
+        debug!("Moved {} cards from main set.", total_updated);
+        Ok(total_updated)
+    }
+
     fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {
         use std::collections::HashMap;
         let mut id_index: HashMap<String, usize> = HashMap::new();

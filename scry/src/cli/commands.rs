@@ -36,8 +36,8 @@ pub enum Commands {
     /// Prune unwanted ingested data
     PostIngestPrune {},
 
-    /// Save calculations for set sizes and set prices
-    /// Prices rely on accurate sizes
+    /// Save set sizes, prices, & fix main set misclassifications
+    /// Note: Set Prices rely on accurate sizes
     PostIngestUpdates {},
 
     /// Run cleanup operations

@@ -263,11 +263,13 @@ impl CliController {
         info!("Found {} base_sizes for all sets.", base_sizes.len());
         let total_sizes = self.card_service.count_per_all_sets(false).await?;
         info!("Found {} total_sizes for all sets.", total_sizes.len());
-        let total_updated = self
+        let total_sets_updated = self
             .set_service
             .update_sizes(base_sizes, total_sizes)
             .await?;
-        info!("Total set sizes updated: {}", total_updated);
+        info!("Total set sizes updated: {}", total_sets_updated);
+        let total_cards_updated = self.card_service.fix_main_classification().await?;
+        info!("Total cards moved from their main set to non-main: {}", total_cards_updated);
         let total_set_prices_updated = self.set_service.update_set_prices().await?;
         info!("Total set prices rows updated: {}", total_set_prices_updated);
         Ok(())

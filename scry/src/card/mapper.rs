@@ -1,3 +1,4 @@
+use crate::card::domain::InMainClassifier;
 use crate::card::models::{Card, CardRarity, Format, Legality, LegalityStatus};
 use crate::utils::json;
 use anyhow::Result;
@@ -49,7 +50,7 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
         let img_src = Self::build_img_src(card_data)?;
-        let in_main = Self::in_main(card_data);
+        let in_main = InMainClassifier::classify(card_data);
         let sort_number = Self::normalize_sort_number(&number, in_main);
         let legalities = if let Some(legalities_dto) = card_data.get("legalities") {
             Self::extract_legalities(legalities_dto, &id)?
@@ -185,77 +186,6 @@ impl CardMapper {
             .unwrap_or(false);
     }
 
-    fn in_main(card_data: &Value) -> bool {
-        if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
-            if !Self::is_canon(promo_types) {
-                return false;
-            }
-        }
-        if let Some(booster_types) = card_data.get("boosterTypes").and_then(|v| v.as_array()) {
-            let has_booster = booster_types
-                .iter()
-                .any(|v| v.as_str().map(|s| s == "default").unwrap_or(false));
-            if !has_booster {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        let set_code = match json::extract_string(card_data, "setCode") {
-            Ok(code) => code.to_lowercase(),
-            Err(_) => return false,
-        };
-        let num = json::extract_string(card_data, "number");
-        if let Ok(num_str) = num {
-            if !num_str.is_ascii() && set_code != "arn" {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        true
-    }
-
-    fn is_canon(promo_types: &[Value]) -> bool {
-        let allowed_promos = [
-            "beginnerbox",
-            "draftweekend",
-            "ffi",
-            "ffii",
-            "ffiii",
-            "ffiv",
-            "ffix",
-            "ffv",
-            "ffvi",
-            "ffvii",
-            "ffviii",
-            "ffx",
-            "ffxi",
-            "ffxii",
-            "ffxiii",
-            "ffxiv",
-            "ffxv",
-            "ffxvi",
-            "intropack",
-            "league",
-            "openhouse",
-            "playtest",
-            "release",
-            "startercollection",
-            "starterdeck",
-            "themepack",
-            "universesbeyond",
-            "upsidedown",
-            "welcome",
-        ];
-        promo_types.iter().all(|promo| {
-            promo
-                .as_str()
-                .map(|s| allowed_promos.contains(&s))
-                .unwrap_or(false)
-        })
-    }
-
     fn build_sort_number_prefix(input: &str, in_main: bool) -> String {
         let mut prefix = String::new();
         if !in_main {
@@ -384,58 +314,6 @@ mod tests {
         let out = CardMapper::has_non_foil(&v);
         println!("test_has_non_foil_with_flag_fallback -> {}", out);
         assert!(out);
-    }
-
-    #[test]
-    fn test_is_canon_true_and_false() {
-        let allowed = vec![json!("upsidedown"), json!("playtest")];
-        let a = CardMapper::is_canon(&allowed);
-        println!("test_is_canon_true -> {}", a);
-        assert!(a);
-        let disallowed = vec![json!("weirdpromo")];
-        let d = CardMapper::is_canon(&disallowed);
-        println!("test_is_canon_false -> {}", d);
-        assert!(!d);
-    }
-
-    #[test]
-    fn test_in_main_requires_booster_default() {
-        let v = json!({
-            "promoTypes": ["upsidedown"],
-            "setCode": "UNH",
-            "number": "1"
-        });
-        let out = CardMapper::in_main(&v);
-        println!(
-            "test_in_main_requires_booster_default (no boosters) -> {}",
-            out
-        );
-        assert!(!out);
-
-        let v2 = json!({
-            "promoTypes": ["upsidedown"],
-            "boosterTypes": ["default"],
-            "setCode": "UNH",
-            "number": "1"
-        });
-        let out2 = CardMapper::in_main(&v2);
-        println!(
-            "test_in_main_requires_booster_default (with default) -> {}",
-            out2
-        );
-        assert!(out2);
-    }
-
-    #[test]
-    fn test_in_main_non_ascii_number_demoted() {
-        let v = json!({
-            "boosterTypes": ["default"],
-            "setCode": "XYZ",
-            "number": "232†",
-        });
-        let out = CardMapper::in_main(&v);
-        println!("test_in_main_non_ascii_number_demoted -> {}", out);
-        assert!(!out);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-use crate::price::models::Price;
+use crate::price::domain::Price;
 use crate::utils::json_stream_parser::JsonEventProcessor;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};

@@ -1,5 +1,5 @@
 pub mod service;
-mod models;
+mod domain;
 mod repository;
 mod event_processor;
 

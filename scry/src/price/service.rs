@@ -1,5 +1,5 @@
 use crate::price::event_processor::PriceEventProcessor;
-use crate::price::models::Price;
+use crate::price::domain::Price;
 use crate::price::repository::PriceRepository;
 use crate::utils::JsonStreamParser;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};

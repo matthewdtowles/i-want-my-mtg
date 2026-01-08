@@ -1,6 +1,6 @@
 use crate::{
     database::ConnectionPool,
-    set::models::{Set, SetPrice},
+    set::domain::{Set, SetPrice},
 };
 use anyhow::{Ok, Result};
 use sqlx::QueryBuilder;

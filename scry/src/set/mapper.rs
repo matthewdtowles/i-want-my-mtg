@@ -1,4 +1,4 @@
-use crate::{set::models::Set, utils::json};
+use crate::{set::domain::Set, utils::json};
 use anyhow::Result;
 use serde_json::Value;
 

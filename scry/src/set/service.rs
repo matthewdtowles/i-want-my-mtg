@@ -1,4 +1,4 @@
-use crate::set::models::{Set, SetPrice};
+use crate::set::domain::{Set, SetPrice};
 use crate::set::{mapper::SetMapper, repository::SetRepository};
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;

@@ -1,4 +1,4 @@
 pub mod service;
 mod mapper;
-mod models;
+mod domain;
 mod repository;

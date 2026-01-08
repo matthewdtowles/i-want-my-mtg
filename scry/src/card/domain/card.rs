@@ -1,4 +1,4 @@
-use crate::card::domain::{CardRarity, Legality};
+use super::{CardRarity, Legality};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
@@ -66,21 +66,6 @@ impl Card {
 
     pub fn is_foreign(&self) -> bool {
         !self.language.is_empty() && self.language != "English"
-    }
-
-    /// Is this card a candidate for duplicate foil pruning?
-    pub fn is_duplicate_foil_candidate(&self, set_code: &str) -> bool {
-        const DUP_FOIL_SETS: &[&str] = &[
-            "40k", "7ed", "8ed", "9ed", "10e", "frf", "ons", "shm", "stx", "thb", "unh",
-        ];
-        DUP_FOIL_SETS.contains(&set_code) && !self.number.is_ascii()
-    }
-
-    /// Transfer foil availability from another card
-    pub fn enable_foil_from(&mut self, source: &Card) {
-        if source.has_foil && !self.has_foil {
-            self.has_foil = true;
-        }
     }
 
     /// Merge two mana costs (for split cards)
@@ -233,28 +218,6 @@ mod tests {
 
         card.language = "Japanese".to_string();
         assert!(card.is_foreign());
-    }
-
-    #[test]
-    fn test_is_duplicate_foil_candidate() {
-        let mut card = create_test_card();
-        card.set_code = "7ed".to_string();
-        card.number = "232†".to_string();
-        assert!(card.is_duplicate_foil_candidate("7ed"));
-
-        card.number = "123".to_string();
-        assert!(!card.is_duplicate_foil_candidate("7ed"));
-    }
-
-    #[test]
-    fn test_enable_foil_from() {
-        let mut target = create_test_card();
-        target.has_foil = false;
-
-        let source = create_test_card();
-        target.enable_foil_from(&source);
-
-        assert!(target.has_foil);
     }
 
     #[test]

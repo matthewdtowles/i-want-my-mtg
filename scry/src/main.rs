@@ -18,7 +18,9 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("* * * Starting Scry * * *");
+    info!("* * * * * * * * * * * * *");
+    info!("* * * Starting Scry * * *");
+    info!("* * * * * * * * * * * * *");
 
     // Initialize logging
     tracing_subscriber::registry()

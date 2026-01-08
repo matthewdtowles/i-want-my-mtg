@@ -307,7 +307,7 @@ impl CardService {
         }
         for c in &mut cards {
             c.in_main = false;
-            c.sort_number = Card::compute_sort_number(&c.number, c.in_main); // ← Use Card method!
+            c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
         }
         let total_updated = self.repository.save_cards(&cards).await?;
         debug!("Moved {} cards from main set.", total_updated);

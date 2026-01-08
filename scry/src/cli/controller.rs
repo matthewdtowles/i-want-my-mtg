@@ -213,7 +213,7 @@ impl CliController {
             .interact()
             .unwrap();
         if !confirmed {
-            println!("Skipped data reset.");
+            warn!("Skipped data reset.");
             return Ok(());
         }
         let prices_deleted = self.price_service.delete_all().await?;

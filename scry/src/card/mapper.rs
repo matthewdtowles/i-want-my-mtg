@@ -1,5 +1,5 @@
 use crate::card::domain::{
-    Card, CardNumber, CardRarity, Format, Legality, LegalityStatus, MainSetClassifier,
+    Card, CardRarity, Format, Legality, LegalityStatus, MainSetClassifier,
 };
 use crate::utils::json;
 use anyhow::Result;
@@ -32,17 +32,12 @@ impl CardMapper {
         let raw_face_name = json::extract_optional_string(card_data, "faceName");
         let set_code = json::extract_string(card_data, "setCode")?.to_lowercase();
         let number_str = json::extract_string(card_data, "number")?;
-
-        // Validate number
-        CardNumber::parse(&number_str)?;
-
         let type_line = json::extract_string(card_data, "type")?;
         let rarity_str = json::extract_string(card_data, "rarity")?;
         let rarity = rarity_str
             .parse::<CardRarity>()
             .unwrap_or(CardRarity::Common);
 
-        // Use Card domain logic for mana cost
         let raw_mana_cost = json::extract_optional_string(card_data, "manaCost");
         let mana_cost = Card::normalize_mana_cost(raw_mana_cost);
 
@@ -59,7 +54,6 @@ impl CardMapper {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
-        // Use Card domain logic for image path
         let scryfall_id = card_data
             .get("identifiers")
             .and_then(|i| i.get("scryfallId"))
@@ -113,7 +107,6 @@ impl CardMapper {
             .unwrap_or("")
             .to_string();
 
-        // Use Card domain logic for sort number
         let sort_number = Card::compute_sort_number(&number_str, in_main);
 
         Ok(Card {

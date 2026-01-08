@@ -1,11 +1,6 @@
 use serde_json::Value;
 
-/// Business rules for determining if a card belongs in the main set.
-///
-/// Main set cards are those that:
-/// - Have canonical promo types (or no promo types)
-/// - Appear in default booster packs
-/// - Have ASCII numbers (except Arabian Nights set)
+/// Business rules to determine if a card belongs in the main set.
 pub struct MainSetClassifier;
 
 impl MainSetClassifier {
@@ -16,39 +11,31 @@ impl MainSetClassifier {
     /// - Card is not in default booster packs
     /// - Card number is non-ASCII (except for set "arn")
     pub fn is_main_set_card(card_data: &Value) -> bool {
-        // Check promo types first (fastest rejection)
         if let Some(promo_types) = card_data.get("promoTypes").and_then(|v| v.as_array()) {
             if !Self::has_canonical_promo_types(promo_types) {
                 return false;
             }
         }
-
-        // Check booster inclusion
         if let Some(booster_types) = card_data.get("boosterTypes").and_then(|v| v.as_array()) {
             if !Self::is_in_default_booster(booster_types) {
                 return false;
             }
         } else {
-            // No booster types means not in main set
             return false;
         }
-
         // Check number format (ASCII only, except Arabian Nights)
         let set_code = card_data
             .get("setCode")
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_lowercase();
-
         if let Some(number) = card_data.get("number").and_then(|v| v.as_str()) {
             if !number.is_ascii() && set_code != "arn" {
                 return false;
             }
         } else {
-            // Missing number -> not in main
             return false;
         }
-
         true
     }
 
@@ -89,7 +76,6 @@ impl MainSetClassifier {
             "upsidedown",
             "welcome",
         ];
-
         promo_types.iter().all(|promo| {
             promo
                 .as_str()
@@ -117,7 +103,6 @@ mod tests {
             "boosterTypes": ["default"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify standard card -> {}", result);
         assert!(result);
     }
 
@@ -128,7 +113,6 @@ mod tests {
             "number": "123"
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify card with no boosterTypes -> {}", result);
         assert!(!result);
     }
 
@@ -140,7 +124,6 @@ mod tests {
             "boosterTypes": ["arena"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify card with non-default booster -> {}", result);
         assert!(!result);
     }
 
@@ -153,10 +136,6 @@ mod tests {
             "promoTypes": ["upsidedown"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!(
-            "classify card with canonical promo (upsidedown) -> {}",
-            result
-        );
         assert!(result);
     }
 
@@ -169,7 +148,6 @@ mod tests {
             "promoTypes": ["buyabox"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify card with non-canonical promo -> {}", result);
         assert!(!result);
     }
 
@@ -182,7 +160,6 @@ mod tests {
             "promoTypes": ["playtest"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify playtest promo (not MB2) -> {}", result);
         assert!(result);
     }
 
@@ -194,7 +171,6 @@ mod tests {
             "boosterTypes": ["default"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify card with non-ASCII number -> {}", result);
         assert!(!result);
     }
 
@@ -206,10 +182,6 @@ mod tests {
             "boosterTypes": ["default"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!(
-            "classify Arabian Nights with non-ASCII number -> {}",
-            result
-        );
         assert!(result);
     }
 
@@ -220,7 +192,6 @@ mod tests {
             "boosterTypes": ["default"]
         });
         let result = MainSetClassifier::is_main_set_card(&card);
-        println!("classify card with missing number -> {}", result);
         assert!(!result);
     }
 
@@ -228,7 +199,6 @@ mod tests {
     fn test_has_canonical_promo_types_all_valid() {
         let promos = vec![json!("release"), json!("starterdeck")];
         let result = MainSetClassifier::has_canonical_promo_types(&promos);
-        println!("has_canonical_promo_types (all valid) -> {}", result);
         assert!(result);
     }
 
@@ -236,7 +206,6 @@ mod tests {
     fn test_has_canonical_promo_types_one_invalid() {
         let promos = vec![json!("release"), json!("buyabox")];
         let result = MainSetClassifier::has_canonical_promo_types(&promos);
-        println!("has_canonical_promo_types (one invalid) -> {}", result);
         assert!(!result);
     }
 
@@ -244,7 +213,6 @@ mod tests {
     fn test_is_in_default_booster_true() {
         let boosters = vec![json!("default"), json!("arena")];
         let result = MainSetClassifier::is_in_default_booster(&boosters);
-        println!("is_in_default_booster (has default) -> {}", result);
         assert!(result);
     }
 
@@ -252,7 +220,6 @@ mod tests {
     fn test_is_in_default_booster_false() {
         let boosters = vec![json!("arena"), json!("collector")];
         let result = MainSetClassifier::is_in_default_booster(&boosters);
-        println!("is_in_default_booster (no default) -> {}", result);
         assert!(!result);
     }
 }

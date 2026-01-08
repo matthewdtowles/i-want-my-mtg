@@ -1,4 +1,4 @@
-use crate::card::models::{Format, LegalityStatus};
+use crate::card::domain::{Format, LegalityStatus};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 

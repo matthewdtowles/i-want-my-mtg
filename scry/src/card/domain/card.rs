@@ -1,4 +1,5 @@
-use crate::card::models::{CardRarity, Format, Legality, LegalityStatus};
+use crate::card::domain::{CardRarity, Legality};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -48,6 +49,7 @@ pub struct Card {
 }
 
 impl Card {
+    /// Should this card be filtered out from main processing?
     pub fn should_filter(&self) -> bool {
         if self.is_online_only || self.is_oversized {
             return true;
@@ -66,24 +68,120 @@ impl Card {
         !self.language.is_empty() && self.language != "English"
     }
 
-    pub fn merge_mana_cost(&mut self, other_cost: Option<&str>) {
-        if let (Some(my_cost), Some(other)) = (&self.mana_cost, other_cost) {
-            self.mana_cost = Some(format!("{} // {}", my_cost, other));
-        } else if let Some(other) = other_cost {
-            self.mana_cost = Some(other.to_string());
+    /// Is this card a candidate for duplicate foil pruning?
+    pub fn is_duplicate_foil_candidate(&self, set_code: &str) -> bool {
+        const DUP_FOIL_SETS: &[&str] = &[
+            "40k", "7ed", "8ed", "9ed", "10e", "frf", "ons", "shm", "stx", "thb", "unh",
+        ];
+        DUP_FOIL_SETS.contains(&set_code) && !self.number.is_ascii()
+    }
+
+    /// Transfer foil availability from another card
+    pub fn enable_foil_from(&mut self, source: &Card) {
+        if source.has_foil && !self.has_foil {
+            self.has_foil = true;
         }
     }
 
-    pub fn is_legal_in(&self, format: Format) -> bool {
-        self.legalities
-            .iter()
-            .any(|l| l.format == format && l.status == LegalityStatus::Legal)
+    /// Merge two mana costs (for split cards)
+    pub fn merge_mana_costs(base_cost: Option<&str>, other_cost: Option<&str>) -> Option<String> {
+        match (base_cost, other_cost) {
+            (Some(base), Some(other)) => Some(format!("{} // {}", base, other)),
+            (Some(base), None) => Some(base.to_string()),
+            (None, Some(other)) => Some(other.to_string()),
+            (None, None) => None,
+        }
     }
 
-    pub fn is_banned_in(&self, format: Format) -> bool {
-        self.legalities
-            .iter()
-            .any(|l| l.format == format && l.status == LegalityStatus::Banned)
+    /// Normalize mana cost string (lowercase, remove hybrid slashes)
+    pub fn normalize_mana_cost(raw: Option<String>) -> Option<String> {
+        raw.map(|cost| {
+            let mut result = String::new();
+            let mut chars = cost.chars().peekable();
+            let mut in_brace = false;
+
+            while let Some(ch) = chars.next() {
+                match ch {
+                    '{' => {
+                        in_brace = true;
+                        result.push(ch);
+                    }
+                    '}' => {
+                        in_brace = false;
+                        result.push(ch);
+                    }
+                    '/' if in_brace => continue, // Skip slashes inside braces
+                    '/' if chars.peek() == Some(&'/') => {
+                        result.push_str("//");
+                        chars.next();
+                    }
+                    _ => result.push(ch.to_ascii_lowercase()),
+                }
+            }
+            result
+        })
+    }
+
+    /// Compute sort number based on card number and main set status
+    pub fn compute_sort_number(number: &str, in_main: bool) -> String {
+        let s = number.trim();
+        let prefix = Self::sort_prefix(number, in_main);
+
+        // Handle hyphenated numbers (e.g., "2-3")
+        if let Some(idx) = s.find('-') {
+            let (left, right) = s.split_at(idx);
+            let right = &right[1..];
+            let digits_end = right
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(right.len());
+            let (right_digits, right_rest) = right.split_at(digits_end);
+            let padded_right = if right_digits.is_empty() {
+                right.to_string()
+            } else {
+                format!("{:0>4}{}", right_digits, right_rest)
+            };
+            return format!("{}{}-{}", prefix, left, padded_right);
+        }
+
+        // Handle pure numeric numbers
+        if s.starts_with(|c: char| c.is_ascii_digit()) {
+            let digits_end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+            let (digits, rest) = s.split_at(digits_end);
+            return format!("{}{:0>6}{}", prefix, digits, rest);
+        }
+
+        // Handle mixed alphanumeric
+        if let Some(idx) = s.find(|c: char| c.is_ascii_digit()) {
+            let (letters, digits_and_rest) = s.split_at(idx);
+            let digits_end = digits_and_rest
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(digits_and_rest.len());
+            let (digits, rest) = digits_and_rest.split_at(digits_end);
+            return format!("{}{}{:0>4}{}", prefix, letters, digits, rest);
+        }
+
+        format!("{}{}", prefix, s)
+    }
+
+    /// Build Scryfall image path from UUID
+    pub fn build_scryfall_image_path(scryfall_id: &str) -> Result<String> {
+        if scryfall_id.len() < 2 {
+            return Err(anyhow::anyhow!("ScryfallId too short"));
+        }
+        let first = scryfall_id.chars().next().unwrap();
+        let second = scryfall_id.chars().nth(1).unwrap();
+        Ok(format!("{}/{}/{}.jpg", first, second, scryfall_id))
+    }
+
+    fn sort_prefix(number: &str, in_main: bool) -> String {
+        let mut prefix = String::new();
+        if !in_main {
+            prefix.push('~');
+        }
+        if !number.is_ascii() {
+            prefix.push('~');
+        }
+        prefix
     }
 }
 
@@ -105,11 +203,7 @@ mod tests {
             is_oversized: false,
             language: "English".to_string(),
             layout: "normal".to_string(),
-            legalities: vec![Legality::new(
-                "test-id".to_string(),
-                Format::Standard,
-                LegalityStatus::Legal,
-            )],
+            legalities: vec![],
             mana_cost: Some("{2}{U}".to_string()),
             name: "Test Card".to_string(),
             number: "123".to_string(),
@@ -124,25 +218,61 @@ mod tests {
     }
 
     #[test]
-    fn test_should_filter_online_only() {
+    fn test_should_filter() {
         let mut card = create_test_card();
         assert!(!card.should_filter());
+
         card.is_online_only = true;
         assert!(card.should_filter());
     }
 
     #[test]
-    fn test_is_split_card() {
+    fn test_is_foreign() {
         let mut card = create_test_card();
-        assert!(!card.is_split_card());
-        card.layout = "split".to_string();
-        assert!(card.is_split_card());
+        assert!(!card.is_foreign());
+
+        card.language = "Japanese".to_string();
+        assert!(card.is_foreign());
     }
 
     #[test]
-    fn test_merge_mana_cost() {
+    fn test_is_duplicate_foil_candidate() {
         let mut card = create_test_card();
-        card.merge_mana_cost(Some("{R}{G}"));
-        assert_eq!(card.mana_cost, Some("{2}{U} // {R}{G}".to_string()));
+        card.set_code = "7ed".to_string();
+        card.number = "232†".to_string();
+        assert!(card.is_duplicate_foil_candidate("7ed"));
+
+        card.number = "123".to_string();
+        assert!(!card.is_duplicate_foil_candidate("7ed"));
+    }
+
+    #[test]
+    fn test_enable_foil_from() {
+        let mut target = create_test_card();
+        target.has_foil = false;
+
+        let source = create_test_card();
+        target.enable_foil_from(&source);
+
+        assert!(target.has_foil);
+    }
+
+    #[test]
+    fn test_merge_mana_costs() {
+        let result = Card::merge_mana_costs(Some("{2}{U}"), Some("{R}{G}"));
+        assert_eq!(result, Some("{2}{U} // {R}{G}".to_string()));
+    }
+
+    #[test]
+    fn test_normalize_mana_cost() {
+        let result = Card::normalize_mana_cost(Some("{2/W}{W/G/P} // {U/R}".to_string()));
+        assert_eq!(result, Some("{2w}{wgp} // {ur}".to_string()));
+    }
+
+    #[test]
+    fn test_compute_sort_number() {
+        assert_eq!(Card::compute_sort_number("123", true), "000123");
+        assert_eq!(Card::compute_sort_number("232†", true), "~000232†");
+        assert_eq!(Card::compute_sort_number("2-3", true), "2-0003");
     }
 }

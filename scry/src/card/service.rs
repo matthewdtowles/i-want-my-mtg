@@ -1,6 +1,6 @@
 use crate::{
     card::{
-        event_processor::CardEventProcessor, mapper::CardMapper, models::Card,
+        domain::Card, event_processor::CardEventProcessor, mapper::CardMapper,
         repository::CardRepository,
     },
     database::ConnectionPool,
@@ -241,7 +241,7 @@ impl CardService {
                 .repository
                 .fetch_ascii_cards_by_set_and_names(set_code, &names)
                 .await?;
-            let mut ascii_by_name: HashMap<&str, &crate::card::models::Card> = HashMap::new();
+            let mut ascii_by_name: HashMap<&str, &Card> = HashMap::new();
             for ac in &ascii_cards {
                 ascii_by_name.entry(ac.name.as_str()).or_insert(ac);
             }

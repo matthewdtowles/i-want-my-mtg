@@ -1,5 +1,7 @@
+mod card;
 mod card_number;
-mod in_main_classifier;
+mod main_set_classifier;
 
+pub use card::Card;
 pub use card_number::CardNumber;
-pub use in_main_classifier::InMainClassifier;
+pub use main_set_classifier::MainSetClassifier;

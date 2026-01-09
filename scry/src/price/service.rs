@@ -107,7 +107,6 @@ impl PriceService {
         Ok(())
     }
 
-    // TODO: Update DI, Move to Price Domain Entity
     pub async fn prices_are_current(&self) -> Result<bool> {
         let price_dates = self.repository.fetch_price_dates().await?;
         let expected_date = self.expected_latest_available_date()?;

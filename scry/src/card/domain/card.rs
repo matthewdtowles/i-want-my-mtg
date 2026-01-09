@@ -267,7 +267,7 @@ mod tests {
         let source = create_test_card();
 
         target.enable_foil_from(&source);
-        assert!(target.has_foil); // Still true
+        assert!(target.has_foil);
     }
 
     #[test]
@@ -279,7 +279,7 @@ mod tests {
         source.has_foil = false;
 
         target.enable_foil_from(&source);
-        assert!(!target.has_foil); // Should remain false
+        assert!(!target.has_foil);
     }
 
     #[test]

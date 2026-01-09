@@ -158,6 +158,7 @@ impl SetService {
         Ok(total)
     }
 
+    // TODO: move to Set domain entity
     fn should_filter(&self, set: &Set) -> bool {
         if set.is_online_only || set.is_foreign_only || set.set_type == "memorabilia" {
             return true;

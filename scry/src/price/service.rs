@@ -107,12 +107,14 @@ impl PriceService {
         Ok(())
     }
 
+    // TODO: Update DI, Move to Price Domain Entity
     pub async fn prices_are_current(&self) -> Result<bool> {
         let price_dates = self.repository.fetch_price_dates().await?;
         let expected_date = self.expected_latest_available_date()?;
         Ok(price_dates.iter().max().map(|d| *d) == Some(expected_date))
     }
 
+    // TODO: Move to Price Domain Entity
     pub fn expected_latest_available_date(&self) -> Result<NaiveDate> {
         let est_now = chrono::Utc::now().with_timezone(&New_York);
         let est_hour = 10;

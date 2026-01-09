@@ -329,13 +329,10 @@ impl CardService {
             if cards[i].is_split_card() {
                 if let Some(ref other_ids) = cards[i].other_face_ids {
                     for oid in other_ids.iter() {
-                        if let Some(&other_idx) = id_index.get(oid) {
-                            let merged = Card::merge_mana_costs(
-                                cards[i].mana_cost.as_deref(),
-                                cards[other_idx].mana_cost.as_deref(),
-                            );
+                        if let Some(&j) = id_index.get(oid) {
+                            let merged = cards[i].merge_mana_costs(cards[j].mana_cost.as_deref());
                             mana_cost_updates.push((i, merged));
-                            keep_mask[other_idx] = false;
+                            keep_mask[j] = false;
                         }
                     }
                 }

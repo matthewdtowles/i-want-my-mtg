@@ -65,8 +65,8 @@ impl Card {
     }
 
     /// Merge two mana costs (for split cards)
-    pub fn merge_mana_costs(base_cost: Option<&str>, other_cost: Option<&str>) -> Option<String> {
-        match (base_cost, other_cost) {
+    pub fn merge_mana_costs(&self, other_cost: Option<&str>) -> Option<String> {
+        match (self.mana_cost.as_deref(), other_cost) {
             (Some(base), Some(other)) => Some(format!("{} // {}", base, other)),
             (Some(base), None) => Some(base.to_string()),
             (None, Some(other)) => Some(other.to_string()),
@@ -218,7 +218,8 @@ mod tests {
 
     #[test]
     fn test_merge_mana_costs() {
-        let result = Card::merge_mana_costs(Some("{2}{U}"), Some("{R}{G}"));
+        let card = create_test_card();
+        let result = card.merge_mana_costs(Some("{R}{G}"));
         assert_eq!(result, Some("{2}{U} // {R}{G}".to_string()));
     }
 

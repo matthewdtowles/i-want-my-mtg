@@ -13,6 +13,14 @@ pub struct Card {
     pub in_main: bool,
     pub is_alternative: bool,
     pub is_reserved: bool,
+    pub layout: String,
+    pub mana_cost: Option<String>,
+    pub name: String,
+    pub number: String,
+    pub oracle_text: Option<String>,
+    pub rarity: CardRarity,
+    pub set_code: String,
+    pub sort_number: String,
 
     #[sqlx(skip)]
     pub is_online_only: bool,
@@ -23,26 +31,14 @@ pub struct Card {
     #[sqlx(skip)]
     pub language: String,
 
-    pub layout: String,
-
     #[sqlx(skip)]
     pub legalities: Vec<Legality>,
-
-    pub mana_cost: Option<String>,
-    pub name: String,
-    pub number: String,
-    pub oracle_text: Option<String>,
 
     #[sqlx(skip)]
     pub other_face_ids: Option<Vec<String>>,
 
-    pub rarity: CardRarity,
-    pub set_code: String,
-
     #[sqlx(skip)]
     pub side: Option<String>,
-
-    pub sort_number: String,
 
     #[sqlx(rename = "type")]
     pub type_line: String,

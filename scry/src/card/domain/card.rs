@@ -56,15 +56,29 @@ impl Card {
         false
     }
 
+    /// Is this a split or aftermath card requiring mana cost merging?
     pub fn is_split_card(&self) -> bool {
         matches!(self.layout.as_str(), "split" | "aftermath")
     }
 
+    /// Is this a foreign (non-English) printing?
     pub fn is_foreign(&self) -> bool {
         !self.language.is_empty() && self.language != "English"
     }
 
-    /// Merge two mana costs (for split cards)
+    /// Enable foil availability from another card if not already set
+    ///
+    /// Used when consolidating duplicate foil entries.
+    pub fn enable_foil_from(&mut self, source: &Card) {
+        if source.has_foil && !self.has_foil {
+            self.has_foil = true;
+        }
+    }
+
+    /// Merge another card's mana cost into this one (for split cards)
+    ///
+    /// Used when consolidating split card faces like "Fire // Ice".
+    /// Returns new merged cost without mutating the card.
     pub fn merge_mana_costs(&self, other_cost: Option<&str>) -> Option<String> {
         match (self.mana_cost.as_deref(), other_cost) {
             (Some(base), Some(other)) => Some(format!("{} // {}", base, other)),
@@ -74,7 +88,12 @@ impl Card {
         }
     }
 
-    /// Normalize mana cost string (lowercase, remove hybrid slashes)
+    /// Normalize mana cost from MTG JSON format
+    ///
+    /// Converts to lowercase and removes hybrid mana slashes.
+    /// - `{2/W}` becomes `{2w}`
+    /// - `{W/G/P}` becomes `{wgp}`
+    /// - `{U} // {R}` preserved (split card separator)
     pub fn normalize_mana_cost(raw: Option<String>) -> Option<String> {
         raw.map(|cost| {
             let mut result = String::new();
@@ -103,7 +122,13 @@ impl Card {
         })
     }
 
-    /// Compute sort number based on card number and main set status
+    /// Compute sortable card number
+    ///
+    /// Pads numbers for proper string sorting:
+    /// - "1" → "000001"
+    /// - "2-3" → "2-0003"
+    /// - "232†" → "~000232†" (non-ASCII gets ~ prefix)
+    /// - Non-main set cards get additional ~ prefix
     pub fn compute_sort_number(number: &str, in_main: bool) -> String {
         let s = number.trim();
         let prefix = Self::sort_prefix(number, in_main);
@@ -144,7 +169,9 @@ impl Card {
         format!("{}{}", prefix, s)
     }
 
-    /// Build Scryfall image path from UUID
+    /// Build Scryfall image path from Scryfall UUID
+    ///
+    /// Encodes Scryfall's directory structure: `{first}/{second}/{uuid}.jpg`
     pub fn build_scryfall_image_path(scryfall_id: &str) -> Result<String> {
         if scryfall_id.len() < 2 {
             return Err(anyhow::anyhow!("ScryfallId too short"));
@@ -214,6 +241,45 @@ mod tests {
 
         card.language = "Japanese".to_string();
         assert!(card.is_foreign());
+    }
+
+    #[test]
+    fn test_enable_foil_from() {
+        let mut target = create_test_card();
+        target.has_foil = false;
+
+        let source = create_test_card();
+        assert!(source.has_foil);
+
+        target.enable_foil_from(&source);
+        assert!(target.has_foil);
+
+        // Test idempotency - calling again doesn't break
+        target.enable_foil_from(&source);
+        assert!(target.has_foil);
+    }
+
+    #[test]
+    fn test_enable_foil_from_no_change() {
+        let mut target = create_test_card();
+        target.has_foil = true;
+
+        let source = create_test_card();
+
+        target.enable_foil_from(&source);
+        assert!(target.has_foil); // Still true
+    }
+
+    #[test]
+    fn test_enable_foil_from_source_no_foil() {
+        let mut target = create_test_card();
+        target.has_foil = false;
+
+        let mut source = create_test_card();
+        source.has_foil = false;
+
+        target.enable_foil_from(&source);
+        assert!(!target.has_foil); // Should remain false
     }
 
     #[test]

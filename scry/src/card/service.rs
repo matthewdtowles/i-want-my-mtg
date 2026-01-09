@@ -262,8 +262,8 @@ impl CardService {
                 if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
                     if non_ascii.has_foil {
                         let mut ascii_clone = (*ascii).clone();
-                        if !ascii_clone.has_foil {
-                            ascii_clone.has_foil = true;
+                        ascii_clone.enable_foil_from(&non_ascii);
+                        if ascii_clone.has_foil {  // Only save if it changed
                             let _ = self.repository.save_cards(&[ascii_clone]).await?;
                         }
                     }

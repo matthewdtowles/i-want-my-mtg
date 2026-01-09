@@ -45,7 +45,7 @@ pub struct Card {
 }
 
 impl Card {
-    /// Should this card be filtered out from main processing?
+    /// Should this card be filtered out of inclusion in DB?
     pub fn should_filter(&self) -> bool {
         if self.is_online_only || self.is_oversized {
             return true;

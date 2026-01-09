@@ -33,7 +33,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     match SetMapper::map_mtg_json_to_set(set_obj) {
                         Ok(set) => {
-                            if !self.should_filter(&set) {
+                            if !set.should_filter() {
                                 to_save.push(set);
                             }
                         }
@@ -79,7 +79,7 @@ impl SetService {
                 if let Some(code) = set_obj.get("code").and_then(|v| v.as_str()) {
                     let code = code.to_lowercase();
                     if let Ok(set) = SetMapper::map_mtg_json_to_set(set_obj) {
-                        if self.should_filter(&set) {
+                        if set.should_filter() {
                             total_deleted += self.repository.delete_set_batch(&code).await?;
                         }
                     }
@@ -156,13 +156,5 @@ impl SetService {
             total += self.repository.update_prices(chunk.to_vec()).await?;
         }
         Ok(total)
-    }
-
-    // TODO: move to Set domain entity
-    fn should_filter(&self, set: &Set) -> bool {
-        if set.is_online_only || set.is_foreign_only || set.set_type == "memorabilia" {
-            return true;
-        }
-        false
     }
 }

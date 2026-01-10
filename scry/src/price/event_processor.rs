@@ -1,11 +1,8 @@
-use crate::price::domain::Price;
+use crate::price::domain::{Price, PriceAccumulator};
 use crate::utils::json_stream_parser::JsonEventProcessor;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
 use anyhow::Result;
-use chrono::NaiveDate;
-use rust_decimal::prelude::FromPrimitive;
-use rust_decimal::Decimal;
 
 const ALLOWED_PROVIDERS: &[&str] = &["tcgplayer", "cardkingdom", "cardsphere"];
 
@@ -87,20 +84,8 @@ impl PriceEventProcessor {
             if let (Some(card_uuid), Some(acc)) =
                 (self.current_card_uuid.take(), self.accumulator.take())
             {
-                let date = acc
-                    .date
-                    .as_ref()
-                    .and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
-                let foil = acc.average_foil().map(|v| Decimal::from_f64(v)).flatten();
-                let normal = acc.average_normal().map(|v| Decimal::from_f64(v)).flatten();
-                if foil.is_some() || normal.is_some() {
-                    let price = Price {
-                        id: None,
-                        card_id: card_uuid,
-                        date: date.unwrap_or_else(|| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
-                        foil,
-                        normal,
-                    };
+                // Use domain method to convert accumulator to Price
+                if let Ok(price) = acc.into_price(card_uuid) {
                     self.batch.push(price);
                 }
             }
@@ -140,6 +125,7 @@ impl PriceEventProcessor {
                 && self.path[2] == "paper"
                 && self.path[4] == "retail"
                 && (self.path[5] == "normal" || self.path[5] == "foil" || self.path[5] == "etched");
+
             if at_price_value {
                 let provider = &self.path[3];
                 if ALLOWED_PROVIDERS.contains(&provider.as_str()) {
@@ -148,10 +134,10 @@ impl PriceEventProcessor {
 
                         if price_type == "foil" || price_type == "etched" {
                             acc.add_foil(price);
-                            acc.date = Some(self.path[6].clone());
+                            acc.set_date(self.path[6].clone());
                         } else if price_type == "normal" {
                             acc.add_normal(price);
-                            acc.date = Some(self.path[6].clone());
+                            acc.set_date(self.path[6].clone());
                         }
                     }
                 }
@@ -163,51 +149,5 @@ impl PriceEventProcessor {
 
     fn in_price_object(&self) -> bool {
         self.in_data_object && self.json_depth == 2
-    }
-}
-
-struct PriceAccumulator {
-    foil_sum: f64,
-    foil_count: usize,
-    normal_sum: f64,
-    normal_count: usize,
-    date: Option<String>,
-}
-
-impl PriceAccumulator {
-    fn new() -> Self {
-        Self {
-            foil_sum: 0.0,
-            foil_count: 0,
-            normal_sum: 0.0,
-            normal_count: 0,
-            date: None,
-        }
-    }
-
-    fn add_foil(&mut self, value: f64) {
-        self.foil_sum += value;
-        self.foil_count += 1;
-    }
-
-    fn add_normal(&mut self, value: f64) {
-        self.normal_sum += value;
-        self.normal_count += 1;
-    }
-
-    fn average_foil(&self) -> Option<f64> {
-        if self.foil_count > 0 {
-            Some(self.foil_sum / self.foil_count as f64)
-        } else {
-            None
-        }
-    }
-
-    fn average_normal(&self) -> Option<f64> {
-        if self.normal_count > 0 {
-            Some(self.normal_sum / self.normal_count as f64)
-        } else {
-            None
-        }
     }
 }

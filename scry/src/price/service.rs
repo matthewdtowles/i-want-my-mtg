@@ -1,11 +1,9 @@
-use crate::price::event_processor::PriceEventProcessor;
 use crate::price::domain::Price;
+use crate::price::event_processor::PriceEventProcessor;
 use crate::price::repository::PriceRepository;
 use crate::utils::JsonStreamParser;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
 use anyhow::Result;
-use chrono::{Duration, NaiveDate, Timelike};
-use chrono_tz::America::New_York;
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -33,8 +31,6 @@ impl PriceService {
         self.repository.fetch_prices_for_card_ids(card_ids).await
     }
 
-    /// This is meant to update only if null
-    /// Used to help merge split foil and normal cards
     pub async fn update_price_foil_if_null(
         &self,
         card_id: &str,
@@ -109,18 +105,8 @@ impl PriceService {
 
     pub async fn prices_are_current(&self) -> Result<bool> {
         let price_dates = self.repository.fetch_price_dates().await?;
-        let expected_date = self.expected_latest_available_date()?;
+        let expected_date = Price::expected_latest_available_date();
         Ok(price_dates.iter().max().map(|d| *d) == Some(expected_date))
-    }
-
-    // TODO: Move to Price Domain Entity
-    pub fn expected_latest_available_date(&self) -> Result<NaiveDate> {
-        let est_now = chrono::Utc::now().with_timezone(&New_York);
-        let est_hour = 10;
-        if est_now.hour() >= est_hour {
-            return Ok(est_now.date_naive());
-        }
-        Ok(est_now.date_naive() - Duration::days(1))
     }
 
     async fn save_prices(

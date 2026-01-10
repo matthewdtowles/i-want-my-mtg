@@ -69,9 +69,12 @@ impl Card {
     /// Enable foil availability from another card if not already set
     ///
     /// Used when consolidating duplicate foil entries.
-    pub fn enable_foil_from(&mut self, source: &Card) {
+    pub fn enable_foil_from(&mut self, source: &Card) -> bool {
         if source.has_foil && !self.has_foil {
             self.has_foil = true;
+            true
+        } else {
+            false
         }
     }
 
@@ -251,11 +254,13 @@ mod tests {
         let source = create_test_card();
         assert!(source.has_foil);
 
-        target.enable_foil_from(&source);
+        let changed = target.enable_foil_from(&source);
+        assert!(changed); // Should return true when changed
         assert!(target.has_foil);
 
-        // Test idempotency - calling again doesn't break
-        target.enable_foil_from(&source);
+        // Test idempotency - calling again doesn't break and returns false
+        let changed = target.enable_foil_from(&source);
+        assert!(!changed); // Should return false when no change
         assert!(target.has_foil);
     }
 
@@ -266,7 +271,8 @@ mod tests {
 
         let source = create_test_card();
 
-        target.enable_foil_from(&source);
+        let changed = target.enable_foil_from(&source);
+        assert!(!changed); // Should return false - was already true
         assert!(target.has_foil);
     }
 
@@ -278,7 +284,8 @@ mod tests {
         let mut source = create_test_card();
         source.has_foil = false;
 
-        target.enable_foil_from(&source);
+        let changed = target.enable_foil_from(&source);
+        assert!(!changed); // Should return false - source has no foil
         assert!(!target.has_foil);
     }
 
@@ -300,5 +307,29 @@ mod tests {
         assert_eq!(Card::compute_sort_number("123", true), "000123");
         assert_eq!(Card::compute_sort_number("232†", true), "~000232†");
         assert_eq!(Card::compute_sort_number("2-3", true), "2-0003");
+    }
+
+    #[test]
+    fn test_build_scryfall_image_path_valid() {
+        let result = Card::build_scryfall_image_path("abcdef12-3456-7890-abcd-ef1234567890");
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            "a/b/abcdef12-3456-7890-abcd-ef1234567890.jpg"
+        );
+    }
+
+    #[test]
+    fn test_build_scryfall_image_path_two_chars() {
+        let result = Card::build_scryfall_image_path("ab");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "a/b/ab.jpg");
+    }
+
+    #[test]
+    fn test_build_scryfall_image_path_one_char_fails() {
+        let result = Card::build_scryfall_image_path("a");
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "ScryfallId too short");
     }
 }

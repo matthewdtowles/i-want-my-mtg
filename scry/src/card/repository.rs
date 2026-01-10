@@ -1,4 +1,4 @@
-use crate::{card::models::Card, database::ConnectionPool};
+use crate::{card::domain::Card, database::ConnectionPool};
 use anyhow::Result;
 use sqlx::QueryBuilder;
 use std::sync::Arc;
@@ -81,10 +81,13 @@ impl CardRepository {
             JOIN min_non_main m USING (set_code)
             WHERE n.n > m.min_n
             AND n.in_main = true
-            ORDER BY n.set_code, n.n"
+            ORDER BY n.set_code, n.n",
         );
         let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
-        debug!("Found {} cards misclassified as being in the main set.", rows.len());
+        debug!(
+            "Found {} cards misclassified as being in the main set.",
+            rows.len()
+        );
         Ok(rows)
     }
 

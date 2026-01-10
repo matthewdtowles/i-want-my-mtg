@@ -1,6 +1,6 @@
 use crate::{
     card::{
-        event_processor::CardEventProcessor, mapper::CardMapper, models::Card,
+        domain::Card, event_processor::CardEventProcessor, mapper::CardMapper,
         repository::CardRepository,
     },
     database::ConnectionPool,
@@ -119,7 +119,7 @@ impl CardService {
                         batch_owned = CardService::merge_and_filter_cards(batch_owned);
                         let mut foreign_ids = Vec::new();
                         for c in &batch_owned {
-                            if !c.language.is_empty() && c.language != "English" {
+                            if c.is_foreign() {
                                 foreign_ids.push(c.id.clone());
                             }
                         }
@@ -170,7 +170,7 @@ impl CardService {
                     let _permit = sem.clone().acquire_owned().await;
                     let mut ids_to_delete: Vec<String> = Vec::new();
                     for c in batch.iter() {
-                        if Self::should_filter(c) {
+                        if c.should_filter() {
                             ids_to_delete.push(c.id.clone());
                         }
                     }
@@ -241,7 +241,7 @@ impl CardService {
                 .repository
                 .fetch_ascii_cards_by_set_and_names(set_code, &names)
                 .await?;
-            let mut ascii_by_name: HashMap<&str, &crate::card::models::Card> = HashMap::new();
+            let mut ascii_by_name: HashMap<&str, &Card> = HashMap::new();
             for ac in &ascii_cards {
                 ascii_by_name.entry(ac.name.as_str()).or_insert(ac);
             }
@@ -262,8 +262,7 @@ impl CardService {
                 if let Some(ascii) = ascii_by_name.get(non_ascii.name.as_str()) {
                     if non_ascii.has_foil {
                         let mut ascii_clone = (*ascii).clone();
-                        if !ascii_clone.has_foil {
-                            ascii_clone.has_foil = true;
+                        if ascii_clone.enable_foil_from(&non_ascii) {
                             let _ = self.repository.save_cards(&[ascii_clone]).await?;
                         }
                     }
@@ -307,7 +306,7 @@ impl CardService {
         }
         for c in &mut cards {
             c.in_main = false;
-            c.sort_number = CardMapper::normalize_sort_number(&c.number, c.in_main);
+            c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
         }
         let total_updated = self.repository.save_cards(&cards).await?;
         debug!("Moved {} cards from main set.", total_updated);
@@ -315,37 +314,31 @@ impl CardService {
     }
 
     fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {
-        use std::collections::HashMap;
         let mut id_index: HashMap<String, usize> = HashMap::new();
         for (i, c) in cards.iter().enumerate() {
             id_index.insert(c.id.clone(), i);
         }
         let mut keep_mask = vec![true; cards.len()];
+        let mut mana_cost_updates: Vec<(usize, Option<String>)> = Vec::new();
         for i in 0..cards.len() {
-            if Self::should_filter(&cards[i]) {
+            if cards[i].should_filter() {
                 keep_mask[i] = false;
                 continue;
             }
-            let layout = cards[i].layout.to_lowercase();
-            if layout == "split" || layout == "aftermath" {
-                let mut parts: Vec<String> = Vec::new();
-                if let Some(mc) = &cards[i].mana_cost {
-                    parts.push(mc.clone());
-                }
+            if cards[i].is_split_card() {
                 if let Some(ref other_ids) = cards[i].other_face_ids {
                     for oid in other_ids.iter() {
-                        if let Some(&other_idx) = id_index.get(oid) {
-                            if let Some(m) = &cards[other_idx].mana_cost {
-                                parts.push(m.clone());
-                                keep_mask[other_idx] = false;
-                            }
+                        if let Some(&j) = id_index.get(oid) {
+                            let merged = cards[i].merge_mana_costs(cards[j].mana_cost.as_deref());
+                            mana_cost_updates.push((i, merged));
+                            keep_mask[j] = false;
                         }
                     }
                 }
-                if !parts.is_empty() {
-                    cards[i].mana_cost = Some(parts.join(" // "));
-                }
             }
+        }
+        for (idx, new_cost) in mana_cost_updates {
+            cards[idx].mana_cost = new_cost;
         }
         cards
             .into_iter()
@@ -353,15 +346,5 @@ impl CardService {
             .filter(|(idx, _)| keep_mask[*idx])
             .map(|(_, c)| c)
             .collect()
-    }
-
-    fn should_filter(card: &Card) -> bool {
-        if card.is_online_only || card.is_oversized {
-            return true;
-        }
-        if let Some(side) = card.side.as_deref() {
-            return side != "a";
-        }
-        false
     }
 }

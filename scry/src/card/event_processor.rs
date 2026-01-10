@@ -1,4 +1,4 @@
-use crate::card::{mapper::CardMapper, models::Card};
+use crate::card::{domain::Card, mapper::CardMapper};
 use crate::utils::json_stream_parser::JsonEventProcessor;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};

@@ -18,8 +18,6 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("* * * Starting Scry * * *");
-
     // Initialize logging
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -27,6 +25,10 @@ async fn main() -> Result<()> {
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
+
+    info!("* * * * * * * * * * * * *");
+    info!("* * * Starting Scry * * *");
+    info!("* * * * * * * * * * * * *");
 
     dotenvy::dotenv().ok();
     let cli = Cli::parse();

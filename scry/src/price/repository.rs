@@ -1,5 +1,5 @@
 use crate::database::ConnectionPool;
-use crate::price::models::Price;
+use crate::price::domain::Price;
 use anyhow::Result;
 use chrono::NaiveDate;
 use sqlx::QueryBuilder;

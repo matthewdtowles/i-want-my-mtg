@@ -307,6 +307,7 @@ mod tests {
         assert_eq!(Card::compute_sort_number("123", true), "000123");
         assert_eq!(Card::compute_sort_number("232†", true), "~000232†");
         assert_eq!(Card::compute_sort_number("2-3", true), "2-0003");
+        assert_eq!(Card::compute_sort_number("232†", false), "~~000232†");
     }
 
     #[test]

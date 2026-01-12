@@ -117,7 +117,7 @@ export class SetOrchestrator {
                     new SortableHeaderView(options, SortOptions.PRICE, ["xs-hide"]),
                     new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["xs-hide", "pr-2"]),
                     new SortableHeaderView(options, SortOptions.PRICE, ["xs-show", "pr-2"]),
-                ])
+                ]),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);

@@ -1,5 +1,6 @@
 import { Card } from "src/core/card/card.entity";
 import { validateInit } from "src/core/validation.util";
+import { SetPrice } from "./set-price.entity";
 
 export class Set {
     readonly code: string;
@@ -13,6 +14,7 @@ export class Set {
     readonly block?: string;
     readonly cards?: Card[];
     readonly parentCode?: string;
+    readonly prices?: SetPrice;
 
     constructor(init: Partial<Set>) {
         const requiredFields: (keyof Set)[] = [
@@ -30,5 +32,6 @@ export class Set {
         this.block = init.block;
         this.cards = init.cards;
         this.parentCode = init.parentCode;
+        this.prices = init.prices;
     }
 }

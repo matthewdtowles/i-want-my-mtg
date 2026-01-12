@@ -4,26 +4,20 @@ export class BaseSetResponseDto {
     readonly completionRate: number;
     readonly keyruneCode: string;
     readonly name: string;
+    readonly ownedTotal: number
     readonly ownedValue: string;
     readonly releaseDate: string;
-    readonly ownedTotal: number
-    readonly setSize: number
-    readonly totalValue: string;
     readonly url: string;
-    // TODO: after cleaner number parsing, use:
-    // readonly baseSetSize: number
-    
+
     constructor(init: Partial<BaseSetResponseDto>) {
         this.block = init.block || init.name || "";
         this.code = init.code || "";
+        this.completionRate = init.completionRate ?? 0;
         this.keyruneCode = init.keyruneCode || "";
         this.name = init.name || "";
-        this.completionRate = init.completionRate || 0;
+        this.ownedTotal = init.ownedTotal ?? 0;
         this.ownedValue = init.ownedValue || "0.00";
         this.releaseDate = init.releaseDate || "";
-        this.totalValue = init.totalValue || "0.00";
         this.url = init.url || "";
-        this.ownedTotal = init.ownedTotal || 0;
-        this.setSize = init.setSize || 0;
     }
 }

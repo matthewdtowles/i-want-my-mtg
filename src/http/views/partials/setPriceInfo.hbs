@@ -13,9 +13,6 @@
     {{! Popover }}
     <div id="price-info-popover" class="absolute hidden left-1/2 transform -translate-x-1/2 mt-2 w-full max-w-2xl z-50"
         role="dialog" aria-modal="false" aria-labelledby="popover-title">
-        {{! Backdrop for click-outside }}}
-        <div id="popover-backdrop" class="fixed inset-0 -z-10"></div>
-
         <div id="popover-content"
             class="bg-white rounded-lg shadow-2xl border-2 border-teal-500 overflow-hidden max-h-[80vh] overflow-y-auto">
             {{! Header }}
@@ -140,7 +137,6 @@
         const popover = document.getElementById("price-info-popover");
         const closeBtn = document.getElementById("close-popover");
         const popoverContent = document.getElementById("popover-content");
-        const backdrop = document.getElementById("popover-backdrop");
 
         if (!toggleBtn || !popover) return;
 
@@ -156,8 +152,15 @@
         toggleBtn.addEventListener("click", openPopover);
         closeBtn?.addEventListener("click", closePopover);
 
-        // Click outside closes popover
-        backdrop?.addEventListener("click", closePopover);
+        // Close when clicking outside the popover
+        document.addEventListener("click", (e) => {
+            if (!popover.classList.contains("hidden") && 
+            !popoverContent.contains(e.target) && 
+            !toggleBtn.contains(e.target)) {
+            closePopover();
+            }
+        });
+
 
         // Prevent clicks inside popover from closing it
         popoverContent?.addEventListener("click", (e) => {

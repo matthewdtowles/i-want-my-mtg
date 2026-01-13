@@ -1,5 +1,5 @@
 <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
-<div>
+<div id="set-header-container" class="relative">
     <section class="text-center bg-teal-100 mb-4">
         <h3 class="page-title flex items-center justify-center space-x-2">
             <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
@@ -9,13 +9,6 @@
             <li class="text-gray-700">Block: {{set.block}}</li>
             <li class="text-gray-700">Code: {{toUpperCase set.code}}</li>
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
-            {{!-- TODO: Use Base/Main Set Price for Normal as default --}}
-            {{!-- TODO: Add Button to show pop-up with all Set Price info:
-            Base-Normal,
-            Base-All,
-            All-Normal,
-            All-All
-            --}}
             <li class="text-gray-700"><span>{{>setPriceInfo set=set}}</span>Set Price: {{set.prices.basePriceNormal}}
             </li>
             {{#if authenticated}}

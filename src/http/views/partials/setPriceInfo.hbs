@@ -1,6 +1,6 @@
-<div class="set-price-info inline-block">
+<div class="set-price-info inline-block relative">
     <button type="button" id="price-info-toggle"
-        class="inline-flex items-center space-x-2 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md text-sm"
+        class="inline-flex items-center space-x-2 px-3 py-1.5 btn btn-primary text-sm"
         aria-label="View detailed set prices">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -10,17 +10,21 @@
         <span class="font-semibold">View Set Prices</span>
     </button>
 
-    {{! Modal/Popup }}
-    <div id="price-info-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4"
-        role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+    {{! Popover }}
+    <div id="price-info-popover" class="absolute hidden left-1/2 transform -translate-x-1/2 mt-2 w-full max-w-2xl z-50"
+        role="dialog" aria-modal="false" aria-labelledby="popover-title">
+        {{! Backdrop for click-outside }}}
+        <div id="popover-backdrop" class="fixed inset-0 -z-10"></div>
+
+        <div id="popover-content"
+            class="bg-white rounded-lg shadow-2xl border-2 border-teal-500 overflow-hidden max-h-[80vh] overflow-y-auto">
             {{! Header }}
-            <div class="bg-teal-600 text-white px-6 py-4 flex items-center justify-between">
-                <h3 id="modal-title" class="text-xl font-bold flex items-center space-x-2">
+            <div class="bg-teal-500 text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+                <h3 id="popover-title" class="text-xl font-bold flex items-center space-x-2">
                     <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
                     <span>{{set.name}} Prices</span>
                 </h3>
-                <button type="button" id="close-modal" class="text-white hover:text-gray-200 transition-colors"
+                <button type="button" id="close-popover" class="text-white hover:text-teal-100 transition-colors"
                     aria-label="Close price details">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -30,97 +34,83 @@
             </div>
 
             {{! Content }}
-            <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-                <div class="mb-4 text-sm text-gray-600 bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
+            <div class="p-6">
+                <div class="mb-4 text-sm text-gray-700 bg-teal-50 border-l-4 border-teal-400 p-3 rounded">
                     <p><strong>Base Set:</strong> Only main set cards (numbers 1-{{set.baseSize}})</p>
-                    <p class="mt-1"><strong>All Cards:</strong> Base set + bonus/extended cards ({{set.totalSize}}
-                        total)</p>
+                    <p class="mt-1"><strong>All Cards:</strong> Base set + bonus/extended cards
+                        ({{set.totalSize}} total)</p>
                 </div>
 
                 {{! Price Grid }}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{! Base Set - Normal }}
-                    <div
-                        class="border border-gray-300 rounded-lg p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg transition-shadow">
+                    <div class="border border-teal-300 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Base Set</h4>
-                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Normal Only</span>
+                            <h4 class="font-semibold text-teal-700 text-sm uppercase tracking-wide">Base Set</h4>
+                            <span class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">Normal Only</span>
                         </div>
                         <div class="text-3xl font-bold text-gray-900 font-mono">
-                            {{#if set.prices}}
-                            ${{set.prices.basePriceNormal}}
+                            {{#if set.prices.basePriceNormal}}
+                            {{set.prices.basePriceNormal}}
                             {{else}}
                             <span class="text-gray-400">No Price</span>
                             {{/if}}
                         </div>
-                        <div class="text-xs text-gray-500 mt-2">
-                            {{set.baseSize}} cards
-                        </div>
+                        <div class="text-xs text-gray-600 mt-2">{{set.baseSize}} cards</div>
                     </div>
 
                     {{! Base Set - With Foils }}
-                    <div
-                        class="border border-purple-300 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-white hover:shadow-lg transition-shadow">
+                    <div class="border border-purple-300 rounded-lg p-4 bg-purple-50 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="font-semibold text-purple-700 text-sm uppercase tracking-wide">Base Set</h4>
                             <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">+ Foils</span>
                         </div>
                         <div class="text-3xl font-bold text-purple-900 font-mono">
                             {{#if set.prices.basePriceAll}}
-                            ${{set.prices.basePriceAll}}
+                            {{set.prices.basePriceAll}}
                             {{else}}
-                            <span class="text-purple-300">-</span>
+                            <span class="text-purple-300">No Price</span>
                             {{/if}}
                         </div>
-                        <div class="text-xs text-purple-600 mt-2">
-                            {{set.baseSize}} cards (normal + foil variants)
-                        </div>
+                        <div class="text-xs text-purple-700 mt-2">{{set.baseSize}} cards (normal + foil variants)</div>
                     </div>
 
                     {{! All Cards - Normal }}
-                    <div
-                        class="border border-teal-300 rounded-lg p-4 bg-gradient-to-br from-white to-teal-50 hover:shadow-lg transition-shadow">
+                    <div class="border border-teal-300 rounded-lg p-4 bg-teal-50 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="font-semibold text-teal-700 text-sm uppercase tracking-wide">All Cards</h4>
-                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Normal Only</span>
+                            <span class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">Normal Only</span>
                         </div>
                         <div class="text-3xl font-bold text-teal-900 font-mono">
                             {{#if set.prices.totalPriceNormal}}
-                            ${{set.prices.totalPriceNormal}}
+                            {{set.prices.totalPriceNormal}}
                             {{else}}
-                            <span class="text-teal-300">-</span>
+                            <span class="text-teal-300">No Price</span>
                             {{/if}}
                         </div>
-                        <div class="text-xs text-teal-600 mt-2">
-                            {{set.totalSize}} cards
-                        </div>
+                        <div class="text-xs text-teal-700 mt-2">{{set.totalSize}} cards</div>
                     </div>
 
                     {{! All Cards - With Foils }}
-                    <div
-                        class="border border-indigo-300 rounded-lg p-4 bg-gradient-to-br from-indigo-50 to-white hover:shadow-lg transition-shadow">
+                    <div class="border border-purple-300 rounded-lg p-4 bg-purple-50 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-indigo-700 text-sm uppercase tracking-wide">All Cards</h4>
-                            <span class="text-xs bg-indigo-200 text-indigo-800 px-2 py-1 rounded">+ Foils</span>
+                            <h4 class="font-semibold text-purple-700 text-sm uppercase tracking-wide">All Cards</h4>
+                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">+ Foils</span>
                         </div>
-                        <div class="text-3xl font-bold text-indigo-900 font-mono">
+                        <div class="text-3xl font-bold text-purple-900 font-mono">
                             {{#if set.prices.totalPriceAll}}
-                            ${{set.prices.totalPriceAll}}
+                            {{set.prices.totalPriceAll}}
                             {{else}}
-                            <span class="text-indigo-300">-</span>
+                            <span class="text-purple-300">No Price</span>
                             {{/if}}
                         </div>
-                        <div class="text-xs text-indigo-600 mt-2">
-                            {{set.totalSize}} cards (normal + foil variants)
-                        </div>
+                        <div class="text-xs text-purple-700 mt-2">{{set.totalSize}} cards (normal + foil variants)</div>
                     </div>
                 </div>
 
-                {{! Comparison Section }}
-                {{#if set.prices.totalPriceNormal}}
-                {{#if set.prices.basePriceNormal}}
-                <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <h5 class="font-semibold text-amber-900 mb-2 flex items-center space-x-2">
+                {{! Set Information }}
+                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">
+                    <h5 class="font-semibold text-teal-900 mb-2 flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -131,24 +121,14 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p class="text-gray-600">Base Set Size:</p>
-                            <p class="font-bold text-amber-900">{{set.baseSize}} cards</p>
+                            <p class="font-bold text-teal-900">{{set.baseSize}} cards</p>
                         </div>
                         <div>
                             <p class="text-gray-600">Total with Bonus:</p>
-                            <p class="font-bold text-amber-900">{{set.totalSize}} cards</p>
+                            <p class="font-bold text-teal-900">{{set.totalSize}} cards</p>
                         </div>
                     </div>
                 </div>
-                {{/if}}
-                {{/if}}
-            </div>
-
-            {{! Footer }}
-            <div class="bg-gray-50 px-6 py-4 flex justify-end">
-                <button type="button"
-                    class="close-modal-btn px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors font-medium">
-                    Close
-                </button>
             </div>
         </div>
     </div>
@@ -156,40 +136,38 @@
 
 <script>
     (function () {
-        const toggleBtn = document.getElementById('price-info-toggle');
-        const modal = document.getElementById('price-info-modal');
-        const closeBtn = document.getElementById('close-modal');
-        const closeFooterBtn = document.querySelector('.close-modal-btn');
+        const toggleBtn = document.getElementById("price-info-toggle");
+        const popover = document.getElementById("price-info-popover");
+        const closeBtn = document.getElementById("close-popover");
+        const popoverContent = document.getElementById("popover-content");
+        const backdrop = document.getElementById("popover-backdrop");
 
-        if (!toggleBtn || !modal) return;
+        if (!toggleBtn || !popover) return;
 
-        function openModal() {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+        function openPopover(e) {
+            e.stopPropagation();
+            popover.classList.remove("hidden");
         }
 
-        function closeModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
+        function closePopover() {
+            popover.classList.add("hidden");
         }
 
-        toggleBtn.addEventListener('click', openModal);
-        closeBtn?.addEventListener('click', closeModal);
-        closeFooterBtn?.addEventListener('click', closeModal);
+        toggleBtn.addEventListener("click", openPopover);
+        closeBtn?.addEventListener("click", closePopover);
 
-        // Close on outside click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
+        // Click outside closes popover
+        backdrop?.addEventListener("click", closePopover);
+
+        // Prevent clicks inside popover from closing it
+        popoverContent?.addEventListener("click", (e) => {
+            e.stopPropagation();
         });
 
-        // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                closeModal();
+        // Close on Escape
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !popover.classList.contains("hidden")) {
+                closePopover();
             }
         });
     })();

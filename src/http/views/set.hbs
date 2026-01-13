@@ -16,7 +16,8 @@
             All-Normal,
             All-All
             --}}
-            <li class="text-gray-700">Set Price: {{set.totalValue}}</li>
+            <li class="text-gray-700"><span>{{>setPriceInfo set=set}}</span>Set Price: {{set.prices.basePriceNormal}}
+            </li>
             {{#if authenticated}}
             <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.setSize}}</li>
             <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>

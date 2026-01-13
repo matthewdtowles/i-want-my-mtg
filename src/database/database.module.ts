@@ -11,6 +11,7 @@ import { LegalityOrmEntity } from "./card/legality.orm-entity";
 import { InventoryOrmEntity } from "./inventory/inventory.orm-entity";
 import { InventoryRepository } from "./inventory/inventory.repository";
 import { PriceOrmEntity } from "./price/price.orm-entity";
+import { SetPriceOrmEntity } from "./set/set-price.orm-entity";
 import { SetOrmEntity } from "./set/set.orm-entity";
 import { SetRepository } from "./set/set.repository";
 import { UserOrmEntity } from "./user/user.orm-entity";
@@ -24,7 +25,8 @@ import { UserRepository } from "./user/user.repository";
             LegalityOrmEntity,
             PriceOrmEntity,
             SetOrmEntity,
-            UserOrmEntity
+            SetPriceOrmEntity,
+            UserOrmEntity,
         ]),
     ],
     providers: [

@@ -1,22 +1,27 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
+import { SetOrmEntity } from "./set.orm-entity";
 
 @Entity("set_price")
 export class SetPriceOrmEntity {
-    @PrimaryColumn()
-    readonly setCode: string;
+    @PrimaryColumn({ name: "set_code" })
+    setCode: string;
 
     @Column({ name: "base_price" })
-    readonly basePrice: number;
+    basePrice: number;
 
     @Column({ name: "total_price" })
-    readonly totalPrice: number;
+    totalPrice: number;
 
     @Column({ name: "base_price_all" })
-    readonly basePriceAll: number;
+    basePriceAll: number;
 
     @Column({ name: "total_price_all" })
-    readonly totalPriceAll: number;
+    totalPriceAll: number;
 
     @Column({ name: "date" })
-    readonly lastUpdate: Date;
+    lastUpdate: Date;
+
+    @OneToOne(() => SetOrmEntity, (set) => set.setPrice)
+    @JoinColumn({ name: "set_code" })
+    set: SetOrmEntity;
 }

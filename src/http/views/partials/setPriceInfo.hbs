@@ -10,14 +10,14 @@
         <span class="font-semibold">View Set Prices</span>
     </button>
 
-    {{! Popover }}
-    <div id="price-info-popover" class="absolute hidden left-1/2 transform -translate-x-1/2 mt-2 w-full max-w-2xl z-50"
-        role="dialog" aria-modal="false" aria-labelledby="popover-title">
+    {{! Popover - positioned relative to #set-header-container }}
+    <div id="price-info-popover" class="absolute hidden left-4 right-4 top-full mt-2 z-50" role="dialog"
+        aria-modal="false" aria-labelledby="popover-title">
         <div id="popover-content"
-            class="bg-white rounded-lg shadow-2xl border-2 border-teal-500 overflow-hidden max-h-[80vh] overflow-y-auto">
+            class="bg-white rounded-lg shadow-2xl border-2 border-teal-500 overflow-hidden max-h-[70vh] overflow-y-auto mx-auto max-w-6xl">
             {{! Header }}
-            <div class="bg-teal-500 text-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-                <h3 id="popover-title" class="text-xl font-bold flex items-center space-x-2">
+            <div class="bg-teal-500 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+                <h3 id="popover-title" class="text-lg md:text-xl font-bold flex items-center space-x-2">
                     <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
                     <span>{{set.name}} Prices</span>
                 </h3>
@@ -31,22 +31,26 @@
             </div>
 
             {{! Content }}
-            <div class="p-6">
-                <div class="mb-4 text-sm text-gray-700 bg-teal-50 border-l-4 border-teal-400 p-3 rounded">
+            <div class="p-4 md:p-6">
+                <div class="mb-4 text-xs md:text-sm text-gray-700 bg-teal-50 border-l-4 border-teal-400 p-3 rounded">
                     <p><strong>Base Set:</strong> Only main set cards (numbers 1-{{set.baseSize}})</p>
                     <p class="mt-1"><strong>All Cards:</strong> Base set + bonus/extended cards
                         ({{set.totalSize}} total)</p>
                 </div>
 
-                {{! Price Grid }}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{! Price Grid - responsive: vertical on mobile, 2 cols on tablet, 4 cols on desktop }}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {{! Base Set - Normal }}
-                    <div class="border border-teal-300 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-teal-700 text-sm uppercase tracking-wide">Base Set</h4>
-                            <span class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">Normal Only</span>
+                    <div
+                        class="border border-teal-300 rounded-lg p-3 md:p-4 bg-white hover:shadow-md transition-shadow">
+                        <div class="flex flex-col mb-2">
+                            <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">Base Set
+                            </h4>
+                            <span
+                                class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded mt-1 inline-block self-start">Normal
+                                Only</span>
                         </div>
-                        <div class="text-3xl font-bold text-gray-900 font-mono">
+                        <div class="text-2xl md:text-3xl font-bold text-gray-900 font-mono">
                             {{#if set.prices.basePriceNormal}}
                             {{set.prices.basePriceNormal}}
                             {{else}}
@@ -57,12 +61,16 @@
                     </div>
 
                     {{! Base Set - With Foils }}
-                    <div class="border border-purple-300 rounded-lg p-4 bg-purple-50 hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-purple-700 text-sm uppercase tracking-wide">Base Set</h4>
-                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">+ Foils</span>
+                    <div
+                        class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow">
+                        <div class="flex flex-col mb-2">
+                            <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">Base
+                                Set</h4>
+                            <span
+                                class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded mt-1 inline-block self-start">+
+                                Foils</span>
                         </div>
-                        <div class="text-3xl font-bold text-purple-900 font-mono">
+                        <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
                             {{#if set.prices.basePriceAll}}
                             {{set.prices.basePriceAll}}
                             {{else}}
@@ -73,12 +81,16 @@
                     </div>
 
                     {{! All Cards - Normal }}
-                    <div class="border border-teal-300 rounded-lg p-4 bg-teal-50 hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-teal-700 text-sm uppercase tracking-wide">All Cards</h4>
-                            <span class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">Normal Only</span>
+                    <div
+                        class="border border-teal-300 rounded-lg p-3 md:p-4 bg-teal-50 hover:shadow-md transition-shadow">
+                        <div class="flex flex-col mb-2">
+                            <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">All Cards
+                            </h4>
+                            <span
+                                class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded mt-1 inline-block self-start">Normal
+                                Only</span>
                         </div>
-                        <div class="text-3xl font-bold text-teal-900 font-mono">
+                        <div class="text-2xl md:text-3xl font-bold text-teal-900 font-mono">
                             {{#if set.prices.totalPriceNormal}}
                             {{set.prices.totalPriceNormal}}
                             {{else}}
@@ -89,12 +101,16 @@
                     </div>
 
                     {{! All Cards - With Foils }}
-                    <div class="border border-purple-300 rounded-lg p-4 bg-purple-50 hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-purple-700 text-sm uppercase tracking-wide">All Cards</h4>
-                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">+ Foils</span>
+                    <div
+                        class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow">
+                        <div class="flex flex-col mb-2">
+                            <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">All
+                                Cards</h4>
+                            <span
+                                class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded mt-1 inline-block self-start">+
+                                Foils</span>
                         </div>
-                        <div class="text-3xl font-bold text-purple-900 font-mono">
+                        <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
                             {{#if set.prices.totalPriceAll}}
                             {{set.prices.totalPriceAll}}
                             {{else}}
@@ -106,16 +122,16 @@
                 </div>
 
                 {{! Set Information }}
-                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                    <h5 class="font-semibold text-teal-900 mb-2 flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div class="mt-4 md:mt-6 p-3 md:p-4 bg-teal-50 border border-teal-200 rounded-lg">
+                    <h5 class="font-semibold text-teal-900 mb-2 flex items-center space-x-2 text-sm md:text-base">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                                 clip-rule="evenodd"></path>
                         </svg>
                         <span>Set Information</span>
                     </h5>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="grid grid-cols-2 gap-4 text-xs md:text-sm">
                         <div>
                             <p class="text-gray-600">Base Set Size:</p>
                             <p class="font-bold text-teal-900">{{set.baseSize}} cards</p>
@@ -141,11 +157,16 @@
         if (!toggleBtn || !popover) return;
 
         function openPopover(e) {
+            e.preventDefault();
             e.stopPropagation();
             popover.classList.remove("hidden");
         }
 
-        function closePopover() {
+        function closePopover(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             popover.classList.add("hidden");
         }
 
@@ -154,10 +175,10 @@
 
         // Close when clicking outside the popover
         document.addEventListener("click", (e) => {
-            if (!popover.classList.contains("hidden") && 
-            !popoverContent.contains(e.target) && 
-            !toggleBtn.contains(e.target)) {
-            closePopover();
+            if (!popover.classList.contains("hidden") &&
+                !popoverContent.contains(e.target) &&
+                !toggleBtn.contains(e.target)) {
+                closePopover();
             }
         });
 

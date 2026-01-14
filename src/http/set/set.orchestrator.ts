@@ -226,6 +226,6 @@ export class SetOrchestrator {
             totalPriceNormal: toDollar(prices.totalPrice),
             totalPriceAll: toDollar(prices.totalPriceAll),
             lastUpdate: prices.lastUpdate,
-        })
+        });
     }
 }

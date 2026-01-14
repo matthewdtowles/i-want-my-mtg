@@ -164,7 +164,7 @@
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
             <li class="text-gray-700">Set Price: {{set.prices.basePriceNormal}}</li>
             {{#if authenticated}}
-            <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.setSize}}</li>
+            <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.baseSize}}</li>
             <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>
             <li class="text-gray-700">{{>completionRate set}}</li>
             {{/if}}
@@ -187,6 +187,9 @@
             e.preventDefault();
             e.stopPropagation();
             popover.classList.remove("hidden");
+            popover.setAttribute("aria-modal", "true");
+            // Move focus to close button for accessibility
+            closeBtn?.focus();
         }
 
         function closePopover(e) {
@@ -195,6 +198,9 @@
                 e.stopPropagation();
             }
             popover.classList.add("hidden");
+            popover.setAttribute("aria-modal", "false");
+            // Return focus to toggle button for accessibility
+            toggleBtn.focus();
         }
 
         toggleBtn.addEventListener("click", openPopover);
@@ -218,6 +224,25 @@
         document.addEventListener("keydown", (e) => {
             if (e.key === "Escape" && !popover.classList.contains("hidden")) {
                 closePopover();
+            }
+        });
+
+        // Trap focus inside popover when open
+        popover.addEventListener("keydown", (e) => {
+            if (e.key === "Tab" && !popover.classList.contains("hidden")) {
+                const focusableElements = popover.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstFocusable = focusableElements[0];
+                const lastFocusable = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey && document.activeElement === firstFocusable) {
+                    e.preventDefault();
+                    lastFocusable.focus();
+                } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
+                }
             }
         });
     })();

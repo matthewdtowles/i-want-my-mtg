@@ -1,9 +1,9 @@
 export class SetPrice {
     readonly setCode: string;
-    readonly basePrice: number;
-    readonly totalPrice: number;
-    readonly basePriceAll: number;
-    readonly totalPriceAll: number;
+    readonly basePrice: number | null;
+    readonly totalPrice: number | null;
+    readonly basePriceAll: number | null;
+    readonly totalPriceAll: number | null;
     readonly lastUpdate: Date;
 
     constructor(init: Partial<SetPrice>) {

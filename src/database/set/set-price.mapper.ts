@@ -7,11 +7,11 @@ export class SetPriceMapper {
 
         return new SetPrice({
             setCode: ormEntity.setCode,
-            basePrice: ormEntity.basePrice ? Number(ormEntity.basePrice) : null,
-            totalPrice: ormEntity.totalPrice ? Number(ormEntity.totalPrice) : null,
-            basePriceAll: ormEntity.basePriceAll ? Number(ormEntity.basePriceAll) : null,
-            totalPriceAll: ormEntity.totalPriceAll ? Number(ormEntity.totalPriceAll) : null,
-            lastUpdate: ormEntity.lastUpdate ? new Date(ormEntity.lastUpdate) : new Date(),
+            basePrice: ormEntity.basePrice,
+            totalPrice: ormEntity.totalPrice,
+            basePriceAll: ormEntity.basePriceAll,
+            totalPriceAll: ormEntity.totalPriceAll,
+            lastUpdate: ormEntity.lastUpdate,
         });
     }
 

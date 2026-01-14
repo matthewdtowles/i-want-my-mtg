@@ -42,6 +42,8 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             relations: ["setPrice"],
         });
         this.LOGGER.debug(`Set ${set ? "found" : "not found"} for code: ${code}.`);
+        // TODO: REMOVE:
+        this.LOGGER.log(`Set prices - base: ${set?.setPrice?.basePrice}, total: ${set?.setPrice?.totalPrice}, baseAll: ${set?.setPrice?.basePriceAll}, totalAll: ${set?.setPrice?.totalPriceAll}`);
         return set ? SetMapper.toCore(set) : null;
     }
 

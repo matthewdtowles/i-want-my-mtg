@@ -86,6 +86,7 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
+            this.LOGGER.log(`Set prices - basePrice: ${set.prices?.basePrice}, basePriceAll: ${set.prices?.basePriceAll}, totalPrice: ${set.prices?.totalPrice}, totalPriceAll: ${set.prices?.totalPriceAll}, lastUpdate: ${set.prices?.lastUpdate}`);
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);

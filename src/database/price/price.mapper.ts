@@ -1,4 +1,4 @@
-import { Price } from "src/core/price/price.entity";
+import { Price } from "src/core/card/price.entity";
 import { CardOrmEntity } from "src/database/card/card.orm-entity";
 import { PriceOrmEntity } from "./price.orm-entity";
 

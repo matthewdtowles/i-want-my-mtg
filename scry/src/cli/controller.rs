@@ -258,6 +258,11 @@ impl CliController {
     }
 
     async fn post_ingest_updates(&self) -> Result<()> {
+        let total_cards_updated = self.card_service.fix_main_classification().await?;
+        info!(
+            "Total cards moved from their main set to non-main: {}",
+            total_cards_updated
+        );
         info!("Begin post-ingestion updates.");
         let base_sizes = self.card_service.count_per_all_sets(true).await?;
         info!("Found {} base_sizes for all sets.", base_sizes.len());
@@ -268,10 +273,11 @@ impl CliController {
             .update_sizes(base_sizes, total_sizes)
             .await?;
         info!("Total set sizes updated: {}", total_sets_updated);
-        let total_cards_updated = self.card_service.fix_main_classification().await?;
-        info!("Total cards moved from their main set to non-main: {}", total_cards_updated);
         let total_set_prices_updated = self.set_service.update_set_prices().await?;
-        info!("Total set prices rows updated: {}", total_set_prices_updated);
+        info!(
+            "Total set prices rows updated: {}",
+            total_set_prices_updated
+        );
         Ok(())
     }
 }

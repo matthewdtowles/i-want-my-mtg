@@ -24,7 +24,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Finding all sets meta.`);
-        const qb = this.createBaseQuery();
+        const qb = this.createBaseQuery().leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
@@ -39,8 +39,11 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Finding set by code: ${code}.`);
         const set: SetOrmEntity = await this.repository.findOne({
             where: { code },
+            relations: ["setPrice"],
         });
         this.LOGGER.debug(`Set ${set ? "found" : "not found"} for code: ${code}.`);
+        // TODO: REMOVE:
+        this.LOGGER.log(`Set prices - base: ${set?.setPrice?.basePrice}, total: ${set?.setPrice?.totalPrice}, baseAll: ${set?.setPrice?.basePriceAll}, totalAll: ${set?.setPrice?.totalPriceAll}`);
         return set ? SetMapper.toCore(set) : null;
     }
 

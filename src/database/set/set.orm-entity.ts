@@ -1,5 +1,6 @@
 import { CardOrmEntity } from "src/database/card/card.orm-entity";
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { SetPriceOrmEntity } from "./set-price.orm-entity";
 
 @Entity("set")
 export class SetOrmEntity {
@@ -23,6 +24,9 @@ export class SetOrmEntity {
 
     @Column({ name: "parent_code", nullable: true })
     parentCode?: string;
+
+    @OneToOne(() => SetPriceOrmEntity, (setPrice) => setPrice.set)
+    setPrice: SetPriceOrmEntity;
 
     @Column({ name: "release_date", type: "date" })
     releaseDate: string;

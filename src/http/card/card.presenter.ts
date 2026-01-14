@@ -2,7 +2,7 @@ import { Card } from "src/core/card/card.entity";
 import { CardImgType } from "src/core/card/card.img.type.enum";
 import { CardRarity } from "src/core/card/card.rarity.enum";
 import { Format } from "src/core/card/format.enum";
-import { Price } from "src/core/price/price.entity";
+import { Price } from "src/core/card/price.entity";
 import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
 import { InventoryQuantities } from "src/http/inventory/inventory.quantities";
 import { CardResponseDto, ManaToken } from "./dto/card.response.dto";

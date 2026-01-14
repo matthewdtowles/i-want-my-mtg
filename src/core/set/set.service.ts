@@ -49,6 +49,4 @@ export class SetService {
             throw new Error(`Error getting total value of ${includeFoil ? "" : "non-foil "}cards for set ${setCode}: ${error.message}.`);
         }
     }
-
-
 }

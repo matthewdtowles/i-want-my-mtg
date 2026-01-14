@@ -22,8 +22,10 @@ import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { getLogger } from "src/logger/global-app-logger";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
+import { SetPriceDto } from "./dto/set-price.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
+import { SetPrice } from "src/core/set/set-price.entity";
 
 @Injectable()
 export class SetOrchestrator {
@@ -84,6 +86,7 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
+            this.LOGGER.log(`Set prices - basePrice: ${set.prices?.basePrice}, basePriceAll: ${set.prices?.basePriceAll}, totalPrice: ${set.prices?.totalPrice}, totalPriceAll: ${set.prices?.totalPriceAll}, lastUpdate: ${set.prices?.lastUpdate}`);
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
@@ -117,7 +120,7 @@ export class SetOrchestrator {
                     new SortableHeaderView(options, SortOptions.PRICE, ["xs-hide"]),
                     new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["xs-hide", "pr-2"]),
                     new SortableHeaderView(options, SortOptions.PRICE, ["xs-show", "pr-2"]),
-                ])
+                ]),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
@@ -181,8 +184,8 @@ export class SetOrchestrator {
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
             ownedTotal,
+            prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
-            totalValue: toDollar(await this.getSetValue(set.code, false, baseOnly)),
             url: `/sets/${set.code.toLowerCase()}`
         });
     }
@@ -195,6 +198,7 @@ export class SetOrchestrator {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
         const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
         return new SetResponseDto({
+            baseSize: set.baseSize,
             block: set.block ?? set.name,
             code: set.code,
             completionRate: completionRate(ownedTotal, setSize),
@@ -202,16 +206,27 @@ export class SetOrchestrator {
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
             ownedTotal,
+            prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
-            setSize,
-            totalValue: toDollar(await this.getSetValue(set.code, false, baseOnly)),
+            totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards
                 ? set.cards.map(card => CardPresenter.toCardResponse(
                     card,
                     InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
                     CardImgType.SMALL))
-                : []
+                : [],
+        });
+    }
+
+    private createSetPriceDto(prices: SetPrice): SetPriceDto {
+        prices = prices ?? new SetPrice({});
+        return new SetPriceDto({
+            basePriceNormal: toDollar(prices.basePrice),
+            basePriceAll: toDollar(prices.basePriceAll),
+            totalPriceNormal: toDollar(prices.totalPrice),
+            totalPriceAll: toDollar(prices.totalPriceAll),
+            lastUpdate: prices.lastUpdate,
         });
     }
 }

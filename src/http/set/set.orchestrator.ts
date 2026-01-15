@@ -222,10 +222,10 @@ export class SetOrchestrator {
     private createSetPriceDto(prices: SetPrice): SetPriceDto {
         prices = prices ?? new SetPrice({});
         return new SetPriceDto({
-            basePriceNormal: toDollar(prices.basePrice),
-            basePriceAll: toDollar(prices.basePriceAll),
-            totalPriceNormal: toDollar(prices.totalPrice),
-            totalPriceAll: toDollar(prices.totalPriceAll),
+            basePriceNormal: prices.basePrice && prices.basePrice != 0 ? toDollar(prices.basePrice) : null,
+            basePriceAll: prices.basePriceAll && prices.basePriceAll != 0 ? toDollar(prices.basePriceAll) : null,
+            totalPriceNormal: prices.totalPrice && prices.totalPrice != 0 ? toDollar(prices.totalPrice) : null,
+            totalPriceAll: prices.totalPriceAll && prices.totalPriceAll != 0 ? toDollar(prices.totalPriceAll) : null,
             lastUpdate: prices.lastUpdate,
         });
     }

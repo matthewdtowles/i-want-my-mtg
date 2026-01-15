@@ -2391,11 +2391,6 @@ select {
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 
-.text-purple-300 {
-  --tw-text-opacity: 1;
-  color: rgb(217 186 237 / var(--tw-text-opacity, 1));
-}
-
 .text-purple-700 {
   --tw-text-opacity: 1;
   color: rgb(122 58 154 / var(--tw-text-opacity, 1));
@@ -2409,11 +2404,6 @@ select {
 .text-purple-900 {
   --tw-text-opacity: 1;
   color: rgb(83 43 100 / var(--tw-text-opacity, 1));
-}
-
-.text-teal-300 {
-  --tw-text-opacity: 1;
-  color: rgb(110 218 209 / var(--tw-text-opacity, 1));
 }
 
 .text-teal-500 {

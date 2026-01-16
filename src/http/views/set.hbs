@@ -9,7 +9,7 @@
             <li class="text-gray-700">Block: {{set.block}}</li>
             <li class="text-gray-700">Code: {{toUpperCase set.code}}</li>
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
-            <li class="text-gray-700">Set Price: {{set.prices.basePriceNormal}}</li>
+            <li class="text-gray-700">Set Price: {{set.prices.defaultPrice}}</li>
             {{#if authenticated}}
             <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.baseSize}}</li>
             <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>
@@ -45,14 +45,17 @@
                         {{#if set.baseSize }}
                         <p><strong>Base Set:</strong> Only main set cards (numbers 1-{{set.baseSize}})</p>
                         {{/if}}
+                        {{#if (eq set.baseSize set.totalSize)}}
+                        {{else}}
                         <p class="mt-1">
                             <strong>All Cards:</strong> Base set + bonus/extended cards
                             ({{set.totalSize}} total)
                         </p>
+                        {{/if}}
                     </div>
 
                     {{! Price Grid - responsive: vertical on mobile, 2 cols on tablet, 4 cols on desktop }}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{set.prices.gridCols}} gap-3 md:gap-4">
                         {{! Base Set - Normal }}
                         {{#if set.prices.basePriceNormal}}
                         <div
@@ -131,33 +134,12 @@
                             <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
                                 {{set.prices.totalPriceAll}}
                             </div>
-                            <div class="text-xs text-purple-700 mt-2">{{set.totalSize}} cards (normal + foil variants)
+                            <div class="text-xs text-purple-700 mt-2">
+                                {{set.totalSize}} cards (normal + foil variants)
                             </div>
                         </div>
                     </div>
                     {{/if}}
-
-                    {{! Set Information }}
-                    <div class="mt-4 md:mt-6 p-3 md:p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                        <h5 class="font-semibold text-teal-900 mb-2 flex items-center space-x-2 text-sm md:text-base">
-                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            <span>Set Information</span>
-                        </h5>
-                        <div class="grid grid-cols-2 gap-4 text-xs md:text-sm">
-                            <div>
-                                <p class="text-gray-600">Base Set Size:</p>
-                                <p class="font-bold text-teal-900">{{set.baseSize}} cards</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600">Total with Bonus:</p>
-                                <p class="font-bold text-teal-900">{{set.totalSize}} cards</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

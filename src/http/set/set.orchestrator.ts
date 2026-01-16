@@ -86,7 +86,6 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            this.LOGGER.log(`Set prices - basePrice: ${set.prices?.basePrice}, basePriceAll: ${set.prices?.basePriceAll}, totalPrice: ${set.prices?.totalPrice}, totalPriceAll: ${set.prices?.totalPriceAll}, lastUpdate: ${set.prices?.lastUpdate}`);
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
@@ -221,12 +220,46 @@ export class SetOrchestrator {
 
     private createSetPriceDto(prices: SetPrice): SetPriceDto {
         prices = prices ?? new SetPrice({});
+        let defaultPrice = "-";
+        let cardinality = 0;
+        const totalPriceAll = prices.totalPriceAll
+            && prices.totalPriceAll != 0
+            && prices.totalPriceAll !== prices.totalPrice
+            && prices.totalPriceAll !== prices.basePriceAll
+            ? toDollar(prices.totalPriceAll) : null;
+        if (totalPriceAll) {
+            cardinality++;
+            defaultPrice = totalPriceAll;
+        }
+        const totalPriceNormal = prices.totalPrice 
+            && prices.totalPrice != 0 
+            && prices.totalPrice !== prices.basePrice
+            ? toDollar(prices.totalPrice) : null;
+        if (totalPriceNormal) {
+            cardinality++;
+            defaultPrice = totalPriceNormal;
+        }
+        let basePriceAll = prices.basePriceAll
+            && prices.basePriceAll != 0
+            && prices.basePriceAll !== prices.basePrice
+            ? toDollar(prices.basePriceAll) : null;
+        if (basePriceAll) {
+            cardinality++;
+            defaultPrice = basePriceAll;
+        }
+        let basePriceNormal = prices.basePrice && prices.basePrice != 0 ? toDollar(prices.basePrice) : null;
+        if (basePriceNormal) {
+            cardinality++;
+            defaultPrice = basePriceNormal;
+        }
+        let lastUpdate = prices.lastUpdate;
         return new SetPriceDto({
-            basePriceNormal: prices.basePrice && prices.basePrice != 0 ? toDollar(prices.basePrice) : null,
-            basePriceAll: prices.basePriceAll && prices.basePriceAll != 0 ? toDollar(prices.basePriceAll) : null,
-            totalPriceNormal: prices.totalPrice && prices.totalPrice != 0 ? toDollar(prices.totalPrice) : null,
-            totalPriceAll: prices.totalPriceAll && prices.totalPriceAll != 0 ? toDollar(prices.totalPriceAll) : null,
-            lastUpdate: prices.lastUpdate,
+            defaultPrice,
+            basePriceNormal,
+            basePriceAll,
+            totalPriceNormal,
+            totalPriceAll,
+            lastUpdate,
         });
     }
 }

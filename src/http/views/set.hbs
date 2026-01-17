@@ -56,10 +56,11 @@
                     </div>
 
                     {{! Price Grid - responsive: vertical on mobile, 2 cols on tablet, 4 cols on desktop }}
-                    {{!-- <div
-                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{set.prices.gridCols}} gap-3 md:gap-4">
-                        --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div class="grid grid-cols-1 
+                        sm:grid-cols-{{#if (gt 2 set.prices.gridCols)}}1{{else}}2{{/if}} 
+                        lg:grid-cols-{{set.prices.gridCols}} 
+                        gap-3 md:gap-4">
+                        {{!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"> --}}
                             {{! Base Set - Normal }}
                             {{#if set.prices.basePriceNormal}}
                             <div

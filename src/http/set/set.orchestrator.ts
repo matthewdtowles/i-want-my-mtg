@@ -221,22 +221,22 @@ export class SetOrchestrator {
     private createSetPriceDto(prices: SetPrice): SetPriceDto {
         prices = prices ?? new SetPrice({});
         let defaultPrice = "-";
-        let cardinality = 0;
+        let gridCols = 0;
         const totalPriceAll = prices.totalPriceAll
             && prices.totalPriceAll != 0
             && prices.totalPriceAll !== prices.totalPrice
             && prices.totalPriceAll !== prices.basePriceAll
             ? toDollar(prices.totalPriceAll) : null;
         if (totalPriceAll) {
-            cardinality++;
+            gridCols++;
             defaultPrice = totalPriceAll;
         }
-        const totalPriceNormal = prices.totalPrice 
-            && prices.totalPrice != 0 
+        const totalPriceNormal = prices.totalPrice
+            && prices.totalPrice != 0
             && prices.totalPrice !== prices.basePrice
             ? toDollar(prices.totalPrice) : null;
         if (totalPriceNormal) {
-            cardinality++;
+            gridCols++;
             defaultPrice = totalPriceNormal;
         }
         let basePriceAll = prices.basePriceAll
@@ -244,16 +244,20 @@ export class SetOrchestrator {
             && prices.basePriceAll !== prices.basePrice
             ? toDollar(prices.basePriceAll) : null;
         if (basePriceAll) {
-            cardinality++;
+            gridCols++;
             defaultPrice = basePriceAll;
         }
-        let basePriceNormal = prices.basePrice && prices.basePrice != 0 ? toDollar(prices.basePrice) : null;
+        let basePriceNormal = prices.basePrice
+            && prices.basePrice != 0
+            ? toDollar(prices.basePrice) : null;
         if (basePriceNormal) {
-            cardinality++;
+            gridCols++;
             defaultPrice = basePriceNormal;
         }
         let lastUpdate = prices.lastUpdate;
+        this.LOGGER.log(`SetPriceDto: gridCols=${gridCols}, defaultPrice=${defaultPrice}, basePriceNormal=${basePriceNormal}, basePriceAll=${basePriceAll}, totalPriceNormal=${totalPriceNormal}, totalPriceAll=${totalPriceAll}, lastUpdate=${lastUpdate}`);
         return new SetPriceDto({
+            gridCols,
             defaultPrice,
             basePriceNormal,
             basePriceAll,

@@ -9,7 +9,7 @@ export class SetPriceDto {
 
     constructor(init: Partial<SetPriceDto>) {
         this.gridCols = init.gridCols ?? 1;
-        this.defaultPrice = init.defaultPrice;
+        this.defaultPrice = init.defaultPrice ?? "-";
         this.basePriceNormal = init.basePriceNormal;
         this.basePriceAll = init.basePriceAll;
         this.totalPriceNormal = init.totalPriceNormal;

@@ -91,7 +91,6 @@ export class SetOrchestrator {
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
-            // TODO: remove call and use setResponse.size?
             const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
 
             return new SetViewDto({
@@ -255,7 +254,6 @@ export class SetOrchestrator {
             defaultPrice = basePriceNormal;
         }
         let lastUpdate = prices.lastUpdate;
-        this.LOGGER.log(`SetPriceDto: gridCols=${gridCols}, defaultPrice=${defaultPrice}, basePriceNormal=${basePriceNormal}, basePriceAll=${basePriceAll}, totalPriceNormal=${totalPriceNormal}, totalPriceAll=${totalPriceAll}, lastUpdate=${lastUpdate}`);
         return new SetPriceDto({
             gridCols,
             defaultPrice,

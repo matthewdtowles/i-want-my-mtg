@@ -9,13 +9,14 @@
             <li class="text-gray-700">Block: {{set.block}}</li>
             <li class="text-gray-700">Code: {{toUpperCase set.code}}</li>
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
-            <li class="text-gray-700">Set Price: {{set.prices.basePriceNormal}}</li>
+            <li class="text-gray-700">Set Price: {{set.prices.defaultPrice}}</li>
             {{#if authenticated}}
             <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.baseSize}}</li>
             <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>
             <li class="text-gray-700">{{>completionRate set}}</li>
             {{/if}}
         </ul>
+
         {{! Popover - positioned relative to #set-header-container }}
         <div id="price-info-popover" class="absolute hidden left-4 right-4 top-full mt-2 z-50" role="dialog"
             aria-modal="false" aria-labelledby="popover-title">
@@ -41,124 +42,148 @@
                 <div class="p-4 md:p-6">
                     <div
                         class="mb-4 text-xs md:text-sm text-gray-700 bg-teal-50 border-l-4 border-teal-400 p-3 rounded">
-                        <p><strong>Base Set:</strong> Only main set cards (numbers 1-{{set.baseSize}})</p>
-                        <p class="mt-1"><strong>All Cards:</strong> Base set + bonus/extended cards
-                            ({{set.totalSize}} total)</p>
+                        {{#if (eq set.baseSize set.totalSize)}}
+                        <p><strong>{{set.baseSize}}</strong> total cards</p>
+                        {{else}}
+                        {{#if set.baseSize }}
+                        <p><strong>Base Set:</strong> the first {{set.baseSize}} cards in set</p>
+                        {{/if}}
+                        <p class="mt-1">
+                            <strong>All Cards:</strong> Base set + bonus/extended cards
+                            ({{set.totalSize}} total)
+                        </p>
+                        {{/if}}
                     </div>
-
                     {{! Price Grid - responsive: vertical on mobile, 2 cols on tablet, 4 cols on desktop }}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div class="grid grid-cols-1 
+                        {{#if (gt set.prices.gridcols 1)}}
+                        sm:grid-cols-2
+                        {{else}}
+                        sm:grid-cols-1
+                        {{/if}}
+                        {{#if (gt set.prices.gridCols 3)}}
+                        lg:grid-cols-4
+                        {{/if}}
+                        {{#if (eq set.prices.gridCols 3)}}
+                        lg:grid-cols-3
+                        {{/if}}
+                        {{#if (eq set.prices.gridCols 2)}}
+                        lg:grid-cols-2
+                        {{/if}}
+                        {{#if (lt set.prices.gridCols 2)}}
+                        lg:grid-cols-1
+                        {{/if}}
+                        gap-3 md:gap-4">
                         {{! Base Set - Normal }}
+                        {{#if set.prices.basePriceNormal}}
                         <div
-                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-white hover:shadow-md transition-shadow">
+                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-white hover:shadow-md transition-shadow relative">
+                            {{>priceInfoTooltip
+                            title="Base Set"
+                            type="base-normal"
+                            baseSize=set.baseSize
+                            totalSize=set.totalSize
+                            iconColor="teal"
+                            }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">Base
-                                    Set
+                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">
+                                    Base Set
                                 </h4>
-                                <span
-                                    class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded mt-1 inline-block self-start">Normal
-                                    Only</span>
                             </div>
                             <div class="text-2xl md:text-3xl font-bold text-gray-900 font-mono">
-                                {{#if set.prices.basePriceNormal}}
                                 {{set.prices.basePriceNormal}}
-                                {{else}}
-                                <span class="text-gray-400">No Price</span>
-                                {{/if}}
                             </div>
                             <div class="text-xs text-gray-600 mt-2">{{set.baseSize}} cards</div>
                         </div>
+                        {{/if}}
 
                         {{! Base Set - With Foils }}
+                        {{#if set.prices.basePriceAll}}
                         <div
-                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow">
+                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow relative">
+                            {{>priceInfoTooltip
+                            title="Base Set + Foils"
+                            type="base-foil"
+                            baseSize=set.baseSize
+                            totalSize=set.totalSize
+                            iconColor="purple"
+                            }}
                             <div class="flex flex-col mb-2">
                                 <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">
-                                    Base
-                                    Set
+                                    Base Set
+                                    <span
+                                        class="text-xs bg-purple-200 text-purple-800 px-1 py-1/2 rounded mt-1 inline-block self-start">
+                                        + Foils
+                                    </span>
                                 </h4>
-                                <span
-                                    class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded mt-1 inline-block self-start">+
-                                    Foils</span>
                             </div>
                             <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
-                                {{#if set.prices.basePriceAll}}
                                 {{set.prices.basePriceAll}}
-                                {{else}}
-                                <span class="text-purple-300">No Price</span>
-                                {{/if}}
                             </div>
-                            <div class="text-xs text-purple-700 mt-2">{{set.baseSize}} cards (normal + foil variants)
+                            <div class="text-xs text-purple-700 mt-2">
+                                {{set.baseSize}} cards (normal + foil variants)
                             </div>
                         </div>
+                        {{/if}}
 
                         {{! All Cards - Normal }}
+                        {{#if set.prices.totalPriceNormal}}
                         <div
-                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-teal-50 hover:shadow-md transition-shadow">
+                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-teal-50 hover:shadow-md transition-shadow relative">
+                            {{>priceInfoTooltip
+                            title="All Cards"
+                            type="total-normal"
+                            baseSize=set.baseSize
+                            totalSize=set.totalSize
+                            iconColor="teal"
+                            }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">All
-                                    Cards
+                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">
+                                    All Cards
                                 </h4>
-                                <span
-                                    class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded mt-1 inline-block self-start">Normal
-                                    Only</span>
                             </div>
                             <div class="text-2xl md:text-3xl font-bold text-teal-900 font-mono">
-                                {{#if set.prices.totalPriceNormal}}
                                 {{set.prices.totalPriceNormal}}
-                                {{else}}
-                                <span class="text-teal-300">No Price</span>
-                                {{/if}}
                             </div>
                             <div class="text-xs text-teal-700 mt-2">{{set.totalSize}} cards</div>
                         </div>
+                        {{/if}}
 
                         {{! All Cards - With Foils }}
+                        {{#if set.prices.totalPriceAll}}
                         <div
-                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow">
+                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow relative">
+                            {{>priceInfoTooltip
+                            title="All Cards + Foils"
+                            type="total-foil"
+                            baseSize=set.baseSize
+                            totalSize=set.totalSize
+                            iconColor="purple"
+                            }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">All
-                                    Cards</h4>
-                                <span
-                                    class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded mt-1 inline-block self-start">+
-                                    Foils</span>
+                                <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">
+                                    All Cards
+                                    <span
+                                        class="text-xs bg-purple-200 text-purple-800 px-1 py-1/2 rounded mt-1 inline-block self-start">
+                                        + Foils
+                                    </span>
+                                </h4>
+
                             </div>
                             <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
-                                {{#if set.prices.totalPriceAll}}
                                 {{set.prices.totalPriceAll}}
-                                {{else}}
-                                <span class="text-purple-300">No Price</span>
-                                {{/if}}
                             </div>
-                            <div class="text-xs text-purple-700 mt-2">{{set.totalSize}} cards (normal + foil variants)
+                            <div class="text-xs text-purple-700 mt-2">
+                                {{set.totalSize}} cards (normal + foil variants)
                             </div>
                         </div>
-                    </div>
-
-                    {{! Set Information }}
-                    <div class="mt-4 md:mt-6 p-3 md:p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                        <h5 class="font-semibold text-teal-900 mb-2 flex items-center space-x-2 text-sm md:text-base">
-                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            <span>Set Information</span>
-                        </h5>
-                        <div class="grid grid-cols-2 gap-4 text-xs md:text-sm">
-                            <div>
-                                <p class="text-gray-600">Base Set Size:</p>
-                                <p class="font-bold text-teal-900">{{set.baseSize}} cards</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600">Total with Bonus:</p>
-                                <p class="font-bold text-teal-900">{{set.totalSize}} cards</p>
-                            </div>
-                        </div>
+                        {{/if}}
                     </div>
                 </div>
             </div>
         </div>
+        {{! End Set Price Info }}
+        {{#if (gt set.prices.gridCols 1)}}
         <button type="button" id="price-info-toggle"
             class="inline-flex items-center space-x-2 px-3 py-1.5 btn btn-primary text-sm"
             aria-label="View detailed set prices">
@@ -167,87 +192,11 @@
                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                 </path>
             </svg>
-            <span class="font-semibold">More Price Info</span>
+            <span class="font-semibold">Price Info</span>
         </button>
-
+        {{/if}}
     </section>
-
-
 </div>
-
-<script>
-    (function () {
-        const toggleBtn = document.getElementById("price-info-toggle");
-        const popover = document.getElementById("price-info-popover");
-        const closeBtn = document.getElementById("close-popover");
-        const popoverContent = document.getElementById("popover-content");
-
-        if (!toggleBtn || !popover) return;
-
-        function openPopover(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            popover.classList.remove("hidden");
-            popover.setAttribute("aria-modal", "true");
-            // Move focus to close button for accessibility
-            closeBtn?.focus();
-        }
-
-        function closePopover(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            popover.classList.add("hidden");
-            popover.setAttribute("aria-modal", "false");
-            // Return focus to toggle button for accessibility
-            toggleBtn.focus();
-        }
-
-        toggleBtn.addEventListener("click", openPopover);
-        closeBtn?.addEventListener("click", closePopover);
-
-        // Close when clicking outside the popover
-        document.addEventListener("click", (e) => {
-            if (!popover.classList.contains("hidden") &&
-                !popoverContent.contains(e.target) &&
-                !toggleBtn.contains(e.target)) {
-                closePopover();
-            }
-        });
-
-        // Prevent clicks inside popover from closing it
-        popoverContent?.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-
-        // Close on Escape
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape" && !popover.classList.contains("hidden")) {
-                closePopover();
-            }
-        });
-
-        // Trap focus inside popover when open
-        popover.addEventListener("keydown", (e) => {
-            if (e.key === "Tab" && !popover.classList.contains("hidden")) {
-                const focusableElements = popover.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
-                const firstFocusable = focusableElements[0];
-                const lastFocusable = focusableElements[focusableElements.length - 1];
-
-                if (e.shiftKey && document.activeElement === firstFocusable) {
-                    e.preventDefault();
-                    lastFocusable.focus();
-                } else if (!e.shiftKey && document.activeElement === lastFocusable) {
-                    e.preventDefault();
-                    firstFocusable.focus();
-                }
-            }
-        });
-    })();
-</script>
 
 <div class="w-full mx-auto">
     {{>filter}}
@@ -296,3 +245,4 @@
 {{>pagination}}
 
 <script src="/public/js/updateInventory.js" defer></script>
+<script src="/public/js/setPriceInfo.js" defer></script>

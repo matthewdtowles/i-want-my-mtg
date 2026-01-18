@@ -86,13 +86,11 @@ export class SetOrchestrator {
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            this.LOGGER.log(`Set prices - basePrice: ${set.prices?.basePrice}, basePriceAll: ${set.prices?.basePriceAll}, totalPrice: ${set.prices?.totalPrice}, totalPriceAll: ${set.prices?.totalPriceAll}, lastUpdate: ${set.prices?.lastUpdate}`);
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
             const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
-            // TODO: remove call and use setResponse.size?
             const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
 
             return new SetViewDto({
@@ -169,6 +167,73 @@ export class SetOrchestrator {
         }
     }
 
+    /**
+     * Creates a SetPriceDto with proper price filtering and deduplication.
+     * Handles prices that may be strings or numbers from the database.
+     * Filters out zero values and duplicate prices across categories.
+     */
+    createSetPriceDto(prices: SetPrice): SetPriceDto {
+        prices = prices ?? new SetPrice({});
+
+        // Helper to safely convert to number and check if valid price
+        const toValidNumber = (value: any): number | null => {
+            if (value === null || value === undefined) return null;
+            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            return !isNaN(num) && num > 0 ? num : null;
+        };
+
+        // Convert all prices to numbers or null
+        const basePrice = toValidNumber(prices.basePrice);
+        const basePriceAll = toValidNumber(prices.basePriceAll);
+        const totalPrice = toValidNumber(prices.totalPrice);
+        const totalPriceAll = toValidNumber(prices.totalPriceAll);
+
+        let defaultPrice = "-";
+        let gridCols = 0;
+
+        // Filter and deduplicate prices in priority order (reverse of display)
+        const totalPriceAllFiltered = totalPriceAll
+            && totalPriceAll !== totalPrice
+            && totalPriceAll !== basePriceAll
+            ? toDollar(totalPriceAll) : null;
+        if (totalPriceAllFiltered) {
+            gridCols++;
+            defaultPrice = totalPriceAllFiltered;
+        }
+
+        const totalPriceNormalFiltered = totalPrice
+            && totalPrice !== basePrice
+            ? toDollar(totalPrice) : null;
+        if (totalPriceNormalFiltered) {
+            gridCols++;
+            defaultPrice = totalPriceNormalFiltered;
+        }
+
+        const basePriceAllFiltered = basePriceAll
+            && basePriceAll !== basePrice
+            ? toDollar(basePriceAll) : null;
+        if (basePriceAllFiltered) {
+            gridCols++;
+            defaultPrice = basePriceAllFiltered;
+        }
+
+        const basePriceNormalFiltered = basePrice
+            ? toDollar(basePrice) : null;
+        if (basePriceNormalFiltered) {
+            gridCols++;
+            defaultPrice = basePriceNormalFiltered;
+        }
+
+        return new SetPriceDto({
+            gridCols,
+            defaultPrice,
+            basePriceNormal: basePriceNormalFiltered,
+            basePriceAll: basePriceAllFiltered,
+            totalPriceNormal: totalPriceNormalFiltered,
+            totalPriceAll: totalPriceAllFiltered,
+            lastUpdate: prices.lastUpdate,
+        });
+    }
     private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
         return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }
@@ -216,17 +281,6 @@ export class SetOrchestrator {
                     InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
                     CardImgType.SMALL))
                 : [],
-        });
-    }
-
-    private createSetPriceDto(prices: SetPrice): SetPriceDto {
-        prices = prices ?? new SetPrice({});
-        return new SetPriceDto({
-            basePriceNormal: toDollar(prices.basePrice),
-            basePriceAll: toDollar(prices.basePriceAll),
-            totalPriceNormal: toDollar(prices.totalPrice),
-            totalPriceAll: toDollar(prices.totalPriceAll),
-            lastUpdate: prices.lastUpdate,
         });
     }
 }

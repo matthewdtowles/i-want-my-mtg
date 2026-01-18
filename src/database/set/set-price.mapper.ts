@@ -4,7 +4,6 @@ import { SetPriceOrmEntity } from "./set-price.orm-entity";
 export class SetPriceMapper {
     static toCore(ormEntity: SetPriceOrmEntity): SetPrice {
         if (!ormEntity) return null;
-
         return new SetPrice({
             setCode: ormEntity.setCode,
             basePrice: ormEntity.basePrice,

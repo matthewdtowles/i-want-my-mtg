@@ -178,7 +178,7 @@ export class SetOrchestrator {
         // Helper to safely convert to number and check if valid price
         const toValidNumber = (value: any): number | null => {
             if (value === null || value === undefined) return null;
-            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            const num = typeof value === "string" ? parseFloat(value) : Number(value);
             return !isNaN(num) && num > 0 ? num : null;
         };
 
@@ -234,6 +234,7 @@ export class SetOrchestrator {
             lastUpdate: prices.lastUpdate,
         });
     }
+
     private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
         return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }

@@ -167,51 +167,71 @@ export class SetOrchestrator {
         }
     }
 
+    /**
+     * Creates a SetPriceDto with proper price filtering and deduplication.
+     * Handles prices that may be strings or numbers from the database.
+     * Filters out zero values and duplicate prices across categories.
+     */
     createSetPriceDto(prices: SetPrice): SetPriceDto {
         prices = prices ?? new SetPrice({});
+
+        // Helper to safely convert to number and check if valid price
+        const toValidNumber = (value: any): number | null => {
+            if (value === null || value === undefined) return null;
+            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            return !isNaN(num) && num > 0 ? num : null;
+        };
+
+        // Convert all prices to numbers or null
+        const basePrice = toValidNumber(prices.basePrice);
+        const basePriceAll = toValidNumber(prices.basePriceAll);
+        const totalPrice = toValidNumber(prices.totalPrice);
+        const totalPriceAll = toValidNumber(prices.totalPriceAll);
+
         let defaultPrice = "-";
         let gridCols = 0;
-        const totalPriceAll = prices.totalPriceAll
-            && prices.totalPriceAll != 0
-            && prices.totalPriceAll !== prices.totalPrice
-            && prices.totalPriceAll !== prices.basePriceAll
-            ? toDollar(prices.totalPriceAll) : null;
-        if (totalPriceAll) {
+
+        // Filter and deduplicate prices in priority order (reverse of display)
+        const totalPriceAllFiltered = totalPriceAll
+            && totalPriceAll !== totalPrice
+            && totalPriceAll !== basePriceAll
+            ? toDollar(totalPriceAll) : null;
+        if (totalPriceAllFiltered) {
             gridCols++;
-            defaultPrice = totalPriceAll;
+            defaultPrice = totalPriceAllFiltered;
         }
-        const totalPriceNormal = prices.totalPrice
-            && prices.totalPrice != 0
-            && prices.totalPrice !== prices.basePrice
-            ? toDollar(prices.totalPrice) : null;
-        if (totalPriceNormal) {
+
+        const totalPriceNormalFiltered = totalPrice
+            && totalPrice !== basePrice
+            ? toDollar(totalPrice) : null;
+        if (totalPriceNormalFiltered) {
             gridCols++;
-            defaultPrice = totalPriceNormal;
+            defaultPrice = totalPriceNormalFiltered;
         }
-        let basePriceAll = prices.basePriceAll
-            && prices.basePriceAll != 0
-            && prices.basePriceAll !== prices.basePrice
-            ? toDollar(prices.basePriceAll) : null;
-        if (basePriceAll) {
+
+        const basePriceAllFiltered = basePriceAll
+            && basePriceAll !== basePrice
+            ? toDollar(basePriceAll) : null;
+        if (basePriceAllFiltered) {
             gridCols++;
-            defaultPrice = basePriceAll;
+            defaultPrice = basePriceAllFiltered;
         }
-        let basePriceNormal = prices.basePrice
-            && prices.basePrice != 0
-            ? toDollar(prices.basePrice) : null;
-        if (basePriceNormal) {
+
+        const basePriceNormalFiltered = basePrice
+            ? toDollar(basePrice) : null;
+        if (basePriceNormalFiltered) {
             gridCols++;
-            defaultPrice = basePriceNormal;
+            defaultPrice = basePriceNormalFiltered;
         }
-        let lastUpdate = prices.lastUpdate;
+
         return new SetPriceDto({
             gridCols,
             defaultPrice,
-            basePriceNormal,
-            basePriceAll,
-            totalPriceNormal,
-            totalPriceAll,
-            lastUpdate,
+            basePriceNormal: basePriceNormalFiltered,
+            basePriceAll: basePriceAllFiltered,
+            totalPriceNormal: totalPriceNormalFiltered,
+            totalPriceAll: totalPriceAllFiltered,
+            lastUpdate: prices.lastUpdate,
         });
     }
     private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {

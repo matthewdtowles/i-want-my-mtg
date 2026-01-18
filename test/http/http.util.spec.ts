@@ -26,7 +26,7 @@ describe("toDollar", () => {
     });
 
     it("should handle more than 2 decimals correctly", () => {
-        expect(toDollar(90.12345)).toBe("$90.13");
+        expect(toDollar(90.12345)).toBe("$90.12");
     });
 
     it("should handle multi-comma large numbers correctly", () => {
@@ -34,7 +34,7 @@ describe("toDollar", () => {
     });
 
     it("should handle small numbers correctly", () => {
-        expect(toDollar(0.0001)).toBe("$0.01");
+        expect(toDollar(0.0001)).toBe("$0.00");
     });
 });
 

@@ -167,6 +167,53 @@ export class SetOrchestrator {
         }
     }
 
+    createSetPriceDto(prices: SetPrice): SetPriceDto {
+        prices = prices ?? new SetPrice({});
+        let defaultPrice = "-";
+        let gridCols = 0;
+        const totalPriceAll = prices.totalPriceAll
+            && prices.totalPriceAll != 0
+            && prices.totalPriceAll !== prices.totalPrice
+            && prices.totalPriceAll !== prices.basePriceAll
+            ? toDollar(prices.totalPriceAll) : null;
+        if (totalPriceAll) {
+            gridCols++;
+            defaultPrice = totalPriceAll;
+        }
+        const totalPriceNormal = prices.totalPrice
+            && prices.totalPrice != 0
+            && prices.totalPrice !== prices.basePrice
+            ? toDollar(prices.totalPrice) : null;
+        if (totalPriceNormal) {
+            gridCols++;
+            defaultPrice = totalPriceNormal;
+        }
+        let basePriceAll = prices.basePriceAll
+            && prices.basePriceAll != 0
+            && prices.basePriceAll !== prices.basePrice
+            ? toDollar(prices.basePriceAll) : null;
+        if (basePriceAll) {
+            gridCols++;
+            defaultPrice = basePriceAll;
+        }
+        let basePriceNormal = prices.basePrice
+            && prices.basePrice != 0
+            ? toDollar(prices.basePrice) : null;
+        if (basePriceNormal) {
+            gridCols++;
+            defaultPrice = basePriceNormal;
+        }
+        let lastUpdate = prices.lastUpdate;
+        return new SetPriceDto({
+            gridCols,
+            defaultPrice,
+            basePriceNormal,
+            basePriceAll,
+            totalPriceNormal,
+            totalPriceAll,
+            lastUpdate,
+        });
+    }
     private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
         return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }
@@ -214,54 +261,6 @@ export class SetOrchestrator {
                     InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
                     CardImgType.SMALL))
                 : [],
-        });
-    }
-
-    private createSetPriceDto(prices: SetPrice): SetPriceDto {
-        prices = prices ?? new SetPrice({});
-        let defaultPrice = "-";
-        let gridCols = 0;
-        const totalPriceAll = prices.totalPriceAll
-            && prices.totalPriceAll != 0
-            && prices.totalPriceAll !== prices.totalPrice
-            && prices.totalPriceAll !== prices.basePriceAll
-            ? toDollar(prices.totalPriceAll) : null;
-        if (totalPriceAll) {
-            gridCols++;
-            defaultPrice = totalPriceAll;
-        }
-        const totalPriceNormal = prices.totalPrice
-            && prices.totalPrice != 0
-            && prices.totalPrice !== prices.basePrice
-            ? toDollar(prices.totalPrice) : null;
-        if (totalPriceNormal) {
-            gridCols++;
-            defaultPrice = totalPriceNormal;
-        }
-        let basePriceAll = prices.basePriceAll
-            && prices.basePriceAll != 0
-            && prices.basePriceAll !== prices.basePrice
-            ? toDollar(prices.basePriceAll) : null;
-        if (basePriceAll) {
-            gridCols++;
-            defaultPrice = basePriceAll;
-        }
-        let basePriceNormal = prices.basePrice
-            && prices.basePrice != 0
-            ? toDollar(prices.basePrice) : null;
-        if (basePriceNormal) {
-            gridCols++;
-            defaultPrice = basePriceNormal;
-        }
-        let lastUpdate = prices.lastUpdate;
-        return new SetPriceDto({
-            gridCols,
-            defaultPrice,
-            basePriceNormal,
-            basePriceAll,
-            totalPriceNormal,
-            totalPriceAll,
-            lastUpdate,
         });
     }
 }

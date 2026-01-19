@@ -53,6 +53,16 @@ export class SetOrchestrator {
             const baseUrl = "/sets";
             const pagination = new PaginationView(options, baseUrl, totalSets);
             this.LOGGER.debug(`Found ${sets?.length} of ${totalSets} total sets.`);
+            const tableHeadersRow = new TableHeadersRowView([
+                new SortableHeaderView(options, SortOptions.SET, ["pl-2"]),
+                new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ["pl-2"]),
+            ]);
+            const isAuthd = isAuthenticated(req);
+            if (isAuthd) {
+                tableHeadersRow.headers.push(new TableHeaderView("Owned Value"));
+            }
+            tableHeadersRow.headers.push(new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]));
+
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
@@ -61,12 +71,7 @@ export class SetOrchestrator {
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(options, baseUrl),
-                tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.SET, ["pl-2"]),
-                    new TableHeaderView("Set Value"),
-                    new TableHeaderView("Owned Value"),
-                    new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]),
-                ])
+                tableHeadersRow,
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
@@ -178,7 +183,7 @@ export class SetOrchestrator {
         // Helper to safely convert to number and check if valid price
         const toValidNumber = (value: any): number | null => {
             if (value === null || value === undefined) return null;
-            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            const num = typeof value === "string" ? parseFloat(value) : Number(value);
             return !isNaN(num) && num > 0 ? num : null;
         };
 
@@ -234,6 +239,7 @@ export class SetOrchestrator {
             lastUpdate: prices.lastUpdate,
         });
     }
+
     private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
         return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }

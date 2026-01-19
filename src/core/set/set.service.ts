@@ -12,7 +12,7 @@ export class SetService {
     constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) { }
 
     async findSets(query: SafeQueryOptions): Promise<Set[]> {
-        this.LOGGER.debug(`Calling findSets(page: ${JSON.stringify(query)})`);
+        this.LOGGER.debug(`Calling findSets.`);
         return await this.repository.findAllSetsMeta(query);
     }
 

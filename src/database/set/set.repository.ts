@@ -27,6 +27,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const qb = this.createBaseQuery().leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
+        // TODO: enable sort by setPrice
         this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
         // extra order clause for default
         if (!options.sort) qb.addOrderBy(`${SortOptions.SET}`, this.ASC, this.NULLS_LAST);

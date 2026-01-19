@@ -10,7 +10,9 @@
                     <a href="{{this.url}}" class="table-link">{{this.name}}</a>
                 </td>
                 <td class="py-2">{{this.prices.basePriceNormal}}</td>
+                {{#if ../authenticated}}
                 <td class="py-2">{{>completionRate}}</td>
+                {{/if}}
                 <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
             </tr>
             {{/each}}

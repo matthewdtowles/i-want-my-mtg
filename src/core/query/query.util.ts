@@ -34,12 +34,8 @@ export function safeAlphaNumeric(value: any): string | null {
 }
 
 export function safeBoolean(value: any): boolean | null {
-    if (value == null || value === "") {
-        return null;
-    }
-    if (typeof value === "boolean") {
-        return value;
-    }
+    if (value == null || value === "") return null;
+    if (typeof value === "boolean") return value;
     if (typeof value === "string") {
         const trimmed = value.trim().toLowerCase();
         if (trimmed === "true") return true;

@@ -1,5 +1,12 @@
 <div class="w-full mx-auto">
-    {{>filter}}
+    <div class="flex items-center gap-2 mb-4">
+        <div class="flex-1">
+            {{>filter}}
+        </div>
+        <a href="{{baseOnlyToggle.url}}" class="btn btn-secondary whitespace-nowrap">
+            {{baseOnlyToggle.text}}
+        </a>
+    </div>
     <table class="min-w-full bg-white">
         <thead>{{>tableHeadersRow}}</thead>
         <tbody>
@@ -9,7 +16,7 @@
                     <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
                     <a href="{{this.url}}" class="table-link">{{this.name}}</a>
                 </td>
-                <td class="py-2">{{this.prices.basePriceNormal}}</td>
+                <td class="py-2">{{this.prices.defaultPrice}}</td>
                 {{#if ../authenticated}}
                 <td class="py-2">{{>completionRate}}</td>
                 {{/if}}

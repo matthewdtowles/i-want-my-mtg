@@ -26,6 +26,7 @@ import { SetPriceDto } from "./dto/set-price.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPrice } from "src/core/set/set-price.entity";
+import { BaseOnlyToggleView } from "../list/base-only-toggle.view";
 
 @Injectable()
 export class SetOrchestrator {
@@ -64,7 +65,8 @@ export class SetOrchestrator {
             tableHeadersRow.headers.push(new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]));
 
             return new SetListViewDto({
-                authenticated: isAuthenticated(req),
+                authenticated: isAuthd,
+                baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.total}`,
                 setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),

@@ -6,7 +6,7 @@ import { Set } from "src/core/set/set.entity";
 import { SetRepositoryPort } from "src/core/set/set.repository.port";
 import { BaseRepository } from "src/database/base.repository";
 import { getLogger } from "src/logger/global-app-logger";
-import { Repository, SelectQueryBuilder } from "typeorm";
+import { Repository } from "typeorm";
 import { SetMapper } from "./set.mapper";
 import { SetOrmEntity } from "./set.orm-entity";
 
@@ -24,10 +24,13 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Finding all sets meta.`);
-        const qb = this.createBaseQuery().leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
+        const qb = this.repository.createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
+        if (!options.showAll) {
+            qb.where(`${this.TABLE}.baseSize > 0`);
+        }
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
-        // TODO: enable sort by setPrice
         this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
         // extra order clause for default
         if (!options.sort) qb.addOrderBy(`${SortOptions.SET}`, this.ASC, this.NULLS_LAST);
@@ -48,7 +51,10 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async totalSets(options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total sets.`);
-        const qb = this.createBaseQuery();
+        const qb = this.repository.createQueryBuilder(this.TABLE);
+        if (!options.showAll) {
+            qb.where(`${this.TABLE}.baseSize > 0`);
+        }
         this.addFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total sets: ${count}.`);
@@ -90,11 +96,5 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         } else {
             return "total_price_all";
         }
-    }
-
-    private createBaseQuery(): SelectQueryBuilder<SetOrmEntity> {
-        return this.repository
-            .createQueryBuilder(this.TABLE)
-            .where(`${this.TABLE}.baseSize > 0`);
     }
 }

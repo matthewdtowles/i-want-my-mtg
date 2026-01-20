@@ -101,7 +101,7 @@ describe("buildQueryString", () => {
     });
 
     it("should build query string with page and limit", () => {
-        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true})).toBe("?page=2&limit=50&baseOnly=true");
+        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true })).toBe("?page=2&limit=50");
     });
 
     it("should build query string with filter and sort using default page and limit", () => {
@@ -122,5 +122,10 @@ describe("buildQueryString", () => {
     it("should build query string with filter, ascend, sort, and new limit using default page", () => {
         const options = new SafeQueryOptions({ limit: 100, filter: "baz", ascend: false, sort: SortOptions.CARD });
         expect(buildQueryString(options)).toBe("?page=1&limit=100&filter=baz&ascend=false&sort=card.name");
+    });
+
+    it("should build query string with baseOnly false", () => {
+        const options = new SafeQueryOptions({ baseOnly: false });
+        expect(buildQueryString(options)).toBe("?page=1&limit=25&baseOnly=false");
     });
 });

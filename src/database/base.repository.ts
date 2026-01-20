@@ -39,8 +39,7 @@ export abstract class BaseRepository<T> implements BaseRepositoryPort {
     }
 
     protected addPagination(qb: SelectQueryBuilder<T>, options: SafeQueryOptions) {
-        qb.skip((options.page - 1) * options.limit)
-            .take(options.limit);
+        qb.skip((options.page - 1) * options.limit).take(options.limit);
     }
 
     protected addOrdering(qb: SelectQueryBuilder<T>, options: SafeQueryOptions, defaultSort: SortOptions, desc?: boolean) {

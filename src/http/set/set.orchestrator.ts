@@ -64,7 +64,7 @@ export class SetOrchestrator {
             tableHeadersRow.headers.push(new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]));
 
             return new SetListViewDto({
-                authenticated: isAuthenticated(req),
+                authenticated: isAuthd,
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.total}`,
                 setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),

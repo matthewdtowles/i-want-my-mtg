@@ -101,7 +101,7 @@ describe("buildQueryString", () => {
     });
 
     it("should build query string with page and limit", () => {
-        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true})).toBe("?page=2&limit=50");
+        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true})).toBe("?page=2&limit=50&baseOnly=true");
     });
 
     it("should build query string with filter and sort using default page and limit", () => {

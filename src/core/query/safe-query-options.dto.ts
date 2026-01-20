@@ -3,11 +3,10 @@ import { SortOptions } from "./sort-options.enum";
 
 export class SafeQueryOptions {
     readonly ascend?: boolean;
-    readonly baseOnly: boolean;
+    readonly baseOnly?: boolean;
     readonly filter?: string;
     readonly limit: number;
     readonly page: number;
-    readonly showAll?: boolean;
     readonly sort?: SortOptions;
 
     constructor(init?: Partial<SafeQueryOptions>) {
@@ -17,7 +16,6 @@ export class SafeQueryOptions {
         this.filter = safeAlphaNumeric(init.filter);
         this.limit = sanitizeInt(init.limit, 25);
         this.page = sanitizeInt(init.page, 1);
-        this.showAll = safeBoolean(init.showAll);
         this.sort = safeSort(init.sort);
     }
 }

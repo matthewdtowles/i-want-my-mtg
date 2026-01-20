@@ -26,7 +26,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Finding all sets meta.`);
         const qb = this.repository.createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
-        if (!options.showAll) {
+        if (options.baseOnly) {
             qb.where(`${this.TABLE}.baseSize > 0`);
         }
         this.addFilters(qb, options.filter);
@@ -52,7 +52,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     async totalSets(options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total sets.`);
         const qb = this.repository.createQueryBuilder(this.TABLE);
-        if (!options.showAll) {
+        if (options.baseOnly) {
             qb.where(`${this.TABLE}.baseSize > 0`);
         }
         this.addFilters(qb, options.filter);

@@ -1,6 +1,12 @@
 <div class="w-full mx-auto">
-    {{! TODO: add button to show All/Normal sets}}
-    {{>filter}}
+    <div class="flex items-center gap-2 mb-4">
+        <div class="flex-1">
+            {{>filter}}
+        </div>
+        <a href="{{baseOnlyToggle.url}}" class="btn btn-secondary whitespace-nowrap">
+            {{baseOnlyToggle.text}}
+        </a>
+    </div>
     <table class="min-w-full bg-white">
         <thead>{{>tableHeadersRow}}</thead>
         <tbody>

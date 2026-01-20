@@ -24,6 +24,7 @@ export function buildQueryString(options: SafeQueryOptions): string {
     if (options.filter) params.push(`filter=${options.filter}`);
     if (typeof options.ascend === "boolean") params.push(`ascend=${options.ascend}`);
     if (options.sort) params.push(`sort=${options.sort}`);
+    if (options.baseOnly === false) params.push(`baseOnly=false`);
     return params.length > 0 ? `?${params.join("&")}` : "";
 }
 

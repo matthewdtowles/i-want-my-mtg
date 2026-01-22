@@ -20,12 +20,14 @@ export class CardPresenter {
             throw new Error("Card is required to create CardResponseDto");
         }
         const price: Price | undefined = card.prices ? card.prices[0] : undefined;
+        const tags = [];
+        if (card.isReserved) tags.push("Reserved");
+        if (!card.inMain) tags.push("Bonus");
         return new CardResponseDto({
             cardId: card.id,
             hasFoil: card.hasFoil,
             hasNormal: card.hasNonFoil,
             imgSrc: this.buildImgSrc(card, imageType),
-            isReserved: card.isReserved,
             manaCost: this.manaForView(card.manaCost),
             name: card.name,
             number: card.number,
@@ -37,6 +39,7 @@ export class CardPresenter {
             foilQuantity: card.hasFoil && inventory?.foilQuantity ? inventory.foilQuantity : 0,
             normalPrice: toDollar(price?.normal),
             normalQuantity: card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
+            tags,
         });
     }
 

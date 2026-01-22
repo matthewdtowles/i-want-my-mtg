@@ -7,12 +7,10 @@ export interface ManaToken {
 }
 
 export class CardResponseDto {
-
     readonly cardId: string;
     readonly hasFoil: boolean;
     readonly hasNormal: boolean;
     readonly imgSrc: string;
-    readonly isReserved: boolean;
     readonly manaCost: ManaToken[];
     readonly name: string;
     readonly number: string;
@@ -24,13 +22,13 @@ export class CardResponseDto {
     readonly foilQuantity?: number;
     readonly normalPrice?: string;
     readonly normalQuantity?: number;
+    readonly tags: string[];
 
     constructor(init: Partial<CardResponseDto>) {
         this.cardId = init.cardId || "";
         this.hasFoil = init.hasFoil || false;
         this.hasNormal = init.hasNormal || false;
         this.imgSrc = init.imgSrc || "";
-        this.isReserved = init.isReserved || false;
         this.manaCost = init.manaCost || [];
         this.name = init.name || "";
         this.number = init.number || "";
@@ -42,5 +40,6 @@ export class CardResponseDto {
         this.foilQuantity = init.foilQuantity || 0;
         this.normalPrice = init.normalPrice || "";
         this.normalQuantity = init.normalQuantity || 0;
+        this.tags = init.tags || [];
     }
 }

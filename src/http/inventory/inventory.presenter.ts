@@ -46,17 +46,20 @@ export class InventoryPresenter {
         const card: Card = inventory.card;
         const priceObj: Price = card?.prices[0]
         const priceValueRaw: number = inventory.isFoil ? priceObj?.foil : priceObj?.normal;
+        const tags = [];
+        if (card.isReserved) tags.push("Reserved");
+        if (!card.inMain) tags.push("Bonus");
         return new InventoryResponseDto({
             cardId: inventory.cardId,
             isFoil: inventory.isFoil,
             quantity: inventory.quantity,
             priceValue: toDollar(priceValueRaw),
             imgSrc: `${BASE_IMAGE_URL}/normal/front/${card.imgSrc}`,
-            isReserved: card.isReserved,
             name: card.name,
             rarity: card.rarity,
             setCode: card.setCode,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
+            tags,
         });
     }
 

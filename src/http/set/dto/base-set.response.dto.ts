@@ -14,7 +14,6 @@ export class BaseSetResponseDto {
     readonly totalSize: number;
     readonly url: string;
 
-
     constructor(init: Partial<BaseSetResponseDto>) {
         this.baseSize = init.baseSize ?? 0;
         this.block = init.block || init.name || "";

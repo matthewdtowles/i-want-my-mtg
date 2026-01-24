@@ -13,6 +13,7 @@ export class BaseSetResponseDto {
     readonly releaseDate: string;
     readonly totalSize: number;
     readonly url: string;
+    readonly tags: string[];
 
     constructor(init: Partial<BaseSetResponseDto>) {
         this.baseSize = init.baseSize ?? 0;
@@ -27,5 +28,6 @@ export class BaseSetResponseDto {
         this.releaseDate = init.releaseDate || "";
         this.totalSize = init.totalSize ?? 0;
         this.url = init.url || "";
+        this.tags = init.tags || [];
     }
 }

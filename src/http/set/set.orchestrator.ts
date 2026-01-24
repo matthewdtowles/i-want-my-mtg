@@ -27,6 +27,7 @@ import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
 import { SetPrice } from "src/core/set/set-price.entity";
 import { BaseOnlyToggleView } from "../list/base-only-toggle.view";
+import { SetTypeMapper } from "./set-type.mapper";
 
 @Injectable()
 export class SetOrchestrator {
@@ -259,6 +260,7 @@ export class SetOrchestrator {
             ownedTotal,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
+            tags: SetTypeMapper.mapSetTypeToTags(set),
             url: `/sets/${set.code.toLowerCase()}`
         });
     }
@@ -281,6 +283,7 @@ export class SetOrchestrator {
             ownedTotal,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
+            tags: SetTypeMapper.mapSetTypeToTags(set),
             totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards

@@ -5,6 +5,7 @@ import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryQuantities } from "./inventory.quantities";
+import { CardPresenter } from "../card/card.presenter";
 
 
 export class InventoryPresenter {
@@ -46,9 +47,6 @@ export class InventoryPresenter {
         const card: Card = inventory.card;
         const priceObj: Price = card?.prices[0]
         const priceValueRaw: number = inventory.isFoil ? priceObj?.foil : priceObj?.normal;
-        const tags = [];
-        if (card.isReserved) tags.push("Reserved");
-        if (!card.inMain) tags.push("Bonus");
         return new InventoryResponseDto({
             cardId: inventory.cardId,
             isFoil: inventory.isFoil,
@@ -59,7 +57,7 @@ export class InventoryPresenter {
             rarity: card.rarity,
             setCode: card.setCode,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
-            tags,
+            tags: CardPresenter.createTags(card),
         });
     }
 

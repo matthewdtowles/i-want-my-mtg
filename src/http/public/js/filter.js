@@ -22,6 +22,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const newPagination = doc.querySelector(".pagination-container");
                 document.querySelector("table").replaceWith(newTable);
                 document.querySelector(".pagination-container").replaceWith(newPagination);
+
+                // Re-initialize card hover functionality if it exists
+                if (window.initCardHover && typeof window.initCardHover === 'function') {
+                    window.initCardHover();
+                }
             });
     }
 

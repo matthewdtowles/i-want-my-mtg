@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const qtyInt = currentQty - 1;
                 console.log(`Updating quantity to ${qtyInt} for card ${_cardId}`);
-                
+
                 // If going to zero, use DELETE method instead
                 if (qtyInt === 0) {
                     const response = await fetch('/inventory', {
@@ -56,19 +56,19 @@ document.addEventListener("DOMContentLoaded", function () {
                             isFoil: isFoil,
                         }),
                     });
-                    
+
                     if (!response.ok) {
                         console.error(`Error in deleteInventory: ${response.statusText}`);
                         return _quantity; // Return original on error
                     }
-                    
+
                     console.log("Item successfully deleted from inventory");
                     return "0"; // Successfully deleted, so return 0
                 } else {
                     // For non-zero quantities, use PATCH
                     const updatedInventory = await updateInventory(qtyInt, _cardId, isFoil, 'PATCH');
                     console.log("Response from update:", updatedInventory);
-                    
+
                     // Handle various response scenarios
                     if (updatedInventory && typeof updatedInventory.quantity !== 'undefined') {
                         return updatedInventory.quantity.toString();
@@ -115,30 +115,40 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    let currentImgLink = null;
+    function initCardHover() {
+        let currentImgLink = null;
 
-    document.querySelectorAll(".card-name-link").forEach(item => {
-        const imgLink = item.querySelector(".card-img-link");
-        const imgPreview = imgLink.querySelector(".card-img-preview");
+        document.querySelectorAll(".card-name-link").forEach(item => {
+            const imgLink = item.querySelector(".card-img-link");
+            const imgPreview = imgLink?.querySelector(".card-img-preview");
 
-        item.addEventListener("mouseover", () => {
-            if (currentImgLink && currentImgLink !== imgLink) {
-                currentImgLink.classList.add("hidden");
-            }
-            currentImgLink = imgLink;
-            imgLink.style.display = "block";
-            imgPreview.style.display = "block";
-            const rect = item.getBoundingClientRect();
-            const imgWidth = imgLink.offsetWidth;
-            imgLink.style.top = `${rect.bottom + window.scrollY}px`;
-            imgLink.style.left = `${rect.left + window.scrollX + imgWidth / 4}px`;
+            if (!imgLink || !imgPreview) return;
+
+            item.addEventListener("mouseover", () => {
+                if (currentImgLink && currentImgLink !== imgLink) {
+                    currentImgLink.style.display = "none";
+                }
+                currentImgLink = imgLink;
+                imgLink.style.display = "block";
+                imgPreview.style.display = "block";
+                const rect = item.getBoundingClientRect();
+                const imgWidth = imgLink.offsetWidth;
+                imgLink.style.top = `${rect.bottom + window.scrollY}px`;
+                imgLink.style.left = `${rect.left + window.scrollX + imgWidth / 4}px`;
+            });
+
+            item.addEventListener("mouseout", () => {
+                imgLink.style.display = "none";
+                imgPreview.style.display = "none";
+            });
         });
+    }
 
-        item.addEventListener("mouseout", () => {
-            imgLink.style.display = "none";
-            imgPreview.style.display = "none";
-        });
-    });
+    // Make it globally accessible
+    window.initCardHover = initCardHover;
+
+    // Initialize card hover immediately
+    initCardHover();
 
     document.querySelectorAll(".delete-inventory-form").forEach((form) => {
         const deleteButton = form.querySelector(".delete-inventory-button");

@@ -15,13 +15,15 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(url)
             .then(response => response.text())
             .then(html => {
-                // Replace the table and pagination with the new HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, "text/html");
                 const newTable = doc.querySelector("table");
                 const newPagination = doc.querySelector(".pagination-container");
                 document.querySelector("table").replaceWith(newTable);
                 document.querySelector(".pagination-container").replaceWith(newPagination);
+                if (window.initCardHover && typeof window.initCardHover === 'function') {
+                    window.initCardHover();
+                }
             });
     }
 

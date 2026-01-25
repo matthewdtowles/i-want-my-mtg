@@ -12,7 +12,7 @@
                 <div class="text-xl">
                     <span>{{card.name}}</span>
                     <span>{{>manaCost card=card}}</span>
-                    {{>cardTags card=card}}
+                    {{>tags item=card}}
                 </div>
                 <div class="flex items-center mb-2">
                     <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
@@ -81,7 +81,7 @@
                     <td class="set-icon pl-2 py-2"><i class="ss ss-{{p.setCode}}"></i></td>
                     <td class="card-name-link py-2" data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}">
                         <a href="{{p.url}}">{{p.name}}</a>
-                        {{>cardTags card=p}}
+                        {{>tags item=p}}
                         <a href="{{p.url}}" class="card-img-link">
                             <img src="{{p.imgSrc}}" alt="{{p.name}}" class="card-img-preview" />
                         </a>

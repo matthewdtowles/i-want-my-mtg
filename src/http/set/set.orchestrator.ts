@@ -5,6 +5,7 @@ import { CardService } from "src/core/card/card.service";
 import { InventoryService } from "src/core/inventory/inventory.service";
 import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
 import { SortOptions } from "src/core/query/sort-options.enum";
+import { SetPrice } from "src/core/set/set-price.entity";
 import { Set } from "src/core/set/set.entity";
 import { SetService } from "src/core/set/set.service";
 import { ActionStatus } from "src/http/base/action-status.enum";
@@ -20,13 +21,12 @@ import { SortableHeaderView } from "src/http/list/sortable-header.view";
 import { TableHeaderView } from "src/http/list/table-header.view";
 import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
 import { getLogger } from "src/logger/global-app-logger";
+import { BaseOnlyToggleView } from "../list/base-only-toggle.view";
 import { SetListViewDto } from "./dto/set-list.view.dto";
 import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
 import { SetPriceDto } from "./dto/set-price.dto";
 import { SetResponseDto } from "./dto/set.response.dto";
 import { SetViewDto } from "./dto/set.view.dto";
-import { SetPrice } from "src/core/set/set-price.entity";
-import { BaseOnlyToggleView } from "../list/base-only-toggle.view";
 import { SetTypeMapper } from "./set-type.mapper";
 
 @Injectable()

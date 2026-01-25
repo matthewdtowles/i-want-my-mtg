@@ -4,6 +4,7 @@
         <h3 class="page-title flex items-center justify-center space-x-2">
             <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
             <span>{{set.name}}</span>
+            {{>tags item=set}}
         </h3>
         <ul class="mt-4 space-y-2">
             <li class="text-gray-700">Block: {{set.block}}</li>
@@ -211,7 +212,7 @@
                 <td class="py-2">{{this.number}}</td>
                 <td class="card-name-link py-2" data-id="{{this.cardId}}" data-img-src="{{this.imgSrc}}">
                     <a href="{{this.url}}">{{this.name}}</a>
-                    {{>cardTags card=this}}
+                    {{>tags item=this}}
                     <a href="{{this.url}}" class="card-img-link">
                         <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" />
                     </a>

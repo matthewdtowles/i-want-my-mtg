@@ -16,7 +16,7 @@
                     <td class="pl-2">{{>cardsOwned card=card}}</td>
                     <td class="card-name-link" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                         <a href="{{card.url}}">{{card.name}}</a>
-                        {{>cardTags card=card}}
+                        {{>tags item=card}}
                         <a href="{{card.url}}" class="card-img-link">
                             <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                         </a>

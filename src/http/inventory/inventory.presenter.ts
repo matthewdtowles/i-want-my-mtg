@@ -5,6 +5,7 @@ import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
 import { InventoryRequestDto } from "./dto/inventory.request.dto";
 import { InventoryResponseDto } from "./dto/inventory.response.dto";
 import { InventoryQuantities } from "./inventory.quantities";
+import { CardPresenter } from "../card/card.presenter";
 
 
 export class InventoryPresenter {
@@ -52,11 +53,11 @@ export class InventoryPresenter {
             quantity: inventory.quantity,
             priceValue: toDollar(priceValueRaw),
             imgSrc: `${BASE_IMAGE_URL}/normal/front/${card.imgSrc}`,
-            isReserved: card.isReserved,
             name: card.name,
             rarity: card.rarity,
             setCode: card.setCode,
             url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
+            tags: CardPresenter.createTags(card),
         });
     }
 

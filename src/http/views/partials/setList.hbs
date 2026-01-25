@@ -15,6 +15,7 @@
                 <td class="py-2 pl-2">
                     <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
                     <a href="{{this.url}}" class="table-link">{{this.name}}</a>
+                    {{>tags item=this}}
                 </td>
                 <td class="py-2">{{this.prices.defaultPrice}}</td>
                 {{#if ../authenticated}}

@@ -19,7 +19,12 @@ export class SetTypeMapper {
         const tags: string[] = [];
         const setType = set.type;
         if (BONUS_SET_TYPES.has(setType.toLowerCase())) {
-            tags.push(setType.charAt(0).toUpperCase() + setType.slice(1));
+            const normalizedType = setType.toLowerCase().replace(/_/g, " ");
+            const displayTag = normalizedType
+                .split(" ")
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+            tags.push(displayTag);
         }
         else if (set.baseSize === 0) {
             tags.push("Bonus");

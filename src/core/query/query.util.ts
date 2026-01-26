@@ -1,14 +1,14 @@
-import { isEnumValue } from "src/core/validation.util";
-import { SortOptions } from "./sort-options.enum";
+import { isEnumValue } from 'src/core/validation.util';
+import { SortOptions } from './sort-options.enum';
 
 export function sanitizeInt(value: any, defaultValue: number): number {
-    if (value == null || value === "") {
+    if (value == null || value === '') {
         return defaultValue;
     }
-    if (typeof value === "number" && Number.isInteger(value) && value >= 1) {
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) {
         return value;
     }
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
         const trimmed = value.trim();
         if (trimmed.length === 0) return defaultValue;
         const parsed = parseInt(trimmed, 10);
@@ -23,9 +23,9 @@ export function safeAlphaNumeric(value: any): string | null {
     if (!value || value.trim().length === 0) {
         return null;
     }
-    let sanitized = value.trim().replace(/[^a-zA-Z0-9\-]/g, " ");
+    let sanitized = value.trim().replace(/[^a-zA-Z0-9\-]/g, ' ');
     // Collapse multiple spaces to a single space
-    sanitized = sanitized.replace(/\s+/g, " ");
+    sanitized = sanitized.replace(/\s+/g, ' ');
     const charLimit = 25;
     if (sanitized.length > charLimit) {
         sanitized = sanitized.substring(0, charLimit);
@@ -34,12 +34,12 @@ export function safeAlphaNumeric(value: any): string | null {
 }
 
 export function safeBoolean(value: any): boolean | null {
-    if (value == null || value === "") return null;
-    if (typeof value === "boolean") return value;
-    if (typeof value === "string") {
+    if (value == null || value === '') return null;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
         const trimmed = value.trim().toLowerCase();
-        if (trimmed === "true") return true;
-        if (trimmed === "false") return false;
+        if (trimmed === 'true') return true;
+        if (trimmed === 'false') return false;
     }
     return null;
 }

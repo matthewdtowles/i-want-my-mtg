@@ -1,11 +1,10 @@
-import { Card } from "src/core/card/card.entity";
-import { PriceMapper } from "src/database/price/price.mapper";
-import { SetMapper } from "src/database/set/set.mapper";
-import { CardOrmEntity } from "./card.orm-entity";
-import { LegalityMapper } from "./legality.mapper";
+import { Card } from 'src/core/card/card.entity';
+import { PriceMapper } from 'src/database/price/price.mapper';
+import { SetMapper } from 'src/database/set/set.mapper';
+import { CardOrmEntity } from './card.orm-entity';
+import { LegalityMapper } from './legality.mapper';
 
 export class CardMapper {
-
     static toCore(ormCard: CardOrmEntity): Card {
         return new Card({
             id: ormCard.id,
@@ -16,7 +15,9 @@ export class CardMapper {
             inMain: ormCard.inMain,
             isAlternative: ormCard.isAlternative,
             isReserved: ormCard.isReserved,
-            legalities: ormCard.legalities ? ormCard.legalities.map(legality => (LegalityMapper.toCore(legality))) : [],
+            legalities: ormCard.legalities
+                ? ormCard.legalities.map((legality) => LegalityMapper.toCore(legality))
+                : [],
             manaCost: ormCard.manaCost,
             name: ormCard.name,
             number: ormCard.number,
@@ -26,7 +27,7 @@ export class CardMapper {
             sortNumber: ormCard.sortNumber,
             type: ormCard.type,
             // For read operations
-            prices: ormCard.prices ? ormCard.prices.map(p => (PriceMapper.toCore(p))) : undefined,
+            prices: ormCard.prices ? ormCard.prices.map((p) => PriceMapper.toCore(p)) : undefined,
             set: ormCard.set ? SetMapper.toCore(ormCard.set) : undefined,
         });
     }
@@ -41,7 +42,9 @@ export class CardMapper {
         ormEntity.inMain = coreCard.inMain;
         ormEntity.isAlternative = coreCard.isAlternative;
         ormEntity.isReserved = coreCard.isReserved;
-        ormEntity.legalities = coreCard.legalities.map(legality => (LegalityMapper.toOrmEntity(legality)));
+        ormEntity.legalities = coreCard.legalities.map((legality) =>
+            LegalityMapper.toOrmEntity(legality)
+        );
         ormEntity.manaCost = coreCard.manaCost;
         ormEntity.name = coreCard.name;
         ormEntity.number = coreCard.number;

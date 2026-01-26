@@ -1,5 +1,5 @@
-import { SetPrice } from "src/core/set/set-price.entity";
-import { SetPriceOrmEntity } from "./set-price.orm-entity";
+import { SetPrice } from 'src/core/set/set-price.entity';
+import { SetPriceOrmEntity } from './set-price.orm-entity';
 
 export class SetPriceMapper {
     static toCore(ormEntity: SetPriceOrmEntity): SetPrice {

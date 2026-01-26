@@ -1,6 +1,5 @@
-import { Card } from "src/core/card/card.entity";
-import { validateInit } from "src/core/validation.util";
-
+import { Card } from 'src/core/card/card.entity';
+import { validateInit } from 'src/core/validation.util';
 
 export class Inventory {
     readonly cardId: string;
@@ -11,7 +10,7 @@ export class Inventory {
     readonly card?: Card;
 
     constructor(init: Partial<Inventory>) {
-        validateInit(init, ["cardId", "userId", "isFoil", "quantity"]);
+        validateInit(init, ['cardId', 'userId', 'isFoil', 'quantity']);
         this.cardId = init.cardId;
         this.userId = init.userId;
         this.isFoil = init.isFoil;

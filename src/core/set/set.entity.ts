@@ -1,6 +1,6 @@
-import { Card } from "src/core/card/card.entity";
-import { validateInit } from "src/core/validation.util";
-import { SetPrice } from "./set-price.entity";
+import { Card } from 'src/core/card/card.entity';
+import { validateInit } from 'src/core/validation.util';
+import { SetPrice } from './set-price.entity';
 
 export class Set {
     readonly code: string;
@@ -18,7 +18,13 @@ export class Set {
 
     constructor(init: Partial<Set>) {
         const requiredFields: (keyof Set)[] = [
-            "code", "baseSize", "keyruneCode", "name", "releaseDate", "totalSize", "type"
+            'code',
+            'baseSize',
+            'keyruneCode',
+            'name',
+            'releaseDate',
+            'totalSize',
+            'type',
         ];
         validateInit(init, requiredFields);
         this.code = init.code;

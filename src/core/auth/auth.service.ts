@@ -1,11 +1,10 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
-import { User } from "src/core/user/user.entity";
-import { UserService } from "src/core/user/user.service";
-import { getLogger } from "src/logger/global-app-logger";
-import { AuthToken, JwtPayload } from "./auth.types";
-
+import { Inject, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { User } from 'src/core/user/user.entity';
+import { UserService } from 'src/core/user/user.service';
+import { getLogger } from 'src/logger/global-app-logger';
+import { AuthToken, JwtPayload } from './auth.types';
 
 @Injectable()
 export class AuthService {
@@ -13,8 +12,8 @@ export class AuthService {
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        @Inject(JwtService) private readonly jwtService: JwtService,
-    ) { }
+        @Inject(JwtService) private readonly jwtService: JwtService
+    ) {}
 
     async validateUser(email: string, password: string): Promise<User | null> {
         this.LOGGER.debug(`Attempt to authenticate ${email}.`);

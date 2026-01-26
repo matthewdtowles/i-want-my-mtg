@@ -1,8 +1,8 @@
-import { Set } from "src/core/set/set.entity";
-import { validateInit } from "src/core/validation.util";
-import { CardRarity } from "./card.rarity.enum";
-import { Legality } from "./legality.entity";
-import { Price } from "./price.entity";
+import { Set } from 'src/core/set/set.entity';
+import { validateInit } from 'src/core/validation.util';
+import { CardRarity } from './card.rarity.enum';
+import { Legality } from './legality.entity';
+import { Price } from './price.entity';
 
 export class Card {
     readonly id: string;
@@ -28,15 +28,15 @@ export class Card {
 
     constructor(init: Partial<Card>) {
         const requiredFields: (keyof Card)[] = [
-            "id",
-            "imgSrc",
-            "legalities",
-            "name",
-            "number",
-            "rarity",
-            "setCode",
-            "sortNumber",
-            "type",
+            'id',
+            'imgSrc',
+            'legalities',
+            'name',
+            'number',
+            'rarity',
+            'setCode',
+            'sortNumber',
+            'type',
         ];
         validateInit(init, requiredFields);
         this.id = init.id;

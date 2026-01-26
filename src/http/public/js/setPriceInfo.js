@@ -3,47 +3,47 @@
  * Handles price popover dialog and tooltip functionality for set price information
  */
 (function () {
-    "use strict";
+    'use strict';
 
     const CONFIG = {
         selectors: {
             // Popover selectors
             popover: {
-                toggle: "#price-info-toggle",
-                popover: "#price-info-popover",
-                close: "#close-popover",
-                content: "#popover-content"
+                toggle: '#price-info-toggle',
+                popover: '#price-info-popover',
+                close: '#close-popover',
+                content: '#popover-content',
             },
             // Tooltip selectors
             tooltip: {
-                trigger: ".price-info-tooltip-trigger",
-                tooltip: ".price-info-tooltip",
-                description: ".tooltip-description"
-            }
+                trigger: '.price-info-tooltip-trigger',
+                tooltip: '.price-info-tooltip',
+                description: '.tooltip-description',
+            },
         },
         classes: {
-            hidden: "hidden"
+            hidden: 'hidden',
         },
         events: {
-            click: "click",
-            keydown: "keydown",
-            mouseenter: "mouseenter",
-            mouseleave: "mouseleave"
+            click: 'click',
+            keydown: 'keydown',
+            mouseenter: 'mouseenter',
+            mouseleave: 'mouseleave',
         },
         keys: {
-            escape: "Escape",
-            tab: "Tab"
+            escape: 'Escape',
+            tab: 'Tab',
         },
         tooltipTypes: {
-            "base-normal": (baseSize) =>
+            'base-normal': (baseSize) =>
                 `Main set cards: the first ${baseSize} cards in the set. Non-foil only.`,
-            "base-foil": (baseSize) =>
+            'base-foil': (baseSize) =>
                 `Main set cards: the first ${baseSize} cards in the set and their foil versions.`,
-            "total-normal": (baseSize, totalSize) =>
+            'total-normal': (baseSize, totalSize) =>
                 `All ${totalSize} cards in main and bonus section of set. Non-foil only.`,
-            "total-foil": (baseSize, totalSize) =>
+            'total-foil': (baseSize, totalSize) =>
                 `All ${totalSize} cards in main and bonus section of the set and their foil versions.`,
-        }
+        },
     };
 
     /**
@@ -74,9 +74,11 @@
 
             // Close when clicking outside
             document.addEventListener(CONFIG.events.click, (e) => {
-                if (!this.popover.classList.contains(CONFIG.classes.hidden) &&
+                if (
+                    !this.popover.classList.contains(CONFIG.classes.hidden) &&
                     !this.content.contains(e.target) &&
-                    !this.toggleBtn.contains(e.target)) {
+                    !this.toggleBtn.contains(e.target)
+                ) {
                     this.close();
                 }
             });
@@ -88,14 +90,20 @@
 
             // Close on Escape key
             document.addEventListener(CONFIG.events.keydown, (e) => {
-                if (e.key === CONFIG.keys.escape && !this.popover.classList.contains(CONFIG.classes.hidden)) {
+                if (
+                    e.key === CONFIG.keys.escape &&
+                    !this.popover.classList.contains(CONFIG.classes.hidden)
+                ) {
                     this.close();
                 }
             });
 
             // Trap focus inside popover when open
             this.popover.addEventListener(CONFIG.events.keydown, (e) => {
-                if (e.key === CONFIG.keys.tab && !this.popover.classList.contains(CONFIG.classes.hidden)) {
+                if (
+                    e.key === CONFIG.keys.tab &&
+                    !this.popover.classList.contains(CONFIG.classes.hidden)
+                ) {
                     this.trapFocus(e);
                 }
             });
@@ -105,7 +113,7 @@
             e?.preventDefault();
             e?.stopPropagation();
             this.popover.classList.remove(CONFIG.classes.hidden);
-            this.popover.setAttribute("aria-modal", "true");
+            this.popover.setAttribute('aria-modal', 'true');
             // Move focus to close button for accessibility
             this.closeBtn?.focus();
         }
@@ -116,7 +124,7 @@
                 e.stopPropagation();
             }
             this.popover.classList.add(CONFIG.classes.hidden);
-            this.popover.setAttribute("aria-modal", "false");
+            this.popover.setAttribute('aria-modal', 'false');
             // Return focus to toggle button for accessibility
             this.toggleBtn.focus();
         }
@@ -154,15 +162,17 @@
         }
 
         initializeTooltipDescriptions() {
-            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach(trigger => {
+            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
                 const tooltip = trigger.nextElementSibling;
-                if (!tooltip?.classList.contains("price-info-tooltip")) return;
+                if (!tooltip?.classList.contains('price-info-tooltip')) return;
 
                 const type = trigger.dataset.tooltipType;
                 const baseSize = parseInt(trigger.dataset.baseSize);
                 const totalSize = parseInt(trigger.dataset.totalSize);
 
-                const descriptionElement = tooltip.querySelector(CONFIG.selectors.tooltip.description);
+                const descriptionElement = tooltip.querySelector(
+                    CONFIG.selectors.tooltip.description
+                );
                 if (descriptionElement && CONFIG.tooltipTypes[type]) {
                     descriptionElement.textContent = CONFIG.tooltipTypes[type](baseSize, totalSize);
                 }
@@ -170,13 +180,15 @@
         }
 
         attachEventListeners() {
-            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach(trigger => {
+            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
                 const tooltip = trigger.nextElementSibling;
-                if (!tooltip?.classList.contains("price-info-tooltip")) return;
+                if (!tooltip?.classList.contains('price-info-tooltip')) return;
 
                 // Mouse events for hover behavior
                 trigger.addEventListener(CONFIG.events.mouseenter, () => this.showTooltip(tooltip));
-                trigger.addEventListener(CONFIG.events.mouseleave, () => this.scheduleHide(tooltip));
+                trigger.addEventListener(CONFIG.events.mouseleave, () =>
+                    this.scheduleHide(tooltip)
+                );
 
                 // Click event for toggle behavior
                 trigger.addEventListener(CONFIG.events.click, (e) => {
@@ -189,7 +201,9 @@
                     this.cancelHide(tooltip);
                     this.showTooltip(tooltip);
                 });
-                tooltip.addEventListener(CONFIG.events.mouseleave, () => this.scheduleHide(tooltip));
+                tooltip.addEventListener(CONFIG.events.mouseleave, () =>
+                    this.scheduleHide(tooltip)
+                );
 
                 // Prevent tooltip clicks from bubbling
                 tooltip.addEventListener(CONFIG.events.click, (e) => e.stopPropagation());
@@ -242,7 +256,7 @@
         }
 
         hideAllTooltips() {
-            this.activeTooltips.forEach(tooltip => this.hideTooltip(tooltip));
+            this.activeTooltips.forEach((tooltip) => this.hideTooltip(tooltip));
         }
     }
 
@@ -252,8 +266,8 @@
         new TooltipManager();
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initialize);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
     } else {
         initialize();
     }

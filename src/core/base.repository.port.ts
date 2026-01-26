@@ -1,7 +1,6 @@
-export const BaseRepositoryPort = "BaseRepositoryPort";
+export const BaseRepositoryPort = 'BaseRepositoryPort';
 
 export interface BaseRepositoryPort {
-
     /**
      * @returns total number of unique cards
      */

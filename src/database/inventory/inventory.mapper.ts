@@ -1,7 +1,6 @@
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { CardMapper } from "src/database/card/card.mapper";
-import { InventoryOrmEntity } from "./inventory.orm-entity";
-
+import { Inventory } from 'src/core/inventory/inventory.entity';
+import { CardMapper } from 'src/database/card/card.mapper';
+import { InventoryOrmEntity } from './inventory.orm-entity';
 
 export class InventoryMapper {
     static toCore(ormInventory: InventoryOrmEntity): Inventory {

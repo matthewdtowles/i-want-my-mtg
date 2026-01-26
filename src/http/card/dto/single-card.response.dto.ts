@@ -1,5 +1,5 @@
-import { CardResponseDto } from "./card.response.dto";
-import { LegalityResponseDto } from "./legality.response.dto";
+import { CardResponseDto } from './card.response.dto';
+import { LegalityResponseDto } from './legality.response.dto';
 
 export class SingleCardResponseDto extends CardResponseDto {
     readonly artist?: string;
@@ -10,8 +10,9 @@ export class SingleCardResponseDto extends CardResponseDto {
     constructor(init: Partial<SingleCardResponseDto>) {
         super(init);
         this.artist = init.artist;
-        this.legalities = init.legalities?.map(legality => new LegalityResponseDto(legality)) || [];
+        this.legalities =
+            init.legalities?.map((legality) => new LegalityResponseDto(legality)) || [];
         this.oracleText = init.oracleText;
-        this.setName = init.setName || "";
+        this.setName = init.setName || '';
     }
 }

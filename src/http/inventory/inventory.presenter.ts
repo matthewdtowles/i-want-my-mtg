@@ -1,17 +1,16 @@
-import { Card } from "src/core/card/card.entity";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { Price } from "src/core/card/price.entity";
-import { BASE_IMAGE_URL, toDollar } from "src/http/base/http.util";
-import { InventoryRequestDto } from "./dto/inventory.request.dto";
-import { InventoryResponseDto } from "./dto/inventory.response.dto";
-import { InventoryQuantities } from "./inventory.quantities";
-import { CardPresenter } from "../card/card.presenter";
-
+import { Card } from 'src/core/card/card.entity';
+import { Inventory } from 'src/core/inventory/inventory.entity';
+import { Price } from 'src/core/card/price.entity';
+import { BASE_IMAGE_URL, toDollar } from 'src/http/base/http.util';
+import { InventoryRequestDto } from './dto/inventory.request.dto';
+import { InventoryResponseDto } from './dto/inventory.response.dto';
+import { InventoryQuantities } from './inventory.quantities';
+import { CardPresenter } from '../card/card.presenter';
 
 export class InventoryPresenter {
     /**
      * @param inventoryItems
-     * @param userId 
+     * @param userId
      * @returns a list of Inventory entities based on the provided DTOs and userId.
      * This is used for creating or updating inventory items in the database.
      */
@@ -38,14 +37,14 @@ export class InventoryPresenter {
 
     static toInventoryResponseDto(inventory: Inventory): InventoryResponseDto {
         if (!inventory) {
-            throw new Error("Inventory is required to create InventoryResponseDto");
+            throw new Error('Inventory is required to create InventoryResponseDto');
         }
         if (!inventory.card) {
-            throw new Error("Inventory must have a card to create InventoryResponseDto");
+            throw new Error('Inventory must have a card to create InventoryResponseDto');
         }
         // extract the price value from card prices where price is for foil if isFoil is true, otherwise normal price
         const card: Card = inventory.card;
-        const priceObj: Price = card?.prices[0]
+        const priceObj: Price = card?.prices[0];
         const priceValueRaw: number = inventory.isFoil ? priceObj?.foil : priceObj?.normal;
         return new InventoryResponseDto({
             cardId: inventory.cardId,
@@ -66,10 +65,14 @@ export class InventoryPresenter {
      * @returns map of cardId to foil and normal quantities owned by the user.
      */
     static toQuantityMap(inventory: Inventory[]): Map<string, InventoryQuantities> {
-        const quantityMap: Map<string, InventoryQuantities> = new Map<string, InventoryQuantities>();
+        const quantityMap: Map<string, InventoryQuantities> = new Map<
+            string,
+            InventoryQuantities
+        >();
         for (const item of inventory) {
             const key: string = item.cardId;
-            const existing: InventoryQuantities = quantityMap.get(key) || new InventoryQuantities(0, 0);
+            const existing: InventoryQuantities =
+                quantityMap.get(key) || new InventoryQuantities(0, 0);
             if (item.isFoil) {
                 existing.foilQuantity += item.quantity;
             } else {

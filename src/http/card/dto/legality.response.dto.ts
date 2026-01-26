@@ -4,8 +4,8 @@ export class LegalityResponseDto {
     readonly status: string;
 
     constructor(init: Partial<LegalityResponseDto>) {
-        this.cardId = init.cardId || "";
-        this.format = init.format || "";
-        this.status = init.status || "";
+        this.cardId = init.cardId || '';
+        this.format = init.format || '';
+        this.status = init.status || '';
     }
 }

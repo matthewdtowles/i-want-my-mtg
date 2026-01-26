@@ -25,20 +25,20 @@ export class CardResponseDto {
     readonly tags: string[];
 
     constructor(init: Partial<CardResponseDto>) {
-        this.cardId = init.cardId || "";
+        this.cardId = init.cardId || '';
         this.hasFoil = init.hasFoil || false;
         this.hasNormal = init.hasNormal || false;
-        this.imgSrc = init.imgSrc || "";
+        this.imgSrc = init.imgSrc || '';
         this.manaCost = init.manaCost || [];
-        this.name = init.name || "";
-        this.number = init.number || "";
-        this.rarity = init.rarity || "";
-        this.setCode = init.setCode || "";
-        this.type = init.type || "";
-        this.url = init.url || "";
-        this.foilPrice = init.foilPrice || "";
+        this.name = init.name || '';
+        this.number = init.number || '';
+        this.rarity = init.rarity || '';
+        this.setCode = init.setCode || '';
+        this.type = init.type || '';
+        this.url = init.url || '';
+        this.foilPrice = init.foilPrice || '';
         this.foilQuantity = init.foilQuantity || 0;
-        this.normalPrice = init.normalPrice || "";
+        this.normalPrice = init.normalPrice || '';
         this.normalQuantity = init.normalQuantity || 0;
         this.tags = init.tags || [];
     }

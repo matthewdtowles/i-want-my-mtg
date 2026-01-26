@@ -1,32 +1,31 @@
-import { HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { AuthService } from "src/core/auth/auth.service";
-import { AuthToken } from "src/core/auth/auth.types";
-import { User } from "src/core/user/user.entity";
-import { UserService } from "src/core/user/user.service";
-import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
-import { BaseViewDto } from "src/http/base/base.view.dto";
-import { HttpErrorHandler } from "src/http/http.error.handler";
-import { getLogger } from "src/logger/global-app-logger";
-import { UserRole } from "src/shared/constants/user.role.enum";
-import { CreateUserRequestDto } from "./dto/create-user.request.dto";
-import { UpdateUserRequestDto } from "./dto/update-user.request.dto";
-import { UserResponseDto } from "./dto/user.response.dto";
-import { UserViewDto } from "./dto/user.view.dto";
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { AuthService } from 'src/core/auth/auth.service';
+import { AuthToken } from 'src/core/auth/auth.types';
+import { User } from 'src/core/user/user.entity';
+import { UserService } from 'src/core/user/user.service';
+import { ActionStatus } from 'src/http/base/action-status.enum';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { getLogger } from 'src/logger/global-app-logger';
+import { UserRole } from 'src/shared/constants/user.role.enum';
+import { CreateUserRequestDto } from './dto/create-user.request.dto';
+import { UpdateUserRequestDto } from './dto/update-user.request.dto';
+import { UserResponseDto } from './dto/user.response.dto';
+import { UserViewDto } from './dto/user.view.dto';
 
 @Injectable()
 export class UserOrchestrator {
-
     private readonly LOGGER = getLogger(UserOrchestrator.name);
 
     private readonly breadCrumbs = [
-        { label: "Home", url: "/" },
-        { label: "User", url: "/user" },
+        { label: 'Home', url: '/' },
+        { label: 'User', url: '/user' },
     ];
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        @Inject(AuthService) private readonly authService: AuthService,
+        @Inject(AuthService) private readonly authService: AuthService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -38,20 +37,20 @@ export class UserOrchestrator {
                 email: createUserDto.email,
                 name: createUserDto.name,
                 password: createUserDto.password,
-                role: UserRole.User
+                role: UserRole.User,
             });
             const createdUser: User = await this.userService.create(user);
             if (!createdUser) {
-                throw new Error("User creation failed");
+                throw new Error('User creation failed');
             }
             const authToken: AuthToken = await this.authService.login(createdUser);
             if (!authToken?.access_token) {
-                throw new Error("Authentication token generation failed");
+                throw new Error('Authentication token generation failed');
             }
             return authToken;
         } catch (error) {
             this.LOGGER.debug(`Error creating user with email: ${createUserDto.email}.`);
-            return HttpErrorHandler.toHttpException(error, "create");
+            return HttpErrorHandler.toHttpException(error, 'create');
         }
     }
 
@@ -65,8 +64,8 @@ export class UserOrchestrator {
                 user &&
                 req.query &&
                 req.query.status === HttpStatus.OK.toString() &&
-                req.query.action === "login";
-            this.LOGGER.debug(`User ${userId} login ${login ? "success" : "failed"}.`);
+                req.query.action === 'login';
+            this.LOGGER.debug(`User ${userId} login ${login ? 'success' : 'failed'}.`);
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
@@ -76,11 +75,14 @@ export class UserOrchestrator {
             };
         } catch (error) {
             this.LOGGER.debug(`Error finding user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, "findUser");
+            return HttpErrorHandler.toHttpException(error, 'findUser');
         }
     }
 
-    async updateUser(userRequestDto: UpdateUserRequestDto, req: AuthenticatedRequest): Promise<UserViewDto> {
+    async updateUser(
+        userRequestDto: UpdateUserRequestDto,
+        req: AuthenticatedRequest
+    ): Promise<UserViewDto> {
         const userId = req?.user?.id;
         this.LOGGER.debug(`Updating user ${userId}.`);
         try {
@@ -90,7 +92,7 @@ export class UserOrchestrator {
                 return new UserViewDto({
                     authenticated: req.isAuthenticated(),
                     breadcrumbs: this.breadCrumbs,
-                    message: "No changes detected",
+                    message: 'No changes detected',
                     status: ActionStatus.NONE,
                     user: null,
                 });
@@ -111,7 +113,7 @@ export class UserOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error updating user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, "findUser");
+            return HttpErrorHandler.toHttpException(error, 'findUser');
         }
     }
 
@@ -127,16 +129,18 @@ export class UserOrchestrator {
                 role: req.user.role as UserRole,
             });
             const pwdUpdated: boolean = await this.userService.updatePassword(coreUser, password);
-            this.LOGGER.debug(`Password update for user ${userId}: ${pwdUpdated ? "success" : "failed"}.`);
+            this.LOGGER.debug(
+                `Password update for user ${userId}: ${pwdUpdated ? 'success' : 'failed'}.`
+            );
             return new BaseViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                message: pwdUpdated ? "Password updated" : "Error updating password",
+                message: pwdUpdated ? 'Password updated' : 'Error updating password',
                 status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
             });
         } catch (error) {
             this.LOGGER.debug(`Error updating password for user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, "updatePassword");
+            return HttpErrorHandler.toHttpException(error, 'updatePassword');
         }
     }
 
@@ -149,18 +153,18 @@ export class UserOrchestrator {
             const user: UserResponseDto = await this.userService.findById(req.user.id);
             if (user && user.name) {
                 this.LOGGER.debug(`Failed to delete user ${userId}.`);
-                throw new Error("Could not delete user");
+                throw new Error('Could not delete user');
             }
             this.LOGGER.debug(`User ${userId} deleted successfully.`);
             return new BaseViewDto({
                 authenticated: false,
                 breadcrumbs: this.breadCrumbs,
-                message: "User deleted successfully",
+                message: 'User deleted successfully',
                 status: ActionStatus.SUCCESS,
             });
         } catch (error) {
             this.LOGGER.debug(`Error deleting user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, "deleteUser");
+            return HttpErrorHandler.toHttpException(error, 'deleteUser');
         }
     }
 }

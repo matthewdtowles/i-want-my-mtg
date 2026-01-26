@@ -1,5 +1,5 @@
-import { ListView } from "src/http/list/list.view";
-import { SetResponseDto } from "./set.response.dto";
+import { ListView } from 'src/http/list/list.view';
+import { SetResponseDto } from './set.response.dto';
 
 export class SetViewDto extends ListView {
     readonly set: SetResponseDto;

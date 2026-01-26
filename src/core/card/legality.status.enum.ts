@@ -1,5 +1,5 @@
 export enum LegalityStatus {
-    Legal = "legal",
-    Banned = "banned",
-    Restricted = "restricted",
+    Legal = 'legal',
+    Banned = 'banned',
+    Restricted = 'restricted',
 }

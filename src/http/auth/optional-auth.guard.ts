@@ -1,11 +1,11 @@
-import { ExecutionContext, Injectable } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { Request } from "express";
-import { getLogger } from "src/logger/global-app-logger";
-import { AUTH_TOKEN_NAME } from "./dto/auth.types";
+import { ExecutionContext, Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+import { getLogger } from 'src/logger/global-app-logger';
+import { AUTH_TOKEN_NAME } from './dto/auth.types';
 
 @Injectable()
-export class OptionalAuthGuard extends AuthGuard("jwt") {
+export class OptionalAuthGuard extends AuthGuard('jwt') {
     private readonly LOGGER = getLogger(OptionalAuthGuard.name);
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -19,7 +19,9 @@ export class OptionalAuthGuard extends AuthGuard("jwt") {
             const result = await super.canActivate(context);
             return !!result;
         } catch (error) {
-            this.LOGGER.debug(`Authentication failed, but allowing unauthenticated access: ${error.message}`);
+            this.LOGGER.debug(
+                `Authentication failed, but allowing unauthenticated access: ${error.message}`
+            );
             return true;
         }
     }

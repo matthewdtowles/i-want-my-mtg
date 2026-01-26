@@ -1,5 +1,5 @@
-import { ActionStatus } from "./action-status.enum";
-import { Breadcrumb } from "./breadcrumb";
+import { ActionStatus } from './action-status.enum';
+import { Breadcrumb } from './breadcrumb';
 
 export class BaseViewDto {
     readonly authenticated: boolean = false;

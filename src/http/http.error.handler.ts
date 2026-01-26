@@ -1,12 +1,12 @@
 import {
     BadRequestException,
-    ForbiddenException, InternalServerErrorException,
+    ForbiddenException,
+    InternalServerErrorException,
     NotFoundException,
-    UnauthorizedException
-} from "@nestjs/common";
-import { getLogger } from "src/logger/global-app-logger";
-import { AuthenticatedRequest } from "./base/authenticated.request";
-
+    UnauthorizedException,
+} from '@nestjs/common';
+import { getLogger } from 'src/logger/global-app-logger';
+import { AuthenticatedRequest } from './base/authenticated.request';
 
 export class HttpErrorHandler {
     private static readonly LOGGER = getLogger(HttpErrorHandler.name);
@@ -19,19 +19,19 @@ export class HttpErrorHandler {
      */
     static toHttpException(error: Error, context: string): never {
         this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
-        if (error.message.includes("not found")) {
+        if (error.message.includes('not found')) {
             throw new NotFoundException(error.message);
         }
-        if (error.message.includes("unauthorized") || error.message.includes("not logged in")) {
+        if (error.message.includes('unauthorized') || error.message.includes('not logged in')) {
             throw new UnauthorizedException(error.message);
         }
-        if (error.message.includes("forbidden") || error.message.includes("not allowed")) {
+        if (error.message.includes('forbidden') || error.message.includes('not allowed')) {
             throw new ForbiddenException(error.message);
         }
-        if (error.message.includes("invalid") || error.message.includes("required")) {
+        if (error.message.includes('invalid') || error.message.includes('required')) {
             throw new BadRequestException(error.message);
         }
-        throw new InternalServerErrorException("An unexpected error occurred");
+        throw new InternalServerErrorException('An unexpected error occurred');
     }
 
     /**
@@ -41,13 +41,13 @@ export class HttpErrorHandler {
      */
     static validateAuthenticatedRequest(req: AuthenticatedRequest): void {
         if (!req) {
-            throw new UnauthorizedException("Request not found");
+            throw new UnauthorizedException('Request not found');
         }
         if (!req.user) {
-            throw new UnauthorizedException("User not found in request");
+            throw new UnauthorizedException('User not found in request');
         }
         if (!req.user.id) {
-            throw new UnauthorizedException("User does not have valid ID");
+            throw new UnauthorizedException('User does not have valid ID');
         }
     }
 }

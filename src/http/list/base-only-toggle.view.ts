@@ -1,5 +1,5 @@
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { buildQueryString } from "src/http/base/http.util";
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { buildQueryString } from 'src/http/base/http.util';
 
 export class BaseOnlyToggleView {
     readonly url: string;
@@ -8,9 +8,9 @@ export class BaseOnlyToggleView {
     constructor(options: SafeQueryOptions, baseUrl: string) {
         const toggledOptions = new SafeQueryOptions({
             ...options,
-            baseOnly: !options.baseOnly
+            baseOnly: !options.baseOnly,
         });
         this.url = `${baseUrl}${buildQueryString(toggledOptions)}`;
-        this.text = options.baseOnly ? "Show All" : "Main Only";
+        this.text = options.baseOnly ? 'Show All' : 'Main Only';
     }
 }

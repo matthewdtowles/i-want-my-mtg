@@ -1,4 +1,4 @@
-import { BaseViewDto } from "src/http/base/base.view.dto";
+import { BaseViewDto } from 'src/http/base/base.view.dto';
 
 export class CreateUserViewDto extends BaseViewDto {
     readonly name: string;
@@ -6,7 +6,7 @@ export class CreateUserViewDto extends BaseViewDto {
 
     constructor(init: Partial<CreateUserViewDto> = {}) {
         super(init);
-        this.name = init.name || "";
-        this.email = init.email || "";
+        this.name = init.name || '';
+        this.email = init.email || '';
     }
 }

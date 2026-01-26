@@ -6,17 +6,16 @@ import {
     HttpException,
     HttpStatus,
     NotFoundException,
-    UnauthorizedException
-} from "@nestjs/common";
-import { Request, Response } from "express";
-import { getLogger } from "src/logger/global-app-logger";
-import { LoginFormViewDto } from "./auth/dto/login-form.view.dto";
-import { ActionStatus } from "./base/action-status.enum";
-import { CreateUserViewDto } from "./user/dto/create-user.view.dto";
+    UnauthorizedException,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
+import { getLogger } from 'src/logger/global-app-logger';
+import { LoginFormViewDto } from './auth/dto/login-form.view.dto';
+import { ActionStatus } from './base/action-status.enum';
+import { CreateUserViewDto } from './user/dto/create-user.view.dto';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-
     private readonly LOGGER = getLogger(HttpExceptionFilter.name);
 
     catch(exception: any, host: ArgumentsHost) {
@@ -25,13 +24,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
         const isHttpException = exception instanceof HttpException;
-        const status: number = isHttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+        const status: number = isHttpException
+            ? exception.getStatus()
+            : HttpStatus.INTERNAL_SERVER_ERROR;
         if (this.isApiRequest(request)) {
             response.status(status).json({
                 statusCode: status,
                 timestamp: new Date().toISOString(),
                 path: request.url,
-                message: exception.message || "Internal Server Error",
+                message: exception.message || 'Internal Server Error',
                 status: ActionStatus.ERROR,
             });
         } else if (this.isFormRoute(request.url)) {
@@ -40,7 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             const template = this.getErrorTemplate(exception);
             response.status(status).render(template, {
                 status: ActionStatus.ERROR,
-                message: exception.message || "Internal Server Error",
+                message: exception.message || 'Internal Server Error',
                 statusCode: status,
                 authenticated: false,
             });
@@ -48,29 +49,33 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     private isApiRequest(request: Request): boolean {
-        return request.headers.accept?.includes("application/json") ||
-            request.headers["content-type"]?.includes("application/json");
+        return (
+            request.headers.accept?.includes('application/json') ||
+            request.headers['content-type']?.includes('application/json')
+        );
     }
 
     private isFormRoute(url: string): boolean {
-        return url.includes('/user/create') ||
+        return (
+            url.includes('/user/create') ||
             url.includes('/auth/login') ||
             url.includes('/user/update') ||
-            url.includes('/auth/register');
+            url.includes('/auth/register')
+        );
     }
 
     private handleFormError(response: Response, request: Request, exception: any): void {
-        let errorMessage = exception.message || "An error occurred";
+        let errorMessage = exception.message || 'An error occurred';
         if (exception instanceof UnauthorizedException) {
-            errorMessage = "Invalid email or password";
+            errorMessage = 'Invalid email or password';
         }
         if (request.url.includes('/user/create')) {
             const errorView = new CreateUserViewDto({
                 authenticated: false,
                 message: errorMessage,
                 status: ActionStatus.ERROR,
-                name: request.body?.name || "",
-                email: request.body?.email || "",
+                name: request.body?.name || '',
+                email: request.body?.email || '',
             });
             response.status(200).render('createUser', errorView);
             return;
@@ -81,7 +86,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 authenticated: false,
                 message: errorMessage,
                 status: ActionStatus.ERROR,
-                email: request.body?.email || "",
+                email: request.body?.email || '',
             });
             response.status(200).render('login', errorView);
             return;
@@ -106,11 +111,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     private getErrorTemplate(exception: HttpException): string {
         if (exception instanceof NotFoundException) {
-            return "errors/404";
+            return 'errors/404';
         }
         if (exception instanceof UnauthorizedException || exception instanceof ForbiddenException) {
-            return "errors/401";
+            return 'errors/401';
         }
-        return "errors/500";
+        return 'errors/500';
     }
 }

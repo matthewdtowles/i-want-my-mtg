@@ -1,15 +1,13 @@
-import { BaseRepositoryPort } from "src/core/base.repository.port";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { Inventory } from "./inventory.entity";
+import { BaseRepositoryPort } from 'src/core/base.repository.port';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { Inventory } from './inventory.entity';
 
-
-export const InventoryRepositoryPort = "InventoryRepositoryPort";
+export const InventoryRepositoryPort = 'InventoryRepositoryPort';
 
 /**
  * Persistence layer for inventory entity
  */
 export interface InventoryRepositoryPort extends BaseRepositoryPort {
-
     /**
      * Create inventory entities, update if they exist
      *
@@ -28,7 +26,7 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
 
     /**
      * This is used to find both foil and non-foil cards
-     * 
+     *
      * @param userId
      * @param cardId
      * @returns user's inventory entities matching cardId
@@ -47,7 +45,7 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
     /**
      * Find user inventory items with pagination
      *
-     * @param {number} userId 
+     * @param {number} userId
      * @param {SafeQueryOptions} options safe pagination and filter options
      * @returns user's inventory entities for given page
      */
@@ -63,7 +61,7 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
     totalInventoryCards(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
-     * @param {number} userId 
+     * @param {number} userId
      * @returns total value of user's inventory items
      */
     totalInventoryValue(userId: number): Promise<number>;

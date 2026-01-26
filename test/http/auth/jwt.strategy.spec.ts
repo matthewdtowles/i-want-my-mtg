@@ -1,25 +1,25 @@
-import { UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { Test, TestingModule } from "@nestjs/testing";
-import { UserResponseDto } from "src/http/user/dto/user.response.dto";
-import { JwtPayload } from "src/core/auth/auth.types";
-import { JwtStrategy } from "src/core/auth/jwt.strategy";
-import { UserService } from "src/core/user/user.service";
+import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
+import { JwtPayload } from 'src/core/auth/auth.types';
+import { JwtStrategy } from 'src/core/auth/jwt.strategy';
+import { UserService } from 'src/core/user/user.service';
 
 const mockUserDto: UserResponseDto = {
     id: 1,
-    email: "test@test.com",
-    name: "Test User",
-    role: "user",
+    email: 'test@test.com',
+    name: 'Test User',
+    role: 'user',
 };
 
 const mockJwtPayload: JwtPayload = {
-    sub: "1",
-    email: "test@test.com",
-    role: "user",
+    sub: '1',
+    email: 'test@test.com',
+    role: 'user',
 };
 
-describe("JwtStrategy", () => {
+describe('JwtStrategy', () => {
     let jwtStrategy: JwtStrategy;
     let userService: UserService;
 
@@ -36,7 +36,7 @@ describe("JwtStrategy", () => {
                 {
                     provide: ConfigService,
                     useValue: {
-                        get: jest.fn().mockReturnValue("mockJwtSecret"),
+                        get: jest.fn().mockReturnValue('mockJwtSecret'),
                     },
                 },
             ],
@@ -46,19 +46,17 @@ describe("JwtStrategy", () => {
         userService = module.get<UserService>(UserService);
     });
 
-    describe("validate", () => {
-        it("should return a UserDto if the user is found", async () => {
+    describe('validate', () => {
+        it('should return a UserDto if the user is found', async () => {
             const result = await jwtStrategy.validate(mockJwtPayload);
-            expect(userService.findById).toHaveBeenCalledWith(
-                parseInt(mockJwtPayload.sub),
-            );
+            expect(userService.findById).toHaveBeenCalledWith(parseInt(mockJwtPayload.sub));
             expect(result).toEqual(mockUserDto);
         });
 
-        it("should throw UnauthorizedException if no user is found", async () => {
-            jest.spyOn(userService, "findById").mockResolvedValue(null);
+        it('should throw UnauthorizedException if no user is found', async () => {
+            jest.spyOn(userService, 'findById').mockResolvedValue(null);
             await expect(jwtStrategy.validate(mockJwtPayload)).rejects.toThrow(
-                UnauthorizedException,
+                UnauthorizedException
             );
         });
     });

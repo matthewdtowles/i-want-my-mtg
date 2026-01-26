@@ -5,7 +5,8 @@
     function handleMouseOver(event) {
         const cardNameLink = event.target.closest(".card-name-link");
         if (!cardNameLink) return;
-        const imgLink = cardNameLink.querySelector(".card-img-link");
+        const parentCell = cardNameLink.parentElement;
+        const imgLink = parentCell.querySelector(".card-img-link");
         const imgPreview = imgLink?.querySelector(".card-img-preview");
         if (!imgLink || !imgPreview) return;
         if (currentImgLink && currentImgLink !== imgLink) {
@@ -24,7 +25,8 @@
     function handleMouseOut(event) {
         const cardNameLink = event.target.closest(".card-name-link");
         if (!cardNameLink) return;
-        const imgLink = cardNameLink.querySelector(".card-img-link");
+        const parentCell = cardNameLink.parentElement;
+        const imgLink = parentCell.querySelector(".card-img-link");
         const imgPreview = imgLink?.querySelector(".card-img-preview");
         if (!imgLink || !imgPreview) return;
         imgLink.style.display = "none";

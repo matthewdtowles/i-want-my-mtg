@@ -2623,6 +2623,14 @@ select {
   width: 16rem;
 }
 
+.card-name-link {
+  text-decoration-line: none;
+}
+
+.card-name-link:hover {
+  text-decoration-line: underline;
+}
+
 .create-user-container {
   margin-left: auto;
   margin-right: auto;

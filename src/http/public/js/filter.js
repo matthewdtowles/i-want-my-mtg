@@ -5,12 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let debounceTimeout;
 
-    function fetchFilteredSets(filter) {
+    function fetchFilteredResults(filter) {
         const params = new URLSearchParams();
         params.set("filter", filter);
         params.set("page", 1);
         params.set("limit", form.querySelector("input[name=\"limit\"]").value);
-        url = form.action + "?" + params.toString();
+        const url = form.action + "?" + params.toString();
         console.log("Fetching URL:", url);
         fetch(url)
             .then(response => response.text())
@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const newPagination = doc.querySelector(".pagination-container");
                 document.querySelector("table").replaceWith(newTable);
                 document.querySelector(".pagination-container").replaceWith(newPagination);
-                if (window.initCardHover && typeof window.initCardHover === 'function') {
-                    window.initCardHover();
-                }
+            })
+            .catch(error => {
+                console.error("Error fetching filtered results:", error);
             });
     }
 
@@ -31,14 +31,14 @@ document.addEventListener("DOMContentLoaded", function () {
         clearTimeout(debounceTimeout);
         clearBtn.style.display = this.value ? "inline" : "none";
         debounceTimeout = setTimeout(() => {
-            fetchFilteredSets(this.value);
+            fetchFilteredResults(this.value);
         }, 300);
     });
 
     clearBtn.addEventListener("click", function () {
         filterInput.value = "";
         clearBtn.style.display = "none";
-        fetchFilteredSets("");
+        fetchFilteredResults("");
     });
 
     form.addEventListener("submit", function (e) {

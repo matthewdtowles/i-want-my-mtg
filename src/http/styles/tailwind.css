@@ -35,6 +35,14 @@
     @apply w-64 h-auto;
 }
 
+.card-name-link {
+    @apply no-underline;
+}
+
+.card-name-link:hover {
+    @apply underline;
+}
+
 .create-user-container {
     @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
 }

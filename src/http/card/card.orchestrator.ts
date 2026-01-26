@@ -79,7 +79,7 @@ export class CardOrchestrator {
                 ],
                 card: singleCard,
                 otherPrintings: allPrintings
-                    .filter((card) => card.setCode !== setCode)
+                    .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                     .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),
                 message: HttpStatus.OK === 200 ? 'Card found' : 'Card not found',
                 status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,

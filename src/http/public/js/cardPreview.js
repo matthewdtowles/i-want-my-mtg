@@ -1,17 +1,13 @@
-// src/http/public/js/cardPreview.js
-(function() {
+(function () {
     let currentImgLink = null;
     let initialized = false;
 
     function handleMouseOver(event) {
         const cardNameLink = event.target.closest(".card-name-link");
         if (!cardNameLink) return;
-
         const imgLink = cardNameLink.querySelector(".card-img-link");
         const imgPreview = imgLink?.querySelector(".card-img-preview");
-
         if (!imgLink || !imgPreview) return;
-
         if (currentImgLink && currentImgLink !== imgLink) {
             currentImgLink.style.display = "none";
         }
@@ -20,19 +16,17 @@
         imgPreview.style.display = "block";
         const rect = cardNameLink.getBoundingClientRect();
         const imgWidth = imgLink.offsetWidth;
-        imgLink.style.top = `${rect.bottom + window.scrollY}px`;
+        const imgHeight = imgLink.offsetHeight;
+        imgLink.style.top = `${rect.top + window.scrollY - imgHeight}px`;
         imgLink.style.left = `${rect.left + window.scrollX + imgWidth / 4}px`;
     }
 
     function handleMouseOut(event) {
         const cardNameLink = event.target.closest(".card-name-link");
         if (!cardNameLink) return;
-
         const imgLink = cardNameLink.querySelector(".card-img-link");
         const imgPreview = imgLink?.querySelector(".card-img-preview");
-
         if (!imgLink || !imgPreview) return;
-
         imgLink.style.display = "none";
         imgPreview.style.display = "none";
     }
@@ -42,7 +36,6 @@
             console.debug('Card hover already initialized');
             return;
         }
-        
         document.body.addEventListener("mouseover", handleMouseOver);
         document.body.addEventListener("mouseout", handleMouseOut);
         initialized = true;
@@ -55,10 +48,4 @@
     } else {
         initCardHover();
     }
-
-    // Expose globally for dynamic content reinitialization (currently unused but available)
-    window.CardPreview = {
-        init: initCardHover,
-        // Future: could add refresh(), destroy(), etc.
-    };
 })();

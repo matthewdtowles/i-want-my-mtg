@@ -69,6 +69,7 @@
     </section>
     </section>
 
+    {{#if otherPrintings.length}}
     <section class="section-container">
         <h3 class="section-title">Other Printings</h3>
         <table class="table-container">
@@ -102,10 +103,11 @@
                 {{/each}}
             </tbody>
         </table>
+        {{>pagination hasItems=otherPrintings.length}}
     </section>
+    {{/if}}
 </div>
 
-{{>pagination}}
 
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>

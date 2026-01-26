@@ -56,7 +56,6 @@ export class CardOrchestrator {
                 InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id),
                 CardImgType.NORMAL
             );
-
             const totalPrintings = await this.cardService.totalWithName(singleCard.name);
             const lastPage = Math.max(1, Math.ceil(totalPrintings / rawOptions.limit));
             const options = new SafeQueryOptions({
@@ -64,7 +63,6 @@ export class CardOrchestrator {
                 page: Math.min(rawOptions.page, lastPage),
             });
             this.LOGGER.debug(`Options: ${JSON.stringify(options)}`);
-
             const allPrintings: Card[] = await this.cardService.findWithName(
                 singleCard.name,
                 options

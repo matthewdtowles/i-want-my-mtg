@@ -3,7 +3,7 @@ import { buildQueryString } from 'src/http/base/http.util';
 
 export class PaginationView {
     readonly current: number;
-    readonly total: number;
+    readonly totalPages: number;
     readonly baseUrl: string;
     readonly limit: number;
     readonly previous?: PaginationLink;
@@ -16,7 +16,7 @@ export class PaginationView {
     constructor(options: SafeQueryOptions, baseUrl: string, totalItems: number) {
         this.current = options.page;
         this.limit = options.limit;
-        this.total = Math.ceil(totalItems / this.limit);
+        this.totalPages = Math.ceil(totalItems / this.limit);
         this.baseUrl = baseUrl;
         this.previous = this.buildPrevious(options);
         this.first = this.buildFirst(options);
@@ -67,15 +67,15 @@ export class PaginationView {
             ? new PaginationLink(
                   `${this.baseUrl}${buildQueryString({
                       ...options,
-                      page: this.total,
+                      page: this.totalPages,
                   })}`,
-                  String(this.total)
+                  String(this.totalPages)
               )
             : undefined;
     }
 
     private buildSkipBack(options: SafeQueryOptions): PaginationLink | undefined {
-        const skipBackValue = this.current - Math.floor(this.total / 3);
+        const skipBackValue = this.current - Math.floor(this.totalPages / 3);
         return skipBackValue > 1 && skipBackValue < this.current
             ? new PaginationLink(
                   `${this.baseUrl}${buildQueryString({
@@ -88,8 +88,8 @@ export class PaginationView {
     }
 
     private buildSkipForward(options: SafeQueryOptions): PaginationLink | undefined {
-        const skipForwardValue = this.current + Math.floor(this.total / 3);
-        return skipForwardValue < this.total && skipForwardValue > this.current
+        const skipForwardValue = this.current + Math.floor(this.totalPages / 3);
+        return skipForwardValue < this.totalPages && skipForwardValue > this.current
             ? new PaginationLink(
                   `${this.baseUrl}${buildQueryString({
                       ...options,
@@ -105,7 +105,7 @@ export class PaginationView {
     }
 
     private hasNextPage(): boolean {
-        return this.current < this.total;
+        return this.current < this.totalPages;
     }
 }
 

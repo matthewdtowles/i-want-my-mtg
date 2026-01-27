@@ -10,6 +10,7 @@
             {{baseOnlyToggle.text}}
         </a>
     </div>
+    {{#if setList.length}}
     <table class="min-w-full bg-white">
         <thead>{{>tableHeadersRow}}</thead>
         <tbody>
@@ -29,5 +30,10 @@
             {{/each}}
         </tbody>
     </table>
+    {{else}}
+    <div class="text-center py-8 text-gray-500">
+        No sets found matching your filter.
+    </div>
+    {{/if}}
 </div>
 {{>pagination hasItems=setList.length}}

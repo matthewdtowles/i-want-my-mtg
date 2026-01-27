@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('filter', filter);
         params.set('page', 1);
         params.set('limit', form.querySelector('input[name="limit"]').value);
+
+        // Preserve baseOnly parameter from current URL
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.has('baseOnly')) {
+            params.set('baseOnly', currentParams.get('baseOnly'));
+        }
+
         const url = form.action + '?' + params.toString();
         console.log('Fetching URL:', url);
         fetch(url)
@@ -19,8 +26,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 const doc = parser.parseFromString(html, 'text/html');
                 const newTable = doc.querySelector('table');
                 const newPagination = doc.querySelector('.pagination-container');
-                document.querySelector('table').replaceWith(newTable);
-                document.querySelector('.pagination-container').replaceWith(newPagination);
+
+                if (newTable) {
+                    document.querySelector('table').replaceWith(newTable);
+                }
+                if (newPagination) {
+                    const existingPagination = document.querySelector('.pagination-container');
+                    if (existingPagination) {
+                        existingPagination.replaceWith(newPagination);
+                    }
+                }
             })
             .catch((error) => {
                 console.error('Error fetching filtered results:', error);

@@ -89,7 +89,7 @@ describe('InventoryOrchestrator', () => {
 
             expect(result.cards.length).toBe(1);
             expect(result.pagination.current).toBe(1);
-            expect(result.pagination.total).toBe(1);
+            expect(result.pagination.totalPages).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 
@@ -103,7 +103,7 @@ describe('InventoryOrchestrator', () => {
             );
 
             expect(result.cards).toHaveLength(0);
-            expect(result.pagination.total).toBe(0);
+            expect(result.pagination.totalPages).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
 

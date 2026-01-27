@@ -70,7 +70,7 @@ export class SetOrchestrator {
                 authenticated: isAuthd,
                 baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
                 breadcrumbs,
-                message: `Page ${pagination.current} of ${pagination.total}`,
+                message: `Page ${pagination.current} of ${pagination.totalPages}`,
                 setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),
                 status: ActionStatus.SUCCESS,
                 pagination,

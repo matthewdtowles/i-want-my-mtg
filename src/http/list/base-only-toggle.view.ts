@@ -4,8 +4,10 @@ import { buildQueryString } from 'src/http/base/http.util';
 export class BaseOnlyToggleView {
     readonly url: string;
     readonly text: string;
+    readonly isBaseOnly: boolean;
 
     constructor(options: SafeQueryOptions, baseUrl: string) {
+        this.isBaseOnly = options.baseOnly;
         const toggledOptions = new SafeQueryOptions({
             ...options,
             baseOnly: !options.baseOnly,

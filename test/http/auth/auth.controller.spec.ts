@@ -95,10 +95,6 @@ describe('AuthController', () => {
             expect(mockRes.cookie).not.toHaveBeenCalled();
             expect(mockRes.redirect).toHaveBeenCalledWith('/auth/login?error=Invalid credentials');
         });
-        const mockRes = {
-            clearCookie: jest.fn(),
-            redirect: jest.fn(),
-        } as unknown as Response;
     });
 
     describe('logout', () => {

@@ -103,7 +103,9 @@
                 {{/each}}
             </tbody>
         </table>
+        {{#if (gt pagination.total 1)}}
         {{>pagination hasItems=otherPrintings.length}}
+        {{/if}}
     </section>
     {{/if}}
 </div>

@@ -1,7 +1,7 @@
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { SortOptionLabels, SortOptions } from "src/core/query/sort-options.enum";
-import { buildQueryString } from "src/http/base/http.util";
-import { TableHeaderView } from "./table-header.view";
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SortOptionLabels, SortOptions } from 'src/core/query/sort-options.enum';
+import { buildQueryString } from 'src/http/base/http.util';
+import { TableHeaderView } from './table-header.view';
 
 export class SortableHeaderView extends TableHeaderView {
     readonly href: string;

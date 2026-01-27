@@ -1,16 +1,14 @@
-import { Inject, Injectable } from "@nestjs/common";
-import * as bcrypt from "bcrypt";
-import { getLogger } from "src/logger/global-app-logger";
-import { User } from "./user.entity";
-import { UserRepositoryPort } from "./user.repository.port";
-
+import { Inject, Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { getLogger } from 'src/logger/global-app-logger';
+import { User } from './user.entity';
+import { UserRepositoryPort } from './user.repository.port';
 
 @Injectable()
 export class UserService {
-
     private readonly LOGGER = getLogger(UserService.name);
 
-    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) { }
+    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
 
     async create(userIn: User): Promise<User | null> {
         this.LOGGER.debug(`Create user ${userIn?.email}.`);
@@ -40,9 +38,9 @@ export class UserService {
     async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`Update user ID ${user?.id}.`);
         if (user.password) {
-            throw new Error("Password must be updated separately.");
+            throw new Error('Password must be updated separately.');
         }
-        return await this.repository.update(user) ?? null;
+        return (await this.repository.update(user)) ?? null;
     }
 
     async updatePassword(userIn: User, newPassword: string): Promise<boolean> {
@@ -51,7 +49,7 @@ export class UserService {
             ...userIn,
             password: await this.encrypt(newPassword),
         });
-        return !!await this.repository.update(user);
+        return !!(await this.repository.update(user));
     }
 
     async remove(id: number): Promise<void> {

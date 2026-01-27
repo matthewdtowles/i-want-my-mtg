@@ -1,24 +1,24 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
     // Use event delegation for quantity forms
-    document.body.addEventListener("click", async function (event) {
-        const incrementButton = event.target.closest(".increment-quantity");
-        const decrementButton = event.target.closest(".decrement-quantity");
+    document.body.addEventListener('click', async function (event) {
+        const incrementButton = event.target.closest('.increment-quantity');
+        const decrementButton = event.target.closest('.decrement-quantity');
         if (incrementButton) {
             event.stopImmediatePropagation();
-            const form = incrementButton.closest(".quantity-form");
+            const form = incrementButton.closest('.quantity-form');
             const quantityOwned = form.querySelector("input[name='quantity-owned']");
             const cardId = form.querySelector("input[name='cardId']").value;
-            const isFoil = form.querySelector("input[name='isFoil']").value === "true";
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
             console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
         }
         if (decrementButton) {
             event.stopImmediatePropagation();
-            const form = decrementButton.closest(".quantity-form");
+            const form = decrementButton.closest('.quantity-form');
             const quantityOwned = form.querySelector("input[name='quantity-owned']");
             const cardId = form.querySelector("input[name='cardId']").value;
-            const isFoil = form.querySelector("input[name='isFoil']").value === "true";
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
@@ -26,17 +26,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Use event delegation for delete buttons
-    document.body.addEventListener("click", async function (event) {
-        const deleteButton = event.target.closest(".delete-inventory-button");
+    document.body.addEventListener('click', async function (event) {
+        const deleteButton = event.target.closest('.delete-inventory-button');
         if (deleteButton) {
             event.stopImmediatePropagation();
-            const form = deleteButton.closest(".delete-inventory-form");
+            const form = deleteButton.closest('.delete-inventory-form');
             const cardId = form.querySelector("input[name='card-id']").value;
-            const isFoil = form.querySelector("input[name='isFoil']").value === "true";
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
             console.log(`Deleting card ${cardId} from inventory`);
             try {
                 await deleteInventoryItem(cardId, isFoil);
-                const tableRow = form.closest("tr");
+                const tableRow = form.closest('tr');
                 if (tableRow) {
                     tableRow.remove();
                     console.log(`Card ${cardId} successfully deleted from inventory`);
@@ -65,16 +65,16 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const currentQty = parseInt(quantity);
             if (isNaN(currentQty) || currentQty <= 0) {
-                return "0";
+                return '0';
             }
             const qtyInt = currentQty - 1;
             console.log(`Updating quantity to ${qtyInt} for card ${cardId}`);
             if (qtyInt === 0) {
                 await deleteInventoryItem(cardId, isFoil);
-                return "0";
+                return '0';
             } else {
                 const updatedInventory = await updateInventory(qtyInt, cardId, isFoil, 'PATCH');
-                console.log("Response from update:", updatedInventory);
+                console.log('Response from update:', updatedInventory);
                 if (updatedInventory && typeof updatedInventory.quantity !== 'undefined') {
                     return updatedInventory.quantity.toString();
                 } else {
@@ -115,17 +115,19 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify([{
-                cardId: cardId,
-                isFoil: isFoil,
-                quantity: quantity,
-            }]),
+            body: JSON.stringify([
+                {
+                    cardId: cardId,
+                    isFoil: isFoil,
+                    quantity: quantity,
+                },
+            ]),
         });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const responseData = await response.json();
-        console.log("Response data:", responseData);
+        console.log('Response data:', responseData);
         if (responseData.success && responseData.data && responseData.data.length > 0) {
             return responseData.data[0];
         }

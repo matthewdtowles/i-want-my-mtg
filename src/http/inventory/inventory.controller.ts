@@ -2,47 +2,51 @@ import {
     Body,
     Controller,
     Delete,
-    Get, Inject,
+    Get,
+    Inject,
     Patch,
     Post,
     Render,
-    Req, UseGuards
-} from "@nestjs/common";
-import { Inventory } from "src/core/inventory/inventory.entity";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { JwtAuthGuard } from "src/http/auth/jwt.auth.guard";
-import { ApiResult, createErrorResult, createSuccessResult } from "src/http/base/api.result";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
-import { getLogger } from "src/logger/global-app-logger";
-import { InventoryRequestDto } from "./dto/inventory.request.dto";
-import { InventoryViewDto } from "./dto/inventory.view.dto";
-import { InventoryOrchestrator } from "./inventory.orchestrator";
+    Req,
+    UseGuards,
+} from '@nestjs/common';
+import { Inventory } from 'src/core/inventory/inventory.entity';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { ApiResult, createErrorResult, createSuccessResult } from 'src/http/base/api.result';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { getLogger } from 'src/logger/global-app-logger';
+import { InventoryRequestDto } from './dto/inventory.request.dto';
+import { InventoryViewDto } from './dto/inventory.view.dto';
+import { InventoryOrchestrator } from './inventory.orchestrator';
 
-
-@Controller("inventory")
+@Controller('inventory')
 export class InventoryController {
+    private readonly LOGGER = getLogger(InventoryController.name);
 
-    private readonly LOGGER = getLogger(InventoryController.name)
-
-    constructor(@Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator) { }
+    constructor(
+        @Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator
+    ) {}
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    @Render("inventory")
+    @Render('inventory')
     async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
         const userId = req?.user?.id;
         this.LOGGER.log(`Find inventory for user ${userId}.`);
         if (!userId) {
-            throw new Error("User ID not found in request");
+            throw new Error('User ID not found in request');
         }
         const rawOptions = new SafeQueryOptions(req?.query);
         const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
         const options = new SafeQueryOptions({
             ...rawOptions,
-            page: Math.min(rawOptions.page, lastPage)
+            page: Math.min(rawOptions.page, lastPage),
         });
         const inventory = await this.inventoryOrchestrator.findByUser(req, options);
-        this.LOGGER.log(`Found inventory for user ${userId} with ${inventory?.cards?.length ?? 0} items.`);
+        this.LOGGER.log(
+            `Found inventory for user ${userId} with ${inventory?.cards?.length ?? 0} items.`
+        );
         return inventory;
     }
 
@@ -50,13 +54,20 @@ export class InventoryController {
     @Post()
     async create(
         @Body() createInventoryDtos: InventoryRequestDto[],
-        @Req() req: AuthenticatedRequest,
+        @Req() req: AuthenticatedRequest
     ): Promise<ApiResult<Inventory[]>> {
         const userId = req?.user?.id;
-        this.LOGGER.log(`Create inventory items for user ${userId}. Count: ${createInventoryDtos?.length ?? 0}`);
+        this.LOGGER.log(
+            `Create inventory items for user ${userId}. Count: ${createInventoryDtos?.length ?? 0}`
+        );
         try {
-            const createdItems: Inventory[] = await this.inventoryOrchestrator.save(createInventoryDtos, req);
-            this.LOGGER.log(`Added ${createdItems?.length ?? 0} inventory items for user ${userId}.`);
+            const createdItems: Inventory[] = await this.inventoryOrchestrator.save(
+                createInventoryDtos,
+                req
+            );
+            this.LOGGER.log(
+                `Added ${createdItems?.length ?? 0} inventory items for user ${userId}.`
+            );
             return createSuccessResult(createdItems, `Added inventory items`);
         } catch (error) {
             this.LOGGER.error(`Error adding inventory items for user ${userId}: ${error}`);
@@ -68,13 +79,20 @@ export class InventoryController {
     @Patch()
     async update(
         @Body() updateInventoryDtos: InventoryRequestDto[],
-        @Req() req: AuthenticatedRequest,
+        @Req() req: AuthenticatedRequest
     ): Promise<ApiResult<Inventory[]>> {
         const userId = req?.user?.id;
-        this.LOGGER.log(`Update inventory items for user ${userId}. Count: ${updateInventoryDtos?.length ?? 0}`);
+        this.LOGGER.log(
+            `Update inventory items for user ${userId}. Count: ${updateInventoryDtos?.length ?? 0}`
+        );
         try {
-            const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(updateInventoryDtos, req);
-            this.LOGGER.log(`Updated ${updatedInventory?.length ?? 0} inventory items for user ${userId}.`);
+            const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(
+                updateInventoryDtos,
+                req
+            );
+            this.LOGGER.log(
+                `Updated ${updatedInventory?.length ?? 0} inventory items for user ${userId}.`
+            );
             return createSuccessResult(updatedInventory, `Updated inventory items`);
         } catch (error) {
             this.LOGGER.error(`Error updating inventory items for user ${userId}: ${error}`);
@@ -87,19 +105,22 @@ export class InventoryController {
     async delete(
         @Body('cardId') cardId: string,
         @Body('isFoil') isFoil: boolean,
-        @Req() req: AuthenticatedRequest,
-    ): Promise<ApiResult<{ cardId: string, isFoil: boolean }>> {
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResult<{ cardId: string; isFoil: boolean }>> {
         const userId = req?.user?.id;
-        this.LOGGER.log(`Delete inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`);
+        this.LOGGER.log(
+            `Delete inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`
+        );
         try {
             await this.inventoryOrchestrator.delete(req, cardId, isFoil);
-            this.LOGGER.log(`Deleted inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`);
-            return createSuccessResult(
-                { cardId, isFoil },
-                `Deleted inventory item`
+            this.LOGGER.log(
+                `Deleted inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`
             );
+            return createSuccessResult({ cardId, isFoil }, `Deleted inventory item`);
         } catch (error) {
-            this.LOGGER.error(`Error deleting inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}. Error: ${error}`);
+            this.LOGGER.error(
+                `Error deleting inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}. Error: ${error}`
+            );
             return createErrorResult(`Error deleting inventory item: ${error}`);
         }
     }

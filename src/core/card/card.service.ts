@@ -1,15 +1,14 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { getLogger } from "src/logger/global-app-logger";
-import { Card } from "./card.entity";
-import { CardRepositoryPort } from "./card.repository.port";
+import { Inject, Injectable } from '@nestjs/common';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { getLogger } from 'src/logger/global-app-logger';
+import { Card } from './card.entity';
+import { CardRepositoryPort } from './card.repository.port';
 
 @Injectable()
 export class CardService {
-
     private readonly LOGGER = getLogger(CardService.name);
 
-    constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) { }
+    constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) {}
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
@@ -36,11 +35,19 @@ export class CardService {
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
         this.LOGGER.debug(`Find card no. ${number} in set ${code}.`);
         try {
-            const card = await this.repository.findBySetCodeAndNumber(code, number, ["set", "legalities", "prices"]);
-            this.LOGGER.debug(`Card no. ${number} in set ${code}: ${card ? card.id : "Not found"}.`);
+            const card = await this.repository.findBySetCodeAndNumber(code, number, [
+                'set',
+                'legalities',
+                'prices',
+            ]);
+            this.LOGGER.debug(
+                `Card no. ${number} in set ${code}: ${card ? card.id : 'Not found'}.`
+            );
             return card;
         } catch (error) {
-            throw new Error(`Error finding card with set code ${code} and number ${number}: ${error.message}`);
+            throw new Error(
+                `Error finding card with set code ${code} and number ${number}: ${error.message}`
+            );
         }
     }
 

@@ -1,32 +1,24 @@
-import {
-    Controller,
-    Get, Inject,
-    Param,
-    Render,
-    Req,
-    UseGuards
-} from "@nestjs/common";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { OptionalAuthGuard } from "src/http/auth/optional-auth.guard";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
-import { getLogger } from "src/logger/global-app-logger";
-import { CardOrchestrator } from "./card.orchestrator";
-import { CardViewDto } from "./dto/card.view.dto";
+import { Controller, Get, Inject, Param, Render, Req, UseGuards } from '@nestjs/common';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { getLogger } from 'src/logger/global-app-logger';
+import { CardOrchestrator } from './card.orchestrator';
+import { CardViewDto } from './dto/card.view.dto';
 
-@Controller("card")
+@Controller('card')
 export class CardController {
-
     private readonly LOGGER = getLogger(CardController.name);
 
-    constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) { }
+    constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) {}
 
     @UseGuards(OptionalAuthGuard)
-    @Get(":setCode/:setNumber")
-    @Render("card")
+    @Get(':setCode/:setNumber')
+    @Render('card')
     async findSetCard(
         @Req() req: AuthenticatedRequest,
-        @Param("setCode") setCode: string,
-        @Param("setNumber") setNumber: string,
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string
     ): Promise<CardViewDto> {
         this.LOGGER.log(`Find set card ${setCode}/${setNumber}.`);
         const options = new SafeQueryOptions(req.query);

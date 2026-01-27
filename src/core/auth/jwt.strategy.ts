@@ -1,12 +1,12 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { PassportStrategy } from "@nestjs/passport";
-import { Strategy } from "passport-jwt";
-import { User } from "src/core/user/user.entity";
-import { UserService } from "src/core/user/user.service";
-import { AUTH_TOKEN_NAME } from "src/http/auth/dto/auth.types";
-import { getLogger } from "src/logger/global-app-logger";
-import { JwtPayload } from "./auth.types";
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-jwt';
+import { User } from 'src/core/user/user.entity';
+import { UserService } from 'src/core/user/user.service';
+import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
+import { getLogger } from 'src/logger/global-app-logger';
+import { JwtPayload } from './auth.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        private readonly configService: ConfigService,
+        private readonly configService: ConfigService
     ) {
         super({
             jwtFromRequest: (request) => {
@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 this.LOGGER.debug(`No cookies found in request`);
                 return null;
             },
-            secretOrKey: configService.get<string>("JWT_SECRET"),
+            secretOrKey: configService.get<string>('JWT_SECRET'),
             ignoreExpiration: false,
         });
         this.LOGGER.debug(`JWT Strategy initialized - reading from cookies`);

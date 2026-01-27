@@ -1,47 +1,47 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const filterInput = document.getElementById("filter");
-    const form = document.getElementById("filter-form");
-    const clearBtn = document.getElementById("clear-filter-btn");
+document.addEventListener('DOMContentLoaded', function () {
+    const filterInput = document.getElementById('filter');
+    const form = document.getElementById('filter-form');
+    const clearBtn = document.getElementById('clear-filter-btn');
 
     let debounceTimeout;
 
     function fetchFilteredResults(filter) {
         const params = new URLSearchParams();
-        params.set("filter", filter);
-        params.set("page", 1);
-        params.set("limit", form.querySelector("input[name=\"limit\"]").value);
-        const url = form.action + "?" + params.toString();
-        console.log("Fetching URL:", url);
+        params.set('filter', filter);
+        params.set('page', 1);
+        params.set('limit', form.querySelector('input[name="limit"]').value);
+        const url = form.action + '?' + params.toString();
+        console.log('Fetching URL:', url);
         fetch(url)
-            .then(response => response.text())
-            .then(html => {
+            .then((response) => response.text())
+            .then((html) => {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                const newTable = doc.querySelector("table");
-                const newPagination = doc.querySelector(".pagination-container");
-                document.querySelector("table").replaceWith(newTable);
-                document.querySelector(".pagination-container").replaceWith(newPagination);
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTable = doc.querySelector('table');
+                const newPagination = doc.querySelector('.pagination-container');
+                document.querySelector('table').replaceWith(newTable);
+                document.querySelector('.pagination-container').replaceWith(newPagination);
             })
-            .catch(error => {
-                console.error("Error fetching filtered results:", error);
+            .catch((error) => {
+                console.error('Error fetching filtered results:', error);
             });
     }
 
-    filterInput.addEventListener("input", function () {
+    filterInput.addEventListener('input', function () {
         clearTimeout(debounceTimeout);
-        clearBtn.style.display = this.value ? "inline" : "none";
+        clearBtn.style.display = this.value ? 'inline' : 'none';
         debounceTimeout = setTimeout(() => {
             fetchFilteredResults(this.value);
         }, 300);
     });
 
-    clearBtn.addEventListener("click", function () {
-        filterInput.value = "";
-        clearBtn.style.display = "none";
-        fetchFilteredResults("");
+    clearBtn.addEventListener('click', function () {
+        filterInput.value = '';
+        clearBtn.style.display = 'none';
+        fetchFilteredResults('');
     });
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
     });
 });

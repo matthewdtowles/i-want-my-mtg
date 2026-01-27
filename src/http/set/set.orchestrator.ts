@@ -1,44 +1,43 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { Card } from "src/core/card/card.entity";
-import { CardImgType } from "src/core/card/card.img.type.enum";
-import { CardService } from "src/core/card/card.service";
-import { InventoryService } from "src/core/inventory/inventory.service";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { SortOptions } from "src/core/query/sort-options.enum";
-import { SetPrice } from "src/core/set/set-price.entity";
-import { Set } from "src/core/set/set.entity";
-import { SetService } from "src/core/set/set.service";
-import { ActionStatus } from "src/http/base/action-status.enum";
-import { AuthenticatedRequest } from "src/http/base/authenticated.request";
-import { Breadcrumb } from "src/http/base/breadcrumb";
-import { completionRate, isAuthenticated, toDollar } from "src/http/base/http.util";
-import { CardPresenter } from "src/http/card/card.presenter";
-import { HttpErrorHandler } from "src/http/http.error.handler";
-import { InventoryPresenter } from "src/http/inventory/inventory.presenter";
-import { FilterView } from "src/http/list/filter.view";
-import { PaginationView } from "src/http/list/pagination.view";
-import { SortableHeaderView } from "src/http/list/sortable-header.view";
-import { TableHeaderView } from "src/http/list/table-header.view";
-import { TableHeadersRowView } from "src/http/list/table-headers-row.view";
-import { getLogger } from "src/logger/global-app-logger";
-import { BaseOnlyToggleView } from "../list/base-only-toggle.view";
-import { SetListViewDto } from "./dto/set-list.view.dto";
-import { SetMetaResponseDto } from "./dto/set-meta.response.dto";
-import { SetPriceDto } from "./dto/set-price.dto";
-import { SetResponseDto } from "./dto/set.response.dto";
-import { SetViewDto } from "./dto/set.view.dto";
-import { SetTypeMapper } from "./set-type.mapper";
+import { Inject, Injectable } from '@nestjs/common';
+import { Card } from 'src/core/card/card.entity';
+import { CardImgType } from 'src/core/card/card.img.type.enum';
+import { CardService } from 'src/core/card/card.service';
+import { InventoryService } from 'src/core/inventory/inventory.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SetPrice } from 'src/core/set/set-price.entity';
+import { Set } from 'src/core/set/set.entity';
+import { SetService } from 'src/core/set/set.service';
+import { ActionStatus } from 'src/http/base/action-status.enum';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { Breadcrumb } from 'src/http/base/breadcrumb';
+import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
+import { CardPresenter } from 'src/http/card/card.presenter';
+import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { InventoryPresenter } from 'src/http/inventory/inventory.presenter';
+import { FilterView } from 'src/http/list/filter.view';
+import { PaginationView } from 'src/http/list/pagination.view';
+import { SortableHeaderView } from 'src/http/list/sortable-header.view';
+import { TableHeaderView } from 'src/http/list/table-header.view';
+import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
+import { getLogger } from 'src/logger/global-app-logger';
+import { BaseOnlyToggleView } from '../list/base-only-toggle.view';
+import { SetListViewDto } from './dto/set-list.view.dto';
+import { SetMetaResponseDto } from './dto/set-meta.response.dto';
+import { SetPriceDto } from './dto/set-price.dto';
+import { SetResponseDto } from './dto/set.response.dto';
+import { SetViewDto } from './dto/set.view.dto';
+import { SetTypeMapper } from './set-type.mapper';
 
 @Injectable()
 export class SetOrchestrator {
-
     private readonly LOGGER = getLogger(SetOrchestrator.name);
 
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
-        @Inject(CardService) private readonly cardService: CardService,
-    ) { }
+        @Inject(CardService) private readonly cardService: CardService
+    ) {}
 
     async findSetList(
         req: AuthenticatedRequest,
@@ -50,20 +49,22 @@ export class SetOrchestrator {
             const userId = req.user?.id ?? 0;
             const [sets, totalSets] = await Promise.all([
                 this.setService.findSets(options),
-                this.setService.totalSetsCount(options)
+                this.setService.totalSetsCount(options),
             ]);
-            const baseUrl = "/sets";
+            const baseUrl = '/sets';
             const pagination = new PaginationView(options, baseUrl, totalSets);
             this.LOGGER.debug(`Found ${sets?.length} of ${totalSets} total sets.`);
             const tableHeadersRow = new TableHeadersRowView([
-                new SortableHeaderView(options, SortOptions.SET, ["pl-2"]),
-                new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ["pl-2"]),
+                new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
+                new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2']),
             ]);
             const isAuthd = isAuthenticated(req);
             if (isAuthd) {
-                tableHeadersRow.headers.push(new TableHeaderView("Owned Value"));
+                tableHeadersRow.headers.push(new TableHeaderView('Owned Value'));
             }
-            tableHeadersRow.headers.push(new SortableHeaderView(options, SortOptions.RELEASE_DATE, ["xs-hide", "pr-2"]));
+            tableHeadersRow.headers.push(
+                new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2'])
+            );
 
             return new SetListViewDto({
                 authenticated: isAuthd,
@@ -78,7 +79,7 @@ export class SetOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, "findSetListPaginated");
+            return HttpErrorHandler.toHttpException(error, 'findSetListPaginated');
         }
     }
 
@@ -104,33 +105,29 @@ export class SetOrchestrator {
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
-                    { label: "Home", url: "/" },
-                    { label: "Sets", url: "/sets" },
+                    { label: 'Home', url: '/' },
+                    { label: 'Sets', url: '/sets' },
                     { label: setResonse.name, url: baseUrl },
                 ],
-                message: setResonse ? `Found set: ${setResonse.name}` : "Set not found",
+                message: setResonse ? `Found set: ${setResonse.name}` : 'Set not found',
                 set: setResonse,
                 status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                pagination: new PaginationView(
-                    options,
-                    baseUrl,
-                    setSize
-                ),
+                pagination: new PaginationView(options, baseUrl, setSize),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new TableHeaderView("Owned"),
+                    new TableHeaderView('Owned'),
                     new SortableHeaderView(options, SortOptions.NUMBER),
                     new SortableHeaderView(options, SortOptions.CARD),
-                    new TableHeaderView("Mana Cost", ["xs-hide"]),
-                    new TableHeaderView("Rarity", ["xs-hide"]),
-                    new SortableHeaderView(options, SortOptions.PRICE, ["xs-hide"]),
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ["xs-hide", "pr-2"]),
-                    new SortableHeaderView(options, SortOptions.PRICE, ["xs-show", "pr-2"]),
+                    new TableHeaderView('Mana Cost', ['xs-hide']),
+                    new TableHeaderView('Rarity', ['xs-hide']),
+                    new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide']),
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2']),
+                    new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2']),
                 ]),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
-            return HttpErrorHandler.toHttpException(error, "findBySetCodeWithPagination");
+            return HttpErrorHandler.toHttpException(error, 'findBySetCodeWithPagination');
         }
     }
 
@@ -143,7 +140,7 @@ export class SetOrchestrator {
             return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error getting last page number: ${error.message}.`);
-            return HttpErrorHandler.toHttpException(error, "getLastPage");
+            return HttpErrorHandler.toHttpException(error, 'getLastPage');
         }
     }
 
@@ -155,23 +152,26 @@ export class SetOrchestrator {
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;
         } catch (error) {
-            this.LOGGER.debug(`Error getting last page number for cards in set ${setCode}: ${error.message}.`);
-            return HttpErrorHandler.toHttpException(error, "getLastCardPage");
+            this.LOGGER.debug(
+                `Error getting last page number for cards in set ${setCode}: ${error.message}.`
+            );
+            return HttpErrorHandler.toHttpException(error, 'getLastCardPage');
         }
     }
 
-
     async getSetValue(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
-        const setType = baseOnly ? "main" : "";
-        const withFoils = includeFoil ? "with foils" : "";
+        const setType = baseOnly ? 'main' : '';
+        const withFoils = includeFoil ? 'with foils' : '';
         this.LOGGER.debug(`Get value for ${setType} set ${setCode} ${withFoils}`);
         try {
             const setValue = await this.setService.totalValueForSet(setCode, includeFoil, baseOnly);
             this.LOGGER.debug(`Value for ${setType} set ${setCode} ${withFoils}: ${setValue}.`);
             return setValue;
         } catch (error) {
-            this.LOGGER.debug(`Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`);
-            return HttpErrorHandler.toHttpException(error, "getSetValue");
+            this.LOGGER.debug(
+                `Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`
+            );
+            return HttpErrorHandler.toHttpException(error, 'getSetValue');
         }
     }
 
@@ -186,7 +186,7 @@ export class SetOrchestrator {
         // Helper to safely convert to number and check if valid price
         const toValidNumber = (value: any): number | null => {
             if (value === null || value === undefined) return null;
-            const num = typeof value === "string" ? parseFloat(value) : Number(value);
+            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
             return !isNaN(num) && num > 0 ? num : null;
         };
 
@@ -196,37 +196,34 @@ export class SetOrchestrator {
         const totalPrice = toValidNumber(prices.totalPrice);
         const totalPriceAll = toValidNumber(prices.totalPriceAll);
 
-        let defaultPrice = "-";
+        let defaultPrice = '-';
         let gridCols = 0;
 
         // Filter and deduplicate prices in priority order (reverse of display)
-        const totalPriceAllFiltered = totalPriceAll
-            && totalPriceAll !== totalPrice
-            && totalPriceAll !== basePriceAll
-            ? toDollar(totalPriceAll) : null;
+        const totalPriceAllFiltered =
+            totalPriceAll && totalPriceAll !== totalPrice && totalPriceAll !== basePriceAll
+                ? toDollar(totalPriceAll)
+                : null;
         if (totalPriceAllFiltered) {
             gridCols++;
             defaultPrice = totalPriceAllFiltered;
         }
 
-        const totalPriceNormalFiltered = totalPrice
-            && totalPrice !== basePrice
-            ? toDollar(totalPrice) : null;
+        const totalPriceNormalFiltered =
+            totalPrice && totalPrice !== basePrice ? toDollar(totalPrice) : null;
         if (totalPriceNormalFiltered) {
             gridCols++;
             defaultPrice = totalPriceNormalFiltered;
         }
 
-        const basePriceAllFiltered = basePriceAll
-            && basePriceAll !== basePrice
-            ? toDollar(basePriceAll) : null;
+        const basePriceAllFiltered =
+            basePriceAll && basePriceAll !== basePrice ? toDollar(basePriceAll) : null;
         if (basePriceAllFiltered) {
             gridCols++;
             defaultPrice = basePriceAllFiltered;
         }
 
-        const basePriceNormalFiltered = basePrice
-            ? toDollar(basePrice) : null;
+        const basePriceNormalFiltered = basePrice ? toDollar(basePrice) : null;
         if (basePriceNormalFiltered) {
             gridCols++;
             defaultPrice = basePriceNormalFiltered;
@@ -243,11 +240,19 @@ export class SetOrchestrator {
         });
     }
 
-    private async createSetMetaResponseDtos(userId: number, sets: Set[], baseOnly: boolean): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map(set => this.createSetMetaResponseDto(userId, set, baseOnly)));
+    private async createSetMetaResponseDtos(
+        userId: number,
+        sets: Set[],
+        baseOnly: boolean
+    ): Promise<SetMetaResponseDto[]> {
+        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, baseOnly)));
     }
 
-    private async createSetMetaResponseDto(userId: number, set: Set, baseOnly: boolean): Promise<SetMetaResponseDto> {
+    private async createSetMetaResponseDto(
+        userId: number,
+        set: Set,
+        baseOnly: boolean
+    ): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
         const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
         return new SetMetaResponseDto({
@@ -261,15 +266,23 @@ export class SetOrchestrator {
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),
-            url: `/sets/${set.code.toLowerCase()}`
+            url: `/sets/${set.code.toLowerCase()}`,
         });
     }
 
-    private async createSetResponseDto(userId: number, set: Set, baseOnly: boolean): Promise<SetResponseDto> {
+    private async createSetResponseDto(
+        userId: number,
+        set: Set,
+        baseOnly: boolean
+    ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
-        const inventory = userId && setPayloadSize > 0
-            ? await this.inventoryService.findByCards(userId, set.cards.map(c => c.id))
-            : [];
+        const inventory =
+            userId && setPayloadSize > 0
+                ? await this.inventoryService.findByCards(
+                      userId,
+                      set.cards.map((c) => c.id)
+                  )
+                : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
         const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
         return new SetResponseDto({
@@ -287,10 +300,13 @@ export class SetOrchestrator {
             totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards
-                ? set.cards.map(card => CardPresenter.toCardResponse(
-                    card,
-                    InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
-                    CardImgType.SMALL))
+                ? set.cards.map((card) =>
+                      CardPresenter.toCardResponse(
+                          card,
+                          InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
+                          CardImgType.SMALL
+                      )
+                  )
                 : [],
         });
     }

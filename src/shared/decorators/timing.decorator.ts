@@ -1,13 +1,12 @@
-import { getLogger } from "src/logger/global-app-logger";
+import { getLogger } from 'src/logger/global-app-logger';
 
 export function Timing(): MethodDecorator {
-
-    const logger = getLogger("TimingDecorator");
+    const logger = getLogger('TimingDecorator');
 
     return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const originalMethod = descriptor.value;
         descriptor.value = async function (...args: any[]) {
-            if (process.env.TIMING_ENABLED !== "true") {
+            if (process.env.TIMING_ENABLED !== 'true') {
                 return originalMethod.apply(this, args);
             }
             const className = target.constructor.name;

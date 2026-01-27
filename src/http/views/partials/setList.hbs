@@ -1,9 +1,12 @@
 <div class="w-full mx-auto">
-    <div class="flex items-center gap-2 mb-4">
+    <div class="flex items-center gap-2">
         <div class="flex-1">
             {{>filter}}
         </div>
-        <a href="{{baseOnlyToggle.url}}" class="btn btn-secondary whitespace-nowrap">
+        <a href="{{baseOnlyToggle.url}}" 
+           class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}} 
+                  whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0
+                  mb-4">
             {{baseOnlyToggle.text}}
         </a>
     </div>
@@ -27,4 +30,4 @@
         </tbody>
     </table>
 </div>
-{{>pagination}}
+{{>pagination hasItems=setList.length}}

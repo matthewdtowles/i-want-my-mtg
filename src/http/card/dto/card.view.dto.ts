@@ -1,6 +1,6 @@
-import { ListView } from "src/http/list/list.view";
-import { CardResponseDto } from "./card.response.dto";
-import { SingleCardResponseDto } from "./single-card.response.dto";
+import { ListView } from 'src/http/list/list.view';
+import { CardResponseDto } from './card.response.dto';
+import { SingleCardResponseDto } from './single-card.response.dto';
 
 export class CardViewDto extends ListView {
     readonly card: SingleCardResponseDto;

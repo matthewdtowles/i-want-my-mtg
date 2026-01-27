@@ -1,16 +1,16 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { getLogger } from "src/logger/global-app-logger";
-import { Inventory } from "./inventory.entity";
-import { InventoryRepositoryPort } from "./inventory.repository.port";
-
+import { Inject, Injectable } from '@nestjs/common';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { getLogger } from 'src/logger/global-app-logger';
+import { Inventory } from './inventory.entity';
+import { InventoryRepositoryPort } from './inventory.repository.port';
 
 @Injectable()
 export class InventoryService {
-
     private readonly LOGGER = getLogger(InventoryService.name);
 
-    constructor(@Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort) { }
+    constructor(
+        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort
+    ) {}
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items.`);
@@ -27,23 +27,30 @@ export class InventoryService {
     }
 
     async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
-        this.LOGGER.debug(`findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`);
+        this.LOGGER.debug(
+            `findAllForUserWithPagination ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`
+        );
         const inventoryList = userId ? await this.repository.findByUser(userId, options) : [];
-        this.LOGGER.debug(`Found ${inventoryList.length} cards for user ${userId} with pagination.`);
+        this.LOGGER.debug(
+            `Found ${inventoryList.length} cards for user ${userId} with pagination.`
+        );
         return inventoryList;
     }
 
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}.`);
-        const inventoryList = userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
+        const inventoryList =
+            userId && cardId ? await this.repository.findByCard(userId, cardId) : [];
         this.LOGGER.debug(`Found ${inventoryList.length} cards for user ${userId}.`);
         return inventoryList;
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
         this.LOGGER.debug(`findByCards for user: ${userId}.`);
-        const inventoryList = userId && cardIds && cardIds.length > 0
-            ? await this.repository.findByCards(userId, cardIds) : [];
+        const inventoryList =
+            userId && cardIds && cardIds.length > 0
+                ? await this.repository.findByCards(userId, cardIds)
+                : [];
         this.LOGGER.debug(`Found ${inventoryList.length} cards by cards given for user ${userId}.`);
         return inventoryList;
     }
@@ -65,7 +72,9 @@ export class InventoryService {
     async totalInventoryItemsForSet(userId: number, setCode: string): Promise<number> {
         this.LOGGER.debug(`Get total inventory items for ${userId} in set ${setCode}.`);
         const result = await this.repository.totalInventoryCardsForSet(userId, setCode);
-        this.LOGGER.debug(`Total inventory items for user ${userId} in set ${setCode} is ${result}.`);
+        this.LOGGER.debug(
+            `Total inventory items for user ${userId} in set ${setCode} is ${result}.`
+        );
         return result;
     }
 
@@ -84,18 +93,22 @@ export class InventoryService {
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {
-        this.LOGGER.debug(`delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`);
+        this.LOGGER.debug(
+            `delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`
+        );
         if (userId && cardId) {
             try {
                 await this.repository.delete(userId, cardId, isFoil);
-                const foundItem: Inventory | null = await this.repository.findOne(userId, cardId, isFoil);
+                const foundItem: Inventory | null = await this.repository.findOne(
+                    userId,
+                    cardId,
+                    isFoil
+                );
                 return foundItem ? false : true;
-            }
-            catch (error) {
+            } catch (error) {
                 this.LOGGER.error(`Failed to delete inventory: ${error.message}`);
             }
         }
         return false;
     }
-
 }

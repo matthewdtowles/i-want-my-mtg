@@ -1,5 +1,4 @@
-import { IsBoolean, IsInt, IsUUID } from "class-validator";
-
+import { IsBoolean, IsInt, IsUUID } from 'class-validator';
 
 /**
  * Inventory item for read/write operations

@@ -1,8 +1,7 @@
-import { Legality } from "src/core/card/legality.entity";
-import { LegalityOrmEntity } from "./legality.orm-entity";
+import { Legality } from 'src/core/card/legality.entity';
+import { LegalityOrmEntity } from './legality.orm-entity';
 
 export class LegalityMapper {
-
     static toCore(legalityOrmEntity: LegalityOrmEntity): Legality {
         return {
             cardId: legalityOrmEntity.cardId,

@@ -1,9 +1,8 @@
-import { User } from "src/core/user/user.entity";
-import { UserRole } from "src/shared/constants/user.role.enum";
-import { UserOrmEntity } from "./user.orm-entity";
+import { User } from 'src/core/user/user.entity';
+import { UserRole } from 'src/shared/constants/user.role.enum';
+import { UserOrmEntity } from './user.orm-entity';
 
 export class UserMapper {
-
     static toCore(ormUser: UserOrmEntity): User {
         const user: User = new User({
             id: ormUser.id,

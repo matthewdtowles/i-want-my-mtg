@@ -1981,6 +1981,10 @@ select {
   height: 1.5rem;
 }
 
+.h-\[42px\] {
+  height: 42px;
+}
+
 .h-full {
   height: 100%;
 }
@@ -2047,6 +2051,10 @@ select {
 
 .flex-shrink {
   flex-shrink: 1;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
 }
 
 .-translate-y-1\/2 {
@@ -2668,8 +2676,6 @@ select {
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(110 218 209 / var(--tw-border-opacity, 1));
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
   padding-left: 2.75rem;
   padding-right: 3rem;
   transition-property: all;
@@ -2680,6 +2686,15 @@ select {
 .filter-input:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.filter-input {
+  height: 42px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 /* On hover: border becomes teal, glow slightly stronger but still max 8px */

@@ -1,26 +1,26 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { Set } from "src/core/set/set.entity";
-import { SetRepositoryPort } from "src/core/set/set.repository.port";
-import { SetService } from "src/core/set/set.service";
+import { Test, TestingModule } from '@nestjs/testing';
+import { Set } from 'src/core/set/set.entity';
+import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetService } from 'src/core/set/set.service';
 
-describe("SetService", () => {
+describe('SetService', () => {
     let service: SetService;
     let repository: SetRepositoryPort;
 
-    const mockSetCode: string = "SET";
-    const setCodes: string[] = ["SET", "ETS", "TES"];
+    const mockSetCode: string = 'SET';
+    const setCodes: string[] = ['SET', 'ETS', 'TES'];
     const mockCreateSetDtos: Set[] = Array.from({ length: 3 }, (_, i) => ({
         baseSize: 3,
-        block: "Test Set",
+        block: 'Test Set',
         code: setCodes[i],
         imgSrc: null,
-        keyruneCode: "set",
-        name: "Test Set" + i,
-        parentCode: "SET",
-        releaseDate: "2022-01-01",
+        keyruneCode: 'set',
+        name: 'Test Set' + i,
+        parentCode: 'SET',
+        releaseDate: '2022-01-01',
         totalSize: 3,
-        type: "expansion",
-        url: "sets/" + setCodes[i],
+        type: 'expansion',
+        url: 'sets/' + setCodes[i],
     }));
     const mockSets: Set[] = mockCreateSetDtos.map((dto, i) => ({
         ...dto,
@@ -36,9 +36,8 @@ describe("SetService", () => {
         totalCards: jest.fn().mockResolvedValue(3),
         totalCardsInSet: jest.fn().mockResolvedValue(3),
         totalInSet: jest.fn().mockResolvedValue(3),
-        totalValueForSet: jest.fn().mockResolvedValue(100)
-    }
-
+        totalValueForSet: jest.fn().mockResolvedValue(100),
+    };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -55,10 +54,10 @@ describe("SetService", () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks()
+        jest.clearAllMocks();
     });
 
-    it("should find set with cards by given set code", async () => {
+    it('should find set with cards by given set code', async () => {
         const foundSetWithCards: Set = await service.findByCode(mockSetCode);
         expect(repository.findByCode).toHaveBeenCalledTimes(1);
         expect(foundSetWithCards.code).toBe(mockSetCode);

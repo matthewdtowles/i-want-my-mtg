@@ -1,5 +1,5 @@
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { buildQueryString } from "src/http/base/http.util";
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { buildQueryString } from 'src/http/base/http.util';
 
 export class PaginationView {
     readonly current: number;
@@ -27,58 +27,76 @@ export class PaginationView {
     }
 
     private buildPrevious(options: SafeQueryOptions): PaginationLink | undefined {
-        return this.hasPreviousPage() ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: this.current - 1
-            })}`, "<")
+        return this.hasPreviousPage()
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: this.current - 1,
+                  })}`,
+                  '<'
+              )
             : undefined;
     }
 
     private buildFirst(options: SafeQueryOptions): PaginationLink | undefined {
-        return this.hasPreviousPage() ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: 1
-            })}`, "1")
+        return this.hasPreviousPage()
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: 1,
+                  })}`,
+                  '1'
+              )
             : undefined;
     }
 
     private buildNext(options: SafeQueryOptions): PaginationLink | undefined {
-        return this.hasNextPage() ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: this.current + 1
-            })}`, ">")
+        return this.hasNextPage()
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: this.current + 1,
+                  })}`,
+                  '>'
+              )
             : undefined;
     }
 
     private buildLast(options: SafeQueryOptions): PaginationLink | undefined {
-        return this.hasNextPage() ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: this.total
-            })}`, String(this.total))
+        return this.hasNextPage()
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: this.total,
+                  })}`,
+                  String(this.total)
+              )
             : undefined;
     }
 
     private buildSkipBack(options: SafeQueryOptions): PaginationLink | undefined {
         const skipBackValue = this.current - Math.floor(this.total / 3);
-        return skipBackValue > 1 && skipBackValue < this.current ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: skipBackValue
-            })}`, String(skipBackValue))
+        return skipBackValue > 1 && skipBackValue < this.current
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: skipBackValue,
+                  })}`,
+                  String(skipBackValue)
+              )
             : undefined;
     }
 
     private buildSkipForward(options: SafeQueryOptions): PaginationLink | undefined {
         const skipForwardValue = this.current + Math.floor(this.total / 3);
-        return skipForwardValue < this.total && skipForwardValue > this.current ?
-            new PaginationLink(`${this.baseUrl}${buildQueryString({
-                ...options,
-                page: skipForwardValue
-            })}`, String(skipForwardValue))
+        return skipForwardValue < this.total && skipForwardValue > this.current
+            ? new PaginationLink(
+                  `${this.baseUrl}${buildQueryString({
+                      ...options,
+                      page: skipForwardValue,
+                  })}`,
+                  String(skipForwardValue)
+              )
             : undefined;
     }
 
@@ -90,7 +108,6 @@ export class PaginationView {
         return this.current < this.total;
     }
 }
-
 
 export class PaginationLink {
     readonly href: string;

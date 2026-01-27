@@ -1,28 +1,27 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Card } from "src/core/card/card.entity";
-import { CardRepositoryPort } from "src/core/card/card.repository.port";
-import { Format } from "src/core/card/format.enum";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { SortOptions } from "src/core/query/sort-options.enum";
-import { BaseRepository } from "src/database/base.repository";
-import { getLogger } from "src/logger/global-app-logger";
-import { Repository } from "typeorm";
-import { CardMapper } from "./card.mapper";
-import { CardOrmEntity } from "./card.orm-entity";
-import { LegalityOrmEntity } from "./legality.orm-entity";
-
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Card } from 'src/core/card/card.entity';
+import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { Format } from 'src/core/card/format.enum';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SortOptions } from 'src/core/query/sort-options.enum';
+import { BaseRepository } from 'src/database/base.repository';
+import { getLogger } from 'src/logger/global-app-logger';
+import { Repository } from 'typeorm';
+import { CardMapper } from './card.mapper';
+import { CardOrmEntity } from './card.orm-entity';
+import { LegalityOrmEntity } from './legality.orm-entity';
 
 @Injectable()
 export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
-
-    readonly TABLE = "card";
+    readonly TABLE = 'card';
     private readonly LOGGER = getLogger(CardRepository.name);
-    private readonly DEFAULT_RELATIONS: string[] = ["set", "legalities", "prices"];
+    private readonly DEFAULT_RELATIONS: string[] = ['set', 'legalities', 'prices'];
 
     constructor(
         @InjectRepository(CardOrmEntity) protected readonly repository: Repository<CardOrmEntity>,
-        @InjectRepository(LegalityOrmEntity) protected readonly legalityRepository: Repository<LegalityOrmEntity>,
+        @InjectRepository(LegalityOrmEntity)
+        protected readonly legalityRepository: Repository<LegalityOrmEntity>
     ) {
         super();
         this.LOGGER.debug(`Instantiated.`);
@@ -38,32 +37,38 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     }
 
     async findById(uuid: string, _relations: string[]): Promise<Card | null> {
-        this.LOGGER.debug(`Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
+        this.LOGGER.debug(
+            `Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`
+        );
         const ormCard: CardOrmEntity = await this.repository.findOne({
             where: { id: uuid },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
-        this.LOGGER.debug(`Card ${ormCard ? "found" : "not found"} for id: ${uuid}.`);
+        this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for id: ${uuid}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`);
-        const qb = this.repository.createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
+        this.LOGGER.debug(
+            `Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`
+        );
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.setCode = :code`, { code });
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.NUMBER);
-        const results = (await qb.getMany()).map((item: CardOrmEntity) => (CardMapper.toCore(item)));
+        const results = (await qb.getMany()).map((item: CardOrmEntity) => CardMapper.toCore(item));
         this.LOGGER.debug(`Found ${results.length} cards for set ${code}.`);
         return results;
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Finding cards with name: ${name}, options: ${JSON.stringify(options)}.`);
-        const qb = this.repository.createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.prices`, "prices")
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.name = :name`, { name });
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.PRICE, true);
@@ -72,21 +77,31 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return cards;
     }
 
-    async findBySetCodeAndNumber(code: string, number: string, _relations: string[]): Promise<Card | null> {
-        this.LOGGER.debug(`Finding card by set code ${code} and number ${number}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`);
+    async findBySetCodeAndNumber(
+        code: string,
+        number: string,
+        _relations: string[]
+    ): Promise<Card | null> {
+        this.LOGGER.debug(
+            `Finding card by set code ${code} and number ${number}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`
+        );
         const ormCard: CardOrmEntity = await this.repository.findOne({
             where: {
-                set: { code, },
+                set: { code },
                 number,
             },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
-        this.LOGGER.debug(`Card ${ormCard ? "found" : "not found"} for set ${code} number ${number}.`);
+        this.LOGGER.debug(
+            `Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`
+        );
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
     async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`);
+        this.LOGGER.debug(
+            `Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`
+        );
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
@@ -99,26 +114,37 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     async totalWithName(name: string): Promise<number> {
         this.LOGGER.debug(`Counting total cards with name: ${name}.`);
         const count = await this.repository.count({
-            where: { name }
+            where: { name },
         });
         this.LOGGER.debug(`Total cards with name ${name}: ${count}.`);
         return count;
     }
 
-    async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean = true): Promise<number> {
-        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? " with foils" : ""}.`);
+    async totalValueForSet(
+        code: string,
+        includeFoil: boolean,
+        baseOnly: boolean = true
+    ): Promise<number> {
+        this.LOGGER.debug(
+            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`
+        );
         const selectExpr = includeFoil
-            ? "(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))"
-            : "COALESCE(p.normal, p.foil, 0)";
-        const result = await this.repository.query(`
+            ? '(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))'
+            : 'COALESCE(p.normal, p.foil, 0)';
+        const result = await this.repository.query(
+            `
             SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
             FROM card c
             JOIN price p ON p.card_id = c.id
             WHERE c.set_code = $1
             AND c.in_main = $2
-        `, [code, baseOnly]);
+        `,
+            [code, baseOnly]
+        );
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`);
+        this.LOGGER.debug(
+            `Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`
+        );
         return total;
     }
 
@@ -134,7 +160,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
             .getMany();
         const found = new Set(ormCards.map((c: CardOrmEntity) => c.id));
-        this.LOGGER.debug(`Verified ${found.size} existing cards out of ${cardIds.length} provided.`);
+        this.LOGGER.debug(
+            `Verified ${found.size} existing cards out of ${cardIds.length} provided.`
+        );
         return found;
     }
 

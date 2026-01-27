@@ -1,4 +1,4 @@
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 export class FilterView {
     readonly baseUrl: string;

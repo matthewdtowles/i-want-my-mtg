@@ -1,10 +1,9 @@
-import { Card } from "src/core/card/card.entity";
-import { Set } from "src/core/set/set.entity";
-import { CardMapper } from "src/database/card/card.mapper";
-import { CardOrmEntity } from "src/database/card/card.orm-entity";
-import { SetPriceMapper } from "./set-price.mapper";
-import { SetOrmEntity } from "./set.orm-entity";
-
+import { Card } from 'src/core/card/card.entity';
+import { Set } from 'src/core/set/set.entity';
+import { CardMapper } from 'src/database/card/card.mapper';
+import { CardOrmEntity } from 'src/database/card/card.orm-entity';
+import { SetPriceMapper } from './set-price.mapper';
+import { SetOrmEntity } from './set.orm-entity';
 
 export class SetMapper {
     static toCore(ormSet: SetOrmEntity): Set {
@@ -18,8 +17,10 @@ export class SetMapper {
             keyruneCode: ormSet.keyruneCode,
             totalSize: ormSet.totalSize,
             prices: ormSet.setPrice ? SetPriceMapper.toCore(ormSet.setPrice) : null,
-            cards: ormSet.cards && Array.isArray(ormSet.cards) ?
-                ormSet.cards.map((c: CardOrmEntity) => CardMapper.toCore(c)) : [],
+            cards:
+                ormSet.cards && Array.isArray(ormSet.cards)
+                    ? ormSet.cards.map((c: CardOrmEntity) => CardMapper.toCore(c))
+                    : [],
         });
     }
 
@@ -34,7 +35,9 @@ export class SetMapper {
         ormEntity.setPrice = coreSet.prices ? SetPriceMapper.toOrmEntity(coreSet.prices) : null;
         ormEntity.totalSize = coreSet.totalSize;
         ormEntity.type = coreSet.type;
-        ormEntity.cards = coreSet.cards ? coreSet.cards.map((c: Card) => CardMapper.toOrmEntity(c)) : [];
+        ormEntity.cards = coreSet.cards
+            ? coreSet.cards.map((c: Card) => CardMapper.toOrmEntity(c))
+            : [];
         return ormEntity;
     }
 }

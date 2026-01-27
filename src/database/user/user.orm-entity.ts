@@ -1,8 +1,8 @@
-import { Exclude } from "class-transformer";
-import { UserRole } from "src/shared/constants/user.role.enum";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Exclude } from 'class-transformer';
+import { UserRole } from 'src/shared/constants/user.role.enum';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity("users")
+@Entity('users')
 export class UserOrmEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -18,9 +18,9 @@ export class UserOrmEntity {
     password: string;
 
     @Column({
-        type: "enum",
+        type: 'enum',
         enum: UserRole,
-        enumName: "user_role_enum",
+        enumName: 'user_role_enum',
         default: UserRole.User,
     })
     role: UserRole;

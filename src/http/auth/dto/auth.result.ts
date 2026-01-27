@@ -1,4 +1,4 @@
-import { User } from "src/core/user/user.entity";
+import { User } from 'src/core/user/user.entity';
 
 export class AuthResult {
     readonly success: boolean;
@@ -10,7 +10,7 @@ export class AuthResult {
 
     constructor(init?: Partial<AuthResult>) {
         this.success = init?.success ?? false;
-        this.redirectTo = init?.redirectTo ?? "/";
+        this.redirectTo = init?.redirectTo ?? '/';
         this.statusCode = init?.statusCode ?? 500;
         this.token = init?.token;
         this.user = init?.user;

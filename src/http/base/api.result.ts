@@ -9,7 +9,7 @@ export function createSuccessResult<T>(data: T, message?: string): ApiResult<T> 
     return {
         success: true,
         data,
-        message
+        message,
     };
 }
 
@@ -18,6 +18,6 @@ export function createErrorResult(error: Error | string): ApiResult<null> {
     return {
         success: false,
         data: null,
-        error: errorMessage
+        error: errorMessage,
     };
 }

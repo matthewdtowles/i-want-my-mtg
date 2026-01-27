@@ -1,5 +1,5 @@
-import { CardResponseDto } from "src/http/card/dto/card.response.dto";
-import { BaseSetResponseDto } from "./base-set.response.dto";
+import { CardResponseDto } from 'src/http/card/dto/card.response.dto';
+import { BaseSetResponseDto } from './base-set.response.dto';
 
 // For set.hbs (setInfo.hbs)
 export class SetResponseDto extends BaseSetResponseDto {

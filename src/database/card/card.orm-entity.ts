@@ -1,48 +1,39 @@
+import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { PriceOrmEntity } from 'src/database/price/price.orm-entity';
+import { SetOrmEntity } from 'src/database/set/set.orm-entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { LegalityOrmEntity } from './legality.orm-entity';
 
-import { CardRarity } from "src/core/card/card.rarity.enum";
-import { PriceOrmEntity } from "src/database/price/price.orm-entity";
-import { SetOrmEntity } from "src/database/set/set.orm-entity";
-import {
-    Column,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    OneToMany,
-    PrimaryColumn
-} from "typeorm";
-import { LegalityOrmEntity } from "./legality.orm-entity";
-
-@Entity("card")
+@Entity('card')
 export class CardOrmEntity {
-
-    @PrimaryColumn({ name: "id", unique: true })
+    @PrimaryColumn({ name: 'id', unique: true })
     id: string;
 
     @Column({ nullable: true })
     artist?: string;
 
-    @Column({ name: "has_foil" })
+    @Column({ name: 'has_foil' })
     hasFoil: boolean;
 
-    @Column({ name: "has_non_foil" })
+    @Column({ name: 'has_non_foil' })
     hasNonFoil: boolean;
 
-    @Column({ name: "img_src" })
+    @Column({ name: 'img_src' })
     imgSrc: string;
 
-    @Column({ name: "in_main" })
+    @Column({ name: 'in_main' })
     inMain: boolean;
 
-    @Column({ name: "is_alternative" })
+    @Column({ name: 'is_alternative' })
     isAlternative: boolean;
 
-    @Column({ default: false, name: "is_reserved" })
+    @Column({ default: false, name: 'is_reserved' })
     isReserved: boolean;
 
-    @OneToMany(() => LegalityOrmEntity, legality => legality.card, { cascade: true })
+    @OneToMany(() => LegalityOrmEntity, (legality) => legality.card, { cascade: true })
     legalities: LegalityOrmEntity[];
 
-    @Column({ name: "mana_cost", nullable: true })
+    @Column({ name: 'mana_cost', nullable: true })
     manaCost?: string;
 
     @Column()
@@ -51,27 +42,27 @@ export class CardOrmEntity {
     @Column()
     number: string;
 
-    @Column({ name: "oracle_text", nullable: true, type: "text" })
+    @Column({ name: 'oracle_text', nullable: true, type: 'text' })
     oracleText?: string;
 
     @OneToMany(() => PriceOrmEntity, (price) => price.card, { cascade: true })
     prices: PriceOrmEntity[];
 
     @Column({
-        type: "enum",
+        type: 'enum',
         enum: CardRarity,
-        enumName: "card_rarity_enum",
+        enumName: 'card_rarity_enum',
     })
     rarity: CardRarity;
 
     @ManyToOne(() => SetOrmEntity, (set) => set.cards)
-    @JoinColumn({ name: "set_code", referencedColumnName: "code" })
+    @JoinColumn({ name: 'set_code', referencedColumnName: 'code' })
     set: SetOrmEntity;
 
-    @Column({ name: "set_code" })
+    @Column({ name: 'set_code' })
     setCode: string;
 
-    @Column({ name: "sort_number" })
+    @Column({ name: 'sort_number' })
     sortNumber: string;
 
     @Column()

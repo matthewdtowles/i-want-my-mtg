@@ -1,15 +1,14 @@
-import { BaseRepositoryPort } from "src/core/base.repository.port";
-import { SafeQueryOptions } from "src/core/query/safe-query-options.dto";
-import { Card } from "./card.entity";
-import { Format } from "./format.enum";
+import { BaseRepositoryPort } from 'src/core/base.repository.port';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { Card } from './card.entity';
+import { Format } from './format.enum';
 
-export const CardRepositoryPort = "CardRepositoryPort";
+export const CardRepositoryPort = 'CardRepositoryPort';
 
 /**
  * Persistence layer interface for Card entity.
  */
 export interface CardRepositoryPort extends BaseRepositoryPort {
-
     /**
      * Saves an array of Card entities. Updates existing cards if they already exist.
      * @param cards Array of Card entities to save.

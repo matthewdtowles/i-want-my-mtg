@@ -1,17 +1,13 @@
-import {
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException
-} from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { Observable } from "rxjs";
-import { getLogger } from "src/logger/global-app-logger";
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs';
+import { getLogger } from 'src/logger/global-app-logger';
 
 /**
  * Trigger local auth strategy to validate email and password during login
  */
 @Injectable()
-export class LocalAuthGuard extends AuthGuard("local") {
+export class LocalAuthGuard extends AuthGuard('local') {
     private readonly LOGGER = getLogger(LocalAuthGuard.name);
 
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {

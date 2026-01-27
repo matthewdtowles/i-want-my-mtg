@@ -1,5 +1,5 @@
-import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from "./query.util";
-import { SortOptions } from "./sort-options.enum";
+import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';
+import { SortOptions } from './sort-options.enum';
 
 export class SafeQueryOptions {
     readonly ascend?: boolean;

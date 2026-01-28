@@ -63,8 +63,8 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return count;
     }
 
-    async totalInSet(code: string, baseOnly: boolean): Promise<number> {
-        this.LOGGER.debug(`Get total cards in${baseOnly ? ' main ' : ' '}set: ${code}.`);
+    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Get total cards in set: ${code}`);
         const set = await this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.code = :code`, { code })
@@ -73,14 +73,18 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             this.LOGGER.debug(`Set not found: ${code}.`);
             return 0;
         }
-        return baseOnly ? (set.baseSize ?? 0) : (set.totalSize ?? 0);
+        return options.baseOnly ? (set.baseSize ?? 0) : (set.totalSize ?? 0);
     }
 
-    async totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
+    async totalValueForSet(
+        code: string,
+        includeFoil: boolean,
+        options: SafeQueryOptions
+    ): Promise<number> {
         this.LOGGER.debug(
-            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`
+            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}, baseOnly: ${options.baseOnly}.`
         );
-        const select_price = this.determineWhichPrice(includeFoil, baseOnly);
+        const select_price = this.determineWhichPrice(includeFoil, options.baseOnly);
         const result = await this.repository.query(
             `SELECT ${select_price} AS total_value FROM set_price WHERE set_code = $1`,
             [code]

@@ -7,7 +7,17 @@
         {{>completionRate}}
     </section>
     <div class="w-full mx-auto">
-        {{>filter}}
+        <div class="flex items-center gap-2">
+            <div class="flex-1">
+                {{>filter}}
+            </div>
+            <a href="{{baseOnlyToggle.url}}" 
+               class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
+                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
+               style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                {{baseOnlyToggle.text}}
+            </a>
+        </div>
         <table class="table-container w-full">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>

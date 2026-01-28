@@ -1,49 +1,30 @@
-import { isEnumValue } from 'src/core/validation.util';
 import { SortOptions } from './sort-options.enum';
 
 export function sanitizeInt(value: any, defaultValue: number): number {
-    if (value == null || value === '') {
-        return defaultValue;
-    }
-    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) {
-        return value;
-    }
+    const parsed = parseInt(value);
+    return isNaN(parsed) || parsed < 1 ? defaultValue : parsed;
+}
+
+export function safeAlphaNumeric(value: any): string | undefined {
+    if (!value || typeof value !== 'string') return undefined;
+    const sanitized = value.replace(/[^a-zA-Z0-9\s-]/g, '').trim();
+    return sanitized.length > 0 ? sanitized : undefined;
+}
+
+export function safeSort(value: any): SortOptions | undefined {
+    if (!value || typeof value !== 'string') return undefined;
+    const validSorts = Object.values(SortOptions);
+    return validSorts.includes(value as SortOptions) ? (value as SortOptions) : undefined;
+}
+
+export function safeBoolean(value: any): boolean {
+    // Only return false if explicitly set to false
     if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed.length === 0) return defaultValue;
-        const parsed = parseInt(trimmed, 10);
-        if (!isNaN(parsed) && parsed >= 1) {
-            return parsed;
-        }
+        const lower = value.toLowerCase();
+        if (lower === 'false' || lower === '0') return false;
     }
-    return defaultValue;
-}
+    if (value === false || value === 0) return false;
 
-export function safeAlphaNumeric(value: any): string | null {
-    if (!value || value.trim().length === 0) {
-        return null;
-    }
-    let sanitized = value.trim().replace(/[^a-zA-Z0-9\-]/g, ' ');
-    // Collapse multiple spaces to a single space
-    sanitized = sanitized.replace(/\s+/g, ' ');
-    const charLimit = 25;
-    if (sanitized.length > charLimit) {
-        sanitized = sanitized.substring(0, charLimit);
-    }
-    return sanitized.length > 0 ? sanitized : null;
-}
-
-export function safeBoolean(value: any): boolean | null {
-    if (value == null || value === '') return null;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-        const trimmed = value.trim().toLowerCase();
-        if (trimmed === 'true') return true;
-        if (trimmed === 'false') return false;
-    }
-    return null;
-}
-
-export function safeSort(value: any): SortOptions | null {
-    return isEnumValue(SortOptions, value) ? value : null;
+    // Default to true for undefined, null, or any other value
+    return true;
 }

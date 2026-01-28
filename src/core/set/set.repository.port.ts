@@ -31,18 +31,23 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Gets the total number of cards in a set.
-     * @param code Set code.
-     * @param baseOnly if true, base_size. Otherwise, total_size.
-     * @returns Promise resolving to the total number of cards in the set.
+     *
+     * @param code - The set code.
+     * @param options - The query options used to filter which cards are counted.
+     * @returns A promise that resolves to the total number of cards in the set.
      */
-    totalInSet(code: string, baseOnly: boolean): Promise<number>;
+    totalInSet(code: string, options: SafeQueryOptions): Promise<number>;
 
     /**
      * Gets the total value of all foil|non-foil cards in a set.
      * @param code Set code.
      * @param includeFoil Include foil prices if true.
-     * @param baseOnly Include only the base set if true. Entire set if false.
+     * @param options Query options used to filter which cards are counted.
      * @returns Promise resolving to the total value of foil|non-foil cards in the set.
      */
-    totalValueForSet(code: string, includeFoil: boolean, baseOnly: boolean): Promise<number>;
+    totalValueForSet(
+        code: string,
+        includeFoil: boolean,
+        options: SafeQueryOptions
+    ): Promise<number>;
 }

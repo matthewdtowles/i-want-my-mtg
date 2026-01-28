@@ -71,7 +71,7 @@ export class SetOrchestrator {
                 baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
                 breadcrumbs,
                 message: `Page ${pagination.current} of ${pagination.totalPages}`,
-                setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),
+                setList: await this.createSetMetaResponseDtos(userId, sets, options),
                 status: ActionStatus.SUCCESS,
                 pagination,
                 filter: new FilterView(options, baseUrl),
@@ -97,21 +97,22 @@ export class SetOrchestrator {
             }
             const cards: Card[] = await this.cardService.findBySet(setCode, options);
             set.cards.push(...cards);
-            const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
+            const setResponse = await this.createSetResponseDto(userId, set, options);
             this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
             const baseUrl = `/sets/${set.code}`;
-            const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
+            const setSize = await this.setService.totalCardsInSet(set.code, options);
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
+                baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Sets', url: '/sets' },
-                    { label: setResonse.name, url: baseUrl },
+                    { label: setResponse.name, url: baseUrl },
                 ],
-                message: setResonse ? `Found set: ${setResonse.name}` : 'Set not found',
-                set: setResonse,
-                status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                message: setResponse ? `Found set: ${setResponse.name}` : 'Set not found',
+                set: setResponse,
+                status: setResponse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 pagination: new PaginationView(options, baseUrl, setSize),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
@@ -144,11 +145,11 @@ export class SetOrchestrator {
         }
     }
 
-    async getLastCardPage(setCode: string, query: SafeQueryOptions): Promise<number> {
+    async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, query.baseOnly);
-            const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
+            const totalCards = await this.setService.totalCardsInSet(setCode, options);
+            const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;
         } catch (error) {
@@ -159,12 +160,16 @@ export class SetOrchestrator {
         }
     }
 
-    async getSetValue(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
-        const setType = baseOnly ? 'main' : '';
+    async getSetValue(
+        setCode: string,
+        includeFoil: boolean,
+        options: SafeQueryOptions
+    ): Promise<number> {
+        const setType = options.baseOnly ? 'main' : 'all';
         const withFoils = includeFoil ? 'with foils' : '';
         this.LOGGER.debug(`Get value for ${setType} set ${setCode} ${withFoils}`);
         try {
-            const setValue = await this.setService.totalValueForSet(setCode, includeFoil, baseOnly);
+            const setValue = await this.setService.totalValueForSet(setCode, includeFoil, options);
             this.LOGGER.debug(`Value for ${setType} set ${setCode} ${withFoils}: ${setValue}.`);
             return setValue;
         } catch (error) {
@@ -243,18 +248,18 @@ export class SetOrchestrator {
     private async createSetMetaResponseDtos(
         userId: number,
         sets: Set[],
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, baseOnly)));
+        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, options)));
     }
 
     private async createSetMetaResponseDto(
         userId: number,
         set: Set,
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
+        const setSize = await this.setService.totalCardsInSet(set.code, options);
         return new SetMetaResponseDto({
             block: set.block ?? set.name,
             code: set.code,
@@ -273,7 +278,7 @@ export class SetOrchestrator {
     private async createSetResponseDto(
         userId: number,
         set: Set,
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory =
@@ -284,7 +289,7 @@ export class SetOrchestrator {
                   )
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
+        const setSize = await this.setService.totalCardsInSet(set.code, options);
         return new SetResponseDto({
             baseSize: set.baseSize,
             block: set.block ?? set.name,

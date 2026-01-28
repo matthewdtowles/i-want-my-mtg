@@ -7,6 +7,7 @@ import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { completionRate, toDollar } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { BaseOnlyToggleView } from 'src/http/list/base-only-toggle.view';
 import { FilterView } from 'src/http/list/filter.view';
 import { PaginationView } from 'src/http/list/pagination.view';
 import { SortableHeaderView } from 'src/http/list/sortable-header.view';
@@ -44,14 +45,12 @@ export class InventoryOrchestrator {
             const username: string = req.user.name;
             const baseUrl = '/inventory';
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
-            // owned total is always the entire amount of cards owned
-            // cards.length is the number of those cards that are part of current payload
             const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
-            // total cards in existence
             const totalCards = await this.inventoryService.totalCards();
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
+                baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Inventory', url: baseUrl },

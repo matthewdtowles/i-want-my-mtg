@@ -12,7 +12,7 @@
             <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
             <li class="text-gray-700">Set Price: {{set.prices.defaultPrice}}</li>
             {{#if authenticated}}
-            <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.baseSize}}</li>
+            <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.effectiveSize}}</li>
             <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>
             <li class="text-gray-700">{{>completionRate set}}</li>
             {{/if}}

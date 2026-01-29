@@ -327,11 +327,15 @@ export class SetOrchestrator {
         options: SafeQueryOptions
     ): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, options);
+
+        // Use effectiveSize: totalSize when baseSize is 0
+        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+
         return new SetMetaResponseDto({
+            baseSize: set.baseSize,
             block: set.block ?? set.name,
             code: set.code,
-            completionRate: completionRate(ownedTotal, setSize),
+            completionRate: completionRate(ownedTotal, effectiveSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
@@ -339,6 +343,7 @@ export class SetOrchestrator {
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),
+            totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
         });
     }
@@ -357,12 +362,15 @@ export class SetOrchestrator {
                   )
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, options);
+
+        // Use effectiveSize: totalSize when baseSize is 0
+        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+
         return new SetResponseDto({
             baseSize: set.baseSize,
             block: set.block ?? set.name,
             code: set.code,
-            completionRate: completionRate(ownedTotal, setSize),
+            completionRate: completionRate(ownedTotal, effectiveSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),

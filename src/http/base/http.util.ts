@@ -20,25 +20,34 @@ export function isAuthenticated(req: AuthenticatedRequest): boolean {
 }
 
 export function buildQueryString(options: SafeQueryOptions): string {
+    if (!options || (options.page === undefined && options.limit === undefined)) {
+        return '';
+    }
+
     const params = new URLSearchParams();
-    if (options.page && options.page !== 1) {
+
+    if (options.page !== undefined) {
         params.set('page', String(options.page));
     }
-    if (options.limit && options.limit !== 25) {
+    if (options.limit !== undefined) {
         params.set('limit', String(options.limit));
     }
     if (options.filter) {
         params.set('filter', options.filter);
     }
-    if (options.sort) {
-        params.set('sort', options.sort);
-    }
     if (options.ascend !== undefined) {
         params.set('ascend', String(options.ascend));
     }
-    params.set('baseOnly', String(options.baseOnly));
-    const query = params.toString();
-    return query ? `?${query}` : '';
+    if (options.sort) {
+        params.set('sort', options.sort);
+    }
+    // Only include baseOnly when explicitly false (true is the default)
+    if (options.baseOnly === false) {
+        params.set('baseOnly', 'false');
+    }
+
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
 }
 
 export function completionRate(totalOwned: number, totalCards: number): number {

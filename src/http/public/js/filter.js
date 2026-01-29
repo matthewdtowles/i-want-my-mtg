@@ -31,21 +31,23 @@ document.addEventListener('DOMContentLoaded', function () {
             .then((html) => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const newTable = doc.querySelector('table');
-                const newPagination = doc.querySelector('.pagination-container');
 
-                if (newTable) {
-                    document.querySelector('table').replaceWith(newTable);
+                // Replace the filter-results container (handles both table and empty state)
+                const newResults = doc.querySelector('#filter-results');
+                const existingResults = document.querySelector('#filter-results');
+                if (newResults && existingResults) {
+                    existingResults.replaceWith(newResults);
                 }
-                if (newPagination) {
-                    const existingPagination = document.querySelector('.pagination-container');
-                    if (existingPagination) {
-                        existingPagination.replaceWith(newPagination);
-                    }
+
+                // Replace pagination
+                const newPagination = doc.querySelector('.pagination-container');
+                const existingPagination = document.querySelector('.pagination-container');
+                if (newPagination && existingPagination) {
+                    existingPagination.replaceWith(newPagination);
                 }
 
                 // Update the URL without reloading
-                window.history.replaceState({}, '', form.action + '?' + params.toString());
+                window.history.replaceState({}, '', url);
             })
             .catch((error) => {
                 console.error('Error fetching filtered results:', error);

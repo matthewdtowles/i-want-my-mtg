@@ -27,13 +27,11 @@ export class SetService {
         return result;
     }
 
-    async totalCardsInSet(setCode: string, baseOnly?: boolean): Promise<number> {
+    async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
         try {
-            const total = await this.repository.totalInSet(setCode, baseOnly);
-            this.LOGGER.debug(
-                `Total cards in${baseOnly ? ' main ' : ' '}set ${setCode}: ${total}.`
-            );
+            const total = await this.repository.totalInSet(setCode, options);
+            this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
             return total;
         } catch (error) {
             throw new Error(`Error counting cards in set ${setCode}: ${error.message}`);
@@ -43,15 +41,15 @@ export class SetService {
     async totalValueForSet(
         setCode: string,
         includeFoil: boolean,
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<number> {
         this.LOGGER.debug(
-            `Get total value of cards in set ${setCode} ${includeFoil ? 'with foils' : ''}.`
+            `Get total value of cards in set ${setCode} ${includeFoil ? 'with foils' : ''}, baseOnly: ${options.baseOnly}.`
         );
         try {
-            const total = await this.repository.totalValueForSet(setCode, includeFoil, baseOnly);
+            const total = await this.repository.totalValueForSet(setCode, includeFoil, options);
             this.LOGGER.debug(
-                `Total value for set ${setCode} ${includeFoil ? 'with foils' : ''} ${total}.`
+                `Total value for set ${setCode} ${includeFoil ? 'with foils' : ''}: ${total}.`
             );
             return total;
         } catch (error) {

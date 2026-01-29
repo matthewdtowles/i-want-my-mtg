@@ -3,37 +3,41 @@
         <div class="flex-1">
             {{>filter}}
         </div>
+        {{#if baseOnlyToggle.visible}}
         <a href="{{baseOnlyToggle.url}}" 
            class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}} 
                   whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0
                   mb-4">
             {{baseOnlyToggle.text}}
         </a>
+        {{/if}}
     </div>
-    {{#if setList.length}}
-    <table class="min-w-full bg-white">
-        <thead>{{>tableHeadersRow}}</thead>
-        <tbody>
-            {{#each setList}}
-            <tr class="table-row">
-                <td class="py-2 pl-2">
-                    <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
-                    <a href="{{this.url}}" class="table-link">{{this.name}}</a>
-                    {{>tags item=this}}
-                </td>
-                <td class="py-2">{{this.prices.defaultPrice}}</td>
-                {{#if ../authenticated}}
-                <td class="py-2">{{>completionRate}}</td>
-                {{/if}}
-                <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    {{else}}
-    <div class="text-center py-8 text-gray-500">
-        No sets found matching your filter.
+    <div id="filter-results">
+        {{#if setList.length}}
+        <table class="min-w-full bg-white">
+            <thead>{{>tableHeadersRow}}</thead>
+            <tbody>
+                {{#each setList}}
+                <tr class="table-row">
+                    <td class="py-2 pl-2">
+                        <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                        <a href="{{this.url}}" class="table-link">{{this.name}}</a>
+                        {{>tags item=this}}
+                    </td>
+                    <td class="py-2">{{this.prices.defaultPrice}}</td>
+                    {{#if ../authenticated}}
+                    <td class="py-2">{{>completionRate}}</td>
+                    {{/if}}
+                    <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="text-center py-8 text-gray-500">
+            No sets found matching your filter.
+        </div>
+        {{/if}}
     </div>
-    {{/if}}
 </div>
 {{>pagination hasItems=setList.length}}

@@ -1,58 +1,67 @@
-import { Controller, Get, Inject, Param, Render, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { safeBoolean, safeSort } from 'src/core/query/query.util';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { getLogger } from 'src/logger/global-app-logger';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetViewDto } from './dto/set.view.dto';
 import { SetOrchestrator } from './set.orchestrator';
 
 @Controller('sets')
 export class SetController {
-    private readonly LOGGER = getLogger(SetController.name);
-
-    private readonly breadcrumbs = [
-        { label: 'Home', url: '/' },
-        { label: 'Sets', url: '/sets' },
-    ];
-
     constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) {}
 
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render('setListPage')
-    async setListing(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        this.LOGGER.log(`Find list of sets.`);
-        const rawOptions = new SafeQueryOptions(req.query);
-        const lastPage = await this.setOrchestrator.getLastPage(rawOptions);
+    async findAll(
+        @Query('page') page: string,
+        @Query('limit') limit: string,
+        @Query('filter') filter: string,
+        @Query('sort') sort: string,
+        @Query('ascend') ascend: string,
+        @Query('baseOnly') baseOnly: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<SetListViewDto> {
         const options = new SafeQueryOptions({
-            ...rawOptions,
-            page: Math.min(rawOptions.page, lastPage),
+            page: parseInt(page),
+            limit: parseInt(limit),
+            filter,
+            sort: safeSort(sort),
+            ascend: ascend === 'true',
+            baseOnly: safeBoolean(baseOnly),
         });
-        const setList = await this.setOrchestrator.findSetList(req, this.breadcrumbs, options);
-        this.LOGGER.log(`Found list of ${setList?.setList?.length} sets.`);
-        return setList;
+        return await this.setOrchestrator.findSetList(
+            req,
+            [
+                { label: 'Home', url: '/' },
+                { label: 'Sets', url: '/sets' },
+            ],
+            options
+        );
     }
 
     @UseGuards(OptionalAuthGuard)
-    @Get(':setCode')
+    @Get(':code')
     @Render('set')
-    async findBySetCode(
-        @Req() req: AuthenticatedRequest,
-        @Param('setCode') setCode: string
+    async findByCode(
+        @Param('code') code: string,
+        @Query('page') page: string,
+        @Query('limit') limit: string,
+        @Query('filter') filter: string,
+        @Query('sort') sort: string,
+        @Query('ascend') ascend: string,
+        @Query('baseOnly') baseOnly: string,
+        @Req() req: AuthenticatedRequest
     ): Promise<SetViewDto> {
-        this.LOGGER.log(`Find set and cards for set ${setCode}.`);
-        const rawOptions = new SafeQueryOptions({
-            ...req.query,
-            baseOnly: false, // do not filter out non-main cards
-        });
-        const lastPage = await this.setOrchestrator.getLastCardPage(setCode, rawOptions);
         const options = new SafeQueryOptions({
-            ...rawOptions,
-            page: Math.min(rawOptions.page, lastPage),
+            page: parseInt(page),
+            limit: parseInt(limit),
+            filter,
+            sort: safeSort(sort),
+            ascend: ascend === 'true',
+            baseOnly: safeBoolean(baseOnly),
         });
-        const set = await this.setOrchestrator.findBySetCode(req, setCode, options);
-        this.LOGGER.log(`Found set ${setCode} with ${set?.set?.cards?.length} cards.`);
-        return set;
+        return await this.setOrchestrator.findBySetCode(req, code, options);
     }
 }

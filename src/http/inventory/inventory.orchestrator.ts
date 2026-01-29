@@ -7,11 +7,13 @@ import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { completionRate, toDollar } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { BaseOnlyToggleView } from 'src/http/list/base-only-toggle.view';
 import { FilterView } from 'src/http/list/filter.view';
 import { PaginationView } from 'src/http/list/pagination.view';
 import { SortableHeaderView } from 'src/http/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
+import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryResponseDto } from './dto/inventory.response.dto';
@@ -34,38 +36,50 @@ export class InventoryOrchestrator {
         this.LOGGER.debug(`Find inventory for user ${userId}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const inventoryItems: Inventory[] = await this.inventoryService.findAllForUser(
-                req.user.id,
-                options
-            );
+
+            const [inventoryItems, currentCount, targetCount, totalCards, ownedValue] =
+                await Promise.all([
+                    this.inventoryService.findAllForUser(req.user.id, options),
+                    this.inventoryService.totalInventoryItems(userId, options),
+                    this.inventoryService.totalInventoryItems(userId, {
+                        ...options,
+                        baseOnly: !options.baseOnly,
+                    }),
+                    this.inventoryService.totalCards(),
+                    this.inventoryService.totalOwnedValue(userId),
+                ]);
+
             const cards: InventoryResponseDto[] = inventoryItems.map((item) =>
                 InventoryPresenter.toInventoryResponseDto(item)
             );
-            const username: string = req.user.name;
+
+            const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
             const baseUrl = '/inventory';
+
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
-            // owned total is always the entire amount of cards owned
-            // cards.length is the number of those cards that are part of current payload
-            const ownedTotal = await this.inventoryService.totalInventoryItems(userId, options);
-            // total cards in existence
-            const totalCards = await this.inventoryService.totalCards();
 
             return new InventoryViewDto({
                 authenticated: req.isAuthenticated(),
+                baseOnlyToggle: new BaseOnlyToggleView(
+                    options,
+                    baseUrl,
+                    toggleConfig.targetMaxPage,
+                    toggleConfig.visible
+                ),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Inventory', url: baseUrl },
                 ],
                 cards,
                 message: cards
-                    ? `Inventory for ${username} found`
-                    : `Inventory not found for ${username}`,
+                    ? `Inventory for ${req.user.name} found`
+                    : `Inventory not found for ${req.user.name}`,
                 status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                username,
-                ownedValue: toDollar(await this.inventoryService.totalOwnedValue(userId)),
-                ownedTotal,
-                completionRate: completionRate(ownedTotal, totalCards),
-                pagination: new PaginationView(options, baseUrl, ownedTotal),
+                username: req.user.name,
+                ownedValue: toDollar(ownedValue),
+                ownedTotal: currentCount,
+                completionRate: completionRate(currentCount, totalCards),
+                pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
                     new SortableHeaderView(options, SortOptions.OWNED_QUANTITY, ['pl-2']),

@@ -61,4 +61,17 @@ export class CardService {
             throw new Error(`Error counting cards with name ${name}: ${error.message}`);
         }
     }
+
+    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(
+            `Find total number of cards in set ${code}, options: ${JSON.stringify(options)}.`
+        );
+        try {
+            const total = await this.repository.totalInSet(code, options);
+            this.LOGGER.debug(`Total cards in set ${code}: ${total}.`);
+            return total;
+        } catch (error) {
+            throw new Error(`Error counting cards in set ${code}: ${error.message}`);
+        }
+    }
 }

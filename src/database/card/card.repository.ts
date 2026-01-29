@@ -56,6 +56,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.setCode = :code`, { code });
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
+        }
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.NUMBER);
@@ -98,14 +101,17 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async totalInSet(code: string, options?: SafeQueryOptions): Promise<number> {
+    async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(
             `Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`
         );
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
-        this.addFilters(qb, options?.filter);
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
+        }
+        this.addFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total cards in set ${code}: ${count}.`);
         return count;

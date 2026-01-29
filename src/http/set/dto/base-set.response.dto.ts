@@ -5,6 +5,7 @@ export class BaseSetResponseDto {
     readonly block?: string;
     readonly code: string;
     readonly completionRate: number;
+    readonly effectiveSize: number;
     readonly keyruneCode: string;
     readonly name: string;
     readonly ownedTotal: number;
@@ -29,5 +30,8 @@ export class BaseSetResponseDto {
         this.totalSize = init.totalSize ?? 0;
         this.url = init.url || '';
         this.tags = init.tags || [];
+
+        // Use totalSize when baseSize is 0 (bonus-only sets)
+        this.effectiveSize = this.baseSize > 0 ? this.baseSize : this.totalSize;
     }
 }

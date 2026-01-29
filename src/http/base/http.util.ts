@@ -20,14 +20,34 @@ export function isAuthenticated(req: AuthenticatedRequest): boolean {
 }
 
 export function buildQueryString(options: SafeQueryOptions): string {
-    const params = [];
-    if (options.page) params.push(`page=${options.page}`);
-    if (options.limit) params.push(`limit=${options.limit}`);
-    if (options.filter) params.push(`filter=${options.filter}`);
-    if (typeof options.ascend === 'boolean') params.push(`ascend=${options.ascend}`);
-    if (options.sort) params.push(`sort=${options.sort}`);
-    if (options.baseOnly === false) params.push(`baseOnly=false`);
-    return params.length > 0 ? `?${params.join('&')}` : '';
+    if (!options || (options.page === undefined && options.limit === undefined)) {
+        return '';
+    }
+
+    const params = new URLSearchParams();
+
+    if (options.page !== undefined) {
+        params.set('page', String(options.page));
+    }
+    if (options.limit !== undefined) {
+        params.set('limit', String(options.limit));
+    }
+    if (options.filter) {
+        params.set('filter', options.filter);
+    }
+    if (options.ascend !== undefined) {
+        params.set('ascend', String(options.ascend));
+    }
+    if (options.sort) {
+        params.set('sort', options.sort);
+    }
+    // Only include baseOnly when explicitly false (true is the default)
+    if (options.baseOnly === false) {
+        params.set('baseOnly', 'false');
+    }
+
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
 }
 
 export function completionRate(totalOwned: number, totalCards: number): number {

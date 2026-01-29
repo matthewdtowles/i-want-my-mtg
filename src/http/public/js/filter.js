@@ -11,10 +11,17 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('page', 1);
         params.set('limit', form.querySelector('input[name="limit"]').value);
 
-        // Preserve baseOnly parameter from current URL
+        // Preserve all parameters from current URL
         const currentParams = new URLSearchParams(window.location.search);
+
         if (currentParams.has('baseOnly')) {
             params.set('baseOnly', currentParams.get('baseOnly'));
+        }
+        if (currentParams.has('sort')) {
+            params.set('sort', currentParams.get('sort'));
+        }
+        if (currentParams.has('ascend')) {
+            params.set('ascend', currentParams.get('ascend'));
         }
 
         const url = form.action + '?' + params.toString();
@@ -24,18 +31,23 @@ document.addEventListener('DOMContentLoaded', function () {
             .then((html) => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const newTable = doc.querySelector('table');
-                const newPagination = doc.querySelector('.pagination-container');
 
-                if (newTable) {
-                    document.querySelector('table').replaceWith(newTable);
+                // Replace the filter-results container (handles both table and empty state)
+                const newResults = doc.querySelector('#filter-results');
+                const existingResults = document.querySelector('#filter-results');
+                if (newResults && existingResults) {
+                    existingResults.replaceWith(newResults);
                 }
-                if (newPagination) {
-                    const existingPagination = document.querySelector('.pagination-container');
-                    if (existingPagination) {
-                        existingPagination.replaceWith(newPagination);
-                    }
+
+                // Replace pagination
+                const newPagination = doc.querySelector('.pagination-container');
+                const existingPagination = document.querySelector('.pagination-container');
+                if (newPagination && existingPagination) {
+                    existingPagination.replaceWith(newPagination);
                 }
+
+                // Update the URL without reloading
+                window.history.replaceState({}, '', url);
             })
             .catch((error) => {
                 console.error('Error fetching filtered results:', error);

@@ -3,27 +3,28 @@ import {
     Controller,
     Delete,
     Get,
+    HttpCode,
+    HttpStatus,
     Inject,
     Patch,
     Post,
+    Query,
     Render,
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { Inventory } from 'src/core/inventory/inventory.entity';
+import { safeBoolean, safeSort } from 'src/core/query/query.util';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
-import { ApiResult, createErrorResult, createSuccessResult } from 'src/http/base/api.result';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { getLogger } from 'src/logger/global-app-logger';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
+import { InventoryResponseDto } from './dto/inventory.response.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
+import { InventoryPresenter } from './inventory.presenter';
 
 @Controller('inventory')
 export class InventoryController {
-    private readonly LOGGER = getLogger(InventoryController.name);
-
     constructor(
         @Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator
     ) {}
@@ -31,97 +32,58 @@ export class InventoryController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render('inventory')
-    async findByUser(@Req() req: AuthenticatedRequest): Promise<InventoryViewDto> {
-        const userId = req?.user?.id;
-        this.LOGGER.log(`Find inventory for user ${userId}.`);
-        if (!userId) {
-            throw new Error('User ID not found in request');
-        }
-        const rawOptions = new SafeQueryOptions(req?.query);
-        const lastPage = await this.inventoryOrchestrator.getLastPage(userId, rawOptions);
+    async findByUser(
+        @Query('page') page: string,
+        @Query('limit') limit: string,
+        @Query('filter') filter: string,
+        @Query('sort') sort: string,
+        @Query('ascend') ascend: string,
+        @Query('baseOnly') baseOnly: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<InventoryViewDto> {
         const options = new SafeQueryOptions({
-            ...rawOptions,
-            page: Math.min(rawOptions.page, lastPage),
+            page: parseInt(page),
+            limit: parseInt(limit),
+            filter,
+            sort: safeSort(sort),
+            ascend: ascend === 'true',
+            baseOnly: safeBoolean(baseOnly),
         });
-        const inventory = await this.inventoryOrchestrator.findByUser(req, options);
-        this.LOGGER.log(
-            `Found inventory for user ${userId} with ${inventory?.cards?.length ?? 0} items.`
-        );
-        return inventory;
+        return await this.inventoryOrchestrator.findByUser(req, options);
     }
 
     @UseGuards(JwtAuthGuard)
     @Post()
+    @HttpCode(HttpStatus.CREATED)
     async create(
-        @Body() createInventoryDtos: InventoryRequestDto[],
+        @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResult<Inventory[]>> {
-        const userId = req?.user?.id;
-        this.LOGGER.log(
-            `Create inventory items for user ${userId}. Count: ${createInventoryDtos?.length ?? 0}`
-        );
-        try {
-            const createdItems: Inventory[] = await this.inventoryOrchestrator.save(
-                createInventoryDtos,
-                req
-            );
-            this.LOGGER.log(
-                `Added ${createdItems?.length ?? 0} inventory items for user ${userId}.`
-            );
-            return createSuccessResult(createdItems, `Added inventory items`);
-        } catch (error) {
-            this.LOGGER.error(`Error adding inventory items for user ${userId}: ${error}`);
-            return createErrorResult(`Error adding inventory items: ${error}`);
-        }
+    ): Promise<{ success: boolean; data?: InventoryResponseDto[]; error?: string }> {
+        const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
+        const data = inventories.map((inv) => InventoryPresenter.toInventoryResponseDto(inv));
+        return { success: true, data };
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch()
+    @HttpCode(HttpStatus.OK)
     async update(
-        @Body() updateInventoryDtos: InventoryRequestDto[],
+        @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResult<Inventory[]>> {
-        const userId = req?.user?.id;
-        this.LOGGER.log(
-            `Update inventory items for user ${userId}. Count: ${updateInventoryDtos?.length ?? 0}`
-        );
-        try {
-            const updatedInventory: Inventory[] = await this.inventoryOrchestrator.save(
-                updateInventoryDtos,
-                req
-            );
-            this.LOGGER.log(
-                `Updated ${updatedInventory?.length ?? 0} inventory items for user ${userId}.`
-            );
-            return createSuccessResult(updatedInventory, `Updated inventory items`);
-        } catch (error) {
-            this.LOGGER.error(`Error updating inventory items for user ${userId}: ${error}`);
-            return createErrorResult(`Error updating inventory items: ${error}`);
-        }
+    ): Promise<{ success: boolean; data?: InventoryResponseDto[]; error?: string }> {
+        const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
+        const data = inventories.map((inv) => InventoryPresenter.toInventoryResponseDto(inv));
+        return { success: true, data };
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete()
+    @HttpCode(HttpStatus.OK)
     async delete(
-        @Body('cardId') cardId: string,
-        @Body('isFoil') isFoil: boolean,
+        @Body() body: { cardId: string; isFoil: boolean },
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResult<{ cardId: string; isFoil: boolean }>> {
-        const userId = req?.user?.id;
-        this.LOGGER.log(
-            `Delete inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`
-        );
-        try {
-            await this.inventoryOrchestrator.delete(req, cardId, isFoil);
-            this.LOGGER.log(
-                `Deleted inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}`
-            );
-            return createSuccessResult({ cardId, isFoil }, `Deleted inventory item`);
-        } catch (error) {
-            this.LOGGER.error(
-                `Error deleting inventory item for user ${userId}. CardId: ${cardId}, isFoil: ${isFoil}. Error: ${error}`
-            );
-            return createErrorResult(`Error deleting inventory item: ${error}`);
-        }
+    ): Promise<{ success: boolean; error?: string }> {
+        const success = await this.inventoryOrchestrator.delete(req, body.cardId, body.isFoil);
+        return { success };
     }
 }

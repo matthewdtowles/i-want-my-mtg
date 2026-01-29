@@ -57,6 +57,13 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     totalWithName(name: string): Promise<number>;
 
     /**
+     * Gets total number of cards in the set
+     * @param code set code
+     * @param options Query options
+     */
+    totalInSet(code: string, options: SafeQueryOptions): Promise<number>;
+
+    /**
      * Verifies the existence of cards by their IDs.
      * @param ids Array of card IDs to verify.
      * @returns Promise resolving to a set of existing card IDs.

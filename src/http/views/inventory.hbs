@@ -7,45 +7,65 @@
         {{>completionRate}}
     </section>
     <div class="w-full mx-auto">
-        {{>filter}}
-        <table class="table-container w-full">
-            <thead>{{>tableHeadersRow}}</thead>
-            <tbody>
-                {{#each cards as |card|}}
-                <tr class="table-row">
-                    <td class="pl-2">{{>cardsOwned card=card}}</td>
-                    <td data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
-                        <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
-                        {{>tags item=card}}
-                        <a href="{{card.url}}" class="card-img-link">
-                            <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
-                        </a>
-                    </td>
-                    <td>
-                        <a href="/sets/{{card.setCode}}">
-                            <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
-                            {{toUpperCase card.setCode}}
-                        </a>
-                    </td>
-                    <td>
-                        <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
-                            {{card.priceValue}}
-                        </span>
-                    </td>
-                    <td class="delete-inventory-entry pr-2 xs-hide">
-                        <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
-                            <input type="hidden" name="card-id" value="{{card.cardId}}" />
-                            <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
+        <div class="flex items-center gap-2">
+            <div class="flex-1">
+                {{>filter}}
+            </div>
+            {{#if baseOnlyToggle.visible}}
+            <a href="{{baseOnlyToggle.url}}" 
+               class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
+                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
+               style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                {{baseOnlyToggle.text}}
+            </a>
+            {{/if}}
+        </div>
+        <div id="filter-results">
+            {{#if cards.length}}
+            <table class="table-container w-full">
+                <thead>{{>tableHeadersRow}}</thead>
+                <tbody>
+                    {{#each cards as |card|}}
+                    <tr class="table-row">
+                        <td class="pl-2">{{>cardsOwned card=card}}</td>
+                        <td data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
+                            <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
+                            {{>tags item=card}}
+                            <a href="{{card.url}}" class="card-img-link">
+                                <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/sets/{{card.setCode}}">
+                                <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
+                                {{toUpperCase card.setCode}}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
+                                {{card.priceValue}}
+                            </span>
+                        </td>
+                        <td class="delete-inventory-entry pr-2 xs-hide">
+                            <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
+                                <input type="hidden" name="card-id" value="{{card.cardId}}" />
+                                <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
 
-                            <button type="button" class="delete-inventory-button">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
+                                <button type="button" class="delete-inventory-button">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <div class="text-center py-8 text-gray-500">
+                No inventory items found matching your filter.
+            </div>
+            {{/if}}
+        </div>
     </div>
 </section>
 

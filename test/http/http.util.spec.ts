@@ -106,38 +106,57 @@ describe('buildQueryString', () => {
     });
 
     it('should build query string with page and limit', () => {
-        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true })).toBe('?page=2&limit=50');
+        expect(buildQueryString({ page: 2, limit: 50 } as SafeQueryOptions)).toBe(
+            '?page=2&limit=50'
+        );
     });
 
-    it('should build query string with filter and sort using default page and limit', () => {
-        const options = new SafeQueryOptions({ filter: 'foo', sort: SortOptions.CARD });
+    it('should build query string with page, limit, and baseOnly true (baseOnly omitted)', () => {
+        expect(buildQueryString({ page: 2, limit: 50, baseOnly: true } as SafeQueryOptions)).toBe(
+            '?page=2&limit=50'
+        );
+    });
+
+    it('should build query string with filter and sort', () => {
+        const options = {
+            page: 1,
+            limit: 25,
+            filter: 'foo',
+            sort: SortOptions.CARD,
+        } as SafeQueryOptions;
         expect(buildQueryString(options)).toBe('?page=1&limit=25&filter=foo&sort=card.name');
     });
 
     it('should build query string with ascend true', () => {
-        const options = new SafeQueryOptions({ ascend: true });
+        const options = { page: 1, limit: 25, ascend: true } as SafeQueryOptions;
         expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=true');
     });
 
     it('should build query string with ascend false', () => {
-        const options = new SafeQueryOptions({ ascend: false });
+        const options = { page: 1, limit: 25, ascend: false } as SafeQueryOptions;
         expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=false');
     });
 
-    it('should build query string with filter, ascend, sort, and new limit using default page', () => {
-        const options = new SafeQueryOptions({
+    it('should build query string with filter, ascend, sort, and limit', () => {
+        const options = {
+            page: 1,
             limit: 100,
             filter: 'baz',
             ascend: false,
             sort: SortOptions.CARD,
-        });
+        } as SafeQueryOptions;
         expect(buildQueryString(options)).toBe(
             '?page=1&limit=100&filter=baz&ascend=false&sort=card.name'
         );
     });
 
     it('should build query string with baseOnly false', () => {
-        const options = new SafeQueryOptions({ baseOnly: false });
+        const options = { page: 1, limit: 25, baseOnly: false } as SafeQueryOptions;
         expect(buildQueryString(options)).toBe('?page=1&limit=25&baseOnly=false');
+    });
+
+    it('should use SafeQueryOptions defaults when constructed', () => {
+        const options = new SafeQueryOptions({ baseOnly: false });
+        expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=true&baseOnly=false');
     });
 });

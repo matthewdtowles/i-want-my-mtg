@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
@@ -15,13 +14,14 @@ import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.ut
 import { CardPresenter } from 'src/http/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { InventoryPresenter } from 'src/http/inventory/inventory.presenter';
+import { BaseOnlyToggleView } from 'src/http/list/base-only-toggle.view';
 import { FilterView } from 'src/http/list/filter.view';
 import { PaginationView } from 'src/http/list/pagination.view';
 import { SortableHeaderView } from 'src/http/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
+import { buildToggleConfig, ToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
-import { BaseOnlyToggleView } from '../list/base-only-toggle.view';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
@@ -47,35 +47,30 @@ export class SetOrchestrator {
         this.LOGGER.debug(`Find list of sets.`);
         try {
             const userId = req.user?.id ?? 0;
-            const [sets, totalSets] = await Promise.all([
+            const [sets, currentCount, targetCount] = await Promise.all([
                 this.setService.findSets(options),
                 this.setService.totalSetsCount(options),
+                this.setService.totalSetsCount({ ...options, baseOnly: !options.baseOnly }),
             ]);
+
+            const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
             const baseUrl = '/sets';
-            const pagination = new PaginationView(options, baseUrl, totalSets);
-            this.LOGGER.debug(`Found ${sets?.length} of ${totalSets} total sets.`);
-            const tableHeadersRow = new TableHeadersRowView([
-                new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-                new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2']),
-            ]);
-            const isAuthd = isAuthenticated(req);
-            if (isAuthd) {
-                tableHeadersRow.headers.push(new TableHeaderView('Owned Value'));
-            }
-            tableHeadersRow.headers.push(
-                new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2'])
-            );
 
             return new SetListViewDto({
-                authenticated: isAuthd,
-                baseOnlyToggle: new BaseOnlyToggleView(options, baseUrl),
+                authenticated: isAuthenticated(req),
+                baseOnlyToggle: new BaseOnlyToggleView(
+                    options,
+                    baseUrl,
+                    toggleConfig.targetMaxPage,
+                    toggleConfig.visible
+                ),
                 breadcrumbs,
-                message: `Page ${pagination.current} of ${pagination.totalPages}`,
-                setList: await this.createSetMetaResponseDtos(userId, sets, options.baseOnly),
+                message: `Page ${options.page} of ${Math.ceil(currentCount / options.limit)}`,
+                setList: await this.createSetMetaResponseDtos(userId, sets, options),
                 status: ActionStatus.SUCCESS,
-                pagination,
+                pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
-                tableHeadersRow,
+                tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
@@ -90,40 +85,49 @@ export class SetOrchestrator {
     ): Promise<SetViewDto> {
         this.LOGGER.debug(`Find set and cards for set ${setCode}.`);
         try {
-            const userId = req.user?.id ?? 0;
-            const set: Set | null = await this.setService.findByCode(setCode);
+            const set = await this.setService.findByCode(setCode);
             if (!set) {
                 throw new Error(`Set with code ${setCode} not found`);
             }
-            const cards: Card[] = await this.cardService.findBySet(setCode, options);
+
+            const currentSize = options.baseOnly ? set.baseSize : set.totalSize;
+            const targetSize = options.baseOnly ? set.totalSize : set.baseSize;
+            const forceShowAll = set.baseSize === 0;
+
+            const toggleConfig = buildToggleConfig(options, currentSize, targetSize, forceShowAll);
+            const { effectiveOptions } = toggleConfig;
+
+            const [cards, setSize] = await Promise.all([
+                this.cardService.findBySet(setCode, effectiveOptions),
+                this.setService.totalCardsInSet(setCode, effectiveOptions),
+            ]);
             set.cards.push(...cards);
-            const setResonse = await this.createSetResponseDto(userId, set, options.baseOnly);
-            this.LOGGER.debug(`Found ${set?.cards?.length} cards for set ${set.code}.`);
+
+            const userId = req.user?.id ?? 0;
+            const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
             const baseUrl = `/sets/${set.code}`;
-            const setSize = await this.setService.totalCardsInSet(set.code, options.baseOnly);
+
+            this.LOGGER.debug(`Found ${cards.length} cards for set ${set.code}.`);
 
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
+                baseOnlyToggle: new BaseOnlyToggleView(
+                    effectiveOptions,
+                    baseUrl,
+                    toggleConfig.targetMaxPage,
+                    toggleConfig.visible
+                ),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Sets', url: '/sets' },
-                    { label: setResonse.name, url: baseUrl },
+                    { label: setResponse.name, url: baseUrl },
                 ],
-                message: setResonse ? `Found set: ${setResonse.name}` : 'Set not found',
-                set: setResonse,
-                status: setResonse ? ActionStatus.SUCCESS : ActionStatus.ERROR,
-                pagination: new PaginationView(options, baseUrl, setSize),
-                filter: new FilterView(options, baseUrl),
-                tableHeadersRow: new TableHeadersRowView([
-                    new TableHeaderView('Owned'),
-                    new SortableHeaderView(options, SortOptions.NUMBER),
-                    new SortableHeaderView(options, SortOptions.CARD),
-                    new TableHeaderView('Mana Cost', ['xs-hide']),
-                    new TableHeaderView('Rarity', ['xs-hide']),
-                    new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide']),
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2']),
-                    new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2']),
-                ]),
+                message: `Found set: ${setResponse.name}`,
+                set: setResponse,
+                status: ActionStatus.SUCCESS,
+                pagination: new PaginationView(effectiveOptions, baseUrl, setSize),
+                filter: new FilterView(effectiveOptions, baseUrl),
+                tableHeadersRow: this.buildSetDetailTableHeaders(effectiveOptions),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
@@ -144,11 +148,11 @@ export class SetOrchestrator {
         }
     }
 
-    async getLastCardPage(setCode: string, query: SafeQueryOptions): Promise<number> {
+    async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, query.baseOnly);
-            const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));
+            const totalCards = await this.setService.totalCardsInSet(setCode, options);
+            const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;
         } catch (error) {
@@ -159,12 +163,16 @@ export class SetOrchestrator {
         }
     }
 
-    async getSetValue(setCode: string, includeFoil: boolean, baseOnly: boolean): Promise<number> {
-        const setType = baseOnly ? 'main' : '';
+    async getSetValue(
+        setCode: string,
+        includeFoil: boolean,
+        options: SafeQueryOptions
+    ): Promise<number> {
+        const setType = options.baseOnly ? 'main' : 'all';
         const withFoils = includeFoil ? 'with foils' : '';
         this.LOGGER.debug(`Get value for ${setType} set ${setCode} ${withFoils}`);
         try {
-            const setValue = await this.setService.totalValueForSet(setCode, includeFoil, baseOnly);
+            const setValue = await this.setService.totalValueForSet(setCode, includeFoil, options);
             this.LOGGER.debug(`Value for ${setType} set ${setCode} ${withFoils}: ${setValue}.`);
             return setValue;
         } catch (error) {
@@ -240,25 +248,94 @@ export class SetOrchestrator {
         });
     }
 
+    private buildSetToggleConfig(set: Set, options: SafeQueryOptions): ToggleConfig {
+        const hasBaseCards = set.baseSize > 0;
+        const hasBonusCards = set.baseSize !== set.totalSize;
+
+        // Force showing all cards when there are no base cards
+        const effectiveOptions = hasBaseCards
+            ? options
+            : new SafeQueryOptions({ ...options, baseOnly: false });
+
+        // Target size is what we'd see after toggling
+        const targetSize = effectiveOptions.baseOnly ? set.totalSize : set.baseSize;
+        const targetMaxPage = Math.max(1, Math.ceil(targetSize / effectiveOptions.limit));
+
+        return {
+            effectiveOptions,
+            targetMaxPage,
+            visible: hasBaseCards && hasBonusCards,
+        };
+    }
+
+    private async buildSetListToggleConfig(
+        options: SafeQueryOptions,
+        currentCount: number
+    ): Promise<ToggleConfig> {
+        const targetOptions = { ...options, baseOnly: !options.baseOnly };
+        const targetCount = await this.setService.totalSetsCount(targetOptions);
+        const targetMaxPage = Math.max(1, Math.ceil(targetCount / options.limit));
+
+        return {
+            effectiveOptions: options,
+            targetMaxPage,
+            visible: currentCount !== targetCount && targetCount > 0,
+        };
+    }
+
+    private buildSetListTableHeaders(
+        options: SafeQueryOptions,
+        authenticated: boolean
+    ): TableHeadersRowView {
+        const headers = new TableHeadersRowView([
+            new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
+            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2']),
+        ]);
+        if (authenticated) {
+            headers.headers.push(new TableHeaderView('Owned Value'));
+        }
+        headers.headers.push(
+            new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2'])
+        );
+        return headers;
+    }
+
+    private buildSetDetailTableHeaders(options: SafeQueryOptions): TableHeadersRowView {
+        return new TableHeadersRowView([
+            new TableHeaderView('Owned'),
+            new SortableHeaderView(options, SortOptions.NUMBER),
+            new SortableHeaderView(options, SortOptions.CARD),
+            new TableHeaderView('Mana Cost', ['xs-hide']),
+            new TableHeaderView('Rarity', ['xs-hide']),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide']),
+            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2']),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2']),
+        ]);
+    }
+
     private async createSetMetaResponseDtos(
         userId: number,
         sets: Set[],
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, baseOnly)));
+        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, options)));
     }
 
     private async createSetMetaResponseDto(
         userId: number,
         set: Set,
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
+
+        // Use effectiveSize: totalSize when baseSize is 0
+        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+
         return new SetMetaResponseDto({
+            baseSize: set.baseSize,
             block: set.block ?? set.name,
             code: set.code,
-            completionRate: completionRate(ownedTotal, setSize),
+            completionRate: completionRate(ownedTotal, effectiveSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
@@ -266,6 +343,7 @@ export class SetOrchestrator {
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),
+            totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
         });
     }
@@ -273,7 +351,7 @@ export class SetOrchestrator {
     private async createSetResponseDto(
         userId: number,
         set: Set,
-        baseOnly: boolean
+        options: SafeQueryOptions
     ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory =
@@ -284,12 +362,15 @@ export class SetOrchestrator {
                   )
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
-        const setSize = await this.setService.totalCardsInSet(set.code, baseOnly);
+
+        // Use effectiveSize: totalSize when baseSize is 0
+        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+
         return new SetResponseDto({
             baseSize: set.baseSize,
             block: set.block ?? set.name,
             code: set.code,
-            completionRate: completionRate(ownedTotal, setSize),
+            completionRate: completionRate(ownedTotal, effectiveSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),

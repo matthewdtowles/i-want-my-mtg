@@ -76,13 +76,16 @@ export class InventoryRepository
 
     async findByUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
         this.LOGGER.debug(
-            `Finding inventory items for userId: ${userId}, page: ${options.page}, limit: ${options.limit}, filter: ${options.filter}.`
+            `Finding inventory items for userId: ${userId}, options: ${JSON.stringify(options)}.`
         );
         const qb = this.repository
             .createQueryBuilder('inventory')
             .leftJoinAndSelect(`${this.TABLE}.card`, 'card')
             .leftJoinAndSelect('card.prices', 'prices')
             .where(`${this.TABLE}.userId = :userId`, { userId });
+        if (options.baseOnly) {
+            qb.andWhere('card.inMain = :inMain', { inMain: true });
+        }
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
         this.addOrdering(qb, options, SortOptions.NUMBER);
@@ -93,12 +96,15 @@ export class InventoryRepository
 
     async totalInventoryCards(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(
-            `Counting total inventory items for userId: ${userId}, filter: ${options.filter}.`
+            `Counting total inventory items for userId: ${userId}, options: ${JSON.stringify(options)}.`
         );
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoin(`${this.TABLE}.card`, 'card')
             .where(`${this.TABLE}.userId = :userId`, { userId });
+        if (options.baseOnly) {
+            qb.andWhere('card.inMain = :inMain', { inMain: true });
+        }
         this.addFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total inventory items for userId: ${userId}: ${count}.`);

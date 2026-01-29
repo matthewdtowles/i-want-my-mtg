@@ -24,7 +24,6 @@ export function safeBoolean(value: any): boolean {
         if (lower === 'false' || lower === '0') return false;
     }
     if (value === false || value === 0) return false;
-
-    // Default to true for undefined, null, or any other value
+    // Default to true
     return true;
 }

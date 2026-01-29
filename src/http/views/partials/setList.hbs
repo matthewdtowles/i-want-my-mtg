@@ -3,12 +3,14 @@
         <div class="flex-1">
             {{>filter}}
         </div>
+        {{#if baseOnlyToggle.visible}}
         <a href="{{baseOnlyToggle.url}}" 
            class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}} 
                   whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0
                   mb-4">
             {{baseOnlyToggle.text}}
         </a>
+        {{/if}}
     </div>
     {{#if setList.length}}
     <table class="min-w-full bg-white">

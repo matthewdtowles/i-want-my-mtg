@@ -6,7 +6,7 @@ import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
 import { BaseRepository } from 'src/database/base.repository';
 import { getLogger } from 'src/logger/global-app-logger';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { SetMapper } from './set.mapper';
 import { SetOrmEntity } from './set.orm-entity';
 
@@ -33,9 +33,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         }
         this.addFilters(qb, options.filter);
         this.addPagination(qb, options);
-        this.addOrdering(qb, options, SortOptions.RELEASE_DATE, true);
-        // extra order clause for default
-        if (!options.sort) qb.addOrderBy(`${SortOptions.SET}`, this.ASC, this.NULLS_LAST);
+        this.addSetOrdering(qb, options);
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Found ${results.length} sets.`);
         return results;
@@ -103,6 +101,32 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             return 'base_price_all';
         } else {
             return 'total_price_all';
+        }
+    }
+
+    /**
+     * Adds ordering specific to set queries.
+     * Handles set price sorting with proper fallbacks for bonus-only sets.
+     * Matches the defaultPrice logic in createSetPriceDto.
+     */
+    private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
+        if (!options.sort) {
+            // Default: release date desc, then name asc
+            qb.orderBy(`${this.TABLE}.releaseDate`, this.DESC, this.NULLS_LAST);
+            qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+            return;
+        }
+
+        const direction = options.ascend ? this.ASC : this.DESC;
+
+        if (options.sort === SortOptions.SET_BASE_PRICE) {
+            // Use addSelect with raw SQL for COALESCE, then order by the alias
+            qb.addSelect(
+                `COALESCE(NULLIF(setPrice.basePrice, 0), NULLIF(setPrice.basePriceAll, 0), NULLIF(setPrice.totalPrice, 0), setPrice.totalPriceAll)`,
+                'effective_price'
+            ).orderBy('effective_price', direction, this.NULLS_LAST);
+        } else {
+            qb.orderBy(options.sort, direction, this.NULLS_LAST);
         }
     }
 }

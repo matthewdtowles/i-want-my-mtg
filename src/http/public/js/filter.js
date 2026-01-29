@@ -11,10 +11,17 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('page', 1);
         params.set('limit', form.querySelector('input[name="limit"]').value);
 
-        // Preserve baseOnly parameter from current URL
+        // Preserve all parameters from current URL
         const currentParams = new URLSearchParams(window.location.search);
+
         if (currentParams.has('baseOnly')) {
             params.set('baseOnly', currentParams.get('baseOnly'));
+        }
+        if (currentParams.has('sort')) {
+            params.set('sort', currentParams.get('sort'));
+        }
+        if (currentParams.has('ascend')) {
+            params.set('ascend', currentParams.get('ascend'));
         }
 
         const url = form.action + '?' + params.toString();
@@ -36,6 +43,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         existingPagination.replaceWith(newPagination);
                     }
                 }
+
+                // Update the URL without reloading
+                window.history.replaceState({}, '', form.action + '?' + params.toString());
             })
             .catch((error) => {
                 console.error('Error fetching filtered results:', error);

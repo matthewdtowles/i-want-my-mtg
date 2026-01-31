@@ -20,9 +20,12 @@ export class BaseOnlyToggleView {
         const adjustedPage = Math.min(options.page, targetMaxPage);
 
         const toggledOptions = new SafeQueryOptions({
-            ...options,
-            baseOnly: !options.baseOnly,
-            page: adjustedPage,
+            baseOnly: String(!options.baseOnly),
+            page: String(adjustedPage),
+            limit: String(options.limit),
+            ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
+            ...(options.filter && { filter: options.filter }),
+            ...(options.sort && { sort: String(options.sort) }),
         });
 
         this.url = `${baseUrl}${buildQueryString(toggledOptions)}`;

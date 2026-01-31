@@ -20,6 +20,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
 import { CardViewDto } from './dto/card.view.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
+import { safeLastPage } from 'src/core/query/query.util';
 
 @Injectable()
 export class CardOrchestrator {
@@ -33,13 +34,11 @@ export class CardOrchestrator {
     }
 
     async findSetCard(
-        req: AuthenticatedRequest,
-        setCode: string,
-        setNumber: string,
-        rawOptions: SafeQueryOptions
+req: AuthenticatedRequest, setCode: string, setNumber: string, mockQueryOptions: SafeQueryOptions,
     ): Promise<CardViewDto> {
         this.LOGGER.debug(`Find set card ${setCode}/${setNumber}.`);
         try {
+            const rawQueryOptions = req.query;
             const userId: number = req.user ? req.user.id : 0;
             const coreCard: Card | null = await this.cardService.findBySetCodeAndNumber(
                 setCode,
@@ -57,10 +56,9 @@ export class CardOrchestrator {
                 CardImgType.NORMAL
             );
             const totalPrintings = await this.cardService.totalWithName(singleCard.name);
-            const lastPage = Math.max(1, Math.ceil(totalPrintings / rawOptions.limit));
             const options = new SafeQueryOptions({
-                ...rawOptions,
-                page: Math.min(rawOptions.page, lastPage),
+                ...rawQueryOptions,
+                page: safeLastPage(rawQueryOptions, totalPrintings),
             });
             this.LOGGER.debug(`Options: ${JSON.stringify(options)}`);
             const allPrintings: Card[] = await this.cardService.findWithName(

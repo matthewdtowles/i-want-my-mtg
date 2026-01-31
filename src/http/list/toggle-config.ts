@@ -21,7 +21,14 @@ export function buildToggleConfig(
     forceShowAll: boolean = false
 ): ToggleConfig {
     const effectiveOptions = forceShowAll
-        ? new SafeQueryOptions({ ...options, baseOnly: false })
+        ? new SafeQueryOptions({
+              baseOnly: 'false',
+              page: String(options.page),
+              limit: String(options.limit),
+              ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
+              ...(options.filter && { filter: options.filter }),
+              ...(options.sort && { sort: String(options.sort) }),
+          })
         : options;
 
     const targetMaxPage = Math.max(1, Math.ceil(targetCount / effectiveOptions.limit));

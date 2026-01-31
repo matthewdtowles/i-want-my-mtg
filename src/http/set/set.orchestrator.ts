@@ -248,41 +248,6 @@ export class SetOrchestrator {
         });
     }
 
-    private buildSetToggleConfig(set: Set, options: SafeQueryOptions): ToggleConfig {
-        const hasBaseCards = set.baseSize > 0;
-        const hasBonusCards = set.baseSize !== set.totalSize;
-
-        // Force showing all cards when there are no base cards
-        const effectiveOptions = hasBaseCards
-            ? options
-            : new SafeQueryOptions({ ...options, baseOnly: false });
-
-        // Target size is what we'd see after toggling
-        const targetSize = effectiveOptions.baseOnly ? set.totalSize : set.baseSize;
-        const targetMaxPage = Math.max(1, Math.ceil(targetSize / effectiveOptions.limit));
-
-        return {
-            effectiveOptions,
-            targetMaxPage,
-            visible: hasBaseCards && hasBonusCards,
-        };
-    }
-
-    private async buildSetListToggleConfig(
-        options: SafeQueryOptions,
-        currentCount: number
-    ): Promise<ToggleConfig> {
-        const targetOptions = { ...options, baseOnly: !options.baseOnly };
-        const targetCount = await this.setService.totalSetsCount(targetOptions);
-        const targetMaxPage = Math.max(1, Math.ceil(targetCount / options.limit));
-
-        return {
-            effectiveOptions: options,
-            targetMaxPage,
-            visible: currentCount !== targetCount && targetCount > 0,
-        };
-    }
-
     private buildSetListTableHeaders(
         options: SafeQueryOptions,
         authenticated: boolean

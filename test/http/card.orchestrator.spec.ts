@@ -36,8 +36,9 @@ describe('CardOrchestrator', () => {
             id: 1,
             name: 'Test User',
         },
+        query: { page: '1', limit: '10' },
         isAuthenticated: () => true,
-    } as AuthenticatedRequest;
+    } as unknown as AuthenticatedRequest;
 
     const mockCard: Card = new Card({
         id: 'card1',
@@ -71,7 +72,7 @@ describe('CardOrchestrator', () => {
         inMain: true,
     });
 
-    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10 });
+    const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10' });
 
     const mockInventory = [
         {
@@ -111,6 +112,7 @@ describe('CardOrchestrator', () => {
         // Reset all mock implementations
         mockCardService.findBySetCodeAndNumber.mockReset();
         mockCardService.findWithName.mockReset();
+        mockCardService.totalWithName.mockReset();
         mockInventoryService.findForUser.mockReset();
         mockHttpErrorHandler.toHttpException.mockReset();
     });
@@ -119,6 +121,7 @@ describe('CardOrchestrator', () => {
         it('should return card view with card and other printings', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.totalWithName.mockResolvedValue(2);
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
             const result: CardViewDto = await orchestrator.findSetCard(
@@ -134,7 +137,7 @@ describe('CardOrchestrator', () => {
             expect(result.card.name).toBe('Lightning Bolt');
             expect(result.card.setCode).toBe('TST');
             expect(result.card.number).toBe('1');
-            expect(result.otherPrintings).toHaveLength(1); // Only other printings, not the current card
+            expect(result.otherPrintings).toHaveLength(1);
             expect(result.otherPrintings[0].setCode).toBe('M10');
             expect(result.status).toBe(ActionStatus.SUCCESS);
             expect(result.message).toBe('Card found');
@@ -174,11 +177,13 @@ describe('CardOrchestrator', () => {
         it('should handle unauthenticated requests', async () => {
             const unauthenticatedReq = {
                 user: null,
+                query: { page: '1', limit: '10' },
                 isAuthenticated: () => false,
-            } as AuthenticatedRequest;
+            } as unknown as AuthenticatedRequest;
 
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.totalWithName.mockResolvedValue(2);
 
             const result: CardViewDto = await orchestrator.findSetCard(
                 unauthenticatedReq,
@@ -195,7 +200,8 @@ describe('CardOrchestrator', () => {
 
         it('should handle no other printings case', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findWithName.mockResolvedValue([mockCard]); // Only current card
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
             mockInventoryService.findForUser.mockResolvedValue(mockInventory);
 
             const result: CardViewDto = await orchestrator.findSetCard(
@@ -206,7 +212,7 @@ describe('CardOrchestrator', () => {
             );
 
             expect(result).toBeDefined();
-            expect(result.otherPrintings).toHaveLength(0); // No other printings
+            expect(result.otherPrintings).toHaveLength(0);
             expect(result.card.name).toBe('Lightning Bolt');
             expect(result.status).toBe(ActionStatus.SUCCESS);
         });
@@ -214,7 +220,8 @@ describe('CardOrchestrator', () => {
         it('should handle empty inventory', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
-            mockInventoryService.findForUser.mockResolvedValue([]); // Empty inventory
+            mockCardService.totalWithName.mockResolvedValue(2);
+            mockInventoryService.findForUser.mockResolvedValue([]);
 
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
@@ -249,7 +256,7 @@ describe('CardOrchestrator', () => {
 
         it('should handle inventory service errors gracefully', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
-            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.totalWithName.mockResolvedValue(2);
             const inventoryError = new Error('Inventory service failed');
             mockInventoryService.findForUser.mockRejectedValue(inventoryError);
             mockHttpErrorHandler.toHttpException.mockImplementation(() => {
@@ -269,6 +276,7 @@ describe('CardOrchestrator', () => {
         it('should create correct breadcrumbs', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
             mockInventoryService.findForUser.mockResolvedValue([]);
 
             const result: CardViewDto = await orchestrator.findSetCard(
@@ -284,6 +292,111 @@ describe('CardOrchestrator', () => {
                 { label: 'TST', url: '/sets/TST' },
                 { label: 'Lightning Bolt', url: '/card/TST/1' },
             ]);
+        });
+
+        it('should include pagination view', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard, mockOtherPrintingCard]);
+            mockCardService.totalWithName.mockResolvedValue(25);
+            mockInventoryService.findForUser.mockResolvedValue([]);
+
+            const result: CardViewDto = await orchestrator.findSetCard(
+                mockAuthenticatedRequest,
+                'TST',
+                '1',
+                mockQueryOptions
+            );
+
+            expect(result.pagination).toBeDefined();
+            expect(result.pagination.current).toBe(1);
+            expect(result.pagination.totalPages).toBeGreaterThan(0);
+        });
+
+        it('should include filter view', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+            mockInventoryService.findForUser.mockResolvedValue([]);
+
+            const result: CardViewDto = await orchestrator.findSetCard(
+                mockAuthenticatedRequest,
+                'TST',
+                '1',
+                mockQueryOptions
+            );
+
+            expect(result.filter).toBeDefined();
+        });
+
+        it('should include table headers row', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+            mockInventoryService.findForUser.mockResolvedValue([]);
+
+            const result: CardViewDto = await orchestrator.findSetCard(
+                mockAuthenticatedRequest,
+                'TST',
+                '1',
+                mockQueryOptions
+            );
+
+            expect(result.tableHeadersRow).toBeDefined();
+            expect(result.tableHeadersRow.headers).toBeDefined();
+            expect(result.tableHeadersRow.headers.length).toBe(4);
+        });
+    });
+
+    describe('getPrintingsLastPage', () => {
+        it('should return correct last page for total printings', async () => {
+            mockCardService.totalWithName.mockResolvedValue(25);
+
+            const result = await orchestrator.getPrintingsLastPage(
+                'Lightning Bolt',
+                mockQueryOptions
+            );
+
+            expect(result).toBe(3);
+            expect(cardService.totalWithName).toHaveBeenCalledWith('Lightning Bolt');
+        });
+
+        it('should return 1 for single page of results', async () => {
+            mockCardService.totalWithName.mockResolvedValue(5);
+
+            const result = await orchestrator.getPrintingsLastPage(
+                'Lightning Bolt',
+                mockQueryOptions
+            );
+
+            expect(result).toBe(1);
+        });
+
+        it('should return 1 for zero results', async () => {
+            mockCardService.totalWithName.mockResolvedValue(0);
+
+            const result = await orchestrator.getPrintingsLastPage(
+                'Lightning Bolt',
+                mockQueryOptions
+            );
+
+            expect(result).toBe(1);
+        });
+
+        it('should handle service errors', async () => {
+            const serviceError = new Error('Database error');
+            mockCardService.totalWithName.mockRejectedValue(serviceError);
+            mockHttpErrorHandler.toHttpException.mockImplementation(() => {
+                throw serviceError;
+            });
+
+            await expect(
+                orchestrator.getPrintingsLastPage('Lightning Bolt', mockQueryOptions)
+            ).rejects.toThrow('Database error');
+
+            expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(
+                serviceError,
+                'getPrintingsLastPage'
+            );
         });
     });
 });

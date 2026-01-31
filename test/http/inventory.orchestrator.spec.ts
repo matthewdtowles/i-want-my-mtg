@@ -19,7 +19,7 @@ describe('InventoryOrchestrator', () => {
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
 
-    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: 'test' });
+    const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

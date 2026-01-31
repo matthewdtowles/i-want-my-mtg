@@ -12,7 +12,7 @@ describe('CardService', () => {
     let service: CardService;
     let repository: jest.Mocked<CardRepositoryPort>;
 
-    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10 });
+    const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10' });
 
     const testCard = new Card({
         id: 'test-card-id',

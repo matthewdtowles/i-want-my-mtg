@@ -127,8 +127,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result).toBeDefined();
@@ -157,12 +156,7 @@ describe('CardOrchestrator', () => {
             });
 
             await expect(
-                orchestrator.findSetCard(
-                    mockAuthenticatedRequest,
-                    'INVALID',
-                    '999',
-                    mockQueryOptions
-                )
+                orchestrator.findSetCard(mockAuthenticatedRequest, 'INVALID', '999')
             ).rejects.toThrow('Card with set code INVALID and number 999 not found');
 
             expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith('INVALID', '999');
@@ -188,8 +182,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 unauthenticatedReq,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result.authenticated).toBe(false);
@@ -207,8 +200,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result).toBeDefined();
@@ -226,8 +218,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result).toBeDefined();
@@ -245,7 +236,7 @@ describe('CardOrchestrator', () => {
             });
 
             await expect(
-                orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1', mockQueryOptions)
+                orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1')
             ).rejects.toThrow('Database connection failed');
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(
@@ -264,7 +255,7 @@ describe('CardOrchestrator', () => {
             });
 
             await expect(
-                orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1', mockQueryOptions)
+                orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1')
             ).rejects.toThrow('Inventory service failed');
 
             expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(
@@ -282,8 +273,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result.breadcrumbs).toEqual([
@@ -303,8 +293,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result.pagination).toBeDefined();
@@ -321,8 +310,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result.filter).toBeDefined();
@@ -337,8 +325,7 @@ describe('CardOrchestrator', () => {
             const result: CardViewDto = await orchestrator.findSetCard(
                 mockAuthenticatedRequest,
                 'TST',
-                '1',
-                mockQueryOptions
+                '1'
             );
 
             expect(result.tableHeadersRow).toBeDefined();

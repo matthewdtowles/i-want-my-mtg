@@ -34,7 +34,9 @@ export class CardOrchestrator {
     }
 
     async findSetCard(
-req: AuthenticatedRequest, setCode: string, setNumber: string, mockQueryOptions: SafeQueryOptions,
+        req: AuthenticatedRequest,
+        setCode: string,
+        setNumber: string
     ): Promise<CardViewDto> {
         this.LOGGER.debug(`Find set card ${setCode}/${setNumber}.`);
         try {

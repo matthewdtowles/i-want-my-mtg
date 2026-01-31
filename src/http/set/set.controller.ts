@@ -1,5 +1,4 @@
 import { Controller, Get, Inject, Param, Query, Render, Req, UseGuards } from '@nestjs/common';
-import { safeBoolean, safeSort } from 'src/core/query/query.util';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -15,22 +14,10 @@ export class SetController {
     @Get()
     @Render('setListPage')
     async findAll(
-        @Query('page') page: string,
-        @Query('limit') limit: string,
-        @Query('filter') filter: string,
-        @Query('sort') sort: string,
-        @Query('ascend') ascend: string,
-        @Query('baseOnly') baseOnly: string,
+        @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<SetListViewDto> {
-        const options = new SafeQueryOptions({
-            page: parseInt(page),
-            limit: parseInt(limit),
-            filter,
-            sort: safeSort(sort),
-            ascend: ascend === 'true',
-            baseOnly: safeBoolean(baseOnly),
-        });
+        const options = new SafeQueryOptions(query);
         return await this.setOrchestrator.findSetList(
             req,
             [
@@ -46,22 +33,10 @@ export class SetController {
     @Render('set')
     async findByCode(
         @Param('code') code: string,
-        @Query('page') page: string,
-        @Query('limit') limit: string,
-        @Query('filter') filter: string,
-        @Query('sort') sort: string,
-        @Query('ascend') ascend: string,
-        @Query('baseOnly') baseOnly: string,
+        @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<SetViewDto> {
-        const options = new SafeQueryOptions({
-            page: parseInt(page),
-            limit: parseInt(limit),
-            filter,
-            sort: safeSort(sort),
-            ascend: ascend === 'true',
-            baseOnly: safeBoolean(baseOnly),
-        });
+        const options = new SafeQueryOptions(query);
         return await this.setOrchestrator.findBySetCode(req, code, options);
     }
 }

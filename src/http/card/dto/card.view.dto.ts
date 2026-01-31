@@ -6,6 +6,7 @@ import { SingleCardResponseDto } from './single-card.response.dto';
 import { ListView } from 'src/http/list/list.view';
 
 export class CardViewDto extends ListView {
+    // TODO remove redundant attrs inherited from ListView
     readonly card: SingleCardResponseDto;
     readonly otherPrintings: CardResponseDto[];
     readonly pagination?: PaginationView;

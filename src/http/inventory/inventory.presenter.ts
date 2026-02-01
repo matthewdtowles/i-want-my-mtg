@@ -9,10 +9,10 @@ import { InventoryQuantities } from './inventory.quantities';
 
 export class InventoryPresenter {
     /**
+     * This is used for creating or updating inventory items in the database.
      * @param inventoryItems
      * @param userId
      * @returns a list of Inventory entities based on the provided DTOs and userId.
-     * This is used for creating or updating inventory items in the database.
      */
     static toEntities(inventoryItems: InventoryRequestDto[], userId: number): Inventory[] {
         return inventoryItems.map((item: InventoryRequestDto) => this.toEntity(item, userId));

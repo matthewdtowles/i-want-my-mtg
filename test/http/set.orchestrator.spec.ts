@@ -35,7 +35,7 @@ describe('SetOrchestrator', () => {
         type: 'test',
     };
 
-    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: 'test' });
+    const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
     const mockCard: Card = {
         id: 'card1',

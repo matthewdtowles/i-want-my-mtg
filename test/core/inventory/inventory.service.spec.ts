@@ -22,7 +22,7 @@ describe('InventoryService', () => {
         quantity: 2,
     });
 
-    const mockQueryOptions = new SafeQueryOptions({ page: 1, limit: 10, filter: 'test' });
+    const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
     beforeEach(async () => {
         const mockRepository = {

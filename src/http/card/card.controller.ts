@@ -1,5 +1,4 @@
 import { Controller, Get, Inject, Param, Render, Req, UseGuards } from '@nestjs/common';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -21,8 +20,7 @@ export class CardController {
         @Param('setNumber') setNumber: string
     ): Promise<CardViewDto> {
         this.LOGGER.log(`Find set card ${setCode}/${setNumber}.`);
-        const options = new SafeQueryOptions(req.query);
-        const card = await this.cardOrchestrator.findSetCard(req, setCode, setNumber, options);
+        const card = await this.cardOrchestrator.findSetCard(req, setCode, setNumber);
         this.LOGGER.log(`Found set card ${setCode}/${setNumber} -> ID: ${card?.card?.cardId}.`);
         return card;
     }

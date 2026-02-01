@@ -156,7 +156,7 @@ describe('buildQueryString', () => {
     });
 
     it('should use SafeQueryOptions defaults when constructed', () => {
-        const options = new SafeQueryOptions({ baseOnly: false });
+        const options = new SafeQueryOptions({ baseOnly: 'false' });
         expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=true&baseOnly=false');
     });
 });

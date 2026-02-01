@@ -13,15 +13,12 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { safeBoolean, safeSort } from 'src/core/query/query.util';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
-import { InventoryResponseDto } from './dto/inventory.response.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
-import { InventoryPresenter } from './inventory.presenter';
 
 @Controller('inventory')
 export class InventoryController {
@@ -33,22 +30,10 @@ export class InventoryController {
     @Get()
     @Render('inventory')
     async findByUser(
-        @Query('page') page: string,
-        @Query('limit') limit: string,
-        @Query('filter') filter: string,
-        @Query('sort') sort: string,
-        @Query('ascend') ascend: string,
-        @Query('baseOnly') baseOnly: string,
+        @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<InventoryViewDto> {
-        const options = new SafeQueryOptions({
-            page: parseInt(page),
-            limit: parseInt(limit),
-            filter,
-            sort: safeSort(sort),
-            ascend: ascend === 'true',
-            baseOnly: safeBoolean(baseOnly),
-        });
+        const options = new SafeQueryOptions(query);
         return await this.inventoryOrchestrator.findByUser(req, options);
     }
 
@@ -58,9 +43,13 @@ export class InventoryController {
     async create(
         @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<{ success: boolean; data?: InventoryResponseDto[]; error?: string }> {
+    ): Promise<{ success: boolean; data?: { cardId: string; isFoil: boolean; quantity: number }[]; error?: string }> {
         const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
-        const data = inventories.map((inv) => InventoryPresenter.toInventoryResponseDto(inv));
+        const data = inventories.map((inv) => ({
+            cardId: inv.cardId,
+            isFoil: inv.isFoil,
+            quantity: inv.quantity,
+        }));
         return { success: true, data };
     }
 
@@ -70,9 +59,13 @@ export class InventoryController {
     async update(
         @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<{ success: boolean; data?: InventoryResponseDto[]; error?: string }> {
+    ): Promise<{ success: boolean; data?: { cardId: string; isFoil: boolean; quantity: number }[]; error?: string }> {
         const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
-        const data = inventories.map((inv) => InventoryPresenter.toInventoryResponseDto(inv));
+        const data = inventories.map((inv) => ({
+            cardId: inv.cardId,
+            isFoil: inv.isFoil,
+            quantity: inv.quantity,
+        }));
         return { success: true, data };
     }
 

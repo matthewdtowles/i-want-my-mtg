@@ -14,6 +14,14 @@ export class PriceCalculationPolicy {
     }
 
     /**
+     * Returns SQL expression for inventory item value.
+     * Business rule: Use foil price if item is foil, otherwise normal price.
+     */
+    static inventoryItemValueExpression(): string {
+        return `CASE WHEN i.foil THEN p.foil ELSE p.normal END`;
+    }
+
+    /**
      * Returns the column name for set price based on options.
      * Business rule: baseOnly + includeFoil determines which pre-calculated price to use.
      */

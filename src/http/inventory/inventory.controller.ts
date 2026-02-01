@@ -13,7 +13,6 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { safeBoolean, safeSort } from 'src/core/query/query.util';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -33,22 +32,10 @@ export class InventoryController {
     @Get()
     @Render('inventory')
     async findByUser(
-        @Query('page') page: string,
-        @Query('limit') limit: string,
-        @Query('filter') filter: string,
-        @Query('sort') sort: string,
-        @Query('ascend') ascend: string,
-        @Query('baseOnly') baseOnly: string,
+        @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<InventoryViewDto> {
-        const options = new SafeQueryOptions({
-            page: parseInt(page),
-            limit: parseInt(limit),
-            filter,
-            sort: safeSort(sort),
-            ascend: ascend === 'true',
-            baseOnly: safeBoolean(baseOnly),
-        });
+        const options = new SafeQueryOptions(query);
         return await this.inventoryOrchestrator.findByUser(req, options);
     }
 

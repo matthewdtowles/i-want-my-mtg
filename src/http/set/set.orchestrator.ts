@@ -74,7 +74,7 @@ export class SetOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'findSetListPaginated');
+            return HttpErrorHandler.toHttpException(error, 'findSetList');
         }
     }
 

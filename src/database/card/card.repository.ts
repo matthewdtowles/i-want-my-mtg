@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { CardMapper } from './card.mapper';
 import { CardOrmEntity } from './card.orm-entity';
 import { LegalityOrmEntity } from './legality.orm-entity';
+import { QueryBuilderHelper } from '../query/query-builder.helper';
 
 @Injectable()
 export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
@@ -48,23 +49,25 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
+    private readonly queryHelper = new QueryBuilderHelper<CardOrmEntity>({
+        table: this.TABLE,
+        defaultSort: SortOptions.NUMBER,
+    });
+
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(
-            `Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`
-        );
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.setCode = :code`, { code });
+
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
         }
-        this.addFilters(qb, options.filter);
-        this.addPagination(qb, options);
-        this.addOrdering(qb, options, SortOptions.NUMBER);
-        const results = (await qb.getMany()).map((item: CardOrmEntity) => CardMapper.toCore(item));
-        this.LOGGER.debug(`Found ${results.length} cards for set ${code}.`);
-        return results;
+
+        // Single call handles filter, pagination, ordering
+        this.queryHelper.applyOptions(qb, options);
+
+        return (await qb.getMany()).map(CardMapper.toCore);
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {

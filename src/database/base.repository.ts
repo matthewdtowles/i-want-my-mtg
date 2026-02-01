@@ -18,13 +18,11 @@ export abstract class BaseRepository<T> implements BaseRepositoryPort {
     }
 
     async totalCardsInSet(setCode: string): Promise<number> {
-        return Number(
-            (await this.repository.query(
-                `
-            SELECT COUNT(*) AS total_cards FROM card WHERE set_code = $1`,
-                [setCode]
-            )[0]?.total_cards) ?? 0
+        const result = await this.repository.query(
+            `SELECT COUNT(*) AS total_cards FROM card WHERE set_code = $1`,
+            [setCode]
         );
+        return Number(result[0]?.total_cards ?? 0);
     }
 
     protected addFilters(qb: SelectQueryBuilder<T>, filter?: string) {

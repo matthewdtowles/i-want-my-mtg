@@ -9,6 +9,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { SetMapper } from './set.mapper';
 import { SetOrmEntity } from './set.orm-entity';
+import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 
 @Injectable()
 export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRepositoryPort {
@@ -79,36 +80,16 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         includeFoil: boolean,
         options: SafeQueryOptions
     ): Promise<number> {
-        this.LOGGER.debug(
-            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}, baseOnly: ${options.baseOnly}.`
-        );
-        const select_price = this.determineWhichPrice(includeFoil, options.baseOnly);
+        const priceColumn = PriceCalculationPolicy.setPriceColumn(includeFoil, options.baseOnly);
+        this.LOGGER.debug(`Get ${priceColumn} for set ${code}`);
+
         const result = await this.repository.query(
-            `SELECT ${select_price} AS total_value FROM set_price WHERE set_code = $1`,
+            `SELECT ${priceColumn} AS total_value FROM set_price WHERE set_code = $1`,
             [code]
         );
-        const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`${code.toUpperCase()} ${select_price} is \$${total}`);
-        return total;
+        return Number(result[0]?.total_value ?? 0);
     }
 
-    private determineWhichPrice(includeFoil: boolean, baseOnly: boolean): string {
-        if (!includeFoil && baseOnly) {
-            return 'base_price';
-        } else if (includeFoil && baseOnly) {
-            return 'total_price';
-        } else if (!includeFoil && !baseOnly) {
-            return 'base_price_all';
-        } else {
-            return 'total_price_all';
-        }
-    }
-
-    /**
-     * Adds ordering specific to set queries.
-     * Handles set price sorting with proper fallbacks for bonus-only sets.
-     * Matches the defaultPrice logic in createSetPriceDto.
-     */
     private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
         if (!options.sort) {
             // Default: release date desc, then name asc

@@ -43,22 +43,22 @@ describe('PriceCalculationPolicy', () => {
     });
 
     describe('effectiveSetPriceExpression', () => {
-        it('should return COALESCE expression with default alias', () => {
-            const result = PriceCalculationPolicy.effectiveSetPriceExpression();
-            expect(result).toContain('setPrice.basePrice');
-            expect(result).toContain('setPrice.basePriceAll');
-            expect(result).toContain('setPrice.totalPrice');
-            expect(result).toContain('setPrice.totalPriceAll');
+        it('should return COALESCE expression with proper column names', () => {
+            const result = PriceCalculationPolicy.effectiveSetPriceExpression('setPrice');
+            expect(result).toContain('"setPrice"."base_price"');
+            expect(result).toContain('"setPrice"."base_price_all"');
+            expect(result).toContain('"setPrice"."total_price"');
+            expect(result).toContain('"setPrice"."total_price_all"');
             expect(result).toContain('COALESCE');
             expect(result).toContain('NULLIF');
         });
 
         it('should use custom alias when provided', () => {
             const result = PriceCalculationPolicy.effectiveSetPriceExpression('sp');
-            expect(result).toContain('sp.basePrice');
-            expect(result).toContain('sp.basePriceAll');
-            expect(result).toContain('sp.totalPrice');
-            expect(result).toContain('sp.totalPriceAll');
+            expect(result).toContain('"sp"."base_price"');
+            expect(result).toContain('"sp"."base_price_all"');
+            expect(result).toContain('"sp"."total_price"');
+            expect(result).toContain('"sp"."total_price_all"');
         });
     });
 
@@ -102,7 +102,6 @@ describe('PriceCalculationPolicy', () => {
             });
 
             it('should return 0 when normal is 0 (not null)', () => {
-                // This tests the ?? behavior - 0 is not nullish so it returns 0
                 const result = PriceCalculationPolicy.calculateCardValue(0, 20, false);
                 expect(result).toBe(0);
             });

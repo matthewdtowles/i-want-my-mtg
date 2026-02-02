@@ -6,6 +6,7 @@ import {
     toDollar,
     isAuthenticated,
     buildQueryString,
+    toStringRecord,
 } from 'src/http/base/http.util';
 
 describe('toDollar', () => {
@@ -158,5 +159,62 @@ describe('buildQueryString', () => {
     it('should use SafeQueryOptions defaults when constructed', () => {
         const options = new SafeQueryOptions({ baseOnly: 'false' });
         expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=true&baseOnly=false');
+    });
+});
+
+describe('toStringRecord', () => {
+    it('should return empty object for empty input', () => {
+        expect(toStringRecord({})).toEqual({});
+    });
+
+    it('should include string values', () => {
+        expect(toStringRecord({ page: '1', limit: '25' })).toEqual({ page: '1', limit: '25' });
+    });
+
+    it('should exclude array values', () => {
+        expect(toStringRecord({ page: '1', tags: ['a', 'b'] })).toEqual({ page: '1' });
+    });
+
+    it('should exclude nested object values', () => {
+        expect(toStringRecord({ page: '1', nested: { foo: 'bar' } })).toEqual({ page: '1' });
+    });
+
+    it('should exclude number values', () => {
+        expect(toStringRecord({ page: '1', count: 42 })).toEqual({ page: '1' });
+    });
+
+    it('should exclude boolean values', () => {
+        expect(toStringRecord({ page: '1', active: true })).toEqual({ page: '1' });
+    });
+
+    it('should exclude null values', () => {
+        expect(toStringRecord({ page: '1', empty: null })).toEqual({ page: '1' });
+    });
+
+    it('should exclude undefined values', () => {
+        expect(toStringRecord({ page: '1', missing: undefined })).toEqual({ page: '1' });
+    });
+
+    it('should handle mixed types and only include strings', () => {
+        const input = {
+            page: '1',
+            limit: '25',
+            filter: 'test',
+            count: 100,
+            active: false,
+            tags: ['a', 'b'],
+            nested: { foo: 'bar' },
+            empty: null,
+            missing: undefined,
+        };
+        expect(toStringRecord(input)).toEqual({
+            page: '1',
+            limit: '25',
+            filter: 'test',
+        });
+    });
+
+    it('should handle empty string values', () => {
+        expect(toStringRecord({ page: '', limit: '25' })).toEqual({ page: '', limit: '25' });
     });
 });

@@ -36,19 +36,23 @@ export class PriceCalculationPolicy {
      * Returns SQL for effective set price with fallbacks.
      * Business rule: Try base normal → base all → total normal → total all
      */
-    static effectiveSetPriceExpression(alias: string = 'setPrice'): string {
+    static effectiveSetPriceExpression(alias: string): string {
         return `COALESCE(
-            NULLIF(${alias}.basePrice, 0), 
-            NULLIF(${alias}.basePriceAll, 0), 
-            NULLIF(${alias}.totalPrice, 0), 
-            ${alias}.totalPriceAll
+            NULLIF("${alias}"."base_price", 0), 
+            NULLIF("${alias}"."base_price_all", 0), 
+            NULLIF("${alias}"."total_price", 0), 
+            "${alias}"."total_price_all"
         )`;
     }
 
     /**
      * Calculate value from price objects (for service layer use)
      */
-    static calculateCardValue(normal: number | null, foil: number | null, includeFoil: boolean): number {
+    static calculateCardValue(
+        normal: number | null,
+        foil: number | null,
+        includeFoil: boolean
+    ): number {
         if (includeFoil) {
             return (normal ?? 0) + (foil ?? 0);
         }

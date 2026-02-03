@@ -51,27 +51,31 @@ describe('CardService', () => {
         ],
     });
 
-    beforeEach(async () => {
-        const mockRepository = {
-            save: jest.fn(),
-            findById: jest.fn(),
-            deleteLegality: jest.fn(),
-            findByIds: jest.fn(),
-            findAllInSet: jest.fn(),
-            findWithName: jest.fn(),
-            findBySetCodeAndNumber: jest.fn(),
-            findBySet: jest.fn(),
-            totalWithName: jest.fn(),
-            totalInSet: jest.fn(),
-            delete: jest.fn(),
-        };
+    const mockRepository = {
+        save: jest.fn(),
+        findById: jest.fn(),
+        deleteLegality: jest.fn(),
+        findByIds: jest.fn(),
+        findAllInSet: jest.fn(),
+        findWithName: jest.fn(),
+        findBySetCodeAndNumber: jest.fn(),
+        findBySet: jest.fn(),
+        totalWithName: jest.fn(),
+        totalInSet: jest.fn(),
+        delete: jest.fn(),
+    };
 
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [CardService, { provide: CardRepositoryPort, useValue: mockRepository }],
         }).compile();
 
         service = module.get<CardService>(CardService);
         repository = module.get(CardRepositoryPort) as jest.Mocked<CardRepositoryPort>;
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('findWithName', () => {

@@ -14,7 +14,7 @@ describe('AuthController', () => {
         logout: jest.fn(),
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
             providers: [
@@ -27,6 +27,10 @@ describe('AuthController', () => {
 
         controller = module.get<AuthController>(AuthController);
         authOrchestrator = module.get<AuthOrchestrator>(AuthOrchestrator);
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('login', () => {

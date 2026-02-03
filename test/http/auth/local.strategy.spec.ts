@@ -19,7 +19,7 @@ describe('LocalStrategy', () => {
         validateUser: jest.fn(),
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 LocalStrategy,
@@ -32,6 +32,10 @@ describe('LocalStrategy', () => {
 
         localStrategy = module.get<LocalStrategy>(LocalStrategy);
         authService = module.get<AuthService>(AuthService);
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     it('should be defined', () => {

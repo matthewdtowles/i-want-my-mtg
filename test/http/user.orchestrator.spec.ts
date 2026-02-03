@@ -62,7 +62,7 @@ describe('UserOrchestrator', () => {
         password: 'password123',
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UserOrchestrator,
@@ -81,14 +81,13 @@ describe('UserOrchestrator', () => {
         userService = module.get<UserService>(UserService);
         authService = module.get<AuthService>(AuthService);
 
-        // Setup HttpErrorHandler mock
         (HttpErrorHandler.validateAuthenticatedRequest as jest.Mock) =
             mockHttpErrorHandler.validateAuthenticatedRequest;
         (HttpErrorHandler.toHttpException as unknown as jest.Mock) =
             mockHttpErrorHandler.toHttpException;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
         jest.clearAllMocks();
     });
 

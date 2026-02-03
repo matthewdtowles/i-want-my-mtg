@@ -24,15 +24,15 @@ describe('InventoryService', () => {
 
     const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
-    beforeEach(async () => {
-        const mockRepository = {
-            save: jest.fn(),
-            findOne: jest.fn(),
-            findByCard: jest.fn(),
-            findByUser: jest.fn(),
-            delete: jest.fn(),
-        };
+    const mockRepository = {
+        save: jest.fn(),
+        findOne: jest.fn(),
+        findByCard: jest.fn(),
+        findByUser: jest.fn(),
+        delete: jest.fn(),
+    };
 
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryService,
@@ -42,6 +42,10 @@ describe('InventoryService', () => {
 
         service = module.get<InventoryService>(InventoryService);
         repository = module.get(InventoryRepositoryPort) as jest.Mocked<InventoryRepositoryPort>;
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('save', () => {
@@ -133,7 +137,8 @@ describe('InventoryService', () => {
     describe('delete', () => {
         it('should delete an inventory item and return true on success', async () => {
             repository.delete.mockResolvedValue();
-            repository.findOne.mockResolvedValue(null); // Item no longer found after deletion
+            repository.findOne.mockResolvedValue(null);
+
             const result = await service.delete(1, 'card-1', false);
 
             expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);
@@ -143,7 +148,8 @@ describe('InventoryService', () => {
 
         it('should return false if item still exists after deletion', async () => {
             repository.delete.mockResolvedValue();
-            repository.findOne.mockResolvedValue(testInventoryItem); // Item still exists
+            repository.findOne.mockResolvedValue(testInventoryItem);
+
             const result = await service.delete(1, 'card-1', false);
 
             expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);

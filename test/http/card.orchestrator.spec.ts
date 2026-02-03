@@ -83,7 +83,7 @@ describe('CardOrchestrator', () => {
         },
     ];
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 CardOrchestrator,
@@ -102,19 +102,12 @@ describe('CardOrchestrator', () => {
         cardService = module.get<CardService>(CardService);
         inventoryService = module.get<InventoryService>(InventoryService);
 
-        // Setup HttpErrorHandler mock
         (HttpErrorHandler.toHttpException as unknown as jest.Mock) =
             mockHttpErrorHandler.toHttpException;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
         jest.clearAllMocks();
-        // Reset all mock implementations
-        mockCardService.findBySetCodeAndNumber.mockReset();
-        mockCardService.findWithName.mockReset();
-        mockCardService.totalWithName.mockReset();
-        mockInventoryService.findForUser.mockReset();
-        mockHttpErrorHandler.toHttpException.mockReset();
     });
 
     describe('findSetCard', () => {

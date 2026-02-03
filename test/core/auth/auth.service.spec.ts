@@ -8,7 +8,6 @@ import { UserRepositoryPort } from 'src/core/user/user.repository.port';
 import { UserService } from 'src/core/user/user.service';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 
-// Mock User data
 const mockUser: User = {
     id: 1,
     email: 'test@test.com',
@@ -23,7 +22,7 @@ describe('AuthService', () => {
     let userRepositoryPort: UserRepositoryPort;
     let jwtService: JwtService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthService,
@@ -53,6 +52,10 @@ describe('AuthService', () => {
         userService = module.get<UserService>(UserService);
         userRepositoryPort = module.get<UserRepositoryPort>(UserRepositoryPort);
         jwtService = module.get<JwtService>(JwtService);
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('validateUser', () => {

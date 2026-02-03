@@ -32,17 +32,17 @@ describe('SetService', () => {
 
     const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10' });
 
-    beforeEach(async () => {
-        const mockSetRepository = {
-            findByCode: jest.fn(),
-            findAllSetsMeta: jest.fn(),
-            totalSets: jest.fn(),
-            totalCards: jest.fn(),
-            totalCardsInSet: jest.fn(),
-            totalInSet: jest.fn(),
-            totalValueForSet: jest.fn(),
-        };
+    const mockSetRepository = {
+        findByCode: jest.fn(),
+        findAllSetsMeta: jest.fn(),
+        totalSets: jest.fn(),
+        totalCards: jest.fn(),
+        totalCardsInSet: jest.fn(),
+        totalInSet: jest.fn(),
+        totalValueForSet: jest.fn(),
+    };
 
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 SetService,
@@ -57,7 +57,7 @@ describe('SetService', () => {
         repository = module.get(SetRepositoryPort) as jest.Mocked<SetRepositoryPort>;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
         jest.clearAllMocks();
     });
 

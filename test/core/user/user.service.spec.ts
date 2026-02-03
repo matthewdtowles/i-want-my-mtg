@@ -38,7 +38,7 @@ describe('UserService', () => {
         update: jest.fn().mockImplementation(async (user: User) => user),
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UserService,
@@ -51,6 +51,10 @@ describe('UserService', () => {
 
         service = module.get<UserService>(UserService);
         repository = module.get<UserRepositoryPort>(UserRepositoryPort);
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     it('create should successfully insert a user', async () => {

@@ -1,6 +1,8 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AuthService } from 'src/core/auth/auth.service';
 import { AuthToken } from 'src/core/auth/auth.types';
+import { EmailService } from 'src/core/email/email.service';
+import { PendingUserService } from 'src/core/user/pending-user.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
@@ -13,6 +15,7 @@ import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UserViewDto } from './dto/user.view.dto';
+import { VerificationResultDto } from './dto/verification-result.dto';
 
 @Injectable()
 export class UserOrchestrator {
@@ -25,9 +28,102 @@ export class UserOrchestrator {
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        @Inject(AuthService) private readonly authService: AuthService
+        @Inject(PendingUserService) private readonly pendingUserService: PendingUserService,
+        @Inject(AuthService) private readonly authService: AuthService,
+        @Inject(EmailService) private readonly emailService: EmailService
     ) {
         this.LOGGER.debug(`Initialized`);
+    }
+
+    async initiateSignup(
+        createUserDto: CreateUserRequestDto
+    ): Promise<{ success: boolean; message: string }> {
+        this.LOGGER.debug(`Initiating signup for email: ${createUserDto.email}.`);
+        try {
+            // Check if user already exists
+            const existingUser = await this.userService.findByEmail(createUserDto.email);
+            if (existingUser) {
+                throw new Error('A user with this email already exists');
+            }
+
+            // Create pending user (handles hashing and token generation)
+            const pendingUser = await this.pendingUserService.createPendingUser(
+                createUserDto.email,
+                createUserDto.name,
+                createUserDto.password
+            );
+
+            // Send verification email
+            const emailSent = await this.emailService.sendVerificationEmail(
+                pendingUser.email,
+                pendingUser.verificationToken,
+                pendingUser.name
+            );
+
+            if (!emailSent) {
+                await this.pendingUserService.deleteByEmail(createUserDto.email);
+                throw new Error('Failed to send verification email');
+            }
+
+            return {
+                success: true,
+                message: 'Please check your email to verify your account',
+            };
+        } catch (error) {
+            this.LOGGER.debug(`Error initiating signup for email: ${createUserDto.email}.`);
+            throw error;
+        }
+    }
+
+    async verifyEmail(token: string): Promise<VerificationResultDto> {
+        this.LOGGER.debug(`Verifying email with token.`);
+        try {
+            const pendingUser = await this.pendingUserService.findByToken(token);
+
+            if (!pendingUser) {
+                return new VerificationResultDto({
+                    success: false,
+                    message: 'Invalid or expired verification link',
+                });
+            }
+
+            if (pendingUser.isExpired()) {
+                await this.pendingUserService.deleteByToken(token);
+                return new VerificationResultDto({
+                    success: false,
+                    message: 'Verification link has expired. Please sign up again.',
+                });
+            }
+
+            // Create the actual user
+            const user = new User({
+                email: pendingUser.email,
+                name: pendingUser.name,
+                password: pendingUser.passwordHash, // Already hashed
+                role: UserRole.User,
+            });
+
+            const createdUser = await this.userService.createWithHashedPassword(user);
+
+            // Delete pending user
+            await this.pendingUserService.deleteByToken(token);
+
+            // Generate auth token
+            const authToken = await this.authService.login(createdUser);
+
+            return new VerificationResultDto({
+                success: true,
+                message: 'Email verified successfully! Welcome to I Want My MTG.',
+                token: authToken.access_token,
+                user: createdUser,
+            });
+        } catch (error) {
+            this.LOGGER.error(`Error verifying email: ${error.message}`);
+            return new VerificationResultDto({
+                success: false,
+                message: 'An error occurred during verification. Please try again.',
+            });
+        }
     }
 
     async create(createUserDto: CreateUserRequestDto): Promise<AuthToken> {

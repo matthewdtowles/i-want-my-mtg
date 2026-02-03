@@ -6,6 +6,7 @@ import {
     Inject,
     Patch,
     Post,
+    Query,
     Render,
     Req,
     Res,
@@ -24,6 +25,7 @@ import { CreateUserViewDto } from './dto/create-user.view.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserViewDto } from './dto/user.view.dto';
 import { UserOrchestrator } from './user.orchestrator';
+import { VerificationResultDto } from './dto/verification-result.dto';
 
 @Controller('user')
 export class UserController {
@@ -50,20 +52,15 @@ export class UserController {
 
     @Post('create')
     async create(@Body() createUserDto: CreateUserRequestDto, @Res() res: Response): Promise<void> {
-        this.LOGGER.log(`Create new user ${createUserDto?.email}.`);
+        this.LOGGER.log(`Initiate signup for ${createUserDto?.email}.`);
         try {
-            const authToken: AuthToken = await this.userOrchestrator.create(createUserDto);
-            res.cookie(AUTH_TOKEN_NAME, authToken.access_token, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: false,
-                maxAge: 3600000,
-                path: '/',
+            const result = await this.userOrchestrator.initiateSignup(createUserDto);
+            res.render('verificationSent', {
+                email: createUserDto.email,
+                message: result.message,
             });
-            res.redirect('/user?welcome=true');
-            this.LOGGER.log(`New user created ${createUserDto?.email}.`);
         } catch (error) {
-            this.LOGGER.error(`Error creating user ${createUserDto?.email}: ${error}.`);
+            this.LOGGER.error(`Error initiating signup ${createUserDto?.email}: ${error}.`);
             if (error?.message?.includes('already exists')) {
                 res.render('createUser', {
                     error: 'A user with this email already exists. Please try logging in instead.',
@@ -77,6 +74,37 @@ export class UserController {
                     name: createUserDto.name,
                 });
             }
+        }
+    }
+
+    @Get('verify')
+    async verifyEmail(@Query('token') token: string, @Res() res: Response): Promise<void> {
+        this.LOGGER.log(`Verify email with token.`);
+
+        if (!token) {
+            res.render('verificationResult', {
+                success: false,
+                message: 'Invalid verification link',
+            });
+            return;
+        }
+
+        const result: VerificationResultDto = await this.userOrchestrator.verifyEmail(token);
+
+        if (result.success && result.token) {
+            res.cookie(AUTH_TOKEN_NAME, result.token, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: false,
+                maxAge: 3600000,
+                path: '/',
+            });
+            res.redirect('/user?welcome=true');
+        } else {
+            res.render('verificationResult', {
+                success: false,
+                message: result.message,
+            });
         }
     }
 

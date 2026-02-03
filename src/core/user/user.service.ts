@@ -19,6 +19,11 @@ export class UserService {
         return await this.repository.create(user);
     }
 
+    async createWithHashedPassword(user: User): Promise<User> {
+        // Skip password hashing since it's already hashed
+        return await this.repository.create(user);
+    }
+
     async findById(id: number): Promise<User | null> {
         this.LOGGER.debug(`Find user ID ${id}.`);
         return await this.repository.findById(id);

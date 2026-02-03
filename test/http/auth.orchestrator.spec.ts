@@ -26,7 +26,7 @@ describe('AuthOrchestrator', () => {
         expires_in: 3600,
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthOrchestrator,

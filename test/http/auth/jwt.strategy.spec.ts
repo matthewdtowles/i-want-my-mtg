@@ -23,7 +23,7 @@ describe('JwtStrategy', () => {
     let jwtStrategy: JwtStrategy;
     let userService: UserService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 JwtStrategy,
@@ -44,6 +44,10 @@ describe('JwtStrategy', () => {
 
         jwtStrategy = module.get<JwtStrategy>(JwtStrategy);
         userService = module.get<UserService>(UserService);
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('validate', () => {

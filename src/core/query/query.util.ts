@@ -34,6 +34,8 @@ export function safeBoolean(
 }
 
 export function safeLastPage(rawQueryOptions: RawQueryOptions, minLast: number): string {
-    const lastPage = Math.max(1, Math.ceil(minLast / parseInt(rawQueryOptions.limit)));
-    return String(Math.min(parseInt(rawQueryOptions.page), lastPage));
+    const limit = sanitizeInt(rawQueryOptions.limit, 25);
+    const page = sanitizeInt(rawQueryOptions.page, 1);
+    const lastPage = Math.max(1, Math.ceil(minLast / limit));
+    return String(Math.min(page, lastPage));
 }

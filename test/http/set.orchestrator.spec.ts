@@ -56,7 +56,7 @@ describe('SetOrchestrator', () => {
         inMain: true,
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 SetOrchestrator,
@@ -97,7 +97,7 @@ describe('SetOrchestrator', () => {
         cardService = module.get(CardService) as jest.Mocked<CardService>;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
         jest.clearAllMocks();
     });
 

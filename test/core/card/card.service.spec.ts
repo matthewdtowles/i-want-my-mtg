@@ -51,18 +51,21 @@ describe('CardService', () => {
         ],
     });
 
-    beforeEach(async () => {
-        const mockRepository = {
-            save: jest.fn(),
-            findById: jest.fn(),
-            deleteLegality: jest.fn(),
-            findByIds: jest.fn(),
-            findAllInSet: jest.fn(),
-            findWithName: jest.fn(),
-            findBySetCodeAndNumber: jest.fn(),
-            delete: jest.fn(),
-        };
+    const mockRepository = {
+        save: jest.fn(),
+        findById: jest.fn(),
+        deleteLegality: jest.fn(),
+        findByIds: jest.fn(),
+        findAllInSet: jest.fn(),
+        findWithName: jest.fn(),
+        findBySetCodeAndNumber: jest.fn(),
+        findBySet: jest.fn(),
+        totalWithName: jest.fn(),
+        totalInSet: jest.fn(),
+        delete: jest.fn(),
+    };
 
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [CardService, { provide: CardRepositoryPort, useValue: mockRepository }],
         }).compile();
@@ -71,7 +74,11 @@ describe('CardService', () => {
         repository = module.get(CardRepositoryPort) as jest.Mocked<CardRepositoryPort>;
     });
 
-    describe('findAllWithName', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe('findWithName', () => {
         it('should return cards with the given name', async () => {
             const cards = [testCard];
             repository.findWithName.mockResolvedValue(cards);
@@ -87,6 +94,125 @@ describe('CardService', () => {
 
             await expect(service.findWithName('Test Card', mockQueryOptions)).rejects.toThrow(
                 'Error finding cards with name Test Card'
+            );
+        });
+    });
+
+    describe('findBySet', () => {
+        it('should return cards in the given set', async () => {
+            const cards = [testCard];
+            repository.findBySet.mockResolvedValue(cards);
+
+            const result = await service.findBySet('TST', mockQueryOptions);
+
+            expect(repository.findBySet).toHaveBeenCalledWith('TST', mockQueryOptions);
+            expect(result).toEqual(cards);
+        });
+
+        it('should return empty array when no cards in set', async () => {
+            repository.findBySet.mockResolvedValue([]);
+
+            const result = await service.findBySet('EMPTY', mockQueryOptions);
+
+            expect(repository.findBySet).toHaveBeenCalledWith('EMPTY', mockQueryOptions);
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.findBySet.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.findBySet('TST', mockQueryOptions)).rejects.toThrow(
+                'Error finding cards in set TST'
+            );
+        });
+    });
+
+    describe('findBySetCodeAndNumber', () => {
+        it('should return card when found', async () => {
+            repository.findBySetCodeAndNumber.mockResolvedValue(testCard);
+
+            const result = await service.findBySetCodeAndNumber('TST', '123');
+
+            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('TST', '123', [
+                'set',
+                'legalities',
+                'prices',
+            ]);
+            expect(result).toEqual(testCard);
+        });
+
+        it('should return null when card not found', async () => {
+            repository.findBySetCodeAndNumber.mockResolvedValue(null);
+
+            const result = await service.findBySetCodeAndNumber('TST', '999');
+
+            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('TST', '999', [
+                'set',
+                'legalities',
+                'prices',
+            ]);
+            expect(result).toBeNull();
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.findBySetCodeAndNumber.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.findBySetCodeAndNumber('TST', '123')).rejects.toThrow(
+                'Error finding card with set code TST and number 123'
+            );
+        });
+    });
+
+    describe('totalWithName', () => {
+        it('should return total count of cards with name', async () => {
+            repository.totalWithName.mockResolvedValue(5);
+
+            const result = await service.totalWithName('Test Card');
+
+            expect(repository.totalWithName).toHaveBeenCalledWith('Test Card');
+            expect(result).toBe(5);
+        });
+
+        it('should return 0 when no cards found', async () => {
+            repository.totalWithName.mockResolvedValue(0);
+
+            const result = await service.totalWithName('Nonexistent');
+
+            expect(result).toBe(0);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.totalWithName.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.totalWithName('Test Card')).rejects.toThrow(
+                'Error counting cards with name Test Card'
+            );
+        });
+    });
+
+    describe('totalInSet', () => {
+        it('should return total count of cards in set', async () => {
+            repository.totalInSet.mockResolvedValue(250);
+
+            const result = await service.totalInSet('TST', mockQueryOptions);
+
+            expect(repository.totalInSet).toHaveBeenCalledWith('TST', mockQueryOptions);
+            expect(result).toBe(250);
+        });
+
+        it('should return 0 for empty set', async () => {
+            repository.totalInSet.mockResolvedValue(0);
+
+            const result = await service.totalInSet('EMPTY', mockQueryOptions);
+
+            expect(result).toBe(0);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.totalInSet.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.totalInSet('TST', mockQueryOptions)).rejects.toThrow(
+                'Error counting cards in set TST'
             );
         });
     });

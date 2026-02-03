@@ -34,6 +34,7 @@ logs
 *.pid
 *.seed
 *.pid.lock
+.jest-cache/
 
 # Ignore yarn.lock for Yarn
 yarn.lock

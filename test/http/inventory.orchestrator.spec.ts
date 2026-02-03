@@ -21,7 +21,7 @@ describe('InventoryOrchestrator', () => {
 
     const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryOrchestrator,
@@ -46,7 +46,7 @@ describe('InventoryOrchestrator', () => {
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
         jest.clearAllMocks();
     });
 

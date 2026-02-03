@@ -56,3 +56,17 @@ export function completionRate(totalOwned: number, totalCards: number): number {
     const completionRate = (totalOwned / totalCards) * 100;
     return Math.round(completionRate * 100) / 100;
 }
+
+/**
+ * Safely converts Express ParsedQs to Record<string, string>.
+ * Only includes values that are strings, ignoring arrays and nested objects.
+ */
+export function toStringRecord(query: Record<string, unknown>): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (const [key, value] of Object.entries(query)) {
+        if (typeof value === 'string') {
+            result[key] = value;
+        }
+    }
+    return result;
+}

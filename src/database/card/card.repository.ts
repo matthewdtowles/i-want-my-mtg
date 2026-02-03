@@ -3,9 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
 import { CardRepositoryPort } from 'src/core/card/card.repository.port';
 import { Format } from 'src/core/card/format.enum';
+import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
+import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
 import { CardMapper } from './card.mapper';
@@ -17,6 +19,17 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     readonly TABLE = 'card';
     private readonly LOGGER = getLogger(CardRepository.name);
     private readonly DEFAULT_RELATIONS: string[] = ['set', 'legalities', 'prices'];
+
+    private readonly queryHelper = new QueryBuilderHelper<CardOrmEntity>({
+        table: this.TABLE,
+        defaultSort: SortOptions.NUMBER,
+    });
+
+    private readonly queryHelperPriceDesc = new QueryBuilderHelper<CardOrmEntity>({
+        table: this.TABLE,
+        defaultSort: SortOptions.PRICE,
+        defaultSortDesc: true,
+    });
 
     constructor(
         @InjectRepository(CardOrmEntity) protected readonly repository: Repository<CardOrmEntity>,
@@ -49,33 +62,34 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     }
 
     async findBySet(code: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(
-            `Finding cards by set code: ${code}, options: ${JSON.stringify(options)}.`
-        );
+        this.LOGGER.debug(`Finding cards by set code: ${code}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.setCode = :code`, { code });
+
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
         }
-        this.addFilters(qb, options.filter);
-        this.addPagination(qb, options);
-        this.addOrdering(qb, options, SortOptions.NUMBER);
-        const results = (await qb.getMany()).map((item: CardOrmEntity) => CardMapper.toCore(item));
+
+        this.queryHelper.applyOptions(qb, options);
+        const results = (await qb.getMany()).map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${results.length} cards for set ${code}.`);
         return results;
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
-        this.LOGGER.debug(`Finding cards with name: ${name}, options: ${JSON.stringify(options)}.`);
+        this.LOGGER.debug(`Finding cards with name: ${name}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
             .where(`${this.TABLE}.name = :name`, { name });
-        this.addPagination(qb, options);
-        this.addOrdering(qb, options, SortOptions.PRICE, true);
-        const cards = (await qb.getMany()).map((card: CardOrmEntity) => CardMapper.toCore(card));
+
+        // Use price-desc helper for "other printings" sorted by value
+        this.queryHelperPriceDesc.applyPagination(qb, options);
+        this.queryHelperPriceDesc.applyOrdering(qb, options);
+
+        const cards = (await qb.getMany()).map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${cards.length} cards with name: ${name}.`);
         return cards;
     }
@@ -85,33 +99,26 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         number: string,
         _relations: string[]
     ): Promise<Card | null> {
-        this.LOGGER.debug(
-            `Finding card by set code ${code} and number ${number}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`
-        );
+        this.LOGGER.debug(`Finding card by set code ${code} and number ${number}.`);
         const ormCard: CardOrmEntity = await this.repository.findOne({
-            where: {
-                set: { code },
-                number,
-            },
+            where: { set: { code }, number },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
-        this.LOGGER.debug(
-            `Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`
-        );
+        this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(
-            `Counting total cards in set: ${code}, options: ${JSON.stringify(options)}.`
-        );
+        this.LOGGER.debug(`Counting total cards in set: ${code}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code });
+
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
         }
-        this.addFilters(qb, options.filter);
+
+        this.queryHelper.applyFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total cards in set ${code}: ${count}.`);
         return count;
@@ -119,9 +126,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
 
     async totalWithName(name: string): Promise<number> {
         this.LOGGER.debug(`Counting total cards with name: ${name}.`);
-        const count = await this.repository.count({
-            where: { name },
-        });
+        const count = await this.repository.count({ where: { name } });
         this.LOGGER.debug(`Total cards with name ${name}: ${count}.`);
         return count;
     }
@@ -131,12 +136,8 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         includeFoil: boolean,
         baseOnly: boolean = true
     ): Promise<number> {
-        this.LOGGER.debug(
-            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`
-        );
-        const selectExpr = includeFoil
-            ? '(COALESCE(p.normal, 0) + COALESCE(p.foil, 0))'
-            : 'COALESCE(p.normal, p.foil, 0)';
+        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`);
+        const selectExpr = PriceCalculationPolicy.cardValueExpression(includeFoil);
         const result = await this.repository.query(
             `
             SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
@@ -144,20 +145,17 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             JOIN price p ON p.card_id = c.id
             WHERE c.set_code = $1
             AND c.in_main = $2
-        `,
+            `,
             [code, baseOnly]
         );
         const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(
-            `Total ${includeFoil ? 'with foils' : 'non-foil'} value for set ${code}: ${total}.`
-        );
+        this.LOGGER.debug(`Total value for set ${code}: ${total}.`);
         return total;
     }
 
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
         this.LOGGER.debug(`Verifying existence of ${cardIds?.length ?? 0} card ids.`);
-        if (0 === cardIds.length) {
-            this.LOGGER.debug(`No card ids provided to verify.`);
+        if (cardIds.length === 0) {
             return new Set();
         }
         const ormCards: CardOrmEntity[] = await this.repository
@@ -166,9 +164,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
             .getMany();
         const found = new Set(ormCards.map((c: CardOrmEntity) => c.id));
-        this.LOGGER.debug(
-            `Verified ${found.size} existing cards out of ${cardIds.length} provided.`
-        );
+        this.LOGGER.debug(`Verified ${found.size} existing cards out of ${cardIds.length} provided.`);
         return found;
     }
 

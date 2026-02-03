@@ -8,7 +8,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { isAuthenticated } from 'src/http/base/http.util';
+import { isAuthenticated, toStringRecord } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { InventoryPresenter } from 'src/http/inventory/inventory.presenter';
 import { FilterView } from 'src/http/list/filter.view';
@@ -20,7 +20,6 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
 import { CardViewDto } from './dto/card.view.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
-import { safeLastPage } from 'src/core/query/query.util';
 
 @Injectable()
 export class CardOrchestrator {
@@ -40,7 +39,6 @@ export class CardOrchestrator {
     ): Promise<CardViewDto> {
         this.LOGGER.debug(`Find set card ${setCode}/${setNumber}.`);
         try {
-            const rawQueryOptions = req.query;
             const userId: number = req.user ? req.user.id : 0;
             const coreCard: Card | null = await this.cardService.findBySetCodeAndNumber(
                 setCode,
@@ -58,10 +56,15 @@ export class CardOrchestrator {
                 CardImgType.NORMAL
             );
             const totalPrintings = await this.cardService.totalWithName(singleCard.name);
-            const options = new SafeQueryOptions({
-                ...rawQueryOptions,
-                page: safeLastPage(rawQueryOptions, totalPrintings),
-            });
+
+            const rawOptions = toStringRecord(req.query);
+            const parsedOptions = new SafeQueryOptions(rawOptions);
+            const lastPage = Math.max(1, Math.ceil(totalPrintings / parsedOptions.limit));
+            const options =
+                parsedOptions.page > lastPage
+                    ? new SafeQueryOptions({ ...rawOptions, page: String(lastPage) })
+                    : parsedOptions;
+
             this.LOGGER.debug(`Options: ${JSON.stringify(options)}`);
             const allPrintings: Card[] = await this.cardService.findWithName(
                 singleCard.name,
@@ -99,7 +102,7 @@ export class CardOrchestrator {
     }
 
     async getPrintingsLastPage(name: string, query: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`Find last page for other printings paginationi for ${name}.`);
+        this.LOGGER.debug(`Find last page for other printings pagination for ${name}.`);
         try {
             const totalCards = await this.cardService.totalWithName(name);
             const lastPage = Math.max(1, Math.ceil(totalCards / query.limit));

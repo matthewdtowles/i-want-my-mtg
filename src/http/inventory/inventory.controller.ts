@@ -16,6 +16,11 @@ import {
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import {
+    InventoryApiResponseDto,
+    InventoryDeleteResponseDto,
+    InventoryItemDto,
+} from './dto/inventory.api-response.dto';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
@@ -43,14 +48,19 @@ export class InventoryController {
     async create(
         @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<{ success: boolean; data?: { cardId: string; isFoil: boolean; quantity: number }[]; error?: string }> {
+    ): Promise<InventoryApiResponseDto> {
         const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
-        const data = inventories.map((inv) => ({
-            cardId: inv.cardId,
-            isFoil: inv.isFoil,
-            quantity: inv.quantity,
-        }));
-        return { success: true, data };
+        return new InventoryApiResponseDto({
+            success: true,
+            data: inventories.map(
+                (inv) =>
+                    new InventoryItemDto({
+                        cardId: inv.cardId,
+                        isFoil: inv.isFoil,
+                        quantity: inv.quantity,
+                    })
+            ),
+        });
     }
 
     @UseGuards(JwtAuthGuard)
@@ -59,14 +69,19 @@ export class InventoryController {
     async update(
         @Body() inventoryDtos: InventoryRequestDto[],
         @Req() req: AuthenticatedRequest
-    ): Promise<{ success: boolean; data?: { cardId: string; isFoil: boolean; quantity: number }[]; error?: string }> {
+    ): Promise<InventoryApiResponseDto> {
         const inventories = await this.inventoryOrchestrator.save(inventoryDtos, req);
-        const data = inventories.map((inv) => ({
-            cardId: inv.cardId,
-            isFoil: inv.isFoil,
-            quantity: inv.quantity,
-        }));
-        return { success: true, data };
+        return new InventoryApiResponseDto({
+            success: true,
+            data: inventories.map(
+                (inv) =>
+                    new InventoryItemDto({
+                        cardId: inv.cardId,
+                        isFoil: inv.isFoil,
+                        quantity: inv.quantity,
+                    })
+            ),
+        });
     }
 
     @UseGuards(JwtAuthGuard)
@@ -75,8 +90,8 @@ export class InventoryController {
     async delete(
         @Body() body: { cardId: string; isFoil: boolean },
         @Req() req: AuthenticatedRequest
-    ): Promise<{ success: boolean; error?: string }> {
+    ): Promise<InventoryDeleteResponseDto> {
         const success = await this.inventoryOrchestrator.delete(req, body.cardId, body.isFoil);
-        return { success };
+        return new InventoryDeleteResponseDto({ success });
     }
 }

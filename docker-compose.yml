@@ -1,101 +1,117 @@
 services:
-  # Web Application
-  web:
-    build:
-      context: .
-      target: development
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - NODE_ENV=${NODE_ENV}
-      - JWT_SECRET=${JWT_SECRET}
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/scry
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    # Web Application
+    web:
+        build:
+            context: .
+            target: development
+        ports:
+            - '3000:3000'
+        environment:
+            - DATABASE_URL=${DATABASE_URL}
+            - NODE_ENV=${NODE_ENV}
+            - JWT_SECRET=${JWT_SECRET}
+            - SMTP_HOST=mailhog
+            - SMTP_PORT=1025
+            - SMTP_SECURE=false
+            - SMTP_FROM=noreply@iwantmymtg.local
+            - APP_URL=http://localhost:3000
+        volumes:
+            - .:/app
+            - /app/node_modules
+            - /app/scry
+        depends_on:
+            postgres:
+                condition: service_healthy
+            mailhog:
+                condition: service_started
+        restart: unless-stopped
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '10m'
+                max-file: '3'
 
-  # Scry - ETL Application
-  etl:
-    build:
-      context: ./scry
-      dockerfile: Dockerfile
-      target: development
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - SCRY_LOG=${SCRY_LOG}
-      - CARGO_NET_GIT_FETCH_WITH_CLI=true
-      - CARGO_HTTP_MULTIPLEXING=false
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    profiles: [ "etl" ]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    volumes:
-      - ./scry:/app
-      - ./scry/target:/app/target
-      - cargo_registry:/usr/local/cargo/registry
-      - cargo_git:/usr/local/cargo/git
-    command: [ "cargo", "run", "--", "ingest" ]
+    # Scry - ETL Application
+    etl:
+        build:
+            context: ./scry
+            dockerfile: Dockerfile
+            target: development
+        environment:
+            - DATABASE_URL=${DATABASE_URL}
+            - SCRY_LOG=${SCRY_LOG}
+            - CARGO_NET_GIT_FETCH_WITH_CLI=true
+            - CARGO_HTTP_MULTIPLEXING=false
 
-  # PostgreSQL Database (shared by web and etl)
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d/
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+        env_file:
+            - .env
+        depends_on:
+            postgres:
+                condition: service_healthy
+        profiles: ['etl']
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '10m'
+                max-file: '3'
+        volumes:
+            - ./scry:/app
+            - ./scry/target:/app/target
+            - cargo_registry:/usr/local/cargo/registry
+            - cargo_git:/usr/local/cargo/git
+        command: ['cargo', 'run', '--', 'ingest']
 
-  # Database Admin Interface
-  adminer:
-    image: adminer:latest
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
+    # PostgreSQL Database (shared by web and etl)
+    postgres:
+        image: postgres:15-alpine
+        environment:
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        env_file:
+            - .env
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_dev_data:/var/lib/postgresql/data
+            - ./docker/postgres/init:/docker-entrypoint-initdb.d/
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  migrate:
-    image: postgres:15-alpine
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./docker/postgres/migrations:/migrations:ro
-    entrypoint: [ "/migrations/run_migrations.sh" ]
-    profiles: [ "migrate" ]
-    restart: "no"
+    # Database Admin Interface
+    adminer:
+        image: adminer:latest
+        ports:
+            - '8080:8080'
+        depends_on:
+            - postgres
+
+    migrate:
+        image: postgres:15-alpine
+        env_file:
+            - .env
+        depends_on:
+            postgres:
+                condition: service_healthy
+        volumes:
+            - ./docker/postgres/migrations:/migrations:ro
+        entrypoint: ['/migrations/run_migrations.sh']
+        profiles: ['migrate']
+        restart: 'no'
+
+    mailhog:
+        image: mailhog/mailhog:latest
+        container_name: mtg-mailhog
+        ports:
+            - '1025:1025' # SMTP
+            - '8025:8025' # Web UI
+        restart: unless-stopped
 
 volumes:
-  postgres_dev_data:
-  etl_target:
-  cargo_registry:
-  cargo_git:
+    postgres_dev_data:
+    etl_target:
+    cargo_registry:
+    cargo_git:

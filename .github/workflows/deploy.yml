@@ -1,99 +1,106 @@
 name: CI/CD
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Run App Unit Tests
-        run: |
-          cp .env.example .env
-          docker compose run --rm web npm test
+            - name: Run App Unit Tests
+              run: |
+                  cp .env.example .env
+                  docker compose run --rm web npm test
 
-      - name: Cleanup
-        run: docker compose down -v
+            - name: Cleanup
+              run: docker compose down -v
 
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      packages: write
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and Push Web App
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          target: production
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
-
-      - name: Build and Push ETL App
-        uses: docker/build-push-action@v5
-        with:
-          context: ./scry
-          target: production
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:${{ github.sha }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment: production
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Make deployment script executable
-        run: chmod +x .github/scripts/deploy.sh
-
-      - name: Deploy to Production
+    build:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        permissions:
+            contents: read
+            packages: write
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
-          LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          LIGHTSAIL_GITHUB_TOKEN: ${{ secrets.LIGHTSAIL_GITHUB_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          SCRY_LOG: ${{ secrets.SCRY_LOG }}
-        run: ./.github/scripts/deploy.sh
+            REGISTRY: ghcr.io
+            IMAGE_NAME: ${{ github.repository }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Login to Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Extract Metadata
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+                  tags: |
+                      type=ref,event=branch
+                      type=sha,prefix=sha-
+                      type=raw,value=latest,enable={{is_default_branch}}
+
+            - name: Build and Push Web App
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  target: production
+                  push: true
+                  tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
+
+            - name: Build and Push ETL App
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./scry
+                  target: production
+                  push: true
+                  tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:${{ github.sha }}
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        environment: production
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Make deployment script executable
+              run: chmod +x .github/scripts/deploy.sh
+
+            - name: Deploy to Production
+              env:
+                  SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
+                  LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_ACTOR: ${{ github.actor }}
+                  LIGHTSAIL_GITHUB_TOKEN: ${{ secrets.LIGHTSAIL_GITHUB_TOKEN }}
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+                  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+                  NODE_ENV: ${{ secrets.NODE_ENV }}
+                  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+                  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                  SCRY_LOG: ${{ secrets.SCRY_LOG }}
+                  SMTP_HOST: ${{ secrets.SMTP_HOST }}
+                  SMTP_PORT: ${{ secrets.SMTP_PORT }}
+                  SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+                  SMTP_USER: ${{ secrets.SMTP_USER }}
+                  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+                  SMTP_FROM: ${{ secrets.SMTP_FROM }}
+                  APP_URL: ${{ secrets.APP_URL }}
+              run: ./.github/scripts/deploy.sh

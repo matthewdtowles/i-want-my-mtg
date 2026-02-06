@@ -1,5 +1,5 @@
 #!/bin/bash
-# filepath: scripts/deploy.sh
+# filepath: /home/matt/projects/i-want-my-mtg/.github/scripts/deploy.sh
 set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
 # Colors for output
@@ -34,6 +34,10 @@ required_vars=(
     "POSTGRES_PASSWORD"
     "SCRY_LOG"
     "LIGHTSAIL_GITHUB_TOKEN"
+    "SMTP_HOST"
+    "SMTP_PORT"
+    "SMTP_FROM"
+    "APP_URL"
 )
 
 log_info "Validating environment variables..."
@@ -70,6 +74,15 @@ echo "POSTGRES_USER=\"$POSTGRES_USER\"" >> .env
 echo "POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"" >> .env
 echo "SCRY_LOG=\"$SCRY_LOG\"" >> .env
 echo "LIGHTSAIL_GITHUB_TOKEN=\"$LIGHTSAIL_GITHUB_TOKEN\"" >> .env
+
+# Email configuration
+echo "SMTP_HOST=\"$SMTP_HOST\"" >> .env
+echo "SMTP_PORT=\"$SMTP_PORT\"" >> .env
+echo "SMTP_SECURE=\"${SMTP_SECURE:-false}\"" >> .env
+echo "SMTP_USER=\"${SMTP_USER:-}\"" >> .env
+echo "SMTP_PASS=\"${SMTP_PASS:-}\"" >> .env
+echo "SMTP_FROM=\"$SMTP_FROM\"" >> .env
+echo "APP_URL=\"$APP_URL\"" >> .env
 
 # Copy files to server
 log_info "Copying files to server..."

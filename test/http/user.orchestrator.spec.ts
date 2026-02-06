@@ -10,6 +10,9 @@ import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
 import { UserViewDto } from 'src/http/user/dto/user.view.dto';
 import { UserOrchestrator } from 'src/http/user/user.orchestrator';
 import { AuthService } from 'src/core/auth/auth.service';
+import { EmailService } from 'src/core/email/email.service';
+import { PendingUser } from 'src/core/user/pending-user.entity';
+import { PendingUserService } from 'src/core/user/pending-user.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { UserRole } from 'src/shared/constants/user.role.enum';
@@ -18,19 +21,36 @@ jest.mock('src/http/http.error.handler');
 
 describe('UserOrchestrator', () => {
     let orchestrator: UserOrchestrator;
-    let userService: UserService;
-    let authService: AuthService;
+    let userService: jest.Mocked<UserService>;
+    let pendingUserService: jest.Mocked<PendingUserService>;
+    let authService: jest.Mocked<AuthService>;
+    let emailService: jest.Mocked<EmailService>;
 
     const mockUserService = {
         create: jest.fn(),
+        createWithHashedPassword: jest.fn(),
         findById: jest.fn(),
+        findByEmail: jest.fn(),
         update: jest.fn(),
         updatePassword: jest.fn(),
         remove: jest.fn(),
     };
 
+    const mockPendingUserService = {
+        createPendingUser: jest.fn(),
+        findByToken: jest.fn(),
+        findByEmail: jest.fn(),
+        deleteByToken: jest.fn(),
+        deleteByEmail: jest.fn(),
+        deleteExpired: jest.fn(),
+    };
+
     const mockAuthService = {
         login: jest.fn(),
+    };
+
+    const mockEmailService = {
+        sendVerificationEmail: jest.fn(),
     };
 
     const mockHttpErrorHandler = {
@@ -66,20 +86,18 @@ describe('UserOrchestrator', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UserOrchestrator,
-                {
-                    provide: UserService,
-                    useValue: mockUserService,
-                },
-                {
-                    provide: AuthService,
-                    useValue: mockAuthService,
-                },
+                { provide: UserService, useValue: mockUserService },
+                { provide: PendingUserService, useValue: mockPendingUserService },
+                { provide: AuthService, useValue: mockAuthService },
+                { provide: EmailService, useValue: mockEmailService },
             ],
         }).compile();
 
         orchestrator = module.get<UserOrchestrator>(UserOrchestrator);
-        userService = module.get<UserService>(UserService);
-        authService = module.get<AuthService>(AuthService);
+        userService = module.get(UserService);
+        pendingUserService = module.get(PendingUserService);
+        authService = module.get(AuthService);
+        emailService = module.get(EmailService);
 
         (HttpErrorHandler.validateAuthenticatedRequest as jest.Mock) =
             mockHttpErrorHandler.validateAuthenticatedRequest;
@@ -89,6 +107,123 @@ describe('UserOrchestrator', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('initiateSignup', () => {
+        it('should create pending user and send verification email', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashed',
+                verificationToken: 'token123',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockPendingUserService.createPendingUser.mockResolvedValue(mockPendingUser);
+            mockEmailService.sendVerificationEmail.mockResolvedValue(true);
+
+            const result = await orchestrator.initiateSignup(mockCreateUserDto);
+
+            expect(result.success).toBe(true);
+            expect(result.message).toBe('Please check your email to verify your account');
+            expect(mockUserService.findByEmail).toHaveBeenCalledWith('new@example.com');
+            expect(mockPendingUserService.createPendingUser).toHaveBeenCalledWith(
+                'new@example.com',
+                'New User',
+                'password123'
+            );
+            expect(mockEmailService.sendVerificationEmail).toHaveBeenCalledWith(
+                'new@example.com',
+                'token123',
+                'New User'
+            );
+        });
+
+        it('should throw error if user already exists', async () => {
+            mockUserService.findByEmail.mockResolvedValue(
+                new User({ id: 1, email: 'new@example.com', name: 'username' })
+            );
+
+            await expect(orchestrator.initiateSignup(mockCreateUserDto)).rejects.toThrow(
+                'A user with this email already exists'
+            );
+        });
+
+        it('should cleanup pending user if email fails to send', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashed',
+                verificationToken: 'token123',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockPendingUserService.createPendingUser.mockResolvedValue(mockPendingUser);
+            mockEmailService.sendVerificationEmail.mockResolvedValue(false);
+
+            await expect(orchestrator.initiateSignup(mockCreateUserDto)).rejects.toThrow(
+                'Failed to send verification email'
+            );
+            expect(mockPendingUserService.deleteByEmail).toHaveBeenCalledWith('new@example.com');
+        });
+    });
+
+    describe('verifyEmail', () => {
+        it('should create user and return token on valid verification', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'validtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+            const mockUser = new User({ id: 1, email: 'new@example.com', name: 'New User' });
+            const mockToken = { access_token: 'jwt-token', expires_in: 3600 };
+
+            mockPendingUserService.findByToken.mockResolvedValue(mockPendingUser);
+            mockUserService.createWithHashedPassword.mockResolvedValue(mockUser);
+            mockAuthService.login.mockResolvedValue(mockToken);
+
+            const result = await orchestrator.verifyEmail('validtoken');
+
+            expect(result.success).toBe(true);
+            expect(result.token).toBe('jwt-token');
+            expect(result.user).toEqual(mockUser);
+            expect(mockPendingUserService.deleteByToken).toHaveBeenCalledWith('validtoken');
+        });
+
+        it('should return error for invalid token', async () => {
+            mockPendingUserService.findByToken.mockResolvedValue(null);
+
+            const result = await orchestrator.verifyEmail('invalidtoken');
+
+            expect(result.success).toBe(false);
+            expect(result.message).toBe('Invalid or expired verification link');
+        });
+
+        it('should return error and cleanup for expired token', async () => {
+            const expiredPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'expiredtoken',
+                expiresAt: new Date(Date.now() - 86400000), // expired
+            });
+
+            mockPendingUserService.findByToken.mockResolvedValue(expiredPendingUser);
+
+            const result = await orchestrator.verifyEmail('expiredtoken');
+
+            expect(result.success).toBe(false);
+            expect(result.message).toBe('Verification link has expired. Please sign up again.');
+            expect(mockPendingUserService.deleteByToken).toHaveBeenCalledWith('expiredtoken');
+        });
     });
 
     describe('create', () => {

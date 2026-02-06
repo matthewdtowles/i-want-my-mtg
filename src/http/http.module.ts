@@ -14,6 +14,7 @@ import { UserController } from './user/user.controller';
 import { UserOrchestrator } from './user/user.orchestrator';
 
 @Module({
+    imports: [CoreModule],
     controllers: [
         AuthController,
         CardController,
@@ -22,7 +23,6 @@ import { UserOrchestrator } from './user/user.orchestrator';
         SetController,
         UserController,
     ],
-    imports: [CoreModule],
     providers: [
         AuthOrchestrator,
         CardOrchestrator,

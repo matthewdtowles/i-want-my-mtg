@@ -4,7 +4,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
-import { CoreModule } from './core/core.module';
 import { DatabaseModule } from './database/database.module';
 import { HttpModule } from './http/http.module';
 import { getLogger } from './logger/global-app-logger';
@@ -23,7 +22,6 @@ import { getLogger } from './logger/global-app-logger';
                 const databaseUrl = configService.get<string>('DATABASE_URL');
 
                 if (databaseUrl) {
-                    // Parse DATABASE_URL for production
                     return {
                         type: 'postgres',
                         url: databaseUrl,
@@ -42,7 +40,6 @@ import { getLogger } from './logger/global-app-logger';
                         },
                     };
                 } else {
-                    // Use individual variables for development
                     return {
                         type: 'postgres',
                         host: configService.get<string>('DB_HOST'),
@@ -76,7 +73,6 @@ import { getLogger } from './logger/global-app-logger';
             },
         }),
         DatabaseModule,
-        CoreModule,
         HttpModule,
     ],
 })

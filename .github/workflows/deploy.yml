@@ -97,10 +97,10 @@ jobs:
                   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
                   SCRY_LOG: ${{ secrets.SCRY_LOG }}
                   SMTP_HOST: ${{ secrets.SMTP_HOST }}
-                  SMTP_PORT: ${{ secrets.SMTP_PORT }}
-                  SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+                  SMTP_PORT: 587
+                  SMTP_SECURE: false
                   SMTP_USER: ${{ secrets.SMTP_USER }}
                   SMTP_PASS: ${{ secrets.SMTP_PASS }}
-                  SMTP_FROM: ${{ secrets.SMTP_FROM }}
-                  APP_URL: ${{ secrets.APP_URL }}
+                  SMTP_FROM: noreply@iwantmymtg.net
+                  APP_URL: https://iwantmymtg.net
               run: ./.github/scripts/deploy.sh

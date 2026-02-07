@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS pending_user (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE INDEX idx_pending_user_token ON pending_user(verification_token);
-CREATE INDEX idx_pending_user_expires ON pending_user(expires_at);
+CREATE INDEX IF NOT EXISTS idx_pending_user_token ON pending_user(verification_token);
+CREATE INDEX IF NOT EXISTS idx_pending_user_expires ON pending_user(expires_at);

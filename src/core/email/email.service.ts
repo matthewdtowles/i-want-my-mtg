@@ -17,19 +17,47 @@ export class EmailService {
 
     constructor(private readonly configService: ConfigService) {
         const host = this.configService.get<string>('SMTP_HOST');
+        const port = this.configService.get<number>('SMTP_PORT', 587);
+        const user = this.configService.get<string>('SMTP_USER');
 
-        if (host && !host.includes('example.com')) {
+        this.LOGGER.log(
+            `Email config - Host: ${host}, Port: ${port}, User: ${user ? 'SET' : 'NOT SET'}`
+        );
+
+        if (host && !host.includes('example.com') && host !== 'mailhog') {
             this.transporter = nodemailer.createTransport({
                 host,
-                port: this.configService.get<number>('SMTP_PORT', 587),
+                port,
                 secure: this.configService.get<string>('SMTP_SECURE') === 'true',
                 auth: this.getAuthConfig(),
+                debug: true,
+                logger: true,
             });
             this.isConfigured = true;
-            this.LOGGER.log(`Email service configured with host: ${host}`);
+            this.LOGGER.log(`Email service configured with host: ${host}:${port}`);
+
+            // Verify connection on startup
+            this.verifyConnection();
+        } else if (host === 'mailhog') {
+            this.transporter = nodemailer.createTransport({
+                host,
+                port,
+                secure: false,
+            });
+            this.isConfigured = true;
+            this.LOGGER.log(`Email service configured with Mailhog`);
         } else {
             this.isConfigured = false;
-            this.LOGGER.warn(`Email service not configured. Set SMTP_HOST in environment.`);
+            this.LOGGER.warn(`Email service not configured. SMTP_HOST: ${host}`);
+        }
+    }
+
+    private async verifyConnection(): Promise<void> {
+        try {
+            await this.transporter?.verify();
+            this.LOGGER.log(`SMTP connection verified successfully`);
+        } catch (error) {
+            this.LOGGER.error(`SMTP connection verification failed: ${error.message}`);
         }
     }
 
@@ -37,17 +65,22 @@ export class EmailService {
         const user = this.configService.get<string>('SMTP_USER');
         const pass = this.configService.get<string>('SMTP_PASS');
         if (!user && !pass) {
+            this.LOGGER.warn(`No SMTP auth configured`);
             return undefined;
         }
+        this.LOGGER.debug(`SMTP auth configured for user: ${user}`);
         return { user, pass };
     }
 
     async sendVerificationEmail(email: string, token: string, name: string): Promise<boolean> {
         const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
         const verificationUrl = `${baseUrl}/user/verify?token=${token}`;
+        const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
 
-        if (!this.isConfigured) {
-            this.LOGGER.warn(`Email service not configured. Verification URL: ${verificationUrl}`);
+        this.LOGGER.log(`Attempting to send verification email to: ${email}, from: ${from}`);
+
+        if (!this.isConfigured || !this.transporter) {
+            this.LOGGER.warn(`Email not configured. Verification URL: ${verificationUrl}`);
             return this.configService.get<string>('NODE_ENV') === 'dev';
         }
 
@@ -77,16 +110,17 @@ export class EmailService {
         `;
 
         try {
-            await this.transporter.sendMail({
-                from: this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.com'),
+            const info = await this.transporter.sendMail({
+                from,
                 to: email,
                 subject: 'Verify your email - I Want My MTG',
                 html,
             });
-            this.LOGGER.debug(`Verification email sent to ${email}`);
+            this.LOGGER.log(`Verification email sent to ${email}. MessageId: ${info.messageId}`);
             return true;
         } catch (error) {
             this.LOGGER.error(`Failed to send verification email to ${email}: ${error.message}`);
+            this.LOGGER.error(`Full error: ${JSON.stringify(error)}`);
             return false;
         }
     }

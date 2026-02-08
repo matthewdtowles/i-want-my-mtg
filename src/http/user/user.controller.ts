@@ -26,6 +26,7 @@ import { UserViewDto } from './dto/user.view.dto';
 import { VerificationResultDto } from './dto/verification-result.dto';
 import { UserOrchestrator } from './user.orchestrator';
 import { ConfigService } from '@nestjs/config';
+import { getAuthCookieOptions } from 'src/http/auth/auth.cookie.util';
 
 @Controller('user')
 export class UserController {
@@ -35,17 +36,6 @@ export class UserController {
         @Inject(UserOrchestrator) private readonly userOrchestrator: UserOrchestrator,
         private readonly configService: ConfigService
     ) {}
-
-    private getCookieOptions() {
-        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
-        return {
-            httpOnly: true,
-            sameSite: 'strict' as const,
-            secure: isProduction,
-            maxAge: 3600000,
-            path: '/',
-        };
-    }
 
     @Get('create')
     @Render('createUser')
@@ -64,8 +54,8 @@ export class UserController {
         this.LOGGER.log(`Get user profile.`);
         const user = await this.userOrchestrator.findUser(req);
         this.LOGGER.log(`Profile found for user ${user?.user?.id}.`);
-        if (welcome) {
-            user.welcome = true;
+        if (welcome === 'true') {
+            return new UserViewDto({ ...user, welcome: true });
         }
         return user;
     }
@@ -109,7 +99,7 @@ export class UserController {
         }
         const result: VerificationResultDto = await this.userOrchestrator.verifyEmail(token);
         if (result.success && result.token) {
-            res.cookie(AUTH_TOKEN_NAME, result.token, this.getCookieOptions());
+            res.cookie(AUTH_TOKEN_NAME, result.token, getAuthCookieOptions(this.configService));
             res.redirect('/user?welcome=true');
         } else {
             res.render('verificationResult', {

@@ -25,13 +25,14 @@ export class EmailService {
         );
 
         if (host && !host.includes('example.com') && host !== 'mailhog') {
+            const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
             this.transporter = nodemailer.createTransport({
                 host,
                 port,
                 secure: this.configService.get<string>('SMTP_SECURE') === 'true',
                 auth: this.getAuthConfig(),
-                debug: true,
-                logger: true,
+                debug: !isProduction,
+                logger: !isProduction,
             });
             this.isConfigured = true;
             this.LOGGER.log(`Email service configured with host: ${host}:${port}`);
@@ -100,7 +101,7 @@ export class EmailService {
             return true;
         } catch (error) {
             this.LOGGER.error(`Failed to send verification email to ${email}: ${error.message}`);
-            this.LOGGER.error(`Full error: ${JSON.stringify(error)}`);
+            this.LOGGER.debug(`Stack trace: ${error.stack}`);
             return false;
         }
     }
@@ -117,10 +118,19 @@ export class EmailService {
     private getAuthConfig(): { user: string; pass: string } | undefined {
         const user = this.configService.get<string>('SMTP_USER');
         const pass = this.configService.get<string>('SMTP_PASS');
+
         if (!user && !pass) {
             this.LOGGER.warn(`No SMTP auth configured`);
             return undefined;
         }
+
+        if (!user || !pass) {
+            this.LOGGER.error(
+                `Incomplete SMTP auth configuration - user: ${user ? 'SET' : 'NOT SET'}, pass: ${pass ? 'SET' : 'NOT SET'}`
+            );
+            return undefined;
+        }
+
         this.LOGGER.debug(`SMTP auth configured for user: ${user}`);
         return { user, pass };
     }

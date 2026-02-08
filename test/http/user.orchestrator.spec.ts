@@ -1,5 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from 'src/core/auth/auth.service';
+import { EmailService } from 'src/core/email/email.service';
+import { PendingUser } from 'src/core/user/pending-user.entity';
+import { PendingUserService } from 'src/core/user/pending-user.service';
+import { User } from 'src/core/user/user.entity';
+import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
@@ -9,12 +15,6 @@ import { UpdateUserRequestDto } from 'src/http/user/dto/update-user.request.dto'
 import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
 import { UserViewDto } from 'src/http/user/dto/user.view.dto';
 import { UserOrchestrator } from 'src/http/user/user.orchestrator';
-import { AuthService } from 'src/core/auth/auth.service';
-import { EmailService } from 'src/core/email/email.service';
-import { PendingUser } from 'src/core/user/pending-user.entity';
-import { PendingUserService } from 'src/core/user/pending-user.service';
-import { User } from 'src/core/user/user.entity';
-import { UserService } from 'src/core/user/user.service';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 
 jest.mock('src/http/http.error.handler');
@@ -170,6 +170,41 @@ describe('UserOrchestrator', () => {
             );
             expect(mockPendingUserService.deleteByEmail).toHaveBeenCalledWith('new@example.com');
         });
+
+        it('should handle duplicate pending registration by replacing existing pending user', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 2,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashed',
+                verificationToken: 'newtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockPendingUserService.createPendingUser.mockResolvedValue(mockPendingUser);
+            mockEmailService.sendVerificationEmail.mockResolvedValue(true);
+
+            const result = await orchestrator.initiateSignup(mockCreateUserDto);
+
+            expect(result.success).toBe(true);
+            expect(mockPendingUserService.createPendingUser).toHaveBeenCalledWith(
+                'new@example.com',
+                'New User',
+                'password123'
+            );
+        });
+
+        it('should throw error if pending user creation fails', async () => {
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockPendingUserService.createPendingUser.mockRejectedValue(
+                new Error('Database constraint violation')
+            );
+
+            await expect(orchestrator.initiateSignup(mockCreateUserDto)).rejects.toThrow(
+                'Database constraint violation'
+            );
+        });
     });
 
     describe('verifyEmail', () => {
@@ -223,6 +258,102 @@ describe('UserOrchestrator', () => {
             expect(result.success).toBe(false);
             expect(result.message).toBe('Verification link has expired. Please sign up again.');
             expect(mockPendingUserService.deleteByToken).toHaveBeenCalledWith('expiredtoken');
+        });
+
+        it('should handle race condition when user already exists in users table', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'validtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+            const existingUser = new User({
+                id: 5,
+                email: 'new@example.com',
+                name: 'New User',
+            });
+            const mockToken = { access_token: 'jwt-token', expires_in: 3600 };
+
+            mockPendingUserService.findByToken.mockResolvedValue(mockPendingUser);
+            mockUserService.findByEmail.mockResolvedValue(existingUser);
+            mockAuthService.login.mockResolvedValue(mockToken);
+
+            const result = await orchestrator.verifyEmail('validtoken');
+
+            expect(result.success).toBe(true);
+            expect(result.token).toBe('jwt-token');
+            expect(result.user).toEqual(existingUser);
+            expect(mockPendingUserService.deleteByToken).toHaveBeenCalledWith('validtoken');
+            expect(mockUserService.createWithHashedPassword).not.toHaveBeenCalled();
+        });
+
+        it('should return error and preserve pending user when createWithHashedPassword returns null', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'validtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+
+            mockPendingUserService.findByToken.mockResolvedValue(mockPendingUser);
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockUserService.createWithHashedPassword.mockResolvedValue(null);
+
+            const result = await orchestrator.verifyEmail('validtoken');
+
+            expect(result.success).toBe(false);
+            expect(result.message).toBe('An error occurred during verification. Please try again.');
+            expect(mockPendingUserService.deleteByToken).not.toHaveBeenCalled();
+        });
+
+        it('should return error and preserve pending user when createWithHashedPassword throws', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'validtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+
+            mockPendingUserService.findByToken.mockResolvedValue(mockPendingUser);
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockUserService.createWithHashedPassword.mockRejectedValue(
+                new Error('Database connection failed')
+            );
+
+            const result = await orchestrator.verifyEmail('validtoken');
+
+            expect(result.success).toBe(false);
+            expect(result.message).toBe('An error occurred during verification. Please try again.');
+            expect(mockPendingUserService.deleteByToken).not.toHaveBeenCalled();
+        });
+
+        it('should return error when auth token generation fails after user creation', async () => {
+            const mockPendingUser = new PendingUser({
+                id: 1,
+                email: 'new@example.com',
+                name: 'New User',
+                passwordHash: 'hashedpwd',
+                verificationToken: 'validtoken',
+                expiresAt: new Date(Date.now() + 86400000),
+            });
+            const mockUser = new User({ id: 1, email: 'new@example.com', name: 'New User' });
+
+            mockPendingUserService.findByToken.mockResolvedValue(mockPendingUser);
+            mockUserService.findByEmail.mockResolvedValue(null);
+            mockUserService.createWithHashedPassword.mockResolvedValue(mockUser);
+            mockAuthService.login.mockRejectedValue(new Error('JWT signing failed'));
+
+            const result = await orchestrator.verifyEmail('validtoken');
+
+            expect(result.success).toBe(false);
+            expect(result.message).toBe('An error occurred during verification. Please try again.');
+            expect(mockPendingUserService.deleteByToken).toHaveBeenCalledWith('validtoken');
         });
     });
 

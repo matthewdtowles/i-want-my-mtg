@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
 import { getLogger } from 'src/logger/global-app-logger';
 import { AuthController } from './auth/auth.controller';
@@ -14,7 +15,7 @@ import { UserController } from './user/user.controller';
 import { UserOrchestrator } from './user/user.orchestrator';
 
 @Module({
-    imports: [CoreModule],
+    imports: [ConfigModule, CoreModule],
     controllers: [
         AuthController,
         CardController,

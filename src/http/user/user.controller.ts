@@ -13,7 +13,6 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthToken } from 'src/core/auth/auth.types';
 import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResult, createErrorResult, createSuccessResult } from 'src/http/base/api.result';
@@ -24,14 +23,29 @@ import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { CreateUserViewDto } from './dto/create-user.view.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserViewDto } from './dto/user.view.dto';
-import { UserOrchestrator } from './user.orchestrator';
 import { VerificationResultDto } from './dto/verification-result.dto';
+import { UserOrchestrator } from './user.orchestrator';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('user')
 export class UserController {
     private readonly LOGGER = getLogger(UserController.name);
 
-    constructor(@Inject(UserOrchestrator) private readonly userOrchestrator: UserOrchestrator) {}
+    constructor(
+        @Inject(UserOrchestrator) private readonly userOrchestrator: UserOrchestrator,
+        private readonly configService: ConfigService
+    ) {}
+
+    private getCookieOptions() {
+        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+        return {
+            httpOnly: true,
+            sameSite: 'strict' as const,
+            secure: isProduction,
+            maxAge: 3600000,
+            path: '/',
+        };
+    }
 
     @Get('create')
     @Render('createUser')
@@ -43,10 +57,16 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render('user')
-    async profile(@Req() req: AuthenticatedRequest): Promise<UserViewDto> {
+    async profile(
+        @Req() req: AuthenticatedRequest,
+        @Query('welcome') welcome?: string
+    ): Promise<UserViewDto> {
         this.LOGGER.log(`Get user profile.`);
         const user = await this.userOrchestrator.findUser(req);
         this.LOGGER.log(`Profile found for user ${user?.user?.id}.`);
+        if (welcome) {
+            user.welcome = true;
+        }
         return user;
     }
 
@@ -80,7 +100,6 @@ export class UserController {
     @Get('verify')
     async verifyEmail(@Query('token') token: string, @Res() res: Response): Promise<void> {
         this.LOGGER.log(`Verify email with token.`);
-
         if (!token) {
             res.render('verificationResult', {
                 success: false,
@@ -88,17 +107,9 @@ export class UserController {
             });
             return;
         }
-
         const result: VerificationResultDto = await this.userOrchestrator.verifyEmail(token);
-
         if (result.success && result.token) {
-            res.cookie(AUTH_TOKEN_NAME, result.token, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: false,
-                maxAge: 3600000,
-                path: '/',
-            });
+            res.cookie(AUTH_TOKEN_NAME, result.token, this.getCookieOptions());
             res.redirect('/user?welcome=true');
         } else {
             res.render('verificationResult', {

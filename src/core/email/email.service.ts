@@ -52,26 +52,6 @@ export class EmailService {
         }
     }
 
-    private async verifyConnection(): Promise<void> {
-        try {
-            await this.transporter?.verify();
-            this.LOGGER.log(`SMTP connection verified successfully`);
-        } catch (error) {
-            this.LOGGER.error(`SMTP connection verification failed: ${error.message}`);
-        }
-    }
-
-    private getAuthConfig(): { user: string; pass: string } | undefined {
-        const user = this.configService.get<string>('SMTP_USER');
-        const pass = this.configService.get<string>('SMTP_PASS');
-        if (!user && !pass) {
-            this.LOGGER.warn(`No SMTP auth configured`);
-            return undefined;
-        }
-        this.LOGGER.debug(`SMTP auth configured for user: ${user}`);
-        return { user, pass };
-    }
-
     async sendVerificationEmail(email: string, token: string, name: string): Promise<boolean> {
         const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
         const verificationUrl = `${baseUrl}/user/verify?token=${token}`;
@@ -123,5 +103,25 @@ export class EmailService {
             this.LOGGER.error(`Full error: ${JSON.stringify(error)}`);
             return false;
         }
+    }
+
+    private async verifyConnection(): Promise<void> {
+        try {
+            await this.transporter?.verify();
+            this.LOGGER.log(`SMTP connection verified successfully`);
+        } catch (error) {
+            this.LOGGER.error(`SMTP connection verification failed: ${error.message}`);
+        }
+    }
+
+    private getAuthConfig(): { user: string; pass: string } | undefined {
+        const user = this.configService.get<string>('SMTP_USER');
+        const pass = this.configService.get<string>('SMTP_PASS');
+        if (!user && !pass) {
+            this.LOGGER.warn(`No SMTP auth configured`);
+            return undefined;
+        }
+        this.LOGGER.debug(`SMTP auth configured for user: ${user}`);
+        return { user, pass };
     }
 }

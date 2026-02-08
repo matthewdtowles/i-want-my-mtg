@@ -8,4 +8,6 @@ export class UserViewDto extends BaseViewDto {
         super(init);
         this.user = init.user || new UserResponseDto();
     }
+
+    welcome?: boolean;
 }

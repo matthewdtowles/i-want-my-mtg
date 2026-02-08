@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { AuthController } from 'src/http/auth/auth.controller';
@@ -14,6 +15,13 @@ describe('AuthController', () => {
         logout: jest.fn(),
     };
 
+    const mockConfigService = {
+        get: jest.fn((key: string) => {
+            if (key === 'NODE_ENV') return 'development';
+            return undefined;
+        }),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
@@ -21,6 +29,10 @@ describe('AuthController', () => {
                 {
                     provide: AuthOrchestrator,
                     useValue: mockAuthOrchestrator,
+                },
+                {
+                    provide: ConfigService,
+                    useValue: mockConfigService,
                 },
             ],
         }).compile();
@@ -72,7 +84,49 @@ describe('AuthController', () => {
             expect(mockRes.redirect).toHaveBeenCalledWith('/user');
         });
 
+        it('should set secure cookie in production', async () => {
+            mockConfigService.get.mockImplementation((key: string) => {
+                if (key === 'NODE_ENV') return 'production';
+                return undefined;
+            });
+
+            const userDto = {
+                id: 1,
+                name: 'Test User',
+                email: 'testuser@example.com',
+                role: UserRole.User,
+            };
+
+            const mockReq = { user: userDto } as any;
+            const mockRes = {
+                cookie: jest.fn().mockReturnThis(),
+                redirect: jest.fn().mockReturnThis(),
+            } as unknown as Response;
+
+            mockAuthOrchestrator.login.mockResolvedValue({
+                success: true,
+                token: 'mock-jwt-token',
+                redirectTo: '/user',
+                statusCode: 200,
+            });
+
+            await controller.login(mockReq, mockRes);
+
+            expect(mockRes.cookie).toHaveBeenCalledWith(
+                AUTH_TOKEN_NAME,
+                'mock-jwt-token',
+                expect.objectContaining({
+                    secure: true,
+                })
+            );
+        });
+
         it('should redirect to login with error on authentication failure', async () => {
+            mockConfigService.get.mockImplementation((key: string) => {
+                if (key === 'NODE_ENV') return 'development';
+                return undefined;
+            });
+
             const userDto = {
                 id: 1,
                 name: 'Test User',

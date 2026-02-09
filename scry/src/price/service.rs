@@ -11,6 +11,12 @@ use tracing::{debug, info, warn};
 
 const BATCH_SIZE: usize = 500;
 
+pub struct RetentionResult {
+    pub weekly_deleted: i64,
+    pub monthly_deleted: i64,
+    pub total_deleted: i64,
+}
+
 pub struct PriceService {
     client: Arc<HttpClient>,
     repository: PriceRepository,
@@ -107,6 +113,35 @@ impl PriceService {
         let price_dates = self.repository.fetch_price_dates().await?;
         let expected_date = Price::expected_latest_available_date();
         Ok(price_dates.iter().max().map(|d| *d) == Some(expected_date))
+    }
+
+    pub async fn fetch_history_size(&self) -> Result<String> {
+        self.repository.price_history_size().await
+    }
+
+    pub async fn apply_retention(&self) -> Result<RetentionResult> {
+        info!("Starting retention cleanup on price_history");
+
+        let weekly_deleted = self.repository.apply_weekly_retention().await?;
+        info!("Weekly period: deleted {} rows", weekly_deleted);
+
+        let monthly_deleted = self.repository.apply_monthly_retention().await?;
+        info!("Monthly period: deleted {} rows", monthly_deleted);
+
+        info!("Running VACUUM ANALYZE on price_history...");
+        self.repository.vacuum_price_history().await?;
+        info!("VACUUM ANALYZE completed");
+
+        let total_deleted = weekly_deleted + monthly_deleted;
+        Ok(RetentionResult {
+            weekly_deleted,
+            monthly_deleted,
+            total_deleted,
+        })
+    }
+
+    pub async fn truncate_history(&self) -> Result<()> {
+        self.repository.truncate_price_history().await
     }
 
     async fn save_prices(

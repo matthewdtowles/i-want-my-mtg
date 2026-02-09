@@ -148,6 +148,51 @@ impl PriceRepository {
         }
     }
 
+    pub async fn price_history_size(&self) -> Result<String> {
+        let qb = QueryBuilder::new(
+            "SELECT pg_size_pretty(pg_total_relation_size('public.price_history'))",
+        );
+        let rows: Vec<(String,)> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows.into_iter().next().map(|(s,)| s).unwrap_or_default())
+    }
+
+    pub async fn apply_weekly_retention(&self) -> Result<i64> {
+        self.db
+            .count(
+                "WITH deleted AS ( \
+                    DELETE FROM price_history \
+                    WHERE date >= CURRENT_DATE - INTERVAL '28 days' \
+                      AND date < CURRENT_DATE - INTERVAL '7 days' \
+                      AND EXTRACT(DOW FROM date) NOT IN (1) \
+                    RETURNING 1 \
+                ) \
+                SELECT COUNT(*) FROM deleted",
+            )
+            .await
+    }
+
+    pub async fn apply_monthly_retention(&self) -> Result<i64> {
+        self.db
+            .count(
+                "WITH deleted AS ( \
+                    DELETE FROM price_history \
+                    WHERE date < CURRENT_DATE - INTERVAL '28 days' \
+                      AND EXTRACT(DAY FROM date) != 1 \
+                    RETURNING 1 \
+                ) \
+                SELECT COUNT(*) FROM deleted",
+            )
+            .await
+    }
+
+    pub async fn vacuum_price_history(&self) -> Result<()> {
+        self.db.execute_raw("VACUUM ANALYZE price_history").await
+    }
+
+    pub async fn truncate_price_history(&self) -> Result<()> {
+        self.db.execute_raw("TRUNCATE TABLE price_history").await
+    }
+
     async fn count(&self, table: &str) -> Result<i64> {
         let query = format!("SELECT COUNT(*) FROM {}", table);
         let count = self.db.count(query.as_str()).await?;

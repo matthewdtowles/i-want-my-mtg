@@ -5,29 +5,25 @@
 
 set -e
 
-DB_CONTAINER="ubuntu-postgres-1"
-DB_NAME="i_want_my_mtg"
-DB_USER="iwmm_pg_user"
-
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-GREEN='\033[0;32m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/db-config.sh"
+parse_db_args "$@" || exit 0
 
 echo -e "${RED}=========================================${NC}"
 echo -e "${RED}⚠  DANGER: TRUNCATE PRICE HISTORY TABLE${NC}"
 echo -e "${RED}=========================================${NC}"
 echo ""
+echo -e "${YELLOW}Container: ${DB_CONTAINER} | DB: ${DB_NAME} | User: ${DB_USER}${NC}"
 echo -e "${YELLOW}This will DELETE ALL DATA from the price_history table.${NC}"
 echo -e "${YELLOW}This action CANNOT be undone.${NC}"
 echo ""
 
 # Show current table size
-CURRENT_SIZE=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -c "
+CURRENT_SIZE=$(psql_exec "
 SELECT pg_size_pretty(pg_total_relation_size('public.price_history'));
 " | xargs)
 
-CURRENT_ROWS=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -c "
+CURRENT_ROWS=$(psql_exec "
 SELECT COUNT(*) FROM price_history;
 " | xargs)
 
@@ -46,10 +42,10 @@ fi
 echo ""
 echo -e "${RED}Truncating price_history table...${NC}"
 
-docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -c "TRUNCATE TABLE price_history;"
+psql_exec "TRUNCATE TABLE price_history;"
 
 # Verify
-NEW_SIZE=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -c "
+NEW_SIZE=$(psql_exec "
 SELECT pg_size_pretty(pg_total_relation_size('public.price_history'));
 " | xargs)
 

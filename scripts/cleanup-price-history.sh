@@ -6,19 +6,20 @@
 # - Days 7-28: Keep only Mondays (weekly snapshots)
 # - 28+ days: Keep only 1st of month (monthly snapshots)
 
-set -e  # Exit on error
+set -e
 
-# Configuration
-DB_CONTAINER="ubuntu-postgres-1"
-DB_NAME="i_want_my_mtg"
-DB_USER="iwmm_pg_user"
-LOG_FILE="/var/log/price-history-cleanup.log"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/db-config.sh"
+parse_db_args "$@" || exit 0
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+LOG_FILE="${LOG_FILE:-$PROJECT_DIR/logs/price-history-cleanup.log}"
+
+# Ensure log directory exists and is writable
+LOG_DIR="$(dirname "$LOG_FILE")"
+if ! mkdir -p "$LOG_DIR" 2>/dev/null || [ ! -w "$LOG_DIR" ]; then
+    echo -e "${YELLOW}Warning: Cannot write to $LOG_DIR, logging to stdout only${NC}"
+    LOG_FILE="/dev/null"
+fi
 
 # Function to log messages
 log() {
@@ -37,14 +38,10 @@ log_warning() {
     echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}" | tee -a "$LOG_FILE"
 }
 
-# Function to execute PostgreSQL commands
-psql_exec() {
-    docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -c "$1"
-}
-
 # Start cleanup
 log "========================================="
 log "Starting price history cleanup"
+log "Container: ${DB_CONTAINER} | DB: ${DB_NAME} | User: ${DB_USER}"
 log "========================================="
 
 # Get stats before cleanup
@@ -73,23 +70,29 @@ log "  - Monthly retention (1st only): Before $FOUR_WEEKS_AGO"
 # Step 1: Delete non-Monday records from weekly retention period (7-28 days ago)
 log "Cleaning weekly retention period (keeping only Mondays)..."
 WEEKLY_DELETED=$(psql_exec "
-DELETE FROM price_history
-WHERE date >= '$FOUR_WEEKS_AGO'::date 
-  AND date < '$SEVEN_DAYS_AGO'::date
-  AND EXTRACT(DOW FROM date) NOT IN (1);
-SELECT COUNT(*);
-" | tail -1)
+WITH deleted AS (
+    DELETE FROM price_history
+    WHERE date >= '$FOUR_WEEKS_AGO'::date 
+      AND date < '$SEVEN_DAYS_AGO'::date
+      AND EXTRACT(DOW FROM date) NOT IN (1)
+    RETURNING 1
+)
+SELECT COUNT(*) FROM deleted;
+" | xargs)
 
 log_success "Deleted $WEEKLY_DELETED rows from weekly retention period"
 
 # Step 2: Delete non-1st-of-month records from monthly retention period (28+ days ago)
 log "Cleaning monthly retention period (keeping only 1st of month)..."
 MONTHLY_DELETED=$(psql_exec "
-DELETE FROM price_history
-WHERE date < '$FOUR_WEEKS_AGO'::date
-  AND EXTRACT(DAY FROM date) != 1;
-SELECT COUNT(*);
-" | tail -1)
+WITH deleted AS (
+    DELETE FROM price_history
+    WHERE date < '$FOUR_WEEKS_AGO'::date
+      AND EXTRACT(DAY FROM date) != 1
+    RETURNING 1
+)
+SELECT COUNT(*) FROM deleted;
+" | xargs)
 
 log_success "Deleted $MONTHLY_DELETED rows from monthly retention period"
 
@@ -112,14 +115,22 @@ WHERE relname = 'price_history';
 
 log "After cleanup: $AFTER_STATS"
 
-# Check for bloat warnings
+# Check for bloat warnings — threshold evaluated in SQL to avoid bc dependency
+HIGH_DEAD_PCT=$(psql_exec "
+SELECT CASE 
+    WHEN round(n_dead_tup * 100.0 / NULLIF(n_live_tup + n_dead_tup, 0), 2) > 20 
+    THEN 1 ELSE 0 END
+FROM pg_stat_user_tables 
+WHERE relname = 'price_history';
+" | xargs)
+
 DEAD_PCT=$(psql_exec "
 SELECT round(n_dead_tup * 100.0 / NULLIF(n_live_tup + n_dead_tup, 0), 2)
 FROM pg_stat_user_tables 
 WHERE relname = 'price_history';
 " | xargs)
 
-if [ ! -z "$DEAD_PCT" ] && (( $(echo "$DEAD_PCT > 20" | bc -l) )); then
+if [ "$HIGH_DEAD_PCT" = "1" ]; then
     log_warning "Dead tuple percentage is high: ${DEAD_PCT}%. Consider running VACUUM FULL."
 fi
 

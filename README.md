@@ -22,13 +22,9 @@
 
 `docker compose logs -f web`
 
-#### Run ETL Process to Get All Data
+#### Run ETL (See Scry CLI Commands below)
 
-`docker compose run --rm etl cargo run -- ingest`
-
-#### Run ETL Process One-time Cleanup For Everything
-
-`docker compose run --rm etl cargo run -- cleanup -c`
+`docker compose run --rm etl cargo run -- <command>`
 
 #### Run Tests
 
@@ -117,6 +113,83 @@ docker system prune -a
 ```Docker
 docker compose -f docker compose.prod.yml pull web
 docker compose -f docker compose.prod.yml up -d web
+```
+
+### Scry CLI Commands
+
+Scry is the Rust ETL tool that ingests MTG data from the Scryfall API. Run commands via Docker or directly if built locally:
+
+```bash
+# Via Docker
+docker compose run --rm etl cargo run -- <command>
+
+# Directly (if built locally)
+./scry <command>
+```
+
+#### `ingest` — Ingest MTG data from Scryfall
+
+With no flags, ingests all sets, cards, and prices. Automatically runs post-ingest pruning and updates afterward.
+
+```bash
+scry ingest              # Ingest everything (sets, cards, prices)
+scry ingest -s           # Ingest sets only
+scry ingest -c           # Ingest cards only
+scry ingest -p           # Ingest prices only
+scry ingest -k <CODE>    # Ingest cards for a specific set (e.g., -k mh3)
+scry ingest -r           # Reset all data before ingesting (requires confirmation)
+```
+
+Flags can be combined, e.g. `scry ingest -s -p` to ingest sets and prices.
+
+#### `post-ingest-prune` — Prune unwanted ingested data
+
+Removes foreign cards without prices, sets missing price data, empty sets, and duplicate foil cards. Runs automatically after `ingest`, but can be run standalone.
+
+```bash
+scry post-ingest-prune
+```
+
+#### `post-ingest-updates` — Update set sizes and prices
+
+Fixes main set misclassifications, calculates set sizes, and updates set prices. Runs automatically after `ingest`, but can be run standalone.
+
+```bash
+scry post-ingest-updates
+```
+
+#### `cleanup` — Remove previously saved sets/cards
+
+Only necessary if filtering rules have been updated to exclude sets or cards that were already ingested.
+
+```bash
+scry cleanup             # Clean up sets based on set filtering rules
+scry cleanup -c          # Also clean up individual cards based on card filtering rules
+scry cleanup -c -n 1000  # Card cleanup with custom batch size (default: 500)
+```
+
+#### `health` — Check data integrity
+
+```bash
+scry health              # Basic health check
+scry health --detailed   # Detailed health check
+scry health --price-history  # Check price_history table health (bloat, vacuum, retention)
+```
+
+#### `retention` — Apply price_history retention policy
+
+Applies a tiered retention policy: keeps daily rows for 7 days, weekly (Mondays) for 7-28 days, and monthly (1st of month) for 28+ days.
+
+```bash
+scry retention
+```
+
+#### `truncate-history` — Truncate the price_history table
+
+Deletes all data from the price_history table. Requires interactive confirmation.
+
+```bash
+scry truncate-history
 ```
 
 ### Build & Deploy Scry Release

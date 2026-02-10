@@ -22,9 +22,7 @@ jest.mock('src/http/http.error.handler');
 describe('UserOrchestrator', () => {
     let orchestrator: UserOrchestrator;
     let userService: jest.Mocked<UserService>;
-    let pendingUserService: jest.Mocked<PendingUserService>;
     let authService: jest.Mocked<AuthService>;
-    let emailService: jest.Mocked<EmailService>;
 
     const mockUserService = {
         create: jest.fn(),
@@ -95,9 +93,7 @@ describe('UserOrchestrator', () => {
 
         orchestrator = module.get<UserOrchestrator>(UserOrchestrator);
         userService = module.get(UserService);
-        pendingUserService = module.get(PendingUserService);
         authService = module.get(AuthService);
-        emailService = module.get(EmailService);
 
         (HttpErrorHandler.validateAuthenticatedRequest as jest.Mock) =
             mockHttpErrorHandler.validateAuthenticatedRequest;

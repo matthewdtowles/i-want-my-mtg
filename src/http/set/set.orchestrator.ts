@@ -66,7 +66,7 @@ export class SetOrchestrator {
                 ),
                 breadcrumbs,
                 message: `Page ${options.page} of ${Math.ceil(currentCount / options.limit)}`,
-                setList: await this.createSetMetaResponseDtos(userId, sets, options),
+                setList: await this.createSetMetaResponseDtos(userId, sets),
                 status: ActionStatus.SUCCESS,
                 pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
@@ -287,17 +287,12 @@ export class SetOrchestrator {
 
     private async createSetMetaResponseDtos(
         userId: number,
-        sets: Set[],
-        options: SafeQueryOptions
+        sets: Set[]
     ): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set, options)));
+        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set)));
     }
 
-    private async createSetMetaResponseDto(
-        userId: number,
-        set: Set,
-        options: SafeQueryOptions
-    ): Promise<SetMetaResponseDto> {
+    private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
         // Use effectiveSize: totalSize when baseSize is 0

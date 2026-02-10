@@ -78,12 +78,17 @@ export class AuthOrchestrator {
     }
 
     async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
-        const successMessage = 'If an account with that email exists, we have sent a password reset link.';
+        const successMessage =
+            'If an account with that email exists, we have sent a password reset link.';
         try {
-            this.LOGGER.debug(`Processing password reset request for email: ${redactEmail(email)}.`);
+            this.LOGGER.debug(
+                `Processing password reset request for email: ${redactEmail(email)}.`
+            );
             const user = await this.userService.findByEmail(email);
             if (!user) {
-                this.LOGGER.debug(`No user found for email: ${redactEmail(email)}. Returning success to prevent enumeration.`);
+                this.LOGGER.debug(
+                    `No user found for email: ${redactEmail(email)}. Returning success to prevent enumeration.`
+                );
                 return { success: true, message: successMessage };
             }
 

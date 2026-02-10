@@ -6,23 +6,23 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 @Entity('legality')
 export class LegalityOrmEntity {
     @PrimaryColumn({ name: 'card_id' })
-        cardId: string;
+    cardId: string;
 
     @PrimaryColumn({
         type: 'enum',
         enum: Format,
         enumName: 'format_enum',
     })
-        format: Format;
+    format: Format;
 
     @Column({
         type: 'enum',
         enum: LegalityStatus,
         enumName: 'legality_status_enum',
     })
-        status: LegalityStatus;
+    status: LegalityStatus;
 
     @ManyToOne(() => CardOrmEntity, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
-        card?: CardOrmEntity;
+    card?: CardOrmEntity;
 }

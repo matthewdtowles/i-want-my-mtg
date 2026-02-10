@@ -19,7 +19,9 @@ export class PasswordResetRepository implements PasswordResetRepositoryPort {
     }
 
     async create(passwordReset: PasswordReset): Promise<PasswordReset> {
-        this.LOGGER.debug(`Creating password reset for email: ${redactEmail(passwordReset.email)}.`);
+        this.LOGGER.debug(
+            `Creating password reset for email: ${redactEmail(passwordReset.email)}.`
+        );
         const entity = this.repository.create({
             email: passwordReset.email,
             resetToken: passwordReset.resetToken,

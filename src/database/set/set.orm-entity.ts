@@ -5,35 +5,35 @@ import { SetPriceOrmEntity } from './set-price.orm-entity';
 @Entity('set')
 export class SetOrmEntity {
     @PrimaryColumn()
-        code: string;
+    code: string;
 
     @Column({ name: 'base_size' })
-        baseSize: number;
+    baseSize: number;
 
     @Column({ nullable: true })
-        block?: string;
+    block?: string;
 
     @OneToMany(() => CardOrmEntity, (card) => card.set)
-        cards: CardOrmEntity[];
+    cards: CardOrmEntity[];
 
     @Column({ name: 'keyrune_code' })
-        keyruneCode: string;
+    keyruneCode: string;
 
     @Column()
-        name: string;
+    name: string;
 
     @Column({ name: 'parent_code', nullable: true })
-        parentCode?: string;
+    parentCode?: string;
 
     @OneToOne(() => SetPriceOrmEntity, (setPrice) => setPrice.set)
-        setPrice: SetPriceOrmEntity;
+    setPrice: SetPriceOrmEntity;
 
     @Column({ name: 'release_date', type: 'date' })
-        releaseDate: string;
+    releaseDate: string;
 
     @Column({ name: 'total_size' })
-        totalSize: number;
+    totalSize: number;
 
     @Column()
-        type: string;
+    type: string;
 }

@@ -5,17 +5,17 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('users')
 export class UserOrmEntity {
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Column({ unique: true })
-        email: string;
+    email: string;
 
     @Column()
-        name: string;
+    name: string;
 
     @Column()
     @Exclude()
-        password: string;
+    password: string;
 
     @Column({
         type: 'enum',
@@ -23,5 +23,5 @@ export class UserOrmEntity {
         enumName: 'user_role_enum',
         default: UserRole.User,
     })
-        role: UserRole;
+    role: UserRole;
 }

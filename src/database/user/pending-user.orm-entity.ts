@@ -3,23 +3,23 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('pending_user')
 export class PendingUserOrmEntity {
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Column({ unique: true })
-        email: string;
+    email: string;
 
     @Column()
-        name: string;
+    name: string;
 
     @Column({ name: 'password_hash' })
-        passwordHash: string;
+    passwordHash: string;
 
     @Column({ name: 'verification_token', unique: true })
-        verificationToken: string;
+    verificationToken: string;
 
     @Column({ name: 'expires_at', type: 'timestamp' })
-        expiresAt: Date;
+    expiresAt: Date;
 
     @CreateDateColumn({ name: 'created_at' })
-        createdAt: Date;
+    createdAt: Date;
 }

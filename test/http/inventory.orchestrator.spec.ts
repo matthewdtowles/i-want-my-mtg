@@ -251,7 +251,7 @@ describe('InventoryOrchestrator', () => {
         it('hides toggle when targetCount is zero', async () => {
             inventoryService.totalInventoryItems
                 .mockResolvedValueOnce(25) // currentCount
-                .mockResolvedValueOnce(0);  // targetCount is 0
+                .mockResolvedValueOnce(0); // targetCount is 0
 
             const options = new SafeQueryOptions({ page: '1', limit: '10', baseOnly: 'true' });
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, options);
@@ -288,7 +288,7 @@ describe('InventoryOrchestrator', () => {
             // Target: 30 items (3 pages at limit 10) - page should clamp to 3
             inventoryService.totalInventoryItems
                 .mockResolvedValueOnce(100) // currentCount
-                .mockResolvedValueOnce(30);  // targetCount
+                .mockResolvedValueOnce(30); // targetCount
 
             const options = new SafeQueryOptions({ page: '10', limit: '10', baseOnly: 'false' });
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, options);
@@ -303,7 +303,7 @@ describe('InventoryOrchestrator', () => {
             // Target: 50 items (5 pages at limit 10) - page 2 is fine
             inventoryService.totalInventoryItems
                 .mockResolvedValueOnce(100) // currentCount
-                .mockResolvedValueOnce(50);  // targetCount
+                .mockResolvedValueOnce(50); // targetCount
 
             const options = new SafeQueryOptions({ page: '2', limit: '10', baseOnly: 'false' });
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, options);
@@ -317,7 +317,7 @@ describe('InventoryOrchestrator', () => {
             // Target: 5 items (1 page at limit 10) - page should clamp to 1
             inventoryService.totalInventoryItems
                 .mockResolvedValueOnce(100) // currentCount
-                .mockResolvedValueOnce(5);   // targetCount
+                .mockResolvedValueOnce(5); // targetCount
 
             const options = new SafeQueryOptions({ page: '5', limit: '10', baseOnly: 'false' });
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, options);

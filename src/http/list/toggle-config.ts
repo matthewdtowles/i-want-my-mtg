@@ -22,13 +22,13 @@ export function buildToggleConfig(
 ): ToggleConfig {
     const effectiveOptions = forceShowAll
         ? new SafeQueryOptions({
-            baseOnly: 'false',
-            page: String(options.page),
-            limit: String(options.limit),
-            ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
-            ...(options.filter && { filter: options.filter }),
-            ...(options.sort && { sort: String(options.sort) }),
-        })
+              baseOnly: 'false',
+              page: String(options.page),
+              limit: String(options.limit),
+              ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
+              ...(options.filter && { filter: options.filter }),
+              ...(options.sort && { sort: String(options.sort) }),
+          })
         : options;
 
     const targetMaxPage = Math.max(1, Math.ceil(targetCount / effectiveOptions.limit));

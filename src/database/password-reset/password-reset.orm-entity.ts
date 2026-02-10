@@ -3,17 +3,17 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('password_reset')
 export class PasswordResetOrmEntity {
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Column()
-        email: string;
+    email: string;
 
     @Column({ name: 'reset_token', unique: true })
-        resetToken: string;
+    resetToken: string;
 
     @Column({ name: 'expires_at', type: 'timestamp' })
-        expiresAt: Date;
+    expiresAt: Date;
 
     @CreateDateColumn({ name: 'created_at' })
-        createdAt: Date;
+    createdAt: Date;
 }

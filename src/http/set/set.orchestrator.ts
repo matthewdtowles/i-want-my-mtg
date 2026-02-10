@@ -93,13 +93,13 @@ export class SetOrchestrator {
             const forceShowAll = set.baseSize === 0;
             const effectiveOptions = forceShowAll
                 ? new SafeQueryOptions({
-                    baseOnly: 'false',
-                    page: String(options.page),
-                    limit: String(options.limit),
-                    ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
-                    ...(options.filter && { filter: options.filter }),
-                    ...(options.sort && { sort: String(options.sort) }),
-                })
+                      baseOnly: 'false',
+                      page: String(options.page),
+                      limit: String(options.limit),
+                      ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
+                      ...(options.filter && { filter: options.filter }),
+                      ...(options.sort && { sort: String(options.sort) }),
+                  })
                 : options;
 
             const [cards, currentCount, targetCount] = await Promise.all([
@@ -145,7 +145,11 @@ export class SetOrchestrator {
                 message: `Found set: ${setResponse.name}`,
                 set: setResponse,
                 status: ActionStatus.SUCCESS,
-                pagination: new PaginationView(toggleConfig.effectiveOptions, baseUrl, currentCount),
+                pagination: new PaginationView(
+                    toggleConfig.effectiveOptions,
+                    baseUrl,
+                    currentCount
+                ),
                 filter: new FilterView(toggleConfig.effectiveOptions, baseUrl),
                 tableHeadersRow: this.buildSetDetailTableHeaders(toggleConfig.effectiveOptions),
             });
@@ -342,9 +346,9 @@ export class SetOrchestrator {
         const inventory =
             userId && setPayloadSize > 0
                 ? await this.inventoryService.findByCards(
-                    userId,
-                    set.cards.map((c) => c.id)
-                )
+                      userId,
+                      set.cards.map((c) => c.id)
+                  )
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
@@ -367,12 +371,12 @@ export class SetOrchestrator {
             url: `/sets/${set.code.toLowerCase()}`,
             cards: set.cards
                 ? set.cards.map((card) =>
-                    CardPresenter.toCardResponse(
-                        card,
-                        InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
-                        CardImgType.SMALL
-                    )
-                )
+                      CardPresenter.toCardResponse(
+                          card,
+                          InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
+                          CardImgType.SMALL
+                      )
+                  )
                 : [],
         });
     }

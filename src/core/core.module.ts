@@ -9,8 +9,24 @@ import { SetModule } from './set/set.module';
 import { UserModule } from './user/user.module';
 
 @Module({
-    imports: [AuthModule, CardModule, EmailModule, InventoryModule, PasswordResetModule, SetModule, UserModule],
-    exports: [AuthModule, CardModule, EmailModule, InventoryModule, PasswordResetModule, SetModule, UserModule],
+    imports: [
+        AuthModule,
+        CardModule,
+        EmailModule,
+        InventoryModule,
+        PasswordResetModule,
+        SetModule,
+        UserModule,
+    ],
+    exports: [
+        AuthModule,
+        CardModule,
+        EmailModule,
+        InventoryModule,
+        PasswordResetModule,
+        SetModule,
+        UserModule,
+    ],
 })
 export class CoreModule {
     private readonly LOGGER = getLogger(CoreModule.name);

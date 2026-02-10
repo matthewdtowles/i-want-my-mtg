@@ -144,10 +144,14 @@ export class EmailService {
                 subject: 'Reset your password - I Want My MTG',
                 html,
             });
-            this.LOGGER.log(`Password reset email sent to ${redacted}. MessageId: ${info.messageId}`);
+            this.LOGGER.log(
+                `Password reset email sent to ${redacted}. MessageId: ${info.messageId}`
+            );
             return true;
         } catch (error) {
-            this.LOGGER.error(`Failed to send password reset email to ${redacted}: ${error.message}`);
+            this.LOGGER.error(
+                `Failed to send password reset email to ${redacted}: ${error.message}`
+            );
             this.LOGGER.debug(`Stack trace: ${error.stack}`);
             return false;
         }

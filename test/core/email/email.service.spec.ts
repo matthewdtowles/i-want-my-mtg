@@ -200,7 +200,9 @@ describe('EmailService', () => {
             await service.sendVerificationEmail('user@test.com', 'abc123', 'TestUser');
 
             const sentHtml = mockSendMail.mock.calls[0][0].html;
-            expect(sentHtml).toContain(`https://test.com/user/verify?token=${encodeURIComponent('abc123')}`);
+            expect(sentHtml).toContain(
+                `https://test.com/user/verify?token=${encodeURIComponent('abc123')}`
+            );
         });
 
         it('should include user name in email html', async () => {
@@ -233,7 +235,9 @@ describe('EmailService', () => {
             await service.sendVerificationEmail('user@test.com', 'abc123', 'TestUser');
 
             const sentHtml = mockSendMail.mock.calls[0][0].html;
-            expect(sentHtml).toContain(`http://localhost:3000/user/verify?token=${encodeURIComponent('abc123')}`);
+            expect(sentHtml).toContain(
+                `http://localhost:3000/user/verify?token=${encodeURIComponent('abc123')}`
+            );
         });
 
         it('should use default SMTP_FROM when not configured', async () => {
@@ -332,10 +336,7 @@ describe('EmailService', () => {
                 NODE_ENV: 'dev',
             });
 
-            const result = await service.sendPasswordResetEmail(
-                'user@test.com',
-                'reset-token-123'
-            );
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
 
             expect(result).toBe(true);
             expect(mockSendMail).not.toHaveBeenCalled();
@@ -348,10 +349,7 @@ describe('EmailService', () => {
                 NODE_ENV: 'production',
             });
 
-            const result = await service.sendPasswordResetEmail(
-                'user@test.com',
-                'reset-token-123'
-            );
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
 
             expect(result).toBe(false);
             expect(mockSendMail).not.toHaveBeenCalled();

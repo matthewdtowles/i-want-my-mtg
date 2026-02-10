@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Inject, Post, Query, Render, Req, Res, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Inject,
+    Post,
+    Query,
+    Render,
+    Req,
+    Res,
+    UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -67,7 +78,9 @@ export class AuthController {
         @Body() forgotPasswordDto: ForgotPasswordRequestDto,
         @Res() res: Response
     ): Promise<void> {
-        this.LOGGER.log(`Password reset request for email: ${redactEmail(forgotPasswordDto.email)}.`);
+        this.LOGGER.log(
+            `Password reset request for email: ${redactEmail(forgotPasswordDto.email)}.`
+        );
         const result = await this.authOrchestrator.requestPasswordReset(forgotPasswordDto.email);
         res.render('resetRequestSent', { message: result.message });
     }

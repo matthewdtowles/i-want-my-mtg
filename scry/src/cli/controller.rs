@@ -71,9 +71,26 @@ impl CliController {
                 Ok(())
             }
 
-            Commands::Health { detailed } => {
-                if let Err(e) = self.handle_health(detailed).await {
+            Commands::Health {
+                detailed,
+                price_history,
+            } => {
+                if let Err(e) = self.handle_health(detailed, price_history).await {
                     error!("Health check failed: {}", e);
+                }
+                Ok(())
+            }
+
+            Commands::Retention {} => {
+                if let Err(e) = self.handle_retention().await {
+                    error!("Retention cleanup failed: {}", e);
+                }
+                Ok(())
+            }
+
+            Commands::TruncateHistory {} => {
+                if let Err(e) = self.handle_truncate_history().await {
+                    error!("Truncate history failed: {}", e);
                 }
                 Ok(())
             }
@@ -153,14 +170,49 @@ impl CliController {
         Ok(())
     }
 
-    async fn handle_health(&self, detailed: bool) -> Result<()> {
-        if detailed {
+    async fn handle_health(&self, detailed: bool, price_history: bool) -> Result<()> {
+        if price_history {
+            let status = self.health_service.price_history_check().await?;
+            status.display();
+        } else if detailed {
             let status = self.health_service.detailed_check().await?;
             status.display();
         } else {
             let status = self.health_service.basic_check().await?;
             status.display();
         }
+        Ok(())
+    }
+
+    async fn handle_retention(&self) -> Result<()> {
+        info!("Starting price history retention cleanup");
+        let result = self.price_service.apply_retention().await?;
+        info!("Weekly period: deleted {} rows", result.weekly_deleted);
+        info!("Monthly period: deleted {} rows", result.monthly_deleted);
+        info!("Total deleted: {}", result.total_deleted);
+        Ok(())
+    }
+
+    async fn handle_truncate_history(&self) -> Result<()> {
+        let count = self.price_service.fetch_price_history_count().await?;
+        let size = self.price_service.fetch_history_size().await?;
+        info!("Current price_history: {} rows, {}", count, size);
+
+        let confirmed = Confirm::new()
+            .with_prompt("This will DELETE ALL DATA from price_history. Type 'y' to confirm")
+            .default(false)
+            .interact()
+            .unwrap();
+
+        if !confirmed {
+            warn!("Aborted. No data was deleted.");
+            return Ok(());
+        }
+
+        self.price_service.truncate_history().await?;
+        let new_size = self.price_service.fetch_history_size().await?;
+        info!("Table truncated. New size: {}", new_size);
+        warn!("Remember to reload price history data!");
         Ok(())
     }
 

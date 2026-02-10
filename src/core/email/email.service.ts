@@ -19,23 +19,21 @@ export class EmailService {
         const host = this.configService.get<string>('SMTP_HOST');
         const port = this.configService.get<number>('SMTP_PORT', 587);
         const user = this.configService.get<string>('SMTP_USER');
-
         this.LOGGER.log(
             `Email config - Host: ${host}, Port: ${port}, User: ${user ? 'SET' : 'NOT SET'}`
         );
-
         if (host && !host.includes('example.com') && host !== 'mailhog') {
+            const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
             this.transporter = nodemailer.createTransport({
                 host,
                 port,
                 secure: this.configService.get<string>('SMTP_SECURE') === 'true',
                 auth: this.getAuthConfig(),
-                debug: true,
-                logger: true,
+                debug: !isProduction,
+                logger: !isProduction,
             });
             this.isConfigured = true;
             this.LOGGER.log(`Email service configured with host: ${host}:${port}`);
-
             // Verify connection on startup
             this.verifyConnection();
         } else if (host === 'mailhog') {
@@ -56,14 +54,13 @@ export class EmailService {
         const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
         const verificationUrl = `${baseUrl}/user/verify?token=${token}`;
         const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
-
-        this.LOGGER.log(`Attempting to send verification email to: ${email}, from: ${from}`);
-
+        const redacted = this.redactEmail(email);
+        this.LOGGER.log(`Attempting to send verification email to: ${redacted}, from: ${from}`);
         if (!this.isConfigured || !this.transporter) {
-            this.LOGGER.warn(`Email not configured. Verification URL: ${verificationUrl}`);
+            this.LOGGER.warn(`Email not configured. Skipping send to: ${redacted}`);
+            this.LOGGER.debug(`Verification URL: ${verificationUrl}`);
             return this.configService.get<string>('NODE_ENV') === 'dev';
         }
-
         const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h1 style="color: #333;">Welcome to I Want My MTG, ${name}!</h1>
@@ -88,7 +85,6 @@ export class EmailService {
                 </p>
             </div>
         `;
-
         try {
             const info = await this.transporter.sendMail({
                 from,
@@ -96,11 +92,11 @@ export class EmailService {
                 subject: 'Verify your email - I Want My MTG',
                 html,
             });
-            this.LOGGER.log(`Verification email sent to ${email}. MessageId: ${info.messageId}`);
+            this.LOGGER.log(`Verification email sent to ${redacted}. MessageId: ${info.messageId}`);
             return true;
         } catch (error) {
-            this.LOGGER.error(`Failed to send verification email to ${email}: ${error.message}`);
-            this.LOGGER.error(`Full error: ${JSON.stringify(error)}`);
+            this.LOGGER.error(`Failed to send verification email to ${redacted}: ${error.message}`);
+            this.LOGGER.debug(`Stack trace: ${error.stack}`);
             return false;
         }
     }
@@ -121,7 +117,20 @@ export class EmailService {
             this.LOGGER.warn(`No SMTP auth configured`);
             return undefined;
         }
+        if (!user || !pass) {
+            this.LOGGER.error(
+                `Incomplete SMTP auth configuration - user: ${user ? 'SET' : 'NOT SET'}, pass: ${pass ? 'SET' : 'NOT SET'}`
+            );
+            return undefined;
+        }
         this.LOGGER.debug(`SMTP auth configured for user: ${user}`);
         return { user, pass };
+    }
+
+    private redactEmail(email: string): string {
+        const [local, domain] = email.split('@');
+        if (!local || !domain) return '***';
+        const visibleChars = Math.min(2, local.length);
+        return `${local.substring(0, visibleChars)}***@${domain}`;
     }
 }

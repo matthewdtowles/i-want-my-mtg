@@ -46,6 +46,19 @@ export class UserOrchestrator {
                 throw new Error('A user with this email already exists');
             }
 
+            // Check if there's already a pending registration
+            const existingPending = await this.pendingUserService.findByEmail(createUserDto.email);
+            if (existingPending && !existingPending.isExpired()) {
+                this.LOGGER.debug(
+                    `Pending registration already exists for ${createUserDto.email}.`
+                );
+                return {
+                    success: true,
+                    message:
+                        'A verification email has already been sent. Please check your inbox or wait for the link to expire before requesting a new one.',
+                };
+            }
+
             // Create pending user (handles hashing and token generation)
             const pendingUser = await this.pendingUserService.createPendingUser(
                 createUserDto.email,
@@ -95,6 +108,23 @@ export class UserOrchestrator {
                 });
             }
 
+            // Check if a user with this email already exists (race condition guard)
+            const existingUser = await this.userService.findByEmail(pendingUser.email);
+            if (existingUser) {
+                // Another request already verified this token — clean up and log the user in
+                await this.pendingUserService.deleteByToken(token);
+                this.LOGGER.warn(
+                    `User ${pendingUser.email} already exists. Likely duplicate verification request.`
+                );
+                const authToken = await this.authService.login(existingUser);
+                return new VerificationResultDto({
+                    success: true,
+                    message: 'Email verified successfully! Welcome to I Want My MTG.',
+                    token: authToken.access_token,
+                    user: existingUser,
+                });
+            }
+
             // Create the actual user
             const user = new User({
                 email: pendingUser.email,
@@ -105,7 +135,17 @@ export class UserOrchestrator {
 
             const createdUser = await this.userService.createWithHashedPassword(user);
 
-            // Delete pending user
+            if (!createdUser) {
+                this.LOGGER.error(
+                    `Failed to create user for ${pendingUser.email}. Pending user preserved for retry.`
+                );
+                return new VerificationResultDto({
+                    success: false,
+                    message: 'An error occurred during verification. Please try again.',
+                });
+            }
+
+            // Delete pending user only after successful user creation
             await this.pendingUserService.deleteByToken(token);
 
             // Generate auth token

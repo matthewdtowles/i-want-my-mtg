@@ -51,6 +51,25 @@ impl ConnectionPool {
             .map_err(Into::into)
     }
 
+    pub async fn fetch_one_query_builder<T>(
+        &self,
+        mut query_builder: QueryBuilder<'_, Postgres>,
+    ) -> Result<T>
+    where
+        T: for<'r> FromRow<'r, PgRow> + Send + Unpin,
+    {
+        let query = query_builder.build_query_as::<T>();
+        query
+            .fetch_one(self.pool.as_ref())
+            .await
+            .map_err(Into::into)
+    }
+
+    pub async fn execute_raw(&self, query: &str) -> Result<()> {
+        sqlx::query(query).execute(&*self.pool).await?;
+        Ok(())
+    }
+
     pub async fn row_exists(&self, table: &str, column: &str, value: &str) -> Result<bool> {
         let query = format!(
             r#"SELECT EXISTS(SELECT 1 FROM "{}" WHERE "{}" = $1)"#,

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { getLogger } from 'src/logger/global-app-logger';
+import { getAuthCookieOptions } from './auth.cookie.util';
 import { AuthOrchestrator } from './auth.orchestrator';
 import { AuthResult } from './dto/auth.result';
 import { AUTH_TOKEN_NAME } from './dto/auth.types';
@@ -32,7 +33,7 @@ export class AuthController {
         this.LOGGER.log(`Login attempt for user ${userId ?? '""'}.`);
         const result: AuthResult = await this.authOrchestrator.login(req?.user);
         if (result.success && result.token) {
-            res.cookie(AUTH_TOKEN_NAME, result.token, this.getCookieOptions());
+            res.cookie(AUTH_TOKEN_NAME, result.token, getAuthCookieOptions(this.configService));
             res.redirect('/user');
             this.LOGGER.log(`Login successful for user ${userId}.`);
         } else {
@@ -49,16 +50,5 @@ export class AuthController {
         res.clearCookie(AUTH_TOKEN_NAME);
         res.redirect(result.redirectTo);
         this.LOGGER.log(`Logged out user ${userId ?? '""'}.`);
-    }
-
-    private getCookieOptions() {
-        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
-        return {
-            httpOnly: true,
-            sameSite: 'strict' as const,
-            secure: isProduction,
-            maxAge: 3600000,
-            path: '/',
-        };
     }
 }

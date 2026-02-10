@@ -84,7 +84,7 @@ describe('SetOrchestrator', () => {
                     provide: CardService,
                     useValue: {
                         findBySet: jest.fn(),
-                        totalCardsInSet: jest.fn(),
+                        totalInSet: jest.fn(),
                         totalValueForSet: jest.fn(),
                     },
                 },
@@ -147,7 +147,7 @@ describe('SetOrchestrator', () => {
         it('returns set details and paginated cards', async () => {
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            setService.totalCardsInSet.mockResolvedValue(1);
+            cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);
@@ -176,7 +176,7 @@ describe('SetOrchestrator', () => {
             const unauthReq = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            setService.totalCardsInSet.mockResolvedValue(1);
+            cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);

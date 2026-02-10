@@ -90,21 +90,41 @@ export class SetOrchestrator {
                 throw new Error(`Set with code ${setCode} not found`);
             }
 
-            const currentSize = options.baseOnly ? set.baseSize : set.totalSize;
-            const targetSize = options.baseOnly ? set.totalSize : set.baseSize;
             const forceShowAll = set.baseSize === 0;
+            const effectiveOptions = forceShowAll
+                ? new SafeQueryOptions({
+                      baseOnly: 'false',
+                      page: String(options.page),
+                      limit: String(options.limit),
+                      ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
+                      ...(options.filter && { filter: options.filter }),
+                      ...(options.sort && { sort: String(options.sort) }),
+                  })
+                : options;
 
-            const toggleConfig = buildToggleConfig(options, currentSize, targetSize, forceShowAll);
-            const { effectiveOptions } = toggleConfig;
-
-            const [cards, setSize] = await Promise.all([
+            const [cards, currentCount, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
-                this.setService.totalCardsInSet(setCode, effectiveOptions),
+                this.cardService.totalInSet(setCode, effectiveOptions),
+                this.cardService.totalInSet(setCode, {
+                    ...effectiveOptions,
+                    baseOnly: !effectiveOptions.baseOnly,
+                } as SafeQueryOptions),
             ]);
+
+            const toggleConfig = buildToggleConfig(
+                effectiveOptions,
+                currentCount,
+                targetCount,
+                forceShowAll
+            );
             set.cards.push(...cards);
 
             const userId = req.user?.id ?? 0;
-            const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
+            const setResponse = await this.createSetResponseDto(
+                userId,
+                set,
+                toggleConfig.effectiveOptions
+            );
             const baseUrl = `/sets/${set.code}`;
 
             this.LOGGER.debug(`Found ${cards.length} cards for set ${set.code}.`);
@@ -112,7 +132,7 @@ export class SetOrchestrator {
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 baseOnlyToggle: new BaseOnlyToggleView(
-                    effectiveOptions,
+                    toggleConfig.effectiveOptions,
                     baseUrl,
                     toggleConfig.targetMaxPage,
                     toggleConfig.visible
@@ -125,9 +145,9 @@ export class SetOrchestrator {
                 message: `Found set: ${setResponse.name}`,
                 set: setResponse,
                 status: ActionStatus.SUCCESS,
-                pagination: new PaginationView(effectiveOptions, baseUrl, setSize),
-                filter: new FilterView(effectiveOptions, baseUrl),
-                tableHeadersRow: this.buildSetDetailTableHeaders(effectiveOptions),
+                pagination: new PaginationView(toggleConfig.effectiveOptions, baseUrl, currentCount),
+                filter: new FilterView(toggleConfig.effectiveOptions, baseUrl),
+                tableHeadersRow: this.buildSetDetailTableHeaders(toggleConfig.effectiveOptions),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
@@ -151,7 +171,7 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, options);
+            const totalCards = await this.cardService.totalInSet(setCode, options);
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;

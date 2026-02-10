@@ -1,21 +1,15 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('pending_user')
-export class PendingUserOrmEntity {
+@Entity('password_reset')
+export class PasswordResetOrmEntity {
     @PrimaryGeneratedColumn()
         id: number;
 
-    @Column({ unique: true })
+    @Column()
         email: string;
 
-    @Column()
-        name: string;
-
-    @Column({ name: 'password_hash' })
-        passwordHash: string;
-
-    @Column({ name: 'verification_token', unique: true })
-        verificationToken: string;
+    @Column({ name: 'reset_token', unique: true })
+        resetToken: string;
 
     @Column({ name: 'expires_at', type: 'timestamp' })
         expiresAt: Date;

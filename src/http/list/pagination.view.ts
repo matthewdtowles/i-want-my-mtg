@@ -29,48 +29,48 @@ export class PaginationView {
     private buildPrevious(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage()
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.current - 1,
-                  })}`,
-                  '<'
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: this.current - 1,
+                })}`,
+                '<'
+            )
             : undefined;
     }
 
     private buildFirst(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage()
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: 1,
-                  })}`,
-                  '1'
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: 1,
+                })}`,
+                '1'
+            )
             : undefined;
     }
 
     private buildNext(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage()
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.current + 1,
-                  })}`,
-                  '>'
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: this.current + 1,
+                })}`,
+                '>'
+            )
             : undefined;
     }
 
     private buildLast(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage()
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.totalPages,
-                  })}`,
-                  String(this.totalPages)
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: this.totalPages,
+                })}`,
+                String(this.totalPages)
+            )
             : undefined;
     }
 
@@ -78,12 +78,12 @@ export class PaginationView {
         const skipBackValue = this.current - Math.floor(this.totalPages / 3);
         return skipBackValue > 1 && skipBackValue < this.current
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: skipBackValue,
-                  })}`,
-                  String(skipBackValue)
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: skipBackValue,
+                })}`,
+                String(skipBackValue)
+            )
             : undefined;
     }
 
@@ -91,12 +91,12 @@ export class PaginationView {
         const skipForwardValue = this.current + Math.floor(this.totalPages / 3);
         return skipForwardValue < this.totalPages && skipForwardValue > this.current
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: skipForwardValue,
-                  })}`,
-                  String(skipForwardValue)
-              )
+                `${this.baseUrl}${buildQueryString({
+                    ...options,
+                    page: skipForwardValue,
+                })}`,
+                String(skipForwardValue)
+            )
             : undefined;
     }
 

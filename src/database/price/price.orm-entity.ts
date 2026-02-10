@@ -5,18 +5,18 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique }
 @Unique(['card', 'date'])
 export class PriceOrmEntity {
     @PrimaryGeneratedColumn()
-    id: number;
+        id: number;
 
     @Column({ type: 'decimal', nullable: true })
-    foil: number | null;
+        foil: number | null;
 
     @Column({ type: 'decimal', nullable: true })
-    normal: number | null;
+        normal: number | null;
 
     @Column({ type: 'date' })
-    date: Date;
+        date: Date;
 
     @ManyToOne(() => CardOrmEntity, (card) => card.prices, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'card_id' })
-    card: CardOrmEntity;
+        card: CardOrmEntity;
 }

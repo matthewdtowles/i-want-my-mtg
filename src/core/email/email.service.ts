@@ -101,6 +101,57 @@ export class EmailService {
         }
     }
 
+    async sendPasswordResetEmail(email: string, token: string): Promise<boolean> {
+        const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+        const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+        const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
+        const redacted = this.redactEmail(email);
+        this.LOGGER.log(`Attempting to send password reset email to: ${redacted}, from: ${from}`);
+        if (!this.isConfigured || !this.transporter) {
+            this.LOGGER.warn(`Email not configured. Skipping send to: ${redacted}`);
+            this.LOGGER.debug(`Reset URL: ${resetUrl}`);
+            return this.configService.get<string>('NODE_ENV') === 'dev';
+        }
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #333;">Reset Your Password</h1>
+                <p>We received a request to reset your password for your I Want My MTG account.</p>
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="${resetUrl}"
+                       style="background-color: #4CAF50; color: white; padding: 14px 28px;
+                              text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </p>
+                <p style="color: #666; font-size: 14px;">
+                    This link will expire in 1 hour.
+                </p>
+                <p style="color: #666; font-size: 14px;">
+                    If you didn't request a password reset, you can safely ignore this email.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">
+                    If the button doesn't work, copy and paste this link into your browser:<br>
+                    <a href="${resetUrl}" style="color: #666;">${resetUrl}</a>
+                </p>
+            </div>
+        `;
+        try {
+            const info = await this.transporter.sendMail({
+                from,
+                to: email,
+                subject: 'Reset your password - I Want My MTG',
+                html,
+            });
+            this.LOGGER.log(`Password reset email sent to ${redacted}. MessageId: ${info.messageId}`);
+            return true;
+        } catch (error) {
+            this.LOGGER.error(`Failed to send password reset email to ${redacted}: ${error.message}`);
+            this.LOGGER.debug(`Stack trace: ${error.stack}`);
+            return false;
+        }
+    }
+
     private async verifyConnection(): Promise<void> {
         try {
             await this.transporter?.verify();

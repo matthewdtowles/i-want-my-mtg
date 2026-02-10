@@ -4,24 +4,24 @@ import { SetOrmEntity } from './set.orm-entity';
 @Entity('set_price')
 export class SetPriceOrmEntity {
     @PrimaryColumn({ name: 'set_code' })
-    setCode: string;
+        setCode: string;
 
     @Column({ name: 'base_price', type: 'decimal', nullable: true })
-    basePrice: number;
+        basePrice: number;
 
     @Column({ name: 'total_price', type: 'decimal', nullable: true })
-    totalPrice: number;
+        totalPrice: number;
 
     @Column({ name: 'base_price_all', type: 'decimal', nullable: true })
-    basePriceAll: number;
+        basePriceAll: number;
 
     @Column({ name: 'total_price_all', type: 'decimal', nullable: true })
-    totalPriceAll: number;
+        totalPriceAll: number;
 
     @Column({ name: 'date', type: 'date' })
-    lastUpdate: Date;
+        lastUpdate: Date;
 
     @OneToOne(() => SetOrmEntity, (set) => set.setPrice)
     @JoinColumn({ name: 'set_code' })
-    set: SetOrmEntity;
+        set: SetOrmEntity;
 }

@@ -7,64 +7,64 @@ import { LegalityOrmEntity } from './legality.orm-entity';
 @Entity('card')
 export class CardOrmEntity {
     @PrimaryColumn({ name: 'id', unique: true })
-    id: string;
+        id: string;
 
     @Column({ nullable: true })
-    artist?: string;
+        artist?: string;
 
     @Column({ name: 'has_foil' })
-    hasFoil: boolean;
+        hasFoil: boolean;
 
     @Column({ name: 'has_non_foil' })
-    hasNonFoil: boolean;
+        hasNonFoil: boolean;
 
     @Column({ name: 'img_src' })
-    imgSrc: string;
+        imgSrc: string;
 
     @Column({ name: 'in_main' })
-    inMain: boolean;
+        inMain: boolean;
 
     @Column({ name: 'is_alternative' })
-    isAlternative: boolean;
+        isAlternative: boolean;
 
     @Column({ default: false, name: 'is_reserved' })
-    isReserved: boolean;
+        isReserved: boolean;
 
     @OneToMany(() => LegalityOrmEntity, (legality) => legality.card, { cascade: true })
-    legalities: LegalityOrmEntity[];
+        legalities: LegalityOrmEntity[];
 
     @Column({ name: 'mana_cost', nullable: true })
-    manaCost?: string;
+        manaCost?: string;
 
     @Column()
-    name: string;
+        name: string;
 
     @Column()
-    number: string;
+        number: string;
 
     @Column({ name: 'oracle_text', nullable: true, type: 'text' })
-    oracleText?: string;
+        oracleText?: string;
 
     @OneToMany(() => PriceOrmEntity, (price) => price.card, { cascade: true })
-    prices: PriceOrmEntity[];
+        prices: PriceOrmEntity[];
 
     @Column({
         type: 'enum',
         enum: CardRarity,
         enumName: 'card_rarity_enum',
     })
-    rarity: CardRarity;
+        rarity: CardRarity;
 
     @ManyToOne(() => SetOrmEntity, (set) => set.cards)
     @JoinColumn({ name: 'set_code', referencedColumnName: 'code' })
-    set: SetOrmEntity;
+        set: SetOrmEntity;
 
     @Column({ name: 'set_code' })
-    setCode: string;
+        setCode: string;
 
     @Column({ name: 'sort_number' })
-    sortNumber: string;
+        sortNumber: string;
 
     @Column()
-    type: string;
+        type: string;
 }

@@ -62,10 +62,10 @@ export class QueryBuilderHelper<T> {
         // Handle price sorting with COALESCE
         if (sort === SortOptions.PRICE) {
             qb.addSelect(`COALESCE(${SortOptions.PRICE}, ${SortOptions.PRICE_FOIL})`, 'coalesced_price')
-              .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
+                .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
         } else if (sort === SortOptions.PRICE_FOIL) {
             qb.addSelect(`COALESCE(${SortOptions.PRICE_FOIL}, ${SortOptions.PRICE})`, 'coalesced_price')
-              .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
+                .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
         } else {
             qb.orderBy(sort, direction, QueryBuilderHelper.NULLS_LAST);
         }

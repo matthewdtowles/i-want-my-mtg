@@ -122,32 +122,6 @@ impl PriceRepository {
         Ok(n)
     }
 
-    async fn save(&self, prices: &[Price], table: &str) -> Result<i64> {
-        if prices.is_empty() {
-            return Ok(0);
-        }
-        let query = format!("INSERT INTO {} (card_id, foil, normal, date) ", table);
-        let mut query_builder = QueryBuilder::new(query);
-        query_builder.push_values(prices, |mut b, price| {
-            b.push_bind(&price.card_id)
-                .push_bind(&price.foil)
-                .push_bind(&price.normal)
-                .push_bind(&price.date);
-        });
-        query_builder.push(
-            " ON CONFLICT (card_id, date) DO UPDATE SET 
-            foil = EXCLUDED.foil, 
-            normal = EXCLUDED.normal",
-        );
-        match self.db.execute_query_builder(query_builder).await {
-            Ok(count) => Ok(count),
-            Err(e) => {
-                error!("Database error: {:?}", e);
-                Err(e.into())
-            }
-        }
-    }
-
     pub async fn price_history_size(&self) -> Result<String> {
         let qb = QueryBuilder::new(
             "SELECT pg_size_pretty(pg_total_relation_size('public.price_history'))",
@@ -191,6 +165,32 @@ impl PriceRepository {
 
     pub async fn truncate_price_history(&self) -> Result<()> {
         self.db.execute_raw("TRUNCATE TABLE price_history").await
+    }
+
+    async fn save(&self, prices: &[Price], table: &str) -> Result<i64> {
+        if prices.is_empty() {
+            return Ok(0);
+        }
+        let query = format!("INSERT INTO {} (card_id, foil, normal, date) ", table);
+        let mut query_builder = QueryBuilder::new(query);
+        query_builder.push_values(prices, |mut b, price| {
+            b.push_bind(&price.card_id)
+                .push_bind(&price.foil)
+                .push_bind(&price.normal)
+                .push_bind(&price.date);
+        });
+        query_builder.push(
+            " ON CONFLICT (card_id, date) DO UPDATE SET 
+            foil = EXCLUDED.foil, 
+            normal = EXCLUDED.normal",
+        );
+        match self.db.execute_query_builder(query_builder).await {
+            Ok(count) => Ok(count),
+            Err(e) => {
+                error!("Database error: {:?}", e);
+                Err(e.into())
+            }
+        }
     }
 
     async fn count(&self, table: &str) -> Result<i64> {

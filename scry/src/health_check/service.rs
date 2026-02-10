@@ -40,18 +40,6 @@ impl HealthCheckService {
         })
     }
 
-    async fn count_cards(&self) -> Result<i64> {
-        self.db.count("SELECT COUNT(*) FROM card").await
-    }
-
-    async fn count_prices(&self) -> Result<i64> {
-        self.db.count("SELECT COUNT(*) FROM price").await
-    }
-
-    async fn count_sets(&self) -> Result<i64> {
-        self.db.count("SELECT COUNT(*) FROM set").await
-    }
-
     pub async fn price_history_check(&self) -> Result<PriceHistoryHealth> {
         info!("Performing price history health check");
 
@@ -101,5 +89,17 @@ impl HealthCheckService {
         self.db
             .count("SELECT COUNT(DISTINCT card_id) FROM price")
             .await
+    }
+
+    async fn count_cards(&self) -> Result<i64> {
+        self.db.count("SELECT COUNT(*) FROM card").await
+    }
+
+    async fn count_prices(&self) -> Result<i64> {
+        self.db.count("SELECT COUNT(*) FROM price").await
+    }
+
+    async fn count_sets(&self) -> Result<i64> {
+        self.db.count("SELECT COUNT(*) FROM set").await
     }
 }

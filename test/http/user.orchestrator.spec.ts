@@ -171,32 +171,32 @@ describe('UserOrchestrator', () => {
             expect(mockPendingUserService.deleteByEmail).toHaveBeenCalledWith('new@example.com');
         });
 
-        it('should handle duplicate pending registration by replacing existing pending user', async () => {
-            const mockPendingUser = new PendingUser({
+        it('should return early without creating pending user when non-expired pending registration exists', async () => {
+            const existingPendingUser = new PendingUser({
                 id: 2,
                 email: 'new@example.com',
                 name: 'New User',
                 passwordHash: 'hashed',
-                verificationToken: 'newtoken',
+                verificationToken: 'existingtoken',
                 expiresAt: new Date(Date.now() + 86400000),
             });
 
             mockUserService.findByEmail.mockResolvedValue(null);
-            mockPendingUserService.createPendingUser.mockResolvedValue(mockPendingUser);
-            mockEmailService.sendVerificationEmail.mockResolvedValue(true);
+            mockPendingUserService.findByEmail.mockResolvedValue(existingPendingUser);
 
             const result = await orchestrator.initiateSignup(mockCreateUserDto);
 
             expect(result.success).toBe(true);
-            expect(mockPendingUserService.createPendingUser).toHaveBeenCalledWith(
-                'new@example.com',
-                'New User',
-                'password123'
+            expect(result.message).toBe(
+                'A verification email has already been sent. Please check your inbox or wait for the link to expire before requesting a new one.'
             );
+            expect(mockPendingUserService.createPendingUser).not.toHaveBeenCalled();
+            expect(mockEmailService.sendVerificationEmail).not.toHaveBeenCalled();
         });
 
         it('should throw error if pending user creation fails', async () => {
             mockUserService.findByEmail.mockResolvedValue(null);
+            mockPendingUserService.findByEmail.mockResolvedValue(null);
             mockPendingUserService.createPendingUser.mockRejectedValue(
                 new Error('Database constraint violation')
             );

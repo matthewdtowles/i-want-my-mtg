@@ -51,15 +51,4 @@ export class AuthController {
         res.redirect(result.redirectTo);
         this.LOGGER.log(`Logged out user ${userId ?? '""'}.`);
     }
-
-    private getCookieOptions() {
-        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
-        return {
-            httpOnly: true,
-            sameSite: 'strict' as const,
-            secure: isProduction,
-            maxAge: 3600000,
-            path: '/',
-        };
-    }
 }

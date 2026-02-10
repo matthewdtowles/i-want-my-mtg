@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, MinLength } from 'class-validator';
 
 export class CreateUserRequestDto {
+    @IsNotEmpty()
     @IsEmail({}, { message: 'Please provide a valid email address' })
     readonly email: string;
 

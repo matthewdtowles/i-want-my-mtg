@@ -318,7 +318,7 @@ export class SetOrchestrator {
     private async createSetResponseDto(
         userId: number,
         set: Set,
-        options: SafeQueryOptions
+        _options: SafeQueryOptions
     ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory =

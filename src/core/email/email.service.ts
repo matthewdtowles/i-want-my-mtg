@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { getLogger } from 'src/logger/global-app-logger';
+import { redactEmail } from 'src/shared/utils/redact-email.util';
 
 export interface EmailOptions {
     to: string;
@@ -52,13 +53,13 @@ export class EmailService {
 
     async sendVerificationEmail(email: string, token: string, name: string): Promise<boolean> {
         const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
-        const verificationUrl = `${baseUrl}/user/verify?token=${token}`;
+        const verificationUrl = `${baseUrl}/user/verify?token=${encodeURIComponent(token)}`;
         const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
         const redacted = this.redactEmail(email);
         this.LOGGER.log(`Attempting to send verification email to: ${redacted}, from: ${from}`);
         if (!this.isConfigured || !this.transporter) {
             this.LOGGER.warn(`Email not configured. Skipping send to: ${redacted}`);
-            this.LOGGER.debug(`Verification URL: ${verificationUrl}`);
+            this.LOGGER.debug(`Verification URL generated for: ${redacted}`);
             return this.configService.get<string>('NODE_ENV') === 'dev';
         }
         const html = `
@@ -103,13 +104,13 @@ export class EmailService {
 
     async sendPasswordResetEmail(email: string, token: string): Promise<boolean> {
         const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
-        const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+        const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
         const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
         const redacted = this.redactEmail(email);
         this.LOGGER.log(`Attempting to send password reset email to: ${redacted}, from: ${from}`);
         if (!this.isConfigured || !this.transporter) {
             this.LOGGER.warn(`Email not configured. Skipping send to: ${redacted}`);
-            this.LOGGER.debug(`Reset URL: ${resetUrl}`);
+            this.LOGGER.debug(`Reset URL generated for: ${redacted}`);
             return this.configService.get<string>('NODE_ENV') === 'dev';
         }
         const html = `
@@ -179,9 +180,6 @@ export class EmailService {
     }
 
     private redactEmail(email: string): string {
-        const [local, domain] = email.split('@');
-        if (!local || !domain) return '***';
-        const visibleChars = Math.min(2, local.length);
-        return `${local.substring(0, visibleChars)}***@${domain}`;
+        return redactEmail(email);
     }
 }

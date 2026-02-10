@@ -11,6 +11,7 @@ import { ForgotPasswordRequestDto } from './dto/forgot-password.request.dto';
 import { LoginFormViewDto } from './dto/login-form.view.dto';
 import { ResetPasswordRequestDto } from './dto/reset-password.request.dto';
 import { LocalAuthGuard } from './local.auth.guard';
+import { redactEmail } from 'src/shared/utils/redact-email.util';
 
 @Controller('auth')
 export class AuthController {
@@ -66,7 +67,7 @@ export class AuthController {
         @Body() forgotPasswordDto: ForgotPasswordRequestDto,
         @Res() res: Response
     ): Promise<void> {
-        this.LOGGER.log(`Password reset request for email: ${forgotPasswordDto.email}.`);
+        this.LOGGER.log(`Password reset request for email: ${redactEmail(forgotPasswordDto.email)}.`);
         const result = await this.authOrchestrator.requestPasswordReset(forgotPasswordDto.email);
         res.render('resetRequestSent', { message: result.message });
     }

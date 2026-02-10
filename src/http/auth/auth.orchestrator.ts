@@ -8,6 +8,7 @@ import { UserService } from 'src/core/user/user.service';
 import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { UserRole } from 'src/shared/constants/user.role.enum';
+import { redactEmail } from 'src/shared/utils/redact-email.util';
 import { AuthResult } from './dto/auth.result';
 import { ResetPasswordResultDto } from './dto/reset-password-result.dto';
 
@@ -79,10 +80,10 @@ export class AuthOrchestrator {
     async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
         const successMessage = 'If an account with that email exists, we have sent a password reset link.';
         try {
-            this.LOGGER.debug(`Processing password reset request for email: ${email}.`);
+            this.LOGGER.debug(`Processing password reset request for email: ${redactEmail(email)}.`);
             const user = await this.userService.findByEmail(email);
             if (!user) {
-                this.LOGGER.debug(`No user found for email: ${email}. Returning success to prevent enumeration.`);
+                this.LOGGER.debug(`No user found for email: ${redactEmail(email)}. Returning success to prevent enumeration.`);
                 return { success: true, message: successMessage };
             }
 
@@ -94,7 +95,7 @@ export class AuthOrchestrator {
 
             if (!emailSent) {
                 await this.passwordResetService.deleteByToken(resetRequest.resetToken);
-                this.LOGGER.error(`Failed to send password reset email to ${email}.`);
+                this.LOGGER.error(`Failed to send password reset email to ${redactEmail(email)}.`);
             }
 
             return { success: true, message: successMessage };
@@ -142,7 +143,6 @@ export class AuthOrchestrator {
                 success: true,
                 message: 'Your password has been reset successfully.',
                 token: authToken.access_token,
-                user,
             });
         } catch (error) {
             this.LOGGER.error(`Error resetting password: ${error.message}.`);

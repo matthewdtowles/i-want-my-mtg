@@ -2503,6 +2503,11 @@ select {
   color: rgb(83 43 100 / var(--tw-text-opacity, 1));
 }
 
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+
 .text-teal-500 {
   --tw-text-opacity: 1;
   color: rgb(40 173 168 / var(--tw-text-opacity, 1));

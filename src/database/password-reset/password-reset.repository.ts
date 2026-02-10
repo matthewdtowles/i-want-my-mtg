@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordReset } from 'src/core/password-reset/password-reset.entity';
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
+import { redactEmail } from 'src/shared/utils/redact-email.util';
 import { LessThan, Repository } from 'typeorm';
 import { PasswordResetOrmEntity } from './password-reset.orm-entity';
 
@@ -18,7 +19,7 @@ export class PasswordResetRepository implements PasswordResetRepositoryPort {
     }
 
     async create(passwordReset: PasswordReset): Promise<PasswordReset> {
-        this.LOGGER.debug(`Creating password reset for email: ${passwordReset.email}.`);
+        this.LOGGER.debug(`Creating password reset for email: ${redactEmail(passwordReset.email)}.`);
         const entity = this.repository.create({
             email: passwordReset.email,
             resetToken: passwordReset.resetToken,
@@ -45,9 +46,9 @@ export class PasswordResetRepository implements PasswordResetRepositoryPort {
     }
 
     async deleteByEmail(email: string): Promise<void> {
-        this.LOGGER.debug(`Deleting password resets by email: ${email}.`);
+        this.LOGGER.debug(`Deleting password resets by email: ${redactEmail(email)}.`);
         await this.repository.delete({ email });
-        this.LOGGER.debug(`Password resets deleted by email: ${email}.`);
+        this.LOGGER.debug(`Password resets deleted by email: ${redactEmail(email)}.`);
     }
 
     async deleteExpired(): Promise<number> {

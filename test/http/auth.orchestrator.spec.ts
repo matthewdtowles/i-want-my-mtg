@@ -264,7 +264,6 @@ describe('AuthOrchestrator', () => {
 
             expect(result.success).toBe(true);
             expect(result.token).toBe('test-token');
-            expect(result.user).toBe(coreUser);
             expect(mockUserService.updatePassword).toHaveBeenCalledWith(coreUser, 'NewPassword1!');
             expect(mockPasswordResetService.deleteByToken).toHaveBeenCalledWith('valid-token');
         });

@@ -20,7 +20,7 @@ import { PaginationView } from 'src/http/list/pagination.view';
 import { SortableHeaderView } from 'src/http/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
-import { buildToggleConfig, ToggleConfig } from 'src/http/list/toggle-config';
+import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
@@ -50,7 +50,7 @@ export class SetOrchestrator {
             const [sets, currentCount, targetCount] = await Promise.all([
                 this.setService.findSets(options),
                 this.setService.totalSetsCount(options),
-                this.setService.totalSetsCount({ ...options, baseOnly: !options.baseOnly }),
+                this.setService.totalSetsCount(options.withBaseOnly(!options.baseOnly)),
             ]);
 
             const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
@@ -91,24 +91,15 @@ export class SetOrchestrator {
             }
 
             const forceShowAll = set.baseSize === 0;
-            const effectiveOptions = forceShowAll
-                ? new SafeQueryOptions({
-                      baseOnly: 'false',
-                      page: String(options.page),
-                      limit: String(options.limit),
-                      ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
-                      ...(options.filter && { filter: options.filter }),
-                      ...(options.sort && { sort: String(options.sort) }),
-                  })
-                : options;
+            const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
 
             const [cards, currentCount, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
-                this.cardService.totalInSet(setCode, effectiveOptions),
-                this.cardService.totalInSet(setCode, {
-                    ...effectiveOptions,
-                    baseOnly: !effectiveOptions.baseOnly,
-                } as SafeQueryOptions),
+                this.setService.totalCardsInSet(setCode, effectiveOptions),
+                this.setService.totalCardsInSet(
+                    setCode,
+                    effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
+                ),
             ]);
 
             const toggleConfig = buildToggleConfig(
@@ -120,11 +111,7 @@ export class SetOrchestrator {
             set.cards.push(...cards);
 
             const userId = req.user?.id ?? 0;
-            const setResponse = await this.createSetResponseDto(
-                userId,
-                set,
-                toggleConfig.effectiveOptions
-            );
+            const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
             const baseUrl = `/sets/${set.code}`;
 
             this.LOGGER.debug(`Found ${cards.length} cards for set ${set.code}.`);
@@ -132,7 +119,7 @@ export class SetOrchestrator {
             return new SetViewDto({
                 authenticated: isAuthenticated(req),
                 baseOnlyToggle: new BaseOnlyToggleView(
-                    toggleConfig.effectiveOptions,
+                    effectiveOptions,
                     baseUrl,
                     toggleConfig.targetMaxPage,
                     toggleConfig.visible
@@ -145,13 +132,9 @@ export class SetOrchestrator {
                 message: `Found set: ${setResponse.name}`,
                 set: setResponse,
                 status: ActionStatus.SUCCESS,
-                pagination: new PaginationView(
-                    toggleConfig.effectiveOptions,
-                    baseUrl,
-                    currentCount
-                ),
-                filter: new FilterView(toggleConfig.effectiveOptions, baseUrl),
-                tableHeadersRow: this.buildSetDetailTableHeaders(toggleConfig.effectiveOptions),
+                pagination: new PaginationView(effectiveOptions, baseUrl, currentCount),
+                filter: new FilterView(effectiveOptions, baseUrl),
+                tableHeadersRow: this.buildSetDetailTableHeaders(effectiveOptions),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
@@ -175,7 +158,7 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.cardService.totalInSet(setCode, options);
+            const totalCards = await this.setService.totalCardsInSet(setCode, options);
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;

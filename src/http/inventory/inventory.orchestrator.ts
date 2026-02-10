@@ -41,10 +41,10 @@ export class InventoryOrchestrator {
                 await Promise.all([
                     this.inventoryService.findAllForUser(req.user.id, options),
                     this.inventoryService.totalInventoryItems(userId, options),
-                    this.inventoryService.totalInventoryItems(userId, {
-                        ...options,
-                        baseOnly: !options.baseOnly,
-                    }),
+                    this.inventoryService.totalInventoryItems(
+                        userId,
+                        options.withBaseOnly(!options.baseOnly)
+                    ),
                     this.inventoryService.totalCards(),
                     this.inventoryService.totalOwnedValue(userId),
                 ]);

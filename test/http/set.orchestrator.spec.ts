@@ -84,6 +84,7 @@ describe('SetOrchestrator', () => {
                     provide: CardService,
                     useValue: {
                         findBySet: jest.fn(),
+                        totalInSet: jest.fn(),
                     },
                 },
             ],
@@ -145,7 +146,7 @@ describe('SetOrchestrator', () => {
         it('returns set details and paginated cards', async () => {
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            setService.totalCardsInSet.mockResolvedValue(1);
+            cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);
@@ -174,7 +175,7 @@ describe('SetOrchestrator', () => {
             const unauthReq = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
             setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
             cardService.findBySet.mockResolvedValue([mockCard]);
-            setService.totalCardsInSet.mockResolvedValue(1);
+            cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);
@@ -192,6 +193,102 @@ describe('SetOrchestrator', () => {
             await expect(
                 orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', mockQueryOptions)
             ).rejects.toThrow('An unexpected error occurred');
+        });
+
+        it('passes filter to cardService.totalInSet for accurate pagination', async () => {
+            const filteredOptions = new SafeQueryOptions({
+                page: '1',
+                limit: '10',
+                filter: 'dragon',
+            });
+            setService.findByCode.mockResolvedValue({
+                ...mockSet,
+                baseSize: 100,
+                totalSize: 150,
+                cards: [],
+            });
+            cardService.findBySet.mockResolvedValue([mockCard]);
+            // 3 cards match the filter out of 100 base cards
+            cardService.totalInSet.mockResolvedValue(3);
+            inventoryService.findByCards.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findBySetCode(
+                mockAuthenticatedRequest,
+                'TST',
+                filteredOptions
+            );
+
+            expect(cardService.totalInSet).toHaveBeenCalledWith(
+                'TST',
+                expect.objectContaining({ filter: 'dragon' })
+            );
+            // Pagination should reflect 3 filtered results, not 100 total
+            expect(result.pagination.totalPages).toBe(1);
+        });
+
+        it('updates pagination page count based on filtered card count', async () => {
+            const filteredOptions = new SafeQueryOptions({
+                page: '1',
+                limit: '5',
+                filter: 'goblin',
+            });
+            setService.findByCode.mockResolvedValue({
+                ...mockSet,
+                baseSize: 200,
+                totalSize: 300,
+                cards: [],
+            });
+            cardService.findBySet.mockResolvedValue([mockCard]);
+            // 12 cards match filter => 3 pages at limit=5
+            cardService.totalInSet.mockResolvedValue(12);
+            inventoryService.findByCards.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findBySetCode(
+                mockAuthenticatedRequest,
+                'TST',
+                filteredOptions
+            );
+
+            expect(result.pagination.totalPages).toBe(3);
+        });
+
+        it('uses cardService not setService for card count in set', async () => {
+            setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
+            cardService.findBySet.mockResolvedValue([mockCard]);
+            cardService.totalInSet.mockResolvedValue(1);
+            inventoryService.findByCards.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            await orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', mockQueryOptions);
+
+            expect(cardService.totalInSet).toHaveBeenCalled();
+            expect(setService.totalCardsInSet).not.toHaveBeenCalled();
+        });
+
+        it('forces baseOnly false when set has no base size', async () => {
+            const noBaseSet = { ...mockSet, baseSize: 0, totalSize: 50, cards: [] };
+            setService.findByCode.mockResolvedValue(noBaseSet);
+            cardService.findBySet.mockResolvedValue([mockCard]);
+            cardService.totalInSet.mockResolvedValue(5);
+            inventoryService.findByCards.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            await orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', mockQueryOptions);
+
+            expect(cardService.findBySet).toHaveBeenCalledWith(
+                'TST',
+                expect.objectContaining({ baseOnly: false })
+            );
+            expect(cardService.totalInSet).toHaveBeenCalledWith(
+                'TST',
+                expect.objectContaining({ baseOnly: false })
+            );
         });
     });
 

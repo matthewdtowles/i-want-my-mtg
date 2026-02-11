@@ -95,8 +95,8 @@ export class SetOrchestrator {
 
             const [cards, currentCount, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
-                this.setService.totalCardsInSet(setCode, effectiveOptions),
-                this.setService.totalCardsInSet(
+                this.cardService.totalInSet(setCode, effectiveOptions),
+                this.cardService.totalInSet(
                     setCode,
                     effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
                 ),
@@ -158,7 +158,7 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, options);
+            const totalCards = await this.cardService.totalInSet(setCode, options);
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;

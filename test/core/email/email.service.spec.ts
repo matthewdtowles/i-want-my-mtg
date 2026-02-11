@@ -200,7 +200,9 @@ describe('EmailService', () => {
             await service.sendVerificationEmail('user@test.com', 'abc123', 'TestUser');
 
             const sentHtml = mockSendMail.mock.calls[0][0].html;
-            expect(sentHtml).toContain('https://test.com/user/verify?token=abc123');
+            expect(sentHtml).toContain(
+                `https://test.com/user/verify?token=${encodeURIComponent('abc123')}`
+            );
         });
 
         it('should include user name in email html', async () => {
@@ -233,7 +235,9 @@ describe('EmailService', () => {
             await service.sendVerificationEmail('user@test.com', 'abc123', 'TestUser');
 
             const sentHtml = mockSendMail.mock.calls[0][0].html;
-            expect(sentHtml).toContain('http://localhost:3000/user/verify?token=abc123');
+            expect(sentHtml).toContain(
+                `http://localhost:3000/user/verify?token=${encodeURIComponent('abc123')}`
+            );
         });
 
         it('should use default SMTP_FROM when not configured', async () => {
@@ -247,6 +251,108 @@ describe('EmailService', () => {
                     from: 'noreply@iwantmymtg.net',
                 })
             );
+        });
+    });
+
+    describe('sendPasswordResetEmail', () => {
+        it('should send password reset email successfully', async () => {
+            mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+            const service = await createService();
+
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            expect(result).toBe(true);
+            expect(mockSendMail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    from: 'noreply@test.com',
+                    to: 'user@test.com',
+                    subject: 'Reset your password - I Want My MTG',
+                })
+            );
+        });
+
+        it('should include reset URL with token in email html', async () => {
+            mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+            const service = await createService();
+
+            await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            const sentHtml = mockSendMail.mock.calls[0][0].html;
+            expect(sentHtml).toContain(
+                `https://test.com/auth/reset-password?token=${encodeURIComponent('reset-token-123')}`
+            );
+        });
+
+        it('should include 1 hour expiry notice in email html', async () => {
+            mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+            const service = await createService();
+
+            await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            const sentHtml = mockSendMail.mock.calls[0][0].html;
+            expect(sentHtml).toContain('1 hour');
+        });
+
+        it('should return false when sendMail throws an error', async () => {
+            mockSendMail.mockRejectedValue(new Error('SMTP connection failed'));
+            const service = await createService();
+
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            expect(result).toBe(false);
+        });
+
+        it('should use default APP_URL when not configured', async () => {
+            mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+            const service = await createService({ APP_URL: undefined });
+
+            await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            const sentHtml = mockSendMail.mock.calls[0][0].html;
+            expect(sentHtml).toContain(
+                `http://localhost:3000/auth/reset-password?token=${encodeURIComponent('reset-token-123')}`
+            );
+        });
+
+        it('should use default SMTP_FROM when not configured', async () => {
+            mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+            const service = await createService({ SMTP_FROM: undefined });
+
+            await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            expect(mockSendMail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    from: 'noreply@iwantmymtg.net',
+                })
+            );
+        });
+    });
+
+    describe('sendPasswordResetEmail - unconfigured', () => {
+        it('should return true in dev mode when email is not configured', async () => {
+            (nodemailer.createTransport as jest.Mock).mockClear();
+            const service = await createService({
+                SMTP_HOST: undefined,
+                NODE_ENV: 'dev',
+            });
+
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            expect(result).toBe(true);
+            expect(mockSendMail).not.toHaveBeenCalled();
+        });
+
+        it('should return false in production when email is not configured', async () => {
+            (nodemailer.createTransport as jest.Mock).mockClear();
+            const service = await createService({
+                SMTP_HOST: undefined,
+                NODE_ENV: 'production',
+            });
+
+            const result = await service.sendPasswordResetEmail('user@test.com', 'reset-token-123');
+
+            expect(result).toBe(false);
+            expect(mockSendMail).not.toHaveBeenCalled();
         });
     });
 

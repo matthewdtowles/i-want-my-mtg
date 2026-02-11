@@ -422,6 +422,78 @@ ALTER TABLE ONLY public.price_history
 
 
 --
+-- Name: password_reset; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.password_reset (
+    id integer NOT NULL,
+    email character varying(255) NOT NULL,
+    reset_token character varying(255) NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+
+--
+-- Name: password_reset_id_seq; Type: SEQUENCE; Schema: public
+--
+
+CREATE SEQUENCE public.password_reset_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: password_reset_id_seq; Type: SEQUENCE OWNED BY; Schema: public
+--
+
+ALTER SEQUENCE public.password_reset_id_seq OWNED BY public.password_reset.id;
+
+
+--
+-- Name: password_reset id; Type: DEFAULT; Schema: public
+--
+
+ALTER TABLE ONLY public.password_reset ALTER COLUMN id SET DEFAULT nextval('public.password_reset_id_seq'::regclass);
+
+
+--
+-- Name: password_reset password_reset_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.password_reset
+    ADD CONSTRAINT password_reset_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: password_reset UQ_password_reset_token; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.password_reset
+    ADD CONSTRAINT "UQ_password_reset_token" UNIQUE (reset_token);
+
+
+--
+-- Name: idx_password_reset_token; Type: INDEX; Schema: public
+--
+
+CREATE INDEX idx_password_reset_token ON public.password_reset(reset_token);
+
+
+--
+-- Name: idx_password_reset_expires; Type: INDEX; Schema: public
+--
+
+CREATE INDEX idx_password_reset_expires ON public.password_reset(expires_at);
+
+
+--
 -- PostgreSQL database dump complete
 --
 

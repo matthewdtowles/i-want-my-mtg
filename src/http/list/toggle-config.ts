@@ -1,7 +1,6 @@
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 export interface ToggleConfig {
-    effectiveOptions: SafeQueryOptions;
     targetMaxPage: number;
     visible: boolean;
 }
@@ -9,10 +8,10 @@ export interface ToggleConfig {
 /**
  * Builds toggle configuration for list views.
  *
- * @param options - Current query options
+ * @param options - Current query options (caller must pre-apply forceShowAll if needed)
  * @param currentCount - Count for current baseOnly state
  * @param targetCount - Count for toggled baseOnly state
- * @param forceShowAll - If true, forces baseOnly to false (e.g., when baseSize is 0)
+ * @param forceShowAll - If true, hides the toggle (e.g., when baseSize is 0)
  */
 export function buildToggleConfig(
     options: SafeQueryOptions,
@@ -20,22 +19,10 @@ export function buildToggleConfig(
     targetCount: number,
     forceShowAll: boolean = false
 ): ToggleConfig {
-    const effectiveOptions = forceShowAll
-        ? new SafeQueryOptions({
-              baseOnly: 'false',
-              page: String(options.page),
-              limit: String(options.limit),
-              ...(options.ascend !== undefined && { ascend: String(options.ascend) }),
-              ...(options.filter && { filter: options.filter }),
-              ...(options.sort && { sort: String(options.sort) }),
-          })
-        : options;
-
-    const targetMaxPage = Math.max(1, Math.ceil(targetCount / effectiveOptions.limit));
+    const targetMaxPage = Math.max(1, Math.ceil(targetCount / options.limit));
     const visible = !forceShowAll && currentCount !== targetCount && targetCount > 0;
 
     return {
-        effectiveOptions,
         targetMaxPage,
         visible,
     };

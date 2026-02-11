@@ -45,7 +45,9 @@ export class InventoryRepository
     }
 
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null> {
-        this.LOGGER.debug(`Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`);
+        this.LOGGER.debug(
+            `Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`
+        );
         const item: InventoryOrmEntity = await this.repository.findOne({
             where: { userId, cardId, isFoil },
         });
@@ -61,7 +63,9 @@ export class InventoryRepository
     }
 
     async findByCards(userId: number, cardIds: string[]): Promise<Inventory[]> {
-        this.LOGGER.debug(`Finding inventory items for userId: ${userId}, ${cardIds.length} cardIds.`);
+        this.LOGGER.debug(
+            `Finding inventory items for userId: ${userId}, ${cardIds.length} cardIds.`
+        );
         const items = await this.repository.find({ where: { userId, cardId: In(cardIds) } });
         this.LOGGER.debug(`Found ${items.length} inventory items.`);
         return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
@@ -154,12 +158,16 @@ export class InventoryRepository
             [userId, setCode]
         );
         const count = Number(queryResult[0]?.total ?? 0);
-        this.LOGGER.debug(`Total inventory items for userId: ${userId} in set ${setCode} is ${count}.`);
+        this.LOGGER.debug(
+            `Total inventory items for userId: ${userId} in set ${setCode} is ${count}.`
+        );
         return count;
     }
 
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
-        this.LOGGER.debug(`Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`);
+        this.LOGGER.debug(
+            `Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`
+        );
         try {
             await this.repository
                 .createQueryBuilder()

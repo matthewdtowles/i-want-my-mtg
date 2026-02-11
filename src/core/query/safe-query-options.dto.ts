@@ -10,7 +10,16 @@ export interface RawQueryOptions {
     sort?: string;
 }
 
-export class SafeQueryOptions {
+export interface QueryOptionsData {
+    readonly ascend?: boolean;
+    readonly baseOnly: boolean;
+    readonly filter?: string;
+    readonly limit: number;
+    readonly page: number;
+    readonly sort?: SortOptions;
+}
+
+export class SafeQueryOptions implements QueryOptionsData {
     readonly ascend?: boolean;
     readonly baseOnly: boolean;
     readonly filter?: string;
@@ -26,5 +35,16 @@ export class SafeQueryOptions {
         this.limit = sanitizeInt(init.limit, 25);
         this.page = sanitizeInt(init.page, 1);
         this.sort = safeSort(init.sort);
+    }
+
+    withBaseOnly(baseOnly: boolean): SafeQueryOptions {
+        return new SafeQueryOptions({
+            ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
+            baseOnly: String(baseOnly),
+            filter: this.filter,
+            limit: String(this.limit),
+            page: String(this.page),
+            sort: this.sort,
+        });
     }
 }

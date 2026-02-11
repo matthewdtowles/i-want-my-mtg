@@ -162,7 +162,7 @@ export class UserController {
             const response: BaseViewDto = await this.userOrchestrator.deleteUser(req);
             this.LOGGER.log(`Delete account successful for user ${userId}.`);
             return createSuccessResult<BaseViewDto>(response, 'User deleted');
-        } catch (error) {
+        } catch (_error) {
             const msg = `Error deleting user ${userId}.`;
             this.LOGGER.error(msg);
             return createErrorResult(msg);

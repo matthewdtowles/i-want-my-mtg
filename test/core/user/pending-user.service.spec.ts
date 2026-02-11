@@ -14,7 +14,6 @@ import * as tokenUtil from 'src/core/auth/verification-token.util';
 
 describe('PendingUserService', () => {
     let service: PendingUserService;
-    let repository: jest.Mocked<PendingUserRepositoryPort>;
 
     const mockRepository = {
         create: jest.fn(),
@@ -46,7 +45,6 @@ describe('PendingUserService', () => {
         }).compile();
 
         service = module.get<PendingUserService>(PendingUserService);
-        repository = module.get(PendingUserRepositoryPort);
     });
 
     beforeEach(() => {

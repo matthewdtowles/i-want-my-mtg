@@ -15,7 +15,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
         return super.canActivate(context);
     }
 
-    handleRequest(err, user, info) {
+    handleRequest(err, user, _info) {
         this.LOGGER.debug(`LocalAuthGuard handleRequest called`);
         if (err) {
             this.LOGGER.error(`Error during authentication: ${err.message}`);

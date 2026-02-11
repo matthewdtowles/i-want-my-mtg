@@ -1,4 +1,4 @@
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { QueryOptionsData } from 'src/core/query/safe-query-options.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 
 export const BASE_IMAGE_URL: string = 'https://cards.scryfall.io';
@@ -19,7 +19,7 @@ export function isAuthenticated(req: AuthenticatedRequest): boolean {
         : false;
 }
 
-export function buildQueryString(options: SafeQueryOptions): string {
+export function buildQueryString(options: QueryOptionsData): string {
     if (!options || (options.page === undefined && options.limit === undefined)) {
         return '';
     }

@@ -7,7 +7,10 @@ export interface QueryBuilderConfig {
     filterColumn?: string; // defaults to `${table}.name`
     defaultSort: SortOptions;
     defaultSortDesc?: boolean;
-    customSortHandlers?: Map<SortOptions, (qb: SelectQueryBuilder<any>, direction: 'ASC' | 'DESC') => void>;
+    customSortHandlers?: Map<
+        SortOptions,
+        (qb: SelectQueryBuilder<any>, direction: 'ASC' | 'DESC') => void
+    >;
 }
 
 export class QueryBuilderHelper<T> {
@@ -30,7 +33,7 @@ export class QueryBuilderHelper<T> {
 
     applyFilters(qb: SelectQueryBuilder<T>, filter?: string): void {
         if (!filter) return;
-        
+
         const filterCol = this.config.filterColumn ?? `${this.config.table}.name`;
         filter
             .split(' ')
@@ -48,9 +51,13 @@ export class QueryBuilderHelper<T> {
 
     applyOrdering(qb: SelectQueryBuilder<T>, options: SafeQueryOptions): void {
         const sort = options.sort ?? this.config.defaultSort;
-        const direction = options.ascend 
-            ? QueryBuilderHelper.ASC 
-            : (options.sort ? QueryBuilderHelper.DESC : (this.config.defaultSortDesc ? QueryBuilderHelper.DESC : QueryBuilderHelper.ASC));
+        const direction = options.ascend
+            ? QueryBuilderHelper.ASC
+            : options.sort
+              ? QueryBuilderHelper.DESC
+              : this.config.defaultSortDesc
+                ? QueryBuilderHelper.DESC
+                : QueryBuilderHelper.ASC;
 
         // Check for custom handler first
         const customHandler = this.config.customSortHandlers?.get(sort);
@@ -61,11 +68,15 @@ export class QueryBuilderHelper<T> {
 
         // Handle price sorting with COALESCE
         if (sort === SortOptions.PRICE) {
-            qb.addSelect(`COALESCE(${SortOptions.PRICE}, ${SortOptions.PRICE_FOIL})`, 'coalesced_price')
-              .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
+            qb.addSelect(
+                `COALESCE(${SortOptions.PRICE}, ${SortOptions.PRICE_FOIL})`,
+                'coalesced_price'
+            ).orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
         } else if (sort === SortOptions.PRICE_FOIL) {
-            qb.addSelect(`COALESCE(${SortOptions.PRICE_FOIL}, ${SortOptions.PRICE})`, 'coalesced_price')
-              .orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
+            qb.addSelect(
+                `COALESCE(${SortOptions.PRICE_FOIL}, ${SortOptions.PRICE})`,
+                'coalesced_price'
+            ).orderBy('coalesced_price', direction, QueryBuilderHelper.NULLS_LAST);
         } else {
             qb.orderBy(sort, direction, QueryBuilderHelper.NULLS_LAST);
         }

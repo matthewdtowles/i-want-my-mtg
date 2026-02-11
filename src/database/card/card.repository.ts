@@ -104,7 +104,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             where: { set: { code }, number },
             relations: _relations ?? this.DEFAULT_RELATIONS,
         });
-        this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`);
+        this.LOGGER.debug(
+            `Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`
+        );
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
@@ -136,7 +138,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         includeFoil: boolean,
         baseOnly: boolean = true
     ): Promise<number> {
-        this.LOGGER.debug(`Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`);
+        this.LOGGER.debug(
+            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`
+        );
         const selectExpr = PriceCalculationPolicy.cardValueExpression(includeFoil);
         const result = await this.repository.query(
             `
@@ -164,7 +168,9 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .where(`${this.TABLE}.id IN (:...ids)`, { ids: cardIds })
             .getMany();
         const found = new Set(ormCards.map((c: CardOrmEntity) => c.id));
-        this.LOGGER.debug(`Verified ${found.size} existing cards out of ${cardIds.length} provided.`);
+        this.LOGGER.debug(
+            `Verified ${found.size} existing cards out of ${cardIds.length} provided.`
+        );
         return found;
     }
 

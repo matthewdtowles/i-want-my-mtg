@@ -19,7 +19,6 @@ const mockUser: User = {
 describe('AuthService', () => {
     let authService: AuthService;
     let userService: UserService;
-    let userRepositoryPort: UserRepositoryPort;
     let jwtService: JwtService;
 
     beforeAll(async () => {
@@ -50,7 +49,6 @@ describe('AuthService', () => {
 
         authService = module.get<AuthService>(AuthService);
         userService = module.get<UserService>(UserService);
-        userRepositoryPort = module.get<UserRepositoryPort>(UserRepositoryPort);
         jwtService = module.get<JwtService>(JwtService);
     });
 

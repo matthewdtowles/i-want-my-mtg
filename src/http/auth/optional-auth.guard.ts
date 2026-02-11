@@ -26,7 +26,7 @@ export class OptionalAuthGuard extends AuthGuard('jwt') {
         }
     }
 
-    handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    handleRequest(err: any, user: any, _info: any, _context: ExecutionContext) {
         if (err || !user) {
             this.LOGGER.debug(`No authenticated user - proceeding with null user`);
             return null;

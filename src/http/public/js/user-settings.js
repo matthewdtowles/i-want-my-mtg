@@ -13,10 +13,18 @@ async function updateMessage(response, messageEl, method) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const FV = window.FormValidator;
     const messageEl = document.getElementById('response-message');
 
     document.getElementById('user-update-form').addEventListener('submit', async (event) => {
         event.preventDefault();
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+        let valid = true;
+        if (!FV.validateField(nameEl, FV.validateUsername)) valid = false;
+        if (!FV.validateField(emailEl, FV.validateEmail)) valid = false;
+        if (!valid) return;
+
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
         const response = await fetch('/user', {
@@ -29,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('password-update-form').addEventListener('submit', async (event) => {
         event.preventDefault();
+        const passwordEl = document.getElementById('new-password');
+        if (!FV.validateField(passwordEl, FV.validatePassword)) return;
+
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
         const response = await fetch('/user/password', {
@@ -46,4 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         updateMessage(response, messageEl, 'delete');
     });
+
+    // Attach blur validation for user settings fields
+    const nameEl = document.getElementById('user-name');
+    const emailEl = document.getElementById('user-email');
+    const passwordEl = document.getElementById('new-password');
+
+    if (nameEl) FV.attachBlurValidation(nameEl, FV.validateUsername);
+    if (emailEl) FV.attachBlurValidation(emailEl, FV.validateEmail);
+    if (passwordEl) FV.attachBlurValidation(passwordEl, FV.validatePassword);
 });

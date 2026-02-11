@@ -1,20 +1,49 @@
 <div class="create-user-container">
     <h2 class="page-title">Create User Account</h2>
-    <form id="create-user-form" class="mt-6" action="/user/create" method="post">
+    {{#if error}}
+    <div class="bg-error p-4 rounded mb-4">
+        <p>{{error}}</p>
+    </div>
+    {{/if}}
+    <form id="create-user-form" class="mt-6" action="/user/create" method="post" novalidate>
         <div class="mb-4">
             <label class="input-label" for="user-name">User Name</label>
             <input id="user-name" class="input-field" type="text" name="name"
-                value="{{this.name}}" required>
+                value="{{this.name}}" required minlength="6" maxlength="50"
+                pattern="^[a-zA-Z0-9 _-]+$">
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-email">Email</label>
             <input id="user-email" class="input-field" type="email" name="email" required
-                value"{{this.email}}">
+                maxlength="255" value="{{this.email}}">
         </div>
         <div class="mb-4">
             <label class="input-label" for="user-password">Password</label>
-            <input id="user-password" class="input-field" type="password" name="password" required>
+            <input id="user-password" class="input-field" type="password" name="password" required
+                minlength="8" maxlength="128">
+            <p class="password-requirements">Min 8 characters: 1 uppercase, 1 lowercase, 1 number, 1 special character</p>
         </div>
         <button id="submit-button" class="btn btn-primary" type="submit">Submit</button>
     </form>
 </div>
+<script src="/public/js/form-validation.js"></script>
+<script>
+    (function () {
+        var FV = window.FormValidator;
+        var nameEl = document.getElementById('user-name');
+        var emailEl = document.getElementById('user-email');
+        var passwordEl = document.getElementById('user-password');
+
+        FV.attachBlurValidation(nameEl, FV.validateUsername);
+        FV.attachBlurValidation(emailEl, FV.validateEmail);
+        FV.attachBlurValidation(passwordEl, FV.validatePassword);
+
+        document.getElementById('create-user-form').addEventListener('submit', function (e) {
+            var valid = true;
+            if (!FV.validateField(nameEl, FV.validateUsername)) valid = false;
+            if (!FV.validateField(emailEl, FV.validateEmail)) valid = false;
+            if (!FV.validateField(passwordEl, FV.validatePassword)) valid = false;
+            if (!valid) e.preventDefault();
+        });
+    })();
+</script>

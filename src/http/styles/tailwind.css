@@ -92,6 +92,19 @@
     box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.3);
 }
 
+.input-field-error {
+    @apply border-red-500 focus:ring-red-400;
+    box-shadow: 0 0 8px 0 rgba(239, 68, 68, 0.3);
+}
+
+.field-error {
+    @apply text-red-500 text-sm mt-1;
+}
+
+.password-requirements {
+    @apply text-gray-500 text-xs mt-1;
+}
+
 .input-label {
     @apply block font-medium text-teal-500;
 }

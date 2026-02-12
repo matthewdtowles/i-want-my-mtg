@@ -6080,10 +6080,6 @@ input:where([type='file']):focus {
   background-color: rgb(31 41 55 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-hotpink-700\/20:is(.dark *) {
-  background-color: rgb(196 23 92 / 0.2);
-}
-
 .dark\:bg-hotpink-700\/30:is(.dark *) {
   background-color: rgb(196 23 92 / 0.3);
 }

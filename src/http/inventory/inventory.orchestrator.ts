@@ -37,17 +37,24 @@ export class InventoryOrchestrator {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
 
-            const [inventoryItems, currentCount, targetCount, totalCards, ownedValue] =
-                await Promise.all([
-                    this.inventoryService.findAllForUser(req.user.id, options),
-                    this.inventoryService.totalInventoryItems(userId, options),
-                    this.inventoryService.totalInventoryItems(
-                        userId,
-                        options.withBaseOnly(!options.baseOnly)
-                    ),
-                    this.inventoryService.totalCards(),
-                    this.inventoryService.totalOwnedValue(userId),
-                ]);
+            const [
+                inventoryItems,
+                currentCount,
+                targetCount,
+                totalCards,
+                ownedValue,
+                unfilteredCount,
+            ] = await Promise.all([
+                this.inventoryService.findAllForUser(req.user.id, options),
+                this.inventoryService.totalInventoryItems(userId, options),
+                this.inventoryService.totalInventoryItems(
+                    userId,
+                    options.withBaseOnly(!options.baseOnly)
+                ),
+                this.inventoryService.totalCards(),
+                this.inventoryService.totalOwnedValue(userId),
+                this.inventoryService.totalInventoryItems(userId, new SafeQueryOptions()),
+            ]);
 
             const cards: InventoryResponseDto[] = inventoryItems.map((item) =>
                 InventoryPresenter.toInventoryResponseDto(item)
@@ -79,6 +86,7 @@ export class InventoryOrchestrator {
                 ownedValue: toDollar(ownedValue),
                 ownedTotal: currentCount,
                 completionRate: completionRate(currentCount, totalCards),
+                hasInventory: unfilteredCount > 0,
                 pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([

@@ -1,4 +1,4 @@
-{{#if cards.length}}
+{{#if hasInventory}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
         <h3 class="page-title">{{this.username}}'s Inventory</h3>
@@ -15,13 +15,13 @@
             {{#if baseOnlyToggle.visible}}
             <a href="{{baseOnlyToggle.url}}"
                class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
-               style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4">
                 {{baseOnlyToggle.text}}
             </a>
             {{/if}}
         </div>
         <div id="filter-results">
+            {{#if cards.length}}
             <table class="table-container w-full">
                 <thead>{{>tableHeadersRow}}</thead>
                 <tbody>
@@ -60,43 +60,19 @@
                     {{/each}}
                 </tbody>
             </table>
+            {{else}}
+            <div class="text-center py-16">
+                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your current filters</p>
+                <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>
+                <a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>
+            </div>
+            {{/if}}
         </div>
     </div>
 </section>
 
 {{>pagination hasItems=this.cards.length}}
-
-{{else if filter.searchTerm}}
-<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
-    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
-        <h3 class="page-title">{{this.username}}'s Inventory</h3>
-        <p class="text-gray-700 dark:text-gray-300">Value: {{this.ownedValue}}</p>
-        {{>completionRate}}
-    </section>
-    <div class="w-full mx-auto px-2">
-        <div class="flex items-center gap-2">
-            <div class="flex-1">
-                {{>filter}}
-            </div>
-            {{#if baseOnlyToggle.visible}}
-            <a href="{{baseOnlyToggle.url}}"
-               class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
-               style="padding-top: 0; padding-bottom: 0; line-height: 1;">
-                {{baseOnlyToggle.text}}
-            </a>
-            {{/if}}
-        </div>
-        <div id="filter-results">
-            <div class="text-center py-16">
-                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your search</p>
-                <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
-                <a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
-            </div>
-        </div>
-    </div>
-</section>
 
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">

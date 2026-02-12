@@ -91,6 +91,7 @@ describe('InventoryOrchestrator', () => {
             expect(result.pagination.current).toBe(1);
             expect(result.pagination.totalPages).toBe(1);
             expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.hasInventory).toBe(true);
         });
 
         it('returns empty inventory view when user has no items', async () => {
@@ -105,6 +106,30 @@ describe('InventoryOrchestrator', () => {
             expect(result.cards).toHaveLength(0);
             expect(result.pagination.totalPages).toBe(0);
             expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.hasInventory).toBe(false);
+        });
+
+        it('sets hasInventory true when filters yield no results but user has inventory', async () => {
+            inventoryService.findAllForUser.mockResolvedValue([]);
+            inventoryService.totalInventoryItems
+                .mockResolvedValueOnce(0) // currentCount (filtered)
+                .mockResolvedValueOnce(0) // targetCount
+                .mockResolvedValueOnce(10); // unfilteredCount
+            inventoryService.totalCards.mockResolvedValue(100);
+            inventoryService.totalOwnedValue.mockResolvedValue(50);
+
+            const filteredOptions = new SafeQueryOptions({
+                page: '1',
+                limit: '10',
+                filter: 'nonexistent',
+            });
+            const result: InventoryViewDto = await orchestrator.findByUser(
+                mockAuthenticatedRequest,
+                filteredOptions
+            );
+
+            expect(result.cards).toHaveLength(0);
+            expect(result.hasInventory).toBe(true);
         });
 
         it('throws error if not authenticated', async () => {

@@ -10,19 +10,35 @@ input[type='number'] {
 }
 
 .bg-success {
-    background-color: rgb(185 250 185);
+    background-color: #6edad1;
 }
 
 .bg-error {
-    background-color: rgb(252 165 165);
+    background-color: #fa9ec4;
 }
 
 .bg-warning {
-    background-color: rgb(255 255 0);
+    background-color: #c48aed;
 }
 
 .bg-info {
-    background-color: rgb(173 216 230);
+    background-color: #a8f4ef;
+}
+
+.dark .bg-success {
+    background-color: #1a7a78;
+}
+
+.dark .bg-error {
+    background-color: #c4175c;
+}
+
+.dark .bg-warning {
+    background-color: #7233a4;
+}
+
+.dark .bg-info {
+    background-color: #146060;
 }
 
 .completion-bar-container {
@@ -32,10 +48,14 @@ input[type='number'] {
     justify-content: center;
     width: 100%;
     background: #e0e0e0;
-    border-radius: 4px;
-    height: 18px;
+    border-radius: 8px;
+    height: 20px;
     margin-bottom: 1em;
     overflow: hidden;
+}
+
+.dark .completion-bar-container {
+    background: #241e45;
 }
 
 .completion-bar {
@@ -43,9 +63,10 @@ input[type='number'] {
     top: 0;
     left: 0;
     height: 100%;
-    background: #14b8a6;
+    background: linear-gradient(90deg, #2cc8ca, #a95de0);
     transition: width 0.4s;
     z-index: 1;
+    border-radius: 8px;
 }
 
 .completion-bar-container span {
@@ -53,6 +74,12 @@ input[type='number'] {
     width: 100%;
     text-align: center;
     position: relative;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.dark .completion-bar-container span {
+    color: #f0fdfb;
 }
 
 @media (max-width: 450px) {

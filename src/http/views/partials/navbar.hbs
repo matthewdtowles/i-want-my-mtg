@@ -1,4 +1,4 @@
-<nav class="bg-purple-600 shadow-lg py-4">
+<nav class="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-800 dark:from-midnight-950 dark:via-purple-950 dark:to-midnight-950 shadow-lg py-4 border-b-2 border-teal-400 dark:shadow-glow-teal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
@@ -18,11 +18,31 @@
                 <a class="navbar-link" href="/auth/login">Sign In</a>
                 <a class="navbar-link" href="/user/create">Create Account</a>
                 {{/if}}
+                <button id="theme-toggle" type="button"
+                    class="text-teal-300 hover:text-white p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    aria-label="Toggle theme">
+                    <svg id="theme-icon-sun" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                    </svg>
+                    <svg id="theme-icon-moon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                </button>
             </div>
             {{!-- Mobile Menu Button--}}
-            <div class="md:hidden flex items-center">
+            <div class="md:hidden flex items-center gap-2">
+                <button id="theme-toggle-mobile" type="button"
+                    class="text-teal-300 hover:text-white p-2 rounded-md transition-colors focus:outline-none"
+                    aria-label="Toggle theme">
+                    <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                    </svg>
+                    <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                </button>
                 <button id="mobile-menu-button"
-                    class="text-teal-500 hover:text-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple">
+                    class="text-teal-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-400 p-2 rounded-md">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -33,7 +53,7 @@
         </div>
     </div>
     {{!-- Mobile Menu --}}
-    <div id="mobile-menu" class="hidden md:hidden">
+    <div id="mobile-menu" class="hidden md:hidden bg-purple-800 dark:bg-midnight-900 border-t border-purple-600 dark:border-midnight-700">
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
         {{#if authenticated}}
@@ -87,5 +107,22 @@
             const menu = document.getElementById("mobile-menu");
             menu.classList.toggle("hidden");
         });
+
+        // Mobile theme toggle
+        const mobileToggle = document.getElementById("theme-toggle-mobile");
+        if (mobileToggle) {
+            mobileToggle.addEventListener("click", () => {
+                document.documentElement.classList.toggle("dark");
+                const isDark = document.documentElement.classList.contains("dark");
+                localStorage.setItem("theme", isDark ? "dark" : "light");
+                // Update desktop icons
+                const sunIcon = document.getElementById("theme-icon-sun");
+                const moonIcon = document.getElementById("theme-icon-moon");
+                if (sunIcon && moonIcon) {
+                    sunIcon.classList.toggle("hidden", !isDark);
+                    moonIcon.classList.toggle("hidden", isDark);
+                }
+            });
+        }
     });
 </script>

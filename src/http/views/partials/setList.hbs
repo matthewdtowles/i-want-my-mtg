@@ -4,8 +4,8 @@
             {{>filter}}
         </div>
         {{#if baseOnlyToggle.visible}}
-        <a href="{{baseOnlyToggle.url}}" 
-           class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}} 
+        <a href="{{baseOnlyToggle.url}}"
+           class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}}
                   whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0
                   mb-4">
             {{baseOnlyToggle.text}}
@@ -14,7 +14,7 @@
     </div>
     <div id="filter-results">
         {{#if setList.length}}
-        <table class="min-w-full bg-white">
+        <table class="min-w-full table-container">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each setList}}
@@ -35,9 +35,9 @@
         </table>
         {{else}}
         <div class="text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
-            <p class="text-lg text-gray-600 font-medium mt-4">No sets match your search</p>
-            <p class="text-gray-400 mt-2">Try a different search term or clear your filter.</p>
+            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No sets match your search</p>
+            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
             <a href="/sets" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
         </div>
         {{/if}}

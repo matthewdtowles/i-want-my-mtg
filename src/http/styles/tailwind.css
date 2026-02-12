@@ -2,65 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Breadcrumbs ===== */
+
 .breadcrumb-item {
-    @apply text-sm;
+    @apply text-sm text-gray-600 dark:text-gray-400;
 }
 
 .breadcrumb-layout {
-    @apply flex items-center;
+    @apply flex items-center bg-gray-50 dark:bg-midnight-900 px-4 py-2;
 }
 
+/* ===== Buttons ===== */
+
 .btn {
-    @apply py-2 px-4 rounded-lg shadow-md;
+    @apply py-2 px-4 rounded-lg shadow-md font-medium transition-all duration-200 no-underline inline-block;
 }
 
 .btn-primary {
-    @apply bg-teal-500 text-white hover:bg-teal-600 focus:ring-4 focus:ring-teal-300;
+    @apply bg-teal-500 text-white hover:bg-teal-600 hover:shadow-glow-teal focus:ring-4 focus:ring-teal-300
+           dark:bg-teal-500 dark:hover:bg-teal-400 dark:hover:shadow-glow-teal dark:focus:ring-teal-400;
 }
 
 .btn-secondary {
-    @apply bg-purple-500 text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300;
+    @apply bg-purple-600 text-white hover:bg-purple-700 hover:shadow-glow-purple focus:ring-4 focus:ring-purple-300
+           dark:bg-purple-500 dark:hover:bg-purple-400 dark:hover:shadow-glow-purple dark:focus:ring-purple-400;
 }
 
-.btn-tertiary {
-    @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-4 focus:ring-blue-300;
+.btn-danger {
+    @apply bg-hotpink-500 text-white hover:bg-hotpink-600 hover:shadow-glow-pink focus:ring-4 focus:ring-hotpink-300
+           dark:bg-hotpink-500 dark:hover:bg-hotpink-400 dark:hover:shadow-glow-pink dark:focus:ring-hotpink-400;
 }
+
+.btn-ghost {
+    @apply bg-transparent text-teal-600 hover:text-teal-800 hover:bg-teal-50 focus:ring-2 focus:ring-teal-300 shadow-none
+           dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-700;
+}
+
+/* ===== Card Preview ===== */
 
 .card-img-link {
     @apply absolute hidden z-50;
 }
 
 .card-img-preview {
-    @apply w-64 h-auto;
+    @apply w-64 h-auto rounded-lg shadow-lg;
+}
+
+.card-image {
+    @apply rounded-lg shadow-lg max-w-xs mx-auto;
 }
 
 .card-name-link {
-    @apply no-underline;
+    @apply no-underline text-gray-900 dark:text-gray-100;
 }
 
 .card-name-link:hover {
-    @apply underline;
+    @apply underline text-teal-600 dark:text-teal-400;
 }
+
+.card-title {
+    @apply font-display text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100;
+}
+
+/* ===== Form Containers ===== */
 
 .create-user-container {
-    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
+    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10
+           border-t-4 border-teal-400 dark:border-teal-500;
 }
+
+.login-container {
+    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-md w-full mx-auto mt-10
+           border-t-4 border-purple-500 dark:border-purple-400;
+}
+
+.settings-container {
+    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10
+           border-t-4 border-teal-400 dark:border-teal-500;
+}
+
+.verification-container {
+    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-lg w-full mx-auto mt-10
+           border-t-4 border-purple-500 dark:border-purple-400;
+}
+
+/* ===== Delete Inventory ===== */
 
 .delete-inventory-button {
-    @apply flex items-center justify-center cursor-pointer;
-    color: black;
+    @apply flex items-center justify-center cursor-pointer text-gray-500 dark:text-gray-400
+           hover:text-hotpink-500 dark:hover:text-hotpink-400
+           active:text-hotpink-700 dark:active:text-hotpink-600 transition-colors;
 }
 
-.delete-inventory-button:hover {
-    color: red;
-}
-
-.delete-inventory-button:active {
-    color: darkred;
-}
+/* ===== Filter ===== */
 
 .filter-input {
-    @apply w-full pl-11 pr-12 border border-teal-300 rounded-md transition-all duration-150 focus:outline-none;
+    @apply w-full pl-11 pr-12 border border-teal-300 dark:border-teal-600 rounded-lg transition-all duration-150
+           focus:outline-none bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100;
     height: 42px;
     padding-top: 0;
     padding-bottom: 0;
@@ -69,88 +107,118 @@
     align-items: center;
 }
 
-/* On hover: border becomes teal, glow slightly stronger but still max 8px */
 .filter-input:hover {
-    @apply border-teal-500;
+    @apply border-teal-500 dark:border-teal-400;
     box-shadow: 0 0 2px 0 rgba(44, 200, 202, 0.4);
 }
 
-/* On active/focus: border teal, ring, glow at max 8px */
 .filter-input:focus,
 .filter-input:active {
-    @apply border-teal-500 ring-2 ring-teal-400;
-    box-shadow: 0 0 4px 0 rgba(44, 200, 202, 0.5);
-    background: #edf9f8;
+    @apply border-teal-500 ring-2 ring-teal-400 dark:border-teal-400 dark:ring-teal-500;
+    box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.5);
 }
+
+/* ===== Foil Badge ===== */
 
 .foil-badge {
     @apply inline-flex items-center text-xs font-medium ml-1 bg-purple-600 text-white px-1.5 py-0.5 rounded shadow-inner;
 }
 
+/* ===== Form Fields ===== */
+
 .input-field {
-    @apply mt-1 w-full p-3 border border-teal-400 rounded-md focus:ring-2 focus:ring-teal-400 focus:ring-opacity-60 transition-all duration-150;
-    box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.3);
+    @apply mt-1 w-full p-3 border border-teal-400 dark:border-teal-600 rounded-lg
+           focus:ring-2 focus:ring-teal-400 focus:ring-opacity-60 transition-all duration-150
+           bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100;
+    box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.15);
 }
 
 .input-field-error {
-    @apply border-red-500 focus:ring-red-400;
-    box-shadow: 0 0 8px 0 rgba(239, 68, 68, 0.3);
+    @apply border-hotpink-500 focus:ring-hotpink-400;
+    box-shadow: 0 0 8px 0 rgba(244, 63, 130, 0.3);
 }
 
 .field-error {
-    @apply text-red-500 text-sm mt-1;
+    @apply text-hotpink-500 dark:text-hotpink-400 text-sm mt-1;
 }
 
 .password-requirements {
-    @apply text-gray-500 text-xs mt-1;
+    @apply text-gray-500 dark:text-gray-400 text-xs mt-1;
 }
 
 .input-label {
-    @apply block font-medium text-teal-500;
+    @apply block font-medium text-teal-700 dark:text-teal-300;
 }
 
+/* ===== Inventory Controls ===== */
+
 .inventory-controller-button-normal {
-    @apply flex items-center justify-center px-3 bg-teal-300 text-white hover:bg-teal-400/30 active:bg-teal-500/30;
+    @apply flex items-center justify-center px-3 bg-teal-300 dark:bg-teal-600 text-white
+           hover:bg-teal-400/30 active:bg-teal-500/30 rounded-sm transition-colors;
 }
 
 .inventory-controller-button-foil {
-    @apply flex items-center justify-center px-3 text-white hover:bg-white/20 active:bg-white/30;
+    @apply flex items-center justify-center px-3 text-white
+           hover:bg-white/20 active:bg-white/30 rounded-sm transition-colors;
 }
+
+/* ===== Links ===== */
 
 .link {
-    @apply text-purple-600 hover:underline;
+    @apply text-purple-600 dark:text-purple-400 hover:underline;
 }
 
-.login-container {
-    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-md w-full mx-auto mt-10;
+.text-link {
+    @apply text-teal-600 dark:text-teal-400 hover:underline transition-colors;
 }
+
+/* ===== Logo ===== */
 
 .logo {
     @apply h-20 w-auto;
 }
 
+/* ===== Mana Cost ===== */
+
+.mana-cost {
+    @apply inline-flex items-center align-middle;
+}
+
+.mana-sep {
+    @apply text-gray-400 dark:text-gray-500 mx-0.5;
+}
+
+/* ===== Navbar ===== */
+
 .navbar-link {
-    @apply text-white hover:text-teal-100 px-3 py-2 rounded-md font-medium;
+    @apply text-white hover:text-teal-300 px-3 py-2 rounded-md font-medium transition-colors;
 }
 
 .navbar-link-mobile {
-    @apply text-white hover:text-teal-100 block px-3 py-2 rounded-md text-base font-medium;
+    @apply text-white hover:text-teal-300 hover:bg-purple-800 dark:hover:bg-midnight-700 block px-3 py-2 rounded-md text-base font-medium transition-colors;
 }
 
+/* ===== Page Titles ===== */
+
 .page-title {
-    @apply text-teal-900 text-2xl font-bold mb-4;
+    @apply font-display text-2xl font-bold mb-4
+           bg-gradient-to-r from-purple-700 via-teal-600 to-purple-700
+           dark:from-purple-400 dark:via-teal-400 dark:to-purple-400
+           bg-clip-text text-transparent;
 }
 
 .page-subtitle {
-    @apply text-teal-700 text-lg md:text-base lg:text-xl mb-6;
+    @apply text-gray-600 dark:text-gray-400 text-lg md:text-base lg:text-xl mb-6;
 }
+
+/* ===== Pagination ===== */
 
 .pagination-container {
     @apply flex flex-wrap items-center justify-center gap-2 mt-6 px-2 py-3 w-full sm:gap-3 sm:mt-8 md:gap-4 md:mt-10 lg:w-auto;
 }
 
 .pagination-btn {
-    @apply btn text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2;
+    @apply btn text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-full;
 }
 
 .pagination-btn-primary {
@@ -158,69 +226,80 @@
 }
 
 .pagination-btn-current {
-    @apply bg-teal-600 text-white font-bold border-2 border-teal-800 cursor-default pointer-events-none shadow-lg scale-110;
-    /* Extra emphasis: bold, strong border, shadow, slightly larger, not clickable */
+    @apply bg-teal-600 dark:bg-teal-500 text-white font-bold border-2 border-teal-800 dark:border-teal-300
+           cursor-default pointer-events-none shadow-glow-teal scale-110 rounded-full;
 }
 
 .pagination-btn-tertiary {
-    @apply btn-tertiary;
+    @apply bg-purple-100 dark:bg-midnight-700 text-purple-700 dark:text-purple-300
+           hover:bg-purple-200 dark:hover:bg-midnight-600;
 }
+
+/* ===== Prices ===== */
 
 .price-foil {
     @apply inline-block py-1 px-2 text-white font-medium bg-gradient-to-r from-purple-500 to-teal-400 rounded-md shadow-sm;
 }
 
 .price-normal {
-    @apply inline-block py-1 px-2 text-gray-800 font-medium;
+    @apply inline-block py-1 px-2 text-teal-800 dark:text-teal-300 font-medium bg-teal-50 dark:bg-teal-900/30 rounded-md;
 }
+
+/* ===== Quantity Forms ===== */
 
 .quantity-form {
     @apply text-sm md:text-base lg:text-lg;
 }
 
 .quantity-form-foil {
-    @apply inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8 bg-gradient-to-r from-purple-400 to-teal-300;
+    @apply inline-flex items-stretch border-none rounded-lg overflow-hidden m-1 h-8 bg-gradient-to-r from-purple-400 to-teal-300;
 }
 
 .quantity-form-normal {
-    @apply inline-flex items-stretch border-none rounded overflow-hidden m-1 h-8 bg-teal-300;
+    @apply inline-flex items-stretch border-none rounded-lg overflow-hidden m-1 h-8 bg-teal-300 dark:bg-teal-600;
 }
 
 .quantity-owned {
     @apply text-center border-none bg-transparent text-white px-0 text-sm sm:text-xs md:text-base lg:text-base w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16 focus:outline-none focus:ring-0;
 }
 
+/* ===== Response Messages ===== */
+
 .response-message {
-    @apply fixed top-4 right-4 text-white p-4 rounded shadow-lg cursor-pointer;
+    @apply fixed top-4 right-4 text-white p-4 rounded-lg shadow-lg cursor-pointer z-50;
 }
 
 .response-message-error {
-    @apply bg-red-500;
+    @apply bg-hotpink-500;
 }
 
 .response-message-info {
-    @apply bg-blue-500;
+    @apply bg-purple-500;
 }
 
 .response-message-success {
     @apply bg-teal-500;
 }
 
+/* ===== Sections ===== */
+
 .section-container {
-    @apply bg-white border-b border-teal-100 p-6 m-6;
+    @apply bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600 rounded-lg p-6 m-6;
 }
 
 .section-content {
-    @apply text-sm text-gray-600;
+    @apply text-sm text-gray-600 dark:text-gray-400;
 }
 
 .section-title {
-    @apply text-lg md:text-base lg:text-xl font-semibold mb-2;
+    @apply text-lg md:text-base lg:text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200;
 }
 
-.settings-container {
-    @apply bg-teal-100 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10;
+.subsection-container {
+    @apply mb-6 border-b border-gray-200 dark:border-midnight-600 pb-4;
 }
+
+/* ===== Sorting ===== */
 
 .sortable {
     @apply cursor-pointer select-none;
@@ -238,26 +317,48 @@
     @apply inline-block w-3 h-3 align-middle;
 }
 
-.subsection-container {
-    @apply mb-6 border-b border-gray-200;
-}
+/* ===== Tables ===== */
 
 .table-container {
-    @apply w-full bg-white;
+    @apply w-full bg-white dark:bg-midnight-800;
 }
 
 .table-header {
-    @apply border-b border-purple-300 py-2;
+    @apply border-b-2 border-teal-400 dark:border-teal-500 py-2 text-gray-700 dark:text-gray-300;
 }
 
 .table-header-row {
-    @apply bg-teal-200 text-left;
+    @apply bg-purple-100 dark:bg-midnight-700 text-left;
 }
 
 .table-link {
-    @apply text-blue-500 hover:underline;
+    @apply text-teal-600 dark:text-teal-400 hover:underline hover:text-teal-700 dark:hover:text-teal-300 transition-colors;
 }
 
 .table-row {
-    @apply bg-white even:bg-teal-100 border-b border-teal-300;
+    @apply bg-white dark:bg-midnight-800 even:bg-teal-50 dark:even:bg-midnight-900
+           border-b border-teal-200 dark:border-midnight-600
+           text-gray-800 dark:text-gray-200;
+}
+
+/* ===== Tags ===== */
+
+.tag {
+    @apply inline-flex items-center text-xs font-medium text-white bg-purple-500 dark:bg-purple-600
+           px-2 py-0.5 mx-0.5 rounded-full;
+}
+
+/* ===== Welcome Banner ===== */
+
+.welcome-banner {
+    @apply max-w-3xl mx-auto mt-4 p-4 rounded-lg bg-white dark:bg-midnight-800
+           border-l-4 border-teal-400 dark:border-teal-500 shadow-md;
+}
+
+.welcome-banner h2 {
+    @apply font-display font-bold text-lg text-teal-700 dark:text-teal-300 mb-1;
+}
+
+.welcome-banner p {
+    @apply text-gray-600 dark:text-gray-400 text-sm;
 }

@@ -284,7 +284,7 @@
 /* ===== Content Layout ===== */
 
 .content-wrapper {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8;
 }
 
 /* ===== Sections ===== */
@@ -330,7 +330,7 @@
 }
 
 .table-header {
-    @apply px-3 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500;
+    @apply px-1.5 py-2 sm:px-3 sm:py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500;
 }
 
 .table-header-row {
@@ -349,11 +349,11 @@
 }
 
 .table-wrapper {
-    @apply rounded-lg border border-gray-200 dark:border-midnight-600 shadow-sm overflow-hidden;
+    @apply rounded-lg border border-gray-200 dark:border-midnight-600 shadow-sm overflow-x-auto;
 }
 
 .table-cell {
-    @apply px-3 py-3;
+    @apply px-1.5 py-2 sm:px-3 sm:py-3;
 }
 
 /* ===== Tags ===== */

@@ -82,6 +82,10 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
+.dark .ss-common {
+    color: #d1d5db;
+}
+
 .mana-color-bar {
     display: flex;
     height: 4px;

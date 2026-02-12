@@ -7,7 +7,7 @@
         <p class="text-gray-700 dark:text-gray-300">All Cards: {{this.completionRate}}%</p>
         {{>completionRate}}
     </section>
-    <div class="w-full mx-auto px-2">
+    <div class="content-wrapper">
         <div class="flex items-center gap-2">
             <div class="flex-1">
                 {{>filter}}
@@ -22,31 +22,32 @@
         </div>
         <div id="filter-results">
             {{#if cards.length}}
+            <div class="table-wrapper">
             <table class="table-container w-full">
                 <thead>{{>tableHeadersRow}}</thead>
                 <tbody>
                     {{#each cards as |card|}}
                     <tr class="table-row">
-                        <td class="pl-2">{{>cardsOwned card=card}}</td>
-                        <td data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
+                        <td class="table-cell">{{>cardsOwned card=card}}</td>
+                        <td class="table-cell" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                             <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
                             {{>tags item=card}}
                             <a href="{{card.url}}" class="card-img-link">
                                 <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                             </a>
                         </td>
-                        <td>
+                        <td class="table-cell">
                             <a href="/sets/{{card.setCode}}" class="table-link">
                                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
                                 {{toUpperCase card.setCode}}
                             </a>
                         </td>
-                        <td>
+                        <td class="table-cell">
                             <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
                                 {{card.priceValue}}
                             </span>
                         </td>
-                        <td class="delete-inventory-entry pr-2 xs-hide">
+                        <td class="table-cell delete-inventory-entry xs-hide">
                             <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
                                 <input type="hidden" name="card-id" value="{{card.cardId}}" />
                                 <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
@@ -60,6 +61,7 @@
                     {{/each}}
                 </tbody>
             </table>
+            </div>
             {{else}}
             <div class="text-center py-16">
                 <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>

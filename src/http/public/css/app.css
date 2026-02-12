@@ -82,6 +82,33 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
+.mana-color-bar {
+    display: flex;
+    height: 4px;
+    max-width: 20rem;
+    margin: 0 auto 1.5rem;
+    border-radius: 2px;
+    overflow: hidden;
+}
+.mana-color-bar span {
+    flex: 1;
+}
+.mana-w {
+    background: #f9faf4;
+}
+.mana-u {
+    background: #0e68ab;
+}
+.mana-b {
+    background: #393b44;
+}
+.mana-r {
+    background: #d3202a;
+}
+.mana-g {
+    background: #00733e;
+}
+
 @media (max-width: 450px) {
     table,
     .table-container,

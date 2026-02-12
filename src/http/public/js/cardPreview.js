@@ -18,8 +18,8 @@
         const rect = cardNameLink.getBoundingClientRect();
         const imgWidth = imgLink.offsetWidth;
         const imgHeight = imgLink.offsetHeight;
-        imgLink.style.top = `${rect.top + window.scrollY - imgHeight}px`;
-        imgLink.style.left = `${rect.left + window.scrollX + imgWidth / 4}px`;
+        imgLink.style.top = `${rect.top - imgHeight}px`;
+        imgLink.style.left = `${rect.left + imgWidth / 4}px`;
     }
 
     function handleMouseOut(event) {

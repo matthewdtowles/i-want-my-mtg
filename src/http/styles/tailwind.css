@@ -41,7 +41,7 @@
 /* ===== Card Preview ===== */
 
 .card-img-link {
-    @apply absolute hidden z-50;
+    @apply fixed hidden z-50;
 }
 
 .card-img-preview {
@@ -49,7 +49,7 @@
 }
 
 .card-image {
-    @apply rounded-lg shadow-lg max-w-xs mx-auto;
+    @apply rounded-lg shadow-lg max-w-xs w-full mx-auto object-contain;
 }
 
 .card-name-link {
@@ -281,6 +281,12 @@
     @apply bg-teal-500;
 }
 
+/* ===== Content Layout ===== */
+
+.content-wrapper {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
 /* ===== Sections ===== */
 
 .section-container {
@@ -320,11 +326,11 @@
 /* ===== Tables ===== */
 
 .table-container {
-    @apply w-full bg-white dark:bg-midnight-800;
+    @apply w-full text-sm;
 }
 
 .table-header {
-    @apply border-b-2 border-teal-400 dark:border-teal-500 py-2 text-gray-700 dark:text-gray-300;
+    @apply px-3 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500;
 }
 
 .table-header-row {
@@ -336,9 +342,18 @@
 }
 
 .table-row {
-    @apply bg-white dark:bg-midnight-800 even:bg-teal-50 dark:even:bg-midnight-900
-           border-b border-teal-200 dark:border-midnight-600
-           text-gray-800 dark:text-gray-200;
+    @apply bg-white dark:bg-midnight-800 even:bg-gray-50 dark:even:bg-midnight-900
+           border-b border-gray-200 dark:border-midnight-600
+           text-gray-700 dark:text-gray-200
+           hover:bg-teal-50 dark:hover:bg-midnight-700 transition-colors;
+}
+
+.table-wrapper {
+    @apply rounded-lg border border-gray-200 dark:border-midnight-600 shadow-sm overflow-hidden;
+}
+
+.table-cell {
+    @apply px-3 py-3;
 }
 
 /* ===== Tags ===== */

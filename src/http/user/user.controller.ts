@@ -21,6 +21,7 @@ import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { CreateUserViewDto } from './dto/create-user.view.dto';
+import { UpdatePasswordRequestDto } from './dto/update-password.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserViewDto } from './dto/user.view.dto';
 import { VerificationResultDto } from './dto/verification-result.dto';
@@ -135,13 +136,13 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Patch('password')
     async updatePassword(
-        @Body('password') password: string,
+        @Body() dto: UpdatePasswordRequestDto,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResult<BaseViewDto>> {
         try {
             this.LOGGER.log(`Update password for user ${req?.user?.id}.`);
             const responseData: BaseViewDto = await this.userOrchestrator.updatePassword(
-                password,
+                dto.password,
                 req
             );
             this.LOGGER.log(`Update password success for user ${req?.user?.id}.`);

@@ -59,14 +59,27 @@ async function bootstrap() {
 
 function makeUserFriendly(message: string): string {
     console.error(`Validation error: ${message}`);
-    message = message?.toLowerCase();
-    if (message.includes('email')) return 'Please provide a valid email address';
-    if (message.includes('empty')) return 'This field is required';
-    if (message.includes('length')) return 'Name must be at least 6 characters';
-    if (message.includes('password'))
+    if (isCustomMessage(message)) return message;
+    const lower = message?.toLowerCase();
+    if (lower.includes('email')) return 'Please provide a valid email address';
+    if (lower.includes('empty')) return 'This field is required';
+    if (lower.includes('length')) return 'Name must be at least 6 characters';
+    if (lower.includes('password'))
         return 'Password must contain uppercase, lowercase, number and special character';
-    if (message.includes('string')) return 'Please provide valid text';
-    return message?.charAt(0).toUpperCase() + message?.slice(1) || 'An error occurred';
+    if (lower.includes('string')) return 'Please provide valid text';
+    return lower?.charAt(0).toUpperCase() + lower?.slice(1) || 'An error occurred';
+}
+
+function isCustomMessage(message: string): boolean {
+    if (!message) return false;
+    return (
+        message.includes('must be') ||
+        message.includes('may only') ||
+        message.startsWith('Please') ||
+        message.startsWith('Password') ||
+        message.startsWith('Username') ||
+        message.startsWith('Email')
+    );
 }
 
 bootstrap();

@@ -2645,11 +2645,6 @@ select {
     color: rgb(83 43 100 / var(--tw-text-opacity, 1));
 }
 
-.text-red-500 {
-    --tw-text-opacity: 1;
-    color: rgb(239 68 68 / var(--tw-text-opacity, 1));
-}
-
 .text-teal-500 {
     --tw-text-opacity: 1;
     color: rgb(40 173 168 / var(--tw-text-opacity, 1));
@@ -2700,6 +2695,13 @@ select {
 
 .outline {
     outline-style: solid;
+}
+
+.blur {
+    --tw-blur: blur(8px);
+    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale)
+        var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia)
+        var(--tw-drop-shadow);
 }
 
 .invert {
@@ -2985,6 +2987,36 @@ select {
 
 .input-field {
     box-shadow: 0 0 8px 0 rgba(44, 200, 202, 0.3);
+}
+
+.input-field-error {
+    --tw-border-opacity: 1;
+    border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));
+}
+
+.input-field-error:focus {
+    --tw-ring-opacity: 1;
+    --tw-ring-color: rgb(248 113 113 / var(--tw-ring-opacity, 1));
+}
+
+.input-field-error {
+    box-shadow: 0 0 8px 0 rgba(239, 68, 68, 0.3);
+}
+
+.field-error {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    --tw-text-opacity: 1;
+    color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+
+.password-requirements {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
 .input-label {

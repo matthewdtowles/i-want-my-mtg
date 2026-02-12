@@ -1,9 +1,6 @@
 import { IsNotEmpty, IsStrongPassword, MaxLength } from 'class-validator';
 
-export class ResetPasswordRequestDto {
-    @IsNotEmpty()
-    readonly token: string;
-
+export class UpdatePasswordRequestDto {
     @IsNotEmpty({ message: 'Password is required' })
     @IsStrongPassword(
         {},
@@ -14,7 +11,4 @@ export class ResetPasswordRequestDto {
     )
     @MaxLength(128, { message: 'Password must be at most 128 characters' })
     readonly password: string;
-
-    @IsNotEmpty()
-    readonly confirmPassword: string;
 }

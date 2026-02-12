@@ -1,11 +1,10 @@
 <div class="login-container">
     <h3 class="page-title">User Login</h3>
-    {{!-- TODO: impl js input validation to update this with feedback on user input --}}
     <p class="page-subtitle">Please login to access your account</p>
-    <form id="login-form" class="mt-6" method="post">
+    <form id="login-form" class="mt-6" method="post" novalidate>
         <div class="mb-4">
             <label class="input-label" for="user-email">Email</label>
-            <input id="user-email" class="input-field" type="email" name="email" value="{{this.email}}" required/>
+            <input id="user-email" class="input-field" type="email" name="email" value="{{this.email}}" required maxlength="255" />
         </div>
         <div class="mb-6">
             <label class="input-label" for="user-password">Password</label>
@@ -19,3 +18,25 @@
         </a>
     </div>
 </div>
+<script src="/public/js/form-validation.js"></script>
+<script>
+    (function () {
+        var FV = window.FormValidator;
+        var emailEl = document.getElementById('user-email');
+
+        FV.attachBlurValidation(emailEl, FV.validateEmail);
+
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            var valid = true;
+            if (!FV.validateField(emailEl, FV.validateEmail)) valid = false;
+            var passwordEl = document.getElementById('user-password');
+            if (!passwordEl.value) {
+                FV.showFieldError(passwordEl, 'Password is required');
+                valid = false;
+            } else {
+                FV.clearFieldError(passwordEl);
+            }
+            if (!valid) e.preventDefault();
+        });
+    })();
+</script>

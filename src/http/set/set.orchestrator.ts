@@ -92,14 +92,19 @@ export class SetOrchestrator {
 
             const forceShowAll = set.baseSize === 0;
             const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
+            const hasFilter = !!effectiveOptions.filter;
 
             const [cards, currentCount, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
-                this.setService.totalCardsInSet(setCode, effectiveOptions),
-                this.setService.totalCardsInSet(
-                    setCode,
-                    effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
-                ),
+                hasFilter
+                    ? this.cardService.totalInSet(setCode, effectiveOptions)
+                    : Promise.resolve(effectiveOptions.baseOnly ? set.baseSize : set.totalSize),
+                hasFilter
+                    ? this.cardService.totalInSet(
+                          setCode,
+                          effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
+                      )
+                    : Promise.resolve(effectiveOptions.baseOnly ? set.totalSize : set.baseSize),
             ]);
 
             const toggleConfig = buildToggleConfig(
@@ -158,7 +163,12 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.setService.totalCardsInSet(setCode, options);
+            let totalCards: number;
+            if (options.filter) {
+                totalCards = await this.cardService.totalInSet(setCode, options);
+            } else {
+                totalCards = await this.setService.totalCardsInSet(setCode, options);
+            }
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;

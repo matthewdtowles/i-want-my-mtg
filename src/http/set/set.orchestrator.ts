@@ -94,13 +94,11 @@ export class SetOrchestrator {
             const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
             const hasFilter = !!effectiveOptions.filter;
 
-            const currentCount = hasFilter
-                ? await this.cardService.totalInSet(setCode, effectiveOptions)
-                : effectiveOptions.baseOnly
-                  ? set.baseSize
-                  : set.totalSize;
-            const [cards, targetCount] = await Promise.all([
+            const [cards, currentCount, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
+                hasFilter
+                    ? this.cardService.totalInSet(setCode, effectiveOptions)
+                    : Promise.resolve(effectiveOptions.baseOnly ? set.baseSize : set.totalSize),
                 hasFilter
                     ? this.cardService.totalInSet(
                           setCode,

@@ -325,6 +325,78 @@ describe('SetOrchestrator', () => {
         });
     });
 
+    describe('getLastCardPage', () => {
+        it('uses set baseSize when no filter and baseOnly is true', async () => {
+            const options = new SafeQueryOptions({ page: '1', limit: '10' });
+            setService.findByCode.mockResolvedValue({
+                ...mockSet,
+                baseSize: 45,
+                totalSize: 80,
+            });
+
+            const result = await orchestrator.getLastCardPage('TST', options);
+
+            expect(result).toBe(5); // ceil(45 / 10)
+            expect(setService.findByCode).toHaveBeenCalledWith('TST');
+            expect(cardService.totalInSet).not.toHaveBeenCalled();
+        });
+
+        it('uses set totalSize when no filter and baseOnly is false', async () => {
+            const options = new SafeQueryOptions({
+                page: '1',
+                limit: '10',
+                baseOnly: 'false',
+            });
+            setService.findByCode.mockResolvedValue({
+                ...mockSet,
+                baseSize: 45,
+                totalSize: 80,
+            });
+
+            const result = await orchestrator.getLastCardPage('TST', options);
+
+            expect(result).toBe(8); // ceil(80 / 10)
+            expect(cardService.totalInSet).not.toHaveBeenCalled();
+        });
+
+        it('uses cardService.totalInSet when filter is applied', async () => {
+            const options = new SafeQueryOptions({
+                page: '1',
+                limit: '10',
+                filter: 'dragon',
+            });
+            cardService.totalInSet.mockResolvedValue(23);
+
+            const result = await orchestrator.getLastCardPage('TST', options);
+
+            expect(result).toBe(3); // ceil(23 / 10)
+            expect(cardService.totalInSet).toHaveBeenCalledWith('TST', options);
+            expect(setService.findByCode).not.toHaveBeenCalled();
+        });
+
+        it('returns 1 when set sizes are zero and no filter', async () => {
+            const options = new SafeQueryOptions({ page: '1', limit: '10' });
+            setService.findByCode.mockResolvedValue({
+                ...mockSet,
+                baseSize: 0,
+                totalSize: 0,
+            });
+
+            const result = await orchestrator.getLastCardPage('TST', options);
+
+            expect(result).toBe(1); // max(1, ceil(0 / 10))
+        });
+
+        it('returns 1 when set is not found and no filter', async () => {
+            const options = new SafeQueryOptions({ page: '1', limit: '10' });
+            setService.findByCode.mockResolvedValue(null);
+
+            const result = await orchestrator.getLastCardPage('TST', options);
+
+            expect(result).toBe(1); // fallback via ?? 0
+        });
+    });
+
     describe('createSetPriceDto - Price filtering and defaultPrice selection', () => {
         it('should handle all prices as zero', () => {
             const prices = createMockSetPrice({

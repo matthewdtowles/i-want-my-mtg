@@ -31,6 +31,7 @@ export class CreateUserRequestDto {
                 'Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character',
         }
     )
+    @MinLength(8, { message: 'Password must be at least 8 characters' })
     @MaxLength(128, { message: 'Password must be at most 128 characters' })
     readonly password: string;
 }

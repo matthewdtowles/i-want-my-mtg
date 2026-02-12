@@ -186,7 +186,7 @@
         {{! End Set Price Info }}
         {{#if (gt set.prices.gridCols 1)}}
         <button type="button" id="price-info-toggle"
-            class="inline-flex items-center space-x-2 px-3 py-1.5 btn btn-primary text-sm mt-2"
+            class="btn btn-primary !inline-flex items-center space-x-2 px-3 py-1.5 text-sm mt-2"
             aria-label="View detailed set prices">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -207,8 +207,7 @@
         {{#if baseOnlyToggle.visible}}
         <a href="{{baseOnlyToggle.url}}"
            class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                  whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
-           style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                  whitespace-nowrap h-[42px] !inline-flex items-center justify-center flex-shrink-0 mb-4">
             {{baseOnlyToggle.text}}
         </a>
         {{/if}}

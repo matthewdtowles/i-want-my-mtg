@@ -256,8 +256,11 @@
             </tbody>
         </table>
         {{else}}
-        <div class="text-center py-8 text-gray-500">
-            No cards found matching your filter.
+        <div class="text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+            <p class="text-lg text-gray-600 font-medium mt-4">No cards match your search</p>
+            <p class="text-gray-400 mt-2">Try a different search term or clear your filter.</p>
+            <a href="/sets/{{set.code}}" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
         </div>
         {{/if}}
     </div>

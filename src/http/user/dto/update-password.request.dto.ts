@@ -6,7 +6,7 @@ export class UpdatePasswordRequestDto {
         {},
         {
             message:
-                'Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character',
+                'Password must be at least 8 characters and contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character',
         }
     )
     @MaxLength(128, { message: 'Password must be at most 128 characters' })

@@ -326,32 +326,24 @@ describe('SetOrchestrator', () => {
     });
 
     describe('getLastCardPage', () => {
-        it('uses set baseSize when no filter and baseOnly is true', async () => {
+        it('uses totalCardsInSet when no filter and baseOnly is true', async () => {
             const options = new SafeQueryOptions({ page: '1', limit: '10' });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 45,
-                totalSize: 80,
-            });
+            setService.totalCardsInSet.mockResolvedValue(45);
 
             const result = await orchestrator.getLastCardPage('TST', options);
 
             expect(result).toBe(5); // ceil(45 / 10)
-            expect(setService.findByCode).toHaveBeenCalledWith('TST');
+            expect(setService.totalCardsInSet).toHaveBeenCalledWith('TST', options);
             expect(cardService.totalInSet).not.toHaveBeenCalled();
         });
 
-        it('uses set totalSize when no filter and baseOnly is false', async () => {
+        it('uses totalCardsInSet when no filter and baseOnly is false', async () => {
             const options = new SafeQueryOptions({
                 page: '1',
                 limit: '10',
                 baseOnly: 'false',
             });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 45,
-                totalSize: 80,
-            });
+            setService.totalCardsInSet.mockResolvedValue(80);
 
             const result = await orchestrator.getLastCardPage('TST', options);
 
@@ -374,26 +366,13 @@ describe('SetOrchestrator', () => {
             expect(setService.findByCode).not.toHaveBeenCalled();
         });
 
-        it('returns 1 when set sizes are zero and no filter', async () => {
+        it('returns 1 when totalCardsInSet is zero and no filter', async () => {
             const options = new SafeQueryOptions({ page: '1', limit: '10' });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 0,
-                totalSize: 0,
-            });
+            setService.totalCardsInSet.mockResolvedValue(0);
 
             const result = await orchestrator.getLastCardPage('TST', options);
 
             expect(result).toBe(1); // max(1, ceil(0 / 10))
-        });
-
-        it('returns 1 when set is not found and no filter', async () => {
-            const options = new SafeQueryOptions({ page: '1', limit: '10' });
-            setService.findByCode.mockResolvedValue(null);
-
-            const result = await orchestrator.getLastCardPage('TST', options);
-
-            expect(result).toBe(1); // fallback via ?? 0
         });
     });
 

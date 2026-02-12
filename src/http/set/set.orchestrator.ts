@@ -167,8 +167,7 @@ export class SetOrchestrator {
             if (options.filter) {
                 totalCards = await this.cardService.totalInSet(setCode, options);
             } else {
-                const set = await this.setService.findByCode(setCode);
-                totalCards = options.baseOnly ? (set?.baseSize ?? 0) : (set?.totalSize ?? 0);
+                totalCards = await this.setService.totalCardsInSet(setCode, options);
             }
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);

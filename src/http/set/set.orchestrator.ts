@@ -92,14 +92,21 @@ export class SetOrchestrator {
 
             const forceShowAll = set.baseSize === 0;
             const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
+            const hasFilter = !!effectiveOptions.filter;
 
-            const [cards, currentCount, targetCount] = await Promise.all([
+            const currentCount = hasFilter
+                ? await this.cardService.totalInSet(setCode, effectiveOptions)
+                : effectiveOptions.baseOnly
+                  ? set.baseSize
+                  : set.totalSize;
+            const [cards, targetCount] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
-                this.cardService.totalInSet(setCode, effectiveOptions),
-                this.cardService.totalInSet(
-                    setCode,
-                    effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
-                ),
+                hasFilter
+                    ? this.cardService.totalInSet(
+                          setCode,
+                          effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
+                      )
+                    : Promise.resolve(effectiveOptions.baseOnly ? set.totalSize : set.baseSize),
             ]);
 
             const toggleConfig = buildToggleConfig(
@@ -158,7 +165,13 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
-            const totalCards = await this.cardService.totalInSet(setCode, options);
+            let totalCards: number;
+            if (options.filter) {
+                totalCards = await this.cardService.totalInSet(setCode, options);
+            } else {
+                const set = await this.setService.findByCode(setCode);
+                totalCards = options.baseOnly ? (set?.baseSize ?? 0) : (set?.totalSize ?? 0);
+            }
             const lastPage = Math.max(1, Math.ceil(totalCards / options.limit));
             this.LOGGER.debug(`Last page for cards in set ${setCode} is ${lastPage}.`);
             return lastPage;

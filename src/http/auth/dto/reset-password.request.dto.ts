@@ -4,6 +4,7 @@ export class ResetPasswordRequestDto {
     @IsNotEmpty()
     readonly token: string;
 
+    @IsNotEmpty({ message: 'Password is required' })
     @IsStrongPassword(
         {},
         {

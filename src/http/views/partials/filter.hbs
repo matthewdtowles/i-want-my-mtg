@@ -1,8 +1,7 @@
 <form id="filter-form" method="get" action="{{filter.baseUrl}}" class="mb-4">
     <div class="relative w-full flex items-center">
         <!-- Search Icon -->
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500 pointer-events-none">
-            <!-- Heroicons solid search icon SVG -->
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500 dark:text-teal-400 pointer-events-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
@@ -12,8 +11,8 @@
         </span>
         <input type="text" id="filter" name="filter" value="{{filter.searchTerm}}" placeholder="{{filter.placeholder}}"
             autocomplete="off" class="filter-input" />
-        <button type="button" id="clear-filter-btn" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-1 bg-white transition-colors duration-150
-                   text-gray-400 hover:text-teal-600 focus:outline-none"
+        <button type="button" id="clear-filter-btn" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-1 bg-white dark:bg-midnight-800 transition-colors duration-150
+                   text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none"
             style="display: {{#if filter.searchTerm}}inline{{else}}none{{/if}};" aria-label="Clear filter">&#10005;</button>
     </div>
     <input type="hidden" name="page" value="{{filter.page}}" />

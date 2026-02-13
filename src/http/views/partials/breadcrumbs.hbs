@@ -2,10 +2,10 @@
     <div class="breadcrumb">
         {{#each breadcrumbs}}
         {{#if @last}}
-        <span class="breadcrumb-item active" aria-current="page">{{label}}</span>
+        <span class="breadcrumb-item active text-gray-800 dark:text-gray-200 font-medium" aria-current="page">{{label}}</span>
         {{else}}
         <span class="breadcrumb-item">
-            <a class="link" href="{{url}}">{{label}}</a><span> / </span>
+            <a class="link" href="{{url}}">{{label}}</a><span class="text-teal-400 dark:text-teal-500 mx-1">&rsaquo;</span>
         </span>
         {{/if}}
         {{/each}}

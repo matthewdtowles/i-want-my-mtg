@@ -1,52 +1,53 @@
-<section class="border border-teal-100 sm:m-0 md:m-4">
-    <section class="text-center bg-teal-100 mb-4">
+{{#if hasInventory}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
         <h3 class="page-title">{{this.username}}'s Inventory</h3>
-        <p>Value: {{this.ownedValue}}</p>
-        <p>Total Cards: {{this.ownedTotal}}</p>
-        <p>All Cards: {{this.completionRate}}%</p>
+        <p class="text-gray-700 dark:text-gray-300">Value: {{this.ownedValue}}</p>
+        <p class="text-gray-700 dark:text-gray-300">Total Cards: {{this.ownedTotal}}</p>
+        <p class="text-gray-700 dark:text-gray-300">All Cards: {{this.completionRate}}%</p>
         {{>completionRate}}
     </section>
-    <div class="w-full mx-auto">
+    <div class="content-wrapper">
         <div class="flex items-center gap-2">
             <div class="flex-1">
                 {{>filter}}
             </div>
             {{#if baseOnlyToggle.visible}}
-            <a href="{{baseOnlyToggle.url}}" 
+            <a href="{{baseOnlyToggle.url}}"
                class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
-               style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4">
                 {{baseOnlyToggle.text}}
             </a>
             {{/if}}
         </div>
         <div id="filter-results">
             {{#if cards.length}}
+            <div class="table-wrapper">
             <table class="table-container w-full">
                 <thead>{{>tableHeadersRow}}</thead>
                 <tbody>
                     {{#each cards as |card|}}
                     <tr class="table-row">
-                        <td class="pl-2">{{>cardsOwned card=card}}</td>
-                        <td data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
+                        <td class="table-cell">{{>cardsOwned card=card}}</td>
+                        <td class="table-cell" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
                             <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
                             {{>tags item=card}}
                             <a href="{{card.url}}" class="card-img-link">
                                 <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
                             </a>
                         </td>
-                        <td>
-                            <a href="/sets/{{card.setCode}}">
+                        <td class="table-cell">
+                            <a href="/sets/{{card.setCode}}" class="table-link">
                                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
                                 {{toUpperCase card.setCode}}
                             </a>
                         </td>
-                        <td>
+                        <td class="table-cell">
                             <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">
                                 {{card.priceValue}}
                             </span>
                         </td>
-                        <td class="delete-inventory-entry pr-2 xs-hide">
+                        <td class="table-cell delete-inventory-entry xs-hide">
                             <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
                                 <input type="hidden" name="card-id" value="{{card.cardId}}" />
                                 <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
@@ -60,9 +61,13 @@
                     {{/each}}
                 </tbody>
             </table>
+            </div>
             {{else}}
-            <div class="text-center py-8 text-gray-500">
-                No inventory items found matching your filter.
+            <div class="text-center py-16">
+                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your current filters</p>
+                <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>
+                <a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>
             </div>
             {{/if}}
         </div>
@@ -70,6 +75,17 @@
 </section>
 
 {{>pagination hasItems=this.cards.length}}
+
+{{else}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <div class="text-center py-16 px-4">
+        <i class="fas fa-box-open text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">{{this.username}}'s collection is empty</h3>
+        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Browse sets to find cards and start tracking your collection.</p>
+        <a href="/sets" class="btn btn-primary mt-6 inline-block">Browse Sets</a>
+    </div>
+</section>
+{{/if}}
 
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>

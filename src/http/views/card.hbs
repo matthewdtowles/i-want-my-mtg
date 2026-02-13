@@ -1,5 +1,5 @@
 <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
-<div class="w-full mx-auto">
+<div class="content-wrapper">
     <section class="card-info flex flex-col md:flex-row section-container">
 
         <section class="md:w-1/3 mb-4 md:mb-6">
@@ -16,7 +16,7 @@
                 </div>
                 <div class="flex items-center mb-2">
                     <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-2x mr-2"></i>
-                    <span class="text-lg font-medium">{{toUpperCase card.setCode}} {{card.setName}}</span>
+                    <span class="text-lg font-medium text-gray-700 dark:text-gray-300">{{toUpperCase card.setCode}} {{card.setName}}</span>
                 </div>
             </h3>
 
@@ -24,7 +24,9 @@
                 <section class="subsection-container">
                     <h3 class="section-title">Oracle Text</h3>
                     <p class="card-type section-content">{{card.type}}</p>
-                    <p class="card-oracle-text section-content">{{card.oracleText}}</p>
+                    <div class="prose dark:prose-invert max-w-none">
+                        <p class="card-oracle-text section-content">{{card.oracleText}}</p>
+                    </div>
                 </section>
                 <p class="card-rarity section-content">{{capitalize card.rarity}}</p>
                 <p class="card-number section-content">#{{card.number}}</p>
@@ -36,8 +38,18 @@
                 <table class="list-disc list-inside section-content w-full">
                     {{#each card.legalities as |legality|}}
                     <tr>
-                        <td class="w-1/2">{{capitalize legality.format}}</td>
-                        <td class="w-1/2">{{capitalize legality.status}}</td>
+                        <td class="w-1/2 py-1">{{capitalize legality.format}}</td>
+                        <td class="w-1/2 py-1">
+                            {{#if (eq legality.status 'legal')}}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">{{capitalize legality.status}}</span>
+                            {{else if (eq legality.status 'banned')}}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">{{capitalize legality.status}}</span>
+                            {{else if (eq legality.status 'restricted')}}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">{{capitalize legality.status}}</span>
+                            {{else}}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{capitalize legality.status}}</span>
+                            {{/if}}
+                        </td>
                     </tr>
                     {{/each}}
                 </table>
@@ -72,6 +84,7 @@
     {{#if otherPrintings.length}}
     <section class="section-container">
         <h3 class="section-title">Other Printings</h3>
+        <div class="table-wrapper">
         <table class="table-container">
             <thead>
                 {{>tableHeadersRow}}
@@ -79,8 +92,8 @@
             <tbody>
                 {{#each otherPrintings as |p|}}
                 <tr class="table-row">
-                    <td class="set-icon pl-2 py-2"><i class="ss ss-{{p.setCode}}"></i></td>
-                    <td data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}" class="py-2">
+                    <td class="table-cell set-icon"><i class="ss ss-{{p.setCode}}"></i></td>
+                    <td data-id="{{p.cardId}}" data-img-src="{{p.imgSrc}}" class="table-cell">
                         <a href="{{p.url}}" class="card-name-link">{{p.name}}</a>
                         <a href="{{p.url}}" class="card-img-link">
                             <img src="{{p.imgSrc}}" alt="{{p.name}}" class="card-img-preview" />
@@ -88,12 +101,12 @@
                         {{>tags item=p}}
                         <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
                     </td>
-                    <td class="py-2">
+                    <td class="table-cell">
                         {{#if p.hasNormal}}
                         <span class="price-normal">{{p.normalPrice}}</span>
                         {{/if}}
                     </td>
-                    <td class="py-2 pr-2">
+                    <td class="table-cell">
                         {{#if p.hasFoil}}
                         <span class="price-foil">{{p.foilPrice}}</span>
                         <span class="foil-badge xs-hide">Foil</span>
@@ -103,6 +116,7 @@
                 {{/each}}
             </tbody>
         </table>
+        </div>
         {{#if (gt pagination.totalPages 1)}}
         {{>pagination hasItems=otherPrintings.length}}
         {{/if}}

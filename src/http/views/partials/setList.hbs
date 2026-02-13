@@ -1,11 +1,11 @@
-<div class="w-full mx-auto">
+<div class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1">
             {{>filter}}
         </div>
         {{#if baseOnlyToggle.visible}}
-        <a href="{{baseOnlyToggle.url}}" 
-           class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}} 
+        <a href="{{baseOnlyToggle.url}}"
+           class="btn {{#if baseOnlyToggle.isBaseOnly}}btn-secondary{{else}}btn-primary{{/if}}
                   whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0
                   mb-4">
             {{baseOnlyToggle.text}}
@@ -14,28 +14,33 @@
     </div>
     <div id="filter-results">
         {{#if setList.length}}
-        <table class="min-w-full bg-white">
+        <div class="table-wrapper">
+        <table class="min-w-full table-container">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each setList}}
                 <tr class="table-row">
-                    <td class="py-2 pl-2">
+                    <td class="table-cell">
                         <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
                         <a href="{{this.url}}" class="table-link">{{this.name}}</a>
                         {{>tags item=this}}
                     </td>
-                    <td class="py-2">{{this.prices.defaultPrice}}</td>
+                    <td class="table-cell">{{this.prices.defaultPrice}}</td>
                     {{#if ../authenticated}}
-                    <td class="py-2">{{>completionRate}}</td>
+                    <td class="table-cell">{{>completionRate}}</td>
                     {{/if}}
-                    <td class="py-2 pr-2 xs-hide">{{this.releaseDate}}</td>
+                    <td class="table-cell xs-hide">{{this.releaseDate}}</td>
                 </tr>
                 {{/each}}
             </tbody>
         </table>
+        </div>
         {{else}}
-        <div class="text-center py-8 text-gray-500">
-            No sets found matching your filter.
+        <div class="text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No sets match your search</p>
+            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
+            <a href="/sets" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
         </div>
         {{/if}}
     </div>

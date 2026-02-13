@@ -1,20 +1,20 @@
 <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
 <div id="set-header-container" class="relative">
-    <section class="text-center bg-teal-100 mb-4 pb-4">
-        <h3 class="page-title flex items-center justify-center space-x-2">
-            <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
-            <span>{{set.name}}</span>
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 pb-4 rounded-b-lg">
+        <h3 class="page-title pt-4">
+            <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
+            <span class="align-middle">{{set.name}}</span>
             {{>tags item=set}}
         </h3>
         <ul class="mt-4 space-y-2">
-            <li class="text-gray-700">Block: {{set.block}}</li>
-            <li class="text-gray-700">Code: {{toUpperCase set.code}}</li>
-            <li class="text-gray-700">Release Date: {{set.releaseDate}}</li>
-            <li class="text-gray-700">Set Price: {{set.prices.defaultPrice}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Block: {{set.block}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Code: {{toUpperCase set.code}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Release Date: {{set.releaseDate}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Set Price: {{set.prices.defaultPrice}}</li>
             {{#if authenticated}}
-            <li class="text-gray-700">Total Owned: {{set.ownedTotal}}/{{set.effectiveSize}}</li>
-            <li class="text-gray-700">Owned Value: {{set.ownedValue}}</li>
-            <li class="text-gray-700">{{>completionRate set}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Total Owned: {{set.ownedTotal}}/{{set.effectiveSize}}</li>
+            <li class="text-gray-700 dark:text-gray-300">Owned Value: {{set.ownedValue}}</li>
+            <li class="text-gray-700 dark:text-gray-300">{{>completionRate set}}</li>
             {{/if}}
         </ul>
 
@@ -22,9 +22,9 @@
         <div id="price-info-popover" class="absolute hidden left-4 right-4 top-full mt-2 z-50" role="dialog"
             aria-modal="false" aria-labelledby="popover-title">
             <div id="popover-content"
-                class="bg-white rounded-lg shadow-2xl border-2 border-teal-500 overflow-hidden max-h-[70vh] overflow-y-auto mx-auto max-w-6xl">
+                class="bg-white dark:bg-midnight-800 rounded-lg shadow-2xl border-2 border-teal-500 dark:border-teal-400 overflow-hidden max-h-[70vh] overflow-y-auto mx-auto max-w-6xl">
                 {{! Header }}
-                <div class="bg-teal-500 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+                <div class="bg-teal-500 dark:bg-teal-600 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
                     <h3 id="popover-title" class="text-lg md:text-xl font-bold flex items-center space-x-2">
                         <i class="ss ss-{{set.keyruneCode}} ss-2x"></i>
                         <span>{{set.name}} Prices</span>
@@ -42,7 +42,7 @@
                 {{! Content }}
                 <div class="p-4 md:p-6">
                     <div
-                        class="mb-4 text-xs md:text-sm text-gray-700 bg-teal-50 border-l-4 border-teal-400 p-3 rounded">
+                        class="mb-4 text-xs md:text-sm text-gray-700 dark:text-gray-300 bg-teal-50 dark:bg-teal-900/20 border-l-4 border-teal-400 p-3 rounded">
                         {{#if (eq set.baseSize set.totalSize)}}
                         <p><strong>{{set.baseSize}}</strong> total cards</p>
                         {{else}}
@@ -55,9 +55,9 @@
                         </p>
                         {{/if}}
                     </div>
-                    {{! Price Grid - responsive: vertical on mobile, 2 cols on tablet, 4 cols on desktop }}
-                    <div class="grid grid-cols-1 
-                        {{#if (gt set.prices.gridcols 1)}}
+                    {{! Price Grid }}
+                    <div class="grid grid-cols-1
+                        {{#if (gt set.prices.gridCols 1)}}
                         sm:grid-cols-2
                         {{else}}
                         sm:grid-cols-1
@@ -78,7 +78,7 @@
                         {{! Base Set - Normal }}
                         {{#if set.prices.basePriceNormal}}
                         <div
-                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-white hover:shadow-md transition-shadow relative">
+                            class="border border-teal-300 dark:border-teal-600 rounded-lg p-3 md:p-4 bg-white dark:bg-midnight-800 hover:shadow-md dark:hover:shadow-glow-teal transition-shadow relative">
                             {{>priceInfoTooltip
                             title="Base Set"
                             type="base-normal"
@@ -87,21 +87,21 @@
                             iconColor="teal"
                             }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">
+                                <h4 class="font-semibold text-teal-700 dark:text-teal-300 text-xs md:text-sm uppercase tracking-wide">
                                     Base Set
                                 </h4>
                             </div>
-                            <div class="text-2xl md:text-3xl font-bold text-gray-900 font-mono">
+                            <div class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 font-mono">
                                 {{set.prices.basePriceNormal}}
                             </div>
-                            <div class="text-xs text-gray-600 mt-2">{{set.baseSize}} cards</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400 mt-2">{{set.baseSize}} cards</div>
                         </div>
                         {{/if}}
 
                         {{! Base Set - With Foils }}
                         {{#if set.prices.basePriceAll}}
                         <div
-                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow relative">
+                            class="border border-purple-300 dark:border-purple-600 rounded-lg p-3 md:p-4 bg-purple-50 dark:bg-purple-950/30 hover:shadow-md dark:hover:shadow-glow-purple transition-shadow relative">
                             {{>priceInfoTooltip
                             title="Base Set + Foils"
                             type="base-foil"
@@ -110,18 +110,18 @@
                             iconColor="purple"
                             }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">
+                                <h4 class="font-semibold text-purple-700 dark:text-purple-300 text-xs md:text-sm uppercase tracking-wide">
                                     Base Set
                                     <span
-                                        class="text-xs bg-purple-200 text-purple-800 px-1 py-1/2 rounded mt-1 inline-block self-start">
+                                        class="text-xs bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 px-1 py-0.5 rounded mt-1 inline-block self-start">
                                         + Foils
                                     </span>
                                 </h4>
                             </div>
-                            <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
+                            <div class="text-2xl md:text-3xl font-bold text-purple-900 dark:text-purple-200 font-mono">
                                 {{set.prices.basePriceAll}}
                             </div>
-                            <div class="text-xs text-purple-700 mt-2">
+                            <div class="text-xs text-purple-700 dark:text-purple-400 mt-2">
                                 {{set.baseSize}} cards (normal + foil variants)
                             </div>
                         </div>
@@ -130,7 +130,7 @@
                         {{! All Cards - Normal }}
                         {{#if set.prices.totalPriceNormal}}
                         <div
-                            class="border border-teal-300 rounded-lg p-3 md:p-4 bg-teal-50 hover:shadow-md transition-shadow relative">
+                            class="border border-teal-300 dark:border-teal-600 rounded-lg p-3 md:p-4 bg-teal-50 dark:bg-teal-900/20 hover:shadow-md dark:hover:shadow-glow-teal transition-shadow relative">
                             {{>priceInfoTooltip
                             title="All Cards"
                             type="total-normal"
@@ -139,21 +139,21 @@
                             iconColor="teal"
                             }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-teal-700 text-xs md:text-sm uppercase tracking-wide">
+                                <h4 class="font-semibold text-teal-700 dark:text-teal-300 text-xs md:text-sm uppercase tracking-wide">
                                     All Cards
                                 </h4>
                             </div>
-                            <div class="text-2xl md:text-3xl font-bold text-teal-900 font-mono">
+                            <div class="text-2xl md:text-3xl font-bold text-teal-900 dark:text-teal-200 font-mono">
                                 {{set.prices.totalPriceNormal}}
                             </div>
-                            <div class="text-xs text-teal-700 mt-2">{{set.totalSize}} cards</div>
+                            <div class="text-xs text-teal-700 dark:text-teal-400 mt-2">{{set.totalSize}} cards</div>
                         </div>
                         {{/if}}
 
                         {{! All Cards - With Foils }}
                         {{#if set.prices.totalPriceAll}}
                         <div
-                            class="border border-purple-300 rounded-lg p-3 md:p-4 bg-purple-50 hover:shadow-md transition-shadow relative">
+                            class="border border-purple-300 dark:border-purple-600 rounded-lg p-3 md:p-4 bg-purple-50 dark:bg-purple-950/30 hover:shadow-md dark:hover:shadow-glow-purple transition-shadow relative">
                             {{>priceInfoTooltip
                             title="All Cards + Foils"
                             type="total-foil"
@@ -162,19 +162,19 @@
                             iconColor="purple"
                             }}
                             <div class="flex flex-col mb-2">
-                                <h4 class="font-semibold text-purple-700 text-xs md:text-sm uppercase tracking-wide">
+                                <h4 class="font-semibold text-purple-700 dark:text-purple-300 text-xs md:text-sm uppercase tracking-wide">
                                     All Cards
                                     <span
-                                        class="text-xs bg-purple-200 text-purple-800 px-1 py-1/2 rounded mt-1 inline-block self-start">
+                                        class="text-xs bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 px-1 py-0.5 rounded mt-1 inline-block self-start">
                                         + Foils
                                     </span>
                                 </h4>
 
                             </div>
-                            <div class="text-2xl md:text-3xl font-bold text-purple-900 font-mono">
+                            <div class="text-2xl md:text-3xl font-bold text-purple-900 dark:text-purple-200 font-mono">
                                 {{set.prices.totalPriceAll}}
                             </div>
-                            <div class="text-xs text-purple-700 mt-2">
+                            <div class="text-xs text-purple-700 dark:text-purple-400 mt-2">
                                 {{set.totalSize}} cards (normal + foil variants)
                             </div>
                         </div>
@@ -186,7 +186,7 @@
         {{! End Set Price Info }}
         {{#if (gt set.prices.gridCols 1)}}
         <button type="button" id="price-info-toggle"
-            class="inline-flex items-center space-x-2 px-3 py-1.5 btn btn-primary text-sm"
+            class="btn btn-primary !inline-flex items-center space-x-2 px-3 py-1.5 text-sm mt-2"
             aria-label="View detailed set prices">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -199,51 +199,51 @@
     </section>
 </div>
 
-<div class="w-full mx-auto">
+<div class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1">
             {{>filter}}
         </div>
         {{#if baseOnlyToggle.visible}}
-        <a href="{{baseOnlyToggle.url}}" 
+        <a href="{{baseOnlyToggle.url}}"
            class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                  whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4"
-           style="padding-top: 0; padding-bottom: 0; line-height: 1;">
+                  whitespace-nowrap h-[42px] !inline-flex items-center justify-center flex-shrink-0 mb-4">
             {{baseOnlyToggle.text}}
         </a>
         {{/if}}
     </div>
     <div id="filter-results">
         {{#if set.cards.length}}
+        <div class="table-wrapper">
         <table class="table-container">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each set.cards}}
                 <tr class="table-row">
-                    <td class="py-2 pl-2">
+                    <td class="table-cell">
                         {{>inventoryCtrl card=this}}
                     </td>
-                    <td class="py-2">{{this.number}}</td>
-                    <td data-id="{{this.cardId}}" data-img-src="{{this.imgSrc}}" class="py-2">
+                    <td class="table-cell">{{this.number}}</td>
+                    <td data-id="{{this.cardId}}" data-img-src="{{this.imgSrc}}" class="table-cell">
                         <a href="{{this.url}}" class="card-name-link">{{this.name}}</a>
                         {{>tags item=this}}
                         <a href="{{this.url}}" class="card-img-link">
                             <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" />
                         </a>
                     </td>
-                    <td class="py-2 xs-hide">{{>manaCost card=this}}</td>
-                    <td class="py-2 xs-hide">{{this.rarity}}</td>
-                    <td class="py-2 xs-hide">
+                    <td class="table-cell xs-hide">{{>manaCost card=this}}</td>
+                    <td class="table-cell xs-hide">{{this.rarity}}</td>
+                    <td class="table-cell xs-hide">
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
                         {{/if}}
                     </td>
-                    <td class="py-2 pr-2 xs-hide">
+                    <td class="table-cell xs-hide">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
                         {{/if}}
                     </td>
-                    <td class="py-2 pr-2 xs-show">
+                    <td class="table-cell xs-show">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
                         {{/if}}
@@ -255,9 +255,13 @@
                 {{/each}}
             </tbody>
         </table>
+        </div>
         {{else}}
-        <div class="text-center py-8 text-gray-500">
-            No cards found matching your filter.
+        <div class="text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No cards match your search</p>
+            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
+            <a href="/sets/{{set.code}}" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
         </div>
         {{/if}}
     </div>

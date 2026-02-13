@@ -1,5 +1,6 @@
 # Multi-stage build for NestJS
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
+RUN npm install -g npm@latest
 WORKDIR /app
 COPY package*.json ./
 
@@ -20,7 +21,7 @@ RUN npm run build
 # Production stage
 FROM base AS production
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/http/public ./dist/http/public
 EXPOSE 3000

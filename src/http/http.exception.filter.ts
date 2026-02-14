@@ -12,6 +12,7 @@ import { Request, Response } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
 import { LoginFormViewDto } from './auth/dto/login-form.view.dto';
 import { ActionStatus } from './base/action-status.enum';
+import { Toast } from './base/toast';
 import { CreateUserViewDto } from './user/dto/create-user.view.dto';
 
 @Catch()
@@ -40,8 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         } else {
             const template = this.getErrorTemplate(exception);
             response.status(status).render(template, {
-                status: ActionStatus.ERROR,
-                message: exception.message || 'Internal Server Error',
+                toast: new Toast(exception.message || 'Internal Server Error', ActionStatus.ERROR),
                 statusCode: status,
                 authenticated: false,
             });
@@ -72,8 +72,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         if (request.url.includes('/user/create')) {
             const errorView = new CreateUserViewDto({
                 authenticated: false,
-                message: errorMessage,
-                status: ActionStatus.ERROR,
+                toast: new Toast(errorMessage, ActionStatus.ERROR),
                 name: request.body?.name || '',
                 email: request.body?.email || '',
             });
@@ -84,8 +83,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         if (request.url.includes('/auth/login')) {
             const errorView = new LoginFormViewDto({
                 authenticated: false,
-                message: errorMessage,
-                status: ActionStatus.ERROR,
+                toast: new Toast(errorMessage, ActionStatus.ERROR),
                 email: request.body?.email || '',
             });
             response.status(200).render('login', errorView);
@@ -94,8 +92,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         if (request.url.includes('/user/update')) {
             response.status(200).render('user/update', {
-                status: ActionStatus.ERROR,
-                message: errorMessage,
+                toast: new Toast(errorMessage, ActionStatus.ERROR),
                 authenticated: true,
                 formData: request.body || {},
             });
@@ -103,8 +100,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
 
         response.status(200).render('errors/400', {
-            status: ActionStatus.ERROR,
-            message: errorMessage,
+            toast: new Toast(errorMessage, ActionStatus.ERROR),
             authenticated: false,
         });
     }

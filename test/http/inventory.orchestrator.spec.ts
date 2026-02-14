@@ -5,7 +5,6 @@ import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryViewDto } from 'src/http/inventory/dto/inventory.view.dto';
 import { InventoryOrchestrator } from 'src/http/inventory/inventory.orchestrator';
@@ -90,7 +89,7 @@ describe('InventoryOrchestrator', () => {
             expect(result.cards.length).toBe(1);
             expect(result.pagination.current).toBe(1);
             expect(result.pagination.totalPages).toBe(1);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
             expect(result.hasInventory).toBe(true);
         });
 
@@ -105,7 +104,7 @@ describe('InventoryOrchestrator', () => {
 
             expect(result.cards).toHaveLength(0);
             expect(result.pagination.totalPages).toBe(0);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
             expect(result.hasInventory).toBe(false);
         });
 

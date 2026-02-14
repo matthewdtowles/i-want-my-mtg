@@ -84,8 +84,8 @@ export class CardOrchestrator {
                 otherPrintings: allPrintings
                     .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                     .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),
-                message: HttpStatus.OK === 200 ? 'Card found' : 'Card not found',
-                status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                message: null,
+                status: ActionStatus.NONE,
                 pagination: new PaginationView(options, baseUrl, totalPrintings),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([

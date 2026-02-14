@@ -266,19 +266,96 @@
 /* ===== Response Messages ===== */
 
 .response-message {
-    @apply fixed top-4 right-4 text-white p-4 rounded-lg shadow-lg cursor-pointer z-50;
+    @apply fixed top-4 left-1/2 -translate-x-1/2 text-white rounded-lg shadow-lg z-50 overflow-hidden;
+    max-width: 28rem;
+    width: calc(100% - 2rem);
 }
 
-.response-message-error {
-    @apply bg-hotpink-500;
+.response-message.toast-enter {
+    animation: toast-slide-in 0.3s ease-out forwards;
 }
 
-.response-message-info {
-    @apply bg-purple-500;
+.response-message.toast-exit {
+    animation: toast-slide-out 0.25s ease-in forwards;
 }
 
-.response-message-success {
-    @apply bg-teal-500;
+.toast-body {
+    @apply flex items-start gap-3 p-4;
+}
+
+.toast-icon {
+    @apply flex-shrink-0 w-5 h-5 mt-0.5;
+}
+
+.toast-text {
+    @apply flex-1 text-sm font-medium leading-snug;
+}
+
+.toast-close {
+    @apply flex-shrink-0 ml-2 p-1 rounded-md transition-colors;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.toast-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.bg-warning .toast-close {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.bg-warning .toast-close:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.toast-progress {
+    @apply h-1 w-full;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.bg-warning .toast-progress {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.toast-progress-bar {
+    @apply h-full;
+    background: rgba(255, 255, 255, 0.6);
+    animation: toast-progress-shrink var(--toast-duration, 5s) linear forwards;
+}
+
+.bg-warning .toast-progress-bar {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.bg-warning {
+    color: #1a1a1a;
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes toast-slide-out {
+    from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-1rem);
+    }
+}
+
+@keyframes toast-progress-shrink {
+    from { width: 100%; }
+    to { width: 0%; }
 }
 
 /* ===== Content Layout ===== */

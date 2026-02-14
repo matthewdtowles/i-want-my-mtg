@@ -10,35 +10,35 @@ input[type='number'] {
 }
 
 .bg-success {
-    background-color: #6edad1;
+    background-color: #0d9488;
 }
 
 .bg-error {
-    background-color: #fa9ec4;
+    background-color: #ef4444;
 }
 
 .bg-warning {
-    background-color: #c48aed;
+    background-color: #f59e0b;
 }
 
 .bg-info {
-    background-color: #a8f4ef;
+    background-color: #3b82f6;
 }
 
 .dark .bg-success {
-    background-color: #1a7a78;
+    background-color: #0f766e;
 }
 
 .dark .bg-error {
-    background-color: #c4175c;
+    background-color: #dc2626;
 }
 
 .dark .bg-warning {
-    background-color: #7233a4;
+    background-color: #d97706;
 }
 
 .dark .bg-info {
-    background-color: #146060;
+    background-color: #2563eb;
 }
 
 .completion-bar-container {

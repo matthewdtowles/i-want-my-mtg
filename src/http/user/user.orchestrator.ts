@@ -205,8 +205,8 @@ export class UserOrchestrator {
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                message: login ? `${user.name} - logged in` : null,
-                status: login ? ActionStatus.SUCCESS : ActionStatus.NONE,
+                message: null,
+                status: ActionStatus.NONE,
                 user,
             };
         } catch (error) {

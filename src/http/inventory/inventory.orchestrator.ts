@@ -78,10 +78,8 @@ export class InventoryOrchestrator {
                     { label: 'Inventory', url: baseUrl },
                 ],
                 cards,
-                message: cards
-                    ? `Inventory for ${req.user.name} found`
-                    : `Inventory not found for ${req.user.name}`,
-                status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                message: cards ? null : `Inventory not found for ${req.user.name}`,
+                status: cards ? ActionStatus.NONE : ActionStatus.ERROR,
                 username: req.user.name,
                 ownedValue: toDollar(ownedValue),
                 ownedTotal: currentCount,

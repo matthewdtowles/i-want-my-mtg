@@ -8,6 +8,7 @@ import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { Toast } from 'src/http/base/toast';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { UserRole } from 'src/shared/constants/user.role.enum';
@@ -205,8 +206,6 @@ export class UserOrchestrator {
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                message: login ? `${user.name} - logged in` : null,
-                status: login ? ActionStatus.SUCCESS : ActionStatus.NONE,
                 user,
             };
         } catch (error) {
@@ -228,8 +227,7 @@ export class UserOrchestrator {
                 return new UserViewDto({
                     authenticated: req.isAuthenticated(),
                     breadcrumbs: this.breadCrumbs,
-                    message: 'No changes detected',
-                    status: ActionStatus.NONE,
+                    toast: new Toast('No changes detected', ActionStatus.INFO),
                     user: null,
                 });
             }
@@ -243,8 +241,7 @@ export class UserOrchestrator {
             return new UserViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                message: `User ${updatedUser.name} updated successfully`,
-                status: ActionStatus.SUCCESS,
+                toast: new Toast(`User ${updatedUser.name} updated successfully`, ActionStatus.SUCCESS),
                 user: updatedUser,
             });
         } catch (error) {
@@ -271,8 +268,10 @@ export class UserOrchestrator {
             return new BaseViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                message: pwdUpdated ? 'Password updated' : 'Error updating password',
-                status: pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                toast: new Toast(
+                    pwdUpdated ? 'Password updated' : 'Error updating password',
+                    pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                ),
             });
         } catch (error) {
             this.LOGGER.debug(`Error updating password for user ${userId}.`);
@@ -295,8 +294,7 @@ export class UserOrchestrator {
             return new BaseViewDto({
                 authenticated: false,
                 breadcrumbs: this.breadCrumbs,
-                message: 'User deleted successfully',
-                status: ActionStatus.SUCCESS,
+                toast: new Toast('User deleted successfully', ActionStatus.SUCCESS),
             });
         } catch (error) {
             this.LOGGER.debug(`Error deleting user ${userId}.`);

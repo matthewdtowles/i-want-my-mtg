@@ -5,6 +5,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { Toast } from 'src/http/base/toast';
 import { completionRate, toDollar } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { BaseOnlyToggleView } from 'src/http/list/base-only-toggle.view';
@@ -78,10 +79,7 @@ export class InventoryOrchestrator {
                     { label: 'Inventory', url: baseUrl },
                 ],
                 cards,
-                message: cards
-                    ? `Inventory for ${req.user.name} found`
-                    : `Inventory not found for ${req.user.name}`,
-                status: cards ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                toast: cards ? undefined : new Toast(`Inventory not found for ${req.user.name}`, ActionStatus.ERROR),
                 username: req.user.name,
                 ownedValue: toDollar(ownedValue),
                 ownedTotal: currentCount,

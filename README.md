@@ -33,6 +33,15 @@ docker compose exec web npm test
 docker compose exec etl cargo test
 ```
 
+#### Check Email (MailHog)
+
+Local development uses [MailHog](https://github.com/mailhog/MailHog) to capture outgoing emails (e.g., registration verification). All emails sent by the app are intercepted and viewable in the MailHog web UI:
+
+- **Web UI**: [http://localhost:8025](http://localhost:8025)
+- **SMTP**: `localhost:1025` (configured automatically in Docker)
+
+MailHog starts with `docker compose up -d`. No additional configuration needed.
+
 #### Rebuild (For Dependency Changes)
 
 ```Docker

@@ -7,7 +7,6 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { Set } from 'src/core/set/set.entity';
 import { SetService } from 'src/core/set/set.service';
-import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Breadcrumb } from 'src/http/base/breadcrumb';
 import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
@@ -65,9 +64,7 @@ export class SetOrchestrator {
                     toggleConfig.visible
                 ),
                 breadcrumbs,
-                message: `Page ${options.page} of ${Math.ceil(currentCount / options.limit)}`,
                 setList: await this.createSetMetaResponseDtos(userId, sets),
-                status: ActionStatus.SUCCESS,
                 pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
@@ -134,9 +131,7 @@ export class SetOrchestrator {
                     { label: 'Sets', url: '/sets' },
                     { label: setResponse.name, url: baseUrl },
                 ],
-                message: `Found set: ${setResponse.name}`,
                 set: setResponse,
-                status: ActionStatus.SUCCESS,
                 pagination: new PaginationView(effectiveOptions, baseUrl, currentCount),
                 filter: new FilterView(effectiveOptions, baseUrl),
                 tableHeadersRow: this.buildSetDetailTableHeaders(effectiveOptions),

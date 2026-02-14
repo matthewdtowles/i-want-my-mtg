@@ -9,6 +9,7 @@ import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { Toast } from 'src/http/base/toast';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { CreateUserRequestDto } from 'src/http/user/dto/create-user.request.dto';
 import { UpdateUserRequestDto } from 'src/http/user/dto/update-user.request.dto';
@@ -429,8 +430,7 @@ describe('UserOrchestrator', () => {
             expect(result).toBeDefined();
             expect(result.authenticated).toBe(true);
             expect(result.user).toEqual(mockUserResponseDto);
-            expect(result.message).toBeNull();
-            expect(result.status).toBe(ActionStatus.NONE);
+            expect(result.toast).toBeUndefined();
             expect(userService.findById).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);
             expect(HttpErrorHandler.validateAuthenticatedRequest).toHaveBeenCalledWith(
                 mockAuthenticatedRequest
@@ -449,8 +449,7 @@ describe('UserOrchestrator', () => {
 
             const result: UserViewDto = await orchestrator.findUser(loginRequest);
 
-            expect(result.message).toBe('Test User - logged in');
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
 
         it('should handle validation errors', async () => {
@@ -495,8 +494,7 @@ describe('UserOrchestrator', () => {
             );
 
             expect(result).toBeDefined();
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(result.message).toBe('User Updated Name updated successfully');
+            expect(result.toast).toEqual(new Toast('User Updated Name updated successfully', ActionStatus.SUCCESS));
             expect(result.user).toEqual(updatedUserDto);
             expect(userService.update).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -539,8 +537,7 @@ describe('UserOrchestrator', () => {
             );
 
             expect(result).toBeDefined();
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(result.message).toBe('Password updated');
+            expect(result.toast).toEqual(new Toast('Password updated', ActionStatus.SUCCESS));
             expect(userService.updatePassword).toHaveBeenCalledWith(
                 expect.objectContaining({
                     id: mockAuthenticatedRequest.user.id,
@@ -560,8 +557,7 @@ describe('UserOrchestrator', () => {
                 mockAuthenticatedRequest
             );
 
-            expect(result.status).toBe(ActionStatus.ERROR);
-            expect(result.message).toBe('Error updating password');
+            expect(result.toast).toEqual(new Toast('Error updating password', ActionStatus.ERROR));
         });
 
         it('should handle password update errors', async () => {
@@ -593,8 +589,7 @@ describe('UserOrchestrator', () => {
             const result: BaseViewDto = await orchestrator.deleteUser(mockAuthenticatedRequest);
 
             expect(result).toBeDefined();
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(result.message).toBe('User deleted successfully');
+            expect(result.toast).toEqual(new Toast('User deleted successfully', ActionStatus.SUCCESS));
             expect(result.authenticated).toBe(false);
             expect(userService.remove).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);
             expect(userService.findById).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);

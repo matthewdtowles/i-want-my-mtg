@@ -7,7 +7,6 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
-import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { SetListViewDto } from 'src/http/set/dto/set-list.view.dto';
 import { SetViewDto } from 'src/http/set/dto/set.view.dto';
@@ -116,7 +115,7 @@ describe('SetOrchestrator', () => {
             expect(result).toBeInstanceOf(SetListViewDto);
             expect(result.setList.length).toBe(1);
             expect(result.pagination.current).toBe(1);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
 
         it('returns error DTO on service failure', async () => {
@@ -138,7 +137,7 @@ describe('SetOrchestrator', () => {
             );
 
             expect(result.setList.length).toBe(0);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
     });
 
@@ -160,7 +159,7 @@ describe('SetOrchestrator', () => {
             expect(result).toBeInstanceOf(SetViewDto);
             expect(result.set.cards.length).toBe(1);
             expect(result.pagination.current).toBe(1);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
 
         it('returns error if set not found', async () => {
@@ -183,7 +182,7 @@ describe('SetOrchestrator', () => {
             const result = await orchestrator.findBySetCode(unauthReq, 'TST', mockQueryOptions);
 
             expect(result.authenticated).toBe(false);
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
 
         it('returns error DTO on card service failure', async () => {

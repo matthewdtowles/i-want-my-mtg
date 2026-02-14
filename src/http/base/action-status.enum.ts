@@ -3,5 +3,4 @@ export enum ActionStatus {
     ERROR = 'error',
     WARNING = 'warning',
     INFO = 'info',
-    NONE = null,
 }

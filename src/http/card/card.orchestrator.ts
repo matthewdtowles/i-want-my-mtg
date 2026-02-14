@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
@@ -6,7 +6,6 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
-import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { isAuthenticated, toStringRecord } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
@@ -84,8 +83,6 @@ export class CardOrchestrator {
                 otherPrintings: allPrintings
                     .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                     .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),
-                message: HttpStatus.OK === 200 ? 'Card found' : 'Card not found',
-                status: HttpStatus.OK ? ActionStatus.SUCCESS : ActionStatus.ERROR,
                 pagination: new PaginationView(options, baseUrl, totalPrintings),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([

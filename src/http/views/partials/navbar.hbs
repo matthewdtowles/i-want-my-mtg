@@ -66,9 +66,26 @@
         {{/if}}
     </div>
 </nav>
-<p id="response-message" class="response-message bg-{{#if status }}{{ status }}{{else}}info{{/if}} hidden" role="alert">
-    {{message}}
-</p>
+<div id="response-message" class="response-message bg-{{#if toast }}{{ toast.status }}{{else}}info{{/if}} hidden" role="alert">
+    <div class="toast-body">
+        <div class="toast-icon">
+            {{#if (eq toast.status 'success')}}
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            {{else if (eq toast.status 'error')}}
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {{else if (eq toast.status 'warning')}}
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            {{else}}
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {{/if}}
+        </div>
+        <span class="toast-text">{{toast.message}}</span>
+        <button class="toast-close" id="toast-close-btn" aria-label="Close notification">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+    </div>
+    <div class="toast-progress"><div class="toast-progress-bar" id="toast-progress-bar"></div></div>
+</div>
 {{#if welcome}}
 <div class="welcome-banner" role="alert">
     <h2>Welcome to I Want My MTG: Collection Tracker</h2>
@@ -79,29 +96,40 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const message = document.getElementById("response-message");
-        console.log(`message: ${message}`);
-        message.addEventListener("click", () => {
-            message.classList.add("hidden");
-        });
-        if (message.textContent.trim().length > 0) {
-            message.classList.remove("hidden");
-            setTimeout(() => {
-                message.classList.add("hidden");
-            }, 3000);
+        const closeBtn = document.getElementById("toast-close-btn");
+        const progressBar = document.getElementById("toast-progress-bar");
+        let dismissTimer = null;
+
+        function getStatusDuration() {
+            if (message.classList.contains("bg-error")) return 10000;
+            if (message.classList.contains("bg-warning")) return 7000;
+            return 5000;
         }
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === "childList" && mutation.target === message) {
-                    if (message.textContent.trim().length > 0) {
-                        message.classList.remove("hidden");
-                        setTimeout(() => {
-                            message.classList.add("hidden");
-                        }, 3000);
-                    }
-                }
-            });
-        });
-        observer.observe(message, { childList: true });
+
+        function dismissToast() {
+            clearTimeout(dismissTimer);
+            message.classList.remove("toast-enter");
+            message.classList.add("toast-exit");
+            message.addEventListener("animationend", () => {
+                message.classList.add("hidden");
+                message.classList.remove("toast-exit");
+            }, { once: true });
+        }
+
+        function showToast() {
+            const duration = getStatusDuration();
+            message.style.setProperty("--toast-duration", duration + "ms");
+            message.classList.remove("hidden");
+            message.classList.add("toast-enter");
+            dismissTimer = setTimeout(dismissToast, duration);
+        }
+
+        closeBtn.addEventListener("click", dismissToast);
+
+        const toastText = message.querySelector(".toast-text");
+        if (toastText && toastText.textContent.trim().length > 0) {
+            showToast();
+        }
 
         document.getElementById("mobile-menu-button").addEventListener("click", () => {
             const menu = document.getElementById("mobile-menu");

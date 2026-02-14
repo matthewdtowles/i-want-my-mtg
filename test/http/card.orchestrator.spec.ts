@@ -4,7 +4,6 @@ import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { CardOrchestrator } from 'src/http/card/card.orchestrator';
 import { CardViewDto } from 'src/http/card/dto/card.view.dto';
@@ -131,8 +130,7 @@ describe('CardOrchestrator', () => {
             expect(result.card.number).toBe('1');
             expect(result.otherPrintings).toHaveLength(1);
             expect(result.otherPrintings[0].setCode).toBe('M10');
-            expect(result.status).toBe(ActionStatus.SUCCESS);
-            expect(result.message).toBe('Card found');
+            expect(result.toast).toBeUndefined();
             expect(result.breadcrumbs).toHaveLength(4);
             expect(result.breadcrumbs[3].label).toBe('Lightning Bolt');
 
@@ -199,7 +197,7 @@ describe('CardOrchestrator', () => {
             expect(result).toBeDefined();
             expect(result.otherPrintings).toHaveLength(0);
             expect(result.card.name).toBe('Lightning Bolt');
-            expect(result.status).toBe(ActionStatus.SUCCESS);
+            expect(result.toast).toBeUndefined();
         });
 
         it('should handle empty inventory', async () => {

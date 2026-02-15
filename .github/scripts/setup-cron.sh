@@ -1,5 +1,4 @@
 #!/bin/bash
-# filepath: /home/matt/projects/i-want-my-mtg/.github/scripts/setup-cron.sh
 set -euo pipefail
 
 GREEN='\033[0;32m'

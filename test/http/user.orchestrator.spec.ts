@@ -494,7 +494,9 @@ describe('UserOrchestrator', () => {
             );
 
             expect(result).toBeDefined();
-            expect(result.toast).toEqual(new Toast('User Updated Name updated successfully', ActionStatus.SUCCESS));
+            expect(result.toast).toEqual(
+                new Toast('User Updated Name updated successfully', ActionStatus.SUCCESS)
+            );
             expect(result.user).toEqual(updatedUserDto);
             expect(userService.update).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -589,7 +591,9 @@ describe('UserOrchestrator', () => {
             const result: BaseViewDto = await orchestrator.deleteUser(mockAuthenticatedRequest);
 
             expect(result).toBeDefined();
-            expect(result.toast).toEqual(new Toast('User deleted successfully', ActionStatus.SUCCESS));
+            expect(result.toast).toEqual(
+                new Toast('User deleted successfully', ActionStatus.SUCCESS)
+            );
             expect(result.authenticated).toBe(false);
             expect(userService.remove).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);
             expect(userService.findById).toHaveBeenCalledWith(mockAuthenticatedRequest.user.id);

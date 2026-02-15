@@ -241,7 +241,10 @@ export class UserOrchestrator {
             return new UserViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
-                toast: new Toast(`User ${updatedUser.name} updated successfully`, ActionStatus.SUCCESS),
+                toast: new Toast(
+                    `User ${updatedUser.name} updated successfully`,
+                    ActionStatus.SUCCESS
+                ),
                 user: updatedUser,
             });
         } catch (error) {
@@ -270,7 +273,7 @@ export class UserOrchestrator {
                 breadcrumbs: this.breadCrumbs,
                 toast: new Toast(
                     pwdUpdated ? 'Password updated' : 'Error updating password',
-                    pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR,
+                    pwdUpdated ? ActionStatus.SUCCESS : ActionStatus.ERROR
                 ),
             });
         } catch (error) {

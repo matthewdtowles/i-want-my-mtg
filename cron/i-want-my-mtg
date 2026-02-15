@@ -1,0 +1,14 @@
+# i-want-my-mtg scheduled jobs
+SHELL=/bin/bash
+HOME=/home/ubuntu
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Scryfall data ingestion (daily at 2 AM)
+0 2 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log 2>&1
+
+# Price history retention cleanup (daily at 3 AM)
+0 3 * * * ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log 2>&1
+
+# Log cleanup (weekly, Sunday at 4 AM)
+0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log 2>&1
+

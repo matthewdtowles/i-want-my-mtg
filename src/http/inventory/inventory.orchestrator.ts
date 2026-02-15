@@ -79,7 +79,9 @@ export class InventoryOrchestrator {
                     { label: 'Inventory', url: baseUrl },
                 ],
                 cards,
-                toast: cards ? undefined : new Toast(`Inventory not found for ${req.user.name}`, ActionStatus.ERROR),
+                toast: cards
+                    ? undefined
+                    : new Toast(`Inventory not found for ${req.user.name}`, ActionStatus.ERROR),
                 username: req.user.name,
                 ownedValue: toDollar(ownedValue),
                 ownedTotal: currentCount,

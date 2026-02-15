@@ -1,0 +1,8 @@
+# i-want-my-mtg scheduled jobs
+SHELL=/bin/bash
+
+# Scryfall data ingestion (daily at 2 AM)
+0 2 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log 2>&1
+
+# Price history retention cleanup (daily at 3 AM)
+0 3 * * * ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log 2>&1

@@ -77,6 +77,10 @@ timeout 30 bash -c 'until curl -f http://localhost; do echo "Waiting for web ser
     exit 1
 }
 
+log_info "Setting up cron jobs..."
+chmod +x setup-cron.sh
+./setup-cron.sh
+
 log_info "Cleaning up old images..."
 docker image prune -f
 

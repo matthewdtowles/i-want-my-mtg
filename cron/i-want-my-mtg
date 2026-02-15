@@ -11,3 +11,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Log cleanup (weekly, Sunday at 4 AM)
 0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log 2>&1
+

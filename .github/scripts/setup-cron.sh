@@ -30,9 +30,14 @@ sudo chmod 755 /opt/scripts/clean_logs.sh
 log_info "Extracting scry binary from ETL image..."
 docker pull ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest
 container_id=$(docker create ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest)
-sudo docker cp "$container_id:/app/scry" /opt/scripts/scry
-docker rm "$container_id"
-docker rmi ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest
+cleanup_docker() {
+    docker rm "$container_id" 2>/dev/null || true
+    docker rmi ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest 2>/dev/null || true
+}
+trap cleanup_docker EXIT
+sudo docker cp "${container_id}:/app/scry" /opt/scripts/scry
+cleanup_docker
+trap - EXIT
 sudo chmod 755 /opt/scripts/scry
 
 # Set log directory permissions

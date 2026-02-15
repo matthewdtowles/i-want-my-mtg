@@ -33,7 +33,7 @@ log_info "Setting up production compose file..."
 mv docker-compose.prod.yml docker-compose.yml
 
 log_info "Creating docker-pg-exec alias..."
-echo "alias docker-pg-exec='docker exec -it ubuntu-postgres-1 psql -U iwmm_pg_user -d i_want_my_mtg'" >> ~/.bashrc
+echo "alias docker-pg-exec='docker compose exec postgres psql -U \$POSTGRES_USER -d \$POSTGRES_DB'" >> ~/.bashrc
 log_info "Alias docker-pg-exec added."
 
 # Stop existing containers

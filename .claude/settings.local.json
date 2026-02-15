@@ -1,9 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm test:*)",
-      "Bash(npm run lint:*)",
-      "Bash(git show-branch:*)"
+      "Bash(npm test:*)"
     ]
   }
 }

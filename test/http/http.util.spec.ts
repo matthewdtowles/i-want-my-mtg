@@ -1,4 +1,4 @@
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { QueryOptionsData, SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import {
@@ -159,6 +159,16 @@ describe('buildQueryString', () => {
     it('should use SafeQueryOptions defaults when constructed', () => {
         const options = new SafeQueryOptions({ baseOnly: 'false' });
         expect(buildQueryString(options)).toBe('?page=1&limit=25&ascend=true&baseOnly=false');
+    });
+
+    it('should include q parameter when provided', () => {
+        const options: QueryOptionsData = { page: 1, limit: 25, baseOnly: true, q: 'bolt' };
+        expect(buildQueryString(options)).toBe('?page=1&limit=25&q=bolt');
+    });
+
+    it('should omit q parameter when undefined', () => {
+        const options: QueryOptionsData = { page: 1, limit: 25, baseOnly: true };
+        expect(buildQueryString(options)).toBe('?page=1&limit=25');
     });
 });
 

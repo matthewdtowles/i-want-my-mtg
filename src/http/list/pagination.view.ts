@@ -12,19 +12,15 @@ export class PaginationView {
     readonly last?: PaginationLink;
     readonly skipBack?: PaginationLink;
     readonly skipForward?: PaginationLink;
-    readonly extras?: Record<string, string>;
-
     constructor(
         options: SafeQueryOptions,
         baseUrl: string,
         totalItems: number,
-        extras?: Record<string, string>
     ) {
         this.current = options.page;
         this.limit = options.limit;
         this.totalPages = Math.ceil(totalItems / this.limit);
         this.baseUrl = baseUrl;
-        this.extras = extras;
         this.previous = this.buildPrevious(options);
         this.first = this.buildFirst(options);
         this.skipBack = this.buildSkipBack(options);
@@ -34,7 +30,7 @@ export class PaginationView {
     }
 
     private buildLink(options: SafeQueryOptions, page: number): string {
-        return `${this.baseUrl}${buildQueryString({ ...options, page }, this.extras)}`;
+        return `${this.baseUrl}${buildQueryString({ ...options, page })}`;
     }
 
     private buildPrevious(options: SafeQueryOptions): PaginationLink | undefined {

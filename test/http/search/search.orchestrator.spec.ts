@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { SearchService } from 'src/core/search/search.service';
 import { SearchOrchestrator } from 'src/http/search/search.orchestrator';
 
@@ -7,7 +7,7 @@ describe('SearchOrchestrator', () => {
     let orchestrator: SearchOrchestrator;
     let searchService: jest.Mocked<SearchService>;
 
-    const mockOptions = new SafeQueryOptions({ page: '1', limit: '25' });
+    const mockOptions = new SearchQueryOptions({ page: '1', limit: '25' });
     const mockReq: any = { user: null, isAuthenticated: () => false };
 
     const mockCard = {
@@ -64,7 +64,7 @@ describe('SearchOrchestrator', () => {
 
     describe('search', () => {
         it('should return empty view when no term provided', async () => {
-            const result = await orchestrator.search(mockReq, undefined, mockOptions);
+            const result = await orchestrator.search(mockReq, mockOptions);
 
             expect(searchService.search).not.toHaveBeenCalled();
             expect(result.query).toBe('');
@@ -80,9 +80,10 @@ describe('SearchOrchestrator', () => {
                 setTotal: 1,
             });
 
-            const result = await orchestrator.search(mockReq, 'bolt', mockOptions);
+            const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
+            const result = await orchestrator.search(mockReq, optionsWithQ);
 
-            expect(searchService.search).toHaveBeenCalledWith('bolt', mockOptions);
+            expect(searchService.search).toHaveBeenCalledWith('bolt', optionsWithQ);
             expect(result.query).toBe('bolt');
             expect(result.cards).toHaveLength(1);
             expect(result.cards[0].name).toBe('Lightning Bolt');
@@ -103,7 +104,8 @@ describe('SearchOrchestrator', () => {
                 setTotal: 0,
             });
 
-            const result = await orchestrator.search(mockReq, 'bolt', mockOptions);
+            const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
+            const result = await orchestrator.search(mockReq, optionsWithQ);
 
             expect(result.breadcrumbs).toEqual([
                 { label: 'Home', url: '/' },
@@ -123,12 +125,13 @@ describe('SearchOrchestrator', () => {
                 setTotal: 0,
             });
 
-            const result = await orchestrator.search(authReq, 'bolt', mockOptions);
+            const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
+            const result = await orchestrator.search(authReq, optionsWithQ);
 
             expect(result.authenticated).toBe(true);
         });
 
-        it('should build pagination with search term in extras', async () => {
+        it('should build pagination with search term', async () => {
             searchService.search.mockResolvedValue({
                 cards: [mockCard as any],
                 cardTotal: 50,
@@ -136,7 +139,8 @@ describe('SearchOrchestrator', () => {
                 setTotal: 5,
             });
 
-            const result = await orchestrator.search(mockReq, 'bolt', mockOptions);
+            const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
+            const result = await orchestrator.search(mockReq, optionsWithQ);
 
             expect(result.cardPagination).toBeDefined();
             expect(result.cardPagination.totalPages).toBe(2);

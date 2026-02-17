@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { SearchService } from 'src/core/search/search.service';
 import { Set } from 'src/core/set/set.entity';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -21,9 +21,9 @@ export class SearchOrchestrator {
 
     async search(
         req: AuthenticatedRequest,
-        term: string,
-        options: SafeQueryOptions
+        options: SearchQueryOptions
     ): Promise<SearchViewDto> {
+        const term = options.q;
         this.LOGGER.debug(`Search for: ${term}.`);
         try {
             if (!term) {
@@ -38,7 +38,6 @@ export class SearchOrchestrator {
             }
 
             const result = await this.searchService.search(term, options);
-            const extras = { q: term };
             const baseUrl = '/search';
 
             return new SearchViewDto({
@@ -52,8 +51,8 @@ export class SearchOrchestrator {
                 sets: result.sets.map((set) => this.toSetResult(set)),
                 cardTotal: result.cardTotal,
                 setTotal: result.setTotal,
-                cardPagination: new PaginationView(options, baseUrl, result.cardTotal, extras),
-                setPagination: new PaginationView(options, baseUrl, result.setTotal, extras),
+                cardPagination: new PaginationView(options, baseUrl, result.cardTotal),
+                setPagination: new PaginationView(options, baseUrl, result.setTotal),
             });
         } catch (error) {
             this.LOGGER.debug(`Error searching for "${term}": ${error?.message}`);
@@ -64,6 +63,7 @@ export class SearchOrchestrator {
     private toCardResult(card: Card): SearchCardResultDto {
         return new SearchCardResultDto({
             name: card.name,
+            number: card.number,
             imgSrc: `${BASE_IMAGE_URL}/${CardImgType.SMALL}/front/${card.imgSrc}`,
             setCode: card.setCode,
             keyruneCode: card.set?.keyruneCode ?? card.setCode,

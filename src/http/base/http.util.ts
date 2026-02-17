@@ -19,10 +19,7 @@ export function isAuthenticated(req: AuthenticatedRequest): boolean {
         : false;
 }
 
-export function buildQueryString(
-    options: QueryOptionsData,
-    extras?: Record<string, string>
-): string {
+export function buildQueryString(options: QueryOptionsData): string {
     if (!options || (options.page === undefined && options.limit === undefined)) {
         return '';
     }
@@ -48,12 +45,8 @@ export function buildQueryString(
     if (options.baseOnly === false) {
         params.set('baseOnly', 'false');
     }
-    if (extras) {
-        for (const [key, value] of Object.entries(extras)) {
-            if (value) {
-                params.set(key, value);
-            }
-        }
+    if (options.q) {
+        params.set('q', options.q);
     }
 
     const queryString = params.toString();

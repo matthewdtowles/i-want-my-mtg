@@ -3,6 +3,7 @@ import { PaginationView } from 'src/http/list/pagination.view';
 
 export class SearchCardResultDto {
     readonly name: string;
+    readonly number: string;
     readonly imgSrc: string;
     readonly setCode: string;
     readonly keyruneCode: string;
@@ -11,6 +12,7 @@ export class SearchCardResultDto {
 
     constructor(init: Partial<SearchCardResultDto>) {
         this.name = init.name || '';
+        this.number = init.number || '';
         this.imgSrc = init.imgSrc || '';
         this.setCode = init.setCode || '';
         this.keyruneCode = init.keyruneCode || '';

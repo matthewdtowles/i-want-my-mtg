@@ -63,6 +63,8 @@ describe('CardService', () => {
         totalWithName: jest.fn(),
         totalInSet: jest.fn(),
         delete: jest.fn(),
+        searchByName: jest.fn(),
+        totalSearchByName: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -213,6 +215,61 @@ describe('CardService', () => {
 
             await expect(service.totalInSet('TST', mockQueryOptions)).rejects.toThrow(
                 'Error counting cards in set TST'
+            );
+        });
+    });
+
+    describe('searchByName', () => {
+        it('should return matching cards', async () => {
+            const cards = [testCard];
+            repository.searchByName.mockResolvedValue(cards);
+
+            const result = await service.searchByName('Test', mockQueryOptions);
+
+            expect(repository.searchByName).toHaveBeenCalledWith('Test', mockQueryOptions);
+            expect(result).toEqual(cards);
+        });
+
+        it('should return empty array when no cards match', async () => {
+            repository.searchByName.mockResolvedValue([]);
+
+            const result = await service.searchByName('zzzzz', mockQueryOptions);
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.searchByName.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.searchByName('Test', mockQueryOptions)).rejects.toThrow(
+                'Error searching cards by name "Test"'
+            );
+        });
+    });
+
+    describe('totalSearchByName', () => {
+        it('should return total count of matching cards', async () => {
+            repository.totalSearchByName.mockResolvedValue(10);
+
+            const result = await service.totalSearchByName('Test');
+
+            expect(repository.totalSearchByName).toHaveBeenCalledWith('Test');
+            expect(result).toBe(10);
+        });
+
+        it('should return 0 when no cards match', async () => {
+            repository.totalSearchByName.mockResolvedValue(0);
+
+            const result = await service.totalSearchByName('zzzzz');
+
+            expect(result).toBe(0);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.totalSearchByName.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.totalSearchByName('Test')).rejects.toThrow(
+                'Error counting card search results for "Test"'
             );
         });
     });

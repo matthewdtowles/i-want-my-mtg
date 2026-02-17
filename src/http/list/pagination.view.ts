@@ -12,7 +12,7 @@ export class PaginationView {
     readonly last?: PaginationLink;
     readonly skipBack?: PaginationLink;
     readonly skipForward?: PaginationLink;
-    private readonly extras?: Record<string, string>;
+    readonly extras?: Record<string, string>;
 
     constructor(
         options: SafeQueryOptions,

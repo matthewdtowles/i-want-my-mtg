@@ -108,5 +108,14 @@ describe('SearchService', () => {
 
             await expect(service.search('bolt', mockOptions)).rejects.toThrow('Database error');
         });
+
+        it('should propagate errors from set service', async () => {
+            cardService.searchByName.mockResolvedValue([]);
+            cardService.totalSearchByName.mockResolvedValue(0);
+            setService.searchSets.mockRejectedValue(new Error('Set search error'));
+            setService.totalSearchSets.mockResolvedValue(0);
+
+            await expect(service.search('bolt', mockOptions)).rejects.toThrow('Set search error');
+        });
     });
 });

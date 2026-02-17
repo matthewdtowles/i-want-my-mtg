@@ -40,6 +40,8 @@ describe('SetService', () => {
         totalCardsInSet: jest.fn(),
         totalInSet: jest.fn(),
         totalValueForSet: jest.fn(),
+        searchSets: jest.fn(),
+        totalSearchSets: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -198,6 +200,60 @@ describe('SetService', () => {
             await expect(
                 service.totalValueForSet(mockSetCode, true, mockQueryOptions)
             ).rejects.toThrow(`Error getting total value of cards for set ${mockSetCode}`);
+        });
+    });
+
+    describe('searchSets', () => {
+        it('should return matching sets', async () => {
+            repository.searchSets.mockResolvedValue(mockSets);
+
+            const result = await service.searchSets('Test', mockQueryOptions);
+
+            expect(repository.searchSets).toHaveBeenCalledWith('Test', mockQueryOptions);
+            expect(result).toEqual(mockSets);
+        });
+
+        it('should return empty array when no sets match', async () => {
+            repository.searchSets.mockResolvedValue([]);
+
+            const result = await service.searchSets('zzzzz', mockQueryOptions);
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.searchSets.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.searchSets('Test', mockQueryOptions)).rejects.toThrow(
+                'Error searching sets for "Test"'
+            );
+        });
+    });
+
+    describe('totalSearchSets', () => {
+        it('should return total count of matching sets', async () => {
+            repository.totalSearchSets.mockResolvedValue(3);
+
+            const result = await service.totalSearchSets('Test');
+
+            expect(repository.totalSearchSets).toHaveBeenCalledWith('Test');
+            expect(result).toBe(3);
+        });
+
+        it('should return 0 when no sets match', async () => {
+            repository.totalSearchSets.mockResolvedValue(0);
+
+            const result = await service.totalSearchSets('zzzzz');
+
+            expect(result).toBe(0);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.totalSearchSets.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.totalSearchSets('Test')).rejects.toThrow(
+                'Error counting set search results for "Test"'
+            );
         });
     });
 });

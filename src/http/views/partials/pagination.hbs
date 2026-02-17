@@ -33,6 +33,9 @@
         {{#if filter}}
         <input type="hidden" name="filter" value="{{filter.term}}">
         {{/if}}
+        {{#each pagination.extras}}
+        <input type="hidden" name="{{@key}}" value="{{this}}">
+        {{/each}}
         <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2
                 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600
                 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none

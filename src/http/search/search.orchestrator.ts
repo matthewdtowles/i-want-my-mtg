@@ -19,10 +19,7 @@ export class SearchOrchestrator {
 
     constructor(@Inject(SearchService) private readonly searchService: SearchService) {}
 
-    async search(
-        req: AuthenticatedRequest,
-        options: SearchQueryOptions
-    ): Promise<SearchViewDto> {
+    async search(req: AuthenticatedRequest, options: SearchQueryOptions): Promise<SearchViewDto> {
         const term = options.q;
         this.LOGGER.debug(`Search for: ${term}.`);
         try {

@@ -49,6 +49,7 @@ describe('SearchOrchestrator', () => {
                     provide: SearchService,
                     useValue: {
                         search: jest.fn(),
+                        suggest: jest.fn(),
                     },
                 },
             ],
@@ -145,6 +146,56 @@ describe('SearchOrchestrator', () => {
             expect(result.cardPagination).toBeDefined();
             expect(result.cardPagination.totalPages).toBe(2);
             expect(result.setPagination).toBeDefined();
+        });
+    });
+
+    describe('suggest', () => {
+        it('should return empty response for short term', async () => {
+            const result = await orchestrator.suggest('a');
+
+            expect(searchService.suggest).not.toHaveBeenCalled();
+            expect(result.cards).toEqual([]);
+            expect(result.sets).toEqual([]);
+        });
+
+        it('should return empty response for empty term', async () => {
+            const result = await orchestrator.suggest('');
+
+            expect(searchService.suggest).not.toHaveBeenCalled();
+            expect(result.cards).toEqual([]);
+            expect(result.sets).toEqual([]);
+        });
+
+        it('should map cards and sets to suggest DTOs', async () => {
+            searchService.suggest.mockResolvedValue({
+                cards: [mockCard as any],
+                sets: [mockSet as any],
+            });
+
+            const result = await orchestrator.suggest('bolt');
+
+            expect(searchService.suggest).toHaveBeenCalledWith('bolt');
+            expect(result.query).toBe('bolt');
+            expect(result.cards).toHaveLength(1);
+            expect(result.cards[0].name).toBe('Lightning Bolt');
+            expect(result.cards[0].url).toBe('/card/lea/141');
+            expect(result.cards[0].setCode).toBe('lea');
+            expect(result.cards[0].keyruneCode).toBe('lea');
+            expect(result.cards[0].rarity).toBe('common');
+            expect(result.sets).toHaveLength(1);
+            expect(result.sets[0].name).toBe('Limited Edition Alpha');
+            expect(result.sets[0].url).toBe('/sets/lea');
+            expect(result.sets[0].code).toBe('lea');
+        });
+
+        it('should return empty response on error', async () => {
+            searchService.suggest.mockRejectedValue(new Error('Database error'));
+
+            const result = await orchestrator.suggest('bolt');
+
+            expect(result.cards).toEqual([]);
+            expect(result.sets).toEqual([]);
+            expect(result.query).toBe('bolt');
         });
     });
 });

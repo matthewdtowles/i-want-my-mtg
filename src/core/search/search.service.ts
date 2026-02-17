@@ -13,6 +13,11 @@ export interface SearchResult {
     setTotal: number;
 }
 
+export interface SuggestResult {
+    cards: Card[];
+    sets: Set[];
+}
+
 @Injectable()
 export class SearchService {
     private readonly LOGGER = getLogger(SearchService.name);
@@ -21,6 +26,20 @@ export class SearchService {
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(SetService) private readonly setService: SetService
     ) {}
+
+    async suggest(term: string, cardLimit = 5, setLimit = 3): Promise<SuggestResult> {
+        if (!term || term.trim().length < 2) {
+            return { cards: [], sets: [] };
+        }
+        this.LOGGER.debug(`Suggest for: ${term}.`);
+        const cardOptions = new SafeQueryOptions({ page: '1', limit: String(cardLimit) });
+        const setOptions = new SafeQueryOptions({ page: '1', limit: String(setLimit) });
+        const [cards, sets] = await Promise.all([
+            this.cardService.searchByName(term, cardOptions),
+            this.setService.searchSets(term, setOptions),
+        ]);
+        return { cards, sets };
+    }
 
     async search(term: string, options: SafeQueryOptions): Promise<SearchResult> {
         this.LOGGER.debug(`Searching for: ${term}.`);

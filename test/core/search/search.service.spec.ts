@@ -118,4 +118,57 @@ describe('SearchService', () => {
             await expect(service.search('bolt', mockOptions)).rejects.toThrow('Set search error');
         });
     });
+
+    describe('suggest', () => {
+        it('should search cards and sets in parallel with small limits', async () => {
+            cardService.searchByName.mockResolvedValue(mockCards as any);
+            setService.searchSets.mockResolvedValue(mockSets as any);
+
+            const result = await service.suggest('bolt');
+
+            expect(cardService.searchByName).toHaveBeenCalledWith(
+                'bolt',
+                expect.objectContaining({ limit: 5, page: 1 })
+            );
+            expect(setService.searchSets).toHaveBeenCalledWith(
+                'bolt',
+                expect.objectContaining({ limit: 3, page: 1 })
+            );
+            expect(result.cards).toHaveLength(1);
+            expect(result.sets).toHaveLength(1);
+        });
+
+        it('should return empty results for empty term', async () => {
+            const result = await service.suggest('');
+
+            expect(cardService.searchByName).not.toHaveBeenCalled();
+            expect(setService.searchSets).not.toHaveBeenCalled();
+            expect(result.cards).toHaveLength(0);
+            expect(result.sets).toHaveLength(0);
+        });
+
+        it('should return empty results for single character term', async () => {
+            const result = await service.suggest('a');
+
+            expect(cardService.searchByName).not.toHaveBeenCalled();
+            expect(result.cards).toHaveLength(0);
+            expect(result.sets).toHaveLength(0);
+        });
+
+        it('should accept custom limits', async () => {
+            cardService.searchByName.mockResolvedValue([]);
+            setService.searchSets.mockResolvedValue([]);
+
+            await service.suggest('bolt', 10, 5);
+
+            expect(cardService.searchByName).toHaveBeenCalledWith(
+                'bolt',
+                expect.objectContaining({ limit: 10 })
+            );
+            expect(setService.searchSets).toHaveBeenCalledWith(
+                'bolt',
+                expect.objectContaining({ limit: 5 })
+            );
+        });
+    });
 });

@@ -201,8 +201,12 @@
 /* ===== Search Suggest ===== */
 
 .search-suggest-dropdown {
-    @apply absolute z-50 w-full mt-1 rounded-lg shadow-lg overflow-hidden
+    @apply absolute z-50 mt-1 rounded-lg shadow-lg overflow-hidden
            bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600;
+    top: 100%;
+    left: 0;
+    min-width: max(100%, 20rem);
+    max-width: calc(100vw - 1rem);
     max-height: 24rem;
     overflow-y: auto;
 }

@@ -27,6 +27,13 @@
 
         function showDropdown() {
             dropdown.classList.remove('hidden');
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+            var rect = dropdown.getBoundingClientRect();
+            if (rect.right > window.innerWidth - 8) {
+                dropdown.style.left = 'auto';
+                dropdown.style.right = '0';
+            }
         }
 
         function renderDropdown(data) {

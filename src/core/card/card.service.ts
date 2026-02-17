@@ -62,6 +62,24 @@ export class CardService {
         }
     }
 
+    async searchByName(filter: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Search cards by name: ${filter}.`);
+        try {
+            return await this.repository.searchByName(filter, options);
+        } catch (error) {
+            throw new Error(`Error searching cards by name "${filter}": ${error.message}`);
+        }
+    }
+
+    async totalSearchByName(filter: string): Promise<number> {
+        this.LOGGER.debug(`Count search results for: ${filter}.`);
+        try {
+            return await this.repository.totalSearchByName(filter);
+        } catch (error) {
+            throw new Error(`Error counting card search results for "${filter}": ${error.message}`);
+        }
+    }
+
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(
             `Find total number of cards in set ${code}, options: ${JSON.stringify(options)}.`

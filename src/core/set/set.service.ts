@@ -27,6 +27,24 @@ export class SetService {
         return result;
     }
 
+    async searchSets(filter: string, options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Search sets: ${filter}.`);
+        try {
+            return await this.repository.searchSets(filter, options);
+        } catch (error) {
+            throw new Error(`Error searching sets for "${filter}": ${error.message}`);
+        }
+    }
+
+    async totalSearchSets(filter: string): Promise<number> {
+        this.LOGGER.debug(`Count set search results for: ${filter}.`);
+        try {
+            return await this.repository.totalSearchSets(filter);
+        } catch (error) {
+            throw new Error(`Error counting set search results for "${filter}": ${error.message}`);
+        }
+    }
+
     async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
         try {

@@ -12,12 +12,19 @@ export class PaginationView {
     readonly last?: PaginationLink;
     readonly skipBack?: PaginationLink;
     readonly skipForward?: PaginationLink;
+    private readonly extras?: Record<string, string>;
 
-    constructor(options: SafeQueryOptions, baseUrl: string, totalItems: number) {
+    constructor(
+        options: SafeQueryOptions,
+        baseUrl: string,
+        totalItems: number,
+        extras?: Record<string, string>
+    ) {
         this.current = options.page;
         this.limit = options.limit;
         this.totalPages = Math.ceil(totalItems / this.limit);
         this.baseUrl = baseUrl;
+        this.extras = extras;
         this.previous = this.buildPrevious(options);
         this.first = this.buildFirst(options);
         this.skipBack = this.buildSkipBack(options);
@@ -26,64 +33,38 @@ export class PaginationView {
         this.last = this.buildLast(options);
     }
 
+    private buildLink(options: SafeQueryOptions, page: number): string {
+        return `${this.baseUrl}${buildQueryString({ ...options, page }, this.extras)}`;
+    }
+
     private buildPrevious(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage()
-            ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.current - 1,
-                  })}`,
-                  '<'
-              )
+            ? new PaginationLink(this.buildLink(options, this.current - 1), '<')
             : undefined;
     }
 
     private buildFirst(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasPreviousPage()
-            ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: 1,
-                  })}`,
-                  '1'
-              )
+            ? new PaginationLink(this.buildLink(options, 1), '1')
             : undefined;
     }
 
     private buildNext(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage()
-            ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.current + 1,
-                  })}`,
-                  '>'
-              )
+            ? new PaginationLink(this.buildLink(options, this.current + 1), '>')
             : undefined;
     }
 
     private buildLast(options: SafeQueryOptions): PaginationLink | undefined {
         return this.hasNextPage()
-            ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: this.totalPages,
-                  })}`,
-                  String(this.totalPages)
-              )
+            ? new PaginationLink(this.buildLink(options, this.totalPages), String(this.totalPages))
             : undefined;
     }
 
     private buildSkipBack(options: SafeQueryOptions): PaginationLink | undefined {
         const skipBackValue = this.current - Math.floor(this.totalPages / 3);
         return skipBackValue > 1 && skipBackValue < this.current
-            ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: skipBackValue,
-                  })}`,
-                  String(skipBackValue)
-              )
+            ? new PaginationLink(this.buildLink(options, skipBackValue), String(skipBackValue))
             : undefined;
     }
 
@@ -91,10 +72,7 @@ export class PaginationView {
         const skipForwardValue = this.current + Math.floor(this.totalPages / 3);
         return skipForwardValue < this.totalPages && skipForwardValue > this.current
             ? new PaginationLink(
-                  `${this.baseUrl}${buildQueryString({
-                      ...options,
-                      page: skipForwardValue,
-                  })}`,
+                  this.buildLink(options, skipForwardValue),
                   String(skipForwardValue)
               )
             : undefined;

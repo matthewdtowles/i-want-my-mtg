@@ -45,6 +45,9 @@ export function buildQueryString(options: QueryOptionsData): string {
     if (options.baseOnly === false) {
         params.set('baseOnly', 'false');
     }
+    if (options.q) {
+        params.set('q', options.q);
+    }
 
     const queryString = params.toString();
     return queryString ? `?${queryString}` : '';

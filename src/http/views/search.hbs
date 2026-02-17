@@ -1,0 +1,91 @@
+<section class="content-wrapper">
+    <h3 class="page-title mb-4">Search</h3>
+
+    <form method="get" action="/search" class="mb-6">
+        <div class="flex gap-2">
+            <input type="text" name="q" value="{{query}}" placeholder="Search cards and sets..."
+                class="input-field flex-1 py-2 px-3
+                       bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600
+                       rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none
+                       text-gray-900 dark:text-gray-100"
+                autofocus />
+            <button type="submit" class="btn btn-primary px-4">Search</button>
+        </div>
+    </form>
+
+    {{#if query}}
+        {{!-- Sets Section --}}
+        {{#if sets.length}}
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">
+                Sets
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{setTotal}} found)</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {{#each sets}}
+                <a href="{{this.url}}"
+                   class="flex items-center gap-3 p-3 rounded-lg
+                          bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
+                          hover:border-teal-400 dark:hover:border-teal-500 transition-colors">
+                    <i class="ss ss-{{this.keyruneCode}} ss-2x ss-foil text-gray-700 dark:text-gray-300"></i>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 dark:text-gray-100 truncate">{{this.name}}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            {{toUpperCase this.code}}
+                            {{#if this.releaseDate}} &middot; {{this.releaseDate}}{{/if}}
+                        </div>
+                    </div>
+                    {{#each this.tags}}
+                    <span class="tag">{{this}}</span>
+                    {{/each}}
+                </a>
+                {{/each}}
+            </div>
+            {{> pagination pagination=setPagination hasItems=setPagination.totalPages}}
+        </div>
+        {{/if}}
+
+        {{!-- Cards Section --}}
+        {{#if cards.length}}
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">
+                Cards
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{cardTotal}} found)</span>
+            </h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {{#each cards}}
+                <a href="{{this.url}}"
+                   class="group flex flex-col items-center p-2 rounded-lg
+                          bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
+                          hover:border-teal-400 dark:hover:border-teal-500 transition-colors">
+                    <img src="{{this.imgSrc}}" alt="{{this.name}}"
+                         class="rounded w-full max-w-[146px] mb-2" loading="lazy" />
+                    <div class="text-center w-full">
+                        <div class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{this.name}}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <i class="ss ss-{{this.keyruneCode}} ss-{{this.rarity}} ss-fw"></i>
+                            {{toUpperCase this.setCode}} #{{this.number}}
+                        </div>
+                    </div>
+                </a>
+                {{/each}}
+            </div>
+            {{> pagination pagination=cardPagination hasItems=cardPagination.totalPages}}
+        </div>
+        {{/if}}
+
+        {{!-- Empty State --}}
+        {{#unless sets.length}}
+        {{#unless cards.length}}
+        <div class="text-center py-12">
+            <p class="text-gray-500 dark:text-gray-400 text-lg">No results found for "{{query}}"</p>
+            <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Try a different search term</p>
+        </div>
+        {{/unless}}
+        {{/unless}}
+    {{else}}
+        <div class="text-center py-12">
+            <p class="text-gray-500 dark:text-gray-400 text-lg">Enter a search term to find cards and sets</p>
+        </div>
+    {{/if}}
+</section>

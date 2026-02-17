@@ -9,7 +9,7 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CardMapper } from './card.mapper';
 import { CardOrmEntity } from './card.orm-entity';
 import { LegalityOrmEntity } from './legality.orm-entity';
@@ -178,6 +178,43 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Deleting card with id: ${id}.`);
         await this.repository.delete(id);
         this.LOGGER.debug(`Deleted card with id: ${id}.`);
+    }
+
+    async searchByName(filter: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Searching cards by name: ${filter}.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.set`, 'set');
+
+        this.applySearchFilter(qb, filter);
+
+        qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
+
+        qb.skip((options.page - 1) * options.limit).take(options.limit);
+        const results = (await qb.getMany()).map(CardMapper.toCore);
+        this.LOGGER.debug(`Search found ${results.length} cards for "${filter}".`);
+        return results;
+    }
+
+    async totalSearchByName(filter: string): Promise<number> {
+        this.LOGGER.debug(`Counting search results for: ${filter}.`);
+        const qb = this.repository.createQueryBuilder(this.TABLE);
+        this.applySearchFilter(qb, filter);
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total search results for "${filter}": ${count}.`);
+        return count;
+    }
+
+    private applySearchFilter(qb: SelectQueryBuilder<CardOrmEntity>, filter: string): void {
+        filter
+            .split(' ')
+            .filter((f) => f.length > 0)
+            .forEach((fragment, i) =>
+                qb.andWhere(`${this.TABLE}.name ILIKE :search${i}`, {
+                    [`search${i}`]: `%${fragment}%`,
+                })
+            );
     }
 
     async deleteLegality(cardId: string, format: Format): Promise<void> {

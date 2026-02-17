@@ -84,4 +84,20 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
      * @returns Promise resolving when the legality is deleted.
      */
     deleteLegality(cardId: string, format: Format): Promise<void>;
+
+    /**
+     * Searches cards by name using partial matching (ILIKE).
+     * Returns all matching printings (not deduplicated).
+     * @param filter Search term to match against card names.
+     * @param options Query options for pagination.
+     * @returns Promise resolving to an array of matching Card entities.
+     */
+    searchByName(filter: string, options: SafeQueryOptions): Promise<Card[]>;
+
+    /**
+     * Counts total card printings matching a name search.
+     * @param filter Search term to match against card names.
+     * @returns Promise resolving to the total count.
+     */
+    totalSearchByName(filter: string): Promise<number>;
 }

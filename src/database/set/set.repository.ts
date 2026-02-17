@@ -97,6 +97,39 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return Number(result[0]?.total_value ?? 0);
     }
 
+    async searchSets(filter: string, options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Searching sets by name or code: ${filter}.`);
+        const qb = this.repository.createQueryBuilder(this.TABLE);
+        this.applySearchFilter(qb, filter);
+        qb.orderBy(`${this.TABLE}.releaseDate`, this.DESC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.skip((options.page - 1) * options.limit).take(options.limit);
+        const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
+        this.LOGGER.debug(`Search found ${results.length} sets for "${filter}".`);
+        return results;
+    }
+
+    async totalSearchSets(filter: string): Promise<number> {
+        this.LOGGER.debug(`Counting set search results for: ${filter}.`);
+        const qb = this.repository.createQueryBuilder(this.TABLE);
+        this.applySearchFilter(qb, filter);
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total set search results for "${filter}": ${count}.`);
+        return count;
+    }
+
+    private applySearchFilter(qb: SelectQueryBuilder<SetOrmEntity>, filter: string): void {
+        filter
+            .split(' ')
+            .filter((f) => f.length > 0)
+            .forEach((fragment, i) =>
+                qb.andWhere(
+                    `(${this.TABLE}.name ILIKE :search${i} OR ${this.TABLE}.code ILIKE :search${i})`,
+                    { [`search${i}`]: `%${fragment}%` }
+                )
+            );
+    }
+
     private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
         if (!options.sort) {
             // Default: release date desc, then name asc

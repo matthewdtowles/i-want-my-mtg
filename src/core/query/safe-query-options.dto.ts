@@ -7,6 +7,7 @@ export interface RawQueryOptions {
     filter?: string;
     limit?: string;
     page?: string;
+    q?: string;
     sort?: string;
 }
 
@@ -16,6 +17,7 @@ export interface QueryOptionsData {
     readonly filter?: string;
     readonly limit: number;
     readonly page: number;
+    readonly q?: string;
     readonly sort?: SortOptions;
 }
 

@@ -50,4 +50,19 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
         includeFoil: boolean,
         options: SafeQueryOptions
     ): Promise<number>;
+
+    /**
+     * Searches sets by name or code using partial matching (ILIKE).
+     * @param filter Search term to match against set names or codes.
+     * @param options Query options for pagination.
+     * @returns Promise resolving to an array of matching Set entities.
+     */
+    searchSets(filter: string, options: SafeQueryOptions): Promise<Set[]>;
+
+    /**
+     * Counts total sets matching a name or code search.
+     * @param filter Search term to match against set names or codes.
+     * @returns Promise resolving to the total count.
+     */
+    totalSearchSets(filter: string): Promise<number>;
 }

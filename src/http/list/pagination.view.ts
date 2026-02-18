@@ -12,11 +12,7 @@ export class PaginationView {
     readonly last?: PaginationLink;
     readonly skipBack?: PaginationLink;
     readonly skipForward?: PaginationLink;
-    constructor(
-        options: SafeQueryOptions,
-        baseUrl: string,
-        totalItems: number,
-    ) {
+    constructor(options: SafeQueryOptions, baseUrl: string, totalItems: number) {
         this.current = options.page;
         this.limit = options.limit;
         this.totalPages = Math.ceil(totalItems / this.limit);

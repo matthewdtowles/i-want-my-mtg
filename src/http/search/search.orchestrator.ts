@@ -11,6 +11,7 @@ import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { PaginationView } from 'src/http/list/pagination.view';
 import { SetTypeMapper } from 'src/http/set/set-type.mapper';
 import { getLogger } from 'src/logger/global-app-logger';
+import { SearchSuggestResponseDto, SuggestCardDto, SuggestSetDto } from './dto/search-suggest.dto';
 import { SearchCardResultDto, SearchSetResultDto, SearchViewDto } from './dto/search.view.dto';
 
 @Injectable()
@@ -19,10 +20,24 @@ export class SearchOrchestrator {
 
     constructor(@Inject(SearchService) private readonly searchService: SearchService) {}
 
-    async search(
-        req: AuthenticatedRequest,
-        options: SearchQueryOptions
-    ): Promise<SearchViewDto> {
+    async suggest(term: string): Promise<SearchSuggestResponseDto> {
+        if (!term || term.trim().length < 2) {
+            return new SearchSuggestResponseDto({ query: term || '' });
+        }
+        try {
+            const result = await this.searchService.suggest(term);
+            return new SearchSuggestResponseDto({
+                query: term,
+                cards: result.cards.map((card) => this.toSuggestCard(card)),
+                sets: result.sets.map((set) => this.toSuggestSet(set)),
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error getting suggestions for "${term}": ${error?.message}`);
+            return new SearchSuggestResponseDto({ query: term });
+        }
+    }
+
+    async search(req: AuthenticatedRequest, options: SearchQueryOptions): Promise<SearchViewDto> {
         const term = options.q;
         this.LOGGER.debug(`Search for: ${term}.`);
         try {
@@ -80,6 +95,26 @@ export class SearchOrchestrator {
             releaseDate: set.releaseDate,
             url: `/sets/${set.code.toLowerCase()}`,
             tags: SetTypeMapper.mapSetTypeToTags(set),
+        });
+    }
+
+    private toSuggestCard(card: Card): SuggestCardDto {
+        return new SuggestCardDto({
+            name: card.name,
+            setCode: card.setCode,
+            number: card.number,
+            keyruneCode: card.set?.keyruneCode ?? card.setCode,
+            rarity: this.safeRarity(card.rarity),
+            url: `/card/${card.setCode.toLowerCase()}/${card.number}`,
+        });
+    }
+
+    private toSuggestSet(set: Set): SuggestSetDto {
+        return new SuggestSetDto({
+            code: set.code,
+            name: set.name,
+            keyruneCode: set.keyruneCode ?? set.code,
+            url: `/sets/${set.code.toLowerCase()}`,
         });
     }
 

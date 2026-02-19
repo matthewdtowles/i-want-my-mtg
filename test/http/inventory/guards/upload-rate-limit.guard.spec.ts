@@ -16,6 +16,10 @@ describe('UploadRateLimitGuard', () => {
         guard = new UploadRateLimitGuard();
     });
 
+    afterEach(() => {
+        guard.onModuleDestroy();
+    });
+
     it('allows requests under the limit', () => {
         const ctx = makeContext(1);
         for (let i = 0; i < 10; i++) {

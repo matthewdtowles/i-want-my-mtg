@@ -27,5 +27,6 @@ export interface ImportError {
 export interface ImportResult {
     saved: number;
     skipped: number;
+    deleted: number;
     errors: ImportError[];
 }

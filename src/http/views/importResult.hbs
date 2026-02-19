@@ -5,10 +5,18 @@
     <div class="content-wrapper py-6 px-4">
         <div class="max-w-md mx-auto">
             <div class="space-y-3 text-center mb-6">
+                {{#if result.saved}}
                 <p class="text-gray-700 dark:text-gray-300 text-lg">
                     <span class="font-semibold text-teal-600 dark:text-teal-400">{{result.saved}}</span>
-                    card{{#if (gt result.saved 1)}}s{{/if}} imported
+                    card{{#if (gt result.saved 1)}}s{{/if}} added
                 </p>
+                {{/if}}
+                {{#if result.deleted}}
+                <p class="text-gray-700 dark:text-gray-300 text-lg">
+                    <span class="font-semibold text-orange-600 dark:text-orange-400">{{result.deleted}}</span>
+                    card{{#if (gt result.deleted 1)}}s{{/if}} removed
+                </p>
+                {{/if}}
                 {{#if result.skipped}}
                 <p class="text-gray-500 dark:text-gray-400">
                     {{result.skipped}} row{{#if (gt result.skipped 1)}}s{{/if}} skipped (already owned)
@@ -47,8 +55,9 @@
                     </table>
                 </div>
                 {{#if result.errorCsv}}
-                <a href="data:text/csv;charset=utf-8,{{result.errorCsv}}"
-                   download="import-errors.csv"
+                <a id="download-errors-link"
+                   href="#"
+                   data-csv="{{result.errorCsv}}"
                    class="btn btn-secondary mt-3 inline-block text-sm">
                     Download Error CSV
                 </a>
@@ -58,8 +67,19 @@
 
             <div class="flex gap-3 justify-center">
                 <a href="/inventory" class="btn btn-primary">View Inventory</a>
-                <a href="/inventory" class="btn btn-secondary">Import Another</a>
+                <a href="/inventory#import" class="btn btn-secondary">Import Another</a>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+(function () {
+    var link = document.getElementById('download-errors-link');
+    if (!link) return;
+    var raw = link.getAttribute('data-csv') || '';
+    link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(raw);
+    link.setAttribute('download', 'import-errors.csv');
+    link.removeAttribute('data-csv');
+})();
+</script>

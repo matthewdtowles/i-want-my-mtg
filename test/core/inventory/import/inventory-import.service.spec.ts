@@ -138,14 +138,29 @@ describe('InventoryImportService', () => {
             );
         });
 
-        it('quantity=0 triggers delete', async () => {
+        it('quantity=0 triggers delete and counts as deleted (not saved)', async () => {
             const card = makeCard();
             mockCardRepo.findById.mockResolvedValue(card);
+            mockInventoryRepo.delete.mockResolvedValue(undefined);
 
             const result = await service.importCards([{ id: card.id, quantity: '0' }], 1);
 
             expect(mockInventoryRepo.delete).toHaveBeenCalledWith(1, card.id, false);
+            expect(result.deleted).toBe(1);
+            expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(0);
+        });
+
+        it('reports failed deletion as an error', async () => {
+            const card = makeCard();
+            mockCardRepo.findById.mockResolvedValue(card);
+            mockInventoryRepo.delete.mockRejectedValue(new Error('DB constraint'));
+
+            const result = await service.importCards([{ id: card.id, quantity: '0' }], 1);
+
+            expect(result.deleted).toBe(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0].error).toMatch(/DB constraint/);
         });
 
         it('errors on card not found by id', async () => {

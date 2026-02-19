@@ -2,6 +2,7 @@ import { ImportError } from 'src/core/inventory/import/inventory-import.types';
 
 export class ImportResultDto {
     readonly saved: number;
+    readonly deleted: number;
     readonly skipped: number;
     readonly errorCount: number;
     readonly errors: ImportError[];
@@ -9,6 +10,7 @@ export class ImportResultDto {
 
     constructor(init: Partial<ImportResultDto>) {
         this.saved = init.saved ?? 0;
+        this.deleted = init.deleted ?? 0;
         this.skipped = init.skipped ?? 0;
         this.errors = init.errors ?? [];
         this.errorCount = this.errors.length;

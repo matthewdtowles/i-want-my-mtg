@@ -130,12 +130,18 @@ export class InventoryImportService {
             }
         }
 
-        // Execute deletions
+        // Execute deletions — track successes and failures separately
+        let deleted = 0;
         for (const item of toDelete) {
             try {
                 await this.inventoryRepository.delete(item.userId, item.cardId, item.isFoil);
+                deleted++;
             } catch (e) {
                 this.LOGGER.error(`Failed to delete inventory: ${e.message}`);
+                errors.push({
+                    row: 0,
+                    error: `Failed to delete card ${item.cardId}: ${e.message}`,
+                });
             }
         }
 
@@ -162,13 +168,14 @@ export class InventoryImportService {
             ensureResult = await this.inventoryRepository.ensureAtLeastOne(toEnsure);
         }
 
-        const totalSaved = exactSaved + ensureResult.saved + toDelete.length;
+        const totalSaved = exactSaved + ensureResult.saved;
         this.LOGGER.debug(
-            `importCards complete: saved=${totalSaved}, skipped=${ensureResult.skipped}, errors=${errors.length}.`
+            `importCards complete: saved=${totalSaved}, deleted=${deleted}, skipped=${ensureResult.skipped}, errors=${errors.length}.`
         );
 
         return {
             saved: totalSaved,
+            deleted,
             skipped: ensureResult.skipped,
             errors,
         };
@@ -189,6 +196,7 @@ export class InventoryImportService {
             return {
                 saved: 0,
                 skipped: 0,
+                deleted: 0,
                 errors: [
                     {
                         row: 1,
@@ -228,7 +236,7 @@ export class InventoryImportService {
         });
 
         if (items.length === 0) {
-            return { saved: 0, skipped: 0, errors: [] };
+            return { saved: 0, skipped: 0, deleted: 0, errors: [] };
         }
 
         const result = await this.inventoryRepository.ensureAtLeastOne(items);
@@ -236,7 +244,7 @@ export class InventoryImportService {
             `importSet ${set.code}: saved=${result.saved}, skipped=${result.skipped}.`
         );
 
-        return { saved: result.saved, skipped: result.skipped, errors: [] };
+        return { saved: result.saved, skipped: result.skipped, deleted: 0, errors: [] };
     }
 
     private resolveFoil(foilValue: string | undefined, card: Card): boolean | null {

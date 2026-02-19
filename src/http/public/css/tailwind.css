@@ -2936,6 +2936,11 @@ input:where([type='file']):focus {
     color: rgb(196 23 92 / var(--tw-text-opacity, 1));
 }
 
+.text-orange-600 {
+    --tw-text-opacity: 1;
+    color: rgb(234 88 12 / var(--tw-text-opacity, 1));
+}
+
 .text-purple-700 {
     --tw-text-opacity: 1;
     color: rgb(114 51 164 / var(--tw-text-opacity, 1));
@@ -7077,6 +7082,11 @@ input:where([type='file']):focus {
 .dark\:text-hotpink-400:is(.dark *) {
     --tw-text-opacity: 1;
     color: rgb(247 110 163 / var(--tw-text-opacity, 1));
+}
+
+.dark\:text-orange-400:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(251 146 60 / var(--tw-text-opacity, 1));
 }
 
 .dark\:text-purple-200:is(.dark *) {

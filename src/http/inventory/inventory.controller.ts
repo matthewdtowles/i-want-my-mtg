@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -34,10 +35,21 @@ import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
 
+const CSV_MIME_TYPES = new Set([
+    'text/csv',
+    'text/plain',
+    'application/csv',
+    'application/octet-stream',
+]);
+
 const csvUploadInterceptor = FileInterceptor('file', {
     storage: memoryStorage(),
     limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-    fileFilter: (_req, file, cb) => cb(null, file.originalname.endsWith('.csv')),
+    fileFilter: (_req, file, cb) => {
+        const validExtension = file.originalname.toLowerCase().endsWith('.csv');
+        const validMime = CSV_MIME_TYPES.has(file.mimetype);
+        cb(null, validExtension && validMime);
+    },
 });
 
 @Controller('inventory')
@@ -71,6 +83,9 @@ export class InventoryController {
     @UseInterceptors(csvUploadInterceptor)
     @Render('importResult')
     async importCards(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('No CSV file provided or file type not accepted');
+        }
         const rows = CardCsvParser.parse(file.buffer);
         const result = await this.inventoryOrchestrator.importCards(rows, req);
         return { result };
@@ -81,21 +96,35 @@ export class InventoryController {
     @UseInterceptors(csvUploadInterceptor)
     @Render('importResult')
     async importSets(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('No CSV file provided or file type not accepted');
+        }
         const rows = SetCsvParser.parse(file.buffer);
+
+        const results = await Promise.allSettled(
+            rows.map((row) => this.inventoryOrchestrator.importSet(row, req))
+        );
+
         let totalSaved = 0;
+        let totalDeleted = 0;
         let totalSkipped = 0;
         const allErrors = [];
 
-        for (let i = 0; i < rows.length; i++) {
-            const result = await this.inventoryOrchestrator.importSet(rows[i], req);
-            totalSaved += result.saved;
-            totalSkipped += result.skipped;
-            allErrors.push(...result.errors);
+        for (const outcome of results) {
+            if (outcome.status === 'fulfilled') {
+                totalSaved += outcome.value.saved;
+                totalDeleted += outcome.value.deleted;
+                totalSkipped += outcome.value.skipped;
+                allErrors.push(...outcome.value.errors);
+            } else {
+                allErrors.push({ row: 0, error: outcome.reason?.message ?? 'Unknown error' });
+            }
         }
 
         return {
             result: {
                 saved: totalSaved,
+                deleted: totalDeleted,
                 skipped: totalSkipped,
                 errors: allErrors,
                 errorCount: allErrors.length,

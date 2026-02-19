@@ -4,16 +4,29 @@ import {
     HttpException,
     HttpStatus,
     Injectable,
+    OnModuleDestroy,
 } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
 
 const MAX_UPLOADS = 10;
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
 @Injectable()
-export class UploadRateLimitGuard implements CanActivate {
+export class UploadRateLimitGuard implements CanActivate, OnModuleDestroy {
     private readonly LOGGER = getLogger(UploadRateLimitGuard.name);
     private readonly uploads = new Map<number, number[]>();
+    private readonly cleanupTimer: NodeJS.Timeout;
+
+    constructor() {
+        this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
+        // Allow Node to exit even if this timer is still pending
+        if (this.cleanupTimer.unref) this.cleanupTimer.unref();
+    }
+
+    onModuleDestroy(): void {
+        clearInterval(this.cleanupTimer);
+    }
 
     canActivate(context: ExecutionContext): boolean {
         const request = context.switchToHttp().getRequest();
@@ -38,5 +51,19 @@ export class UploadRateLimitGuard implements CanActivate {
         userUploads.push(now);
         this.uploads.set(userId, userUploads);
         return true;
+    }
+
+    /** Remove all users whose last upload falls outside the rate-limit window. */
+    private cleanup(): void {
+        const windowStart = Date.now() - WINDOW_MS;
+        for (const [userId, timestamps] of this.uploads.entries()) {
+            const active = timestamps.filter((t) => t > windowStart);
+            if (active.length === 0) {
+                this.uploads.delete(userId);
+            } else {
+                this.uploads.set(userId, active);
+            }
+        }
+        this.LOGGER.debug(`Rate-limit cleanup: ${this.uploads.size} active users.`);
     }
 }

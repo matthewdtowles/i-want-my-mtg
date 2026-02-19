@@ -89,4 +89,27 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
      * @param foil true if foil card, false otherwise
      */
     delete(userId: number, cardId: string, foil: boolean): Promise<void>;
+
+    /**
+     * Insert inventory rows, skipping any that already exist with quantity >= 1.
+     * Uses INSERT ... ON CONFLICT (card_id, user_id, foil) DO NOTHING.
+     *
+     * Each item uses 3 SQL parameters; PostgreSQL supports up to 65535 parameters
+     * per query, allowing up to ~21845 items per call. The current MAX_ROWS import
+     * cap (2000 rows × 3 params = 6000) is well within this limit.
+     *
+     * @param items Array of items to insert
+     * @returns Number of rows inserted and skipped
+     */
+    ensureAtLeastOne(
+        items: Array<{ cardId: string; userId: number; isFoil: boolean }>
+    ): Promise<{ saved: number; skipped: number }>;
+
+    /**
+     * Find all inventory items for a user, with card and price data, for export.
+     *
+     * @param userId user ID
+     * @returns all inventory items for the user
+     */
+    findAllForExport(userId: number): Promise<Inventory[]>;
 }

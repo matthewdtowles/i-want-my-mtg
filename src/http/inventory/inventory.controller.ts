@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -11,11 +12,19 @@ import {
     Query,
     Render,
     Req,
+    Res,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { CardCsvParser } from './parsers/card-csv.parser';
+import { SetCsvParser } from './parsers/set-csv.parser';
+import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import {
     InventoryApiResponseDto,
     InventoryDeleteResponseDto,
@@ -24,6 +33,24 @@ import {
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
+import { Response } from 'express';
+
+const CSV_MIME_TYPES = new Set([
+    'text/csv',
+    'text/plain',
+    'application/csv',
+    'application/octet-stream',
+]);
+
+const csvUploadInterceptor = FileInterceptor('file', {
+    storage: memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+    fileFilter: (_req, file, cb) => {
+        const validExtension = file.originalname.toLowerCase().endsWith('.csv');
+        const validMime = CSV_MIME_TYPES.has(file.mimetype);
+        cb(null, validExtension && validMime);
+    },
+});
 
 @Controller('inventory')
 export class InventoryController {
@@ -40,6 +67,69 @@ export class InventoryController {
     ): Promise<InventoryViewDto> {
         const options = new SafeQueryOptions(query);
         return await this.inventoryOrchestrator.findByUser(req, options);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('export')
+    async exportInventory(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+        const csv = await this.inventoryOrchestrator.exportInventory(req);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="inventory.csv"');
+        res.send(csv);
+    }
+
+    @UseGuards(JwtAuthGuard, UploadRateLimitGuard)
+    @Post('import/cards')
+    @UseInterceptors(csvUploadInterceptor)
+    @Render('importResult')
+    async importCards(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('No CSV file provided or file type not accepted');
+        }
+        const rows = CardCsvParser.parse(file.buffer);
+        const result = await this.inventoryOrchestrator.importCards(rows, req);
+        return { result };
+    }
+
+    @UseGuards(JwtAuthGuard, UploadRateLimitGuard)
+    @Post('import/sets')
+    @UseInterceptors(csvUploadInterceptor)
+    @Render('importResult')
+    async importSets(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('No CSV file provided or file type not accepted');
+        }
+        const rows = SetCsvParser.parse(file.buffer);
+
+        const results = await Promise.allSettled(
+            rows.map((row) => this.inventoryOrchestrator.importSet(row, req))
+        );
+
+        let totalSaved = 0;
+        let totalDeleted = 0;
+        let totalSkipped = 0;
+        const allErrors = [];
+
+        for (const outcome of results) {
+            if (outcome.status === 'fulfilled') {
+                totalSaved += outcome.value.saved;
+                totalDeleted += outcome.value.deleted;
+                totalSkipped += outcome.value.skipped;
+                allErrors.push(...outcome.value.errors);
+            } else {
+                allErrors.push({ row: 0, error: outcome.reason?.message ?? 'Unknown error' });
+            }
+        }
+
+        return {
+            result: {
+                saved: totalSaved,
+                deleted: totalDeleted,
+                skipped: totalSkipped,
+                errors: allErrors,
+                errorCount: allErrors.length,
+            },
+        };
     }
 
     @UseGuards(JwtAuthGuard)

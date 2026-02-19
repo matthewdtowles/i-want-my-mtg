@@ -65,4 +65,11 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
      * @returns Promise resolving to the total count.
      */
     totalSearchSets(filter: string): Promise<number>;
+
+    /**
+     * Finds a Set entity by exact name (case-insensitive).
+     * @param name Exact set name to match.
+     * @returns Promise resolving to the Set entity if found, or null otherwise.
+     */
+    findByExactName(name: string): Promise<Set | null>;
 }

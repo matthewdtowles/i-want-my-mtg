@@ -164,6 +164,42 @@ export class InventoryRepository
         return count;
     }
 
+    async ensureAtLeastOne(
+        items: Array<{ cardId: string; userId: number; isFoil: boolean }>
+    ): Promise<{ saved: number; skipped: number }> {
+        this.LOGGER.debug(`ensureAtLeastOne for ${items.length} items.`);
+        if (items.length === 0) return { saved: 0, skipped: 0 };
+
+        const values = items
+            .map((_, i) => `($${i * 3 + 1}, $${i * 3 + 2}, $${i * 3 + 3}, 1)`)
+            .join(', ');
+        const params = items.flatMap((item) => [item.cardId, item.userId, item.isFoil]);
+
+        const result = await this.repository.query(
+            `INSERT INTO inventory (card_id, user_id, foil, quantity)
+             VALUES ${values}
+             ON CONFLICT (card_id, user_id, foil) DO NOTHING`,
+            params
+        );
+        const saved = result?.rowCount ?? 0;
+        const skipped = items.length - saved;
+        this.LOGGER.debug(`ensureAtLeastOne: saved ${saved}, skipped ${skipped}.`);
+        return { saved, skipped };
+    }
+
+    async findAllForExport(userId: number): Promise<Inventory[]> {
+        this.LOGGER.debug(`findAllForExport for userId: ${userId}.`);
+        const items = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.card`, 'card')
+            .where(`${this.TABLE}.userId = :userId`, { userId })
+            .orderBy('card.setCode', 'ASC')
+            .addOrderBy('card.sortNumber', 'ASC')
+            .getMany();
+        this.LOGGER.debug(`Found ${items.length} items for export.`);
+        return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
+    }
+
     async delete(userId: number, cardId: string, foil: boolean): Promise<void> {
         this.LOGGER.debug(
             `Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`

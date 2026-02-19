@@ -2,6 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
+import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -37,6 +39,14 @@ describe('InventoryOrchestrator', () => {
                         totalCards: jest.fn(),
                         totalOwnedValue: jest.fn(),
                     },
+                },
+                {
+                    provide: InventoryImportService,
+                    useValue: { importCards: jest.fn(), importSet: jest.fn() },
+                },
+                {
+                    provide: InventoryExportService,
+                    useValue: { exportToCsv: jest.fn() },
                 },
             ],
         }).compile();

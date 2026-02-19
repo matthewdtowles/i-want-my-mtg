@@ -2,8 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
+import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
 import { Set } from 'src/core/set/set.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
@@ -85,6 +87,14 @@ describe('SetOrchestrator', () => {
                         findBySet: jest.fn(),
                         totalInSet: jest.fn(),
                     },
+                },
+                {
+                    provide: InventoryImportService,
+                    useValue: { importSet: jest.fn() },
+                },
+                {
+                    provide: SetChecklistService,
+                    useValue: { generateChecklist: jest.fn() },
                 },
             ],
         }).compile();

@@ -18,6 +18,27 @@
             {{/if}}
         </ul>
 
+        {{#if authenticated}}
+        <div class="mt-4 flex flex-wrap gap-2 justify-center items-center">
+            <form method="POST" action="/sets/{{set.code}}/inventory" class="inline-flex items-center gap-2">
+                <label class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                    <input type="checkbox" name="foil" value="true" class="rounded" />
+                    Foil
+                </label>
+                <label class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                    <input type="checkbox" name="include_variants" value="true" class="rounded" />
+                    Variants
+                </label>
+                <button type="submit" class="btn btn-primary text-sm px-3 py-1.5">Add All Cards</button>
+            </form>
+            <a href="/sets/{{set.code}}/checklist" class="btn btn-secondary text-sm px-3 py-1.5">My Checklist</a>
+        </div>
+        {{else}}
+        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+            <a href="/sets/{{set.code}}/checklist" class="btn btn-secondary text-sm px-3 py-1.5">Blank Checklist</a>
+        </div>
+        {{/if}}
+
         {{! Popover - positioned relative to #set-header-container }}
         <div id="price-info-popover" class="absolute hidden left-4 right-4 top-full mt-2 z-50" role="dialog"
             aria-modal="false" aria-labelledby="popover-title">

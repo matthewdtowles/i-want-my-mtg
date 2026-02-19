@@ -125,15 +125,18 @@ export class InventoryController {
         }
 
         // Process rows sequentially to avoid unbounded DB query fan-out.
-        for (const row of rows) {
+        // Row numbers are 1-indexed; the header occupies row 1, so data row i → row i + 2.
+        for (let i = 0; i < rows.length; i++) {
+            const csvRow = i + 2;
             try {
-                const r = await this.inventoryOrchestrator.importSet(row, req);
+                const r = await this.inventoryOrchestrator.importSet(rows[i], req);
                 totalSaved += r.saved;
                 totalDeleted += r.deleted;
                 totalSkipped += r.skipped;
-                allErrors.push(...r.errors);
+                // Remap row numbers from the single-row service result to their actual CSV position.
+                allErrors.push(...r.errors.map((e) => ({ ...e, row: csvRow })));
             } catch (err) {
-                allErrors.push({ row: 0, error: (err as Error)?.message ?? 'Unknown error' });
+                allErrors.push({ row: csvRow, error: (err as Error)?.message ?? 'Unknown error' });
             }
         }
 

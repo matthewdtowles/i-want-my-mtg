@@ -18,6 +18,7 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { parse as parseCsv } from 'csv-parse/sync';
 import { memoryStorage } from 'multer';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
@@ -99,25 +100,43 @@ export class InventoryController {
         if (!file) {
             throw new BadRequestException('No CSV file provided or file type not accepted');
         }
-        const rows = SetCsvParser.parse(file.buffer);
 
-        const results = await Promise.allSettled(
-            rows.map((row) => this.inventoryOrchestrator.importSet(row, req))
-        );
+        // Detect truncation: parse at most MAX_SET_ROWS+1 raw records to check if file exceeds the cap.
+        const MAX_SET_ROWS = 2000;
+        const probe: unknown[] = parseCsv(file.buffer, {
+            columns: true,
+            skip_empty_lines: true,
+            to: MAX_SET_ROWS + 1,
+        });
+        const truncated = probe.length > MAX_SET_ROWS;
+
+        const rows = SetCsvParser.parse(file.buffer); // capped at MAX_SET_ROWS by parser
 
         let totalSaved = 0;
         let totalDeleted = 0;
         let totalSkipped = 0;
-        const allErrors = [];
+        const allErrors: Array<{ row: number; error: string }> = [];
 
-        for (const outcome of results) {
-            if (outcome.status === 'fulfilled') {
-                totalSaved += outcome.value.saved;
-                totalDeleted += outcome.value.deleted;
-                totalSkipped += outcome.value.skipped;
-                allErrors.push(...outcome.value.errors);
-            } else {
-                allErrors.push({ row: 0, error: outcome.reason?.message ?? 'Unknown error' });
+        if (truncated) {
+            allErrors.push({
+                row: MAX_SET_ROWS + 1,
+                error: `File exceeds ${MAX_SET_ROWS} row limit; only first ${MAX_SET_ROWS} rows processed`,
+            });
+        }
+
+        // Process rows sequentially to avoid unbounded DB query fan-out.
+        // Row numbers are 1-indexed; the header occupies row 1, so data row i → row i + 2.
+        for (let i = 0; i < rows.length; i++) {
+            const csvRow = i + 2;
+            try {
+                const r = await this.inventoryOrchestrator.importSet(rows[i], req);
+                totalSaved += r.saved;
+                totalDeleted += r.deleted;
+                totalSkipped += r.skipped;
+                // Remap row numbers from the single-row service result to their actual CSV position.
+                allErrors.push(...r.errors.map((e) => ({ ...e, row: csvRow })));
+            } catch (err) {
+                allErrors.push({ row: csvRow, error: (err as Error)?.message ?? 'Unknown error' });
             }
         }
 

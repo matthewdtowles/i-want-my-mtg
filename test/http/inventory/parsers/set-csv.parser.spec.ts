@@ -40,6 +40,13 @@ describe('SetCsvParser', () => {
             expect(result[1].set_code).toBe('grn');
         });
 
+        it('caps rows at 2000', () => {
+            const header = 'set_code,set_name,foil,include_variants\n';
+            const rows = Array.from({ length: 2100 }, (_, i) => `set${i},,,\n`).join('');
+            const result = SetCsvParser.parse(toBuffer(header + rows));
+            expect(result.length).toBe(2000);
+        });
+
         it('throws for unknown column', () => {
             const csv = 'set_code,bad_col\ndmu,xyz\n';
             expect(() => SetCsvParser.parse(toBuffer(csv))).toThrow(/Unknown column/);

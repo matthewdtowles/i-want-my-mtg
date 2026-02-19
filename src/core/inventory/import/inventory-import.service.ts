@@ -34,8 +34,10 @@ export class InventoryImportService {
 
         const cappedRows = rows.slice(0, MAX_ROWS);
         if (rows.length > MAX_ROWS) {
+            // Row numbers are 1-indexed with the header occupying row 1, so data row i has
+            // number i + 2. The first unprocessed row is at index MAX_ROWS → row MAX_ROWS + 2.
             errors.push({
-                row: MAX_ROWS + 1,
+                row: MAX_ROWS + 2,
                 error: `File exceeds ${MAX_ROWS} row limit; only first ${MAX_ROWS} rows processed`,
             });
         }

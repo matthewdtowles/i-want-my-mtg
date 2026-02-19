@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Get,
@@ -21,6 +22,9 @@ import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetViewDto } from './dto/set.view.dto';
 import { SetOrchestrator } from './set.orchestrator';
 import { Response } from 'express';
+
+/** Allowlist for set codes used in Content-Disposition filename headers. */
+const SAFE_SET_CODE_RE = /^[A-Za-z0-9_-]+$/;
 
 @Controller('sets')
 export class SetController {
@@ -65,6 +69,9 @@ export class SetController {
         @Req() req: AuthenticatedRequest,
         @Res() res: Response
     ): Promise<void> {
+        if (!SAFE_SET_CODE_RE.test(code)) {
+            throw new BadRequestException(`Invalid set code: "${code}"`);
+        }
         const userId = req.user?.id ?? null;
         const csv = await this.setOrchestrator.getChecklist(code, userId);
         res.setHeader('Content-Type', 'text/csv');

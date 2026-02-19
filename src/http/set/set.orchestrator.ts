@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
+import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
+import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { Set } from 'src/core/set/set.entity';
 import { SetService } from 'src/core/set/set.service';
@@ -12,6 +15,7 @@ import { Breadcrumb } from 'src/http/base/breadcrumb';
 import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
 import { CardPresenter } from 'src/http/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { ImportResultDto } from 'src/http/inventory/dto/import-result.dto';
 import { InventoryPresenter } from 'src/http/inventory/inventory.presenter';
 import { BaseOnlyToggleView } from 'src/http/list/base-only-toggle.view';
 import { FilterView } from 'src/http/list/filter.view';
@@ -35,7 +39,10 @@ export class SetOrchestrator {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
-        @Inject(CardService) private readonly cardService: CardService
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(InventoryImportService)
+        private readonly importService: InventoryImportService,
+        @Inject(SetChecklistService) private readonly checklistService: SetChecklistService
     ) {}
 
     async findSetList(
@@ -172,6 +179,40 @@ export class SetOrchestrator {
                 `Error getting last page number for cards in set ${setCode}: ${error.message}.`
             );
             return HttpErrorHandler.toHttpException(error, 'getLastCardPage');
+        }
+    }
+
+    async addSetToInventory(
+        req: AuthenticatedRequest,
+        setCode: string,
+        foil: boolean,
+        includeVariants: boolean
+    ): Promise<ImportResultDto> {
+        this.LOGGER.debug(`addSetToInventory: set ${setCode} for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const row: SetImportRow = {
+                set_code: setCode,
+                foil: foil ? 'true' : 'false',
+                include_variants: includeVariants ? 'true' : 'false',
+            };
+            const result = await this.importService.importSet(row, req.user.id);
+            return new ImportResultDto(result);
+        } catch (error) {
+            this.LOGGER.debug(
+                `Error adding set ${setCode} to inventory for user ${req.user?.id}: ${error?.message}`
+            );
+            return HttpErrorHandler.toHttpException(error, 'addSetToInventory');
+        }
+    }
+
+    async getChecklist(setCode: string, userId: number | null): Promise<string> {
+        this.LOGGER.debug(`getChecklist for set ${setCode}, user ${userId}.`);
+        try {
+            return await this.checklistService.generateChecklist(setCode, userId);
+        } catch (error) {
+            this.LOGGER.debug(`Error generating checklist for set ${setCode}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'getChecklist');
         }
     }
 

@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
 import { getLogger } from 'src/logger/global-app-logger';
+import { InventoryExportService } from './export/inventory-export.service';
+import { InventoryImportService } from './import/inventory-import.service';
 import { InventoryService } from './inventory.service';
 
 @Module({
     imports: [DatabaseModule],
-    providers: [InventoryService],
-    exports: [InventoryService],
+    providers: [InventoryService, InventoryImportService, InventoryExportService],
+    exports: [InventoryService, InventoryImportService, InventoryExportService],
 })
 export class InventoryModule {
     private readonly LOGGER = getLogger(InventoryModule.name);

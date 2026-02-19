@@ -11,11 +11,19 @@ import {
     Query,
     Render,
     Req,
+    Res,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { CardCsvParser } from './parsers/card-csv.parser';
+import { SetCsvParser } from './parsers/set-csv.parser';
+import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import {
     InventoryApiResponseDto,
     InventoryDeleteResponseDto,
@@ -24,6 +32,13 @@ import {
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
+import { Response } from 'express';
+
+const csvUploadInterceptor = FileInterceptor('file', {
+    storage: memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+    fileFilter: (_req, file, cb) => cb(null, file.originalname.endsWith('.csv')),
+});
 
 @Controller('inventory')
 export class InventoryController {
@@ -40,6 +55,52 @@ export class InventoryController {
     ): Promise<InventoryViewDto> {
         const options = new SafeQueryOptions(query);
         return await this.inventoryOrchestrator.findByUser(req, options);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('export')
+    async exportInventory(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+        const csv = await this.inventoryOrchestrator.exportInventory(req);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="inventory.csv"');
+        res.send(csv);
+    }
+
+    @UseGuards(JwtAuthGuard, UploadRateLimitGuard)
+    @Post('import/cards')
+    @UseInterceptors(csvUploadInterceptor)
+    @Render('importResult')
+    async importCards(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        const rows = CardCsvParser.parse(file.buffer);
+        const result = await this.inventoryOrchestrator.importCards(rows, req);
+        return { result };
+    }
+
+    @UseGuards(JwtAuthGuard, UploadRateLimitGuard)
+    @Post('import/sets')
+    @UseInterceptors(csvUploadInterceptor)
+    @Render('importResult')
+    async importSets(@UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+        const rows = SetCsvParser.parse(file.buffer);
+        let totalSaved = 0;
+        let totalSkipped = 0;
+        const allErrors = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const result = await this.inventoryOrchestrator.importSet(rows[i], req);
+            totalSaved += result.saved;
+            totalSkipped += result.skipped;
+            allErrors.push(...result.errors);
+        }
+
+        return {
+            result: {
+                saved: totalSaved,
+                skipped: totalSkipped,
+                errors: allErrors,
+                errorCount: allErrors.length,
+            },
+        };
     }
 
     @UseGuards(JwtAuthGuard)

@@ -97,6 +97,17 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         return Number(result[0]?.total_value ?? 0);
     }
 
+    async findByExactName(name: string): Promise<Set | null> {
+        this.LOGGER.debug(`Finding set by exact name: ${name}.`);
+        const set: SetOrmEntity = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
+            .where(`LOWER(${this.TABLE}.name) = LOWER(:name)`, { name })
+            .getOne();
+        this.LOGGER.debug(`Set ${set ? 'found' : 'not found'} for name: ${name}.`);
+        return set ? SetMapper.toCore(set) : null;
+    }
+
     async searchSets(filter: string, options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Searching sets by name or code: ${filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE);

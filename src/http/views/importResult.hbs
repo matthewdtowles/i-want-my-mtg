@@ -1,0 +1,65 @@
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">Import Complete</h3>
+    </section>
+    <div class="content-wrapper py-6 px-4">
+        <div class="max-w-md mx-auto">
+            <div class="space-y-3 text-center mb-6">
+                <p class="text-gray-700 dark:text-gray-300 text-lg">
+                    <span class="font-semibold text-teal-600 dark:text-teal-400">{{result.saved}}</span>
+                    card{{#if (gt result.saved 1)}}s{{/if}} imported
+                </p>
+                {{#if result.skipped}}
+                <p class="text-gray-500 dark:text-gray-400">
+                    {{result.skipped}} row{{#if (gt result.skipped 1)}}s{{/if}} skipped (already owned)
+                </p>
+                {{/if}}
+                {{#if result.errorCount}}
+                <p class="text-red-600 dark:text-red-400">
+                    {{result.errorCount}} row{{#if (gt result.errorCount 1)}}s{{/if}} had errors
+                </p>
+                {{/if}}
+            </div>
+
+            {{#if result.errorCount}}
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Errors:</h4>
+                <div class="overflow-auto max-h-64 border border-red-200 dark:border-red-800 rounded">
+                    <table class="table-container w-full text-sm">
+                        <thead>
+                            <tr class="bg-red-50 dark:bg-red-900/20">
+                                <th class="table-cell text-left">Row</th>
+                                <th class="table-cell text-left">Name</th>
+                                <th class="table-cell text-left">Set</th>
+                                <th class="table-cell text-left">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each result.errors}}
+                            <tr class="table-row">
+                                <td class="table-cell">{{this.row}}</td>
+                                <td class="table-cell">{{this.name}}</td>
+                                <td class="table-cell">{{this.set_code}}</td>
+                                <td class="table-cell text-red-600 dark:text-red-400">{{this.error}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                {{#if result.errorCsv}}
+                <a href="data:text/csv;charset=utf-8,{{result.errorCsv}}"
+                   download="import-errors.csv"
+                   class="btn btn-secondary mt-3 inline-block text-sm">
+                    Download Error CSV
+                </a>
+                {{/if}}
+            </div>
+            {{/if}}
+
+            <div class="flex gap-3 justify-center">
+                <a href="/inventory" class="btn btn-primary">View Inventory</a>
+                <a href="/inventory" class="btn btn-secondary">Import Another</a>
+            </div>
+        </div>
+    </div>
+</section>

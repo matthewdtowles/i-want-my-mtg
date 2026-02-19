@@ -100,4 +100,13 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
      * @returns Promise resolving to the total count.
      */
     totalSearchByName(filter: string): Promise<number>;
+
+    /**
+     * Finds all Card entities with a given name in a specific set (case-insensitive exact match).
+     * Returns array — caller errors if length > 1 (ambiguous, e.g. basic lands).
+     * @param name Exact card name (case-insensitive).
+     * @param setCode Set code.
+     * @returns Promise resolving to an array of matching Card entities.
+     */
+    findByNameAndSetCode(name: string, setCode: string): Promise<Card[]>;
 }

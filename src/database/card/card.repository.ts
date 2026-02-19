@@ -217,6 +217,19 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             );
     }
 
+    async findByNameAndSetCode(name: string, setCode: string): Promise<Card[]> {
+        this.LOGGER.debug(`Finding cards by name "${name}" in set ${setCode}.`);
+        const ormCards = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
+            .where(`LOWER(${this.TABLE}.name) = LOWER(:name)`, { name })
+            .andWhere(`${this.TABLE}.setCode = :setCode`, { setCode })
+            .getMany();
+        const cards = ormCards.map(CardMapper.toCore);
+        this.LOGGER.debug(`Found ${cards.length} cards for name "${name}" in set ${setCode}.`);
+        return cards;
+    }
+
     async deleteLegality(cardId: string, format: Format): Promise<void> {
         this.LOGGER.debug(`Deleting legality for card ${cardId} format ${format}.`);
         await this.legalityRepository.delete({ cardId, format });

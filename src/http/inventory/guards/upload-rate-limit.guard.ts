@@ -20,7 +20,10 @@ export class UploadRateLimitGuard implements CanActivate, OnModuleDestroy {
 
     constructor() {
         this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
-        // Allow Node to exit even if this timer is still pending
+        // Allow Node to exit even if this timer is still pending.
+        // NOTE: This guard is in-memory and per-process. In a multi-instance deployment the
+        // limit is not shared across instances; a shared store (e.g. Redis) would be needed
+        // for global enforcement. Acceptable for the current single-instance deployment.
         if (this.cleanupTimer.unref) this.cleanupTimer.unref();
     }
 

@@ -1,6 +1,7 @@
 import { parse } from 'csv-parse/sync';
 import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 
+const MAX_ROWS = 2000;
 const EXPECTED_HEADERS = new Set(['set_code', 'set_name', 'foil', 'include_variants']);
 
 export class SetCsvParser {
@@ -24,7 +25,7 @@ export class SetCsvParser {
             }
         }
 
-        return records.map((rec) => ({
+        return records.slice(0, MAX_ROWS).map((rec) => ({
             set_code: rec.set_code?.trim() || undefined,
             set_name: rec.set_name?.trim() || undefined,
             foil: rec.foil?.trim() || undefined,

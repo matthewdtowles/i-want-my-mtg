@@ -32,9 +32,13 @@ rm -f docker-compose.yml docker-compose.override.yml
 log_info "Setting up production compose file..."
 mv docker-compose.prod.yml docker-compose.yml
 
-log_info "Creating docker-pg-exec alias..."
-echo "alias docker-pg-exec='docker compose exec postgres psql -U \$POSTGRES_USER -d \$POSTGRES_DB'" >> ~/.bashrc
-log_info "Alias docker-pg-exec added."
+if ! grep -q 'docker-pg-exec' ~/.bashrc; then
+    log_info "Creating docker-pg-exec alias..."
+    echo "alias docker-pg-exec='docker compose exec postgres psql -U \$POSTGRES_USER -d \$POSTGRES_DB'" >> ~/.bashrc
+    log_info "Alias docker-pg-exec added."
+else
+    log_info "docker-pg-exec alias already exists, skipping."
+fi
 
 # Stop existing containers
 log_info "Stopping existing containers..."

@@ -32,6 +32,7 @@ import {
     InventoryItemDto,
 } from './dto/inventory.api-response.dto';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
+import { ImportExportGuideViewDto } from './dto/import-export-guide.view.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
@@ -58,6 +59,19 @@ export class InventoryController {
     constructor(
         @Inject(InventoryOrchestrator) private readonly inventoryOrchestrator: InventoryOrchestrator
     ) {}
+
+    @UseGuards(JwtAuthGuard)
+    @Get('import-export-guide')
+    @Render('importExportGuide')
+    async importExportGuide(): Promise<ImportExportGuideViewDto> {
+        return new ImportExportGuideViewDto({
+            title: 'Import & Export Guide',
+            breadcrumbs: [
+                { label: 'Inventory', url: '/inventory' },
+                { label: 'Import & Export Guide', url: '/inventory/import-export-guide' },
+            ],
+        });
+    }
 
     @UseGuards(JwtAuthGuard)
     @Get()

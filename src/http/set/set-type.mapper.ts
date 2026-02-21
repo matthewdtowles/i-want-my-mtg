@@ -6,6 +6,7 @@ const BONUS_SET_TYPES = new Set<string>([
     'commander',
     'duel_deck',
     'from_the_vault',
+    'masters',
     'planechase',
     'spellbook',
     'box',

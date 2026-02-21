@@ -3,7 +3,15 @@ use serde_json::Value;
 /// Business rules to determine if a card belongs in the main set.
 pub struct MainSetClassifier;
 
+/// Set types where all cards are considered non-main (bonus/supplemental).
+const NON_MAIN_SET_TYPES: &[&str] = &["masters"];
+
 impl MainSetClassifier {
+    /// Returns true if the set type means all cards are non-main.
+    pub fn is_non_main_set_type(set_type: &str) -> bool {
+        NON_MAIN_SET_TYPES.contains(&set_type.to_lowercase().as_str())
+    }
+
     /// Determine if a card should be classified as part of the main set.
     ///
     /// Returns false if:
@@ -221,5 +229,25 @@ mod tests {
         let boosters = vec![json!("arena"), json!("collector")];
         let result = MainSetClassifier::is_in_default_booster(&boosters);
         assert!(!result);
+    }
+
+    #[test]
+    fn test_is_non_main_set_type_masters() {
+        assert!(MainSetClassifier::is_non_main_set_type("masters"));
+    }
+
+    #[test]
+    fn test_is_non_main_set_type_masters_case_insensitive() {
+        assert!(MainSetClassifier::is_non_main_set_type("Masters"));
+    }
+
+    #[test]
+    fn test_is_non_main_set_type_expansion() {
+        assert!(!MainSetClassifier::is_non_main_set_type("expansion"));
+    }
+
+    #[test]
+    fn test_is_non_main_set_type_core() {
+        assert!(!MainSetClassifier::is_non_main_set_type("core"));
     }
 }

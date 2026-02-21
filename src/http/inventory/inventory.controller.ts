@@ -65,8 +65,10 @@ export class InventoryController {
     @Render('importExportGuide')
     async importExportGuide(): Promise<ImportExportGuideViewDto> {
         return new ImportExportGuideViewDto({
+            authenticated: true,
             title: 'Import & Export Guide',
             breadcrumbs: [
+                { label: 'Home', url: '/' },
                 { label: 'Inventory', url: '/inventory' },
                 { label: 'Import & Export Guide', url: '/inventory/import-export-guide' },
             ],

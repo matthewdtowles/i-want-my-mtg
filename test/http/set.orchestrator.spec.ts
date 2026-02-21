@@ -301,7 +301,7 @@ describe('SetOrchestrator', () => {
             expect(result.pagination.totalPages).toBe(10);
         });
 
-        it('forces baseOnly false when set has no base size', async () => {
+        it('forces baseOnly false when set is not a main set', async () => {
             const noBaseSet = new Set({ ...mockSet, baseSize: 0, isMain: false, totalSize: 50, cards: [] });
             setService.findByCode.mockResolvedValue(noBaseSet);
             cardService.findBySet.mockResolvedValue([mockCard]);

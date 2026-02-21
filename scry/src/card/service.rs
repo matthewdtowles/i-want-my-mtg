@@ -307,37 +307,30 @@ impl CardService {
             .repository
             .fetch_in_main_cards_for_set_types(set_types)
             .await?;
-        if cards.is_empty() {
-            return Ok(0);
-        }
-        for c in &mut cards {
-            c.in_main = false;
-            c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
-        }
-        let mut total_updated = 0i64;
-        for chunk in cards.chunks(Self::BATCH_SIZE) {
-            total_updated += self.repository.save_cards(chunk).await?;
-        }
-        debug!(
-            "Reclassified {} cards from non-main set types.",
-            total_updated
-        );
-        Ok(total_updated)
+        cards.iter_mut().for_each(Card::mark_as_non_main);
+        let total = self.save_cards_batched(&cards).await?;
+        debug!("Reclassified {} cards from non-main set types.", total);
+        Ok(total)
     }
 
     pub async fn fix_main_classification(&self) -> Result<i64> {
         debug!("Fix main set classification for all cards.");
         let mut cards = self.repository.fetch_misclassified_as_in_main().await?;
+        cards.iter_mut().for_each(Card::mark_as_non_main);
+        let total = self.save_cards_batched(&cards).await?;
+        debug!("Moved {} cards from main set.", total);
+        Ok(total)
+    }
+
+    async fn save_cards_batched(&self, cards: &[Card]) -> Result<i64> {
         if cards.is_empty() {
             return Ok(0);
         }
-        for c in &mut cards {
-            c.in_main = false;
-            c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
+        let mut total = 0i64;
+        for chunk in cards.chunks(Self::BATCH_SIZE) {
+            total += self.repository.save_cards(chunk).await?;
         }
-        let total_updated = self.repository.save_cards(&cards).await?;
-        debug!("Moved {} cards from main set.", total_updated);
-        Ok(total_updated)
+        Ok(total)
     }
 
     fn merge_and_filter_cards(mut cards: Vec<Card>) -> Vec<Card> {

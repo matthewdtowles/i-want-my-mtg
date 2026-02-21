@@ -119,26 +119,12 @@
 
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
+<script src="/public/js/tooltipManager.js" defer></script>
 <script>
-(function () {
-    var triggers = document.querySelectorAll('.import-export-tooltip-trigger');
-    triggers.forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            var tooltip = btn.parentElement.querySelector('.import-export-tooltip');
-            var isVisible = !tooltip.classList.contains('hidden');
-            document.querySelectorAll('.import-export-tooltip').forEach(function (t) {
-                t.classList.add('hidden');
-            });
-            if (!isVisible) {
-                tooltip.classList.remove('hidden');
-            }
-        });
+document.addEventListener('DOMContentLoaded', function () {
+    new TooltipManager({
+        triggerSelector: '.import-export-tooltip-trigger',
+        tooltipSelector: '.import-export-tooltip',
     });
-    document.addEventListener('click', function () {
-        document.querySelectorAll('.import-export-tooltip').forEach(function (t) {
-            t.classList.add('hidden');
-        });
-    });
-})();
+});
 </script>

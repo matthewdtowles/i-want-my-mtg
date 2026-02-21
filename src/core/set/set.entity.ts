@@ -43,4 +43,9 @@ export class Set {
         this.parentCode = init.parentCode;
         this.prices = init.prices;
     }
+
+    /** The display size for this set: baseSize for main sets, totalSize for non-main. */
+    get effectiveSize(): number {
+        return this.isMain ? this.baseSize : this.totalSize;
+    }
 }

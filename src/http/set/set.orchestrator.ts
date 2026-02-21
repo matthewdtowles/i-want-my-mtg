@@ -341,7 +341,7 @@ export class SetOrchestrator {
     private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
-        const effectiveSize = set.isMain ? set.baseSize : set.totalSize;
+        const effectiveSize = set.effectiveSize;
 
         return new SetMetaResponseDto({
             baseSize: set.baseSize,
@@ -375,7 +375,7 @@ export class SetOrchestrator {
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
-        const effectiveSize = set.isMain ? set.baseSize : set.totalSize;
+        const effectiveSize = set.effectiveSize;
 
         return new SetResponseDto({
             baseSize: set.baseSize,

@@ -94,7 +94,7 @@ export class SetOrchestrator {
                 throw new Error(`Set with code ${setCode} not found`);
             }
 
-            const forceShowAll = set.baseSize === 0;
+            const forceShowAll = !set.isMain;
             const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
             const hasFilter = !!effectiveOptions.filter;
 
@@ -341,8 +341,7 @@ export class SetOrchestrator {
     private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
-        // Use effectiveSize: totalSize when baseSize is 0
-        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+        const effectiveSize = set.isMain ? set.baseSize : set.totalSize;
 
         return new SetMetaResponseDto({
             baseSize: set.baseSize,
@@ -376,8 +375,7 @@ export class SetOrchestrator {
                 : [];
         const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
 
-        // Use effectiveSize: totalSize when baseSize is 0
-        const effectiveSize = set.baseSize > 0 ? set.baseSize : set.totalSize;
+        const effectiveSize = set.isMain ? set.baseSize : set.totalSize;
 
         return new SetResponseDto({
             baseSize: set.baseSize,

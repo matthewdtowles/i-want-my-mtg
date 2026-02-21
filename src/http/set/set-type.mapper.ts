@@ -26,7 +26,7 @@ export class SetTypeMapper {
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
             tags.push(displayTag);
-        } else if (set.baseSize === 0) {
+        } else if (!set.isMain) {
             tags.push('Bonus');
         }
         return tags;

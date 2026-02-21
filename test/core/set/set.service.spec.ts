@@ -15,6 +15,7 @@ describe('SetService', () => {
         block: 'Test Set',
         code: setCodes[i],
         imgSrc: null,
+        isMain: true,
         keyruneCode: 'set',
         name: 'Test Set' + i,
         parentCode: 'SET',

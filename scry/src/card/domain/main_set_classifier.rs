@@ -7,6 +7,11 @@ pub struct MainSetClassifier;
 const NON_MAIN_SET_TYPES: &[&str] = &["masters"];
 
 impl MainSetClassifier {
+    /// Returns the list of set types where all cards are non-main.
+    pub fn non_main_set_types() -> &'static [&'static str] {
+        NON_MAIN_SET_TYPES
+    }
+
     /// Returns true if the set type means all cards are non-main.
     pub fn is_non_main_set_type(set_type: &str) -> bool {
         NON_MAIN_SET_TYPES.contains(&set_type.to_lowercase().as_str())

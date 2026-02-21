@@ -1,7 +1,4 @@
-use crate::card::{
-    domain::{Card, MainSetClassifier},
-    mapper::CardMapper,
-};
+use crate::card::{domain::Card, mapper::CardMapper};
 use crate::utils::json_stream_parser::JsonEventProcessor;
 use actson::tokio::AsyncBufReaderJsonFeeder;
 use actson::{JsonEvent, JsonParser};
@@ -14,9 +11,7 @@ pub struct CardEventProcessor {
     card_object_depth: usize,
     current_card_json: String,
     current_set_code: Option<String>,
-    current_set_type: Option<String>,
     expecting_cards_array: bool,
-    expecting_set_type: bool,
     in_card_object: bool,
     in_cards_array: bool,
     in_set_object: bool,
@@ -104,9 +99,7 @@ impl CardEventProcessor {
             card_object_depth: 0,
             current_card_json: String::new(),
             current_set_code: None,
-            current_set_type: None,
             expecting_cards_array: false,
-            expecting_set_type: false,
             in_card_object: false,
             in_cards_array: false,
             in_set_object: false,
@@ -120,9 +113,7 @@ impl CardEventProcessor {
         // Critical: Reset ALL set state immediately when entering a new set object
         if self.json_depth == 2 {
             self.current_set_code = None;
-            self.current_set_type = None;
             self.expecting_cards_array = false;
-            self.expecting_set_type = false;
             self.in_set_object = true;
         }
         // Handle card objects within the cards array
@@ -150,14 +141,7 @@ impl CardEventProcessor {
                 self.in_card_object = false;
                 let card_result = self.parse_card_from_json(&self.current_card_json);
                 match card_result {
-                    Ok(mut card) => {
-                        if let Some(ref set_type) = self.current_set_type {
-                            if MainSetClassifier::is_non_main_set_type(set_type) {
-                                card.in_main = false;
-                                card.sort_number =
-                                    Card::compute_sort_number(&card.number, card.in_main);
-                            }
-                        }
+                    Ok(card) => {
                         self.batch.push(card);
                         if self.batch.len() >= self.batch_size {
                             return Ok(self.batch.len());
@@ -227,9 +211,6 @@ impl CardEventProcessor {
             "cards" if self.json_depth == 3 => {
                 self.expecting_cards_array = true;
             }
-            "type" if self.json_depth == 3 => {
-                self.expecting_set_type = true;
-            }
             _ if self.in_card_object => {
                 if !self.current_card_json.ends_with('{') {
                     self.current_card_json.push(',');
@@ -255,12 +236,6 @@ impl CardEventProcessor {
     }
 
     fn handle_string_value(&mut self, value: &str) -> Result<usize> {
-        // Capture set-level type field
-        if self.expecting_set_type {
-            self.current_set_type = Some(value.to_string());
-            self.expecting_set_type = false;
-            return Ok(0);
-        }
         // Handle card object values
         if self.in_card_object {
             // Check if we need a comma

@@ -23,6 +23,7 @@ describe('SearchOrchestrator', () => {
         set: {
             code: 'lea',
             baseSize: 295,
+            isMain: true,
             keyruneCode: 'lea',
             name: 'Limited Edition Alpha',
             releaseDate: '1993-08-05',
@@ -34,6 +35,7 @@ describe('SearchOrchestrator', () => {
     const mockSet = {
         code: 'lea',
         baseSize: 295,
+        isMain: true,
         keyruneCode: 'lea',
         name: 'Limited Edition Alpha',
         releaseDate: '1993-08-05',

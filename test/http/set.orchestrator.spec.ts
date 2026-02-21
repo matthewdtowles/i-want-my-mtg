@@ -28,6 +28,7 @@ describe('SetOrchestrator', () => {
     const mockSet: Set = {
         code: 'TST',
         baseSize: 2,
+        isMain: true,
         keyruneCode: 'TST',
         name: 'Test Set',
         releaseDate: String(new Date()),
@@ -313,7 +314,7 @@ describe('SetOrchestrator', () => {
         });
 
         it('forces baseOnly false when set has no base size', async () => {
-            const noBaseSet = { ...mockSet, baseSize: 0, totalSize: 50, cards: [] };
+            const noBaseSet = { ...mockSet, baseSize: 0, isMain: false, totalSize: 50, cards: [] };
             setService.findByCode.mockResolvedValue(noBaseSet);
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(5);

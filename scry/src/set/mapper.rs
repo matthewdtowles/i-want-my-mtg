@@ -30,6 +30,7 @@ impl SetMapper {
             base_size: 0,
             block,
             is_foreign_only,
+            is_main: true,
             is_online_only,
             keyrune_code,
             name,

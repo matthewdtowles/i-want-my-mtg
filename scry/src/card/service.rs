@@ -1,6 +1,8 @@
 use crate::{
     card::{
-        domain::Card, event_processor::CardEventProcessor, mapper::CardMapper,
+        domain::{Card, MainSetClassifier},
+        event_processor::CardEventProcessor,
+        mapper::CardMapper,
         repository::CardRepository,
     },
     database::ConnectionPool,
@@ -296,6 +298,28 @@ impl CardService {
             }
         }
         Ok(total_deleted)
+    }
+
+    pub async fn reclassify_non_main_set_types(&self) -> Result<i64> {
+        debug!("Reclassify cards in non-main set types.");
+        let set_types = MainSetClassifier::non_main_set_types();
+        let mut cards = self
+            .repository
+            .fetch_in_main_cards_for_set_types(set_types)
+            .await?;
+        if cards.is_empty() {
+            return Ok(0);
+        }
+        for c in &mut cards {
+            c.in_main = false;
+            c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
+        }
+        let total_updated = self.repository.save_cards(&cards).await?;
+        debug!(
+            "Reclassified {} cards from non-main set types.",
+            total_updated
+        );
+        Ok(total_updated)
     }
 
     pub async fn fix_main_classification(&self) -> Result<i64> {

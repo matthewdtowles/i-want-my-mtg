@@ -1,0 +1,3 @@
+ALTER TABLE "set" ADD COLUMN IF NOT EXISTS is_main BOOLEAN;
+UPDATE "set" SET is_main = (base_size > 0);
+ALTER TABLE "set" ALTER COLUMN is_main SET DEFAULT true, ALTER COLUMN is_main SET NOT NULL;

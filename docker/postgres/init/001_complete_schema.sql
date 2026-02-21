@@ -232,7 +232,8 @@ CREATE TABLE public.set (
     name character varying NOT NULL,
     parent_code character varying,
     release_date date NOT NULL,
-    type character varying NOT NULL
+    type character varying NOT NULL,
+    is_main boolean NOT NULL DEFAULT true
 );
 
 

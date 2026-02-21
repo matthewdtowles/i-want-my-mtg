@@ -314,7 +314,10 @@ impl CardService {
             c.in_main = false;
             c.sort_number = Card::compute_sort_number(&c.number, c.in_main);
         }
-        let total_updated = self.repository.save_cards(&cards).await?;
+        let mut total_updated = 0i64;
+        for chunk in cards.chunks(Self::BATCH_SIZE) {
+            total_updated += self.repository.save_cards(chunk).await?;
+        }
         debug!(
             "Reclassified {} cards from non-main set types.",
             total_updated

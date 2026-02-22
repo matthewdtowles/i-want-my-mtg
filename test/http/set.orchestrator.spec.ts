@@ -159,10 +159,7 @@ describe('SetOrchestrator', () => {
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
-            const result = await orchestrator.findSpoilersList(
-                mockAuthenticatedRequest,
-                []
-            );
+            const result = await orchestrator.findSpoilersList(mockAuthenticatedRequest, []);
 
             expect(result).toBeInstanceOf(SetListViewDto);
             expect(result.setList.length).toBe(1);
@@ -172,10 +169,7 @@ describe('SetOrchestrator', () => {
         it('handles empty spoiler list', async () => {
             setService.findSpoilerSets.mockResolvedValue([]);
 
-            const result = await orchestrator.findSpoilersList(
-                mockAuthenticatedRequest,
-                []
-            );
+            const result = await orchestrator.findSpoilersList(mockAuthenticatedRequest, []);
 
             expect(result.setList.length).toBe(0);
         });
@@ -339,7 +333,13 @@ describe('SetOrchestrator', () => {
         });
 
         it('forces baseOnly false when set is not a main set', async () => {
-            const noBaseSet = new Set({ ...mockSet, baseSize: 0, isMain: false, totalSize: 50, cards: [] });
+            const noBaseSet = new Set({
+                ...mockSet,
+                baseSize: 0,
+                isMain: false,
+                totalSize: 50,
+                cards: [],
+            });
             setService.findByCode.mockResolvedValue(noBaseSet);
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(5);

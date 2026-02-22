@@ -17,17 +17,11 @@ if [[ "$confirm" != [yY] ]]; then
 fi
 
 echo ""
-echo "[1/4] Stopping services..."
-docker compose down
+echo "[1/3] Stopping services and removing volumes..."
+docker compose down -v
 
 echo ""
-echo "[2/4] Removing postgres volume..."
-docker volume rm "$(docker compose config --volumes | grep postgres)" 2>/dev/null || true
-# Fallback: remove by full name
-docker volume ls -q | grep -i "i-want-my-mtg.*postgres" | xargs -r docker volume rm 2>/dev/null || true
-
-echo ""
-echo "[3/4] Starting postgres..."
+echo "[2/3] Starting postgres..."
 docker compose up -d postgres
 echo "  Waiting for PostgreSQL to be ready..."
 retries=0
@@ -42,7 +36,7 @@ done
 echo "  -> PostgreSQL is ready."
 
 echo ""
-echo "[4/4] Running migrations..."
+echo "[3/3] Running migrations..."
 docker compose run --rm migrate
 
 echo ""

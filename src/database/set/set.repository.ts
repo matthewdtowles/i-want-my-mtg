@@ -35,9 +35,10 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Finding all sets meta.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice');
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
+            .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         if (options.baseOnly) {
-            qb.where(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
         }
         this.queryHelper.applyFilters(qb, options.filter);
         this.queryHelper.applyPagination(qb, options);
@@ -45,6 +46,32 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Found ${results.length} sets.`);
         return results;
+    }
+
+    async findSpoilerSets(options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Finding spoiler sets.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
+            .where(`${this.TABLE}.releaseDate > CURRENT_DATE`);
+        this.queryHelper.applyFilters(qb, options.filter);
+        this.queryHelper.applyPagination(qb, options);
+        qb.orderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
+        this.LOGGER.debug(`Found ${results.length} spoiler sets.`);
+        return results;
+    }
+
+    async totalSpoilerSets(options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting spoiler sets.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.releaseDate > CURRENT_DATE`);
+        this.queryHelper.applyFilters(qb, options.filter);
+        const count = await qb.getCount();
+        this.LOGGER.debug(`Total spoiler sets: ${count}.`);
+        return count;
     }
 
     async findByCode(code: string): Promise<Set | null> {
@@ -59,9 +86,11 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     async totalSets(options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting total sets.`);
-        const qb = this.repository.createQueryBuilder(this.TABLE);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         if (options.baseOnly) {
-            qb.where(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
         }
         this.queryHelper.applyFilters(qb, options.filter);
         const count = await qb.getCount();

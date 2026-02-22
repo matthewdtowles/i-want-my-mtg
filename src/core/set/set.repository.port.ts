@@ -16,6 +16,20 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
     findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]>;
 
     /**
+     * Retrieves unreleased (spoiler) sets with pagination.
+     * @param {SafeQueryOptions} options - The query options for pagination and filtering.
+     * @returns {Promise<Set[]>} A promise that resolves to an array of unreleased Set entities.
+     */
+    findSpoilerSets(options: SafeQueryOptions): Promise<Set[]>;
+
+    /**
+     * Counts unreleased (spoiler) sets.
+     * @param {SafeQueryOptions} options - Optional filter criteria.
+     * @returns {Promise<number>} A promise that resolves to the count of unreleased sets.
+     */
+    totalSpoilerSets(options: SafeQueryOptions): Promise<number>;
+
+    /**
      * Finds a Set entity by its unique three-letter code.
      * @param {string} code - The unique three-letter set code (primary key).
      * @returns {Promise<Set | null>} A promise that resolves to the Set entity if found, or null otherwise.

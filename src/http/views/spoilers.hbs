@@ -1,0 +1,43 @@
+<div class="content-wrapper">
+    <div class="text-center py-6 mb-4">
+        <h1 class="font-display text-2xl md:text-3xl font-bold
+                   text-gray-800 dark:text-gray-200">
+            Upcoming Sets
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">Sets that haven't been released yet.</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <div class="flex-1">
+            {{>filter}}
+        </div>
+    </div>
+    <div id="filter-results">
+        {{#if setList.length}}
+        <div class="table-wrapper">
+        <table class="min-w-full table-container">
+            <thead>{{>tableHeadersRow}}</thead>
+            <tbody>
+                {{#each setList}}
+                <tr class="table-row">
+                    <td class="table-cell">
+                        <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
+                        <a href="{{this.url}}" class="table-link">{{this.name}}</a>
+                        {{>tags item=this}}
+                    </td>
+                    <td class="table-cell">{{this.releaseDate}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+        {{else}}
+        <div class="text-center py-16">
+            <i class="fas fa-crystal-ball text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No upcoming sets found</p>
+            <p class="text-gray-400 dark:text-gray-500 mt-2">Check back later for new spoilers.</p>
+            <a href="/sets" class="btn btn-secondary mt-6 inline-block">View Released Sets</a>
+        </div>
+        {{/if}}
+    </div>
+</div>
+{{>pagination hasItems=setList.length}}

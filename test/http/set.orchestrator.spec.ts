@@ -66,7 +66,9 @@ describe('SetOrchestrator', () => {
                     provide: SetService,
                     useValue: {
                         findSets: jest.fn(),
+                        findSpoilerSets: jest.fn(),
                         totalSetsCount: jest.fn(),
+                        totalSpoilerSetsCount: jest.fn(),
                         findByCode: jest.fn(),
                         totalCardsInSet: jest.fn(),
                         totalValueForSet: jest.fn(),
@@ -149,6 +151,46 @@ describe('SetOrchestrator', () => {
 
             expect(result.setList.length).toBe(0);
             expect(result.toast).toBeUndefined();
+        });
+    });
+
+    describe('findSpoilersList', () => {
+        it('returns spoiler sets with pagination', async () => {
+            setService.findSpoilerSets.mockResolvedValue([mockSet]);
+            setService.totalSpoilerSetsCount.mockResolvedValue(1);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findSpoilersList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(result).toBeInstanceOf(SetListViewDto);
+            expect(result.setList.length).toBe(1);
+            expect(result.pagination.current).toBe(1);
+        });
+
+        it('handles empty spoiler list', async () => {
+            setService.findSpoilerSets.mockResolvedValue([]);
+            setService.totalSpoilerSetsCount.mockResolvedValue(0);
+
+            const result = await orchestrator.findSpoilersList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(result.setList.length).toBe(0);
+        });
+
+        it('returns error DTO on service failure', async () => {
+            setService.findSpoilerSets.mockRejectedValue(new Error('DB error'));
+
+            await expect(
+                orchestrator.findSpoilersList(mockAuthenticatedRequest, [], mockQueryOptions)
+            ).rejects.toThrow('An unexpected error occurred');
         });
     });
 

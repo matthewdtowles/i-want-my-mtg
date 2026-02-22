@@ -28,7 +28,6 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 | Script | Description |
 |--------|-------------|
 | `./scripts/setup.sh` | Full dev environment setup |
-| `./scripts/test.sh` | Run tests (unit, e2e, coverage, scry) |
 | `./scripts/etl.sh` | Run Scry ETL commands |
 | `./scripts/logs.sh` | View Docker service logs |
 | `./scripts/migrate.sh` | Run database migrations |
@@ -39,11 +38,11 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 ### Testing
 
 ```bash
-./scripts/test.sh              # All unit tests
-./scripts/test.sh e2e          # E2E tests
-./scripts/test.sh cov          # Unit tests with coverage
-./scripts/test.sh scry         # Scry (Rust) tests
-./scripts/test.sh card.service # Unit tests matching pattern
+npm test                                          # All unit tests
+npm test -- --testPathPattern='card.service'       # Single test file
+npm run test:e2e                                   # E2E tests
+npm run test:cov                                   # Unit tests with coverage
+cd scry && cargo test                              # Scry (Rust) tests
 ```
 
 ### ETL (Scry)

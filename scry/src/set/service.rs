@@ -134,7 +134,7 @@ impl SetService {
         Ok(total_deleted)
     }
 
-    pub async fn update_is_main(&self) -> Result<i64> {
+    pub async fn update_main_status(&self) -> Result<i64> {
         self.repository.update_is_main().await
     }
 

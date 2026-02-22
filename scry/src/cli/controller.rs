@@ -330,7 +330,7 @@ impl CliController {
             .update_sizes(base_sizes, total_sizes)
             .await?;
         info!("Total set sizes updated: {}", total_sets_updated);
-        let total_is_main_updated = self.set_service.update_is_main().await?;
+        let total_is_main_updated = self.set_service.update_main_status().await?;
         info!("Total set is_main updated: {}", total_is_main_updated);
         let total_set_prices_updated = self.set_service.update_set_prices().await?;
         info!(

@@ -90,6 +90,7 @@ TooltipManager.prototype.toggleTooltip = function (tooltip) {
 };
 
 TooltipManager.prototype.scheduleHide = function (tooltip) {
+    this.cancelHide(tooltip);
     var self = this;
     tooltip.dataset.hideTimeout = setTimeout(function () {
         self.hideTooltip(tooltip);

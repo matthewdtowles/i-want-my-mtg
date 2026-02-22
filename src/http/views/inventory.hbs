@@ -6,11 +6,17 @@
         <p class="text-gray-700 dark:text-gray-300">Total Cards: {{this.ownedTotal}}</p>
         <p class="text-gray-700 dark:text-gray-300">All Cards: {{this.completionRate}}%</p>
         {{>completionRate}}
-        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+        <div class="mt-4 flex flex-wrap gap-2 justify-center items-center">
             <a href="/inventory/export" class="btn btn-secondary text-sm px-3 py-1.5">Export CSV</a>
+            {{>importExportTooltip hint="Downloads your full inventory as CSV. Use it as a template for imports."}}
             <label for="import-cards-file" class="btn btn-secondary text-sm px-3 py-1.5 cursor-pointer">Import Cards</label>
+            {{>importExportTooltip hint="CSV with columns: name, set_code, number, quantity, foil. Quantity 0 removes a card."}}
             <label for="import-sets-file" class="btn btn-secondary text-sm px-3 py-1.5 cursor-pointer">Import Sets</label>
+            {{>importExportTooltip hint="CSV with columns: set_code or set_name, foil, include_variants. Adds all cards in each set."}}
         </div>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <a href="/inventory/import-export-guide" class="underline hover:text-teal-600 dark:hover:text-teal-400">Import & Export Guide</a>
+        </p>
         <form id="import-cards-form" method="POST" action="/inventory/import/cards" enctype="multipart/form-data" class="hidden">
             <input id="import-cards-file" type="file" name="file" accept=".csv" onchange="this.form.submit()" />
         </form>
@@ -98,6 +104,9 @@
             <label for="import-cards-file-empty" class="btn btn-secondary inline-block cursor-pointer">Import Cards CSV</label>
             <label for="import-sets-file-empty" class="btn btn-secondary inline-block cursor-pointer">Import Sets CSV</label>
         </div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <a href="/inventory/import-export-guide" class="underline hover:text-teal-600 dark:hover:text-teal-400">Import & Export Guide</a>
+        </p>
         <form method="POST" action="/inventory/import/cards" enctype="multipart/form-data" class="hidden">
             <input id="import-cards-file-empty" type="file" name="file" accept=".csv" onchange="this.form.submit()" />
         </form>
@@ -110,3 +119,12 @@
 
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
+<script src="/public/js/tooltipManager.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    new TooltipManager({
+        triggerSelector: '.import-export-tooltip-trigger',
+        tooltipSelector: '.import-export-tooltip',
+    });
+});
+</script>

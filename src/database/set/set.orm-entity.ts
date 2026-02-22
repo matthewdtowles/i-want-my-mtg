@@ -13,6 +13,9 @@ export class SetOrmEntity {
     @Column({ nullable: true })
     block?: string;
 
+    @Column({ name: 'is_main' })
+    isMain: boolean;
+
     @OneToMany(() => CardOrmEntity, (card) => card.set)
     cards: CardOrmEntity[];
 

@@ -6,6 +6,7 @@ const BONUS_SET_TYPES = new Set<string>([
     'commander',
     'duel_deck',
     'from_the_vault',
+    'masters',
     'planechase',
     'spellbook',
     'box',
@@ -25,7 +26,7 @@ export class SetTypeMapper {
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
             tags.push(displayTag);
-        } else if (set.baseSize === 0) {
+        } else if (!set.isMain) {
             tags.push('Bonus');
         }
         return tags;

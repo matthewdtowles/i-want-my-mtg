@@ -31,7 +31,7 @@ export class SetChecklistService {
 
         const hasFoilCards = cards.some((c) => c.hasFoil);
 
-        let inventoryMap = new Map<string, { normal: number; foil: number }>();
+        const inventoryMap = new Map<string, { normal: number; foil: number }>();
         if (userId) {
             const cardIds = cards.map((c) => c.id);
             const inventory: Inventory[] = await this.inventoryRepository.findByCards(

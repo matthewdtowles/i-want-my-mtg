@@ -3,7 +3,15 @@ use serde_json::Value;
 /// Business rules to determine if a card belongs in the main set.
 pub struct MainSetClassifier;
 
+/// Set types where all cards are considered non-main (bonus/supplemental).
+const NON_MAIN_SET_TYPES: &[&str] = &["masters"];
+
 impl MainSetClassifier {
+    /// Returns the list of set types where all cards are non-main.
+    pub fn non_main_set_types() -> &'static [&'static str] {
+        NON_MAIN_SET_TYPES
+    }
+
     /// Determine if a card should be classified as part of the main set.
     ///
     /// Returns false if:

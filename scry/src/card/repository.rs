@@ -54,6 +54,33 @@ impl CardRepository {
         Ok(rows)
     }
 
+    pub async fn fetch_in_main_cards_for_set_types(
+        &self,
+        set_types: &[&str],
+    ) -> Result<Vec<Card>> {
+        if set_types.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut qb = QueryBuilder::new(
+            "SELECT c.* FROM card c
+            JOIN \"set\" s ON s.code = c.set_code
+            WHERE c.in_main = true AND s.type = ANY(",
+        );
+        qb.push_bind(
+            set_types
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>(),
+        );
+        qb.push(") ORDER BY c.set_code, c.sort_number");
+        let rows: Vec<Card> = self.db.fetch_all_query_builder(qb).await?;
+        debug!(
+            "Found {} in_main cards for non-main set types.",
+            rows.len()
+        );
+        Ok(rows)
+    }
+
     pub async fn fetch_misclassified_as_in_main(&self) -> Result<Vec<Card>> {
         let qb = QueryBuilder::new(
             "WITH nums AS (

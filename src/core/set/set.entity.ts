@@ -5,6 +5,7 @@ import { SetPrice } from './set-price.entity';
 export class Set {
     readonly code: string;
     readonly baseSize: number;
+    readonly isMain: boolean;
     readonly keyruneCode: string;
     readonly name: string;
     readonly releaseDate: string;
@@ -20,6 +21,7 @@ export class Set {
         const requiredFields: (keyof Set)[] = [
             'code',
             'baseSize',
+            'isMain',
             'keyruneCode',
             'name',
             'releaseDate',
@@ -29,6 +31,7 @@ export class Set {
         validateInit(init, requiredFields);
         this.code = init.code;
         this.baseSize = init.baseSize;
+        this.isMain = init.isMain;
         this.keyruneCode = init.keyruneCode;
         this.name = init.name;
         this.releaseDate = init.releaseDate;
@@ -39,5 +42,10 @@ export class Set {
         this.cards = init.cards;
         this.parentCode = init.parentCode;
         this.prices = init.prices;
+    }
+
+    /** The display size for this set: baseSize for main sets, totalSize for non-main. */
+    get effectiveSize(): number {
+        return this.isMain ? this.baseSize : this.totalSize;
     }
 }

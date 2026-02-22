@@ -10,25 +10,24 @@ describe('SetService', () => {
 
     const mockSetCode: string = 'SET';
     const setCodes: string[] = ['SET', 'ETS', 'TES'];
-    const mockCreateSetDtos: Set[] = Array.from({ length: 3 }, (_, i) => ({
-        baseSize: 3,
-        block: 'Test Set',
-        code: setCodes[i],
-        imgSrc: null,
-        keyruneCode: 'set',
-        name: 'Test Set' + i,
-        parentCode: 'SET',
-        releaseDate: '2022-01-01',
-        totalSize: 3,
-        type: 'expansion',
-        url: 'sets/' + setCodes[i],
-    }));
-    const mockSets: Set[] = mockCreateSetDtos.map((dto, i) => ({
-        ...dto,
-        id: i + 1,
-        setCode: dto.code,
-        cards: [],
-    }));
+    const mockCreateSetDtos: Set[] = Array.from(
+        { length: 3 },
+        (_, i) =>
+            new Set({
+                baseSize: 3,
+                block: 'Test Set',
+                cards: [],
+                code: setCodes[i],
+                isMain: true,
+                keyruneCode: 'set',
+                name: 'Test Set' + i,
+                parentCode: 'SET',
+                releaseDate: '2022-01-01',
+                totalSize: 3,
+                type: 'expansion',
+            })
+    );
+    const mockSets: Set[] = mockCreateSetDtos;
 
     const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10' });
 

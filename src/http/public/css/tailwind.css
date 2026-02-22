@@ -1972,8 +1972,16 @@ input:where([type='file']):focus {
     inset: 0px;
 }
 
+.bottom-full {
+    bottom: 100%;
+}
+
 .left-0 {
     left: 0px;
+}
+
+.left-1\/2 {
+    left: 50%;
 }
 
 .left-3 {
@@ -2075,6 +2083,10 @@ input:where([type='file']):focus {
 
 .mb-8 {
     margin-bottom: 2rem;
+}
+
+.ml-1 {
+    margin-left: 0.25rem;
 }
 
 .mr-2 {
@@ -2229,6 +2241,10 @@ input:where([type='file']):focus {
     width: 1.25rem;
 }
 
+.w-52 {
+    width: 13rem;
+}
+
 .w-6 {
     width: 1.5rem;
 }
@@ -2243,6 +2259,10 @@ input:where([type='file']):focus {
 
 .min-w-full {
     min-width: 100%;
+}
+
+.max-w-3xl {
+    max-width: 48rem;
 }
 
 .max-w-6xl {
@@ -2281,6 +2301,13 @@ input:where([type='file']):focus {
     flex-shrink: 0;
 }
 
+.-translate-x-1\/2 {
+    --tw-translate-x: -50%;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate))
+        skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+        scaleY(var(--tw-scale-y));
+}
+
 .-translate-y-1\/2 {
     --tw-translate-y: -50%;
     transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate))
@@ -2307,6 +2334,10 @@ input:where([type='file']):focus {
 
 .list-inside {
     list-style-position: inside;
+}
+
+.list-decimal {
+    list-style-type: decimal;
 }
 
 .list-disc {
@@ -2367,6 +2398,12 @@ input:where([type='file']):focus {
     --tw-space-x-reverse: 0;
     margin-right: calc(1rem * var(--tw-space-x-reverse));
     margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
@@ -2443,6 +2480,10 @@ input:where([type='file']):focus {
 
 .border-2 {
     border-width: 2px;
+}
+
+.border-b {
+    border-bottom-width: 1px;
 }
 
 .border-b-2 {
@@ -2748,6 +2789,10 @@ input:where([type='file']):focus {
     padding-bottom: 1rem;
 }
 
+.pb-6 {
+    padding-bottom: 1.5rem;
+}
+
 .pl-0 {
     padding-left: 0px;
 }
@@ -2880,6 +2925,10 @@ input:where([type='file']):focus {
 
 .italic {
     font-style: italic;
+}
+
+.leading-relaxed {
+    line-height: 1.625;
 }
 
 .tracking-wide {
@@ -6669,6 +6718,11 @@ input:where([type='file']):focus {
 .hover\:text-teal-100:hover {
     --tw-text-opacity: 1;
     color: rgb(212 250 247 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-teal-200:hover {
+    --tw-text-opacity: 1;
+    color: rgb(168 244 239 / var(--tw-text-opacity, 1));
 }
 
 .hover\:text-teal-600:hover {

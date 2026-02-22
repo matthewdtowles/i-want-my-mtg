@@ -56,6 +56,15 @@ impl Card {
         false
     }
 
+    /// Mark this card as not belonging to the main (base) set.
+    ///
+    /// Sets `in_main` to false and recomputes `sort_number` accordingly
+    /// (non-main cards get a `~` prefix for sorting after main cards).
+    pub fn mark_as_non_main(&mut self) {
+        self.in_main = false;
+        self.sort_number = Self::compute_sort_number(&self.number, self.in_main);
+    }
+
     /// Is this a split or aftermath card requiring mana cost merging?
     pub fn is_split_card(&self) -> bool {
         matches!(self.layout.as_str(), "split" | "aftermath")

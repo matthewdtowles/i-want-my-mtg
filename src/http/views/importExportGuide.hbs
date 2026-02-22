@@ -1,0 +1,171 @@
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">Import & Export Guide</h3>
+    </section>
+    <div class="content-wrapper py-6 px-4">
+        <div class="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+
+            {{!-- Export Section --}}
+            <div class="pb-6 mb-6 border-b border-gray-200 dark:border-midnight-600">
+                <h4 class="text-lg font-semibold mb-3">Export CSV</h4>
+                <p class="mb-3">Exports your entire inventory as a CSV file. Use the exported file as a template for card imports.</p>
+                <table class="table-container w-full text-sm mb-2">
+                    <thead>
+                        <tr>
+                            <th class="table-cell text-left">Column</th>
+                            <th class="table-cell text-left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">id</code></td>
+                            <td class="table-cell">Scryfall card ID (UUID)</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">name</code></td>
+                            <td class="table-cell">Card name</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code></td>
+                            <td class="table-cell">Set code (e.g. "dsk")</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">number</code></td>
+                            <td class="table-cell">Collector number within the set</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">quantity</code></td>
+                            <td class="table-cell">Number of copies owned</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">foil</code></td>
+                            <td class="table-cell">Whether the card is foil (true/false)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {{!-- Card Import Section --}}
+            <div class="pb-6 mb-6 border-b border-gray-200 dark:border-midnight-600">
+                <h4 class="text-lg font-semibold mb-3">Import Cards</h4>
+                <p class="mb-3">Import individual cards into your inventory from a CSV file.</p>
+
+                <h5 class="font-semibold mb-2">CSV Columns</h5>
+                <table class="table-container w-full text-sm mb-4">
+                    <thead>
+                        <tr>
+                            <th class="table-cell text-left">Column</th>
+                            <th class="table-cell text-left">Required</th>
+                            <th class="table-cell text-left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">id</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">Scryfall card ID &mdash; most precise match</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">name</code></td>
+                            <td class="table-cell">Yes*</td>
+                            <td class="table-cell">Card name (required unless <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">id</code> is provided)</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">Set code to narrow the match</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">number</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">Collector number for exact set+number match</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">quantity</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">Number of copies to set (see behavior below)</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">foil</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">true/false &mdash; omit to auto-detect from card data</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h5 class="font-semibold mb-2">How Cards Are Matched</h5>
+                <p class="mb-3">Cards are matched in this priority order:</p>
+                <ol class="list-decimal list-inside mb-4 space-y-1">
+                    <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">id</code> (exact Scryfall ID)</li>
+                    <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code> + <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">number</code></li>
+                    <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">name</code> + <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code></li>
+                    <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">name</code> alone (uses the most recent printing)</li>
+                </ol>
+
+                <h5 class="font-semibold mb-2">Quantity Behavior</h5>
+                <ul class="list-disc list-inside mb-4 space-y-1">
+                    <li>A number (e.g. <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">4</code>) &mdash; sets the quantity to that value</li>
+                    <li><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">0</code> &mdash; removes the card from your inventory</li>
+                    <li>Empty or omitted &mdash; ensures at least 1 copy (won't reduce existing quantity)</li>
+                </ul>
+
+                <h5 class="font-semibold mb-2">Limits</h5>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>2,000 rows per file</li>
+                    <li>2 MB maximum file size</li>
+                    <li>10 uploads per hour</li>
+                </ul>
+            </div>
+
+            {{!-- Set Import Section --}}
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-3">Import Sets</h4>
+                <p class="mb-3">Import entire sets into your inventory at once. Each row adds all cards from the specified set.</p>
+
+                <h5 class="font-semibold mb-2">CSV Columns</h5>
+                <table class="table-container w-full text-sm mb-4">
+                    <thead>
+                        <tr>
+                            <th class="table-cell text-left">Column</th>
+                            <th class="table-cell text-left">Required</th>
+                            <th class="table-cell text-left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code></td>
+                            <td class="table-cell">Yes*</td>
+                            <td class="table-cell">Set code (e.g. "dsk") &mdash; required unless <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_name</code> is provided</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_name</code></td>
+                            <td class="table-cell">Yes*</td>
+                            <td class="table-cell">Set name (e.g. "Duskmourn") &mdash; used if <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">set_code</code> is missing</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">foil</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">true/false &mdash; defaults to false (non-foil)</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">include_variants</code></td>
+                            <td class="table-cell">No</td>
+                            <td class="table-cell">true/false &mdash; include variant printings (defaults to false, base cards only)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h5 class="font-semibold mb-2">Limits</h5>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>2,000 rows per file</li>
+                    <li>2 MB maximum file size</li>
+                    <li>10 uploads per hour</li>
+                </ul>
+            </div>
+
+            <div class="text-center pt-4 border-t border-gray-200 dark:border-midnight-600">
+                <a href="/inventory" class="btn btn-secondary">Back to Inventory</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -25,16 +25,17 @@ describe('SetOrchestrator', () => {
         isAuthenticated: () => true,
     } as AuthenticatedRequest;
 
-    const mockSet: Set = {
+    const mockSet: Set = new Set({
         code: 'TST',
         baseSize: 2,
+        isMain: true,
         keyruneCode: 'TST',
         name: 'Test Set',
         releaseDate: String(new Date()),
         cards: [],
         totalSize: 2,
         type: 'test',
-    };
+    });
 
     const mockQueryOptions = new SafeQueryOptions({ page: '1', limit: '10', filter: 'test' });
 
@@ -153,7 +154,7 @@ describe('SetOrchestrator', () => {
 
     describe('findBySetCode', () => {
         it('returns set details and paginated cards', async () => {
-            setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
+            setService.findByCode.mockResolvedValue(mockSet);
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
@@ -182,7 +183,7 @@ describe('SetOrchestrator', () => {
 
         it('handles unauthenticated requests gracefully', async () => {
             const unauthReq = { user: null, isAuthenticated: () => false } as AuthenticatedRequest;
-            setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
+            setService.findByCode.mockResolvedValue(mockSet);
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
@@ -196,7 +197,7 @@ describe('SetOrchestrator', () => {
         });
 
         it('returns error DTO on card service failure', async () => {
-            setService.findByCode.mockResolvedValue({ ...mockSet, cards: [] });
+            setService.findByCode.mockResolvedValue(mockSet);
             cardService.findBySet.mockRejectedValue(new Error('Card error'));
 
             await expect(
@@ -210,12 +211,9 @@ describe('SetOrchestrator', () => {
                 limit: '10',
                 filter: 'dragon',
             });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 100,
-                totalSize: 150,
-                cards: [],
-            });
+            setService.findByCode.mockResolvedValue(
+                new Set({ ...mockSet, baseSize: 100, totalSize: 150 })
+            );
             cardService.findBySet.mockResolvedValue([mockCard]);
             // 3 cards match the filter out of 100 base cards
             cardService.totalInSet.mockResolvedValue(3);
@@ -243,12 +241,9 @@ describe('SetOrchestrator', () => {
                 limit: '5',
                 filter: 'goblin',
             });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 200,
-                totalSize: 300,
-                cards: [],
-            });
+            setService.findByCode.mockResolvedValue(
+                new Set({ ...mockSet, baseSize: 200, totalSize: 300 })
+            );
             cardService.findBySet.mockResolvedValue([mockCard]);
             // 12 cards match filter => 3 pages at limit=5
             cardService.totalInSet.mockResolvedValue(12);
@@ -271,12 +266,9 @@ describe('SetOrchestrator', () => {
                 limit: '10',
                 filter: 'elf',
             });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 100,
-                totalSize: 150,
-                cards: [],
-            });
+            setService.findByCode.mockResolvedValue(
+                new Set({ ...mockSet, baseSize: 100, totalSize: 150 })
+            );
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(8);
             inventoryService.findByCards.mockResolvedValue([]);
@@ -290,12 +282,9 @@ describe('SetOrchestrator', () => {
 
         it('uses set sizes instead of card count query when no filter is applied', async () => {
             const noFilterOptions = new SafeQueryOptions({ page: '1', limit: '10' });
-            setService.findByCode.mockResolvedValue({
-                ...mockSet,
-                baseSize: 100,
-                totalSize: 150,
-                cards: [],
-            });
+            setService.findByCode.mockResolvedValue(
+                new Set({ ...mockSet, baseSize: 100, totalSize: 150 })
+            );
             cardService.findBySet.mockResolvedValue([mockCard]);
             inventoryService.findByCards.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
@@ -312,8 +301,8 @@ describe('SetOrchestrator', () => {
             expect(result.pagination.totalPages).toBe(10);
         });
 
-        it('forces baseOnly false when set has no base size', async () => {
-            const noBaseSet = { ...mockSet, baseSize: 0, totalSize: 50, cards: [] };
+        it('forces baseOnly false when set is not a main set', async () => {
+            const noBaseSet = new Set({ ...mockSet, baseSize: 0, isMain: false, totalSize: 50, cards: [] });
             setService.findByCode.mockResolvedValue(noBaseSet);
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(5);

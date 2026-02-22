@@ -16,6 +16,9 @@ pub struct Set {
     pub set_type: String,
     pub total_size: i32,
 
+    #[sqlx(default)]
+    pub is_main: bool,
+
     #[sqlx(skip)]
     pub is_online_only: bool,
     #[sqlx(skip)]
@@ -45,6 +48,7 @@ mod tests {
             name: "Test Set".to_string(),
             parent_code: Some("tst".to_string()),
             is_foreign_only: false,
+            is_main: true,
             is_online_only: false,
             release_date: NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
             set_type: "core".to_string(),

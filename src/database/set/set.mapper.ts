@@ -9,6 +9,7 @@ export class SetMapper {
     static toCore(ormSet: SetOrmEntity): Set {
         return new Set({
             code: ormSet.code,
+            isMain: ormSet.isMain,
             name: ormSet.name,
             releaseDate: ormSet.releaseDate,
             type: ormSet.type,
@@ -29,6 +30,7 @@ export class SetMapper {
         ormEntity.baseSize = coreSet.baseSize;
         ormEntity.block = coreSet.block;
         ormEntity.code = coreSet.code;
+        ormEntity.isMain = coreSet.isMain;
         ormEntity.keyruneCode = coreSet.keyruneCode;
         ormEntity.name = coreSet.name;
         ormEntity.releaseDate = coreSet.releaseDate;

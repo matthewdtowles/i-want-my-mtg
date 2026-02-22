@@ -29,6 +29,7 @@ function makeSet(overrides: Partial<Set> = {}): Set {
     return new Set({
         code: 'dmu',
         baseSize: 280,
+        isMain: true,
         keyruneCode: 'dmu',
         name: 'Dominaria United',
         releaseDate: '2022-09-09',

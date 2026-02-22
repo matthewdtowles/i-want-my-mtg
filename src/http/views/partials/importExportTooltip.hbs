@@ -1,0 +1,17 @@
+<span class="relative inline-block">
+    <button type="button"
+        class="import-export-tooltip-trigger text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors ml-1 align-middle"
+        aria-label="{{hint}}">
+        <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd" />
+        </svg>
+    </button>
+    <span class="import-export-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-midnight-800 dark:bg-midnight-700 text-white text-xs rounded-lg p-2 shadow-lg z-10 w-52 text-center">
+        {{hint}}
+        <br>
+        <a href="/inventory/import-export-guide" class="text-teal-300 hover:text-teal-200 underline mt-1 inline-block">Full guide</a>
+        <span class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-midnight-800 dark:bg-midnight-700 transform rotate-45"></span>
+    </span>
+</span>

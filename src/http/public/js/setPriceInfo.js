@@ -147,123 +147,32 @@
     }
 
     /**
-     * Manages price info tooltips
+     * Populates dynamic tooltip descriptions based on data attributes
      */
-    class TooltipManager {
-        constructor() {
-            this.activeTooltips = new Set();
-            this.init();
-        }
+    function initializeTooltipDescriptions() {
+        document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
+            const tooltip = trigger.nextElementSibling;
+            if (!tooltip?.classList.contains('price-info-tooltip')) return;
 
-        init() {
-            this.initializeTooltipDescriptions();
-            this.attachEventListeners();
-            this.setupGlobalClickHandler();
-        }
+            const type = trigger.dataset.tooltipType;
+            const baseSize = parseInt(trigger.dataset.baseSize);
+            const totalSize = parseInt(trigger.dataset.totalSize);
 
-        initializeTooltipDescriptions() {
-            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
-                const tooltip = trigger.nextElementSibling;
-                if (!tooltip?.classList.contains('price-info-tooltip')) return;
-
-                const type = trigger.dataset.tooltipType;
-                const baseSize = parseInt(trigger.dataset.baseSize);
-                const totalSize = parseInt(trigger.dataset.totalSize);
-
-                const descriptionElement = tooltip.querySelector(
-                    CONFIG.selectors.tooltip.description
-                );
-                if (descriptionElement && CONFIG.tooltipTypes[type]) {
-                    descriptionElement.textContent = CONFIG.tooltipTypes[type](baseSize, totalSize);
-                }
-            });
-        }
-
-        attachEventListeners() {
-            document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
-                const tooltip = trigger.nextElementSibling;
-                if (!tooltip?.classList.contains('price-info-tooltip')) return;
-
-                // Mouse events for hover behavior
-                trigger.addEventListener(CONFIG.events.mouseenter, () => this.showTooltip(tooltip));
-                trigger.addEventListener(CONFIG.events.mouseleave, () =>
-                    this.scheduleHide(tooltip)
-                );
-
-                // Click event for toggle behavior
-                trigger.addEventListener(CONFIG.events.click, (e) => {
-                    e.stopPropagation();
-                    this.toggleTooltip(tooltip);
-                });
-
-                // Keep tooltip visible when hovering over it
-                tooltip.addEventListener(CONFIG.events.mouseenter, () => {
-                    this.cancelHide(tooltip);
-                    this.showTooltip(tooltip);
-                });
-                tooltip.addEventListener(CONFIG.events.mouseleave, () =>
-                    this.scheduleHide(tooltip)
-                );
-
-                // Prevent tooltip clicks from bubbling
-                tooltip.addEventListener(CONFIG.events.click, (e) => e.stopPropagation());
-            });
-        }
-
-        setupGlobalClickHandler() {
-            document.addEventListener(CONFIG.events.click, (e) => {
-                const isTooltipClick = e.target.closest(CONFIG.selectors.tooltip.tooltip);
-                const isTriggerClick = e.target.closest(CONFIG.selectors.tooltip.trigger);
-
-                if (!isTooltipClick && !isTriggerClick) {
-                    this.hideAllTooltips();
-                }
-            });
-        }
-
-        showTooltip(tooltip) {
-            this.cancelHide(tooltip);
-            tooltip.classList.remove(CONFIG.classes.hidden);
-            this.activeTooltips.add(tooltip);
-        }
-
-        hideTooltip(tooltip) {
-            tooltip.classList.add(CONFIG.classes.hidden);
-            this.activeTooltips.delete(tooltip);
-            delete tooltip.dataset.hideTimeout;
-        }
-
-        toggleTooltip(tooltip) {
-            if (tooltip.classList.contains(CONFIG.classes.hidden)) {
-                this.showTooltip(tooltip);
-            } else {
-                this.hideTooltip(tooltip);
+            const descriptionElement = tooltip.querySelector(CONFIG.selectors.tooltip.description);
+            if (descriptionElement && CONFIG.tooltipTypes[type]) {
+                descriptionElement.textContent = CONFIG.tooltipTypes[type](baseSize, totalSize);
             }
-        }
-
-        scheduleHide(tooltip) {
-            // Small delay to allow moving mouse from trigger to tooltip
-            tooltip.dataset.hideTimeout = setTimeout(() => {
-                this.hideTooltip(tooltip);
-            }, 100);
-        }
-
-        cancelHide(tooltip) {
-            if (tooltip.dataset.hideTimeout) {
-                clearTimeout(tooltip.dataset.hideTimeout);
-                delete tooltip.dataset.hideTimeout;
-            }
-        }
-
-        hideAllTooltips() {
-            this.activeTooltips.forEach((tooltip) => this.hideTooltip(tooltip));
-        }
+        });
     }
 
-    // Initialize both managers when DOM is ready
+    // Initialize popover, tooltip descriptions, and shared tooltip manager
     function initialize() {
         new PopoverManager();
-        new TooltipManager();
+        initializeTooltipDescriptions();
+        new TooltipManager({
+            triggerSelector: CONFIG.selectors.tooltip.trigger,
+            tooltipSelector: CONFIG.selectors.tooltip.tooltip,
+        });
     }
 
     if (document.readyState === 'loading') {

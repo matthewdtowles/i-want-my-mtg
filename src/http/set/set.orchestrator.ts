@@ -84,26 +84,17 @@ export class SetOrchestrator {
 
     async findSpoilersList(
         req: AuthenticatedRequest,
-        breadcrumbs: Breadcrumb[],
-        options: SafeQueryOptions
+        breadcrumbs: Breadcrumb[]
     ): Promise<SetListViewDto> {
         this.LOGGER.debug(`Find list of spoiler sets.`);
         try {
             const userId = req.user?.id ?? 0;
-            const [sets, totalCount] = await Promise.all([
-                this.setService.findSpoilerSets(options),
-                this.setService.totalSpoilerSetsCount(options),
-            ]);
-
-            const baseUrl = '/spoilers';
+            const sets = await this.setService.findSpoilerSets();
 
             return new SetListViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
                 setList: await this.createSetMetaResponseDtos(userId, sets),
-                pagination: new PaginationView(options, baseUrl, totalCount),
-                filter: new FilterView(options, baseUrl),
-                tableHeadersRow: this.buildSpoilersTableHeaders(options),
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding spoiler sets: ${error?.message}`);
@@ -345,13 +336,6 @@ export class SetOrchestrator {
             new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2'])
         );
         return headers;
-    }
-
-    private buildSpoilersTableHeaders(options: SafeQueryOptions): TableHeadersRowView {
-        return new TableHeadersRowView([
-            new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-            new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['pr-2']),
-        ]);
     }
 
     private buildSetDetailTableHeaders(options: SafeQueryOptions): TableHeadersRowView {

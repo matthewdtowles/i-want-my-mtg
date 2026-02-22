@@ -15,14 +15,9 @@ export class SetService {
         return await this.repository.findAllSetsMeta(query);
     }
 
-    async findSpoilerSets(query: SafeQueryOptions): Promise<Set[]> {
+    async findSpoilerSets(): Promise<Set[]> {
         this.LOGGER.debug(`Calling findSpoilerSets.`);
-        return await this.repository.findSpoilerSets(query);
-    }
-
-    async totalSpoilerSetsCount(options: SafeQueryOptions): Promise<number> {
-        this.LOGGER.debug(`Calling totalSpoilerSetsCount.`);
-        return await this.repository.totalSpoilerSets(options);
+        return await this.repository.findSpoilerSets();
     }
 
     async findByCode(setCode: string): Promise<Set | null> {

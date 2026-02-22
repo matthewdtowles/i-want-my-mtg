@@ -36,7 +36,6 @@ describe('SetService', () => {
         findAllSetsMeta: jest.fn(),
         findSpoilerSets: jest.fn(),
         totalSets: jest.fn(),
-        totalSpoilerSets: jest.fn(),
         totalCards: jest.fn(),
         totalCardsInSet: jest.fn(),
         totalInSet: jest.fn(),
@@ -208,37 +207,18 @@ describe('SetService', () => {
         it('should return spoiler sets', async () => {
             repository.findSpoilerSets.mockResolvedValue(mockSets);
 
-            const result = await service.findSpoilerSets(mockQueryOptions);
+            const result = await service.findSpoilerSets();
 
-            expect(repository.findSpoilerSets).toHaveBeenCalledWith(mockQueryOptions);
+            expect(repository.findSpoilerSets).toHaveBeenCalled();
             expect(result).toEqual(mockSets);
         });
 
         it('should return empty array when no spoiler sets exist', async () => {
             repository.findSpoilerSets.mockResolvedValue([]);
 
-            const result = await service.findSpoilerSets(mockQueryOptions);
+            const result = await service.findSpoilerSets();
 
             expect(result).toEqual([]);
-        });
-    });
-
-    describe('totalSpoilerSetsCount', () => {
-        it('should return total count of spoiler sets', async () => {
-            repository.totalSpoilerSets.mockResolvedValue(2);
-
-            const result = await service.totalSpoilerSetsCount(mockQueryOptions);
-
-            expect(repository.totalSpoilerSets).toHaveBeenCalledWith(mockQueryOptions);
-            expect(result).toBe(2);
-        });
-
-        it('should return 0 when no spoiler sets exist', async () => {
-            repository.totalSpoilerSets.mockResolvedValue(0);
-
-            const result = await service.totalSpoilerSetsCount(mockQueryOptions);
-
-            expect(result).toBe(0);
         });
     });
 

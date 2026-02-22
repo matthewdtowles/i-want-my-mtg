@@ -34,6 +34,7 @@ describe('SetService', () => {
     const mockSetRepository = {
         findByCode: jest.fn(),
         findAllSetsMeta: jest.fn(),
+        findSpoilerSets: jest.fn(),
         totalSets: jest.fn(),
         totalCards: jest.fn(),
         totalCardsInSet: jest.fn(),
@@ -199,6 +200,25 @@ describe('SetService', () => {
             await expect(
                 service.totalValueForSet(mockSetCode, true, mockQueryOptions)
             ).rejects.toThrow(`Error getting total value of cards for set ${mockSetCode}`);
+        });
+    });
+
+    describe('findSpoilerSets', () => {
+        it('should return spoiler sets', async () => {
+            repository.findSpoilerSets.mockResolvedValue(mockSets);
+
+            const result = await service.findSpoilerSets();
+
+            expect(repository.findSpoilerSets).toHaveBeenCalled();
+            expect(result).toEqual(mockSets);
+        });
+
+        it('should return empty array when no spoiler sets exist', async () => {
+            repository.findSpoilerSets.mockResolvedValue([]);
+
+            const result = await service.findSpoilerSets();
+
+            expect(result).toEqual([]);
         });
     });
 

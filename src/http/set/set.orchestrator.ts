@@ -82,6 +82,26 @@ export class SetOrchestrator {
         }
     }
 
+    async findSpoilersList(
+        req: AuthenticatedRequest,
+        breadcrumbs: Breadcrumb[]
+    ): Promise<SetListViewDto> {
+        this.LOGGER.debug(`Find list of spoiler sets.`);
+        try {
+            const userId = req.user?.id ?? 0;
+            const sets = await this.setService.findSpoilerSets();
+
+            return new SetListViewDto({
+                authenticated: isAuthenticated(req),
+                breadcrumbs,
+                setList: await this.createSetMetaResponseDtos(userId, sets),
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error finding spoiler sets: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'findSpoilersList');
+        }
+    }
+
     async findBySetCode(
         req: AuthenticatedRequest,
         setCode: string,

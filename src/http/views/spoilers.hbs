@@ -1,0 +1,37 @@
+<div class="content-wrapper">
+    <div class="text-center py-6 mb-4">
+        <h1 class="font-display text-2xl md:text-3xl font-bold
+                   text-gray-800 dark:text-gray-200">
+            Upcoming Sets
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">Sets that haven't been released yet.</p>
+    </div>
+    {{#if setList.length}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {{#each setList}}
+        <a href="{{this.url}}"
+           class="flex items-center gap-3 p-3 rounded-lg
+                  bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
+                  hover:border-teal-400 dark:hover:border-teal-500 transition-colors">
+            <i class="ss ss-{{this.keyruneCode}} ss-2x ss-foil text-gray-700 dark:text-gray-300"></i>
+            <div class="flex-1 min-w-0">
+                <div class="font-medium text-gray-900 dark:text-gray-100 truncate">{{this.name}}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{toUpperCase this.code}}
+                    {{#if this.releaseDate}} &middot; {{this.releaseDate}}{{/if}}
+                </div>
+            </div>
+            {{#each this.tags}}
+            <span class="tag">{{this}}</span>
+            {{/each}}
+        </a>
+        {{/each}}
+    </div>
+    {{else}}
+    <div class="text-center py-16">
+        <p class="text-lg text-gray-600 dark:text-gray-400 font-medium">No upcoming sets found</p>
+        <p class="text-gray-400 dark:text-gray-500 mt-2">Check back later for new spoilers.</p>
+        <a href="/sets" class="btn btn-secondary mt-6 inline-block">View Released Sets</a>
+    </div>
+    {{/if}}
+</div>

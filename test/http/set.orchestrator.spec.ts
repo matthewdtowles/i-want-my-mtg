@@ -66,6 +66,7 @@ describe('SetOrchestrator', () => {
                     provide: SetService,
                     useValue: {
                         findSets: jest.fn(),
+                        findSpoilerSets: jest.fn(),
                         totalSetsCount: jest.fn(),
                         findByCode: jest.fn(),
                         totalCardsInSet: jest.fn(),
@@ -149,6 +150,42 @@ describe('SetOrchestrator', () => {
 
             expect(result.setList.length).toBe(0);
             expect(result.toast).toBeUndefined();
+        });
+    });
+
+    describe('findSpoilersList', () => {
+        it('returns all spoiler sets without pagination', async () => {
+            setService.findSpoilerSets.mockResolvedValue([mockSet]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findSpoilersList(
+                mockAuthenticatedRequest,
+                []
+            );
+
+            expect(result).toBeInstanceOf(SetListViewDto);
+            expect(result.setList.length).toBe(1);
+            expect(result.pagination).toBeUndefined();
+        });
+
+        it('handles empty spoiler list', async () => {
+            setService.findSpoilerSets.mockResolvedValue([]);
+
+            const result = await orchestrator.findSpoilersList(
+                mockAuthenticatedRequest,
+                []
+            );
+
+            expect(result.setList.length).toBe(0);
+        });
+
+        it('returns error DTO on service failure', async () => {
+            setService.findSpoilerSets.mockRejectedValue(new Error('DB error'));
+
+            await expect(
+                orchestrator.findSpoilersList(mockAuthenticatedRequest, [])
+            ).rejects.toThrow('An unexpected error occurred');
         });
     });
 

@@ -15,6 +15,11 @@ export class SetService {
         return await this.repository.findAllSetsMeta(query);
     }
 
+    async findSpoilerSets(): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findSpoilerSets.`);
+        return await this.repository.findSpoilerSets();
+    }
+
     async findByCode(setCode: string): Promise<Set | null> {
         this.LOGGER.debug(`Calling findByCode(${setCode})`);
         return await this.repository.findByCode(setCode);

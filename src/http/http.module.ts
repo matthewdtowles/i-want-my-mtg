@@ -13,6 +13,7 @@ import { SearchController } from './search/search.controller';
 import { SearchOrchestrator } from './search/search.orchestrator';
 import { SetController } from './set/set.controller';
 import { SetOrchestrator } from './set/set.orchestrator';
+import { SpoilersController } from './set/spoilers.controller';
 import { UserController } from './user/user.controller';
 import { UserOrchestrator } from './user/user.orchestrator';
 
@@ -25,6 +26,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         InventoryController,
         SearchController,
         SetController,
+        SpoilersController,
         UserController,
     ],
     providers: [

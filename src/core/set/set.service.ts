@@ -15,6 +15,11 @@ export class SetService {
         return await this.repository.findAllSetsMeta(query);
     }
 
+    async findAllSets(options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findAllSets (unpaginated).`);
+        return await this.repository.findAllSetsUnpaginated(options);
+    }
+
     async findSpoilerSets(): Promise<Set[]> {
         this.LOGGER.debug(`Calling findSpoilerSets.`);
         return await this.repository.findSpoilerSets();

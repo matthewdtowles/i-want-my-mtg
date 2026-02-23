@@ -16,6 +16,14 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
     findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]>;
 
     /**
+     * Retrieves all qualifying Set entities without pagination.
+     * Applies baseOnly and filter options but no limit/offset.
+     * @param {SafeQueryOptions} options - The query options for filtering.
+     * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
+     */
+    findAllSetsUnpaginated(options: SafeQueryOptions): Promise<Set[]>;
+
+    /**
      * Retrieves all unreleased (spoiler) sets.
      * @returns {Promise<Set[]>} A promise that resolves to an array of unreleased Set entities.
      */

@@ -31,6 +31,23 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Instantiated.`);
     }
 
+    async findAllSetsUnpaginated(options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Finding all sets unpaginated.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
+            .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+        }
+        this.queryHelper.applyFilters(qb, options.filter);
+        qb.orderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
+        this.LOGGER.debug(`Found ${results.length} sets (unpaginated).`);
+        return results;
+    }
+
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Finding all sets meta.`);
         const qb = this.repository

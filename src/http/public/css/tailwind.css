@@ -4903,6 +4903,56 @@ input:where([type='file']):focus {
     }
 }
 
+/* ===== Set Block Headers ===== */
+
+.block-header-row {
+    border-bottom-width: 1px;
+    --tw-border-opacity: 1;
+    border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+    --tw-bg-opacity: 1;
+    background-color: rgb(250 246 254 / var(--tw-bg-opacity, 1));
+}
+
+.block-header-row:is(.dark *) {
+    --tw-border-opacity: 1;
+    border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
+    --tw-bg-opacity: 1;
+    background-color: rgb(36 30 69 / var(--tw-bg-opacity, 1));
+}
+
+.block-header {
+    border-left-width: 4px;
+    --tw-border-opacity: 1;
+    border-color: rgb(169 93 224 / var(--tw-border-opacity, 1));
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    --tw-text-opacity: 1;
+    color: rgb(114 51 164 / var(--tw-text-opacity, 1));
+}
+
+.block-header:is(.dark *) {
+    --tw-border-opacity: 1;
+    border-color: rgb(196 138 237 / var(--tw-border-opacity, 1));
+    --tw-text-opacity: 1;
+    color: rgb(219 181 245 / var(--tw-text-opacity, 1));
+}
+
+@media (min-width: 640px) {
+    .block-header {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
 /* ===== Tags ===== */
 
 .tag {

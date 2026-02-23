@@ -25,6 +25,7 @@ import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
+import { SetBlockGroup } from './dto/set-block-group.dto';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
@@ -53,13 +54,20 @@ export class SetOrchestrator {
         this.LOGGER.debug(`Find list of sets.`);
         try {
             const userId = req.user?.id ?? 0;
-            const [sets, currentCount, targetCount] = await Promise.all([
-                this.setService.findSets(options),
-                this.setService.totalSetsCount(options),
-                this.setService.totalSetsCount(options.withBaseOnly(!options.baseOnly)),
+            const [allSets, targetSets] = await Promise.all([
+                this.setService.findAllSets(options),
+                this.setService.findAllSets(options.withBaseOnly(!options.baseOnly)),
             ]);
 
-            const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
+            const setDtos = await this.createSetMetaResponseDtos(userId, allSets);
+            const allGroups = this.groupSetsByBlock(setDtos);
+            const sortedGroups = this.sortBlockGroups(allGroups, options);
+            const { page, totalGroups } = this.paginateBlockGroups(sortedGroups, options);
+
+            const targetGroups = this.groupSetsByBlock(
+                await this.createSetMetaResponseDtos(userId, targetSets)
+            );
+            const toggleConfig = buildToggleConfig(options, totalGroups, targetGroups.length);
             const baseUrl = '/sets';
 
             return new SetListViewDto({
@@ -71,8 +79,9 @@ export class SetOrchestrator {
                     toggleConfig.visible
                 ),
                 breadcrumbs,
-                setList: await this.createSetMetaResponseDtos(userId, sets),
-                pagination: new PaginationView(options, baseUrl, currentCount),
+                setList: setDtos,
+                blockGroups: page,
+                pagination: new PaginationView(options, baseUrl, totalGroups),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
             });
@@ -172,8 +181,9 @@ export class SetOrchestrator {
     async getLastPage(query: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for list of all sets pagination.`);
         try {
-            const totalSets = await this.setService.totalSetsCount(query);
-            const lastPage = Math.max(1, Math.ceil(totalSets / query.limit));
+            const allSets = await this.setService.findAllSets(query);
+            const blockCount = this.countDistinctBlocks(allSets);
+            const lastPage = Math.max(1, Math.ceil(blockCount / query.limit));
             this.LOGGER.debug(`Last page for list of all sets is ${lastPage}.`);
             return lastPage;
         } catch (error) {
@@ -319,6 +329,87 @@ export class SetOrchestrator {
             totalPriceAll: totalPriceAllFiltered,
             lastUpdate: prices.lastUpdate,
         });
+    }
+
+    groupSetsByBlock(sets: SetMetaResponseDto[]): SetBlockGroup[] {
+        const blockMap = new Map<string, SetMetaResponseDto[]>();
+        for (const set of sets) {
+            const blockName = set.block || set.name;
+            if (!blockMap.has(blockName)) {
+                blockMap.set(blockName, []);
+            }
+            blockMap.get(blockName).push(set);
+        }
+
+        const groups: SetBlockGroup[] = [];
+        for (const [blockName, blockSets] of blockMap) {
+            // Sets within a block sorted by release date ascending (chronological)
+            blockSets.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
+
+            const earliestDate = blockSets[0].releaseDate;
+            const totalPrice = blockSets.reduce((sum, s) => {
+                const price = this.parseDollar(s.prices?.defaultPrice);
+                return sum + price;
+            }, 0);
+
+            groups.push(
+                new SetBlockGroup({
+                    blockName,
+                    sets: blockSets,
+                    isMultiSet: blockSets.length > 1,
+                    releaseDate: earliestDate,
+                    defaultPrice: totalPrice.toFixed(2),
+                })
+            );
+        }
+
+        return groups;
+    }
+
+    sortBlockGroups(groups: SetBlockGroup[], options: SafeQueryOptions): SetBlockGroup[] {
+        const sorted = [...groups];
+
+        // When no explicit sort, default to release date DESC (matches DB behavior)
+        const hasExplicitSort = !!options.sort;
+        const ascending = hasExplicitSort ? (options.ascend ?? true) : false;
+
+        sorted.sort((a, b) => {
+            let cmp: number;
+            if (options.sort === SortOptions.SET) {
+                cmp = a.blockName.localeCompare(b.blockName);
+            } else if (options.sort === SortOptions.SET_BASE_PRICE) {
+                cmp = parseFloat(a.defaultPrice) - parseFloat(b.defaultPrice);
+            } else {
+                // Default: sort by release date
+                cmp = a.releaseDate.localeCompare(b.releaseDate);
+            }
+            return ascending ? cmp : -cmp;
+        });
+
+        return sorted;
+    }
+
+    paginateBlockGroups(
+        groups: SetBlockGroup[],
+        options: SafeQueryOptions
+    ): { page: SetBlockGroup[]; totalGroups: number } {
+        const start = (options.page - 1) * options.limit;
+        const page = groups.slice(start, start + options.limit);
+        return { page, totalGroups: groups.length };
+    }
+
+    private countDistinctBlocks(sets: Set[]): number {
+        const blocks = new globalThis.Set<string>();
+        for (const s of sets) {
+            blocks.add(s.block ?? s.name);
+        }
+        return blocks.size;
+    }
+
+    private parseDollar(value: string | undefined): number {
+        if (!value || value === '-') return 0;
+        const num = parseFloat(value.replace(/[$,]/g, ''));
+        return isNaN(num) ? 0 : num;
     }
 
     private buildSetListTableHeaders(

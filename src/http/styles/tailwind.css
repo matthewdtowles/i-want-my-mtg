@@ -476,6 +476,18 @@
     @apply px-1.5 py-2 sm:px-3 sm:py-3;
 }
 
+/* ===== Set Block Headers ===== */
+
+.block-header-row {
+    @apply bg-purple-50 dark:bg-midnight-700 border-b border-gray-200 dark:border-midnight-600;
+}
+
+.block-header {
+    @apply px-1.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold uppercase tracking-wider
+           text-purple-700 dark:text-purple-300
+           border-l-4 border-purple-500 dark:border-purple-400;
+}
+
 /* ===== Tags ===== */
 
 .tag {

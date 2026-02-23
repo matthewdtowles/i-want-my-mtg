@@ -13,12 +13,18 @@
         {{/if}}
     </div>
     <div id="filter-results">
-        {{#if setList.length}}
+        {{#if blockGroups.length}}
         <div class="table-wrapper">
         <table class="min-w-full table-container">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
-                {{#each setList}}
+                {{#each blockGroups}}
+                {{#if this.isMultiSet}}
+                <tr class="block-header-row">
+                    <td colspan="4" class="block-header">{{this.blockName}}</td>
+                </tr>
+                {{/if}}
+                {{#each this.sets}}
                 <tr class="table-row">
                     <td class="table-cell">
                         <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
@@ -26,11 +32,12 @@
                         {{>tags item=this}}
                     </td>
                     <td class="table-cell">{{this.prices.defaultPrice}}</td>
-                    {{#if ../authenticated}}
+                    {{#if ../../authenticated}}
                     <td class="table-cell">{{>completionRate}}</td>
                     {{/if}}
                     <td class="table-cell xs-hide">{{this.releaseDate}}</td>
                 </tr>
+                {{/each}}
                 {{/each}}
             </tbody>
         </table>
@@ -45,4 +52,4 @@
         {{/if}}
     </div>
 </div>
-{{>pagination hasItems=setList.length}}
+{{>pagination hasItems=blockGroups.length}}

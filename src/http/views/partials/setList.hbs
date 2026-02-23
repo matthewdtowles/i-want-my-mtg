@@ -25,7 +25,7 @@
                 </tr>
                 {{/if}}
                 {{#each this.sets}}
-                <tr class="table-row">
+                <tr class="table-row{{#if @last}} block-last-row{{/if}}">
                     <td class="table-cell">
                         <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
                         <a href="{{this.url}}" class="table-link">{{this.name}}</a>

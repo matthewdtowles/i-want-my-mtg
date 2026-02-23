@@ -16,6 +16,7 @@ export class SetMapper {
             block: ormSet.block,
             baseSize: ormSet.baseSize,
             keyruneCode: ormSet.keyruneCode,
+            parentCode: ormSet.parentCode,
             totalSize: ormSet.totalSize,
             prices: ormSet.setPrice ? SetPriceMapper.toCore(ormSet.setPrice) : null,
             cards:

@@ -194,6 +194,20 @@ impl SetRepository {
         Ok(deleted)
     }
 
+    pub async fn update_parent_codes(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "UPDATE \"set\" s
+            SET parent_code = p.code
+            FROM \"set\" p
+            WHERE s.parent_code IS NULL
+              AND s.block IS NOT NULL
+              AND p.name = s.block
+              AND p.code != s.code
+              AND s.parent_code IS DISTINCT FROM p.code",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
     pub async fn update_is_main(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
             "UPDATE \"set\" SET is_main = (base_size > 0)

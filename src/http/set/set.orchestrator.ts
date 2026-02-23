@@ -332,20 +332,27 @@ export class SetOrchestrator {
     }
 
     groupSetsByBlock(sets: SetMetaResponseDto[]): SetBlockGroup[] {
+        // Group by parent_code: child sets group under their parent's code,
+        // all other sets stand alone under their own code.
+        const codeToName = new Map<string, string>();
+        for (const set of sets) {
+            codeToName.set(set.code, set.block || set.name);
+        }
+
         const blockMap = new Map<string, SetMetaResponseDto[]>();
         for (const set of sets) {
-            const blockName = set.block || set.name;
-            if (!blockMap.has(blockName)) {
-                blockMap.set(blockName, []);
+            const groupKey = set.parentCode || set.code;
+            if (!blockMap.has(groupKey)) {
+                blockMap.set(groupKey, []);
             }
-            blockMap.get(blockName).push(set);
+            blockMap.get(groupKey).push(set);
         }
 
         const groups: SetBlockGroup[] = [];
-        for (const [blockName, blockSets] of blockMap) {
-            // Sets within a block sorted by release date ascending (chronological)
+        for (const [groupKey, blockSets] of blockMap) {
             blockSets.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 
+            const blockName = codeToName.get(groupKey) || blockSets[0].name;
             const earliestDate = blockSets[0].releaseDate;
             const totalPrice = blockSets.reduce((sum, s) => {
                 const price = this.parseDollar(s.prices?.defaultPrice);
@@ -401,7 +408,7 @@ export class SetOrchestrator {
     private countDistinctBlocks(sets: Set[]): number {
         const blocks = new globalThis.Set<string>();
         for (const s of sets) {
-            blocks.add(s.block ?? s.name);
+            blocks.add(s.parentCode ?? s.code);
         }
         return blocks.size;
     }
@@ -463,6 +470,7 @@ export class SetOrchestrator {
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
             ownedTotal,
+            parentCode: set.parentCode,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),

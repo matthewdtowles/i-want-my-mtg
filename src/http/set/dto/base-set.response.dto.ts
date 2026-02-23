@@ -9,6 +9,7 @@ export class BaseSetResponseDto {
     readonly keyruneCode: string;
     readonly name: string;
     readonly ownedTotal: number;
+    readonly parentCode?: string;
     readonly ownedValue: string;
     readonly prices?: SetPriceDto;
     readonly releaseDate: string;
@@ -24,6 +25,7 @@ export class BaseSetResponseDto {
         this.keyruneCode = init.keyruneCode || '';
         this.name = init.name || '';
         this.ownedTotal = init.ownedTotal ?? 0;
+        this.parentCode = init.parentCode;
         this.ownedValue = init.ownedValue || '0.00';
         this.prices = init.prices ?? new SetPriceDto({});
         this.releaseDate = init.releaseDate || '';

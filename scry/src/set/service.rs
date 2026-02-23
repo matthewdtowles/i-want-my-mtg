@@ -134,6 +134,10 @@ impl SetService {
         Ok(total_deleted)
     }
 
+    pub async fn update_parent_codes(&self) -> Result<i64> {
+        self.repository.update_parent_codes().await
+    }
+
     pub async fn update_main_status(&self) -> Result<i64> {
         self.repository.update_is_main().await
     }

@@ -750,7 +750,7 @@ describe('SetOrchestrator', () => {
             });
         };
 
-        it('groups sets by block name', () => {
+        it('groups sets by parent_code', () => {
             const sets = [
                 makeSetDto({
                     name: 'Ixalan',
@@ -762,6 +762,7 @@ describe('SetOrchestrator', () => {
                     name: 'Rivals of Ixalan',
                     code: 'RIX',
                     block: 'Ixalan',
+                    parentCode: 'XLN',
                     releaseDate: '2018-01-19',
                 }),
                 makeSetDto({
@@ -783,6 +784,18 @@ describe('SetOrchestrator', () => {
             expect(dominariaGroup.isMultiSet).toBe(false);
         });
 
+        it('does not group sets that share a block name but have no parent_code', () => {
+            const sets = [
+                makeSetDto({ name: 'Set A', code: 'A', block: 'Same Block' }),
+                makeSetDto({ name: 'Set B', code: 'B', block: 'Same Block' }),
+            ];
+
+            const groups = orchestrator.groupSetsByBlock(sets);
+
+            expect(groups.length).toBe(2);
+            expect(groups.every((g) => g.isMultiSet === false)).toBe(true);
+        });
+
         it('marks single-set blocks as isMultiSet false', () => {
             const sets = [
                 makeSetDto({ name: 'Set A', code: 'A', block: 'Block A' }),
@@ -797,38 +810,43 @@ describe('SetOrchestrator', () => {
         it('sorts sets within a block by release date ascending', () => {
             const sets = [
                 makeSetDto({
+                    name: 'Block',
+                    code: 'BLK',
+                    releaseDate: '2024-01-01',
+                }),
+                makeSetDto({
                     name: 'Set 2',
                     code: 'S2',
-                    block: 'Block',
+                    parentCode: 'BLK',
                     releaseDate: '2024-06-01',
                 }),
                 makeSetDto({
                     name: 'Set 1',
                     code: 'S1',
-                    block: 'Block',
-                    releaseDate: '2024-01-01',
+                    parentCode: 'BLK',
+                    releaseDate: '2024-03-01',
                 }),
             ];
 
             const groups = orchestrator.groupSetsByBlock(sets);
 
-            expect(groups[0].sets[0].code).toBe('S1');
-            expect(groups[0].sets[1].code).toBe('S2');
+            expect(groups[0].sets[0].code).toBe('BLK');
+            expect(groups[0].sets[1].code).toBe('S1');
+            expect(groups[0].sets[2].code).toBe('S2');
         });
 
         it('uses earliest release date for the block', () => {
             const sets = [
                 makeSetDto({
-                    name: 'Set 2',
-                    code: 'S2',
-                    block: 'Block',
-                    releaseDate: '2024-06-01',
+                    name: 'Block',
+                    code: 'BLK',
+                    releaseDate: '2024-01-01',
                 }),
                 makeSetDto({
-                    name: 'Set 1',
-                    code: 'S1',
-                    block: 'Block',
-                    releaseDate: '2024-01-01',
+                    name: 'Set 2',
+                    code: 'S2',
+                    parentCode: 'BLK',
+                    releaseDate: '2024-06-01',
                 }),
             ];
 
@@ -843,11 +861,11 @@ describe('SetOrchestrator', () => {
             expect(groups.length).toBe(0);
         });
 
-        it('handles all sets in the same block', () => {
+        it('handles all sets in the same block via parent_code', () => {
             const sets = [
-                makeSetDto({ name: 'Set A', code: 'A', block: 'Same Block' }),
-                makeSetDto({ name: 'Set B', code: 'B', block: 'Same Block' }),
-                makeSetDto({ name: 'Set C', code: 'C', block: 'Same Block' }),
+                makeSetDto({ name: 'Parent Set', code: 'A' }),
+                makeSetDto({ name: 'Set B', code: 'B', parentCode: 'A' }),
+                makeSetDto({ name: 'Set C', code: 'C', parentCode: 'A' }),
             ];
 
             const groups = orchestrator.groupSetsByBlock(sets);

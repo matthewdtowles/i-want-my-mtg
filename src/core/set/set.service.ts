@@ -15,6 +15,26 @@ export class SetService {
         return await this.repository.findAllSetsMeta(query);
     }
 
+    async findBlockGroupKeys(options: SafeQueryOptions): Promise<string[]> {
+        this.LOGGER.debug(`Calling findBlockGroupKeys.`);
+        return await this.repository.findBlockGroupKeys(options);
+    }
+
+    async totalBlockGroups(options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Calling totalBlockGroups.`);
+        return await this.repository.totalBlockGroups(options);
+    }
+
+    async findSetsByBlockKeys(blockKeys: string[], options: SafeQueryOptions): Promise<Set[]> {
+        this.LOGGER.debug(`Calling findSetsByBlockKeys for ${blockKeys.length} keys.`);
+        return await this.repository.findSetsByBlockKeys(blockKeys, options);
+    }
+
+    async findMultiSetBlockKeys(blockKeys: string[]): Promise<string[]> {
+        this.LOGGER.debug(`Calling findMultiSetBlockKeys for ${blockKeys.length} keys.`);
+        return await this.repository.findMultiSetBlockKeys(blockKeys);
+    }
+
     async findSpoilerSets(): Promise<Set[]> {
         this.LOGGER.debug(`Calling findSpoilerSets.`);
         return await this.repository.findSpoilerSets();

@@ -31,6 +31,82 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Instantiated.`);
     }
 
+    async totalBlockGroups(options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting distinct block groups.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .select(
+                `COUNT(DISTINCT COALESCE(${this.TABLE}.parentCode, ${this.TABLE}.code))`,
+                'count'
+            )
+            .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+        }
+        this.queryHelper.applyFilters(qb, options.filter);
+        const result = await qb.getRawOne();
+        const count = Number(result?.count ?? 0);
+        this.LOGGER.debug(`Total block groups: ${count}.`);
+        return count;
+    }
+
+    async findBlockGroupKeys(options: SafeQueryOptions): Promise<string[]> {
+        this.LOGGER.debug(`Finding block group keys.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .select(`COALESCE(${this.TABLE}.parentCode, ${this.TABLE}.code)`, 'block_key')
+            .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+        }
+        this.queryHelper.applyFilters(qb, options.filter);
+        qb.groupBy('block_key');
+
+        this.addBlockOrdering(qb);
+
+        qb.offset((options.page - 1) * options.limit).limit(options.limit);
+
+        const rows = await qb.getRawMany();
+        const keys = rows.map((r) => r.block_key as string);
+        this.LOGGER.debug(`Found ${keys.length} block group keys.`);
+        return keys;
+    }
+
+    async findMultiSetBlockKeys(blockKeys: string[]): Promise<string[]> {
+        if (blockKeys.length === 0) return [];
+        this.LOGGER.debug(`Finding multi-set block keys.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .select(`DISTINCT ${this.TABLE}.parentCode`, 'parent_code')
+            .where(`${this.TABLE}.parentCode IN (:...blockKeys)`, { blockKeys })
+            .andWhere(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
+        const rows = await qb.getRawMany();
+        const keys = rows.map((r) => r.parent_code as string);
+        this.LOGGER.debug(`Found ${keys.length} multi-set block keys.`);
+        return keys;
+    }
+
+    async findSetsByBlockKeys(blockKeys: string[], options: SafeQueryOptions): Promise<Set[]> {
+        if (blockKeys.length === 0) return [];
+        this.LOGGER.debug(`Finding sets for ${blockKeys.length} block keys.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
+            .where(`COALESCE(${this.TABLE}.parentCode, ${this.TABLE}.code) IN (:...blockKeys)`, {
+                blockKeys,
+            })
+            .andWhere(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
+        if (options.baseOnly) {
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+        }
+        qb.orderBy(`${this.TABLE}.isMain`, this.DESC);
+        qb.addOrderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
+        this.LOGGER.debug(`Found ${results.length} sets for block keys.`);
+        return results;
+    }
+
     async findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Finding all sets meta.`);
         const qb = this.repository
@@ -155,6 +231,11 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
                     { [`search${i}`]: `%${fragment}%` }
                 )
             );
+    }
+
+    private addBlockOrdering(qb: SelectQueryBuilder<SetOrmEntity>): void {
+        qb.addSelect(`MIN(${this.TABLE}.releaseDate)`, 'earliest_date');
+        qb.orderBy('earliest_date', this.DESC, this.NULLS_LAST);
     }
 
     private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {

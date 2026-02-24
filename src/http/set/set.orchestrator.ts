@@ -25,6 +25,7 @@ import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
+import { SetBlockGroup } from './dto/set-block-group.dto';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
@@ -53,33 +54,100 @@ export class SetOrchestrator {
         this.LOGGER.debug(`Find list of sets.`);
         try {
             const userId = req.user?.id ?? 0;
-            const [sets, currentCount, targetCount] = await Promise.all([
-                this.setService.findSets(options),
-                this.setService.totalSetsCount(options),
-                this.setService.totalSetsCount(options.withBaseOnly(!options.baseOnly)),
-            ]);
 
-            const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
-            const baseUrl = '/sets';
-
-            return new SetListViewDto({
-                authenticated: isAuthenticated(req),
-                baseOnlyToggle: new BaseOnlyToggleView(
-                    options,
-                    baseUrl,
-                    toggleConfig.targetMaxPage,
-                    toggleConfig.visible
-                ),
-                breadcrumbs,
-                setList: await this.createSetMetaResponseDtos(userId, sets),
-                pagination: new PaginationView(options, baseUrl, currentCount),
-                filter: new FilterView(options, baseUrl),
-                tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
-            });
+            if (options.sort) {
+                return await this.findFlatSetList(req, breadcrumbs, options, userId);
+            }
+            return await this.findBlockSetList(req, breadcrumbs, options, userId);
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'findSetList');
         }
+    }
+
+    private async findFlatSetList(
+        req: AuthenticatedRequest,
+        breadcrumbs: Breadcrumb[],
+        options: SafeQueryOptions,
+        userId: number
+    ): Promise<SetListViewDto> {
+        const [sets, currentCount, targetCount] = await Promise.all([
+            this.setService.findSets(options),
+            this.setService.totalSetsCount(options),
+            this.setService.totalSetsCount(options.withBaseOnly(!options.baseOnly)),
+        ]);
+
+        const setDtos = await this.createSetMetaResponseDtos(userId, sets);
+        const blockGroups = setDtos.map(
+            (dto) =>
+                new SetBlockGroup({
+                    blockName: dto.block || dto.name,
+                    sets: [dto],
+                    isMultiSet: false,
+                    releaseDate: dto.releaseDate,
+                    defaultPrice: dto.prices?.defaultPrice ?? '-',
+                })
+        );
+
+        const toggleConfig = buildToggleConfig(options, currentCount, targetCount);
+        const baseUrl = '/sets';
+
+        return new SetListViewDto({
+            authenticated: isAuthenticated(req),
+            baseOnlyToggle: new BaseOnlyToggleView(
+                options,
+                baseUrl,
+                toggleConfig.targetMaxPage,
+                toggleConfig.visible
+            ),
+            breadcrumbs,
+            setList: setDtos,
+            blockGroups,
+            pagination: new PaginationView(options, baseUrl, currentCount),
+            filter: new FilterView(options, baseUrl),
+            tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
+        });
+    }
+
+    private async findBlockSetList(
+        req: AuthenticatedRequest,
+        breadcrumbs: Breadcrumb[],
+        options: SafeQueryOptions,
+        userId: number
+    ): Promise<SetListViewDto> {
+        const [totalGroups, targetGroupCount, blockKeys] = await Promise.all([
+            this.setService.totalBlockGroups(options),
+            this.setService.totalBlockGroups(options.withBaseOnly(!options.baseOnly)),
+            this.setService.findBlockGroupKeys(options),
+        ]);
+
+        const [sets, multiSetKeys] = await Promise.all([
+            this.setService.findSetsByBlockKeys(blockKeys, options),
+            this.setService.findMultiSetBlockKeys(blockKeys),
+        ]);
+        const multiSetKeySet = new globalThis.Set(multiSetKeys);
+        const setDtos = await this.createSetMetaResponseDtos(userId, sets);
+        const blockGroups = this.groupSetsByBlock(setDtos, multiSetKeySet);
+        const sortedGroups = this.sortBlockGroups(blockGroups);
+
+        const toggleConfig = buildToggleConfig(options, totalGroups, targetGroupCount);
+        const baseUrl = '/sets';
+
+        return new SetListViewDto({
+            authenticated: isAuthenticated(req),
+            baseOnlyToggle: new BaseOnlyToggleView(
+                options,
+                baseUrl,
+                toggleConfig.targetMaxPage,
+                toggleConfig.visible
+            ),
+            breadcrumbs,
+            setList: setDtos,
+            blockGroups: sortedGroups,
+            pagination: new PaginationView(options, baseUrl, totalGroups),
+            filter: new FilterView(options, baseUrl),
+            tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
+        });
     }
 
     async findSpoilersList(
@@ -172,8 +240,10 @@ export class SetOrchestrator {
     async getLastPage(query: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for list of all sets pagination.`);
         try {
-            const totalSets = await this.setService.totalSetsCount(query);
-            const lastPage = Math.max(1, Math.ceil(totalSets / query.limit));
+            const total = query.sort
+                ? await this.setService.totalSetsCount(query)
+                : await this.setService.totalBlockGroups(query);
+            const lastPage = Math.max(1, Math.ceil(total / query.limit));
             this.LOGGER.debug(`Last page for list of all sets is ${lastPage}.`);
             return lastPage;
         } catch (error) {
@@ -321,6 +391,66 @@ export class SetOrchestrator {
         });
     }
 
+    groupSetsByBlock(
+        sets: SetMetaResponseDto[],
+        multiSetKeys: globalThis.Set<string> = new globalThis.Set()
+    ): SetBlockGroup[] {
+        // Group by parent_code: child sets group under their parent's code,
+        // all other sets stand alone under their own code.
+        const codeToName = new Map<string, string>();
+        for (const set of sets) {
+            codeToName.set(set.code, set.block || set.name);
+        }
+
+        const blockMap = new Map<string, SetMetaResponseDto[]>();
+        for (const set of sets) {
+            const groupKey = set.parentCode || set.code;
+            if (!blockMap.has(groupKey)) {
+                blockMap.set(groupKey, []);
+            }
+            blockMap.get(groupKey).push(set);
+        }
+
+        const groups: SetBlockGroup[] = [];
+        for (const [groupKey, blockSets] of blockMap) {
+            blockSets.sort((a, b) => {
+                // Main sets first, then by release date
+                if (a.isMain !== b.isMain) return a.isMain ? -1 : 1;
+                return a.releaseDate.localeCompare(b.releaseDate);
+            });
+
+            const blockName = codeToName.get(groupKey) || blockSets[0].name;
+            const earliestDate = blockSets[0].releaseDate;
+            const totalPrice = blockSets.reduce((sum, s) => {
+                const price = this.parseDollar(s.prices?.defaultPrice);
+                return sum + price;
+            }, 0);
+
+            groups.push(
+                new SetBlockGroup({
+                    blockName,
+                    sets: blockSets,
+                    isMultiSet: blockSets.length > 1 || multiSetKeys.has(groupKey),
+                    releaseDate: earliestDate,
+                    defaultPrice: totalPrice.toFixed(2),
+                })
+            );
+        }
+
+        return groups;
+    }
+
+    sortBlockGroups(groups: SetBlockGroup[]): SetBlockGroup[] {
+        // Block view is always sorted by release date DESC (matches DB block ordering)
+        return [...groups].sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+    }
+
+    private parseDollar(value: string | undefined): number {
+        if (!value || value === '-') return 0;
+        const num = parseFloat(value.replace(/[$,]/g, ''));
+        return isNaN(num) ? 0 : num;
+    }
+
     private buildSetListTableHeaders(
         options: SafeQueryOptions,
         authenticated: boolean
@@ -368,10 +498,12 @@ export class SetOrchestrator {
             block: set.block ?? set.name,
             code: set.code,
             completionRate: completionRate(ownedTotal, effectiveSize),
+            isMain: set.isMain,
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
             ownedTotal,
+            parentCode: set.parentCode,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),

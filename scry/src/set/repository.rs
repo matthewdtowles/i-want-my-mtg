@@ -194,6 +194,45 @@ impl SetRepository {
         Ok(deleted)
     }
 
+    pub async fn update_parent_codes(&self) -> Result<i64> {
+        // Step 1: Set parent_code where a set's name matches the block name
+        let qb_name_match = QueryBuilder::new(
+            "UPDATE \"set\" s
+            SET parent_code = p.code
+            FROM \"set\" p
+            WHERE s.parent_code IS NULL
+              AND s.block IS NOT NULL
+              AND p.name = s.block
+              AND p.code != s.code
+              AND s.parent_code IS DISTINCT FROM p.code",
+        );
+        let name_matched = self.db.execute_query_builder(qb_name_match).await?;
+
+        // Step 2: For blocks where no set name matches the block name,
+        // use the earliest is_main set as the parent
+        let qb_earliest = QueryBuilder::new(
+            "UPDATE \"set\" s
+            SET parent_code = first.code
+            FROM (
+                SELECT DISTINCT ON (b.block) b.code, b.block
+                FROM \"set\" b
+                WHERE b.block IS NOT NULL
+                  AND b.is_main = true
+                  AND NOT EXISTS (
+                      SELECT 1 FROM \"set\" n WHERE n.name = b.block
+                  )
+                ORDER BY b.block, b.release_date ASC, b.code ASC
+            ) first
+            WHERE s.block = first.block
+              AND s.code != first.code
+              AND s.parent_code IS NULL
+              AND s.parent_code IS DISTINCT FROM first.code",
+        );
+        let earliest_matched = self.db.execute_query_builder(qb_earliest).await?;
+
+        Ok(name_matched + earliest_matched)
+    }
+
     pub async fn update_is_main(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
             "UPDATE \"set\" SET is_main = (base_size > 0)

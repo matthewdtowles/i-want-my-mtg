@@ -6,9 +6,11 @@ export class BaseSetResponseDto {
     readonly code: string;
     readonly completionRate: number;
     readonly effectiveSize: number;
+    readonly isMain: boolean;
     readonly keyruneCode: string;
     readonly name: string;
     readonly ownedTotal: number;
+    readonly parentCode?: string;
     readonly ownedValue: string;
     readonly prices?: SetPriceDto;
     readonly releaseDate: string;
@@ -21,9 +23,11 @@ export class BaseSetResponseDto {
         this.block = init.block || init.name || '';
         this.code = init.code || '';
         this.completionRate = init.completionRate ?? 0;
+        this.isMain = init.isMain ?? true;
         this.keyruneCode = init.keyruneCode || '';
         this.name = init.name || '';
         this.ownedTotal = init.ownedTotal ?? 0;
+        this.parentCode = init.parentCode;
         this.ownedValue = init.ownedValue || '0.00';
         this.prices = init.prices ?? new SetPriceDto({});
         this.releaseDate = init.releaseDate || '';

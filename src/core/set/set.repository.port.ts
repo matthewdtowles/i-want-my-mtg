@@ -16,12 +16,25 @@ export interface SetRepositoryPort extends BaseRepositoryPort {
     findAllSetsMeta(options: SafeQueryOptions): Promise<Set[]>;
 
     /**
-     * Retrieves all qualifying Set entities without pagination.
-     * Applies baseOnly and filter options but no limit/offset.
-     * @param {SafeQueryOptions} options - The query options for filtering.
-     * @returns {Promise<Set[]>} A promise that resolves to an array of Set entities.
+     * Returns one page of block group keys with pagination and ordering.
+     * Block key = COALESCE(parent_code, code).
      */
-    findAllSetsUnpaginated(options: SafeQueryOptions): Promise<Set[]>;
+    findBlockGroupKeys(options: SafeQueryOptions): Promise<string[]>;
+
+    /**
+     * Counts the total number of distinct block groups.
+     */
+    totalBlockGroups(options: SafeQueryOptions): Promise<number>;
+
+    /**
+     * Retrieves all sets matching the given block keys, with set_price joins.
+     */
+    findSetsByBlockKeys(blockKeys: string[], options: SafeQueryOptions): Promise<Set[]>;
+
+    /**
+     * Returns which of the given block keys have child sets (i.e., are multi-set blocks).
+     */
+    findMultiSetBlockKeys(blockKeys: string[]): Promise<string[]>;
 
     /**
      * Retrieves all unreleased (spoiler) sets.

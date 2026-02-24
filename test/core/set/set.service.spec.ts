@@ -34,7 +34,11 @@ describe('SetService', () => {
     const mockSetRepository = {
         findByCode: jest.fn(),
         findAllSetsMeta: jest.fn(),
+        findBlockGroupKeys: jest.fn(),
+        findMultiSetBlockKeys: jest.fn(),
+        findSetsByBlockKeys: jest.fn(),
         findSpoilerSets: jest.fn(),
+        totalBlockGroups: jest.fn(),
         totalSets: jest.fn(),
         totalCards: jest.fn(),
         totalCardsInSet: jest.fn(),
@@ -100,6 +104,82 @@ describe('SetService', () => {
             repository.findAllSetsMeta.mockResolvedValue([]);
 
             const result = await service.findSets(mockQueryOptions);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('findBlockGroupKeys', () => {
+        it('should return block group keys', async () => {
+            repository.findBlockGroupKeys.mockResolvedValue(['SET', 'ETS']);
+
+            const result = await service.findBlockGroupKeys(mockQueryOptions);
+
+            expect(repository.findBlockGroupKeys).toHaveBeenCalledWith(mockQueryOptions);
+            expect(result).toEqual(['SET', 'ETS']);
+        });
+
+        it('should return empty array when no block groups exist', async () => {
+            repository.findBlockGroupKeys.mockResolvedValue([]);
+
+            const result = await service.findBlockGroupKeys(mockQueryOptions);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('totalBlockGroups', () => {
+        it('should return total count of block groups', async () => {
+            repository.totalBlockGroups.mockResolvedValue(5);
+
+            const result = await service.totalBlockGroups(mockQueryOptions);
+
+            expect(repository.totalBlockGroups).toHaveBeenCalledWith(mockQueryOptions);
+            expect(result).toBe(5);
+        });
+
+        it('should return 0 when no block groups exist', async () => {
+            repository.totalBlockGroups.mockResolvedValue(0);
+
+            const result = await service.totalBlockGroups(mockQueryOptions);
+
+            expect(result).toBe(0);
+        });
+    });
+
+    describe('findSetsByBlockKeys', () => {
+        it('should return sets for given block keys', async () => {
+            repository.findSetsByBlockKeys.mockResolvedValue(mockSets);
+
+            const result = await service.findSetsByBlockKeys(['SET'], mockQueryOptions);
+
+            expect(repository.findSetsByBlockKeys).toHaveBeenCalledWith(['SET'], mockQueryOptions);
+            expect(result).toEqual(mockSets);
+        });
+
+        it('should return empty array for empty block keys', async () => {
+            repository.findSetsByBlockKeys.mockResolvedValue([]);
+
+            const result = await service.findSetsByBlockKeys([], mockQueryOptions);
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('findMultiSetBlockKeys', () => {
+        it('should return multi-set block keys', async () => {
+            repository.findMultiSetBlockKeys.mockResolvedValue(['SET']);
+
+            const result = await service.findMultiSetBlockKeys(['SET', 'ETS']);
+
+            expect(repository.findMultiSetBlockKeys).toHaveBeenCalledWith(['SET', 'ETS']);
+            expect(result).toEqual(['SET']);
+        });
+
+        it('should return empty array when no multi-set blocks', async () => {
+            repository.findMultiSetBlockKeys.mockResolvedValue([]);
+
+            const result = await service.findMultiSetBlockKeys(['SET']);
 
             expect(result).toEqual([]);
         });

@@ -11,22 +11,24 @@
 ```
 
 This will:
+
 1. Create `.env` from `.env.example` (if missing) and prompt you to fill in values
 2. Build and start all Docker services
 3. Wait for PostgreSQL to be healthy
 4. Run database migrations
 
 After setup, the app is available at:
-- **Web app**: http://localhost:3000
-- **Adminer** (DB admin): http://localhost:8080
-- **MailHog** (email capture): http://localhost:8025
+
+- **Web app**: <http://localhost:3000>
+- **Adminer** (DB admin): <http://localhost:8080>
+- **MailHog** (email capture): <http://localhost:8025>
 
 ## Developer Scripts
 
 All scripts are in the `scripts/` directory and designed to be run from the project root.
 
 | Script | Description |
-|--------|-------------|
+| ------ | ----------- |
 | `./scripts/setup.sh` | Full dev environment setup |
 | `./scripts/etl.sh` | Run Scry ETL commands |
 | `./scripts/logs.sh` | View Docker service logs |
@@ -127,7 +129,7 @@ docker compose run --rm etl cargo run -- <command>
 
 Local development uses [MailHog](https://github.com/mailhog/MailHog) to capture outgoing emails (e.g., registration verification). All emails sent by the app are intercepted and viewable in the MailHog web UI:
 
-- **Web UI**: http://localhost:8025
+- **Web UI**: <http://localhost:8025>
 - **SMTP**: `localhost:1025` (configured automatically in Docker)
 
 MailHog starts with `docker compose up -d`. No additional configuration needed.

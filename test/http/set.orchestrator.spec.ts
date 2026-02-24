@@ -68,8 +68,11 @@ describe('SetOrchestrator', () => {
                     provide: SetService,
                     useValue: {
                         findSets: jest.fn(),
-                        findAllSets: jest.fn(),
+                        findBlockGroupKeys: jest.fn(),
+                        findMultiSetBlockKeys: jest.fn(),
+                        findSetsByBlockKeys: jest.fn(),
                         findSpoilerSets: jest.fn(),
+                        totalBlockGroups: jest.fn(),
                         totalSetsCount: jest.fn(),
                         findByCode: jest.fn(),
                         totalCardsInSet: jest.fn(),
@@ -116,7 +119,10 @@ describe('SetOrchestrator', () => {
 
     describe('findSetList', () => {
         it('returns paginated block groups and pagination info', async () => {
-            setService.findAllSets.mockResolvedValue([mockSet]);
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
             inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
@@ -134,7 +140,7 @@ describe('SetOrchestrator', () => {
         });
 
         it('returns error DTO on service failure', async () => {
-            setService.findAllSets.mockRejectedValue(new Error('DB error'));
+            setService.totalBlockGroups.mockRejectedValue(new Error('DB error'));
 
             await expect(
                 orchestrator.findSetList(mockAuthenticatedRequest, [], mockQueryOptions)
@@ -142,7 +148,10 @@ describe('SetOrchestrator', () => {
         });
 
         it('handles empty set list', async () => {
-            setService.findAllSets.mockResolvedValue([]);
+            setService.totalBlockGroups.mockResolvedValue(0);
+            setService.findBlockGroupKeys.mockResolvedValue([]);
+            setService.findSetsByBlockKeys.mockResolvedValue([]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
 
             const result = await orchestrator.findSetList(
                 mockAuthenticatedRequest,
@@ -153,6 +162,31 @@ describe('SetOrchestrator', () => {
             expect(result.blockGroups.length).toBe(0);
             expect(result.setList.length).toBe(0);
             expect(result.toast).toBeUndefined();
+        });
+
+        it('uses flat set pagination when sort is specified', async () => {
+            const sortedOptions = new SafeQueryOptions({
+                page: '1',
+                limit: '10',
+                sort: 'set.name',
+            });
+            setService.findSets.mockResolvedValue([mockSet]);
+            setService.totalSetsCount.mockResolvedValue(1);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findSetList(
+                mockAuthenticatedRequest,
+                [],
+                sortedOptions
+            );
+
+            expect(result).toBeInstanceOf(SetListViewDto);
+            expect(result.blockGroups.length).toBe(1);
+            expect(result.blockGroups[0].isMultiSet).toBe(false);
+            expect(result.setList.length).toBe(1);
+            expect(setService.findSets).toHaveBeenCalledWith(sortedOptions);
+            expect(setService.findBlockGroupKeys).not.toHaveBeenCalled();
         });
     });
 
@@ -874,6 +908,27 @@ describe('SetOrchestrator', () => {
             expect(groups[0].sets.length).toBe(3);
             expect(groups[0].isMultiSet).toBe(true);
         });
+
+        it('marks single-visible set as isMultiSet when block key is in multiSetKeys', () => {
+            const sets = [makeSetDto({ name: 'Parent Set', code: 'XLN', block: 'Ixalan' })];
+            const multiSetKeys = new globalThis.Set(['XLN']);
+
+            const groups = orchestrator.groupSetsByBlock(sets, multiSetKeys);
+
+            expect(groups.length).toBe(1);
+            expect(groups[0].isMultiSet).toBe(true);
+            expect(groups[0].sets.length).toBe(1);
+        });
+
+        it('does not mark standalone set as isMultiSet when not in multiSetKeys', () => {
+            const sets = [makeSetDto({ name: 'Dominaria', code: 'DOM', block: 'Dominaria' })];
+            const multiSetKeys = new globalThis.Set(['XLN']);
+
+            const groups = orchestrator.groupSetsByBlock(sets, multiSetKeys);
+
+            expect(groups.length).toBe(1);
+            expect(groups[0].isMultiSet).toBe(false);
+        });
     });
 
     describe('sortBlockGroups', () => {
@@ -888,162 +943,30 @@ describe('SetOrchestrator', () => {
             });
         };
 
-        it('sorts by release date descending by default', () => {
+        it('sorts by release date descending', () => {
             const groups = [
                 makeGroup({ blockName: 'Old', releaseDate: '2020-01-01' }),
                 makeGroup({ blockName: 'New', releaseDate: '2024-01-01' }),
                 makeGroup({ blockName: 'Mid', releaseDate: '2022-01-01' }),
             ];
 
-            const sorted = orchestrator.sortBlockGroups(groups, new SafeQueryOptions({}));
+            const sorted = orchestrator.sortBlockGroups(groups);
 
             expect(sorted[0].blockName).toBe('New');
             expect(sorted[1].blockName).toBe('Mid');
             expect(sorted[2].blockName).toBe('Old');
         });
 
-        it('sorts by release date ascending when sort is RELEASE_DATE and ascend is true', () => {
+        it('does not mutate the original array', () => {
             const groups = [
-                makeGroup({ blockName: 'New', releaseDate: '2024-01-01' }),
                 makeGroup({ blockName: 'Old', releaseDate: '2020-01-01' }),
+                makeGroup({ blockName: 'New', releaseDate: '2024-01-01' }),
             ];
 
-            const sorted = orchestrator.sortBlockGroups(
-                groups,
-                new SafeQueryOptions({ sort: 'set.releaseDate', ascend: 'true' })
-            );
+            const sorted = orchestrator.sortBlockGroups(groups);
 
-            expect(sorted[0].blockName).toBe('Old');
-            expect(sorted[1].blockName).toBe('New');
-        });
-
-        it('sorts by name ascending by default when sort is SET', () => {
-            const groups = [
-                makeGroup({ blockName: 'Zendikar' }),
-                makeGroup({ blockName: 'Amonkhet' }),
-                makeGroup({ blockName: 'Ixalan' }),
-            ];
-
-            const sorted = orchestrator.sortBlockGroups(
-                groups,
-                new SafeQueryOptions({ sort: 'set.name' })
-            );
-
-            expect(sorted[0].blockName).toBe('Amonkhet');
-            expect(sorted[1].blockName).toBe('Ixalan');
-            expect(sorted[2].blockName).toBe('Zendikar');
-        });
-
-        it('sorts by name descending when ascend is false', () => {
-            const groups = [
-                makeGroup({ blockName: 'Zendikar' }),
-                makeGroup({ blockName: 'Amonkhet' }),
-            ];
-
-            const sorted = orchestrator.sortBlockGroups(
-                groups,
-                new SafeQueryOptions({ sort: 'set.name', ascend: 'false' })
-            );
-
-            expect(sorted[0].blockName).toBe('Zendikar');
-            expect(sorted[1].blockName).toBe('Amonkhet');
-        });
-
-        it('sorts by price ascending by default when sort is SET_BASE_PRICE', () => {
-            const groups = [
-                makeGroup({ blockName: 'Cheap', defaultPrice: '50.00' }),
-                makeGroup({ blockName: 'Expensive', defaultPrice: '500.00' }),
-                makeGroup({ blockName: 'Mid', defaultPrice: '200.00' }),
-            ];
-
-            const sorted = orchestrator.sortBlockGroups(
-                groups,
-                new SafeQueryOptions({ sort: 'setPrice.basePrice' })
-            );
-
-            expect(sorted[0].blockName).toBe('Cheap');
-            expect(sorted[1].blockName).toBe('Mid');
-            expect(sorted[2].blockName).toBe('Expensive');
-        });
-
-        it('sorts by price descending when ascend is false', () => {
-            const groups = [
-                makeGroup({ blockName: 'Expensive', defaultPrice: '500.00' }),
-                makeGroup({ blockName: 'Cheap', defaultPrice: '50.00' }),
-            ];
-
-            const sorted = orchestrator.sortBlockGroups(
-                groups,
-                new SafeQueryOptions({ sort: 'setPrice.basePrice', ascend: 'false' })
-            );
-
-            expect(sorted[0].blockName).toBe('Expensive');
-            expect(sorted[1].blockName).toBe('Cheap');
-        });
-    });
-
-    describe('paginateBlockGroups', () => {
-        const makeGroup = (name: string): SetBlockGroup => {
-            return new SetBlockGroup({ blockName: name, sets: [], isMultiSet: false });
-        };
-
-        it('returns correct page slice', () => {
-            const groups = [
-                makeGroup('A'),
-                makeGroup('B'),
-                makeGroup('C'),
-                makeGroup('D'),
-                makeGroup('E'),
-            ];
-            const options = new SafeQueryOptions({ page: '2', limit: '2' });
-
-            const result = orchestrator.paginateBlockGroups(groups, options);
-
-            expect(result.page.length).toBe(2);
-            expect(result.page[0].blockName).toBe('C');
-            expect(result.page[1].blockName).toBe('D');
-            expect(result.totalGroups).toBe(5);
-        });
-
-        it('returns first page correctly', () => {
-            const groups = [makeGroup('A'), makeGroup('B'), makeGroup('C')];
-            const options = new SafeQueryOptions({ page: '1', limit: '2' });
-
-            const result = orchestrator.paginateBlockGroups(groups, options);
-
-            expect(result.page.length).toBe(2);
-            expect(result.page[0].blockName).toBe('A');
-            expect(result.totalGroups).toBe(3);
-        });
-
-        it('returns partial last page', () => {
-            const groups = [makeGroup('A'), makeGroup('B'), makeGroup('C')];
-            const options = new SafeQueryOptions({ page: '2', limit: '2' });
-
-            const result = orchestrator.paginateBlockGroups(groups, options);
-
-            expect(result.page.length).toBe(1);
-            expect(result.page[0].blockName).toBe('C');
-        });
-
-        it('returns empty page for out-of-bounds page', () => {
-            const groups = [makeGroup('A')];
-            const options = new SafeQueryOptions({ page: '5', limit: '2' });
-
-            const result = orchestrator.paginateBlockGroups(groups, options);
-
-            expect(result.page.length).toBe(0);
-            expect(result.totalGroups).toBe(1);
-        });
-
-        it('returns all groups on single page', () => {
-            const groups = [makeGroup('A'), makeGroup('B')];
-            const options = new SafeQueryOptions({ page: '1', limit: '25' });
-
-            const result = orchestrator.paginateBlockGroups(groups, options);
-
-            expect(result.page.length).toBe(2);
-            expect(result.totalGroups).toBe(2);
+            expect(sorted).not.toBe(groups);
+            expect(groups[0].blockName).toBe('Old');
         });
     });
 

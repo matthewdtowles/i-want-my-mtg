@@ -21,7 +21,7 @@
                 {{#each blockGroups}}
                 {{#if this.isMultiSet}}
                 <tr class="block-header-row">
-                    <td colspan="4" class="block-header">{{this.blockName}}</td>
+                    <td colspan="{{#if ../authenticated}}4{{else}}3{{/if}}" class="block-header">{{this.blockName}}</td>
                 </tr>
                 {{/if}}
                 {{#each this.sets}}

@@ -1,0 +1,6 @@
+how to fix blocks: (Ravnica, Urza, Masques, Kamigawa, Alara, Modern Horizon)
+if hasBlock and not hasparentCode
+    and there does not exist a set with a name that matches the block
+    =>
+        parent_code = first code of first set in block
+        add parent_code to all sets that are not the first set in the block

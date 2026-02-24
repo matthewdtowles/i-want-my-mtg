@@ -413,7 +413,11 @@ export class SetOrchestrator {
 
         const groups: SetBlockGroup[] = [];
         for (const [groupKey, blockSets] of blockMap) {
-            blockSets.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
+            blockSets.sort((a, b) => {
+                // Main sets first, then by release date
+                if (a.isMain !== b.isMain) return a.isMain ? -1 : 1;
+                return a.releaseDate.localeCompare(b.releaseDate);
+            });
 
             const blockName = codeToName.get(groupKey) || blockSets[0].name;
             const earliestDate = blockSets[0].releaseDate;
@@ -494,6 +498,7 @@ export class SetOrchestrator {
             block: set.block ?? set.name,
             code: set.code,
             completionRate: completionRate(ownedTotal, effectiveSize),
+            isMain: set.isMain,
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),

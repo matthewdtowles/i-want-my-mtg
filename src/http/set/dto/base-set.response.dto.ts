@@ -6,6 +6,7 @@ export class BaseSetResponseDto {
     readonly code: string;
     readonly completionRate: number;
     readonly effectiveSize: number;
+    readonly isMain: boolean;
     readonly keyruneCode: string;
     readonly name: string;
     readonly ownedTotal: number;
@@ -22,6 +23,7 @@ export class BaseSetResponseDto {
         this.block = init.block || init.name || '';
         this.code = init.code || '';
         this.completionRate = init.completionRate ?? 0;
+        this.isMain = init.isMain ?? true;
         this.keyruneCode = init.keyruneCode || '';
         this.name = init.name || '';
         this.ownedTotal = init.ownedTotal ?? 0;

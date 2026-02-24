@@ -841,7 +841,7 @@ describe('SetOrchestrator', () => {
             expect(groups.every((g) => g.isMultiSet === false)).toBe(true);
         });
 
-        it('sorts sets within a block by release date ascending', () => {
+        it('sorts sets within a block by isMain DESC then release date ascending', () => {
             const sets = [
                 makeSetDto({
                     name: 'Block',
@@ -867,6 +867,29 @@ describe('SetOrchestrator', () => {
             expect(groups[0].sets[0].code).toBe('BLK');
             expect(groups[0].sets[1].code).toBe('S1');
             expect(groups[0].sets[2].code).toBe('S2');
+        });
+
+        it('puts main sets before non-main sets regardless of release date', () => {
+            const sets = [
+                makeSetDto({
+                    name: 'Bonus Set',
+                    code: 'BON',
+                    parentCode: 'BLK',
+                    isMain: false,
+                    releaseDate: '2024-01-01',
+                }),
+                makeSetDto({
+                    name: 'Main Set',
+                    code: 'BLK',
+                    isMain: true,
+                    releaseDate: '2024-06-01',
+                }),
+            ];
+
+            const groups = orchestrator.groupSetsByBlock(sets);
+
+            expect(groups[0].sets[0].code).toBe('BLK');
+            expect(groups[0].sets[1].code).toBe('BON');
         });
 
         it('uses earliest release date for the block', () => {

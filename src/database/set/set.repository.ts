@@ -99,7 +99,8 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
         }
-        qb.orderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
+        qb.orderBy(`${this.TABLE}.isMain`, this.DESC);
+        qb.addOrderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
         qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Found ${results.length} sets for block keys.`);

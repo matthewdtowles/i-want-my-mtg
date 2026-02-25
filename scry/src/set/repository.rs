@@ -230,13 +230,33 @@ impl SetRepository {
         );
         let earliest_matched = self.db.execute_query_builder(qb_earliest).await?;
 
-        Ok(name_matched + earliest_matched)
+        // Step 3: Normalize parent_codes within each block so all sets
+        // point to the same canonical parent (earliest main set).
+        // Fixes cases where Scryfall sets parent_code to a non-first
+        // set in the block (e.g., AER promos → AER instead of KLD).
+        let qb_normalize = QueryBuilder::new(
+            "UPDATE \"set\" s
+            SET parent_code = first.code
+            FROM (
+                SELECT DISTINCT ON (b.block) b.code, b.block
+                FROM \"set\" b
+                WHERE b.block IS NOT NULL
+                  AND b.is_main = true
+                ORDER BY b.block, b.release_date ASC, b.code ASC
+            ) first
+            WHERE s.block = first.block
+              AND s.code != first.code
+              AND s.parent_code IS DISTINCT FROM first.code",
+        );
+        let normalized = self.db.execute_query_builder(qb_normalize).await?;
+
+        Ok(name_matched + earliest_matched + normalized)
     }
 
     pub async fn update_is_main(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
-            "UPDATE \"set\" SET is_main = (base_size > 0)
-            WHERE is_main IS DISTINCT FROM (base_size > 0)",
+            "UPDATE \"set\" SET is_main = (base_size > 0 AND type != 'masterpiece')
+            WHERE is_main IS DISTINCT FROM (base_size > 0 AND type != 'masterpiece')",
         );
         self.db.execute_query_builder(qb).await
     }

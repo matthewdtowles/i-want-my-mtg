@@ -20,9 +20,31 @@
 
         var debounceTimer = null;
         var controller = null;
+        var activeIndex = -1;
+
+        function getItems() {
+            return dropdown.querySelectorAll('.suggest-item, .suggest-search-all');
+        }
+
+        function clearActive() {
+            var items = getItems();
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.remove('suggest-active');
+            }
+        }
+
+        function setActive(index) {
+            var items = getItems();
+            if (items.length === 0) return;
+            clearActive();
+            activeIndex = index;
+            items[activeIndex].classList.add('suggest-active');
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
 
         function hideDropdown() {
             dropdown.classList.add('hidden');
+            activeIndex = -1;
         }
 
         function showDropdown() {
@@ -96,6 +118,7 @@
                 '</a>';
 
             dropdown.innerHTML = html;
+            activeIndex = -1;
             showDropdown();
         }
 
@@ -138,6 +161,23 @@
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 hideDropdown();
+                return;
+            }
+
+            if (dropdown.classList.contains('hidden')) return;
+
+            var items = getItems();
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActive(activeIndex < items.length - 1 ? activeIndex + 1 : 0);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActive(activeIndex > 0 ? activeIndex - 1 : items.length - 1);
+            } else if (e.key === 'Enter' && activeIndex >= 0) {
+                e.preventDefault();
+                items[activeIndex].click();
             }
         });
 

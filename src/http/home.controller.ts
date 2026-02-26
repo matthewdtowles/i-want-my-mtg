@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Render, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Inject, Render, Req, UseGuards } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { OptionalAuthGuard } from './auth/optional-auth.guard';
@@ -19,9 +19,26 @@ export class HomeController {
         this.LOGGER.log(`Home page - find initial set list.`);
         const options: SafeQueryOptions = new SafeQueryOptions(req.query);
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
+        setListView.indexable = true;
         this.LOGGER.log(
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
         return setListView;
+    }
+
+    @Get('robots.txt')
+    @Header('Content-Type', 'text/plain')
+    getRobotsTxt(): string {
+        return [
+            'User-agent: *',
+            'Allow: /',
+            '',
+            'Disallow: /auth/',
+            'Disallow: /user/',
+            'Disallow: /inventory/',
+            'Disallow: /search/suggest',
+            '',
+            'Crawl-delay: 1',
+        ].join('\n');
     }
 }

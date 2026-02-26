@@ -6,6 +6,8 @@ import { CardService } from 'src/core/card/card.service';
 import { Format } from 'src/core/card/format.enum';
 import { Legality } from 'src/core/card/legality.entity';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
+import { PriceHistoryRepositoryPort } from 'src/core/card/price-history.repository.port';
+import { Price } from 'src/core/card/price.entity';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 describe('CardService', () => {
@@ -67,9 +69,17 @@ describe('CardService', () => {
         totalSearchByName: jest.fn(),
     };
 
+    const mockPriceHistoryRepository = {
+        findByCardId: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [CardService, { provide: CardRepositoryPort, useValue: mockRepository }],
+            providers: [
+                CardService,
+                { provide: CardRepositoryPort, useValue: mockRepository },
+                { provide: PriceHistoryRepositoryPort, useValue: mockPriceHistoryRepository },
+            ],
         }).compile();
 
         service = module.get<CardService>(CardService);
@@ -270,6 +280,65 @@ describe('CardService', () => {
 
             await expect(service.totalSearchByName('Test')).rejects.toThrow(
                 'Error counting card search results for "Test"'
+            );
+        });
+    });
+
+    describe('findPriceHistory', () => {
+        const mockPrices = [
+            new Price({
+                id: 1,
+                cardId: 'test-card-id',
+                normal: 1.5,
+                foil: 3.0,
+                date: new Date('2025-01-01'),
+            }),
+            new Price({
+                id: 2,
+                cardId: 'test-card-id',
+                normal: 1.75,
+                foil: 3.25,
+                date: new Date('2025-01-02'),
+            }),
+        ];
+
+        it('should return price history for a card', async () => {
+            mockPriceHistoryRepository.findByCardId.mockResolvedValue(mockPrices);
+
+            const result = await service.findPriceHistory('test-card-id');
+
+            expect(mockPriceHistoryRepository.findByCardId).toHaveBeenCalledWith(
+                'test-card-id',
+                undefined
+            );
+            expect(result).toEqual(mockPrices);
+        });
+
+        it('should pass days parameter to repository', async () => {
+            mockPriceHistoryRepository.findByCardId.mockResolvedValue(mockPrices);
+
+            const result = await service.findPriceHistory('test-card-id', 30);
+
+            expect(mockPriceHistoryRepository.findByCardId).toHaveBeenCalledWith(
+                'test-card-id',
+                30
+            );
+            expect(result).toEqual(mockPrices);
+        });
+
+        it('should return empty array when no history exists', async () => {
+            mockPriceHistoryRepository.findByCardId.mockResolvedValue([]);
+
+            const result = await service.findPriceHistory('test-card-id');
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            mockPriceHistoryRepository.findByCardId.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.findPriceHistory('test-card-id')).rejects.toThrow(
+                'Error finding price history for card test-card-id'
             );
         });
     });

@@ -3,12 +3,18 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Card } from './card.entity';
 import { CardRepositoryPort } from './card.repository.port';
+import { PriceHistoryRepositoryPort } from './price-history.repository.port';
+import { Price } from './price.entity';
 
 @Injectable()
 export class CardService {
     private readonly LOGGER = getLogger(CardService.name);
 
-    constructor(@Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort) {}
+    constructor(
+        @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
+        @Inject(PriceHistoryRepositoryPort)
+        private readonly priceHistoryRepository: PriceHistoryRepositoryPort
+    ) {}
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
@@ -90,6 +96,17 @@ export class CardService {
             return total;
         } catch (error) {
             throw new Error(`Error counting cards in set ${code}: ${error.message}`);
+        }
+    }
+
+    async findPriceHistory(cardId: string, days?: number): Promise<Price[]> {
+        this.LOGGER.debug(`Find price history for card ${cardId}, days=${days}.`);
+        try {
+            const prices = await this.priceHistoryRepository.findByCardId(cardId, days);
+            this.LOGGER.debug(`Found ${prices?.length} price history records for card ${cardId}.`);
+            return prices;
+        } catch (error) {
+            throw new Error(`Error finding price history for card ${cardId}: ${error.message}`);
         }
     }
 }

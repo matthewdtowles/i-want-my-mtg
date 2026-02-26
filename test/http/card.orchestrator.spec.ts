@@ -20,6 +20,7 @@ describe('CardOrchestrator', () => {
         findBySetCodeAndNumber: jest.fn(),
         findWithName: jest.fn(),
         totalWithName: jest.fn(),
+        findPriceHistory: jest.fn(),
     };
 
     const mockInventoryService = {
@@ -322,6 +323,48 @@ describe('CardOrchestrator', () => {
             expect(result.tableHeadersRow).toBeDefined();
             expect(result.tableHeadersRow.headers).toBeDefined();
             expect(result.tableHeadersRow.headers.length).toBe(4);
+        });
+    });
+
+    describe('getPriceHistory', () => {
+        it('should return formatted price history for a card', async () => {
+            const mockPrices = [
+                { id: 1, cardId: 'card1', normal: 1.5, foil: 3.0, date: new Date('2025-01-01') },
+                { id: 2, cardId: 'card1', normal: 1.75, foil: null, date: new Date('2025-01-02') },
+            ];
+            mockCardService.findPriceHistory.mockResolvedValue(mockPrices);
+
+            const result = await orchestrator.getPriceHistory('card1');
+
+            expect(result.cardId).toBe('card1');
+            expect(result.prices).toHaveLength(2);
+            expect(result.prices[0]).toEqual({ date: '2025-01-01', normal: 1.5, foil: 3 });
+            expect(result.prices[1]).toEqual({ date: '2025-01-02', normal: 1.75, foil: null });
+            expect(cardService.findPriceHistory).toHaveBeenCalledWith('card1', undefined);
+        });
+
+        it('should pass days parameter to service', async () => {
+            mockCardService.findPriceHistory.mockResolvedValue([]);
+
+            const result = await orchestrator.getPriceHistory('card1', 30);
+
+            expect(cardService.findPriceHistory).toHaveBeenCalledWith('card1', 30);
+            expect(result.prices).toEqual([]);
+        });
+
+        it('should handle service errors', async () => {
+            const serviceError = new Error('Database error');
+            mockCardService.findPriceHistory.mockRejectedValue(serviceError);
+            mockHttpErrorHandler.toHttpException.mockImplementation(() => {
+                throw serviceError;
+            });
+
+            await expect(orchestrator.getPriceHistory('card1')).rejects.toThrow('Database error');
+
+            expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(
+                serviceError,
+                'getPriceHistory'
+            );
         });
     });
 

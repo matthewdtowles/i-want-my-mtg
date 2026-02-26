@@ -18,6 +18,7 @@ import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
 import { CardViewDto } from './dto/card.view.dto';
+import { PriceHistoryPointDto, PriceHistoryResponseDto } from './dto/price-history-response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
 
 @Injectable()
@@ -95,6 +96,22 @@ export class CardOrchestrator {
         } catch (error) {
             this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'findSetCard');
+        }
+    }
+
+    async getPriceHistory(cardId: string, days?: number): Promise<PriceHistoryResponseDto> {
+        this.LOGGER.debug(`Get price history for card ${cardId}, days=${days}.`);
+        try {
+            const prices = await this.cardService.findPriceHistory(cardId, days);
+            const points: PriceHistoryPointDto[] = prices.map((p) => ({
+                date: p.date instanceof Date ? p.date.toISOString().split('T')[0] : String(p.date),
+                normal: p.normal != null ? Number(p.normal) : null,
+                foil: p.foil != null ? Number(p.foil) : null,
+            }));
+            return { cardId, prices: points };
+        } catch (error) {
+            this.LOGGER.debug(`Error getting price history for ${cardId}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'getPriceHistory');
         }
     }
 

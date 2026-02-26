@@ -62,6 +62,7 @@ jobs:
                   context: .
                   target: production
                   push: true
+                  provenance: false
                   tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
 
             - name: Build and Push ETL App
@@ -70,6 +71,7 @@ jobs:
                   context: ./scry
                   target: production
                   push: true
+                  provenance: false
                   tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/etl:${{ github.sha }}
 
     deploy:

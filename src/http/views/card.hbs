@@ -85,10 +85,10 @@
         <h3 class="section-title">Price History</h3>
         <div id="price-history-chart" data-card-id="{{card.cardId}}">
             <div class="flex gap-2 mb-3">
+                <button class="price-history-range active" data-days="7">7d</button>
                 <button class="price-history-range" data-days="30">30d</button>
-                <button class="price-history-range" data-days="90">90d</button>
                 <button class="price-history-range" data-days="365">1y</button>
-                <button class="price-history-range active" data-days="">All</button>
+                <button class="price-history-range" data-days="">All</button>
             </div>
             <div style="position: relative; height: 300px;">
                 <canvas id="price-history-canvas"></canvas>
@@ -141,6 +141,7 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/priceHistoryChart.js" defer></script>

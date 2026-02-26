@@ -22,46 +22,43 @@
         var ctx = canvas.getContext('2d');
         var colors = getColors();
 
-        var labels = data.prices.map(function (p) {
-            return p.date;
-        });
-        var normalData = data.prices.map(function (p) {
-            return p.normal;
-        });
-        var foilData = data.prices.map(function (p) {
-            return p.foil;
-        });
+        var normalPoints = [];
+        var foilPoints = [];
+        var hasNormal = false;
+        var hasFoil = false;
 
-        var hasNormal = normalData.some(function (v) {
-            return v != null;
-        });
-        var hasFoil = foilData.some(function (v) {
-            return v != null;
+        data.prices.forEach(function (p) {
+            if (p.normal != null) {
+                normalPoints.push({ x: p.date, y: p.normal });
+                hasNormal = true;
+            }
+            if (p.foil != null) {
+                foilPoints.push({ x: p.date, y: p.foil });
+                hasFoil = true;
+            }
         });
 
         var datasets = [];
         if (hasNormal) {
             datasets.push({
                 label: 'Normal',
-                data: normalData,
+                data: normalPoints,
                 borderColor: colors.normal,
                 backgroundColor: colors.normal + '20',
                 borderWidth: 2,
                 pointRadius: data.prices.length > 90 ? 0 : 2,
                 tension: 0.3,
-                spanGaps: true,
             });
         }
         if (hasFoil) {
             datasets.push({
                 label: 'Foil',
-                data: foilData,
+                data: foilPoints,
                 borderColor: colors.foil,
                 backgroundColor: colors.foil + '20',
                 borderWidth: 2,
                 pointRadius: data.prices.length > 90 ? 0 : 2,
                 tension: 0.3,
-                spanGaps: true,
             });
         }
 
@@ -71,12 +68,13 @@
 
         chart = new Chart(ctx, {
             type: 'line',
-            data: { labels: labels, datasets: datasets },
+            data: { datasets: datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: {
-                    mode: 'index',
+                    mode: 'nearest',
+                    axis: 'x',
                     intersect: false,
                 },
                 plugins: {
@@ -95,6 +93,15 @@
                 },
                 scales: {
                     x: {
+                        type: 'time',
+                        time: {
+                            unit: data.prices.length > 365 ? 'month' : 'day',
+                            tooltipFormat: 'MMM d, yyyy',
+                            displayFormats: {
+                                day: 'MMM d',
+                                month: 'MMM yyyy',
+                            },
+                        },
                         ticks: {
                             color: colors.text,
                             maxTicksLimit: 12,
@@ -150,7 +157,7 @@
         var cardId = container.getAttribute('data-card-id');
         if (!cardId) return;
 
-        fetchAndRender(cardId);
+        fetchAndRender(cardId, '7');
 
         var buttons = document.querySelectorAll('.price-history-range');
         buttons.forEach(function (btn) {

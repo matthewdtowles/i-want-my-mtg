@@ -59,6 +59,7 @@ cd scry && cargo test                              # Scry (Rust) tests
 ./scripts/etl.sh health --detailed
 ./scripts/etl.sh cleanup -c       # Clean up filtered sets/cards
 ./scripts/etl.sh retention        # Apply price_history retention
+./scripts/etl.sh backfill         # Backfill price_history from MTGJSON
 ```
 
 ### Logs
@@ -204,6 +205,16 @@ Applies a tiered retention policy: keeps daily rows for 7 days, weekly (Mondays)
 
 ```bash
 scry retention
+```
+
+### `backfill` — Backfill price_history from MTGJSON
+
+One-time operation that downloads AllPrices.json from MTGJSON and backfills the `price_history` table with historical price data. Averages prices across providers (TCGPlayer, Card Kingdom, Cardsphere) per card per date.
+
+```bash
+scry backfill                      # Backfill historical prices
+scry backfill --truncate           # Truncate price_history first (requires confirmation)
+scry backfill --skip-retention     # Skip retention policy after backfill
 ```
 
 ### `truncate-history` — Truncate the price_history table

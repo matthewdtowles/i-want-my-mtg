@@ -15,6 +15,7 @@ impl HttpClient {
     const ALL_CARDS_URL: &str = "AllPrintings.json";
     const SET_LIST_URL: &str = "SetList.json";
     const TODAY_PRICES_URL: &str = "AllPricesToday.json";
+    const ALL_PRICES_URL: &str = "AllPrices.json";
 
     pub fn new() -> Self {
         Self {
@@ -35,6 +36,14 @@ impl HttpClient {
     ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
         let url = format!("{}{}", Self::BASE_INGESTION_URL, Self::TODAY_PRICES_URL);
         info!("Stream all prices from: {}", url);
+        self.fetch_json_bytes_stream(url.as_str()).await
+    }
+
+    pub async fn all_prices_stream(
+        &self,
+    ) -> Result<impl Stream<Item = Result<Bytes, reqwest::Error>>> {
+        let url = format!("{}{}", Self::BASE_INGESTION_URL, Self::ALL_PRICES_URL);
+        info!("Stream all historical prices from: {}", url);
         self.fetch_json_bytes_stream(url.as_str()).await
     }
 

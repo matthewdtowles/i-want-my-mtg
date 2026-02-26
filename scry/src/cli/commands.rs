@@ -75,4 +75,12 @@ pub enum Commands {
 
     /// Truncate the entire price_history table (requires confirmation)
     TruncateHistory {},
+
+    /// Backfill price_history with AllPrices.json from MTGJSON (one-time operation)
+    Backfill {
+        #[arg(long, help = "Truncate price_history before backfill")]
+        truncate: bool,
+        #[arg(long, help = "Skip retention policy after backfill")]
+        skip_retention: bool,
+    },
 }

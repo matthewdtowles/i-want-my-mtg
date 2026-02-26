@@ -1,5 +1,6 @@
 use crate::price::domain::Price;
 use crate::price::event_processor::PriceEventProcessor;
+use crate::price::historical_event_processor::HistoricalPriceEventProcessor;
 use crate::price::repository::PriceRepository;
 use crate::utils::JsonStreamParser;
 use crate::{database::ConnectionPool, utils::http_client::HttpClient};
@@ -83,6 +84,23 @@ impl PriceService {
         Ok(())
     }
 
+    pub async fn ingest_all_historical(&self) -> Result<()> {
+        debug!("Start ingestion of all historical prices");
+        let byte_stream = self.client.all_prices_stream().await?;
+        debug!("Received byte stream for historical prices.");
+        let valid_card_ids = self.repository.fetch_all_card_ids().await?;
+
+        let event_processor = HistoricalPriceEventProcessor::new(BATCH_SIZE);
+
+        let mut json_stream_parser = JsonStreamParser::new(event_processor);
+        json_stream_parser
+            .parse_stream(byte_stream, |batch| {
+                Box::pin(self.save_price_history_only(batch, &valid_card_ids))
+            })
+            .await?;
+        Ok(())
+    }
+
     pub async fn delete_all(&self) -> Result<i64> {
         info!("Deleting all prices.");
         self.repository.delete_all().await
@@ -142,6 +160,25 @@ impl PriceService {
 
     pub async fn truncate_history(&self) -> Result<()> {
         self.repository.truncate_price_history().await
+    }
+
+    async fn save_price_history_only(
+        &self,
+        prices: Vec<Price>,
+        valid_card_ids: &std::collections::HashSet<String>,
+    ) -> Result<()> {
+        let filtered_prices: Vec<Price> = prices
+            .into_iter()
+            .filter(|p| valid_card_ids.contains(&p.card_id))
+            .collect();
+        if !filtered_prices.is_empty() {
+            let history_count = self.repository.save_price_history(&filtered_prices).await?;
+            debug!(
+                "Saved batch of {} prices to history table.",
+                history_count
+            );
+        }
+        Ok(())
     }
 
     async fn save_prices(

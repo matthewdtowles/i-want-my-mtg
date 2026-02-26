@@ -94,6 +94,16 @@ impl CliController {
                 }
                 Ok(())
             }
+
+            Commands::Backfill {
+                truncate,
+                skip_retention,
+            } => {
+                if let Err(e) = self.handle_backfill(truncate, skip_retention).await {
+                    error!("Backfill failed: {}", e);
+                }
+                Ok(())
+            }
         }
     }
 
@@ -213,6 +223,51 @@ impl CliController {
         let new_size = self.price_service.fetch_history_size().await?;
         info!("Table truncated. New size: {}", new_size);
         warn!("Remember to reload price history data!");
+        Ok(())
+    }
+
+    async fn handle_backfill(&self, truncate: bool, skip_retention: bool) -> Result<()> {
+        let count_before = self.price_service.fetch_price_history_count().await?;
+        let size_before = self.price_service.fetch_history_size().await?;
+        info!(
+            "Current price_history: {} rows, {}",
+            count_before, size_before
+        );
+
+        if truncate {
+            let confirmed = Confirm::new()
+                .with_prompt(
+                    "This will TRUNCATE price_history before backfill. Type 'y' to confirm",
+                )
+                .default(false)
+                .interact()
+                .unwrap();
+            if !confirmed {
+                warn!("Aborted backfill.");
+                return Ok(());
+            }
+            self.price_service.truncate_history().await?;
+            info!("Truncated price_history table.");
+        }
+
+        info!("Starting historical price backfill from AllPrices.json...");
+        self.price_service.ingest_all_historical().await?;
+        info!("Historical price backfill complete.");
+
+        if !skip_retention {
+            info!("Applying retention policy...");
+            let result = self.price_service.apply_retention().await?;
+            info!("Weekly period: deleted {} rows", result.weekly_deleted);
+            info!("Monthly period: deleted {} rows", result.monthly_deleted);
+            info!("Total deleted by retention: {}", result.total_deleted);
+        }
+
+        let count_after = self.price_service.fetch_price_history_count().await?;
+        let size_after = self.price_service.fetch_history_size().await?;
+        info!(
+            "Final price_history: {} rows, {}",
+            count_after, size_after
+        );
         Ok(())
     }
 

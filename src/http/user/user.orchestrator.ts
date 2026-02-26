@@ -206,6 +206,7 @@ export class UserOrchestrator {
             return {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
+                indexable: false,
                 user,
             };
         } catch (error) {

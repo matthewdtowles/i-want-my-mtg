@@ -1,15 +1,29 @@
-import { Controller, Get, Inject, Param, Render, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Query, Render, Req, UseGuards } from '@nestjs/common';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardOrchestrator } from './card.orchestrator';
 import { CardViewDto } from './dto/card.view.dto';
+import { PriceHistoryResponseDto } from './dto/price-history-response.dto';
 
 @Controller('card')
 export class CardController {
     private readonly LOGGER = getLogger(CardController.name);
 
     constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) {}
+
+    @Get(':cardId/price-history')
+    async getPriceHistory(
+        @Param('cardId') cardId: string,
+        @Query('days') days?: string
+    ): Promise<PriceHistoryResponseDto> {
+        this.LOGGER.log(`Get price history for card ${cardId}.`);
+        const parsedDays = days ? parseInt(days, 10) : undefined;
+        return this.cardOrchestrator.getPriceHistory(
+            cardId,
+            parsedDays && !isNaN(parsedDays) ? parsedDays : undefined
+        );
+    }
 
     @UseGuards(OptionalAuthGuard)
     @Get(':setCode/:setNumber')

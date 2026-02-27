@@ -64,6 +64,7 @@ services:
     # PostgreSQL Database (shared by web and etl)
     postgres:
         image: postgres:15-alpine
+        shm_size: 256mb
         environment:
             - POSTGRES_DB=${POSTGRES_DB}
             - POSTGRES_USER=${POSTGRES_USER}

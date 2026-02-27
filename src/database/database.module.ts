@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { PriceHistoryRepositoryPort } from 'src/core/card/price-history.repository.port';
 import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
@@ -14,6 +15,8 @@ import { InventoryOrmEntity } from './inventory/inventory.orm-entity';
 import { InventoryRepository } from './inventory/inventory.repository';
 import { PasswordResetOrmEntity } from './password-reset/password-reset.orm-entity';
 import { PasswordResetRepository } from './password-reset/password-reset.repository';
+import { PriceHistoryOrmEntity } from './price-history/price-history.orm-entity';
+import { PriceHistoryRepository } from './price-history/price-history.repository';
 import { PriceOrmEntity } from './price/price.orm-entity';
 import { SetPriceOrmEntity } from './set/set-price.orm-entity';
 import { SetOrmEntity } from './set/set.orm-entity';
@@ -30,6 +33,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
             InventoryOrmEntity,
             LegalityOrmEntity,
             PasswordResetOrmEntity,
+            PriceHistoryOrmEntity,
             PriceOrmEntity,
             SetOrmEntity,
             SetPriceOrmEntity,
@@ -39,6 +43,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
     ],
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
+        { provide: PriceHistoryRepositoryPort, useClass: PriceHistoryRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
@@ -47,6 +52,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
     ],
     exports: [
         CardRepositoryPort,
+        PriceHistoryRepositoryPort,
         InventoryRepositoryPort,
         PasswordResetRepositoryPort,
         SetRepositoryPort,

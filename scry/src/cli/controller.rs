@@ -200,6 +200,7 @@ impl CliController {
         info!("Weekly period: deleted {} rows", result.weekly_deleted);
         info!("Monthly period: deleted {} rows", result.monthly_deleted);
         info!("Total deleted: {}", result.total_deleted);
+        self.vacuum_history().await;
         Ok(())
     }
 
@@ -260,6 +261,7 @@ impl CliController {
             info!("Weekly period: deleted {} rows", result.weekly_deleted);
             info!("Monthly period: deleted {} rows", result.monthly_deleted);
             info!("Total deleted by retention: {}", result.total_deleted);
+            self.vacuum_history().await;
         }
 
         let count_after = self.price_service.fetch_price_history_count().await?;
@@ -269,6 +271,14 @@ impl CliController {
             count_after, size_after
         );
         Ok(())
+    }
+
+    async fn vacuum_history(&self) {
+        info!("Running VACUUM ANALYZE on price_history...");
+        match self.price_service.vacuum_history().await {
+            Ok(_) => info!("VACUUM ANALYZE completed"),
+            Err(e) => warn!("VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
     }
 
     async fn update_prices(&self) -> Result<()> {

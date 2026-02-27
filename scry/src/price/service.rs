@@ -147,8 +147,10 @@ impl PriceService {
         info!("Monthly period: deleted {} rows", monthly_deleted);
 
         info!("Running VACUUM ANALYZE on price_history...");
-        self.repository.vacuum_price_history().await?;
-        info!("VACUUM ANALYZE completed");
+        match self.repository.vacuum_price_history().await {
+            Ok(_) => info!("VACUUM ANALYZE completed"),
+            Err(e) => warn!("VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
 
         let total_deleted = weekly_deleted + monthly_deleted;
         Ok(RetentionResult {

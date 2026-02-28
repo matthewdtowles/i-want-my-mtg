@@ -201,6 +201,18 @@ impl CliController {
         info!("Monthly period: deleted {} rows", result.monthly_deleted);
         info!("Total deleted: {}", result.total_deleted);
         self.vacuum_history().await;
+
+        info!("Starting set price history retention cleanup");
+        let (weekly, monthly) = self.set_service.apply_set_price_history_retention().await?;
+        info!(
+            "Set price history: weekly deleted {} rows, monthly deleted {} rows",
+            weekly, monthly
+        );
+        info!("Running VACUUM ANALYZE on set_price_history...");
+        match self.set_service.vacuum_set_price_history().await {
+            Ok(_) => info!("Set price history VACUUM ANALYZE completed"),
+            Err(e) => warn!("Set price history VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
         Ok(())
     }
 

@@ -19,6 +19,7 @@ import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { SetListViewDto } from './dto/set-list.view.dto';
+import { SetPriceHistoryResponseDto } from './dto/set-price-history-response.dto';
 import { SetViewDto } from './dto/set.view.dto';
 import { SetOrchestrator } from './set.orchestrator';
 import { Response } from 'express';
@@ -60,6 +61,18 @@ export class SetController {
         const includeVariants = body.include_variants === 'true' || body.include_variants === '1';
         await this.setOrchestrator.addSetToInventory(req, code, foil, includeVariants);
         return { url: `/sets/${code}`, statusCode: HttpStatus.FOUND };
+    }
+
+    @Get(':code/price-history')
+    async getPriceHistory(
+        @Param('code') code: string,
+        @Query('days') days?: string
+    ): Promise<SetPriceHistoryResponseDto> {
+        const parsedDays = days ? parseInt(days, 10) : undefined;
+        return this.setOrchestrator.getSetPriceHistory(
+            code,
+            parsedDays && !isNaN(parsedDays) ? parsedDays : undefined
+        );
     }
 
     @UseGuards(OptionalAuthGuard)

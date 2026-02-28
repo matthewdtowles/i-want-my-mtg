@@ -26,6 +26,10 @@ import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SetBlockGroup } from './dto/set-block-group.dto';
+import {
+    SetPriceHistoryPointDto,
+    SetPriceHistoryResponseDto,
+} from './dto/set-price-history-response.dto';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
@@ -323,6 +327,24 @@ export class SetOrchestrator {
                 `Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`
             );
             return HttpErrorHandler.toHttpException(error, 'getSetValue');
+        }
+    }
+
+    async getSetPriceHistory(setCode: string, days?: number): Promise<SetPriceHistoryResponseDto> {
+        this.LOGGER.debug(`Get set price history for set ${setCode}, days=${days}.`);
+        try {
+            const prices = await this.setService.findSetPriceHistory(setCode, days);
+            const points: SetPriceHistoryPointDto[] = prices.map((p) => ({
+                date: p.date instanceof Date ? p.date.toISOString().split('T')[0] : String(p.date),
+                basePrice: p.basePrice != null ? Number(p.basePrice) : null,
+                totalPrice: p.totalPrice != null ? Number(p.totalPrice) : null,
+                basePriceAll: p.basePriceAll != null ? Number(p.basePriceAll) : null,
+                totalPriceAll: p.totalPriceAll != null ? Number(p.totalPriceAll) : null,
+            }));
+            return { setCode, prices: points };
+        } catch (error) {
+            this.LOGGER.debug(`Error getting set price history for ${setCode}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'getSetPriceHistory');
         }
     }
 

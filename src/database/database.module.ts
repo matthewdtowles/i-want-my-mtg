@@ -4,6 +4,7 @@ import { CardRepositoryPort } from 'src/core/card/card.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/price-history.repository.port';
 import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
+import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
 import { UserRepositoryPort } from 'src/core/user/user.repository.port';
 import { PendingUserRepositoryPort } from 'src/core/user/pending-user.repository.port';
@@ -18,6 +19,8 @@ import { PasswordResetRepository } from './password-reset/password-reset.reposit
 import { PriceHistoryOrmEntity } from './price-history/price-history.orm-entity';
 import { PriceHistoryRepository } from './price-history/price-history.repository';
 import { PriceOrmEntity } from './price/price.orm-entity';
+import { SetPriceHistoryOrmEntity } from './set-price-history/set-price-history.orm-entity';
+import { SetPriceHistoryRepository } from './set-price-history/set-price-history.repository';
 import { SetPriceOrmEntity } from './set/set-price.orm-entity';
 import { SetOrmEntity } from './set/set.orm-entity';
 import { SetRepository } from './set/set.repository';
@@ -37,6 +40,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
             PriceOrmEntity,
             SetOrmEntity,
             SetPriceOrmEntity,
+            SetPriceHistoryOrmEntity,
             UserOrmEntity,
             PendingUserOrmEntity,
         ]),
@@ -46,6 +50,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         { provide: PriceHistoryRepositoryPort, useClass: PriceHistoryRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
+        { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
@@ -55,6 +60,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         PriceHistoryRepositoryPort,
         InventoryRepositoryPort,
         PasswordResetRepositoryPort,
+        SetPriceHistoryRepositoryPort,
         SetRepositoryPort,
         UserRepositoryPort,
         PendingUserRepositoryPort,

@@ -31,6 +31,7 @@ describe('SetController', () => {
                         findBySetCode: jest.fn(),
                         addSetToInventory: jest.fn(),
                         getChecklist: jest.fn(),
+                        getSetPriceHistory: jest.fn(),
                     },
                 },
             ],
@@ -42,6 +43,36 @@ describe('SetController', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('getPriceHistory', () => {
+        it('delegates to orchestrator with parsed days', async () => {
+            const mockResponse = { setCode: 'neo', prices: [] };
+            orchestrator.getSetPriceHistory.mockResolvedValue(mockResponse);
+
+            const result = await controller.getPriceHistory('neo', '30');
+
+            expect(orchestrator.getSetPriceHistory).toHaveBeenCalledWith('neo', 30);
+            expect(result).toEqual(mockResponse);
+        });
+
+        it('passes undefined days when not provided', async () => {
+            const mockResponse = { setCode: 'neo', prices: [] };
+            orchestrator.getSetPriceHistory.mockResolvedValue(mockResponse);
+
+            await controller.getPriceHistory('neo');
+
+            expect(orchestrator.getSetPriceHistory).toHaveBeenCalledWith('neo', undefined);
+        });
+
+        it('passes undefined for non-numeric days', async () => {
+            const mockResponse = { setCode: 'neo', prices: [] };
+            orchestrator.getSetPriceHistory.mockResolvedValue(mockResponse);
+
+            await controller.getPriceHistory('neo', 'abc');
+
+            expect(orchestrator.getSetPriceHistory).toHaveBeenCalledWith('neo', undefined);
+        });
     });
 
     describe('getChecklist', () => {

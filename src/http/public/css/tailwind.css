@@ -2580,6 +2580,11 @@ input:where([type='file']):focus {
     background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
 
+.bg-gray-200 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
+}
+
 .bg-gray-50 {
     --tw-bg-opacity: 1;
     background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
@@ -3111,6 +3116,13 @@ input:where([type='file']):focus {
     --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --tw-shadow-colored:
         0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+    box-shadow:
+        var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow-sm {
+    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
     box-shadow:
         var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
@@ -6805,6 +6817,16 @@ input:where([type='file']):focus {
     border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
 }
 
+.hover\:bg-gray-300:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-teal-600:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(32 153 143 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:text-purple-100:hover {
     --tw-text-opacity: 1;
     color: rgb(245 236 253 / var(--tw-text-opacity, 1));
@@ -7067,6 +7089,11 @@ input:where([type='file']):focus {
     display: none;
 }
 
+.dark\:border-gray-700:is(.dark *) {
+    --tw-border-opacity: 1;
+    border-color: rgb(55 65 81 / var(--tw-border-opacity, 1));
+}
+
 .dark\:border-hotpink-400:is(.dark *) {
     --tw-border-opacity: 1;
     border-color: rgb(247 110 163 / var(--tw-border-opacity, 1));
@@ -7100,6 +7127,11 @@ input:where([type='file']):focus {
 .dark\:border-teal-600:is(.dark *) {
     --tw-border-opacity: 1;
     border-color: rgb(32 153 143 / var(--tw-border-opacity, 1));
+}
+
+.dark\:bg-gray-700:is(.dark *) {
+    --tw-bg-opacity: 1;
+    background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1));
 }
 
 .dark\:bg-gray-800:is(.dark *) {
@@ -7317,6 +7349,11 @@ input:where([type='file']):focus {
 .dark\:hover\:border-teal-500:hover:is(.dark *) {
     --tw-border-opacity: 1;
     border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
+}
+
+.dark\:hover\:bg-gray-600:hover:is(.dark *) {
+    --tw-bg-opacity: 1;
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity, 1));
 }
 
 .dark\:hover\:text-teal-400:hover:is(.dark *) {

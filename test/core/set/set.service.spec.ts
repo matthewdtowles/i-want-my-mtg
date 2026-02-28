@@ -1,12 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
+import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
 import { SetService } from 'src/core/set/set.service';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 describe('SetService', () => {
     let service: SetService;
     let repository: jest.Mocked<SetRepositoryPort>;
+    let priceHistoryRepository: jest.Mocked<SetPriceHistoryRepositoryPort>;
 
     const mockSetCode: string = 'SET';
     const setCodes: string[] = ['SET', 'ETS', 'TES'];
@@ -48,6 +51,10 @@ describe('SetService', () => {
         totalSearchSets: jest.fn(),
     };
 
+    const mockPriceHistoryRepository = {
+        findBySetCode: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -56,11 +63,18 @@ describe('SetService', () => {
                     provide: SetRepositoryPort,
                     useValue: mockSetRepository,
                 },
+                {
+                    provide: SetPriceHistoryRepositoryPort,
+                    useValue: mockPriceHistoryRepository,
+                },
             ],
         }).compile();
 
         service = module.get<SetService>(SetService);
         repository = module.get(SetRepositoryPort) as jest.Mocked<SetRepositoryPort>;
+        priceHistoryRepository = module.get(
+            SetPriceHistoryRepositoryPort
+        ) as jest.Mocked<SetPriceHistoryRepositoryPort>;
     });
 
     beforeEach(() => {
@@ -352,6 +366,63 @@ describe('SetService', () => {
 
             await expect(service.totalSearchSets('Test')).rejects.toThrow(
                 'Error counting set search results for "Test"'
+            );
+        });
+    });
+
+    describe('findSetPriceHistory', () => {
+        const mockPriceHistory: SetPriceHistory[] = [
+            new SetPriceHistory({
+                id: 1,
+                setCode: 'SET',
+                basePrice: 100.0,
+                totalPrice: 150.0,
+                basePriceAll: 200.0,
+                totalPriceAll: 300.0,
+                date: new Date('2026-01-01'),
+            }),
+            new SetPriceHistory({
+                id: 2,
+                setCode: 'SET',
+                basePrice: 105.0,
+                totalPrice: 155.0,
+                basePriceAll: 210.0,
+                totalPriceAll: 310.0,
+                date: new Date('2026-01-02'),
+            }),
+        ];
+
+        it('should return price history for a set', async () => {
+            priceHistoryRepository.findBySetCode.mockResolvedValue(mockPriceHistory);
+
+            const result = await service.findSetPriceHistory('SET');
+
+            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('SET', undefined);
+            expect(result).toEqual(mockPriceHistory);
+            expect(result.length).toBe(2);
+        });
+
+        it('should pass days parameter to repository', async () => {
+            priceHistoryRepository.findBySetCode.mockResolvedValue(mockPriceHistory);
+
+            await service.findSetPriceHistory('SET', 30);
+
+            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('SET', 30);
+        });
+
+        it('should return empty array when no history exists', async () => {
+            priceHistoryRepository.findBySetCode.mockResolvedValue([]);
+
+            const result = await service.findSetPriceHistory('SET');
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            priceHistoryRepository.findBySetCode.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.findSetPriceHistory('SET')).rejects.toThrow(
+                'Error finding set price history for set SET'
             );
         });
     });

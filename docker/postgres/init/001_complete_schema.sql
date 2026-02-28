@@ -423,6 +423,47 @@ ALTER TABLE ONLY public.price_history
 
 
 --
+-- Name: set_price_history; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.set_price_history (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    set_code varchar NOT NULL,
+    base_price numeric,
+    total_price numeric,
+    base_price_all numeric,
+    total_price_all numeric,
+    date date NOT NULL
+);
+
+
+
+--
+-- Name: set_price_history set_price_history_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.set_price_history
+    ADD CONSTRAINT set_price_history_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: set_price_history uq_set_price_history_set_code_date; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.set_price_history
+    ADD CONSTRAINT uq_set_price_history_set_code_date UNIQUE (set_code, date);
+
+
+--
+-- Name: set_price_history fk_set_price_history_set; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.set_price_history
+    ADD CONSTRAINT fk_set_price_history_set FOREIGN KEY (set_code)
+        REFERENCES public."set"(code) ON DELETE CASCADE;
+
+
+--
 -- Name: password_reset; Type: TABLE; Schema: public
 --
 

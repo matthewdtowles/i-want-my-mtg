@@ -180,10 +180,16 @@ impl PriceRepository {
                 .push_bind(&price.date);
         });
         query_builder.push(
-            " ON CONFLICT (card_id, date) DO UPDATE SET 
-            foil = EXCLUDED.foil, 
-            normal = EXCLUDED.normal",
+            " ON CONFLICT (card_id, date) DO UPDATE SET
+            foil = COALESCE(EXCLUDED.foil, ",
         );
+        query_builder.push(table);
+        query_builder.push(
+            ".foil),
+            normal = COALESCE(EXCLUDED.normal, ",
+        );
+        query_builder.push(table);
+        query_builder.push(".normal)");
         match self.db.execute_query_builder(query_builder).await {
             Ok(count) => Ok(count),
             Err(e) => {

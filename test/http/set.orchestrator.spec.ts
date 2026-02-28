@@ -6,6 +6,7 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
+import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
 import { Set } from 'src/core/set/set.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
@@ -77,6 +78,7 @@ describe('SetOrchestrator', () => {
                         findByCode: jest.fn(),
                         totalCardsInSet: jest.fn(),
                         totalValueForSet: jest.fn(),
+                        findSetPriceHistory: jest.fn(),
                     },
                 },
                 {
@@ -445,6 +447,60 @@ describe('SetOrchestrator', () => {
             const result = await orchestrator.getLastCardPage('TST', options);
 
             expect(result).toBe(1); // max(1, ceil(0 / 10))
+        });
+    });
+
+    describe('getSetPriceHistory', () => {
+        const mockPriceHistory: SetPriceHistory[] = [
+            new SetPriceHistory({
+                id: 1,
+                setCode: 'TST',
+                basePrice: 100.0,
+                totalPrice: 150.0,
+                basePriceAll: 200.0,
+                totalPriceAll: 300.0,
+                date: new Date('2026-01-01'),
+            }),
+            new SetPriceHistory({
+                id: 2,
+                setCode: 'TST',
+                basePrice: 105.0,
+                totalPrice: null,
+                basePriceAll: null,
+                totalPriceAll: null,
+                date: new Date('2026-01-02'),
+            }),
+        ];
+
+        it('should return price history mapped to DTOs', async () => {
+            setService.findSetPriceHistory.mockResolvedValue(mockPriceHistory);
+
+            const result = await orchestrator.getSetPriceHistory('TST', 30);
+
+            expect(setService.findSetPriceHistory).toHaveBeenCalledWith('TST', 30);
+            expect(result.setCode).toBe('TST');
+            expect(result.prices.length).toBe(2);
+            expect(result.prices[0].date).toBe('2026-01-01');
+            expect(result.prices[0].basePrice).toBe(100.0);
+            expect(result.prices[0].totalPrice).toBe(150.0);
+            expect(result.prices[1].totalPrice).toBeNull();
+        });
+
+        it('should return empty prices array when no history', async () => {
+            setService.findSetPriceHistory.mockResolvedValue([]);
+
+            const result = await orchestrator.getSetPriceHistory('TST');
+
+            expect(result.setCode).toBe('TST');
+            expect(result.prices).toEqual([]);
+        });
+
+        it('should throw on service error', async () => {
+            setService.findSetPriceHistory.mockRejectedValue(new Error('DB error'));
+
+            await expect(orchestrator.getSetPriceHistory('TST')).rejects.toThrow(
+                'An unexpected error occurred'
+            );
         });
     });
 

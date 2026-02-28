@@ -370,7 +370,15 @@ export class SetOrchestrator {
         const totalPriceAll = toValidNumber(prices.totalPriceAll);
 
         let defaultPrice = '-';
+        let defaultChange: number | null = null;
         let gridCols = 0;
+
+        // Helper to convert change value to number or null
+        const toChangeNumber = (value: any): number | null => {
+            if (value === null || value === undefined) return null;
+            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            return isNaN(num) ? null : num;
+        };
 
         // Filter and deduplicate prices in priority order (reverse of display)
         const totalPriceAllFiltered =
@@ -380,6 +388,7 @@ export class SetOrchestrator {
         if (totalPriceAllFiltered) {
             gridCols++;
             defaultPrice = totalPriceAllFiltered;
+            defaultChange = toChangeNumber(prices.totalPriceAllChange7d);
         }
 
         const totalPriceNormalFiltered =
@@ -387,6 +396,7 @@ export class SetOrchestrator {
         if (totalPriceNormalFiltered) {
             gridCols++;
             defaultPrice = totalPriceNormalFiltered;
+            defaultChange = toChangeNumber(prices.totalPriceChange7d);
         }
 
         const basePriceAllFiltered =
@@ -394,12 +404,34 @@ export class SetOrchestrator {
         if (basePriceAllFiltered) {
             gridCols++;
             defaultPrice = basePriceAllFiltered;
+            defaultChange = toChangeNumber(prices.basePriceAllChange7d);
         }
 
         const basePriceNormalFiltered = basePrice ? toDollar(basePrice) : null;
         if (basePriceNormalFiltered) {
             gridCols++;
             defaultPrice = basePriceNormalFiltered;
+            defaultChange = toChangeNumber(prices.basePriceChange7d);
+        }
+
+        // Format the change for the default price tier
+        let defaultPriceChange7d = '';
+        let defaultPriceChange7dSign = '';
+        if (defaultChange !== null) {
+            if (defaultChange === 0) {
+                defaultPriceChange7d = '$0.00';
+                defaultPriceChange7dSign = 'neutral';
+            } else {
+                const abs = Math.abs(Math.round(defaultChange * 100) / 100);
+                const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (defaultChange > 0) {
+                    defaultPriceChange7d = `+${formatted}`;
+                    defaultPriceChange7dSign = 'positive';
+                } else {
+                    defaultPriceChange7d = `-${formatted}`;
+                    defaultPriceChange7dSign = 'negative';
+                }
+            }
         }
 
         return new SetPriceDto({
@@ -409,6 +441,8 @@ export class SetOrchestrator {
             basePriceAll: basePriceAllFiltered,
             totalPriceNormal: totalPriceNormalFiltered,
             totalPriceAll: totalPriceAllFiltered,
+            defaultPriceChange7d,
+            defaultPriceChange7dSign,
             lastUpdate: prices.lastUpdate,
         });
     }

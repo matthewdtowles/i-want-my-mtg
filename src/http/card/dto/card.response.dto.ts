@@ -22,6 +22,8 @@ export class CardResponseDto {
     readonly foilQuantity?: number;
     readonly normalPrice?: string;
     readonly normalQuantity?: number;
+    readonly priceChange7d?: string;
+    readonly priceChange7dSign?: string;
     readonly tags: string[];
 
     constructor(init: Partial<CardResponseDto>) {
@@ -40,6 +42,8 @@ export class CardResponseDto {
         this.foilQuantity = init.foilQuantity || 0;
         this.normalPrice = init.normalPrice || '';
         this.normalQuantity = init.normalQuantity || 0;
+        this.priceChange7d = init.priceChange7d || '';
+        this.priceChange7dSign = init.priceChange7dSign || '';
         this.tags = init.tags || [];
     }
 }

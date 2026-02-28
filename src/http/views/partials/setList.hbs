@@ -31,7 +31,12 @@
                         <a href="{{this.url}}" class="table-link">{{this.name}}</a>
                         {{>tags item=this}}
                     </td>
-                    <td class="table-cell">{{this.prices.defaultPrice}}</td>
+                    <td class="table-cell">
+                        {{this.prices.defaultPrice}}
+                        {{#if this.prices.defaultPriceChange7d}}
+                        <span class="price-change price-change-{{this.prices.defaultPriceChange7dSign}}">{{this.prices.defaultPriceChange7d}}</span>
+                        {{/if}}
+                    </td>
                     {{#if ../../authenticated}}
                     <td class="table-cell">{{>completionRate}}</td>
                     {{/if}}

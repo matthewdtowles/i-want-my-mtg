@@ -245,6 +245,24 @@ impl SetRepository {
             .await
     }
 
+    pub async fn update_set_price_change_7d(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "UPDATE set_price sp \
+             SET base_price_change_7d = sp.base_price - sph.base_price, \
+                 total_price_change_7d = sp.total_price - sph.total_price, \
+                 base_price_all_change_7d = sp.base_price_all - sph.base_price_all, \
+                 total_price_all_change_7d = sp.total_price_all - sph.total_price_all \
+             FROM ( \
+                 SELECT DISTINCT ON (set_code) set_code, base_price, total_price, base_price_all, total_price_all \
+                 FROM set_price_history \
+                 WHERE date <= CURRENT_DATE - INTERVAL '7 days' \
+                 ORDER BY set_code, date DESC \
+             ) sph \
+             WHERE sph.set_code = sp.set_code",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
     pub async fn delete_all(&self) -> Result<i64> {
         let qb = QueryBuilder::new("DELETE FROM set CASCADE");
         self.db.execute_query_builder(qb).await

@@ -199,6 +199,22 @@ impl PriceRepository {
         }
     }
 
+    pub async fn update_price_change_7d(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "UPDATE price p \
+             SET normal_change_7d = p.normal - ph.normal, \
+                 foil_change_7d = p.foil - ph.foil \
+             FROM ( \
+                 SELECT DISTINCT ON (card_id) card_id, normal, foil \
+                 FROM price_history \
+                 WHERE date <= CURRENT_DATE - INTERVAL '7 days' \
+                 ORDER BY card_id, date DESC \
+             ) ph \
+             WHERE ph.card_id = p.card_id",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
     async fn count(&self, table: &str) -> Result<i64> {
         let query = format!("SELECT COUNT(*) FROM {}", table);
         let count = self.db.count(query.as_str()).await?;

@@ -36,6 +36,7 @@ export class CardPresenter {
             normalPrice: toDollar(price?.normal),
             normalQuantity:
                 card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
+            ...this.formatPriceChange(price),
             tags: this.createTags(card),
         });
     }
@@ -108,6 +109,26 @@ export class CardPresenter {
 
     private static buildImgSrc(card: Card, size: CardImgType): string {
         return `${BASE_IMAGE_URL}/${size}/front/${card.imgSrc}`;
+    }
+
+    static formatPriceChange(
+        price?: Price
+    ): { priceChange7d: string; priceChange7dSign: string } {
+        if (!price) return { priceChange7d: '', priceChange7dSign: '' };
+        const change = price.normalChange7d ?? price.foilChange7d;
+        if (change === null || change === undefined) {
+            return { priceChange7d: '', priceChange7dSign: '' };
+        }
+        const num = typeof change === 'string' ? parseFloat(change) : Number(change);
+        if (isNaN(num) || num === 0) {
+            return { priceChange7d: '$0.00', priceChange7dSign: 'neutral' };
+        }
+        const abs = Math.abs(Math.round(num * 100) / 100);
+        const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        if (num > 0) {
+            return { priceChange7d: `+${formatted}`, priceChange7dSign: 'positive' };
+        }
+        return { priceChange7d: `-${formatted}`, priceChange7dSign: 'negative' };
     }
 
     private static convertToCardRarity(rarity: string): CardRarity {

@@ -275,6 +275,9 @@
                     <td class="table-cell xs-hide">
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
+                        {{#if this.priceChange7d}}
+                        <span class="price-change price-change-{{this.priceChange7dSign}}">{{this.priceChange7d}}</span>
+                        {{/if}}
                         {{/if}}
                     </td>
                     <td class="table-cell xs-hide">
@@ -288,6 +291,9 @@
                         {{/if}}
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
+                        {{/if}}
+                        {{#if this.priceChange7d}}
+                        <span class="price-change price-change-{{this.priceChange7dSign}}">{{this.priceChange7d}}</span>
                         {{/if}}
                     </td>
                 </tr>

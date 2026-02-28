@@ -437,6 +437,16 @@ impl CliController {
             "Total set prices rows updated: {}",
             total_set_prices_updated
         );
+        let price_changes_updated = self.price_service.update_price_change_7d().await?;
+        info!(
+            "Card price 7-day changes updated: {}",
+            price_changes_updated
+        );
+        let set_price_changes_updated = self.set_service.update_set_price_change_7d().await?;
+        info!(
+            "Set price 7-day changes updated: {}",
+            set_price_changes_updated
+        );
         Ok(())
     }
 }

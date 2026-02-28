@@ -10,6 +10,10 @@ export class SetPriceMapper {
             totalPrice: ormEntity.totalPrice,
             basePriceAll: ormEntity.basePriceAll,
             totalPriceAll: ormEntity.totalPriceAll,
+            basePriceChange7d: ormEntity.basePriceChange7d,
+            totalPriceChange7d: ormEntity.totalPriceChange7d,
+            basePriceAllChange7d: ormEntity.basePriceAllChange7d,
+            totalPriceAllChange7d: ormEntity.totalPriceAllChange7d,
             lastUpdate: ormEntity.lastUpdate,
         });
     }

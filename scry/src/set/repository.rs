@@ -188,6 +188,28 @@ impl SetRepository {
         self.db.execute_query_builder(qb).await
     }
 
+    pub async fn backfill_set_price_history(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "INSERT INTO set_price_history (set_code, base_price, total_price, base_price_all, total_price_all, date)
+            SELECT
+                c.set_code,
+                COALESCE(SUM(COALESCE(ph.normal, ph.foil, 0)) FILTER (WHERE c.in_main), 0),
+                COALESCE(SUM(COALESCE(ph.normal, ph.foil, 0)), 0),
+                COALESCE(SUM(COALESCE(ph.normal, 0) + COALESCE(ph.foil, 0)) FILTER (WHERE c.in_main), 0),
+                COALESCE(SUM(COALESCE(ph.normal, 0) + COALESCE(ph.foil, 0)), 0),
+                ph.date
+            FROM card c
+            JOIN price_history ph ON ph.card_id = c.id
+            GROUP BY c.set_code, ph.date
+            ON CONFLICT (set_code, date) DO UPDATE SET
+                base_price = COALESCE(EXCLUDED.base_price, set_price_history.base_price),
+                total_price = COALESCE(EXCLUDED.total_price, set_price_history.total_price),
+                base_price_all = COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all),
+                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
     pub async fn apply_set_price_history_weekly_retention(&self) -> Result<i64> {
         self.db
             .count(

@@ -104,6 +104,13 @@ impl CliController {
                 }
                 Ok(())
             }
+
+            Commands::BackfillSetPriceHistory {} => {
+                if let Err(e) = self.handle_backfill_set_price_history().await {
+                    error!("Set price history backfill failed: {}", e);
+                }
+                Ok(())
+            }
         }
     }
 
@@ -282,6 +289,17 @@ impl CliController {
             "Final price_history: {} rows, {}",
             count_after, size_after
         );
+
+        info!("Starting set price history backfill from price_history...");
+        self.handle_backfill_set_price_history().await?;
+
+        Ok(())
+    }
+
+    async fn handle_backfill_set_price_history(&self) -> Result<()> {
+        info!("Backfilling set_price_history from price_history...");
+        let rows = self.set_service.backfill_set_price_history().await?;
+        info!("Set price history backfill complete: {} rows affected", rows);
         Ok(())
     }
 

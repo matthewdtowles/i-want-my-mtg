@@ -154,6 +154,10 @@ impl SetService {
         Ok(updated)
     }
 
+    pub async fn backfill_set_price_history(&self) -> Result<i64> {
+        self.repository.backfill_set_price_history().await
+    }
+
     pub async fn apply_set_price_history_retention(&self) -> Result<(i64, i64)> {
         let weekly = self
             .repository

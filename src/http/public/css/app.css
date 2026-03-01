@@ -152,6 +152,42 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
+.set-price-history-range {
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+        background-color 0.15s,
+        color 0.15s;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.set-price-history-range:hover {
+    background: #f3f4f6;
+}
+
+.set-price-history-range.active {
+    background: #0d9488;
+    color: #fff;
+    border-color: #0d9488;
+}
+
+.dark .set-price-history-range {
+    border-color: #4b5563;
+    color: #d1d5db;
+    background: #374151;
+}
+
+.dark .set-price-history-range:hover {
+    background: #4b5563;
+}
+
+.dark .set-price-history-range.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #f0fdfb;
+}
+
 @media (max-width: 450px) {
     table,
     .table-container,

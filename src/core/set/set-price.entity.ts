@@ -4,6 +4,10 @@ export class SetPrice {
     readonly totalPrice: number | null;
     readonly basePriceAll: number | null;
     readonly totalPriceAll: number | null;
+    readonly basePriceChangeWeekly: number | null;
+    readonly totalPriceChangeWeekly: number | null;
+    readonly basePriceAllChangeWeekly: number | null;
+    readonly totalPriceAllChangeWeekly: number | null;
     readonly lastUpdate: Date;
 
     constructor(init: Partial<SetPrice>) {
@@ -12,6 +16,10 @@ export class SetPrice {
         this.totalPrice = init.totalPrice ?? null;
         this.basePriceAll = init.basePriceAll ?? null;
         this.totalPriceAll = init.totalPriceAll ?? null;
+        this.basePriceChangeWeekly = init.basePriceChangeWeekly ?? null;
+        this.totalPriceChangeWeekly = init.totalPriceChangeWeekly ?? null;
+        this.basePriceAllChangeWeekly = init.basePriceAllChangeWeekly ?? null;
+        this.totalPriceAllChangeWeekly = init.totalPriceAllChangeWeekly ?? null;
         this.lastUpdate = init.lastUpdate ?? new Date();
     }
 }

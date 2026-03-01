@@ -26,6 +26,10 @@ import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SetBlockGroup } from './dto/set-block-group.dto';
+import {
+    SetPriceHistoryPointDto,
+    SetPriceHistoryResponseDto,
+} from './dto/set-price-history-response.dto';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
@@ -326,6 +330,27 @@ export class SetOrchestrator {
         }
     }
 
+    async getSetPriceHistory(setCode: string, days?: number): Promise<SetPriceHistoryResponseDto> {
+        this.LOGGER.debug(`Get set price history for set ${setCode}, days=${days}.`);
+        try {
+            const prices = await this.setService.findSetPriceHistory(setCode, days);
+            const points: SetPriceHistoryPointDto[] = prices.map((p) => ({
+                date:
+                    p.date instanceof Date
+                        ? `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`
+                        : String(p.date),
+                basePrice: p.basePrice != null ? Number(p.basePrice) : null,
+                totalPrice: p.totalPrice != null ? Number(p.totalPrice) : null,
+                basePriceAll: p.basePriceAll != null ? Number(p.basePriceAll) : null,
+                totalPriceAll: p.totalPriceAll != null ? Number(p.totalPriceAll) : null,
+            }));
+            return { setCode, prices: points };
+        } catch (error) {
+            this.LOGGER.debug(`Error getting set price history for ${setCode}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'getSetPriceHistory');
+        }
+    }
+
     /**
      * Creates a SetPriceDto with proper price filtering and deduplication.
      * Handles prices that may be strings or numbers from the database.
@@ -348,7 +373,15 @@ export class SetOrchestrator {
         const totalPriceAll = toValidNumber(prices.totalPriceAll);
 
         let defaultPrice = '-';
+        let defaultChange: number | null = null;
         let gridCols = 0;
+
+        // Helper to convert change value to number or null
+        const toChangeNumber = (value: any): number | null => {
+            if (value === null || value === undefined) return null;
+            const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+            return isNaN(num) ? null : num;
+        };
 
         // Filter and deduplicate prices in priority order (reverse of display)
         const totalPriceAllFiltered =
@@ -358,6 +391,7 @@ export class SetOrchestrator {
         if (totalPriceAllFiltered) {
             gridCols++;
             defaultPrice = totalPriceAllFiltered;
+            defaultChange = toChangeNumber(prices.totalPriceAllChangeWeekly);
         }
 
         const totalPriceNormalFiltered =
@@ -365,6 +399,7 @@ export class SetOrchestrator {
         if (totalPriceNormalFiltered) {
             gridCols++;
             defaultPrice = totalPriceNormalFiltered;
+            defaultChange = toChangeNumber(prices.totalPriceChangeWeekly);
         }
 
         const basePriceAllFiltered =
@@ -372,12 +407,34 @@ export class SetOrchestrator {
         if (basePriceAllFiltered) {
             gridCols++;
             defaultPrice = basePriceAllFiltered;
+            defaultChange = toChangeNumber(prices.basePriceAllChangeWeekly);
         }
 
         const basePriceNormalFiltered = basePrice ? toDollar(basePrice) : null;
         if (basePriceNormalFiltered) {
             gridCols++;
             defaultPrice = basePriceNormalFiltered;
+            defaultChange = toChangeNumber(prices.basePriceChangeWeekly);
+        }
+
+        // Format the change for the default price tier
+        let defaultPriceChangeWeekly = '';
+        let defaultPriceChangeWeeklySign = '';
+        if (defaultChange !== null) {
+            if (defaultChange === 0) {
+                defaultPriceChangeWeekly = '$0.00';
+                defaultPriceChangeWeeklySign = 'neutral';
+            } else {
+                const abs = Math.abs(Math.round(defaultChange * 100) / 100);
+                const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (defaultChange > 0) {
+                    defaultPriceChangeWeekly = `+${formatted}`;
+                    defaultPriceChangeWeeklySign = 'positive';
+                } else {
+                    defaultPriceChangeWeekly = `-${formatted}`;
+                    defaultPriceChangeWeeklySign = 'negative';
+                }
+            }
         }
 
         return new SetPriceDto({
@@ -387,6 +444,8 @@ export class SetOrchestrator {
             basePriceAll: basePriceAllFiltered,
             totalPriceNormal: totalPriceNormalFiltered,
             totalPriceAll: totalPriceAllFiltered,
+            defaultPriceChangeWeekly,
+            defaultPriceChangeWeeklySign,
             lastUpdate: prices.lastUpdate,
         });
     }
@@ -457,7 +516,7 @@ export class SetOrchestrator {
     ): TableHeadersRowView {
         const headers = new TableHeadersRowView([
             new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2']),
+            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2'], '7d'),
         ]);
         if (authenticated) {
             headers.headers.push(new TableHeaderView('Owned Value'));
@@ -475,9 +534,9 @@ export class SetOrchestrator {
             new SortableHeaderView(options, SortOptions.CARD),
             new TableHeaderView('Mana Cost', ['xs-hide']),
             new TableHeaderView('Rarity', ['xs-hide']),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide']),
-            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2']),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2']),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'),
+            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d'),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d'),
         ]);
     }
 

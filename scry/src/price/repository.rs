@@ -180,10 +180,16 @@ impl PriceRepository {
                 .push_bind(&price.date);
         });
         query_builder.push(
-            " ON CONFLICT (card_id, date) DO UPDATE SET 
-            foil = EXCLUDED.foil, 
-            normal = EXCLUDED.normal",
+            " ON CONFLICT (card_id, date) DO UPDATE SET
+            foil = COALESCE(EXCLUDED.foil, ",
         );
+        query_builder.push(table);
+        query_builder.push(
+            ".foil),
+            normal = COALESCE(EXCLUDED.normal, ",
+        );
+        query_builder.push(table);
+        query_builder.push(".normal)");
         match self.db.execute_query_builder(query_builder).await {
             Ok(count) => Ok(count),
             Err(e) => {
@@ -191,6 +197,22 @@ impl PriceRepository {
                 Err(e.into())
             }
         }
+    }
+
+    pub async fn update_price_change_weekly(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "UPDATE price p \
+             SET normal_change_weekly = p.normal - ph.normal, \
+                 foil_change_weekly = p.foil - ph.foil \
+             FROM ( \
+                 SELECT DISTINCT ON (card_id) card_id, normal, foil \
+                 FROM price_history \
+                 WHERE date <= CURRENT_DATE - INTERVAL '7 days' \
+                 ORDER BY card_id, date DESC \
+             ) ph \
+             WHERE ph.card_id = p.card_id",
+        );
+        self.db.execute_query_builder(qb).await
     }
 
     async fn count(&self, table: &str) -> Result<i64> {

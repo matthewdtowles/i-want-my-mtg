@@ -147,17 +147,123 @@ impl SetRepository {
         });
         qb.push(
             " ON CONFLICT (set_code) DO UPDATE SET
-                base_price = EXCLUDED.base_price,
-                total_price = EXCLUDED.total_price,
-                base_price_all = EXCLUDED.base_price_all,
-                total_price_all = EXCLUDED.total_price_all,
+                base_price = COALESCE(EXCLUDED.base_price, set_price.base_price),
+                total_price = COALESCE(EXCLUDED.total_price, set_price.total_price),
+                base_price_all = COALESCE(EXCLUDED.base_price_all, set_price.base_price_all),
+                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price.total_price_all),
                 date = EXCLUDED.date
             WHERE
-                set_price.base_price IS DISTINCT FROM EXCLUDED.base_price OR
-                set_price.total_price IS DISTINCT FROM EXCLUDED.total_price OR
-                set_price.base_price_all IS DISTINCT FROM EXCLUDED.base_price_all OR
-                set_price.total_price_all IS DISTINCT FROM EXCLUDED.total_price_all OR
+                set_price.base_price IS DISTINCT FROM COALESCE(EXCLUDED.base_price, set_price.base_price) OR
+                set_price.total_price IS DISTINCT FROM COALESCE(EXCLUDED.total_price, set_price.total_price) OR
+                set_price.base_price_all IS DISTINCT FROM COALESCE(EXCLUDED.base_price_all, set_price.base_price_all) OR
+                set_price.total_price_all IS DISTINCT FROM COALESCE(EXCLUDED.total_price_all, set_price.total_price_all) OR
                 set_price.date IS DISTINCT FROM EXCLUDED.date",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
+    pub async fn save_set_price_history(&self, set_prices: Vec<SetPrice>) -> Result<i64> {
+        if set_prices.is_empty() {
+            warn!("0 set prices given, 0 set price history rows saved.");
+            return Ok(0);
+        }
+        let mut qb = QueryBuilder::new(
+            "INSERT INTO set_price_history (set_code, base_price, total_price, base_price_all, total_price_all, date)",
+        );
+        qb.push_values(&set_prices, |mut b, sp| {
+            b.push_bind(&sp.set_code)
+                .push_bind(&sp.base_price)
+                .push_bind(&sp.total_price)
+                .push_bind(&sp.base_price_all)
+                .push_bind(&sp.total_price_all)
+                .push_bind(&sp.date);
+        });
+        qb.push(
+            " ON CONFLICT (set_code, date) DO UPDATE SET
+                base_price = COALESCE(EXCLUDED.base_price, set_price_history.base_price),
+                total_price = COALESCE(EXCLUDED.total_price, set_price_history.total_price),
+                base_price_all = COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all),
+                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)
+            WHERE
+                set_price_history.base_price IS DISTINCT FROM COALESCE(EXCLUDED.base_price, set_price_history.base_price) OR
+                set_price_history.total_price IS DISTINCT FROM COALESCE(EXCLUDED.total_price, set_price_history.total_price) OR
+                set_price_history.base_price_all IS DISTINCT FROM COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all) OR
+                set_price_history.total_price_all IS DISTINCT FROM COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
+    pub async fn backfill_set_price_history(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "INSERT INTO set_price_history (set_code, base_price, total_price, base_price_all, total_price_all, date)
+            SELECT
+                c.set_code,
+                COALESCE(SUM(COALESCE(ph.normal, ph.foil, 0)) FILTER (WHERE c.in_main), 0),
+                COALESCE(SUM(COALESCE(ph.normal, ph.foil, 0)), 0),
+                COALESCE(SUM(COALESCE(ph.normal, 0) + COALESCE(ph.foil, 0)) FILTER (WHERE c.in_main), 0),
+                COALESCE(SUM(COALESCE(ph.normal, 0) + COALESCE(ph.foil, 0)), 0),
+                ph.date
+            FROM card c
+            JOIN price_history ph ON ph.card_id = c.id
+            GROUP BY c.set_code, ph.date
+            ON CONFLICT (set_code, date) DO UPDATE SET
+                base_price = COALESCE(EXCLUDED.base_price, set_price_history.base_price),
+                total_price = COALESCE(EXCLUDED.total_price, set_price_history.total_price),
+                base_price_all = COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all),
+                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)",
+        );
+        self.db.execute_query_builder(qb).await
+    }
+
+    pub async fn apply_set_price_history_weekly_retention(&self) -> Result<i64> {
+        self.db
+            .count(
+                "WITH deleted AS ( \
+                    DELETE FROM set_price_history \
+                    WHERE date >= CURRENT_DATE - INTERVAL '28 days' \
+                      AND date < CURRENT_DATE - INTERVAL '7 days' \
+                      AND EXTRACT(DOW FROM date) NOT IN (1) \
+                    RETURNING 1 \
+                ) \
+                SELECT COUNT(*) FROM deleted",
+            )
+            .await
+    }
+
+    pub async fn apply_set_price_history_monthly_retention(&self) -> Result<i64> {
+        self.db
+            .count(
+                "WITH deleted AS ( \
+                    DELETE FROM set_price_history \
+                    WHERE date < CURRENT_DATE - INTERVAL '28 days' \
+                      AND EXTRACT(DAY FROM date) != 1 \
+                    RETURNING 1 \
+                ) \
+                SELECT COUNT(*) FROM deleted",
+            )
+            .await
+    }
+
+    pub async fn vacuum_set_price_history(&self) -> Result<()> {
+        self.db
+            .execute_raw("VACUUM ANALYZE set_price_history")
+            .await
+    }
+
+    pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
+        let qb = QueryBuilder::new(
+            "UPDATE set_price sp \
+             SET base_price_change_weekly = sp.base_price - sph.base_price, \
+                 total_price_change_weekly = sp.total_price - sph.total_price, \
+                 base_price_all_change_weekly = sp.base_price_all - sph.base_price_all, \
+                 total_price_all_change_weekly = sp.total_price_all - sph.total_price_all \
+             FROM ( \
+                 SELECT DISTINCT ON (set_code) set_code, base_price, total_price, base_price_all, total_price_all \
+                 FROM set_price_history \
+                 WHERE date <= CURRENT_DATE - INTERVAL '7 days' \
+                 ORDER BY set_code, date DESC \
+             ) sph \
+             WHERE sph.set_code = sp.set_code",
         );
         self.db.execute_query_builder(qb).await
     }

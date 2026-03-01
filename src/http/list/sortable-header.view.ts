@@ -7,8 +7,13 @@ export class SortableHeaderView extends TableHeaderView {
     readonly href: string;
     readonly ascend?: boolean;
 
-    constructor(options: SafeQueryOptions, sortOption: SortOptions, classes?: string[]) {
-        super(SortOptionLabels[sortOption], classes);
+    constructor(
+        options: SafeQueryOptions,
+        sortOption: SortOptions,
+        classes?: string[],
+        subtitle?: string
+    ) {
+        super(SortOptionLabels[sortOption], classes, subtitle);
         this.ascend = options.sort === sortOption ? !options.ascend : true;
         this.href = buildQueryString({ ...options, sort: sortOption, ascend: this.ascend });
     }

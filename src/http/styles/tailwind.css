@@ -292,6 +292,22 @@
     @apply inline-block py-1 px-2 text-teal-800 dark:text-teal-300 font-medium bg-teal-50 dark:bg-teal-900/30 rounded-md;
 }
 
+.price-change {
+    @apply inline-block text-xs font-medium ml-1;
+}
+
+.price-change-positive {
+    @apply text-green-600 dark:text-green-400;
+}
+
+.price-change-negative {
+    @apply text-red-600 dark:text-red-400;
+}
+
+.price-change-neutral {
+    @apply text-gray-400 dark:text-gray-500;
+}
+
 /* ===== Quantity Forms ===== */
 
 .quantity-form {
@@ -459,6 +475,10 @@
 
 .table-header {
     @apply px-1.5 py-2 sm:px-3 sm:py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500;
+}
+
+.header-subtitle {
+    @apply text-[0.6rem] font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500;
 }
 
 .table-header-row {

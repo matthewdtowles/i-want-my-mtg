@@ -104,6 +104,13 @@ impl CliController {
                 }
                 Ok(())
             }
+
+            Commands::BackfillSetPriceHistory {} => {
+                if let Err(e) = self.handle_backfill_set_price_history().await {
+                    error!("Set price history backfill failed: {}", e);
+                }
+                Ok(())
+            }
         }
     }
 
@@ -200,6 +207,19 @@ impl CliController {
         info!("Weekly period: deleted {} rows", result.weekly_deleted);
         info!("Monthly period: deleted {} rows", result.monthly_deleted);
         info!("Total deleted: {}", result.total_deleted);
+        self.vacuum_history().await;
+
+        info!("Starting set price history retention cleanup");
+        let (weekly, monthly) = self.set_service.apply_set_price_history_retention().await?;
+        info!(
+            "Set price history: weekly deleted {} rows, monthly deleted {} rows",
+            weekly, monthly
+        );
+        info!("Running VACUUM ANALYZE on set_price_history...");
+        match self.set_service.vacuum_set_price_history().await {
+            Ok(_) => info!("Set price history VACUUM ANALYZE completed"),
+            Err(e) => warn!("Set price history VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
         Ok(())
     }
 
@@ -260,6 +280,7 @@ impl CliController {
             info!("Weekly period: deleted {} rows", result.weekly_deleted);
             info!("Monthly period: deleted {} rows", result.monthly_deleted);
             info!("Total deleted by retention: {}", result.total_deleted);
+            self.vacuum_history().await;
         }
 
         let count_after = self.price_service.fetch_price_history_count().await?;
@@ -268,7 +289,26 @@ impl CliController {
             "Final price_history: {} rows, {}",
             count_after, size_after
         );
+
+        info!("Starting set price history backfill from price_history...");
+        self.handle_backfill_set_price_history().await?;
+
         Ok(())
+    }
+
+    async fn handle_backfill_set_price_history(&self) -> Result<()> {
+        info!("Backfilling set_price_history from price_history...");
+        let rows = self.set_service.backfill_set_price_history().await?;
+        info!("Set price history backfill complete: {} rows affected", rows);
+        Ok(())
+    }
+
+    async fn vacuum_history(&self) {
+        info!("Running VACUUM ANALYZE on price_history...");
+        match self.price_service.vacuum_history().await {
+            Ok(_) => info!("VACUUM ANALYZE completed"),
+            Err(e) => warn!("VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
     }
 
     async fn update_prices(&self) -> Result<()> {
@@ -396,6 +436,16 @@ impl CliController {
         info!(
             "Total set prices rows updated: {}",
             total_set_prices_updated
+        );
+        let price_changes_updated = self.price_service.update_price_change_weekly().await?;
+        info!(
+            "Card price weekly changes updated: {}",
+            price_changes_updated
+        );
+        let set_price_changes_updated = self.set_service.update_set_price_change_weekly().await?;
+        info!(
+            "Set price weekly changes updated: {}",
+            set_price_changes_updated
         );
         Ok(())
     }

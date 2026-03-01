@@ -5,6 +5,8 @@ export class SetPriceDto {
     readonly basePriceAll?: string | null;
     readonly totalPriceNormal?: string | null;
     readonly totalPriceAll?: string | null;
+    readonly defaultPriceChangeWeekly?: string;
+    readonly defaultPriceChangeWeeklySign?: string;
     readonly lastUpdate: Date;
 
     constructor(init: Partial<SetPriceDto>) {
@@ -14,6 +16,8 @@ export class SetPriceDto {
         this.basePriceAll = init.basePriceAll;
         this.totalPriceNormal = init.totalPriceNormal;
         this.totalPriceAll = init.totalPriceAll;
+        this.defaultPriceChangeWeekly = init.defaultPriceChangeWeekly || '';
+        this.defaultPriceChangeWeeklySign = init.defaultPriceChangeWeeklySign || '';
         this.lastUpdate = init.lastUpdate;
     }
 }

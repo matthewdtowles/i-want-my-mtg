@@ -83,4 +83,7 @@ pub enum Commands {
         #[arg(long, help = "Skip retention policy after backfill")]
         skip_retention: bool,
     },
+
+    /// Backfill set_price_history from price_history data
+    BackfillSetPriceHistory {},
 }

@@ -21,7 +21,7 @@ export class CardController {
         const parsedDays = days ? parseInt(days, 10) : undefined;
         return this.cardOrchestrator.getPriceHistory(
             cardId,
-            parsedDays && !isNaN(parsedDays) ? parsedDays : undefined
+            Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined
         );
     }
 

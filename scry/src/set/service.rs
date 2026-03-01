@@ -154,6 +154,30 @@ impl SetService {
         Ok(updated)
     }
 
+    pub async fn backfill_set_price_history(&self) -> Result<i64> {
+        self.repository.backfill_set_price_history().await
+    }
+
+    pub async fn apply_set_price_history_retention(&self) -> Result<(i64, i64)> {
+        let weekly = self
+            .repository
+            .apply_set_price_history_weekly_retention()
+            .await?;
+        let monthly = self
+            .repository
+            .apply_set_price_history_monthly_retention()
+            .await?;
+        Ok((weekly, monthly))
+    }
+
+    pub async fn vacuum_set_price_history(&self) -> Result<()> {
+        self.repository.vacuum_set_price_history().await
+    }
+
+    pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
+        self.repository.update_set_price_change_weekly().await
+    }
+
     async fn save_set_prices(&self, set_prices: Vec<SetPrice>) -> Result<i64> {
         if set_prices.is_empty() {
             return Ok(0);
@@ -162,6 +186,12 @@ impl SetService {
         let batch_size = 200usize;
         for chunk in set_prices.chunks(batch_size) {
             total += self.repository.update_prices(chunk.to_vec()).await?;
+        }
+        // Also save to set_price_history
+        for chunk in set_prices.chunks(batch_size) {
+            self.repository
+                .save_set_price_history(chunk.to_vec())
+                .await?;
         }
         Ok(total)
     }

@@ -3115,6 +3115,13 @@ input:where([type='file']):focus {
         var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.shadow-sm {
+    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+    box-shadow:
+        var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
 .outline {
     outline-style: solid;
 }
@@ -4409,6 +4416,44 @@ input:where([type='file']):focus {
     color: rgb(114 236 229 / var(--tw-text-opacity, 1));
 }
 
+.price-change {
+    margin-left: 0.25rem;
+    display: inline-block;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+}
+
+.price-change-positive {
+    --tw-text-opacity: 1;
+    color: rgb(22 163 74 / var(--tw-text-opacity, 1));
+}
+
+.price-change-positive:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(74 222 128 / var(--tw-text-opacity, 1));
+}
+
+.price-change-negative {
+    --tw-text-opacity: 1;
+    color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+
+.price-change-negative:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(248 113 113 / var(--tw-text-opacity, 1));
+}
+
+.price-change-neutral {
+    --tw-text-opacity: 1;
+    color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.price-change-neutral:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
 /* ===== Quantity Forms ===== */
 
 .quantity-form {
@@ -4835,6 +4880,20 @@ input:where([type='file']):focus {
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
     }
+}
+
+.header-subtitle {
+    font-size: 0.6rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0em;
+    --tw-text-opacity: 1;
+    color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.header-subtitle:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
 .table-header-row {
@@ -7065,6 +7124,11 @@ input:where([type='file']):focus {
 
 .dark\:hidden:is(.dark *) {
     display: none;
+}
+
+.dark\:border-gray-700:is(.dark *) {
+    --tw-border-opacity: 1;
+    border-color: rgb(55 65 81 / var(--tw-border-opacity, 1));
 }
 
 .dark\:border-hotpink-400:is(.dark *) {

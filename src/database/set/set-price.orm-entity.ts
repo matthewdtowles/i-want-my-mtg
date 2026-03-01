@@ -18,6 +18,18 @@ export class SetPriceOrmEntity {
     @Column({ name: 'total_price_all', type: 'decimal', nullable: true })
     totalPriceAll: number;
 
+    @Column({ name: 'base_price_change_weekly', type: 'decimal', nullable: true })
+    basePriceChangeWeekly: number | null;
+
+    @Column({ name: 'total_price_change_weekly', type: 'decimal', nullable: true })
+    totalPriceChangeWeekly: number | null;
+
+    @Column({ name: 'base_price_all_change_weekly', type: 'decimal', nullable: true })
+    basePriceAllChangeWeekly: number | null;
+
+    @Column({ name: 'total_price_all_change_weekly', type: 'decimal', nullable: true })
+    totalPriceAllChangeWeekly: number | null;
+
     @Column({ name: 'date', type: 'date' })
     lastUpdate: Date;
 

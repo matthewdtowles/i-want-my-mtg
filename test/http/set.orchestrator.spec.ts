@@ -6,6 +6,7 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
+import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
 import { Set } from 'src/core/set/set.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
@@ -77,6 +78,7 @@ describe('SetOrchestrator', () => {
                         findByCode: jest.fn(),
                         totalCardsInSet: jest.fn(),
                         totalValueForSet: jest.fn(),
+                        findSetPriceHistory: jest.fn(),
                     },
                 },
                 {
@@ -448,6 +450,60 @@ describe('SetOrchestrator', () => {
         });
     });
 
+    describe('getSetPriceHistory', () => {
+        const mockPriceHistory: SetPriceHistory[] = [
+            new SetPriceHistory({
+                id: 1,
+                setCode: 'TST',
+                basePrice: 100.0,
+                totalPrice: 150.0,
+                basePriceAll: 200.0,
+                totalPriceAll: 300.0,
+                date: new Date('2026-01-01'),
+            }),
+            new SetPriceHistory({
+                id: 2,
+                setCode: 'TST',
+                basePrice: 105.0,
+                totalPrice: null,
+                basePriceAll: null,
+                totalPriceAll: null,
+                date: new Date('2026-01-02'),
+            }),
+        ];
+
+        it('should return price history mapped to DTOs', async () => {
+            setService.findSetPriceHistory.mockResolvedValue(mockPriceHistory);
+
+            const result = await orchestrator.getSetPriceHistory('TST', 30);
+
+            expect(setService.findSetPriceHistory).toHaveBeenCalledWith('TST', 30);
+            expect(result.setCode).toBe('TST');
+            expect(result.prices.length).toBe(2);
+            expect(result.prices[0].date).toBe('2026-01-01');
+            expect(result.prices[0].basePrice).toBe(100.0);
+            expect(result.prices[0].totalPrice).toBe(150.0);
+            expect(result.prices[1].totalPrice).toBeNull();
+        });
+
+        it('should return empty prices array when no history', async () => {
+            setService.findSetPriceHistory.mockResolvedValue([]);
+
+            const result = await orchestrator.getSetPriceHistory('TST');
+
+            expect(result.setCode).toBe('TST');
+            expect(result.prices).toEqual([]);
+        });
+
+        it('should throw on service error', async () => {
+            setService.findSetPriceHistory.mockRejectedValue(new Error('DB error'));
+
+            await expect(orchestrator.getSetPriceHistory('TST')).rejects.toThrow(
+                'An unexpected error occurred'
+            );
+        });
+    });
+
     describe('createSetPriceDto - Price filtering and defaultPrice selection', () => {
         it('should handle all prices as zero', () => {
             const prices = createMockSetPrice({
@@ -766,6 +822,84 @@ describe('SetOrchestrator', () => {
             const result = orchestrator.createSetPriceDto(prices);
 
             expect(result.basePriceNormal).toBe('$100.00');
+        });
+    });
+
+    describe('createSetPriceDto - weekly price change selection', () => {
+        it('should select basePriceChangeWeekly when basePriceNormal is the default', () => {
+            const prices = createMockSetPrice({
+                basePrice: 100.0,
+                basePriceAll: 200.0,
+                totalPrice: 150.0,
+                totalPriceAll: 300.0,
+            });
+            (prices as any).basePriceChangeWeekly = 5.5;
+            (prices as any).totalPriceChangeWeekly = 10.0;
+            (prices as any).basePriceAllChangeWeekly = 8.0;
+            (prices as any).totalPriceAllChangeWeekly = 15.0;
+
+            const result = orchestrator.createSetPriceDto(prices);
+
+            expect(result.defaultPriceChangeWeekly).toBe('+$5.50');
+            expect(result.defaultPriceChangeWeeklySign).toBe('positive');
+        });
+
+        it('should select basePriceAllChangeWeekly when basePriceAll is the default', () => {
+            const prices = createMockSetPrice({
+                basePrice: null,
+                basePriceAll: 200.0,
+                totalPrice: null,
+                totalPriceAll: null,
+            });
+            (prices as any).basePriceAllChangeWeekly = -3.25;
+
+            const result = orchestrator.createSetPriceDto(prices);
+
+            expect(result.defaultPriceChangeWeekly).toBe('-$3.25');
+            expect(result.defaultPriceChangeWeeklySign).toBe('negative');
+        });
+
+        it('should select totalPriceChangeWeekly when totalPriceNormal is the default', () => {
+            const prices = createMockSetPrice({
+                basePrice: null,
+                basePriceAll: null,
+                totalPrice: 150.0,
+                totalPriceAll: null,
+            });
+            (prices as any).totalPriceChangeWeekly = 0;
+
+            const result = orchestrator.createSetPriceDto(prices);
+
+            expect(result.defaultPriceChangeWeekly).toBe('$0.00');
+            expect(result.defaultPriceChangeWeeklySign).toBe('neutral');
+        });
+
+        it('should return empty change when all change values are null', () => {
+            const prices = createMockSetPrice({
+                basePrice: 100.0,
+                basePriceAll: null,
+                totalPrice: null,
+                totalPriceAll: null,
+            });
+
+            const result = orchestrator.createSetPriceDto(prices);
+
+            expect(result.defaultPriceChangeWeekly).toBe('');
+            expect(result.defaultPriceChangeWeeklySign).toBe('');
+        });
+
+        it('should return empty change when no prices available', () => {
+            const prices = createMockSetPrice({
+                basePrice: null,
+                basePriceAll: null,
+                totalPrice: null,
+                totalPriceAll: null,
+            });
+
+            const result = orchestrator.createSetPriceDto(prices);
+
+            expect(result.defaultPriceChangeWeekly).toBe('');
+            expect(result.defaultPriceChangeWeeklySign).toBe('');
         });
     });
 

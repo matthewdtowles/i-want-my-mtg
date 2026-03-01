@@ -137,6 +137,10 @@ impl PriceService {
         self.repository.price_history_size().await
     }
 
+    pub async fn vacuum_history(&self) -> Result<()> {
+        self.repository.vacuum_price_history().await
+    }
+
     pub async fn apply_retention(&self) -> Result<RetentionResult> {
         info!("Starting retention cleanup on price_history");
 
@@ -145,10 +149,6 @@ impl PriceService {
 
         let monthly_deleted = self.repository.apply_monthly_retention().await?;
         info!("Monthly period: deleted {} rows", monthly_deleted);
-
-        info!("Running VACUUM ANALYZE on price_history...");
-        self.repository.vacuum_price_history().await?;
-        info!("VACUUM ANALYZE completed");
 
         let total_deleted = weekly_deleted + monthly_deleted;
         Ok(RetentionResult {
@@ -160,6 +160,10 @@ impl PriceService {
 
     pub async fn truncate_history(&self) -> Result<()> {
         self.repository.truncate_price_history().await
+    }
+
+    pub async fn update_price_change_weekly(&self) -> Result<i64> {
+        self.repository.update_price_change_weekly().await
     }
 
     async fn save_price_history_only(

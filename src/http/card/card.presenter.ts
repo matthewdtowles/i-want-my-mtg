@@ -36,6 +36,7 @@ export class CardPresenter {
             normalPrice: toDollar(price?.normal),
             normalQuantity:
                 card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
+            ...this.formatPriceChange(price),
             tags: this.createTags(card),
         });
     }
@@ -108,6 +109,53 @@ export class CardPresenter {
 
     private static buildImgSrc(card: Card, size: CardImgType): string {
         return `${BASE_IMAGE_URL}/${size}/front/${card.imgSrc}`;
+    }
+
+    static formatPriceChange(price?: Price): {
+        priceChangeWeekly: string;
+        priceChangeWeeklySign: string;
+        foilPriceChangeWeekly: string;
+        foilPriceChangeWeeklySign: string;
+    } {
+        return {
+            ...this.formatChange(price?.normalChangeWeekly ?? price?.foilChangeWeekly),
+            ...this.formatFoilChange(price?.foilChangeWeekly),
+        };
+    }
+
+    private static formatChange(change: number | null | undefined): {
+        priceChangeWeekly: string;
+        priceChangeWeeklySign: string;
+    } {
+        const result = this.formatChangeValue(change);
+        return { priceChangeWeekly: result.value, priceChangeWeeklySign: result.sign };
+    }
+
+    private static formatFoilChange(change: number | null | undefined): {
+        foilPriceChangeWeekly: string;
+        foilPriceChangeWeeklySign: string;
+    } {
+        const result = this.formatChangeValue(change);
+        return { foilPriceChangeWeekly: result.value, foilPriceChangeWeeklySign: result.sign };
+    }
+
+    private static formatChangeValue(change: number | null | undefined): {
+        value: string;
+        sign: string;
+    } {
+        if (change === null || change === undefined) {
+            return { value: '', sign: '' };
+        }
+        const num = typeof change === 'string' ? parseFloat(change) : Number(change);
+        if (isNaN(num) || num === 0) {
+            return { value: '$0.00', sign: 'neutral' };
+        }
+        const abs = Math.abs(Math.round(num * 100) / 100);
+        const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        if (num > 0) {
+            return { value: `+${formatted}`, sign: 'positive' };
+        }
+        return { value: `-${formatted}`, sign: 'negative' };
     }
 
     private static convertToCardRarity(rarity: string): CardRarity {

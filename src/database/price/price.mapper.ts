@@ -9,6 +9,8 @@ export class PriceMapper {
             cardId: ormPrice?.card?.id,
             foil: ormPrice.foil,
             normal: ormPrice.normal,
+            normalChangeWeekly: ormPrice.normalChangeWeekly,
+            foilChangeWeekly: ormPrice.foilChangeWeekly,
             date: ormPrice.date,
         });
     }

@@ -220,6 +220,24 @@
     </section>
 </div>
 
+<div class="content-wrapper mb-4">
+    <div id="set-price-history-chart" data-set-code="{{set.code}}"
+        class="bg-white dark:bg-midnight-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
+            <div class="flex gap-1">
+                <button class="set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded">All</button>
+            </div>
+        </div>
+        <div style="height: 250px;">
+            <canvas id="set-price-history-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
 <div class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1">
@@ -257,19 +275,31 @@
                     <td class="table-cell xs-hide">
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
+                        {{/if}}
                         {{/if}}
                     </td>
                     <td class="table-cell xs-hide">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
+                        {{#if this.foilPriceChangeWeekly}}
+                        <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
+                        {{/if}}
                         {{/if}}
                     </td>
                     <td class="table-cell xs-show">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
+                        {{#if this.foilPriceChangeWeekly}}
+                        <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
+                        {{/if}}
                         {{/if}}
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
+                        {{/if}}
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
                         {{/if}}
                     </td>
                 </tr>
@@ -294,3 +324,6 @@
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/setPriceInfo.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="/public/js/setPriceHistoryChart.js" defer></script>

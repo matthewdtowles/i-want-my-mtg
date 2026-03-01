@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
+import { SetPriceHistory } from './set-price-history.entity';
+import { SetPriceHistoryRepositoryPort } from './set-price-history.repository.port';
 import { Set } from './set.entity';
 import { SetRepositoryPort } from './set.repository.port';
 
@@ -8,7 +10,11 @@ import { SetRepositoryPort } from './set.repository.port';
 export class SetService {
     private readonly LOGGER = getLogger(SetService.name);
 
-    constructor(@Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort) {}
+    constructor(
+        @Inject(SetRepositoryPort) private readonly repository: SetRepositoryPort,
+        @Inject(SetPriceHistoryRepositoryPort)
+        private readonly priceHistoryRepository: SetPriceHistoryRepositoryPort
+    ) {}
 
     async findSets(query: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Calling findSets.`);
@@ -99,6 +105,19 @@ export class SetService {
             throw new Error(
                 `Error getting total value of ${includeFoil ? '' : 'non-foil '}cards for set ${setCode}: ${error.message}.`
             );
+        }
+    }
+
+    async findSetPriceHistory(setCode: string, days?: number): Promise<SetPriceHistory[]> {
+        this.LOGGER.debug(`Find set price history for set ${setCode}, days=${days}.`);
+        try {
+            const prices = await this.priceHistoryRepository.findBySetCode(setCode, days);
+            this.LOGGER.debug(
+                `Found ${prices?.length} set price history records for set ${setCode}.`
+            );
+            return prices;
+        } catch (error) {
+            throw new Error(`Error finding set price history for set ${setCode}: ${error.message}`);
         }
     }
 }

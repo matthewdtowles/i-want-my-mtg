@@ -33,7 +33,7 @@ cd scry && cargo build --release  # Production build
 cd scry && cargo run -- ingest    # Ingest sets, cards, prices from Scryfall
 cd scry && cargo run -- cleanup -c  # Post-ingest data cleanup
 cd scry && cargo run -- health    # Check data integrity
-cd scry && cargo run -- retention # Apply price_history retention policy
+cd scry && cargo run -- retention # Apply price_history + set_price_history retention policy
 ```
 
 ### Docker (full stack)
@@ -101,7 +101,15 @@ Tests live in `test/` mirroring the `src/` structure. Test files use `*.spec.ts`
 
 ## Database
 
-PostgreSQL 15. Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `docker/postgres/migrations/` (numbered sequentially, run via `docker compose run --rm migrate`). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`.
+PostgreSQL 15. Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `docker/postgres/migrations/` (numbered sequentially, run via `docker compose run --rm migrate`). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
+
+### Price History
+
+Both card prices and set prices have historical tracking:
+- **Card price history** (`price_history`) — daily snapshots of card normal/foil prices, populated during price ingestion
+- **Set price history** (`set_price_history`) — daily snapshots of set price tiers (base_price, total_price, base_price_all, total_price_all), populated during `post-ingest-updates` via `update_set_prices()`
+
+Both tables use the same retention policy (applied via `cargo run -- retention`): keep daily data for 7 days, weekly (Mondays) for 7-28 days, monthly (1st of month) beyond 28 days. UPSERT queries use COALESCE to preserve existing non-null values when new data has nulls.
 
 TypeORM is configured with `synchronize: false` — all schema changes must go through migration files.
 

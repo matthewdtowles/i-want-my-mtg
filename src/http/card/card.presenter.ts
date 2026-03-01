@@ -111,9 +111,7 @@ export class CardPresenter {
         return `${BASE_IMAGE_URL}/${size}/front/${card.imgSrc}`;
     }
 
-    static formatPriceChange(
-        price?: Price
-    ): { priceChange7d: string; priceChange7dSign: string } {
+    static formatPriceChange(price?: Price): { priceChange7d: string; priceChange7dSign: string } {
         if (!price) return { priceChange7d: '', priceChange7dSign: '' };
         const change = price.normalChange7d ?? price.foilChange7d;
         if (change === null || change === undefined) {

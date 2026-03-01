@@ -825,53 +825,53 @@ describe('SetOrchestrator', () => {
         });
     });
 
-    describe('createSetPriceDto - 7-day price change selection', () => {
-        it('should select basePriceChange7d when basePriceNormal is the default', () => {
+    describe('createSetPriceDto - weekly price change selection', () => {
+        it('should select basePriceChangeWeekly when basePriceNormal is the default', () => {
             const prices = createMockSetPrice({
                 basePrice: 100.0,
                 basePriceAll: 200.0,
                 totalPrice: 150.0,
                 totalPriceAll: 300.0,
             });
-            (prices as any).basePriceChange7d = 5.5;
-            (prices as any).totalPriceChange7d = 10.0;
-            (prices as any).basePriceAllChange7d = 8.0;
-            (prices as any).totalPriceAllChange7d = 15.0;
+            (prices as any).basePriceChangeWeekly = 5.5;
+            (prices as any).totalPriceChangeWeekly = 10.0;
+            (prices as any).basePriceAllChangeWeekly = 8.0;
+            (prices as any).totalPriceAllChangeWeekly = 15.0;
 
             const result = orchestrator.createSetPriceDto(prices);
 
-            expect(result.defaultPriceChange7d).toBe('+$5.50');
-            expect(result.defaultPriceChange7dSign).toBe('positive');
+            expect(result.defaultPriceChangeWeekly).toBe('+$5.50');
+            expect(result.defaultPriceChangeWeeklySign).toBe('positive');
         });
 
-        it('should select basePriceAllChange7d when basePriceAll is the default', () => {
+        it('should select basePriceAllChangeWeekly when basePriceAll is the default', () => {
             const prices = createMockSetPrice({
                 basePrice: null,
                 basePriceAll: 200.0,
                 totalPrice: null,
                 totalPriceAll: null,
             });
-            (prices as any).basePriceAllChange7d = -3.25;
+            (prices as any).basePriceAllChangeWeekly = -3.25;
 
             const result = orchestrator.createSetPriceDto(prices);
 
-            expect(result.defaultPriceChange7d).toBe('-$3.25');
-            expect(result.defaultPriceChange7dSign).toBe('negative');
+            expect(result.defaultPriceChangeWeekly).toBe('-$3.25');
+            expect(result.defaultPriceChangeWeeklySign).toBe('negative');
         });
 
-        it('should select totalPriceChange7d when totalPriceNormal is the default', () => {
+        it('should select totalPriceChangeWeekly when totalPriceNormal is the default', () => {
             const prices = createMockSetPrice({
                 basePrice: null,
                 basePriceAll: null,
                 totalPrice: 150.0,
                 totalPriceAll: null,
             });
-            (prices as any).totalPriceChange7d = 0;
+            (prices as any).totalPriceChangeWeekly = 0;
 
             const result = orchestrator.createSetPriceDto(prices);
 
-            expect(result.defaultPriceChange7d).toBe('$0.00');
-            expect(result.defaultPriceChange7dSign).toBe('neutral');
+            expect(result.defaultPriceChangeWeekly).toBe('$0.00');
+            expect(result.defaultPriceChangeWeeklySign).toBe('neutral');
         });
 
         it('should return empty change when all change values are null', () => {
@@ -884,8 +884,8 @@ describe('SetOrchestrator', () => {
 
             const result = orchestrator.createSetPriceDto(prices);
 
-            expect(result.defaultPriceChange7d).toBe('');
-            expect(result.defaultPriceChange7dSign).toBe('');
+            expect(result.defaultPriceChangeWeekly).toBe('');
+            expect(result.defaultPriceChangeWeeklySign).toBe('');
         });
 
         it('should return empty change when no prices available', () => {
@@ -898,8 +898,8 @@ describe('SetOrchestrator', () => {
 
             const result = orchestrator.createSetPriceDto(prices);
 
-            expect(result.defaultPriceChange7d).toBe('');
-            expect(result.defaultPriceChange7dSign).toBe('');
+            expect(result.defaultPriceChangeWeekly).toBe('');
+            expect(result.defaultPriceChangeWeeklySign).toBe('');
         });
     });
 

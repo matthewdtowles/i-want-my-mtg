@@ -226,10 +226,10 @@
         <div class="flex items-center justify-between mb-3">
             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
             <div class="flex gap-1">
-                <button class="set-price-history-range active px-2 py-1 text-xs rounded bg-teal-500 text-white hover:bg-teal-600 transition-colors" data-days="7">7d</button>
-                <button class="set-price-history-range px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-days="30">30d</button>
-                <button class="set-price-history-range px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-days="365">1y</button>
-                <button class="set-price-history-range px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">All</button>
+                <button class="set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                <button class="set-price-history-range px-2 py-1 text-xs rounded">All</button>
             </div>
         </div>
         <div style="height: 250px;">
@@ -275,25 +275,31 @@
                     <td class="table-cell xs-hide">
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
-                        {{#if this.priceChange7d}}
-                        <span class="price-change price-change-{{this.priceChange7dSign}}">{{this.priceChange7d}}</span>
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
                         {{/if}}
                         {{/if}}
                     </td>
                     <td class="table-cell xs-hide">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
+                        {{#if this.foilPriceChangeWeekly}}
+                        <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
+                        {{/if}}
                         {{/if}}
                     </td>
                     <td class="table-cell xs-show">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
+                        {{#if this.foilPriceChangeWeekly}}
+                        <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
+                        {{/if}}
                         {{/if}}
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
                         {{/if}}
-                        {{#if this.priceChange7d}}
-                        <span class="price-change price-change-{{this.priceChange7dSign}}">{{this.priceChange7d}}</span>
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
                         {{/if}}
                     </td>
                 </tr>
@@ -318,6 +324,6 @@
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/setPriceInfo.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="/public/js/setPriceHistoryChart.js" defer></script>

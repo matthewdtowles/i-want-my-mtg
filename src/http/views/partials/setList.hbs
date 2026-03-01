@@ -33,8 +33,8 @@
                     </td>
                     <td class="table-cell">
                         {{this.prices.defaultPrice}}
-                        {{#if this.prices.defaultPriceChange7d}}
-                        <span class="price-change price-change-{{this.prices.defaultPriceChange7dSign}}">{{this.prices.defaultPriceChange7d}}</span>
+                        {{#if this.prices.defaultPriceChangeWeekly}}
+                        <span class="price-change price-change-{{this.prices.defaultPriceChangeWeeklySign}}">{{this.prices.defaultPriceChangeWeekly}}</span>
                         {{/if}}
                     </td>
                     {{#if ../../authenticated}}

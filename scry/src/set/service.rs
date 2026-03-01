@@ -174,8 +174,8 @@ impl SetService {
         self.repository.vacuum_set_price_history().await
     }
 
-    pub async fn update_set_price_change_7d(&self) -> Result<i64> {
-        self.repository.update_set_price_change_7d().await
+    pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
+        self.repository.update_set_price_change_weekly().await
     }
 
     async fn save_set_prices(&self, set_prices: Vec<SetPrice>) -> Result<i64> {

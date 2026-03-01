@@ -199,11 +199,11 @@ impl PriceRepository {
         }
     }
 
-    pub async fn update_price_change_7d(&self) -> Result<i64> {
+    pub async fn update_price_change_weekly(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
             "UPDATE price p \
-             SET normal_change_7d = p.normal - ph.normal, \
-                 foil_change_7d = p.foil - ph.foil \
+             SET normal_change_weekly = p.normal - ph.normal, \
+                 foil_change_weekly = p.foil - ph.foil \
              FROM ( \
                  SELECT DISTINCT ON (card_id) card_id, normal, foil \
                  FROM price_history \

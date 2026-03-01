@@ -167,8 +167,8 @@ CREATE TABLE public.price (
     normal numeric,
     date date NOT NULL,
     card_id character varying,
-    normal_change_7d numeric,
-    foil_change_7d numeric
+    normal_change_weekly numeric,
+    foil_change_weekly numeric
 );
 
 

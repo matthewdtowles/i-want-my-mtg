@@ -183,7 +183,12 @@ impl SetRepository {
                 base_price = COALESCE(EXCLUDED.base_price, set_price_history.base_price),
                 total_price = COALESCE(EXCLUDED.total_price, set_price_history.total_price),
                 base_price_all = COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all),
-                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)",
+                total_price_all = COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)
+            WHERE
+                set_price_history.base_price IS DISTINCT FROM COALESCE(EXCLUDED.base_price, set_price_history.base_price) OR
+                set_price_history.total_price IS DISTINCT FROM COALESCE(EXCLUDED.total_price, set_price_history.total_price) OR
+                set_price_history.base_price_all IS DISTINCT FROM COALESCE(EXCLUDED.base_price_all, set_price_history.base_price_all) OR
+                set_price_history.total_price_all IS DISTINCT FROM COALESCE(EXCLUDED.total_price_all, set_price_history.total_price_all)",
         );
         self.db.execute_query_builder(qb).await
     }
@@ -245,13 +250,13 @@ impl SetRepository {
             .await
     }
 
-    pub async fn update_set_price_change_7d(&self) -> Result<i64> {
+    pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
             "UPDATE set_price sp \
-             SET base_price_change_7d = sp.base_price - sph.base_price, \
-                 total_price_change_7d = sp.total_price - sph.total_price, \
-                 base_price_all_change_7d = sp.base_price_all - sph.base_price_all, \
-                 total_price_all_change_7d = sp.total_price_all - sph.total_price_all \
+             SET base_price_change_weekly = sp.base_price - sph.base_price, \
+                 total_price_change_weekly = sp.total_price - sph.total_price, \
+                 base_price_all_change_weekly = sp.base_price_all - sph.base_price_all, \
+                 total_price_all_change_weekly = sp.total_price_all - sph.total_price_all \
              FROM ( \
                  SELECT DISTINCT ON (set_code) set_code, base_price, total_price, base_price_all, total_price_all \
                  FROM set_price_history \

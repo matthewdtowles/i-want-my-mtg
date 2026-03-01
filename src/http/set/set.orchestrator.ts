@@ -335,7 +335,10 @@ export class SetOrchestrator {
         try {
             const prices = await this.setService.findSetPriceHistory(setCode, days);
             const points: SetPriceHistoryPointDto[] = prices.map((p) => ({
-                date: p.date instanceof Date ? p.date.toISOString().split('T')[0] : String(p.date),
+                date:
+                    p.date instanceof Date
+                        ? `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`
+                        : String(p.date),
                 basePrice: p.basePrice != null ? Number(p.basePrice) : null,
                 totalPrice: p.totalPrice != null ? Number(p.totalPrice) : null,
                 basePriceAll: p.basePriceAll != null ? Number(p.basePriceAll) : null,
@@ -388,7 +391,7 @@ export class SetOrchestrator {
         if (totalPriceAllFiltered) {
             gridCols++;
             defaultPrice = totalPriceAllFiltered;
-            defaultChange = toChangeNumber(prices.totalPriceAllChange7d);
+            defaultChange = toChangeNumber(prices.totalPriceAllChangeWeekly);
         }
 
         const totalPriceNormalFiltered =
@@ -396,7 +399,7 @@ export class SetOrchestrator {
         if (totalPriceNormalFiltered) {
             gridCols++;
             defaultPrice = totalPriceNormalFiltered;
-            defaultChange = toChangeNumber(prices.totalPriceChange7d);
+            defaultChange = toChangeNumber(prices.totalPriceChangeWeekly);
         }
 
         const basePriceAllFiltered =
@@ -404,32 +407,32 @@ export class SetOrchestrator {
         if (basePriceAllFiltered) {
             gridCols++;
             defaultPrice = basePriceAllFiltered;
-            defaultChange = toChangeNumber(prices.basePriceAllChange7d);
+            defaultChange = toChangeNumber(prices.basePriceAllChangeWeekly);
         }
 
         const basePriceNormalFiltered = basePrice ? toDollar(basePrice) : null;
         if (basePriceNormalFiltered) {
             gridCols++;
             defaultPrice = basePriceNormalFiltered;
-            defaultChange = toChangeNumber(prices.basePriceChange7d);
+            defaultChange = toChangeNumber(prices.basePriceChangeWeekly);
         }
 
         // Format the change for the default price tier
-        let defaultPriceChange7d = '';
-        let defaultPriceChange7dSign = '';
+        let defaultPriceChangeWeekly = '';
+        let defaultPriceChangeWeeklySign = '';
         if (defaultChange !== null) {
             if (defaultChange === 0) {
-                defaultPriceChange7d = '$0.00';
-                defaultPriceChange7dSign = 'neutral';
+                defaultPriceChangeWeekly = '$0.00';
+                defaultPriceChangeWeeklySign = 'neutral';
             } else {
                 const abs = Math.abs(Math.round(defaultChange * 100) / 100);
                 const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 if (defaultChange > 0) {
-                    defaultPriceChange7d = `+${formatted}`;
-                    defaultPriceChange7dSign = 'positive';
+                    defaultPriceChangeWeekly = `+${formatted}`;
+                    defaultPriceChangeWeeklySign = 'positive';
                 } else {
-                    defaultPriceChange7d = `-${formatted}`;
-                    defaultPriceChange7dSign = 'negative';
+                    defaultPriceChangeWeekly = `-${formatted}`;
+                    defaultPriceChangeWeeklySign = 'negative';
                 }
             }
         }
@@ -441,8 +444,8 @@ export class SetOrchestrator {
             basePriceAll: basePriceAllFiltered,
             totalPriceNormal: totalPriceNormalFiltered,
             totalPriceAll: totalPriceAllFiltered,
-            defaultPriceChange7d,
-            defaultPriceChange7dSign,
+            defaultPriceChangeWeekly,
+            defaultPriceChangeWeeklySign,
             lastUpdate: prices.lastUpdate,
         });
     }

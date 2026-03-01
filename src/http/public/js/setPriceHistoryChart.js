@@ -56,7 +56,7 @@
         function pointsDiffer(a, b) {
             if (a.length !== b.length) return true;
             for (var i = 0; i < a.length; i++) {
-                if (a[i].y !== b[i].y) return true;
+                if (a[i].x !== b[i].x || a[i].y !== b[i].y) return true;
             }
             return false;
         }

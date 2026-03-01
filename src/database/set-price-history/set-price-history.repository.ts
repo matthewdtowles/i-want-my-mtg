@@ -20,7 +20,7 @@ export class SetPriceHistoryRepository implements SetPriceHistoryRepositoryPort 
             .where('set.code = :setCode', { setCode })
             .orderBy('sph.date', 'ASC');
 
-        if (days) {
+        if (days != null && days > 0) {
             qb.andWhere('sph.date >= CURRENT_DATE - :days::int', { days });
         }
 

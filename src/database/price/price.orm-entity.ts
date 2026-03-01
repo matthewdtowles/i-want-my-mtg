@@ -13,11 +13,11 @@ export class PriceOrmEntity {
     @Column({ type: 'decimal', nullable: true })
     normal: number | null;
 
-    @Column({ name: 'normal_change_7d', type: 'decimal', nullable: true })
-    normalChange7d: number | null;
+    @Column({ name: 'normal_change_weekly', type: 'decimal', nullable: true })
+    normalChangeWeekly: number | null;
 
-    @Column({ name: 'foil_change_7d', type: 'decimal', nullable: true })
-    foilChange7d: number | null;
+    @Column({ name: 'foil_change_weekly', type: 'decimal', nullable: true })
+    foilChangeWeekly: number | null;
 
     @Column({ type: 'date' })
     date: Date;

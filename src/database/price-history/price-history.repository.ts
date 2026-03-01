@@ -20,7 +20,7 @@ export class PriceHistoryRepository implements PriceHistoryRepositoryPort {
             .where('card.id = :cardId', { cardId })
             .orderBy('ph.date', 'ASC');
 
-        if (days) {
+        if (days != null && days > 0) {
             qb.andWhere('ph.date >= CURRENT_DATE - :days::int', { days });
         }
 

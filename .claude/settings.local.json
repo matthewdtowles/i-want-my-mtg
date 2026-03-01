@@ -6,7 +6,8 @@
       "Bash(npx prettier:*)",
       "Bash(tail:*)",
       "Bash(cargo test:*)",
-      "Bash(cargo build:*)"
+      "Bash(cargo build:*)",
+      "Bash(cargo check:*)"
     ]
   }
 }

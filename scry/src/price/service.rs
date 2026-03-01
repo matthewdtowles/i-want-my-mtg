@@ -162,8 +162,8 @@ impl PriceService {
         self.repository.truncate_price_history().await
     }
 
-    pub async fn update_price_change_7d(&self) -> Result<i64> {
-        self.repository.update_price_change_7d().await
+    pub async fn update_price_change_weekly(&self) -> Result<i64> {
+        self.repository.update_price_change_weekly().await
     }
 
     async fn save_price_history_only(

@@ -71,7 +71,7 @@ export class SetController {
         const parsedDays = days ? parseInt(days, 10) : undefined;
         return this.setOrchestrator.getSetPriceHistory(
             code,
-            parsedDays && !isNaN(parsedDays) ? parsedDays : undefined
+            Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined
         );
     }
 

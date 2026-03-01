@@ -1,6 +1,9 @@
 <th class="table-header {{#each header.classes as |c|}} {{c}} {{/each}}">
     <a href="{{header.href}}" class="sort-btn">
         {{header.text}}
+        {{#if header.subtitle}}
+        <span class="header-subtitle">({{header.subtitle}}△)</span>
+        {{/if}}
         <span class="sort-icon">
             {{#if header.ascend}}
             {{>uparrow}}

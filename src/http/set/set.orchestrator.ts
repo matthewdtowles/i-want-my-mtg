@@ -516,7 +516,7 @@ export class SetOrchestrator {
     ): TableHeadersRowView {
         const headers = new TableHeadersRowView([
             new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2']),
+            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2'], '7d'),
         ]);
         if (authenticated) {
             headers.headers.push(new TableHeaderView('Owned Value'));
@@ -534,9 +534,9 @@ export class SetOrchestrator {
             new SortableHeaderView(options, SortOptions.CARD),
             new TableHeaderView('Mana Cost', ['xs-hide']),
             new TableHeaderView('Rarity', ['xs-hide']),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide']),
-            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2']),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2']),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'),
+            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d'),
+            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d'),
         ]);
     }
 

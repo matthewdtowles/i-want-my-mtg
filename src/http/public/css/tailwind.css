@@ -4882,6 +4882,20 @@ input:where([type='file']):focus {
     }
 }
 
+.header-subtitle {
+    font-size: 0.6rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0em;
+    --tw-text-opacity: 1;
+    color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.header-subtitle:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
 .table-header-row {
     --tw-bg-opacity: 1;
     background-color: rgb(245 236 253 / var(--tw-bg-opacity, 1));

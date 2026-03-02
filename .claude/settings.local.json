@@ -9,7 +9,9 @@
       "Bash(cargo build:*)",
       "Bash(cargo check:*)",
       "Bash(npm run:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "Bash(docker compose:*)"
     ]
   }
 }

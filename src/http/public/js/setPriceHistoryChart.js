@@ -1,7 +1,5 @@
 (function () {
     var chart = null;
-    var activeRange = 'all';
-    var pinnedTooltip = null;
     var activeDatasetIndex = 0;
 
     // Maps data-price-type values to dataset labels
@@ -54,14 +52,6 @@
         return {
             baseSize: container.getAttribute('data-base-size'),
             totalSize: container.getAttribute('data-total-size'),
-            basePriceChange: container.getAttribute('data-base-price-change'),
-            basePriceChangeSign: container.getAttribute('data-base-price-change-sign'),
-            totalPriceChange: container.getAttribute('data-total-price-change'),
-            totalPriceChangeSign: container.getAttribute('data-total-price-change-sign'),
-            basePriceAllChange: container.getAttribute('data-base-price-all-change'),
-            basePriceAllChangeSign: container.getAttribute('data-base-price-all-change-sign'),
-            totalPriceAllChange: container.getAttribute('data-total-price-all-change'),
-            totalPriceAllChangeSign: container.getAttribute('data-total-price-all-change-sign'),
         };
     }
 
@@ -301,6 +291,21 @@
         });
     }
 
+    function hideTooltip() {
+        var canvas = document.getElementById('set-price-history-canvas');
+        if (canvas) {
+            var tip = canvas.parentElement.querySelector('.chart-tooltip');
+            if (tip) {
+                tip.style.opacity = '0';
+            }
+        }
+        if (chart) {
+            chart.setActiveElements([]);
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.update('none');
+        }
+    }
+
     function getOrCreateTooltipEl(canvas) {
         var container = canvas.parentElement;
         var el = container.querySelector('.chart-tooltip');
@@ -308,12 +313,6 @@
             el = document.createElement('div');
             el.className = 'chart-tooltip';
             el.style.opacity = '0';
-            var closeBtn = document.createElement('button');
-            closeBtn.type = 'button';
-            closeBtn.className = 'chart-tooltip-close';
-            closeBtn.setAttribute('aria-label', 'Close');
-            closeBtn.innerHTML = '&times;';
-            el.appendChild(closeBtn);
             container.appendChild(el);
         }
         return el;
@@ -324,17 +323,14 @@
         var canvas = context.chart.canvas;
         var tooltipEl = getOrCreateTooltipEl(canvas);
 
-        if (tooltip.opacity === 0 && !pinnedTooltip) {
+        if (tooltip.opacity === 0) {
             tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
             return;
         }
 
         // Build content
         if (tooltip.body) {
-            var closeBtn = tooltipEl.querySelector('.chart-tooltip-close');
             tooltipEl.innerHTML = '';
-            tooltipEl.appendChild(closeBtn);
 
             if (tooltip.title && tooltip.title.length) {
                 var titleEl = document.createElement('div');
@@ -362,36 +358,26 @@
             });
         }
 
-        tooltipEl.classList.toggle('pinned', !!pinnedTooltip);
         tooltipEl.style.opacity = '1';
 
-        // Position — clamp so tooltip stays within the container
-        var containerRect = canvas.parentElement.getBoundingClientRect();
+        // Position tooltip above the hovered point
         var canvasRect = canvas.getBoundingClientRect();
+        var containerRect = canvas.parentElement.getBoundingClientRect();
         var offsetX = canvasRect.left - containerRect.left;
         var offsetY = canvasRect.top - containerRect.top;
         var caretLeft = offsetX + tooltip.caretX;
         var tooltipWidth = tooltipEl.offsetWidth;
         var containerWidth = canvas.parentElement.offsetWidth;
 
-        // Default: centered above the point
+        // Center above the point, but shift left if it would overflow the right edge
         var left = caretLeft;
-        var translateX = '-50%';
-
-        // If tooltip would overflow the right edge, shift left
         if (caretLeft + tooltipWidth / 2 > containerWidth) {
             left = containerWidth - tooltipWidth / 2;
-            translateX = '-50%';
-        }
-        // If tooltip would overflow the left edge, shift right
-        if (caretLeft - tooltipWidth / 2 < 0) {
-            left = tooltipWidth / 2;
-            translateX = '-50%';
         }
 
         tooltipEl.style.left = left + 'px';
         tooltipEl.style.top = offsetY + tooltip.caretY + 'px';
-        tooltipEl.style.transform = 'translate(' + translateX + ', -110%)';
+        tooltipEl.style.transform = 'translate(-50%, -110%)';
     }
 
     function renderChart(data) {
@@ -450,9 +436,6 @@
                 pointRadius: pointRadius,
                 tension: 0.3,
                 _fullColor: colors.basePrice,
-                _weeklyChange: containerData.basePriceChange || null,
-                _weeklyChangeSign: containerData.basePriceChangeSign || null,
-                _cardCount: containerData.baseSize || null,
             });
         }
         if (hasTotalPrice && pointsDiffer(totalPricePoints, basePricePoints)) {
@@ -465,9 +448,6 @@
                 pointRadius: pointRadius,
                 tension: 0.3,
                 _fullColor: colors.totalPrice,
-                _weeklyChange: containerData.totalPriceChange || null,
-                _weeklyChangeSign: containerData.totalPriceChangeSign || null,
-                _cardCount: containerData.totalSize || null,
             });
         }
         if (hasBasePriceAll && pointsDiffer(basePriceAllPoints, basePricePoints)) {
@@ -480,9 +460,6 @@
                 pointRadius: pointRadius,
                 tension: 0.3,
                 _fullColor: colors.basePriceAll,
-                _weeklyChange: containerData.basePriceAllChange || null,
-                _weeklyChangeSign: containerData.basePriceAllChangeSign || null,
-                _cardCount: containerData.baseSize || null,
             });
         }
         if (
@@ -499,9 +476,6 @@
                 pointRadius: pointRadius,
                 tension: 0.3,
                 _fullColor: colors.totalPriceAll,
-                _weeklyChange: containerData.totalPriceAllChange || null,
-                _weeklyChangeSign: containerData.totalPriceAllChangeSign || null,
-                _cardCount: containerData.totalSize || null,
             });
         }
 
@@ -533,8 +507,6 @@
             chart.destroy();
         }
 
-        pinnedTooltip = null;
-
         chart = new Chart(ctx, {
             type: 'line',
             data: { datasets: datasets },
@@ -546,57 +518,6 @@
                     axis: 'x',
                     intersect: false,
                 },
-                onClick: function (evt) {
-                    var elements = chart.getElementsAtEventForMode(
-                        evt,
-                        'nearest',
-                        { axis: 'x', intersect: false },
-                        false
-                    );
-                    if (elements.length > 0) {
-                        var el = elements[0];
-                        if (
-                            pinnedTooltip &&
-                            pinnedTooltip.datasetIndex === el.datasetIndex &&
-                            pinnedTooltip.index === el.index
-                        ) {
-                            // Unpin
-                            pinnedTooltip = null;
-                            canvas.classList.remove('chart-tooltip-pinned');
-                            chart.setActiveElements([]);
-                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-                            chart.update('none');
-                        } else {
-                            // Pin
-                            pinnedTooltip = {
-                                datasetIndex: el.datasetIndex,
-                                index: el.index,
-                            };
-                            canvas.classList.add('chart-tooltip-pinned');
-                            // Immediately show close button
-                            var tip = canvas.parentElement.querySelector('.chart-tooltip');
-                            if (tip) tip.classList.add('pinned');
-                            var activeEls = chart.data.datasets.map(function (ds, i) {
-                                return { datasetIndex: i, index: el.index };
-                            });
-                            chart.setActiveElements(activeEls);
-                            chart.tooltip.setActiveElements(activeEls, {
-                                x: el.element.x,
-                                y: el.element.y,
-                            });
-                            chart.update('none');
-                        }
-                    } else {
-                        // Clicked empty area - unpin
-                        if (pinnedTooltip) {
-                            pinnedTooltip = null;
-                            canvas.classList.remove('chart-tooltip-pinned');
-                            chart.setActiveElements([]);
-                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-                            chart.update('none');
-                        }
-                    }
-                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -607,17 +528,7 @@
                                 var ds = context.dataset;
                                 var value = context.parsed.y;
                                 if (value == null) return ds.label + ': N/A';
-                                var line = ds.label + ': $' + value.toFixed(2);
-
-                                // Check if this is the latest data point
-                                var isLatest = context.dataIndex === ds.data.length - 1;
-                                if (isLatest && ds._weeklyChange) {
-                                    line += ' (' + ds._weeklyChange + ')';
-                                }
-                                if (isLatest && ds._cardCount) {
-                                    line += ' \u00B7 ' + ds._cardCount + ' cards';
-                                }
-                                return line;
+                                return ds.label + ': $' + value.toFixed(2);
                             },
                             labelTextColor: function (context) {
                                 var ds = context.dataset;
@@ -655,43 +566,6 @@
                     },
                 },
             },
-        });
-
-        // Wire up close button on tooltip (use onclick to avoid duplicate listeners on re-render)
-        var tooltipEl = getOrCreateTooltipEl(canvas);
-        tooltipEl.querySelector('.chart-tooltip-close').onclick = function (e) {
-            e.stopPropagation();
-            pinnedTooltip = null;
-            canvas.classList.remove('chart-tooltip-pinned');
-            tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
-            chart.setActiveElements([]);
-            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-            chart.update('none');
-        };
-
-        // Keep tooltip showing when mouse leaves canvas while pinned
-        canvas.addEventListener('mouseleave', function () {
-            if (pinnedTooltip && chart) {
-                // Keep tooltip showing when mouse leaves
-                var activeEls = chart.data.datasets.map(function (ds, i) {
-                    return { datasetIndex: i, index: pinnedTooltip.index };
-                });
-                requestAnimationFrame(function () {
-                    if (pinnedTooltip && chart) {
-                        chart.setActiveElements(activeEls);
-                        chart.tooltip.setActiveElements(activeEls, {
-                            x: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
-                                pinnedTooltip.index
-                            ].x,
-                            y: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
-                                pinnedTooltip.index
-                            ].y,
-                        });
-                        chart.update('none');
-                    }
-                });
-            }
         });
     }
 
@@ -739,37 +613,15 @@
         buttons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var days = btn.getAttribute('data-days');
-                activeRange = days || 'all';
                 buttons.forEach(function (b) {
                     b.classList.remove('active');
                 });
                 btn.classList.add('active');
-                // Unpin tooltip on range change
-                pinnedTooltip = null;
-                var canvas = document.getElementById('set-price-history-canvas');
-                if (canvas) canvas.classList.remove('chart-tooltip-pinned');
+                hideTooltip();
                 fetchAndRender(setCode, days || undefined);
             });
         });
     }
-
-    // Close pinned tooltip when clicking outside chart
-    document.addEventListener('click', function (e) {
-        if (!pinnedTooltip || !chart) return;
-        var canvas = document.getElementById('set-price-history-canvas');
-        if (!canvas) return;
-        var tooltipEl = canvas.parentElement.querySelector('.chart-tooltip');
-        if (canvas.contains(e.target) || (tooltipEl && tooltipEl.contains(e.target))) return;
-        pinnedTooltip = null;
-        canvas.classList.remove('chart-tooltip-pinned');
-        if (tooltipEl) {
-            tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
-        }
-        chart.setActiveElements([]);
-        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        chart.update('none');
-    });
 
     window.initSetPriceHistory = initSetPriceHistory;
 })();

@@ -1,7 +1,5 @@
 (function () {
     var chart = null;
-    var activeRange = 'all';
-    var pinnedTooltip = null;
     var activeDatasetIndex = 0;
 
     var PRICE_TYPE_TO_LABEL = {
@@ -203,6 +201,21 @@
         });
     }
 
+    function hideTooltip() {
+        var canvas = document.getElementById('price-history-canvas');
+        if (canvas) {
+            var tip = canvas.parentElement.querySelector('.chart-tooltip');
+            if (tip) {
+                tip.style.opacity = '0';
+            }
+        }
+        if (chart) {
+            chart.setActiveElements([]);
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.update('none');
+        }
+    }
+
     function getOrCreateTooltipEl(canvas) {
         var container = canvas.parentElement;
         var el = container.querySelector('.chart-tooltip');
@@ -210,12 +223,6 @@
             el = document.createElement('div');
             el.className = 'chart-tooltip';
             el.style.opacity = '0';
-            var closeBtn = document.createElement('button');
-            closeBtn.type = 'button';
-            closeBtn.className = 'chart-tooltip-close';
-            closeBtn.setAttribute('aria-label', 'Close');
-            closeBtn.innerHTML = '&times;';
-            el.appendChild(closeBtn);
             container.appendChild(el);
         }
         return el;
@@ -226,18 +233,14 @@
         var canvas = context.chart.canvas;
         var tooltipEl = getOrCreateTooltipEl(canvas);
 
-        if (tooltip.opacity === 0 && !pinnedTooltip) {
+        if (tooltip.opacity === 0) {
             tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
             return;
         }
 
         // Build content
         if (tooltip.body) {
-            // Keep close button, clear the rest
-            var closeBtn = tooltipEl.querySelector('.chart-tooltip-close');
             tooltipEl.innerHTML = '';
-            tooltipEl.appendChild(closeBtn);
 
             if (tooltip.title && tooltip.title.length) {
                 var titleEl = document.createElement('div');
@@ -265,36 +268,26 @@
             });
         }
 
-        tooltipEl.classList.toggle('pinned', !!pinnedTooltip);
         tooltipEl.style.opacity = '1';
 
-        // Position — clamp so tooltip stays within the container
-        var containerRect = canvas.parentElement.getBoundingClientRect();
+        // Position tooltip above the hovered point
         var canvasRect = canvas.getBoundingClientRect();
+        var containerRect = canvas.parentElement.getBoundingClientRect();
         var offsetX = canvasRect.left - containerRect.left;
         var offsetY = canvasRect.top - containerRect.top;
         var caretLeft = offsetX + tooltip.caretX;
         var tooltipWidth = tooltipEl.offsetWidth;
         var containerWidth = canvas.parentElement.offsetWidth;
 
-        // Default: centered above the point
+        // Center above the point, but shift left if it would overflow the right edge
         var left = caretLeft;
-        var translateX = '-50%';
-
-        // If tooltip would overflow the right edge, shift left
         if (caretLeft + tooltipWidth / 2 > containerWidth) {
             left = containerWidth - tooltipWidth / 2;
-            translateX = '-50%';
-        }
-        // If tooltip would overflow the left edge, shift right
-        if (caretLeft - tooltipWidth / 2 < 0) {
-            left = tooltipWidth / 2;
-            translateX = '-50%';
         }
 
         tooltipEl.style.left = left + 'px';
         tooltipEl.style.top = offsetY + tooltip.caretY + 'px';
-        tooltipEl.style.transform = 'translate(' + translateX + ', -110%)';
+        tooltipEl.style.transform = 'translate(-50%, -110%)';
     }
 
     function renderChart(data) {
@@ -372,8 +365,6 @@
             chart.destroy();
         }
 
-        pinnedTooltip = null;
-
         chart = new Chart(ctx, {
             type: 'line',
             data: { datasets: datasets },
@@ -384,54 +375,6 @@
                     mode: 'nearest',
                     axis: 'x',
                     intersect: false,
-                },
-                onClick: function (evt) {
-                    var elements = chart.getElementsAtEventForMode(
-                        evt,
-                        'nearest',
-                        { axis: 'x', intersect: false },
-                        false
-                    );
-                    if (elements.length > 0) {
-                        var el = elements[0];
-                        if (
-                            pinnedTooltip &&
-                            pinnedTooltip.datasetIndex === el.datasetIndex &&
-                            pinnedTooltip.index === el.index
-                        ) {
-                            pinnedTooltip = null;
-                            canvas.classList.remove('chart-tooltip-pinned');
-                            chart.setActiveElements([]);
-                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-                            chart.update('none');
-                        } else {
-                            pinnedTooltip = {
-                                datasetIndex: el.datasetIndex,
-                                index: el.index,
-                            };
-                            canvas.classList.add('chart-tooltip-pinned');
-                            // Immediately show close button
-                            var tip = canvas.parentElement.querySelector('.chart-tooltip');
-                            if (tip) tip.classList.add('pinned');
-                            var activeEls = chart.data.datasets.map(function (ds, i) {
-                                return { datasetIndex: i, index: el.index };
-                            });
-                            chart.setActiveElements(activeEls);
-                            chart.tooltip.setActiveElements(activeEls, {
-                                x: el.element.x,
-                                y: el.element.y,
-                            });
-                            chart.update('none');
-                        }
-                    } else {
-                        if (pinnedTooltip) {
-                            pinnedTooltip = null;
-                            canvas.classList.remove('chart-tooltip-pinned');
-                            chart.setActiveElements([]);
-                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-                            chart.update('none');
-                        }
-                    }
                 },
                 plugins: {
                     legend: { display: false },
@@ -480,42 +423,6 @@
                 },
             },
         });
-
-        // Wire up close button on tooltip (use onclick to avoid duplicate listeners on re-render)
-        var tooltipEl = getOrCreateTooltipEl(canvas);
-        tooltipEl.querySelector('.chart-tooltip-close').onclick = function (e) {
-            e.stopPropagation();
-            pinnedTooltip = null;
-            canvas.classList.remove('chart-tooltip-pinned');
-            tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
-            chart.setActiveElements([]);
-            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-            chart.update('none');
-        };
-
-        // Keep tooltip showing when mouse leaves canvas while pinned
-        canvas.addEventListener('mouseleave', function () {
-            if (pinnedTooltip && chart) {
-                var activeEls = chart.data.datasets.map(function (ds, i) {
-                    return { datasetIndex: i, index: pinnedTooltip.index };
-                });
-                requestAnimationFrame(function () {
-                    if (pinnedTooltip && chart) {
-                        chart.setActiveElements(activeEls);
-                        chart.tooltip.setActiveElements(activeEls, {
-                            x: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
-                                pinnedTooltip.index
-                            ].x,
-                            y: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
-                                pinnedTooltip.index
-                            ].y,
-                        });
-                        chart.update('none');
-                    }
-                });
-            }
-        });
     }
 
     function fetchAndRender(cardId, days) {
@@ -558,36 +465,15 @@
         buttons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var days = btn.getAttribute('data-days');
-                activeRange = days || 'all';
                 buttons.forEach(function (b) {
                     b.classList.remove('active');
                 });
                 btn.classList.add('active');
-                pinnedTooltip = null;
-                var canvas = document.getElementById('price-history-canvas');
-                if (canvas) canvas.classList.remove('chart-tooltip-pinned');
+                hideTooltip();
                 fetchAndRender(cardId, days || undefined);
             });
         });
     }
-
-    // Close pinned tooltip when clicking outside chart
-    document.addEventListener('click', function (e) {
-        if (!pinnedTooltip || !chart) return;
-        var canvas = document.getElementById('price-history-canvas');
-        if (!canvas) return;
-        var tooltipEl = canvas.parentElement.querySelector('.chart-tooltip');
-        if (canvas.contains(e.target) || (tooltipEl && tooltipEl.contains(e.target))) return;
-        pinnedTooltip = null;
-        canvas.classList.remove('chart-tooltip-pinned');
-        if (tooltipEl) {
-            tooltipEl.style.opacity = '0';
-            tooltipEl.classList.remove('pinned');
-        }
-        chart.setActiveElements([]);
-        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        chart.update('none');
-    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initPriceHistory);

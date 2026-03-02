@@ -188,10 +188,6 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
-.chart-tooltip-pinned {
-    cursor: pointer;
-}
-
 .chart-tooltip {
     position: absolute;
     pointer-events: none;
@@ -203,12 +199,7 @@ input[type='number'] {
     line-height: 1.4;
     z-index: 30;
     transition: opacity 0.15s;
-    max-width: 280px;
     white-space: nowrap;
-}
-
-.chart-tooltip.pinned {
-    pointer-events: auto;
 }
 
 .chart-tooltip-title {
@@ -228,33 +219,6 @@ input[type='number'] {
     height: 10px;
     border-radius: 2px;
     flex-shrink: 0;
-}
-
-.chart-tooltip-close {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    font-size: 12px;
-    line-height: 1;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border: none;
-    transition: background-color 0.15s;
-}
-
-.chart-tooltip.pinned .chart-tooltip-close {
-    display: inline-flex;
-}
-
-.chart-tooltip-close:hover {
-    background: rgba(255, 255, 255, 0.4);
 }
 
 .legend-tooltip-close {

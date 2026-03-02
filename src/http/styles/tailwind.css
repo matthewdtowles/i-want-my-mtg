@@ -527,6 +527,46 @@
            px-2 py-0.5 mx-0.5 rounded-full;
 }
 
+/* ===== Price Tiles ===== */
+
+.price-tile {
+    @apply border rounded-lg p-2 md:p-3 transition-all duration-200 cursor-pointer;
+}
+
+.price-tile-active {
+    @apply ring-2 ring-offset-1 scale-[1.02] shadow-md;
+}
+
+.price-tile-active .price-tile-value {
+    @apply text-2xl md:text-3xl;
+}
+
+.price-tile-inactive {
+    @apply opacity-75 hover:opacity-100;
+}
+
+.price-tile-inactive .price-tile-value {
+    @apply text-base md:text-lg;
+}
+
+/* ===== Action Cards ===== */
+
+.action-card {
+    @apply bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
+           rounded-lg p-4 text-left;
+}
+
+.action-card-label {
+    @apply flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider
+           text-teal-700 dark:text-teal-400 mb-3 pb-2 border-b border-teal-300 dark:border-teal-700;
+}
+
+/* ===== Legend Active ===== */
+
+.legend-item-active > span:nth-child(2) {
+    @apply font-bold underline underline-offset-2;
+}
+
 /* ===== Welcome Banner ===== */
 
 .welcome-banner {

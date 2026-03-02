@@ -116,6 +116,10 @@
             this.popover.setAttribute('aria-modal', 'true');
             // Move focus to close button for accessibility
             this.closeBtn?.focus();
+            // Initialize chart now that canvas is visible
+            if (typeof window.initSetPriceHistory === 'function') {
+                window.initSetPriceHistory();
+            }
         }
 
         close(e) {
@@ -146,33 +150,9 @@
         }
     }
 
-    /**
-     * Populates dynamic tooltip descriptions based on data attributes
-     */
-    function initializeTooltipDescriptions() {
-        document.querySelectorAll(CONFIG.selectors.tooltip.trigger).forEach((trigger) => {
-            const tooltip = trigger.nextElementSibling;
-            if (!tooltip?.classList.contains('price-info-tooltip')) return;
-
-            const type = trigger.dataset.tooltipType;
-            const baseSize = parseInt(trigger.dataset.baseSize);
-            const totalSize = parseInt(trigger.dataset.totalSize);
-
-            const descriptionElement = tooltip.querySelector(CONFIG.selectors.tooltip.description);
-            if (descriptionElement && CONFIG.tooltipTypes[type]) {
-                descriptionElement.textContent = CONFIG.tooltipTypes[type](baseSize, totalSize);
-            }
-        });
-    }
-
-    // Initialize popover, tooltip descriptions, and shared tooltip manager
+    // Initialize popover only (info tooltips moved to chart legend)
     function initialize() {
         new PopoverManager();
-        initializeTooltipDescriptions();
-        new TooltipManager({
-            triggerSelector: CONFIG.selectors.tooltip.trigger,
-            tooltipSelector: CONFIG.selectors.tooltip.tooltip,
-        });
     }
 
     if (document.readyState === 'loading') {

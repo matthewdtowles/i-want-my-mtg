@@ -203,6 +203,99 @@
         });
     }
 
+    function getOrCreateTooltipEl(canvas) {
+        var container = canvas.parentElement;
+        var el = container.querySelector('.chart-tooltip');
+        if (!el) {
+            el = document.createElement('div');
+            el.className = 'chart-tooltip';
+            el.style.opacity = '0';
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'chart-tooltip-close';
+            closeBtn.setAttribute('aria-label', 'Close');
+            closeBtn.innerHTML = '&times;';
+            el.appendChild(closeBtn);
+            container.appendChild(el);
+        }
+        return el;
+    }
+
+    function externalTooltipHandler(context) {
+        var tooltip = context.tooltip;
+        var canvas = context.chart.canvas;
+        var tooltipEl = getOrCreateTooltipEl(canvas);
+
+        if (tooltip.opacity === 0 && !pinnedTooltip) {
+            tooltipEl.style.opacity = '0';
+            return;
+        }
+
+        // Build content
+        if (tooltip.body) {
+            // Keep close button, clear the rest
+            var closeBtn = tooltipEl.querySelector('.chart-tooltip-close');
+            tooltipEl.innerHTML = '';
+            tooltipEl.appendChild(closeBtn);
+
+            if (tooltip.title && tooltip.title.length) {
+                var titleEl = document.createElement('div');
+                titleEl.className = 'chart-tooltip-title';
+                titleEl.textContent = tooltip.title[0];
+                tooltipEl.appendChild(titleEl);
+            }
+
+            var bodyLines = tooltip.body.map(function (b) {
+                return b.lines;
+            });
+            bodyLines.forEach(function (lines, i) {
+                var item = document.createElement('div');
+                item.className = 'chart-tooltip-body-item';
+                var color = tooltip.labelColors[i] ? tooltip.labelColors[i].borderColor : '#fff';
+                var swatch = document.createElement('span');
+                swatch.className = 'chart-tooltip-swatch';
+                swatch.style.backgroundColor = color;
+                item.appendChild(swatch);
+                var text = document.createElement('span');
+                text.textContent = lines[0];
+                text.style.color = tooltip.labelTextColors ? tooltip.labelTextColors[i] : '#fff';
+                item.appendChild(text);
+                tooltipEl.appendChild(item);
+            });
+        }
+
+        tooltipEl.classList.toggle('pinned', !!pinnedTooltip);
+        tooltipEl.style.opacity = '1';
+
+        // Position — clamp so tooltip stays within the container
+        var containerRect = canvas.parentElement.getBoundingClientRect();
+        var canvasRect = canvas.getBoundingClientRect();
+        var offsetX = canvasRect.left - containerRect.left;
+        var offsetY = canvasRect.top - containerRect.top;
+        var caretLeft = offsetX + tooltip.caretX;
+        var tooltipWidth = tooltipEl.offsetWidth;
+        var containerWidth = canvas.parentElement.offsetWidth;
+
+        // Default: centered above the point
+        var left = caretLeft;
+        var translateX = '-50%';
+
+        // If tooltip would overflow the right edge, shift left
+        if (caretLeft + tooltipWidth / 2 > containerWidth) {
+            left = containerWidth - tooltipWidth / 2;
+            translateX = '-50%';
+        }
+        // If tooltip would overflow the left edge, shift right
+        if (caretLeft - tooltipWidth / 2 < 0) {
+            left = tooltipWidth / 2;
+            translateX = '-50%';
+        }
+
+        tooltipEl.style.left = left + 'px';
+        tooltipEl.style.top = offsetY + tooltip.caretY + 'px';
+        tooltipEl.style.transform = 'translate(' + translateX + ', -110%)';
+    }
+
     function renderChart(data) {
         var canvas = document.getElementById('price-history-canvas');
         if (!canvas) return;
@@ -316,6 +409,9 @@
                                 index: el.index,
                             };
                             canvas.classList.add('chart-tooltip-pinned');
+                            // Immediately show close button
+                            var tip = canvas.parentElement.querySelector('.chart-tooltip');
+                            if (tip) tip.classList.add('pinned');
                             var activeEls = chart.data.datasets.map(function (ds, i) {
                                 return { datasetIndex: i, index: el.index };
                             });
@@ -339,6 +435,8 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        enabled: false,
+                        external: externalTooltipHandler,
                         callbacks: {
                             label: function (context) {
                                 var value = context.parsed.y;
@@ -380,6 +478,19 @@
                     },
                 },
             },
+        });
+
+        // Wire up close button on tooltip
+        var tooltipEl = getOrCreateTooltipEl(canvas);
+        tooltipEl.querySelector('.chart-tooltip-close').addEventListener('click', function (e) {
+            e.stopPropagation();
+            pinnedTooltip = null;
+            canvas.classList.remove('chart-tooltip-pinned');
+            tooltipEl.style.opacity = '0';
+            tooltipEl.classList.remove('pinned');
+            chart.setActiveElements([]);
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.update('none');
         });
 
         // Keep tooltip showing when mouse leaves canvas while pinned
@@ -463,13 +574,18 @@
     document.addEventListener('click', function (e) {
         if (!pinnedTooltip || !chart) return;
         var canvas = document.getElementById('price-history-canvas');
-        if (canvas && !canvas.contains(e.target)) {
-            pinnedTooltip = null;
-            canvas.classList.remove('chart-tooltip-pinned');
-            chart.setActiveElements([]);
-            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-            chart.update('none');
+        if (!canvas) return;
+        var tooltipEl = canvas.parentElement.querySelector('.chart-tooltip');
+        if (canvas.contains(e.target) || (tooltipEl && tooltipEl.contains(e.target))) return;
+        pinnedTooltip = null;
+        canvas.classList.remove('chart-tooltip-pinned');
+        if (tooltipEl) {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.classList.remove('pinned');
         }
+        chart.setActiveElements([]);
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        chart.update('none');
     });
 
     if (document.readyState === 'loading') {

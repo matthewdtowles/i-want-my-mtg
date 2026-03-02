@@ -417,25 +417,31 @@ export class SetOrchestrator {
             defaultChange = toChangeNumber(prices.basePriceChangeWeekly);
         }
 
-        // Format the change for the default price tier
-        let defaultPriceChangeWeekly = '';
-        let defaultPriceChangeWeeklySign = '';
-        if (defaultChange !== null) {
-            if (defaultChange === 0) {
-                defaultPriceChangeWeekly = '$0.00';
-                defaultPriceChangeWeeklySign = 'neutral';
-            } else {
-                const abs = Math.abs(Math.round(defaultChange * 100) / 100);
-                const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                if (defaultChange > 0) {
-                    defaultPriceChangeWeekly = `+${formatted}`;
-                    defaultPriceChangeWeeklySign = 'positive';
-                } else {
-                    defaultPriceChangeWeekly = `-${formatted}`;
-                    defaultPriceChangeWeeklySign = 'negative';
-                }
-            }
-        }
+        // Helper to format a change value into display string + sign
+        const formatChange = (value: any): { changeWeekly: string; changeWeeklySign: string } => {
+            const num = toChangeNumber(value);
+            if (num === null) return { changeWeekly: '', changeWeeklySign: '' };
+            if (num === 0) return { changeWeekly: '$0.00', changeWeeklySign: 'neutral' };
+            const abs = Math.abs(Math.round(num * 100) / 100);
+            const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return num > 0
+                ? { changeWeekly: `+${formatted}`, changeWeeklySign: 'positive' }
+                : { changeWeekly: `-${formatted}`, changeWeeklySign: 'negative' };
+        };
+
+        const defaultFormatted = formatChange(defaultChange);
+        const basePriceNormalChange = basePriceNormalFiltered
+            ? formatChange(prices.basePriceChangeWeekly)
+            : { changeWeekly: '', changeWeeklySign: '' };
+        const basePriceAllChange = basePriceAllFiltered
+            ? formatChange(prices.basePriceAllChangeWeekly)
+            : { changeWeekly: '', changeWeeklySign: '' };
+        const totalPriceNormalChange = totalPriceNormalFiltered
+            ? formatChange(prices.totalPriceChangeWeekly)
+            : { changeWeekly: '', changeWeeklySign: '' };
+        const totalPriceAllChange = totalPriceAllFiltered
+            ? formatChange(prices.totalPriceAllChangeWeekly)
+            : { changeWeekly: '', changeWeeklySign: '' };
 
         return new SetPriceDto({
             gridCols,
@@ -444,8 +450,16 @@ export class SetOrchestrator {
             basePriceAll: basePriceAllFiltered,
             totalPriceNormal: totalPriceNormalFiltered,
             totalPriceAll: totalPriceAllFiltered,
-            defaultPriceChangeWeekly,
-            defaultPriceChangeWeeklySign,
+            defaultPriceChangeWeekly: defaultFormatted.changeWeekly,
+            defaultPriceChangeWeeklySign: defaultFormatted.changeWeeklySign,
+            basePriceNormalChangeWeekly: basePriceNormalChange.changeWeekly,
+            basePriceNormalChangeWeeklySign: basePriceNormalChange.changeWeeklySign,
+            basePriceAllChangeWeekly: basePriceAllChange.changeWeekly,
+            basePriceAllChangeWeeklySign: basePriceAllChange.changeWeeklySign,
+            totalPriceNormalChangeWeekly: totalPriceNormalChange.changeWeekly,
+            totalPriceNormalChangeWeeklySign: totalPriceNormalChange.changeWeeklySign,
+            totalPriceAllChangeWeekly: totalPriceAllChange.changeWeekly,
+            totalPriceAllChangeWeeklySign: totalPriceAllChange.changeWeeklySign,
             lastUpdate: prices.lastUpdate,
         });
     }

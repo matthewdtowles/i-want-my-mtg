@@ -1,6 +1,36 @@
 (function () {
     var chart = null;
     var activeRange = 'all';
+    var pinnedTooltip = null;
+    var activeDatasetIndex = 0;
+
+    // Maps data-price-type values to dataset labels
+    var PRICE_TYPE_TO_LABEL = {
+        'base-normal': 'Base Set',
+        'total-normal': 'All Cards',
+        'base-foil': 'Base + Foils',
+        'total-foil': 'All + Foils',
+    };
+
+    var LABEL_TO_PRICE_TYPE = {};
+    Object.keys(PRICE_TYPE_TO_LABEL).forEach(function (key) {
+        LABEL_TO_PRICE_TYPE[PRICE_TYPE_TO_LABEL[key]] = key;
+    });
+
+    var TOOLTIP_TYPES = {
+        'Base Set': function (baseSize) {
+            return 'First ' + baseSize + ' cards in the set. Non-foil only.';
+        },
+        'All Cards': function (baseSize, totalSize) {
+            return 'All ' + totalSize + ' cards (main + bonus). Non-foil only.';
+        },
+        'Base + Foils': function (baseSize) {
+            return 'First ' + baseSize + ' cards and their foil versions.';
+        },
+        'All + Foils': function (baseSize, totalSize) {
+            return 'All ' + totalSize + ' cards and their foil versions.';
+        },
+    };
 
     function isDarkMode() {
         return document.documentElement.classList.contains('dark');
@@ -18,11 +48,265 @@
         };
     }
 
+    function readContainerData() {
+        var container = document.getElementById('set-price-history-chart');
+        if (!container) return {};
+        return {
+            baseSize: container.getAttribute('data-base-size'),
+            totalSize: container.getAttribute('data-total-size'),
+            basePriceChange: container.getAttribute('data-base-price-change'),
+            basePriceChangeSign: container.getAttribute('data-base-price-change-sign'),
+            totalPriceChange: container.getAttribute('data-total-price-change'),
+            totalPriceChangeSign: container.getAttribute('data-total-price-change-sign'),
+            basePriceAllChange: container.getAttribute('data-base-price-all-change'),
+            basePriceAllChangeSign: container.getAttribute('data-base-price-all-change-sign'),
+            totalPriceAllChange: container.getAttribute('data-total-price-all-change'),
+            totalPriceAllChangeSign: container.getAttribute('data-total-price-all-change-sign'),
+        };
+    }
+
+    function updateTileStates(activePriceType) {
+        var tiles = document.querySelectorAll('[data-price-type]');
+        tiles.forEach(function (tile) {
+            var type = tile.getAttribute('data-price-type');
+            if (type === activePriceType) {
+                tile.classList.remove('price-tile-inactive');
+                tile.classList.add('price-tile-active');
+            } else {
+                tile.classList.remove('price-tile-active');
+                tile.classList.add('price-tile-inactive');
+            }
+        });
+    }
+
+    function applyActiveDatasetStyles() {
+        if (!chart) return;
+        chart.data.datasets.forEach(function (d, j) {
+            if (j === activeDatasetIndex) {
+                d.borderColor = d._fullColor;
+                d.borderWidth = 3;
+            } else {
+                d.borderColor = d._fullColor + '80';
+                d.borderWidth = 1.5;
+            }
+        });
+    }
+
+    function updateLegendActiveState() {
+        var legendEl = document.getElementById('set-price-legend');
+        if (!legendEl) return;
+        var items = legendEl.querySelectorAll('[data-dataset-index]');
+        items.forEach(function (item) {
+            var idx = parseInt(item.getAttribute('data-dataset-index'), 10);
+            if (idx === activeDatasetIndex) {
+                item.classList.add('legend-item-active');
+            } else {
+                item.classList.remove('legend-item-active');
+            }
+        });
+    }
+
+    function getFirstVisibleIndex() {
+        if (!chart) return 0;
+        for (var i = 0; i < chart.data.datasets.length; i++) {
+            var meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) return i;
+        }
+        return 0;
+    }
+
+    function setActivePriceType(priceTypeOrIndex) {
+        if (!chart) return;
+
+        var targetIndex = -1;
+
+        if (typeof priceTypeOrIndex === 'number') {
+            targetIndex = priceTypeOrIndex;
+        } else {
+            // It's a price-type string like 'base-normal'
+            var targetLabel = PRICE_TYPE_TO_LABEL[priceTypeOrIndex];
+            if (!targetLabel) return;
+            chart.data.datasets.forEach(function (ds, i) {
+                if (ds.label === targetLabel) targetIndex = i;
+            });
+        }
+
+        if (targetIndex < 0 || targetIndex >= chart.data.datasets.length) return;
+
+        // Make sure the dataset is visible
+        var meta = chart.getDatasetMeta(targetIndex);
+        if (meta.hidden) {
+            meta.hidden = null;
+            var legendEl = document.getElementById('set-price-legend');
+            if (legendEl) {
+                var item = legendEl.querySelector('[data-dataset-index="' + targetIndex + '"]');
+                if (item) item.style.opacity = '1';
+            }
+        }
+
+        activeDatasetIndex = targetIndex;
+        applyActiveDatasetStyles();
+        chart.update('none');
+        updateLegendActiveState();
+
+        // Sync tile states
+        var activeLabel = chart.data.datasets[targetIndex].label;
+        var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
+        if (activePriceType) {
+            updateTileStates(activePriceType);
+        }
+    }
+
+    // Expose globally for tile onclick
+    window.setActivePriceType = setActivePriceType;
+
+    function buildHtmlLegend(datasets, containerData) {
+        var legendEl = document.getElementById('set-price-legend');
+        if (!legendEl) return;
+        legendEl.innerHTML = '';
+
+        var baseSize = containerData.baseSize || '?';
+        var totalSize = containerData.totalSize || '?';
+
+        datasets.forEach(function (ds, i) {
+            var item = document.createElement('span');
+            item.className =
+                'inline-flex items-center gap-1 text-gray-700 dark:text-gray-300 cursor-pointer';
+            item.setAttribute('data-dataset-index', i);
+
+            if (i === activeDatasetIndex) {
+                item.classList.add('legend-item-active');
+            }
+
+            var swatch = document.createElement('span');
+            swatch.className = 'inline-block w-3 h-3 rounded-sm flex-shrink-0';
+            swatch.style.backgroundColor = ds._fullColor;
+            item.appendChild(swatch);
+
+            var label = document.createElement('span');
+            label.textContent = ds.label;
+            item.appendChild(label);
+
+            // Info icon
+            var infoDesc = TOOLTIP_TYPES[ds.label];
+            if (infoDesc) {
+                var infoBtn = document.createElement('button');
+                infoBtn.type = 'button';
+                infoBtn.className =
+                    'legend-info-btn text-gray-400 dark:text-gray-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors relative';
+                infoBtn.setAttribute('aria-label', 'Info about ' + ds.label);
+                infoBtn.innerHTML =
+                    '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
+
+                var tooltip = document.createElement('span');
+                tooltip.className =
+                    'legend-info-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-midnight-800 dark:bg-midnight-700 text-white text-xs rounded p-2 pr-5 shadow-lg z-20 w-44 text-center whitespace-normal';
+                tooltip.textContent = infoDesc(baseSize, totalSize);
+
+                // X close button
+                var closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'legend-tooltip-close';
+                closeBtn.setAttribute('aria-label', 'Close');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    tooltip.classList.add('hidden');
+                });
+                tooltip.appendChild(closeBtn);
+
+                infoBtn.appendChild(tooltip);
+
+                infoBtn.addEventListener('mouseenter', function () {
+                    tooltip.classList.remove('hidden');
+                });
+                infoBtn.addEventListener('mouseleave', function () {
+                    // Only hide on mouseleave if not "pinned" via click
+                    if (!tooltip.dataset.pinned) {
+                        tooltip.classList.add('hidden');
+                    }
+                });
+                infoBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (tooltip.classList.contains('hidden')) {
+                        tooltip.classList.remove('hidden');
+                        tooltip.dataset.pinned = 'true';
+                    } else {
+                        tooltip.classList.add('hidden');
+                        delete tooltip.dataset.pinned;
+                    }
+                });
+
+                item.appendChild(infoBtn);
+            }
+
+            // Legend click to set active dataset (not on info button)
+            item.addEventListener('click', function (e) {
+                // Don't toggle visibility if clicking the info button
+                if (e.target.closest('.legend-info-btn')) return;
+                if (!chart) return;
+
+                var meta = chart.getDatasetMeta(i);
+                if (i === activeDatasetIndex) {
+                    // Clicking the active item toggles its visibility
+                    meta.hidden = meta.hidden === null ? !ds.hidden : null;
+                    item.style.opacity = meta.hidden ? '0.4' : '1';
+                    if (meta.hidden) {
+                        // Active was hidden, fall back
+                        activeDatasetIndex = getFirstVisibleIndex();
+                    }
+                } else {
+                    // Make this the active dataset
+                    activeDatasetIndex = i;
+                    // Make sure it's visible
+                    if (meta.hidden) {
+                        meta.hidden = null;
+                        item.style.opacity = '1';
+                    }
+                }
+
+                applyActiveDatasetStyles();
+                chart.update('none');
+                updateLegendActiveState();
+
+                // Sync tile states
+                var activeLabel = chart.data.datasets[activeDatasetIndex].label;
+                var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
+                if (activePriceType) {
+                    updateTileStates(activePriceType);
+                }
+            });
+
+            // Legend hover to highlight dataset
+            item.addEventListener('mouseenter', function () {
+                if (!chart) return;
+                chart.data.datasets.forEach(function (d, j) {
+                    if (j === i) {
+                        d.borderColor = d._fullColor;
+                        d.borderWidth = 3;
+                    } else {
+                        d.borderColor = d._fullColor + '80';
+                        d.borderWidth = 1.5;
+                    }
+                });
+                chart.update('none');
+            });
+            item.addEventListener('mouseleave', function () {
+                if (!chart) return;
+                applyActiveDatasetStyles();
+                chart.update('none');
+            });
+
+            legendEl.appendChild(item);
+        });
+    }
+
     function renderChart(data) {
         var canvas = document.getElementById('set-price-history-canvas');
         if (!canvas) return;
         var ctx = canvas.getContext('2d');
         var colors = getColors();
+        var containerData = readContainerData();
 
         var basePricePoints = [];
         var totalPricePoints = [];
@@ -52,7 +336,6 @@
             }
         });
 
-        // Check if datasets differ from basePrice to avoid showing duplicate lines
         function pointsDiffer(a, b) {
             if (a.length !== b.length) return true;
             for (var i = 0; i < a.length; i++) {
@@ -70,31 +353,43 @@
                 data: basePricePoints,
                 borderColor: colors.basePrice,
                 backgroundColor: colors.basePrice + '20',
-                borderWidth: 2,
+                borderWidth: 3,
                 pointRadius: pointRadius,
                 tension: 0.3,
+                _fullColor: colors.basePrice,
+                _weeklyChange: containerData.basePriceChange || null,
+                _weeklyChangeSign: containerData.basePriceChangeSign || null,
+                _cardCount: containerData.baseSize || null,
             });
         }
         if (hasTotalPrice && pointsDiffer(totalPricePoints, basePricePoints)) {
             datasets.push({
                 label: 'All Cards',
                 data: totalPricePoints,
-                borderColor: colors.totalPrice,
+                borderColor: colors.totalPrice + '80',
                 backgroundColor: colors.totalPrice + '20',
-                borderWidth: 2,
+                borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
+                _fullColor: colors.totalPrice,
+                _weeklyChange: containerData.totalPriceChange || null,
+                _weeklyChangeSign: containerData.totalPriceChangeSign || null,
+                _cardCount: containerData.totalSize || null,
             });
         }
         if (hasBasePriceAll && pointsDiffer(basePriceAllPoints, basePricePoints)) {
             datasets.push({
                 label: 'Base + Foils',
                 data: basePriceAllPoints,
-                borderColor: colors.basePriceAll,
+                borderColor: colors.basePriceAll + '80',
                 backgroundColor: colors.basePriceAll + '20',
-                borderWidth: 2,
+                borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
+                _fullColor: colors.basePriceAll,
+                _weeklyChange: containerData.basePriceAllChange || null,
+                _weeklyChangeSign: containerData.basePriceAllChangeSign || null,
+                _cardCount: containerData.baseSize || null,
             });
         }
         if (
@@ -105,17 +400,47 @@
             datasets.push({
                 label: 'All + Foils',
                 data: totalPriceAllPoints,
-                borderColor: colors.totalPriceAll,
+                borderColor: colors.totalPriceAll + '80',
                 backgroundColor: colors.totalPriceAll + '20',
-                borderWidth: 2,
+                borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
+                _fullColor: colors.totalPriceAll,
+                _weeklyChange: containerData.totalPriceAllChange || null,
+                _weeklyChangeSign: containerData.totalPriceAllChangeSign || null,
+                _cardCount: containerData.totalSize || null,
             });
         }
+
+        // Determine active dataset index based on current tile selection
+        var activeTile = document.querySelector('.price-tile-active[data-price-type]');
+        var activePriceType = activeTile
+            ? activeTile.getAttribute('data-price-type')
+            : 'base-normal';
+        var activeLabel = PRICE_TYPE_TO_LABEL[activePriceType] || 'Base Set';
+        activeDatasetIndex = 0;
+        datasets.forEach(function (ds, i) {
+            if (ds.label === activeLabel) activeDatasetIndex = i;
+        });
+
+        // Apply initial active styles
+        datasets.forEach(function (ds, i) {
+            if (i === activeDatasetIndex) {
+                ds.borderColor = ds._fullColor;
+                ds.borderWidth = 3;
+            } else {
+                ds.borderColor = ds._fullColor + '80';
+                ds.borderWidth = 1.5;
+            }
+        });
+
+        buildHtmlLegend(datasets, containerData);
 
         if (chart) {
             chart.destroy();
         }
+
+        pinnedTooltip = null;
 
         chart = new Chart(ctx, {
             type: 'line',
@@ -128,16 +453,77 @@
                     axis: 'x',
                     intersect: false,
                 },
+                onClick: function (evt) {
+                    var elements = chart.getElementsAtEventForMode(
+                        evt,
+                        'nearest',
+                        { axis: 'x', intersect: false },
+                        false
+                    );
+                    if (elements.length > 0) {
+                        var el = elements[0];
+                        if (
+                            pinnedTooltip &&
+                            pinnedTooltip.datasetIndex === el.datasetIndex &&
+                            pinnedTooltip.index === el.index
+                        ) {
+                            // Unpin
+                            pinnedTooltip = null;
+                            canvas.classList.remove('chart-tooltip-pinned');
+                            chart.setActiveElements([]);
+                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+                            chart.update('none');
+                        } else {
+                            // Pin
+                            pinnedTooltip = {
+                                datasetIndex: el.datasetIndex,
+                                index: el.index,
+                            };
+                            canvas.classList.add('chart-tooltip-pinned');
+                            var activeEls = chart.data.datasets.map(function (ds, i) {
+                                return { datasetIndex: i, index: el.index };
+                            });
+                            chart.setActiveElements(activeEls);
+                            chart.tooltip.setActiveElements(activeEls, {
+                                x: el.element.x,
+                                y: el.element.y,
+                            });
+                            chart.update('none');
+                        }
+                    } else {
+                        // Clicked empty area - unpin
+                        if (pinnedTooltip) {
+                            pinnedTooltip = null;
+                            canvas.classList.remove('chart-tooltip-pinned');
+                            chart.setActiveElements([]);
+                            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+                            chart.update('none');
+                        }
+                    }
+                },
                 plugins: {
-                    legend: {
-                        labels: { color: colors.text },
-                    },
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
                             label: function (context) {
+                                var ds = context.dataset;
                                 var value = context.parsed.y;
-                                if (value == null) return context.dataset.label + ': N/A';
-                                return context.dataset.label + ': $' + value.toFixed(2);
+                                if (value == null) return ds.label + ': N/A';
+                                var line = ds.label + ': $' + value.toFixed(2);
+
+                                // Check if this is the latest data point
+                                var isLatest = context.dataIndex === ds.data.length - 1;
+                                if (isLatest && ds._weeklyChange) {
+                                    line += ' (' + ds._weeklyChange + ')';
+                                }
+                                if (isLatest && ds._cardCount) {
+                                    line += ' \u00B7 ' + ds._cardCount + ' cards';
+                                }
+                                return line;
+                            },
+                            labelTextColor: function (context) {
+                                var ds = context.dataset;
+                                return ds._fullColor;
                             },
                         },
                     },
@@ -172,6 +558,30 @@
                 },
             },
         });
+
+        // Override beforeTooltipDraw to prevent tooltip hide when pinned
+        canvas.addEventListener('mouseleave', function () {
+            if (pinnedTooltip && chart) {
+                // Keep tooltip showing when mouse leaves
+                var activeEls = chart.data.datasets.map(function (ds, i) {
+                    return { datasetIndex: i, index: pinnedTooltip.index };
+                });
+                requestAnimationFrame(function () {
+                    if (pinnedTooltip && chart) {
+                        chart.setActiveElements(activeEls);
+                        chart.tooltip.setActiveElements(activeEls, {
+                            x: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
+                                pinnedTooltip.index
+                            ].x,
+                            y: chart.getDatasetMeta(pinnedTooltip.datasetIndex).data[
+                                pinnedTooltip.index
+                            ].y,
+                        });
+                        chart.update('none');
+                    }
+                });
+            }
+        });
     }
 
     function fetchAndRender(setCode, days) {
@@ -201,13 +611,17 @@
             });
     }
 
+    var initialized = false;
+
     function initSetPriceHistory() {
+        if (initialized) return;
         var container = document.getElementById('set-price-history-chart');
         if (!container) return;
 
         var setCode = container.getAttribute('data-set-code');
         if (!setCode) return;
 
+        initialized = true;
         fetchAndRender(setCode, '7');
 
         var buttons = document.querySelectorAll('.set-price-history-range');
@@ -219,14 +633,27 @@
                     b.classList.remove('active');
                 });
                 btn.classList.add('active');
+                // Unpin tooltip on range change
+                pinnedTooltip = null;
+                var canvas = document.getElementById('set-price-history-canvas');
+                if (canvas) canvas.classList.remove('chart-tooltip-pinned');
                 fetchAndRender(setCode, days || undefined);
             });
         });
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSetPriceHistory);
-    } else {
-        initSetPriceHistory();
-    }
+    // Close pinned tooltip when clicking outside chart
+    document.addEventListener('click', function (e) {
+        if (!pinnedTooltip || !chart) return;
+        var canvas = document.getElementById('set-price-history-canvas');
+        if (canvas && !canvas.contains(e.target)) {
+            pinnedTooltip = null;
+            canvas.classList.remove('chart-tooltip-pinned');
+            chart.setActiveElements([]);
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.update('none');
+        }
+    });
+
+    window.initSetPriceHistory = initSetPriceHistory;
 })();

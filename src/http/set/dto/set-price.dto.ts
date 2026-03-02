@@ -7,6 +7,14 @@ export class SetPriceDto {
     readonly totalPriceAll?: string | null;
     readonly defaultPriceChangeWeekly?: string;
     readonly defaultPriceChangeWeeklySign?: string;
+    readonly basePriceNormalChangeWeekly?: string;
+    readonly basePriceNormalChangeWeeklySign?: string;
+    readonly basePriceAllChangeWeekly?: string;
+    readonly basePriceAllChangeWeeklySign?: string;
+    readonly totalPriceNormalChangeWeekly?: string;
+    readonly totalPriceNormalChangeWeeklySign?: string;
+    readonly totalPriceAllChangeWeekly?: string;
+    readonly totalPriceAllChangeWeeklySign?: string;
     readonly lastUpdate: Date;
 
     constructor(init: Partial<SetPriceDto>) {
@@ -18,6 +26,14 @@ export class SetPriceDto {
         this.totalPriceAll = init.totalPriceAll;
         this.defaultPriceChangeWeekly = init.defaultPriceChangeWeekly || '';
         this.defaultPriceChangeWeeklySign = init.defaultPriceChangeWeeklySign || '';
+        this.basePriceNormalChangeWeekly = init.basePriceNormalChangeWeekly || '';
+        this.basePriceNormalChangeWeeklySign = init.basePriceNormalChangeWeeklySign || '';
+        this.basePriceAllChangeWeekly = init.basePriceAllChangeWeekly || '';
+        this.basePriceAllChangeWeeklySign = init.basePriceAllChangeWeeklySign || '';
+        this.totalPriceNormalChangeWeekly = init.totalPriceNormalChangeWeekly || '';
+        this.totalPriceNormalChangeWeeklySign = init.totalPriceNormalChangeWeeklySign || '';
+        this.totalPriceAllChangeWeekly = init.totalPriceAllChangeWeekly || '';
+        this.totalPriceAllChangeWeeklySign = init.totalPriceAllChangeWeeklySign || '';
         this.lastUpdate = init.lastUpdate;
     }
 }

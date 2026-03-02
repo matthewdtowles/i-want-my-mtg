@@ -188,6 +188,33 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
+.chart-tooltip-pinned {
+    cursor: pointer;
+}
+
+.legend-tooltip-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    font-size: 10px;
+    line-height: 1;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: none;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    transition: background-color 0.15s;
+}
+
+.legend-tooltip-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
 @media (max-width: 450px) {
     table,
     .table-container,

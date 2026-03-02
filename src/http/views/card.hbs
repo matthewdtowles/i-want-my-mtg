@@ -57,43 +57,58 @@
         </section>
 
         <section class="price-info md:w-1/3 md:pl-6 mb-4 md:mb-0 border-none">
-            <section class="subjsection-container">
-                <h3 class="section-title">Price</h3>
-                <span>
+            <section class="subsection-container">
+                <h3 class="section-title">Pricing</h3>
+                <div class="grid {{#if card.hasNormal}}{{#if card.hasFoil}}grid-cols-2{{else}}grid-cols-1{{/if}}{{else}}grid-cols-1{{/if}} gap-2 mb-3">
                     {{#if card.hasNormal}}
-                    <div class="mb-2">
-                        <span class="price-normal">{{card.normalPrice}}</span>
+                    <div data-price-type="normal"
+                        class="price-tile price-tile-active border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800 ring-teal-400 dark:ring-teal-500"
+                        onclick="window.setActiveCardPriceType && window.setActiveCardPriceType('normal')">
+                        <h4 class="font-semibold text-teal-700 dark:text-teal-300 text-xs uppercase tracking-wide mb-1">Normal</h4>
+                        <div class="price-tile-value font-bold text-gray-900 dark:text-gray-100 font-mono">
+                            {{card.normalPrice}}
+                        </div>
+                        {{#if card.priceChangeWeekly}}
+                        <span class="price-change price-change-{{card.priceChangeWeeklySign}} text-xs">{{card.priceChangeWeekly}}</span>
+                        {{/if}}
                     </div>
                     {{/if}}
-                </span>
-                <span>
                     {{#if card.hasFoil}}
-                    <div class="mb-2">
-                        <span class="price-foil">{{card.foilPrice}}</span>
+                    <div data-price-type="foil"
+                        class="price-tile {{#if card.hasNormal}}price-tile-inactive{{else}}price-tile-active{{/if}} border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30 ring-purple-400 dark:ring-purple-500"
+                        onclick="window.setActiveCardPriceType && window.setActiveCardPriceType('foil')">
+                        <h4 class="font-semibold text-purple-700 dark:text-purple-300 text-xs uppercase tracking-wide mb-1">Foil</h4>
+                        <div class="price-tile-value font-bold text-purple-900 dark:text-purple-200 font-mono">
+                            {{card.foilPrice}}
+                        </div>
+                        {{#if card.foilPriceChangeWeekly}}
+                        <span class="price-change price-change-{{card.foilPriceChangeWeeklySign}} text-xs">{{card.foilPriceChangeWeekly}}</span>
+                        {{/if}}
                     </div>
                     {{/if}}
-                </span>
+                </div>
                 <section class="inventory-info">
                     {{>inventoryCtrl card=card}}
                 </section>
+
+                <div class="mt-4" id="price-history-chart" data-card-id="{{card.cardId}}">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
+                        <div class="flex gap-1">
+                            <button class="price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                            <button class="price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                            <button class="price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                            <button class="price-history-range px-2 py-1 text-xs rounded" data-days="">All</button>
+                        </div>
+                    </div>
+                    <div id="card-price-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="price-history-canvas"></canvas>
+                    </div>
+                </div>
             </section>
         </section>
     </section>
-    </section>
-
-    <section class="section-container">
-        <h3 class="section-title">Price History</h3>
-        <div id="price-history-chart" data-card-id="{{card.cardId}}">
-            <div class="flex gap-2 mb-3">
-                <button class="price-history-range active" data-days="7">1w</button>
-                <button class="price-history-range" data-days="30">30d</button>
-                <button class="price-history-range" data-days="365">1y</button>
-                <button class="price-history-range" data-days="">All</button>
-            </div>
-            <div style="position: relative; height: 300px;">
-                <canvas id="price-history-canvas"></canvas>
-            </div>
-        </div>
     </section>
 
     {{#if otherPrintings.length}}

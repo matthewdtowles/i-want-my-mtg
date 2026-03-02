@@ -228,6 +228,7 @@
 
         if (tooltip.opacity === 0 && !pinnedTooltip) {
             tooltipEl.style.opacity = '0';
+            tooltipEl.classList.remove('pinned');
             return;
         }
 
@@ -480,9 +481,9 @@
             },
         });
 
-        // Wire up close button on tooltip
+        // Wire up close button on tooltip (use onclick to avoid duplicate listeners on re-render)
         var tooltipEl = getOrCreateTooltipEl(canvas);
-        tooltipEl.querySelector('.chart-tooltip-close').addEventListener('click', function (e) {
+        tooltipEl.querySelector('.chart-tooltip-close').onclick = function (e) {
             e.stopPropagation();
             pinnedTooltip = null;
             canvas.classList.remove('chart-tooltip-pinned');
@@ -491,7 +492,7 @@
             chart.setActiveElements([]);
             chart.tooltip.setActiveElements([], { x: 0, y: 0 });
             chart.update('none');
-        });
+        };
 
         // Keep tooltip showing when mouse leaves canvas while pinned
         canvas.addEventListener('mouseleave', function () {

@@ -188,8 +188,37 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
-.chart-tooltip-pinned {
-    cursor: pointer;
+.chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 30;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+
+.chart-tooltip-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.chart-tooltip-body-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chart-tooltip-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
 }
 
 .legend-tooltip-close {

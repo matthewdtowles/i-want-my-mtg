@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
+            showTransactionPrompt('BUY', isFoil);
         }
         if (decrementButton) {
             event.stopImmediatePropagation();
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
             const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId, isFoil);
             quantityOwned.value = updatedQuantity;
+            showTransactionPrompt('SELL', isFoil);
         }
     });
 
@@ -107,6 +109,41 @@ document.addEventListener('DOMContentLoaded', function () {
             throw new Error(data.error || 'Unknown error');
         }
         return data;
+    }
+
+    function showTransactionPrompt(type, isFoil) {
+        var txForm = document.getElementById('transaction-form');
+        if (!txForm) return;
+        var typeSelect = txForm.querySelector('select[name="type"]');
+        if (typeSelect) typeSelect.value = type;
+        var foilSelect = txForm.querySelector('select[name="isFoil"]');
+        if (foilSelect) foilSelect.value = String(isFoil);
+        // Update price based on foil selection
+        var priceInput = txForm.querySelector('input[name="pricePerUnit"]');
+        if (priceInput) {
+            var price = isFoil ? priceInput.dataset.foilPrice : priceInput.dataset.normalPrice;
+            if (price) priceInput.value = price;
+        }
+        var section = document.getElementById('transaction-form-section');
+        if (section) {
+            section.classList.add(
+                'ring-2',
+                'ring-teal-400',
+                'dark:ring-teal-500',
+                'rounded-lg',
+                'p-2'
+            );
+            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(function () {
+                section.classList.remove(
+                    'ring-2',
+                    'ring-teal-400',
+                    'dark:ring-teal-500',
+                    'rounded-lg',
+                    'p-2'
+                );
+            }, 3000);
+        }
     }
 
     async function updateInventory(quantity, cardId, isFoil, method) {

@@ -26,6 +26,8 @@ export class CardResponseDto {
     readonly priceChangeWeeklySign?: string;
     readonly foilPriceChangeWeekly?: string;
     readonly foilPriceChangeWeeklySign?: string;
+    readonly normalPriceRaw?: number;
+    readonly foilPriceRaw?: number;
     readonly tags: string[];
 
     constructor(init: Partial<CardResponseDto>) {
@@ -48,6 +50,8 @@ export class CardResponseDto {
         this.priceChangeWeeklySign = init.priceChangeWeeklySign || '';
         this.foilPriceChangeWeekly = init.foilPriceChangeWeekly || '';
         this.foilPriceChangeWeeklySign = init.foilPriceChangeWeeklySign || '';
+        this.normalPriceRaw = init.normalPriceRaw || 0;
+        this.foilPriceRaw = init.foilPriceRaw || 0;
         this.tags = init.tags || [];
     }
 }

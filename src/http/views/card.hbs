@@ -91,6 +91,9 @@
                     {{>inventoryCtrl card=card}}
                 </section>
 
+                {{>costBasis}}
+                {{>transactionForm}}
+
                 <div class="mt-4" id="price-history-chart" data-card-id="{{card.cardId}}">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
@@ -160,3 +163,4 @@
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/priceHistoryChart.js" defer></script>
+<script src="/public/js/transactionForm.js" defer></script>

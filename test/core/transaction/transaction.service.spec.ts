@@ -61,7 +61,9 @@ describe('TransactionService', () => {
         }).compile();
 
         service = module.get<TransactionService>(TransactionService);
-        repository = module.get(TransactionRepositoryPort) as jest.Mocked<TransactionRepositoryPort>;
+        repository = module.get(
+            TransactionRepositoryPort
+        ) as jest.Mocked<TransactionRepositoryPort>;
     });
 
     beforeEach(() => {
@@ -155,9 +157,7 @@ describe('TransactionService', () => {
                 date: today,
             });
 
-            await expect(service.create(tx)).rejects.toThrow(
-                'Price per unit cannot be negative.'
-            );
+            await expect(service.create(tx)).rejects.toThrow('Price per unit cannot be negative.');
         });
 
         it('should reject invalid transaction type', async () => {

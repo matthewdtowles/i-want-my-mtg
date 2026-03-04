@@ -3,6 +3,7 @@ import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { TransactionService } from 'src/core/transaction/transaction.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { CardOrchestrator } from 'src/http/card/card.orchestrator';
@@ -94,6 +95,18 @@ describe('CardOrchestrator', () => {
                 {
                     provide: InventoryService,
                     useValue: mockInventoryService,
+                },
+                {
+                    provide: TransactionService,
+                    useValue: {
+                        getCostBasis: jest.fn().mockResolvedValue({
+                            totalCost: 0,
+                            totalQuantity: 0,
+                            averageCost: 0,
+                            unrealizedGain: 0,
+                            realizedGain: 0,
+                        }),
+                    },
                 },
             ],
         }).compile();

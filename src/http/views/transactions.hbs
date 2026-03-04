@@ -1,0 +1,99 @@
+{{#if hasTransactions}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">{{this.username}}'s Transactions</h3>
+        <p class="text-gray-700 dark:text-gray-300">Total Transactions: {{this.totalTransactions}}</p>
+    </section>
+    <div class="content-wrapper">
+        <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Date</th>
+                    <th class="table-header">Type</th>
+                    <th class="table-header">Card</th>
+                    <th class="table-header">Qty</th>
+                    <th class="table-header">Price</th>
+                    <th class="table-header">Total</th>
+                    <th class="table-header pr-2 xs-hide"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each transactions as |tx|}}
+                <tr class="table-row">
+                    <td class="table-cell pl-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{tx.date}}</td>
+                    <td class="table-cell">
+                        {{#if (eq tx.type 'BUY')}}
+                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">BUY</span>
+                        {{else}}
+                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">SELL</span>
+                        {{/if}}
+                    </td>
+                    <td class="table-cell">
+                        {{#if tx.cardUrl}}
+                        <a href="{{tx.cardUrl}}" class="card-name-link">{{tx.cardName}}</a>
+                        {{else}}
+                        {{tx.cardName}}
+                        {{/if}}
+                        {{#if tx.isFoil}}
+                        <span class="foil-badge">Foil</span>
+                        {{/if}}
+                        {{#if tx.cardSetCode}}
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{toUpperCase tx.cardSetCode}})</span>
+                        {{/if}}
+                    </td>
+                    <td class="table-cell">{{tx.quantity}}</td>
+                    <td class="table-cell font-mono">{{tx.pricePerUnit}}</td>
+                    <td class="table-cell font-mono">{{tx.totalPrice}}</td>
+                    <td class="table-cell pr-2 xs-hide">
+                        <button type="button" class="delete-transaction-button text-gray-400 hover:text-red-500 dark:hover:text-red-400" data-transaction-id="{{tx.id}}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
+
+{{else}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <div class="text-center py-16 px-4">
+        <i class="fas fa-receipt text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">No transactions yet</h3>
+        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Record buy and sell transactions from card detail pages to track your profit & loss.</p>
+        <a href="/inventory" class="btn btn-primary inline-block mt-6">Go to Inventory</a>
+    </div>
+</section>
+{{/if}}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.body.addEventListener('click', async function (event) {
+        const deleteBtn = event.target.closest('.delete-transaction-button');
+        if (!deleteBtn) return;
+        event.stopImmediatePropagation();
+
+        const txId = deleteBtn.dataset.transactionId;
+        if (!confirm('Delete this transaction?')) return;
+
+        try {
+            const response = await fetch('/transactions/' + txId, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await response.json();
+            if (data.success) {
+                const row = deleteBtn.closest('tr');
+                if (row) row.remove();
+            } else {
+                console.error('Failed to delete transaction:', data.error);
+            }
+        } catch (error) {
+            console.error('Error deleting transaction:', error);
+        }
+    });
+});
+</script>

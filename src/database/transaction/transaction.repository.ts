@@ -19,7 +19,9 @@ export class TransactionRepository implements TransactionRepositoryPort {
     }
 
     async save(transaction: Transaction): Promise<Transaction> {
-        this.LOGGER.debug(`Saving transaction for user ${transaction.userId}, card ${transaction.cardId}.`);
+        this.LOGGER.debug(
+            `Saving transaction for user ${transaction.userId}, card ${transaction.cardId}.`
+        );
         const orm = TransactionMapper.toOrmEntity(transaction);
         const saved = await this.repository.save(orm);
         this.LOGGER.debug(`Saved transaction id ${saved.id}.`);
@@ -61,7 +63,9 @@ export class TransactionRepository implements TransactionRepositoryPort {
     }
 
     async findSells(userId: number, cardId: string, isFoil: boolean): Promise<Transaction[]> {
-        this.LOGGER.debug(`Finding SELL transactions for user ${userId}, card ${cardId}, foil ${isFoil}.`);
+        this.LOGGER.debug(
+            `Finding SELL transactions for user ${userId}, card ${cardId}, foil ${isFoil}.`
+        );
         const results = await this.repository.find({
             where: { userId, cardId, isFoil, type: 'SELL' },
             order: { date: 'ASC', id: 'ASC' },

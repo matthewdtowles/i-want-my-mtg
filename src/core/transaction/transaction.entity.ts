@@ -17,7 +17,15 @@ export class Transaction {
     readonly createdAt?: Date;
 
     constructor(init: Partial<Transaction>) {
-        validateInit(init, ['userId', 'cardId', 'type', 'quantity', 'pricePerUnit', 'isFoil', 'date']);
+        validateInit(init, [
+            'userId',
+            'cardId',
+            'type',
+            'quantity',
+            'pricePerUnit',
+            'isFoil',
+            'date',
+        ]);
         this.id = init.id;
         this.userId = init.userId;
         this.cardId = init.cardId;

@@ -126,17 +126,17 @@ is populated only for users who have transaction data.
 
 ### Phase 2 — Transaction UI
 
-- [ ] 2.1 Create TransactionController (`src/http/transaction/transaction.controller.ts`)
-- [ ] 2.2 Create TransactionOrchestrator (`src/http/transaction/transaction.orchestrator.ts`)
-- [ ] 2.3 Create request/response DTOs (`src/http/transaction/dto/`)
-- [ ] 2.4 Create TransactionPresenter (`src/http/transaction/transaction.presenter.ts`)
-- [ ] 2.5 Create HttpTransactionModule and register in HttpModule
-- [ ] 2.6 Create transaction list view (`views/transactions.hbs`) — user's full transaction history
-- [ ] 2.7 Add "Record Transaction" form to card detail page (buy/sell, qty, price pre-filled with market price, date defaulted to today)
-- [ ] 2.8 Add transaction summary to card detail page (cost basis, realized gains, unrealized gain)
-- [ ] 2.9 Add transaction prompt to inventory update flow (non-blocking "Record a buy/sell?" after +/- quantity)
-- [ ] 2.10 Add card-level P&L display: cost basis, current value, gain/loss, ROI %
-- [ ] 2.11 Write unit tests for orchestrator and presenter
+- [x] 2.1 Create TransactionController (`src/http/transaction/transaction.controller.ts`)
+- [x] 2.2 Create TransactionOrchestrator (`src/http/transaction/transaction.orchestrator.ts`)
+- [x] 2.3 Create request/response DTOs (`src/http/transaction/dto/`)
+- [x] 2.4 Create TransactionPresenter (`src/http/transaction/transaction.presenter.ts`)
+- [x] 2.5 Create HttpTransactionModule and register in HttpModule
+- [x] 2.6 Create transaction list view (`views/transactions.hbs`) — user's full transaction history
+- [x] 2.7 Add "Record Transaction" form to card detail page (buy/sell, qty, price pre-filled with market price, date defaulted to today)
+- [x] 2.8 Add transaction summary to card detail page (cost basis, realized gains, unrealized gain)
+- [x] 2.9 Add transaction prompt to inventory update flow (non-blocking "Record a buy/sell?" after +/- quantity)
+- [x] 2.10 Add card-level P&L display: cost basis, current value, gain/loss, ROI %
+- [x] 2.11 Write unit tests for orchestrator and presenter
 
 **PR boundary: Phase 2 may split into 2 PRs (2.1-2.6 core UI, then 2.7-2.11 integration).**
 

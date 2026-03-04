@@ -92,11 +92,7 @@ export class TransactionService {
     /**
      * Calculate remaining quantity for a card by subtracting SELL totals from BUY totals.
      */
-    async getRemainingQuantity(
-        userId: number,
-        cardId: string,
-        isFoil: boolean
-    ): Promise<number> {
+    async getRemainingQuantity(userId: number, cardId: string, isFoil: boolean): Promise<number> {
         const buyLots = await this.repository.findBuyLots(userId, cardId, isFoil);
         const sells = await this.repository.findSells(userId, cardId, isFoil);
 
@@ -113,7 +109,11 @@ export class TransactionService {
         userId: number,
         cardId: string,
         isFoil: boolean
-    ): Promise<{ lots: Array<{ lotId: number; remaining: number; costPerUnit: number }>; totalSoldCost: number; totalRealizedGain: number }> {
+    ): Promise<{
+        lots: Array<{ lotId: number; remaining: number; costPerUnit: number }>;
+        totalSoldCost: number;
+        totalRealizedGain: number;
+    }> {
         const buyLots = await this.repository.findBuyLots(userId, cardId, isFoil);
         const sells = await this.repository.findSells(userId, cardId, isFoil);
 
@@ -123,32 +123,31 @@ export class TransactionService {
         let totalRealizedGain = 0;
 
         // Compute weighted average sell price for realized gain calculation
-        const totalSellRevenue = sells.reduce(
-            (sum, t) => sum + t.quantity * t.pricePerUnit,
-            0
-        );
+        const totalSellRevenue = sells.reduce((sum, t) => sum + t.quantity * t.pricePerUnit, 0);
         const avgSellPrice = totalToSell > 0 ? totalSellRevenue / totalToSell : 0;
 
-        const lots = buyLots.map((lot) => {
-            if (sellRemaining <= 0) {
+        const lots = buyLots
+            .map((lot) => {
+                if (sellRemaining <= 0) {
+                    return {
+                        lotId: lot.id,
+                        remaining: lot.quantity,
+                        costPerUnit: lot.pricePerUnit,
+                    };
+                }
+
+                const consumed = Math.min(lot.quantity, sellRemaining);
+                sellRemaining -= consumed;
+                totalSoldCost += consumed * lot.pricePerUnit;
+                totalRealizedGain += consumed * (avgSellPrice - lot.pricePerUnit);
+
                 return {
                     lotId: lot.id,
-                    remaining: lot.quantity,
+                    remaining: lot.quantity - consumed,
                     costPerUnit: lot.pricePerUnit,
                 };
-            }
-
-            const consumed = Math.min(lot.quantity, sellRemaining);
-            sellRemaining -= consumed;
-            totalSoldCost += consumed * lot.pricePerUnit;
-            totalRealizedGain += consumed * (avgSellPrice - lot.pricePerUnit);
-
-            return {
-                lotId: lot.id,
-                remaining: lot.quantity - consumed,
-                costPerUnit: lot.pricePerUnit,
-            };
-        }).filter((lot) => lot.remaining > 0);
+            })
+            .filter((lot) => lot.remaining > 0);
 
         return { lots, totalSoldCost, totalRealizedGain };
     }
@@ -173,10 +172,7 @@ export class TransactionService {
         );
 
         const totalQuantity = lots.reduce((sum, lot) => sum + lot.remaining, 0);
-        const totalCost = lots.reduce(
-            (sum, lot) => sum + lot.remaining * lot.costPerUnit,
-            0
-        );
+        const totalCost = lots.reduce((sum, lot) => sum + lot.remaining * lot.costPerUnit, 0);
         const averageCost = totalQuantity > 0 ? totalCost / totalQuantity : 0;
         const unrealizedGain = totalQuantity * (currentMarketPrice - averageCost);
 

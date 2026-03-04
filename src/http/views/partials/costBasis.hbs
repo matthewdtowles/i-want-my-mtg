@@ -1,0 +1,35 @@
+{{#if costBasis.hasData}}
+<div class="mt-4 border-t border-gray-200 dark:border-midnight-600 pt-4">
+    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">P&L Summary</h4>
+    <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Qty Held</span>
+            <span class="font-mono">{{costBasis.totalQuantity}}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Avg Cost</span>
+            <span class="font-mono">{{costBasis.averageCost}}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Total Cost</span>
+            <span class="font-mono">{{costBasis.totalCost}}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Current Value</span>
+            <span class="font-mono">{{costBasis.currentValue}}</span>
+        </div>
+        <div class="flex justify-between border-t border-gray-200 dark:border-midnight-600 pt-2">
+            <span class="text-gray-500 dark:text-gray-400">Unrealized</span>
+            <span class="font-mono gain-{{costBasis.unrealizedGainSign}}">{{costBasis.unrealizedGain}}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Realized</span>
+            <span class="font-mono gain-{{costBasis.realizedGainSign}}">{{costBasis.realizedGain}}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">ROI</span>
+            <span class="font-mono gain-{{costBasis.roiSign}}">{{costBasis.roi}}</span>
+        </div>
+    </div>
+</div>
+{{/if}}

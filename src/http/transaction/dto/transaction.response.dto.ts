@@ -7,11 +7,13 @@ export class TransactionResponseDto {
     readonly type: string;
     readonly quantity: number;
     readonly pricePerUnit: string;
+    readonly rawPricePerUnit: number;
     readonly totalPrice: string;
     readonly isFoil: boolean;
     readonly date: string;
     readonly source: string;
     readonly fees: string;
+    readonly rawFees: number;
     readonly notes: string;
 
     constructor(init: Partial<TransactionResponseDto>) {
@@ -23,11 +25,13 @@ export class TransactionResponseDto {
         this.type = init.type || '';
         this.quantity = init.quantity || 0;
         this.pricePerUnit = init.pricePerUnit || '';
+        this.rawPricePerUnit = init.rawPricePerUnit || 0;
         this.totalPrice = init.totalPrice || '';
         this.isFoil = init.isFoil || false;
         this.date = init.date || '';
         this.source = init.source || '';
         this.fees = init.fees || '';
+        this.rawFees = init.rawFees || 0;
         this.notes = init.notes || '';
     }
 }

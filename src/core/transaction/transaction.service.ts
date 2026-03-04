@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Inventory } from 'src/core/inventory/inventory.entity';
+import { InventoryService } from 'src/core/inventory/inventory.service';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Transaction } from './transaction.entity';
 import { TransactionRepositoryPort } from './transaction.repository.port';
@@ -24,10 +26,15 @@ export class TransactionService {
 
     constructor(
         @Inject(TransactionRepositoryPort)
-        private readonly repository: TransactionRepositoryPort
+        private readonly repository: TransactionRepositoryPort,
+        @Inject(InventoryService)
+        private readonly inventoryService: InventoryService
     ) {}
 
-    async create(transaction: Transaction): Promise<Transaction> {
+    async create(
+        transaction: Transaction,
+        options?: { skipInventorySync?: boolean }
+    ): Promise<Transaction> {
         this.LOGGER.debug(
             `Creating ${transaction.type} transaction for user ${transaction.userId}, card ${transaction.cardId}.`
         );
@@ -57,6 +64,17 @@ export class TransactionService {
 
         const saved = await this.repository.save(transaction);
         this.LOGGER.debug(`Created transaction id ${saved.id}.`);
+
+        if (!options?.skipInventorySync) {
+            const delta = transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
+            await this.adjustInventory(
+                transaction.userId,
+                transaction.cardId,
+                transaction.isFoil,
+                delta
+            );
+        }
+
         return saved;
     }
 
@@ -79,6 +97,59 @@ export class TransactionService {
         return this.repository.findByUser(userId);
     }
 
+    async update(
+        id: number,
+        userId: number,
+        fields: Partial<Transaction>
+    ): Promise<{ updated: Transaction; oldQuantity: number }> {
+        this.LOGGER.debug(`Updating transaction ${id} for user ${userId}.`);
+        const existing = await this.repository.findById(id);
+        if (!existing || existing.userId !== userId) {
+            throw new Error('Transaction not found.');
+        }
+
+        if (fields.quantity !== undefined && fields.quantity <= 0) {
+            throw new Error('Transaction quantity must be positive.');
+        }
+        if (fields.pricePerUnit !== undefined && fields.pricePerUnit < 0) {
+            throw new Error('Price per unit cannot be negative.');
+        }
+
+        // If updating quantity on a SELL, check constraints
+        const newQuantity = fields.quantity ?? existing.quantity;
+        if (existing.type === 'SELL' && fields.quantity !== undefined) {
+            const remainingQty = await this.getRemainingQuantity(
+                existing.userId,
+                existing.cardId,
+                existing.isFoil
+            );
+            // Add back the old sell quantity, then check if the new sell quantity fits
+            const available = remainingQty + existing.quantity;
+            if (newQuantity > available) {
+                throw new Error(`Cannot sell ${newQuantity} units. Only ${available} remaining.`);
+            }
+        }
+
+        const oldQuantity = existing.quantity;
+        const updated = await this.repository.update(id, userId, fields);
+
+        // Sync inventory if quantity changed
+        if (fields.quantity !== undefined && fields.quantity !== oldQuantity) {
+            const quantityDelta = fields.quantity - oldQuantity;
+            // BUY: more bought = more inventory; SELL: more sold = less inventory
+            const inventoryDelta = existing.type === 'BUY' ? quantityDelta : -quantityDelta;
+            await this.adjustInventory(
+                existing.userId,
+                existing.cardId,
+                existing.isFoil,
+                inventoryDelta
+            );
+        }
+
+        this.LOGGER.debug(`Updated transaction ${id}.`);
+        return { updated, oldQuantity };
+    }
+
     async delete(id: number, userId: number): Promise<void> {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
         const existing = await this.repository.findById(id);
@@ -86,6 +157,11 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
         await this.repository.delete(id, userId);
+
+        // Reverse the inventory effect: BUY delete decrements, SELL delete increments
+        const delta = existing.type === 'BUY' ? -existing.quantity : existing.quantity;
+        await this.adjustInventory(existing.userId, existing.cardId, existing.isFoil, delta);
+
         this.LOGGER.debug(`Deleted transaction ${id}.`);
     }
 
@@ -183,5 +259,34 @@ export class TransactionService {
             unrealizedGain,
             realizedGain: totalRealizedGain,
         };
+    }
+
+    /**
+     * Adjust inventory quantity by a delta (positive = add, negative = subtract).
+     * Creates inventory entry if it doesn't exist. Saves with quantity 0 to trigger deletion
+     * if resulting quantity would be <= 0.
+     */
+    private async adjustInventory(
+        userId: number,
+        cardId: string,
+        isFoil: boolean,
+        delta: number
+    ): Promise<void> {
+        this.LOGGER.debug(
+            `Adjusting inventory for user ${userId}, card ${cardId}, foil ${isFoil}, delta ${delta}.`
+        );
+        const existing = await this.inventoryService.findForUser(userId, cardId);
+        const match = existing.find((inv) => inv.isFoil === isFoil);
+        const currentQty = match ? match.quantity : 0;
+        const newQty = Math.max(0, currentQty + delta);
+
+        await this.inventoryService.save([
+            new Inventory({
+                cardId,
+                userId,
+                isFoil,
+                quantity: newQty,
+            }),
+        ]);
     }
 }

@@ -76,8 +76,10 @@ export class CardOrchestrator {
             );
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
 
-            // Compute cost basis if user is authenticated
+            // Compute cost basis and untracked quantities if user is authenticated
             let costBasis;
+            let untrackedNormal = 0;
+            let untrackedFoil = 0;
             if (userId > 0) {
                 try {
                     const marketPrice = singleCard.normalPriceRaw || singleCard.foilPriceRaw || 0;
@@ -91,6 +93,26 @@ export class CardOrchestrator {
                 } catch (err) {
                     this.LOGGER.debug(`Cost basis unavailable: ${err?.message}`);
                 }
+
+                // Compute untracked inventory (inventory qty - transaction-derived qty)
+                try {
+                    const txQtyNormal = await this.transactionService.getRemainingQuantity(
+                        userId,
+                        coreCard.id,
+                        false
+                    );
+                    const txQtyFoil = await this.transactionService.getRemainingQuantity(
+                        userId,
+                        coreCard.id,
+                        true
+                    );
+                    const invNormal = singleCard.normalQuantity || 0;
+                    const invFoil = singleCard.foilQuantity || 0;
+                    untrackedNormal = Math.max(0, invNormal - txQtyNormal);
+                    untrackedFoil = Math.max(0, invFoil - txQtyFoil);
+                } catch (err) {
+                    this.LOGGER.debug(`Untracked qty unavailable: ${err?.message}`);
+                }
             }
 
             return new CardViewDto({
@@ -103,6 +125,8 @@ export class CardOrchestrator {
                 ],
                 card: singleCard,
                 costBasis,
+                untrackedNormal,
+                untrackedFoil,
                 otherPrintings: allPrintings
                     .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                     .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),

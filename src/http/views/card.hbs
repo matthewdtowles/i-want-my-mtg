@@ -92,6 +92,46 @@
                 </section>
 
                 {{>costBasis}}
+
+                {{#if authenticated}}
+                {{#if untrackedNormal}}
+                <div id="sync-normal" class="mt-3 p-3 rounded-lg border border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-amber-800 dark:text-amber-300">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <strong>{{untrackedNormal}}</strong> untracked normal {{#if (eq untrackedNormal 1)}}copy{{else}}copies{{/if}}
+                            </p>
+                            <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Record as buy to track cost basis</p>
+                        </div>
+                        <button type="button" class="sync-inventory-button text-xs px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                                data-card-id="{{card.cardId}}" data-quantity="{{untrackedNormal}}" data-is-foil="false"
+                                data-price="{{card.normalPriceRaw}}">
+                            Record
+                        </button>
+                    </div>
+                </div>
+                {{/if}}
+                {{#if untrackedFoil}}
+                <div id="sync-foil" class="mt-3 p-3 rounded-lg border border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-amber-800 dark:text-amber-300">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <strong>{{untrackedFoil}}</strong> untracked foil {{#if (eq untrackedFoil 1)}}copy{{else}}copies{{/if}}
+                            </p>
+                            <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Record as buy to track cost basis</p>
+                        </div>
+                        <button type="button" class="sync-inventory-button text-xs px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                                data-card-id="{{card.cardId}}" data-quantity="{{untrackedFoil}}" data-is-foil="true"
+                                data-price="{{card.foilPriceRaw}}">
+                            Record
+                        </button>
+                    </div>
+                </div>
+                {{/if}}
+                {{/if}}
+
                 {{>transactionForm}}
 
                 <div class="mt-4" id="price-history-chart" data-card-id="{{card.cardId}}">

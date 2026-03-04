@@ -82,6 +82,25 @@ export class TransactionRepository implements TransactionRepositoryPort {
         return results.map(TransactionMapper.toCore);
     }
 
+    async update(id: number, userId: number, fields: Partial<Transaction>): Promise<Transaction> {
+        this.LOGGER.debug(`Updating transaction ${id} for user ${userId}.`);
+        const existing = await this.repository.findOne({ where: { id, userId } });
+        if (!existing) {
+            throw new Error('Transaction not found.');
+        }
+
+        if (fields.quantity !== undefined) existing.quantity = fields.quantity;
+        if (fields.pricePerUnit !== undefined) existing.pricePerUnit = fields.pricePerUnit;
+        if (fields.date !== undefined) existing.date = fields.date;
+        if (fields.source !== undefined) existing.source = fields.source;
+        if (fields.fees !== undefined) existing.fees = fields.fees;
+        if (fields.notes !== undefined) existing.notes = fields.notes;
+
+        const saved = await this.repository.save(existing);
+        this.LOGGER.debug(`Updated transaction ${id}.`);
+        return TransactionMapper.toCore(saved);
+    }
+
     async delete(id: number, userId: number): Promise<void> {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
         await this.repository.delete({ id, userId });

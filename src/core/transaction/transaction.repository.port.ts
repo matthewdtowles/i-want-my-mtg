@@ -34,6 +34,11 @@ export interface TransactionRepositoryPort {
     findByUser(userId: number): Promise<Transaction[]>;
 
     /**
+     * Update a transaction by ID (only updates provided fields)
+     */
+    update(id: number, userId: number, fields: Partial<Transaction>): Promise<Transaction>;
+
+    /**
      * Delete a transaction by ID
      */
     delete(id: number, userId: number): Promise<void>;

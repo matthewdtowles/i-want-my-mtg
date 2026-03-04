@@ -3,17 +3,33 @@
 This document tracks the implementation of transaction-based P&L tracking and
 portfolio value history. Work spans multiple PRs and sessions.
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 
 ---
 
 ## Design Decisions
 
-### Transactions are decoupled from inventory
+### Transactions sync inventory (hybrid model)
 Inventory remains a simple quantity tracker (`card_id, user_id, foil, quantity`).
-Transactions are a separate, opt-in financial ledger. When a user modifies
-inventory, the UI offers a non-blocking prompt to record a transaction with the
-market price pre-filled — but never auto-creates transactions silently.
+Transactions are an opt-in financial ledger that **sync with inventory** when used:
+
+- **BUY transaction** auto-increments inventory quantity for that card/foil combo
+- **SELL transaction** auto-decrements inventory quantity
+- **Deleting a transaction** reverses the inventory change (BUY delete decrements,
+  SELL delete increments)
+- **Direct inventory changes** (without a transaction) still work for casual
+  tracking — inventory can exist without transactions
+- Inventory quantity is always >= transaction-derived quantity
+
+This hybrid approach means transactions and inventory stay consistent when both
+are used, but users who don't care about P&L can still manage inventory directly.
+
+### Inventory sync prompt (backfill untracked inventory)
+When a user has more inventory than transaction-derived quantity for a card, the
+card detail page shows a sync prompt: *"N untracked — Record as buy?"* with the
+current market price pre-filled and today's date. This gives users an easy path
+to backfill transaction history for cards added before they started tracking
+transactions. The prompt is non-blocking — users can dismiss it.
 
 ### FIFO cost basis via lot matching
 Each BUY transaction is a "lot" with a remaining quantity. When a user records a
@@ -142,6 +158,42 @@ is populated only for users who have transaction data.
 
 ---
 
+### Phase 2.5 — Bug Fixes, Transaction Editing, Inventory Sync
+
+#### Bug fixes
+
+- [x] 2.12 Fix card link in transactions view — use `card.number` (collector number) instead of `cardId` in URL (`/card/:setCode/:number`)
+- [x] 2.13 Fix presenter `buildCardMap` to include `number` field so it's available for URL construction
+
+#### Transaction editing
+
+- [x] 2.14 Add `update` method to TransactionService (validate ownership, re-check SELL constraints)
+- [x] 2.15 Add `update` method to TransactionRepositoryPort and TransactionRepository
+- [x] 2.16 Add `PUT /transactions/:id` endpoint to TransactionController
+- [x] 2.17 Add inline edit UI to transactions page (editable quantity, price per unit, date, source, notes)
+- [x] 2.18 Write unit tests for transaction update (service + orchestrator)
+
+#### Inventory sync on transaction create/delete
+
+- [x] 2.19 Inject InventoryService into TransactionService (or create a TransactionInventorySyncService)
+- [x] 2.20 On BUY create: auto-increment inventory quantity
+- [x] 2.21 On SELL create: auto-decrement inventory quantity
+- [x] 2.22 On BUY delete: auto-decrement inventory quantity
+- [x] 2.23 On SELL delete: auto-increment inventory quantity
+- [x] 2.24 On transaction update: adjust inventory delta (old qty vs new qty)
+- [x] 2.25 Write unit tests for inventory sync logic
+
+#### Untracked inventory sync prompt
+
+- [x] 2.26 Add logic to card detail orchestrator to compute untracked quantity (inventory qty minus transaction-derived qty)
+- [x] 2.27 Show sync prompt on card detail page when untracked > 0: "N untracked — Record as buy?" with market price pre-filled
+- [x] 2.28 Handle sync form submission — creates BUY transaction(s) without double-incrementing inventory (since those items are already in inventory)
+- [ ] 2.29 Write unit tests for untracked quantity calculation and sync flow
+
+**PR boundary: Phase 2.5 ships as one or two PRs (bug fixes + editing, then inventory sync).**
+
+---
+
 ### Phase 3 — Portfolio Value History (Scry ETL + Backend + Chart)
 
 #### 3A — Database & NestJS read layer
@@ -240,9 +292,10 @@ docker/postgres/migrations/
 
 ## Open Questions
 
-1. **Transaction edit/delete**: Should users be able to edit or delete past
-   transactions? Leaning yes for corrections, but need to think about audit
-   trail implications.
+1. ~~**Transaction edit/delete**: Should users be able to edit or delete past
+   transactions?~~ **Resolved**: Yes. Delete is implemented. Edit (quantity,
+   price, date, source, notes) added in Phase 2.5. No audit trail for MVP —
+   edits overwrite in place.
 2. **Bulk transaction import**: CSV import for transactions (e.g., from
    TCGPlayer order history)? Likely Phase 4 scope.
 3. **Trade transactions**: A TRADE type where no cash changes hands but cards
@@ -250,3 +303,10 @@ docker/postgres/migrations/
 4. **Multi-currency**: USD only for now. Scryfall prices are USD.
 5. **Portfolio chart granularity**: Just total value, or also break down by
    set / foil / rarity? Start with total, expand later.
+6. ~~**Inventory-transaction relationship**: Should transactions affect
+   inventory?~~ **Resolved**: Hybrid model — transactions sync inventory
+   (BUY increments, SELL decrements) but direct inventory changes without
+   transactions are still allowed. Sync prompt helps backfill untracked items.
+7. **Sync prompt for backfill**: When syncing untracked inventory to transactions,
+   the BUY transaction is created *without* incrementing inventory (items are
+   already there). Need a `skipInventorySync` flag or separate code path.

@@ -9,6 +9,7 @@ import {
     Param,
     ParseIntPipe,
     Post,
+    Put,
     Render,
     Req,
     UseGuards,
@@ -17,6 +18,7 @@ import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { TransactionApiResponseDto } from './dto/transaction.api-response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
+import { TransactionUpdateRequestDto } from './dto/transaction.update-request.dto';
 import { TransactionViewDto } from './dto/transaction.view.dto';
 import { TransactionOrchestrator } from './transaction.orchestrator';
 
@@ -42,6 +44,17 @@ export class TransactionController {
         @Req() req: AuthenticatedRequest
     ): Promise<TransactionApiResponseDto> {
         return await this.orchestrator.create(dto, req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Put(':id')
+    @HttpCode(HttpStatus.OK)
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: TransactionUpdateRequestDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<TransactionApiResponseDto> {
+        return await this.orchestrator.update(id, dto, req);
     }
 
     @UseGuards(JwtAuthGuard)

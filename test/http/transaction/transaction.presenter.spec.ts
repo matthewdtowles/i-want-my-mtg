@@ -42,11 +42,12 @@ describe('TransactionPresenter', () => {
                 source: 'lgs',
             });
 
-            const dto = TransactionPresenter.toResponseDto(tx, 'Lightning Bolt', 'lea');
+            const dto = TransactionPresenter.toResponseDto(tx, 'Lightning Bolt', 'lea', '161');
 
             expect(dto.id).toBe(1);
             expect(dto.cardName).toBe('Lightning Bolt');
             expect(dto.cardSetCode).toBe('lea');
+            expect(dto.cardUrl).toBe('/card/lea/161');
             expect(dto.type).toBe('BUY');
             expect(dto.quantity).toBe(2);
             expect(dto.pricePerUnit).toBe('$5.00');

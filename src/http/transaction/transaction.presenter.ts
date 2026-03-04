@@ -24,7 +24,8 @@ export class TransactionPresenter {
     static toResponseDto(
         transaction: Transaction,
         cardName?: string,
-        cardSetCode?: string
+        cardSetCode?: string,
+        cardNumber?: string
     ): TransactionResponseDto {
         const total = transaction.quantity * transaction.pricePerUnit;
         const setCode = cardSetCode || '';
@@ -33,15 +34,17 @@ export class TransactionPresenter {
             cardId: transaction.cardId,
             cardName: cardName || '',
             cardSetCode: setCode,
-            cardUrl: setCode ? `/card/${setCode.toLowerCase()}/${transaction.cardId}` : '',
+            cardUrl: setCode && cardNumber ? `/card/${setCode.toLowerCase()}/${cardNumber}` : '',
             type: transaction.type,
             quantity: transaction.quantity,
             pricePerUnit: toDollar(transaction.pricePerUnit),
+            rawPricePerUnit: transaction.pricePerUnit,
             totalPrice: toDollar(total),
             isFoil: transaction.isFoil,
             date: TransactionPresenter.formatDate(transaction.date),
             source: transaction.source || '',
             fees: transaction.fees ? toDollar(transaction.fees) : '',
+            rawFees: transaction.fees || 0,
             notes: transaction.notes || '',
         });
     }

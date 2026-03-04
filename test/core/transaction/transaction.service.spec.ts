@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { InventoryService } from 'src/core/inventory/inventory.service';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -6,6 +7,7 @@ import { TransactionService } from 'src/core/transaction/transaction.service';
 describe('TransactionService', () => {
     let service: TransactionService;
     let repository: jest.Mocked<TransactionRepositoryPort>;
+    let inventoryService: jest.Mocked<InventoryService>;
 
     const today = new Date('2025-06-01');
 
@@ -49,7 +51,13 @@ describe('TransactionService', () => {
         findBuyLots: jest.fn(),
         findSells: jest.fn(),
         findByUser: jest.fn(),
+        update: jest.fn(),
         delete: jest.fn(),
+    };
+
+    const mockInventoryService = {
+        save: jest.fn().mockResolvedValue([]),
+        findForUser: jest.fn().mockResolvedValue([]),
     };
 
     beforeAll(async () => {
@@ -57,6 +65,7 @@ describe('TransactionService', () => {
             providers: [
                 TransactionService,
                 { provide: TransactionRepositoryPort, useValue: mockRepository },
+                { provide: InventoryService, useValue: mockInventoryService },
             ],
         }).compile();
 
@@ -64,6 +73,7 @@ describe('TransactionService', () => {
         repository = module.get(
             TransactionRepositoryPort
         ) as jest.Mocked<TransactionRepositoryPort>;
+        inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
     });
 
     beforeEach(() => {
@@ -174,6 +184,86 @@ describe('TransactionService', () => {
             await expect(service.create(tx)).rejects.toThrow(
                 'Transaction type must be BUY or SELL.'
             );
+        });
+    });
+
+    describe('update', () => {
+        it('should update quantity and return old quantity', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+            const updatedTx = new Transaction({ ...buyLot1, quantity: 5 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            const result = await service.update(1, 1, { quantity: 5 });
+
+            expect(result.updated.quantity).toBe(5);
+            expect(result.oldQuantity).toBe(2);
+            expect(repository.update).toHaveBeenCalledWith(1, 1, { quantity: 5 });
+        });
+
+        it('should update price per unit', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+            const updatedTx = new Transaction({ ...buyLot1, pricePerUnit: 9.0 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            const result = await service.update(1, 1, { pricePerUnit: 9.0 });
+
+            expect(result.updated.pricePerUnit).toBe(9.0);
+        });
+
+        it('should throw if transaction not found', async () => {
+            repository.findById.mockResolvedValue(null);
+
+            await expect(service.update(999, 1, { quantity: 5 })).rejects.toThrow(
+                'Transaction not found.'
+            );
+        });
+
+        it('should throw if transaction belongs to different user', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+
+            await expect(service.update(1, 999, { quantity: 5 })).rejects.toThrow(
+                'Transaction not found.'
+            );
+        });
+
+        it('should reject zero quantity', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+
+            await expect(service.update(1, 1, { quantity: 0 })).rejects.toThrow(
+                'Transaction quantity must be positive.'
+            );
+        });
+
+        it('should reject negative price', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+
+            await expect(service.update(1, 1, { pricePerUnit: -1 })).rejects.toThrow(
+                'Price per unit cannot be negative.'
+            );
+        });
+
+        it('should validate SELL quantity update against remaining', async () => {
+            repository.findById.mockResolvedValue(sellTx);
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([sellTx]);
+
+            // Remaining = 6 - 3 = 3, plus old sell qty 3 = 6 available
+            // Trying to sell 7 should fail
+            await expect(service.update(3, 1, { quantity: 7 })).rejects.toThrow(
+                'Cannot sell 7 units. Only 6 remaining.'
+            );
+        });
+
+        it('should allow valid SELL quantity update', async () => {
+            repository.findById.mockResolvedValue(sellTx);
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([sellTx]);
+            const updatedTx = new Transaction({ ...sellTx, quantity: 5 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            const result = await service.update(3, 1, { quantity: 5 });
+
+            expect(result.updated.quantity).toBe(5);
         });
     });
 
@@ -379,6 +469,166 @@ describe('TransactionService', () => {
 
             expect(repository.findByUserAndCard).toHaveBeenCalledWith(1, 'card-1', false);
             expect(result).toEqual(transactions);
+        });
+    });
+
+    describe('inventory sync', () => {
+        it('should increment inventory on BUY create', async () => {
+            const tx = new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 3,
+                pricePerUnit: 5.0,
+                isFoil: false,
+                date: today,
+            });
+            repository.save.mockResolvedValue({ ...tx, id: 10 });
+            inventoryService.findForUser.mockResolvedValue([]);
+
+            await service.create(tx);
+
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({
+                    cardId: 'card-1',
+                    userId: 1,
+                    isFoil: false,
+                    quantity: 3,
+                }),
+            ]);
+        });
+
+        it('should add to existing inventory on BUY create', async () => {
+            const tx = new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 2,
+                pricePerUnit: 5.0,
+                isFoil: false,
+                date: today,
+            });
+            repository.save.mockResolvedValue({ ...tx, id: 10 });
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 4 } as any,
+            ]);
+
+            await service.create(tx);
+
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 6 }),
+            ]);
+        });
+
+        it('should decrement inventory on SELL create', async () => {
+            const tx = new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'SELL',
+                quantity: 2,
+                pricePerUnit: 10.0,
+                isFoil: false,
+                date: today,
+            });
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([]);
+            repository.save.mockResolvedValue({ ...tx, id: 10 });
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 6 } as any,
+            ]);
+
+            await service.create(tx);
+
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 4 }),
+            ]);
+        });
+
+        it('should skip inventory sync when skipInventorySync option is set', async () => {
+            const tx = new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 2,
+                pricePerUnit: 5.0,
+                isFoil: false,
+                date: today,
+            });
+            repository.save.mockResolvedValue({ ...tx, id: 10 });
+
+            await service.create(tx, { skipInventorySync: true });
+
+            expect(inventoryService.findForUser).not.toHaveBeenCalled();
+            expect(inventoryService.save).not.toHaveBeenCalled();
+        });
+
+        it('should reverse inventory on BUY delete', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+            repository.delete.mockResolvedValue();
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 5 } as any,
+            ]);
+
+            await service.delete(1, 1);
+
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 3 }),
+            ]);
+        });
+
+        it('should reverse inventory on SELL delete', async () => {
+            repository.findById.mockResolvedValue(sellTx);
+            repository.delete.mockResolvedValue();
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 3 } as any,
+            ]);
+
+            await service.delete(3, 1);
+
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 6 }),
+            ]);
+        });
+
+        it('should adjust inventory on quantity update', async () => {
+            repository.findById.mockResolvedValue(buyLot1); // qty=2
+            const updatedTx = new Transaction({ ...buyLot1, quantity: 5 });
+            repository.update.mockResolvedValue(updatedTx);
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 4 } as any,
+            ]);
+
+            await service.update(1, 1, { quantity: 5 });
+
+            // BUY: delta = 5 - 2 = 3, inventory delta = +3
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 7 }),
+            ]);
+        });
+
+        it('should not adjust inventory when quantity unchanged', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+            const updatedTx = new Transaction({ ...buyLot1, pricePerUnit: 9.0 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            await service.update(1, 1, { pricePerUnit: 9.0 });
+
+            expect(inventoryService.findForUser).not.toHaveBeenCalled();
+        });
+
+        it('should not allow inventory to go below 0', async () => {
+            repository.findById.mockResolvedValue(buyLot1);
+            repository.delete.mockResolvedValue();
+            inventoryService.findForUser.mockResolvedValue([
+                { cardId: 'card-1', userId: 1, isFoil: false, quantity: 1 } as any,
+            ]);
+
+            await service.delete(1, 1); // buyLot1 has qty 2, but inventory only has 1
+
+            // Should clamp to 0 (Math.max(0, 1 - 2))
+            expect(inventoryService.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 0 }),
+            ]);
         });
     });
 });

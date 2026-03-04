@@ -9,6 +9,7 @@ import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
 import { TransactionApiResponseDto } from './dto/transaction.api-response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionResponseDto } from './dto/transaction.response.dto';
+import { TransactionUpdateRequestDto } from './dto/transaction.update-request.dto';
 import { TransactionViewDto } from './dto/transaction.view.dto';
 import { TransactionPresenter } from './transaction.presenter';
 
@@ -33,7 +34,12 @@ export class TransactionOrchestrator {
 
             const responseItems: TransactionResponseDto[] = transactions.map((t) => {
                 const card = cardMap.get(t.cardId);
-                return TransactionPresenter.toResponseDto(t, card?.name, card?.setCode);
+                return TransactionPresenter.toResponseDto(
+                    t,
+                    card?.name,
+                    card?.setCode,
+                    card?.number
+                );
             });
 
             return new TransactionViewDto({
@@ -63,13 +69,45 @@ export class TransactionOrchestrator {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const entity = TransactionPresenter.toEntity(dto, req.user.id);
-            const saved = await this.transactionService.create(entity);
+            const saved = await this.transactionService.create(entity, {
+                skipInventorySync: dto.skipInventorySync,
+            });
             return new TransactionApiResponseDto({
                 success: true,
                 data: { id: saved.id, type: saved.type, quantity: saved.quantity },
             });
         } catch (error) {
             this.LOGGER.debug(`Error creating transaction: ${error?.message}`);
+            return new TransactionApiResponseDto({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
+    async update(
+        id: number,
+        dto: TransactionUpdateRequestDto,
+        req: AuthenticatedRequest
+    ): Promise<TransactionApiResponseDto> {
+        this.LOGGER.debug(`Update transaction ${id} for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const fields: Record<string, unknown> = {};
+            if (dto.quantity !== undefined) fields.quantity = dto.quantity;
+            if (dto.pricePerUnit !== undefined) fields.pricePerUnit = dto.pricePerUnit;
+            if (dto.date !== undefined) fields.date = new Date(dto.date);
+            if (dto.source !== undefined) fields.source = dto.source;
+            if (dto.fees !== undefined) fields.fees = dto.fees;
+            if (dto.notes !== undefined) fields.notes = dto.notes;
+
+            const { updated } = await this.transactionService.update(id, req.user.id, fields);
+            return new TransactionApiResponseDto({
+                success: true,
+                data: { id: updated.id, type: updated.type, quantity: updated.quantity },
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error updating transaction ${id}: ${error?.message}`);
             return new TransactionApiResponseDto({
                 success: false,
                 error: error.message,
@@ -120,7 +158,7 @@ export class TransactionOrchestrator {
             const cardMap = await this.buildCardMap([cardId]);
             const card = cardMap.get(cardId);
             return transactions.map((t) =>
-                TransactionPresenter.toResponseDto(t, card?.name, card?.setCode)
+                TransactionPresenter.toResponseDto(t, card?.name, card?.setCode, card?.number)
             );
         } catch (error) {
             this.LOGGER.debug(`Error getting card transactions: ${error?.message}`);
@@ -130,13 +168,13 @@ export class TransactionOrchestrator {
 
     private async buildCardMap(
         cardIds: string[]
-    ): Promise<Map<string, { name: string; setCode: string }>> {
-        const cardMap = new Map<string, { name: string; setCode: string }>();
+    ): Promise<Map<string, { name: string; setCode: string; number: string }>> {
+        const cardMap = new Map<string, { name: string; setCode: string; number: string }>();
         if (cardIds.length === 0) return cardMap;
 
         const cards = await this.cardService.findByIds(cardIds);
         for (const card of cards) {
-            cardMap.set(card.id, { name: card.name, setCode: card.setCode });
+            cardMap.set(card.id, { name: card.name, setCode: card.setCode, number: card.number });
         }
         return cardMap;
     }

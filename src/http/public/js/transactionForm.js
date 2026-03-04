@@ -57,6 +57,46 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Handle sync inventory buttons (record untracked inventory as BUY)
+    document.querySelectorAll('.sync-inventory-button').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+            var cardId = this.dataset.cardId;
+            var quantity = parseInt(this.dataset.quantity, 10);
+            var isFoil = this.dataset.isFoil === 'true';
+            var price = parseFloat(this.dataset.price) || 0;
+
+            var body = {
+                cardId: cardId,
+                type: 'BUY',
+                quantity: quantity,
+                pricePerUnit: price,
+                isFoil: isFoil,
+                date: new Date().toISOString().split('T')[0],
+                skipInventorySync: true,
+            };
+
+            try {
+                var response = await fetch('/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                var data = await response.json();
+                if (data.success) {
+                    var container = this.closest('[id^="sync-"]');
+                    if (container) container.remove();
+                    var msgEl = document.getElementById('transaction-form-message');
+                    showMessage(msgEl, 'Inventory synced as transaction!', 'success');
+                } else {
+                    alert('Failed to sync: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error syncing inventory:', error);
+                alert('Error syncing inventory.');
+            }
+        });
+    });
+
     function showMessage(el, text, type) {
         if (!el) return;
         el.textContent = text;

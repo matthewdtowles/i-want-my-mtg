@@ -42,4 +42,8 @@ export class TransactionRequestDto {
     @IsOptional()
     @IsString()
     readonly notes?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    readonly skipInventorySync?: boolean;
 }

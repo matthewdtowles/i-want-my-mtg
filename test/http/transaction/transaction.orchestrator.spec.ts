@@ -41,6 +41,7 @@ describe('TransactionOrchestrator', () => {
                         create: jest.fn(),
                         findByUser: jest.fn(),
                         findByUserAndCard: jest.fn(),
+                        update: jest.fn(),
                         delete: jest.fn(),
                         getCostBasis: jest.fn(),
                     },
@@ -67,7 +68,7 @@ describe('TransactionOrchestrator', () => {
         it('should return transaction view with items', async () => {
             transactionService.findByUser.mockResolvedValue([testTransaction]);
             cardService.findByIds.mockResolvedValue([
-                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea' } as any,
+                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
             ]);
 
             const result = await orchestrator.findByUser(mockAuthenticatedRequest);
@@ -134,6 +135,44 @@ describe('TransactionOrchestrator', () => {
         });
     });
 
+    describe('update', () => {
+        it('should update a transaction and return success', async () => {
+            const updatedTx = new Transaction({
+                id: 1,
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 5,
+                pricePerUnit: 7.0,
+                isFoil: false,
+                date: new Date('2025-06-01'),
+            });
+            transactionService.update.mockResolvedValue({ updated: updatedTx, oldQuantity: 2 });
+
+            const result = await orchestrator.update(
+                1,
+                { quantity: 5, pricePerUnit: 7.0 },
+                mockAuthenticatedRequest
+            );
+
+            expect(result.success).toBe(true);
+            expect(result.data).toEqual({ id: 1, type: 'BUY', quantity: 5 });
+        });
+
+        it('should return error on update failure', async () => {
+            transactionService.update.mockRejectedValue(new Error('Transaction not found.'));
+
+            const result = await orchestrator.update(
+                999,
+                { quantity: 5 },
+                mockAuthenticatedRequest
+            );
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBe('Transaction not found.');
+        });
+    });
+
     describe('delete', () => {
         it('should delete a transaction and return success', async () => {
             transactionService.delete.mockResolvedValue();
@@ -183,7 +222,7 @@ describe('TransactionOrchestrator', () => {
         it('should return transactions for a card', async () => {
             transactionService.findByUserAndCard.mockResolvedValue([testTransaction]);
             cardService.findByIds.mockResolvedValue([
-                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea' } as any,
+                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
             ]);
 
             const result = await orchestrator.getCardTransactions(1, 'card-1');

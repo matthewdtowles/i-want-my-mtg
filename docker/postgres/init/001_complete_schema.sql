@@ -538,6 +538,116 @@ CREATE INDEX idx_password_reset_expires ON public.password_reset(expires_at);
 
 
 --
+-- Name: transaction; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public."transaction" (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    card_id character varying NOT NULL,
+    type character varying NOT NULL,
+    quantity integer NOT NULL,
+    price_per_unit numeric(10,2) NOT NULL,
+    is_foil boolean NOT NULL,
+    date date DEFAULT CURRENT_DATE NOT NULL,
+    source character varying,
+    fees numeric(10,2),
+    notes text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+
+--
+-- Name: transaction_id_seq; Type: SEQUENCE; Schema: public
+--
+
+CREATE SEQUENCE public.transaction_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public
+--
+
+ALTER SEQUENCE public.transaction_id_seq OWNED BY public."transaction".id;
+
+
+--
+-- Name: transaction id; Type: DEFAULT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction" ALTER COLUMN id SET DEFAULT nextval('public.transaction_id_seq'::regclass);
+
+
+--
+-- Name: transaction transaction_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction"
+    ADD CONSTRAINT transaction_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transaction CHK_transaction_type; Type: CHECK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction"
+    ADD CONSTRAINT "CHK_transaction_type" CHECK (type IN ('BUY', 'SELL'));
+
+
+--
+-- Name: transaction CHK_transaction_quantity; Type: CHECK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction"
+    ADD CONSTRAINT "CHK_transaction_quantity" CHECK (quantity > 0);
+
+
+--
+-- Name: transaction FK_transaction_user; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction"
+    ADD CONSTRAINT "FK_transaction_user" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: transaction FK_transaction_card; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public."transaction"
+    ADD CONSTRAINT "FK_transaction_card" FOREIGN KEY (card_id) REFERENCES public.card(id) ON DELETE CASCADE;
+
+
+--
+-- Name: idx_transaction_unique; Type: INDEX; Schema: public
+--
+
+CREATE UNIQUE INDEX idx_transaction_unique ON public."transaction" (user_id, card_id, is_foil, type, date, price_per_unit);
+
+
+--
+-- Name: idx_transaction_fifo; Type: INDEX; Schema: public
+--
+
+CREATE INDEX idx_transaction_fifo ON public."transaction" (user_id, card_id, is_foil, date);
+
+
+--
+-- Name: idx_transaction_user_date; Type: INDEX; Schema: public
+--
+
+CREATE INDEX idx_transaction_user_date ON public."transaction" (user_id, date);
+
+
+--
 -- PostgreSQL database dump complete
 --
 

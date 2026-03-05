@@ -53,8 +53,10 @@ export class InventoryService {
         cardId: string,
         isFoil: boolean
     ): Promise<number> {
-        const buyLots = await this.transactionRepository.findBuyLots(userId, cardId, isFoil);
-        const sells = await this.transactionRepository.findSells(userId, cardId, isFoil);
+        const [buyLots, sells] = await Promise.all([
+            this.transactionRepository.findBuyLots(userId, cardId, isFoil),
+            this.transactionRepository.findSells(userId, cardId, isFoil),
+        ]);
         const totalBought = buyLots.reduce((sum, t) => sum + t.quantity, 0);
         const totalSold = sells.reduce((sum, t) => sum + t.quantity, 0);
         return Math.max(0, totalBought - totalSold);

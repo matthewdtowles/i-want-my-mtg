@@ -32,7 +32,7 @@ export class PortfolioController {
         this.LOGGER.log(`Get portfolio history for user ${req.user?.id}.`);
         const parsedDays = days ? parseInt(days, 10) : undefined;
         return this.orchestrator.getHistory(
-            req.user.id,
+            req,
             Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined
         );
     }

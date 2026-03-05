@@ -38,10 +38,14 @@ export class PortfolioOrchestrator {
         }
     }
 
-    async getHistory(userId: number, days?: number): Promise<PortfolioValueHistoryResponseDto> {
-        this.LOGGER.debug(`Get portfolio history for user ${userId}, days: ${days}.`);
+    async getHistory(
+        req: AuthenticatedRequest,
+        days?: number
+    ): Promise<PortfolioValueHistoryResponseDto> {
+        this.LOGGER.debug(`Get portfolio history for user ${req.user?.id}, days: ${days}.`);
         try {
-            const history = await this.portfolioService.getHistory(userId, days);
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const history = await this.portfolioService.getHistory(req.user.id, days);
             const points: PortfolioValueHistoryPointDto[] = history.map((h) => ({
                 date: h.date instanceof Date ? h.date.toISOString().split('T')[0] : String(h.date),
                 totalValue: h.totalValue,

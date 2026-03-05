@@ -89,7 +89,7 @@ describe('PortfolioOrchestrator', () => {
         it('should return history points with formatted dates', async () => {
             portfolioService.getHistory.mockResolvedValue(testHistory);
 
-            const result = await orchestrator.getHistory(1);
+            const result = await orchestrator.getHistory(mockAuthenticatedRequest);
 
             expect(result.history).toHaveLength(2);
             expect(result.history[0].date).toBe('2025-06-01');
@@ -102,7 +102,7 @@ describe('PortfolioOrchestrator', () => {
         it('should pass days parameter to service', async () => {
             portfolioService.getHistory.mockResolvedValue([]);
 
-            await orchestrator.getHistory(1, 30);
+            await orchestrator.getHistory(mockAuthenticatedRequest, 30);
 
             expect(portfolioService.getHistory).toHaveBeenCalledWith(1, 30);
         });
@@ -110,7 +110,7 @@ describe('PortfolioOrchestrator', () => {
         it('should return empty history when service returns empty', async () => {
             portfolioService.getHistory.mockResolvedValue([]);
 
-            const result = await orchestrator.getHistory(1);
+            const result = await orchestrator.getHistory(mockAuthenticatedRequest);
 
             expect(result.history).toHaveLength(0);
         });
@@ -128,9 +128,13 @@ describe('PortfolioOrchestrator', () => {
             ];
             portfolioService.getHistory.mockResolvedValue(historyWithNullCost);
 
-            const result = await orchestrator.getHistory(1);
+            const result = await orchestrator.getHistory(mockAuthenticatedRequest);
 
             expect(result.history[0].totalCost).toBeNull();
+        });
+
+        it('should throw on unauthenticated request', async () => {
+            await expect(orchestrator.getHistory(mockUnauthenticatedRequest)).rejects.toThrow();
         });
     });
 });

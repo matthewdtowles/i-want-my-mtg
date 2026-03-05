@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS public.portfolio_value_history (
         REFERENCES public.users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_portfolio_value_history_user_date
+CREATE INDEX IF NOT EXISTS idx_portfolio_value_history_user_date
     ON public.portfolio_value_history (user_id, date);

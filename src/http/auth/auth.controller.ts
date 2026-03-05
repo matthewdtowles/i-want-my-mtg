@@ -35,9 +35,9 @@ export class AuthController {
 
     @Get('login')
     @Render('login')
-    async loginForm(): Promise<LoginFormViewDto> {
+    async loginForm(@Query('returnUrl') returnUrl?: string): Promise<LoginFormViewDto> {
         this.LOGGER.log(`Fetch login form.`);
-        return new LoginFormViewDto();
+        return new LoginFormViewDto({ returnUrl: this.sanitizeReturnUrl(returnUrl) });
     }
 
     @UseGuards(LocalAuthGuard)
@@ -48,7 +48,8 @@ export class AuthController {
         const result: AuthResult = await this.authOrchestrator.login(req?.user);
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, getAuthCookieOptions(this.configService));
-            res.redirect('/user');
+            const returnUrl = this.sanitizeReturnUrl(req.body?.returnUrl);
+            res.redirect(returnUrl || '/user');
             this.LOGGER.log(`Login successful for user ${userId}.`);
         } else {
             res.redirect('/auth/login?error=Invalid credentials');
@@ -64,6 +65,13 @@ export class AuthController {
         res.clearCookie(AUTH_TOKEN_NAME);
         res.redirect(result.redirectTo);
         this.LOGGER.log(`Logged out user ${userId ?? '""'}.`);
+    }
+
+    private sanitizeReturnUrl(url?: string): string {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+        return '';
     }
 
     @Get('forgot-password')

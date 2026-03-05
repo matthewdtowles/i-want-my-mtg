@@ -44,6 +44,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 toast: new Toast(exception.message || 'Internal Server Error', ActionStatus.ERROR),
                 statusCode: status,
                 authenticated: false,
+                returnUrl: exception instanceof UnauthorizedException ? request.url : undefined,
             });
         }
     }
@@ -85,6 +86,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 authenticated: false,
                 toast: new Toast(errorMessage, ActionStatus.ERROR),
                 email: request.body?.email || '',
+                returnUrl: request.body?.returnUrl || '',
             });
             response.status(200).render('login', errorView);
             return;

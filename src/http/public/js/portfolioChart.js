@@ -266,7 +266,7 @@
         var container = document.getElementById('portfolio-chart-container');
         if (!container) return;
 
-        fetchAndRender('30');
+        fetchAndRender('7');
 
         var buttons = document.querySelectorAll('.portfolio-range');
         buttons.forEach(function (btn) {

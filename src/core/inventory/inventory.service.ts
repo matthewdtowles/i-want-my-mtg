@@ -19,12 +19,12 @@ export class InventoryService {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items.`);
         const toSave: Inventory[] = [];
         for (const item of inventoryItems) {
+            const minQty = await this.getTransactionDerivedQuantity(
+                item.userId,
+                item.cardId,
+                item.isFoil
+            );
             if (item.quantity > 0) {
-                const minQty = await this.getTransactionDerivedQuantity(
-                    item.userId,
-                    item.cardId,
-                    item.isFoil
-                );
                 if (item.quantity < minQty) {
                     throw new Error(
                         `Cannot set inventory to ${item.quantity}. ` +
@@ -34,11 +34,6 @@ export class InventoryService {
                 }
                 toSave.push(item);
             } else {
-                const minQty = await this.getTransactionDerivedQuantity(
-                    item.userId,
-                    item.cardId,
-                    item.isFoil
-                );
                 if (minQty > 0) {
                     throw new Error(
                         `Cannot remove inventory. ` +

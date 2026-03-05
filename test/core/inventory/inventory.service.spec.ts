@@ -56,7 +56,9 @@ describe('InventoryService', () => {
 
         service = module.get<InventoryService>(InventoryService);
         repository = module.get(InventoryRepositoryPort) as jest.Mocked<InventoryRepositoryPort>;
-        transactionRepository = module.get(TransactionRepositoryPort) as jest.Mocked<TransactionRepositoryPort>;
+        transactionRepository = module.get(
+            TransactionRepositoryPort
+        ) as jest.Mocked<TransactionRepositoryPort>;
     });
 
     beforeEach(() => {
@@ -205,7 +207,7 @@ describe('InventoryService', () => {
             transactionRepository.findSells.mockResolvedValue([]);
 
             await expect(service.delete(1, 'card-1', false)).rejects.toThrow(
-                'Cannot delete inventory. 5 units are accounted for in transactions.',
+                'Cannot delete inventory. 5 units are accounted for in transactions.'
             );
             expect(repository.delete).not.toHaveBeenCalled();
         });
@@ -228,7 +230,7 @@ describe('InventoryService', () => {
             });
 
             await expect(service.save([lowItem])).rejects.toThrow(
-                'Cannot set inventory to 5. 7 units are accounted for in transactions.',
+                'Cannot set inventory to 5. 7 units are accounted for in transactions.'
             );
         });
 
@@ -266,7 +268,7 @@ describe('InventoryService', () => {
             });
 
             await expect(service.save([zeroItem])).rejects.toThrow(
-                'Cannot remove inventory. 5 units are accounted for in transactions.',
+                'Cannot remove inventory. 5 units are accounted for in transactions.'
             );
         });
 

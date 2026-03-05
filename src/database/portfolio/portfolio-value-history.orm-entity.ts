@@ -1,12 +1,5 @@
 import { UserOrmEntity } from 'src/database/user/user.orm-entity';
-import {
-    Column,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    Unique,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity('portfolio_value_history')
 @Unique(['user', 'date'])

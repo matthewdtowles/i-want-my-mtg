@@ -13,7 +13,7 @@ export class PortfolioValueHistoryRepository implements PortfolioValueHistoryRep
 
     constructor(
         @InjectRepository(PortfolioValueHistoryOrmEntity)
-        private readonly repository: Repository<PortfolioValueHistoryOrmEntity>,
+        private readonly repository: Repository<PortfolioValueHistoryOrmEntity>
     ) {
         this.LOGGER.debug(`Instantiated.`);
     }

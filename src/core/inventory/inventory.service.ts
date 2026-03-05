@@ -12,7 +12,7 @@ export class InventoryService {
     constructor(
         @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
         @Inject(TransactionRepositoryPort)
-        private readonly transactionRepository: TransactionRepositoryPort,
+        private readonly transactionRepository: TransactionRepositoryPort
     ) {}
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
@@ -23,13 +23,13 @@ export class InventoryService {
                 const minQty = await this.getTransactionDerivedQuantity(
                     item.userId,
                     item.cardId,
-                    item.isFoil,
+                    item.isFoil
                 );
                 if (item.quantity < minQty) {
                     throw new Error(
                         `Cannot set inventory to ${item.quantity}. ` +
                             `${minQty} units are accounted for in transactions. ` +
-                            `Record a SELL transaction to reduce below this amount.`,
+                            `Record a SELL transaction to reduce below this amount.`
                     );
                 }
                 toSave.push(item);
@@ -37,13 +37,13 @@ export class InventoryService {
                 const minQty = await this.getTransactionDerivedQuantity(
                     item.userId,
                     item.cardId,
-                    item.isFoil,
+                    item.isFoil
                 );
                 if (minQty > 0) {
                     throw new Error(
                         `Cannot remove inventory. ` +
                             `${minQty} units are accounted for in transactions. ` +
-                            `Record a SELL transaction to reduce below this amount.`,
+                            `Record a SELL transaction to reduce below this amount.`
                     );
                 }
                 // await omitted intentionally
@@ -56,7 +56,7 @@ export class InventoryService {
     private async getTransactionDerivedQuantity(
         userId: number,
         cardId: string,
-        isFoil: boolean,
+        isFoil: boolean
     ): Promise<number> {
         const buyLots = await this.transactionRepository.findBuyLots(userId, cardId, isFoil);
         const sells = await this.transactionRepository.findSells(userId, cardId, isFoil);
@@ -141,7 +141,7 @@ export class InventoryService {
                 throw new Error(
                     `Cannot delete inventory. ` +
                         `${minQty} units are accounted for in transactions. ` +
-                        `Record a SELL transaction to reduce below this amount.`,
+                        `Record a SELL transaction to reduce below this amount.`
                 );
             }
             try {

@@ -14,6 +14,8 @@ import { SearchOrchestrator } from './search/search.orchestrator';
 import { SetController } from './set/set.controller';
 import { SetOrchestrator } from './set/set.orchestrator';
 import { SpoilersController } from './set/spoilers.controller';
+import { PortfolioController } from './portfolio/portfolio.controller';
+import { PortfolioOrchestrator } from './portfolio/portfolio.orchestrator';
 import { TransactionController } from './transaction/transaction.controller';
 import { TransactionOrchestrator } from './transaction/transaction.orchestrator';
 import { UserController } from './user/user.controller';
@@ -26,6 +28,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         CardController,
         HomeController,
         InventoryController,
+        PortfolioController,
         SearchController,
         SetController,
         SpoilersController,
@@ -36,6 +39,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         AuthOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
+        PortfolioOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
         TransactionOrchestrator,
@@ -45,6 +49,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         AuthOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
+        PortfolioOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
         TransactionOrchestrator,

@@ -9,7 +9,7 @@ export class PortfolioService {
 
     constructor(
         @Inject(PortfolioValueHistoryRepositoryPort)
-        private readonly repository: PortfolioValueHistoryRepositoryPort,
+        private readonly repository: PortfolioValueHistoryRepositoryPort
     ) {}
 
     async getHistory(userId: number, days?: number): Promise<PortfolioValueHistory[]> {

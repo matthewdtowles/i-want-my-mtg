@@ -254,6 +254,47 @@ describe('TransactionService', () => {
             );
         });
 
+        it('should reject BUY quantity reduction that would make sold > bought', async () => {
+            repository.findById.mockResolvedValue(buyLot1); // qty=2
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // total bought=6
+            repository.findSells.mockResolvedValue([sellTx]); // total sold=3, remaining=3
+
+            // buyLot1 is qty 2, reducing to 1 means total bought goes from 6 to 5
+            // remaining would go from 3 to 2, which is fine
+            // But reducing to 0 would be caught by quantity > 0 check
+            // Reducing buyLot2 (qty=4) to 1 means total bought=3, remaining=0. That's fine.
+            // But let's set up a scenario where reduction > remaining
+            const bigBuyLot = new Transaction({
+                ...buyLot1,
+                quantity: 5,
+            });
+            repository.findById.mockResolvedValue(bigBuyLot);
+            repository.findBuyLots.mockResolvedValue([bigBuyLot]); // total bought=5
+            repository.findSells.mockResolvedValue([sellTx]); // total sold=3, remaining=2
+
+            // Reducing from 5 to 1 is a reduction of 4, but only 2 unsold
+            await expect(service.update(1, 1, { quantity: 1 })).rejects.toThrow(
+                'Cannot reduce buy to 1 units. 2 unsold units remaining'
+            );
+        });
+
+        it('should allow BUY quantity reduction when sufficient unsold units remain', async () => {
+            const bigBuyLot = new Transaction({
+                ...buyLot1,
+                quantity: 5,
+            });
+            repository.findById.mockResolvedValue(bigBuyLot);
+            repository.findBuyLots.mockResolvedValue([bigBuyLot]); // total bought=5
+            repository.findSells.mockResolvedValue([sellTx]); // total sold=3, remaining=2
+            const updatedTx = new Transaction({ ...bigBuyLot, quantity: 3 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            // Reducing from 5 to 3 is a reduction of 2, and 2 unsold — exactly fits
+            const result = await service.update(1, 1, { quantity: 3 });
+
+            expect(result.updated.quantity).toBe(3);
+        });
+
         it('should allow valid SELL quantity update', async () => {
             repository.findById.mockResolvedValue(sellTx);
             repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
@@ -270,6 +311,40 @@ describe('TransactionService', () => {
     describe('delete', () => {
         it('should delete a transaction owned by the user', async () => {
             repository.findById.mockResolvedValue(buyLot1);
+            repository.delete.mockResolvedValue();
+
+            await service.delete(1, 1);
+
+            expect(repository.delete).toHaveBeenCalledWith(1, 1);
+        });
+
+        it('should reject deleting a BUY when sold units exceed remaining', async () => {
+            repository.findById.mockResolvedValue(buyLot1); // qty=2
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // total bought=6
+            repository.findSells.mockResolvedValue([sellTx]); // total sold=3, remaining=3
+
+            // buyLot1 has qty 2, but only 3 unsold. Deleting 2 is fine (3 >= 2)
+            // Let's use a lot where deletion would break it
+            const bigSell = new Transaction({
+                ...sellTx,
+                quantity: 5,
+            });
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // total bought=6
+            repository.findSells.mockResolvedValue([bigSell]); // total sold=5, remaining=1
+
+            // buyLot1 has qty 2, but only 1 unsold — can't delete
+            await expect(service.delete(1, 1)).rejects.toThrow(
+                'Cannot delete buy of 2 units. Only 1 unsold units remaining'
+            );
+            expect(repository.delete).not.toHaveBeenCalled();
+        });
+
+        it('should allow deleting a BUY when sufficient unsold units remain', async () => {
+            repository.findById.mockResolvedValue(buyLot1); // qty=2
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // total bought=6
+            repository.findSells.mockResolvedValue([sellTx]); // total sold=3, remaining=3
+
+            // remaining=3 >= buyLot1.quantity=2, so deletion is allowed
             repository.delete.mockResolvedValue();
 
             await service.delete(1, 1);
@@ -373,6 +448,49 @@ describe('TransactionService', () => {
             });
             expect(result.totalRealizedGain).toBe(0);
             expect(result.totalSoldCost).toBe(0);
+        });
+
+        it('should compute correct realized gain with multiple sells at different prices', async () => {
+            const sell1 = new Transaction({
+                id: 10,
+                userId: 1,
+                cardId: 'card-1',
+                type: 'SELL',
+                quantity: 1,
+                pricePerUnit: 6.0,
+                isFoil: false,
+                date: new Date('2025-04-01'),
+            });
+            const sell2 = new Transaction({
+                id: 11,
+                userId: 1,
+                cardId: 'card-1',
+                type: 'SELL',
+                quantity: 2,
+                pricePerUnit: 15.0,
+                isFoil: false,
+                date: new Date('2025-05-01'),
+            });
+
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([sell1, sell2]);
+
+            const result = await service.getFifoLotAllocations(1, 'card-1', false);
+
+            // sell1 (qty 1 @ $6): consumes 1 from lot1 (cost $5) -> gain = 1*(6-5) = $1
+            // sell2 (qty 2 @ $15): consumes 1 from lot1 (cost $5) -> gain = 1*(15-5) = $10
+            //                      consumes 1 from lot2 (cost $8) -> gain = 1*(15-8) = $7
+            // Total realized gain = $1 + $10 + $7 = $18
+            expect(result.totalRealizedGain).toBe(18.0);
+            // Total sold cost = 1*5 + 1*5 + 1*8 = $18
+            expect(result.totalSoldCost).toBe(18.0);
+            // Remaining: lot2 has 3 left
+            expect(result.lots).toHaveLength(1);
+            expect(result.lots[0]).toEqual({
+                lotId: 2,
+                remaining: 3,
+                costPerUnit: 8.0,
+            });
         });
 
         it('should handle all lots fully consumed', async () => {

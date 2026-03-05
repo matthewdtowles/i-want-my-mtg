@@ -57,6 +57,25 @@ describe('TransactionPresenter', () => {
             expect(dto.source).toBe('lgs');
         });
 
+        it('should display fees of 0 as $0.00', () => {
+            const tx = new Transaction({
+                id: 1,
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 1,
+                pricePerUnit: 5.0,
+                isFoil: false,
+                date: new Date('2025-06-01'),
+                fees: 0,
+            });
+
+            const dto = TransactionPresenter.toResponseDto(tx);
+
+            expect(dto.fees).toBe('$0.00');
+            expect(dto.rawFees).toBe(0);
+        });
+
         it('should handle missing card info gracefully', () => {
             const tx = new Transaction({
                 id: 1,

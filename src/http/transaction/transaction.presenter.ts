@@ -43,8 +43,13 @@ export class TransactionPresenter {
             isFoil: transaction.isFoil,
             date: TransactionPresenter.formatDate(transaction.date),
             source: transaction.source || '',
-            fees: transaction.fees ? toDollar(transaction.fees) : '',
-            rawFees: transaction.fees || 0,
+            fees:
+                transaction.fees != null
+                    ? transaction.fees === 0
+                        ? '$0.00'
+                        : toDollar(transaction.fees)
+                    : '',
+            rawFees: transaction.fees ?? 0,
             notes: transaction.notes || '',
         });
     }

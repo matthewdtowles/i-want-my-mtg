@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { CardRepositoryPort } from 'src/core/card/card.repository.port';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
 import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
@@ -41,9 +41,6 @@ function makeSet(overrides: Partial<Set> = {}): Set {
 
 describe('SetChecklistService', () => {
     let service: SetChecklistService;
-    let setRepo: jest.Mocked<SetRepositoryPort>;
-    let cardRepo: jest.Mocked<CardRepositoryPort>;
-    let inventoryRepo: jest.Mocked<InventoryRepositoryPort>;
 
     const mockSetRepo = {
         findByCode: jest.fn(),
@@ -91,9 +88,6 @@ describe('SetChecklistService', () => {
         }).compile();
 
         service = module.get<SetChecklistService>(SetChecklistService);
-        setRepo = module.get(SetRepositoryPort);
-        cardRepo = module.get(CardRepositoryPort);
-        inventoryRepo = module.get(InventoryRepositoryPort);
     });
 
     beforeEach(() => {

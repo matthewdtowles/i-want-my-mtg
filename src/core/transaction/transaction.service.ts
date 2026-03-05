@@ -115,18 +115,30 @@ export class TransactionService {
             throw new Error('Price per unit cannot be negative.');
         }
 
-        // If updating quantity on a SELL, check constraints
         const newQuantity = fields.quantity ?? existing.quantity;
-        if (existing.type === 'SELL' && fields.quantity !== undefined) {
+        if (fields.quantity !== undefined) {
             const remainingQty = await this.getRemainingQuantity(
                 existing.userId,
                 existing.cardId,
                 existing.isFoil
             );
-            // Add back the old sell quantity, then check if the new sell quantity fits
-            const available = remainingQty + existing.quantity;
-            if (newQuantity > available) {
-                throw new Error(`Cannot sell ${newQuantity} units. Only ${available} remaining.`);
+
+            if (existing.type === 'SELL') {
+                // Add back the old sell quantity, then check if the new sell quantity fits
+                const available = remainingQty + existing.quantity;
+                if (newQuantity > available) {
+                    throw new Error(
+                        `Cannot sell ${newQuantity} units. Only ${available} remaining.`
+                    );
+                }
+            } else if (existing.type === 'BUY' && newQuantity < existing.quantity) {
+                // Reducing a BUY lot: ensure total bought doesn't drop below total sold
+                const reduction = existing.quantity - newQuantity;
+                if (reduction > remainingQty) {
+                    throw new Error(
+                        `Cannot reduce buy to ${newQuantity} units. ${remainingQty} unsold units remaining in this card's ledger.`
+                    );
+                }
             }
         }
 
@@ -156,6 +168,20 @@ export class TransactionService {
         if (!existing || existing.userId !== userId) {
             throw new Error('Transaction not found.');
         }
+
+        if (existing.type === 'BUY') {
+            const remainingQty = await this.getRemainingQuantity(
+                existing.userId,
+                existing.cardId,
+                existing.isFoil
+            );
+            if (existing.quantity > remainingQty) {
+                throw new Error(
+                    `Cannot delete buy of ${existing.quantity} units. Only ${remainingQty} unsold units remaining in this card's ledger.`
+                );
+            }
+        }
+
         await this.repository.delete(id, userId);
 
         // Reverse the inventory effect: BUY delete decrements, SELL delete increments
@@ -193,37 +219,34 @@ export class TransactionService {
         const buyLots = await this.repository.findBuyLots(userId, cardId, isFoil);
         const sells = await this.repository.findSells(userId, cardId, isFoil);
 
-        const totalToSell = sells.reduce((sum, t) => sum + t.quantity, 0);
-        let sellRemaining = totalToSell;
         let totalSoldCost = 0;
         let totalRealizedGain = 0;
 
-        // Compute weighted average sell price for realized gain calculation
-        const totalSellRevenue = sells.reduce((sum, t) => sum + t.quantity * t.pricePerUnit, 0);
-        const avgSellPrice = totalToSell > 0 ? totalSellRevenue / totalToSell : 0;
+        // Track remaining quantity per buy lot for FIFO consumption
+        const lotRemaining = buyLots.map((lot) => ({
+            lotId: lot.id,
+            remaining: lot.quantity,
+            costPerUnit: lot.pricePerUnit,
+        }));
 
-        const lots = buyLots
-            .map((lot) => {
-                if (sellRemaining <= 0) {
-                    return {
-                        lotId: lot.id,
-                        remaining: lot.quantity,
-                        costPerUnit: lot.pricePerUnit,
-                    };
-                }
-
-                const consumed = Math.min(lot.quantity, sellRemaining);
+        // Iterate sells in date order; for each sell, consume buy lots FIFO
+        let lotIndex = 0;
+        for (const sell of sells) {
+            let sellRemaining = sell.quantity;
+            while (sellRemaining > 0 && lotIndex < lotRemaining.length) {
+                const lot = lotRemaining[lotIndex];
+                const consumed = Math.min(lot.remaining, sellRemaining);
+                lot.remaining -= consumed;
                 sellRemaining -= consumed;
-                totalSoldCost += consumed * lot.pricePerUnit;
-                totalRealizedGain += consumed * (avgSellPrice - lot.pricePerUnit);
+                totalSoldCost += consumed * lot.costPerUnit;
+                totalRealizedGain += consumed * (sell.pricePerUnit - lot.costPerUnit);
+                if (lot.remaining === 0) {
+                    lotIndex++;
+                }
+            }
+        }
 
-                return {
-                    lotId: lot.id,
-                    remaining: lot.quantity - consumed,
-                    costPerUnit: lot.pricePerUnit,
-                };
-            })
-            .filter((lot) => lot.remaining > 0);
+        const lots = lotRemaining.filter((lot) => lot.remaining > 0);
 
         return { lots, totalSoldCost, totalRealizedGain };
     }

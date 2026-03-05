@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardService } from 'src/core/card/card.service';
-import { Transaction } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { HttpErrorHandler } from 'src/http/http.error.handler';

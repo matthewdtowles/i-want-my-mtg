@@ -1,4 +1,4 @@
-use crate::{cli::Commands, price::PriceService};
+use crate::{cli::Commands, portfolio::service::PortfolioService, price::PriceService};
 use anyhow::Result;
 use dialoguer::Confirm;
 use std::sync::Arc;
@@ -9,6 +9,7 @@ pub struct CliController {
     set_service: crate::set::service::SetService,
     price_service: Arc<PriceService>,
     health_service: crate::health_check::service::HealthCheckService,
+    portfolio_service: PortfolioService,
 }
 
 impl CliController {
@@ -17,12 +18,14 @@ impl CliController {
         set_service: crate::set::service::SetService,
         price_service: Arc<PriceService>,
         health_service: crate::health_check::service::HealthCheckService,
+        portfolio_service: PortfolioService,
     ) -> Self {
         Self {
             card_service,
             set_service,
             price_service,
             health_service,
+            portfolio_service,
         }
     }
 
@@ -219,6 +222,18 @@ impl CliController {
         match self.set_service.vacuum_set_price_history().await {
             Ok(_) => info!("Set price history VACUUM ANALYZE completed"),
             Err(e) => warn!("Set price history VACUUM ANALYZE failed (non-fatal): {}", e),
+        }
+
+        info!("Starting portfolio value history retention cleanup");
+        let (pvh_weekly, pvh_monthly) = self.portfolio_service.apply_retention().await?;
+        info!(
+            "Portfolio value history: weekly deleted {} rows, monthly deleted {} rows",
+            pvh_weekly, pvh_monthly
+        );
+        info!("Running VACUUM ANALYZE on portfolio_value_history...");
+        match self.portfolio_service.vacuum().await {
+            Ok(_) => info!("Portfolio value history VACUUM ANALYZE completed"),
+            Err(e) => warn!("Portfolio value history VACUUM ANALYZE failed (non-fatal): {}", e),
         }
         Ok(())
     }
@@ -446,6 +461,12 @@ impl CliController {
         info!(
             "Set price weekly changes updated: {}",
             set_price_changes_updated
+        );
+
+        let portfolio_snapshots = self.portfolio_service.snapshot_portfolio_values().await?;
+        info!(
+            "Portfolio value snapshots saved: {}",
+            portfolio_snapshots
         );
         Ok(())
     }

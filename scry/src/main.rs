@@ -12,6 +12,7 @@ mod cli;
 mod config;
 mod database;
 mod health_check;
+mod portfolio;
 mod price;
 mod set;
 mod utils;
@@ -45,6 +46,7 @@ async fn main() -> Result<()> {
         connection_pool.clone(),
         http_client.clone(),
     ));
+    let portfolio_service = portfolio::service::PortfolioService::new(connection_pool.clone());
     let cli_controller = CliController::new(
         card::service::CardService::new(
             connection_pool.clone(),
@@ -54,6 +56,7 @@ async fn main() -> Result<()> {
         set::service::SetService::new(connection_pool.clone(), http_client.clone()),
         price_service.clone(),
         health_check::service::HealthCheckService::new(connection_pool),
+        portfolio_service,
     );
 
     if let Err(e) = cli_controller.handle_command(cli.command).await {

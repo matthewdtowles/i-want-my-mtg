@@ -3,10 +3,12 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
 
 describe('InventoryService', () => {
     let service: InventoryService;
     let repository: jest.Mocked<InventoryRepositoryPort>;
+    let transactionRepository: jest.Mocked<TransactionRepositoryPort>;
 
     const testInventoryItem = new Inventory({
         cardId: 'card-1',
@@ -32,16 +34,29 @@ describe('InventoryService', () => {
         delete: jest.fn(),
     };
 
+    const mockTransactionRepository = {
+        save: jest.fn(),
+        findById: jest.fn(),
+        findByUserAndCard: jest.fn(),
+        findBuyLots: jest.fn().mockResolvedValue([]),
+        findSells: jest.fn().mockResolvedValue([]),
+        findByUser: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryService,
                 { provide: InventoryRepositoryPort, useValue: mockRepository },
+                { provide: TransactionRepositoryPort, useValue: mockTransactionRepository },
             ],
         }).compile();
 
         service = module.get<InventoryService>(InventoryService);
         repository = module.get(InventoryRepositoryPort) as jest.Mocked<InventoryRepositoryPort>;
+        transactionRepository = module.get(TransactionRepositoryPort) as jest.Mocked<TransactionRepositoryPort>;
     });
 
     beforeEach(() => {
@@ -136,6 +151,8 @@ describe('InventoryService', () => {
 
     describe('delete', () => {
         it('should delete an inventory item and return true on success', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([]);
+            transactionRepository.findSells.mockResolvedValue([]);
             repository.delete.mockResolvedValue();
             repository.findOne.mockResolvedValue(null);
 
@@ -147,6 +164,8 @@ describe('InventoryService', () => {
         });
 
         it('should return false if item still exists after deletion', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([]);
+            transactionRepository.findSells.mockResolvedValue([]);
             repository.delete.mockResolvedValue();
             repository.findOne.mockResolvedValue(testInventoryItem);
 
@@ -170,11 +189,101 @@ describe('InventoryService', () => {
         });
 
         it('should handle errors during deletion', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([]);
+            transactionRepository.findSells.mockResolvedValue([]);
             repository.delete.mockRejectedValue(new Error('Database error'));
             const result = await service.delete(1, 'card-1', false);
 
             expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);
             expect(result).toBe(false);
+        });
+
+        it('should throw error when transactions exist for the card', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([
+                { id: 1, quantity: 5, pricePerUnit: 10 } as any,
+            ]);
+            transactionRepository.findSells.mockResolvedValue([]);
+
+            await expect(service.delete(1, 'card-1', false)).rejects.toThrow(
+                'Cannot delete inventory. 5 units are accounted for in transactions.',
+            );
+            expect(repository.delete).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('transaction-derived quantity validation', () => {
+        it('should prevent setting inventory below transaction-derived quantity', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([
+                { id: 1, quantity: 10, pricePerUnit: 5 } as any,
+            ]);
+            transactionRepository.findSells.mockResolvedValue([
+                { id: 2, quantity: 3, pricePerUnit: 8 } as any,
+            ]);
+
+            const lowItem = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 5,
+            });
+
+            await expect(service.save([lowItem])).rejects.toThrow(
+                'Cannot set inventory to 5. 7 units are accounted for in transactions.',
+            );
+        });
+
+        it('should allow setting inventory at or above transaction-derived quantity', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([
+                { id: 1, quantity: 10, pricePerUnit: 5 } as any,
+            ]);
+            transactionRepository.findSells.mockResolvedValue([
+                { id: 2, quantity: 3, pricePerUnit: 8 } as any,
+            ]);
+
+            const validItem = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 7,
+            });
+
+            repository.save.mockResolvedValue([validItem]);
+            const result = await service.save([validItem]);
+            expect(result).toEqual([validItem]);
+        });
+
+        it('should prevent removing inventory when transactions exist', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([
+                { id: 1, quantity: 5, pricePerUnit: 10 } as any,
+            ]);
+            transactionRepository.findSells.mockResolvedValue([]);
+
+            const zeroItem = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 0,
+            });
+
+            await expect(service.save([zeroItem])).rejects.toThrow(
+                'Cannot remove inventory. 5 units are accounted for in transactions.',
+            );
+        });
+
+        it('should allow any quantity when no transactions exist', async () => {
+            transactionRepository.findBuyLots.mockResolvedValue([]);
+            transactionRepository.findSells.mockResolvedValue([]);
+
+            const item = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 1,
+            });
+
+            repository.save.mockResolvedValue([item]);
+            const result = await service.save([item]);
+            expect(result).toEqual([item]);
         });
     });
 });

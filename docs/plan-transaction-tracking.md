@@ -198,21 +198,21 @@ is populated only for users who have transaction data.
 
 #### 3A — Database & NestJS read layer
 
-- [ ] 3.1 Create migration `019_table_portfolio_value_history.sql`
-- [ ] 3.2 Add `portfolio_value_history` to initial schema file
-- [ ] 3.3 Create PortfolioValueHistory domain entity (`src/core/portfolio/`)
-- [ ] 3.4 Create ORM entity, mapper, repository port, repository
-- [ ] 3.5 Create PortfolioService with read methods (get history for user, date range)
-- [ ] 3.6 Create PortfolioModule, register in CoreModule and DatabaseModule
+- [x] 3.1 Create migration `019_table_portfolio_value_history.sql`
+- [x] 3.2 Add `portfolio_value_history` to initial schema file
+- [x] 3.3 Create PortfolioValueHistory domain entity (`src/core/portfolio/`)
+- [x] 3.4 Create ORM entity, mapper, repository port, repository
+- [x] 3.5 Create PortfolioService with read methods (get history for user, date range)
+- [x] 3.6 Create PortfolioModule, register in CoreModule and DatabaseModule
 
 #### 3B — Scry ETL snapshot step
 
-- [ ] 3.7 Add `portfolio` module to Scry (`scry/src/portfolio/`)
-- [ ] 3.8 Implement `calculate_portfolio_values()` — query all users' inventory value
-- [ ] 3.9 Implement `save_portfolio_value_history()` — UPSERT snapshots with COALESCE
-- [ ] 3.10 Add portfolio snapshot step to `post_ingest_updates()` in `cli/controller.rs`
-- [ ] 3.11 Implement retention for `portfolio_value_history` (same tiers as price_history)
-- [ ] 3.12 Add retention call to existing `retention` command handler
+- [x] 3.7 Add `portfolio` module to Scry (`scry/src/portfolio/`)
+- [x] 3.8 Implement `calculate_portfolio_values()` — query all users' inventory value
+- [x] 3.9 Implement `save_portfolio_value_history()` — UPSERT snapshots with COALESCE
+- [x] 3.10 Add portfolio snapshot step to `post_ingest_updates()` in `cli/controller.rs`
+- [x] 3.11 Implement retention for `portfolio_value_history` (same tiers as price_history)
+- [x] 3.12 Add retention call to existing `retention` command handler
 - [ ] 3.13 Write Rust tests for portfolio snapshot and retention
 
 #### 3C — Chart UI

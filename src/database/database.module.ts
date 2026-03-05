@@ -7,6 +7,7 @@ import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-re
 import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
 import { UserRepositoryPort } from 'src/core/user/user.repository.port';
+import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/portfolio-value-history.repository.port';
 import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
 import { PendingUserRepositoryPort } from 'src/core/user/pending-user.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -29,6 +30,8 @@ import { UserOrmEntity } from './user/user.orm-entity';
 import { UserRepository } from './user/user.repository';
 import { TransactionOrmEntity } from './transaction/transaction.orm-entity';
 import { TransactionRepository } from './transaction/transaction.repository';
+import { PortfolioValueHistoryOrmEntity } from './portfolio/portfolio-value-history.orm-entity';
+import { PortfolioValueHistoryRepository } from './portfolio/portfolio-value-history.repository';
 import { PendingUserOrmEntity } from './user/pending-user.orm-entity';
 import { PendingUserRepository } from './user/pending-user.repository';
 
@@ -45,6 +48,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
             SetPriceOrmEntity,
             SetPriceHistoryOrmEntity,
             TransactionOrmEntity,
+            PortfolioValueHistoryOrmEntity,
             UserOrmEntity,
             PendingUserOrmEntity,
         ]),
@@ -57,6 +61,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
         { provide: TransactionRepositoryPort, useClass: TransactionRepository },
+        { provide: PortfolioValueHistoryRepositoryPort, useClass: PortfolioValueHistoryRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
     ],
@@ -68,6 +73,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         SetPriceHistoryRepositoryPort,
         SetRepositoryPort,
         TransactionRepositoryPort,
+        PortfolioValueHistoryRepositoryPort,
         UserRepositoryPort,
         PendingUserRepositoryPort,
     ],

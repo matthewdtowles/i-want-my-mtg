@@ -287,3 +287,23 @@ input[type='number'] {
         display: none !important;
     }
 }
+
+/* P&L gain/loss colors */
+.gain-positive {
+    color: #0d9488;
+}
+.gain-negative {
+    color: #ef4444;
+}
+.gain-neutral {
+    color: #6b7280;
+}
+.dark .gain-positive {
+    color: #2dd4bf;
+}
+.dark .gain-negative {
+    color: #f87171;
+}
+.dark .gain-neutral {
+    color: #9ca3af;
+}

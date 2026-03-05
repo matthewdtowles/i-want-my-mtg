@@ -30,7 +30,6 @@ function makeInventory(overrides: Partial<Inventory> = {}): Inventory {
 
 describe('InventoryExportService', () => {
     let service: InventoryExportService;
-    let inventoryRepo: jest.Mocked<InventoryRepositoryPort>;
 
     const mockInventoryRepo = {
         findAllForExport: jest.fn(),
@@ -57,7 +56,6 @@ describe('InventoryExportService', () => {
         }).compile();
 
         service = module.get<InventoryExportService>(InventoryExportService);
-        inventoryRepo = module.get(InventoryRepositoryPort);
     });
 
     beforeEach(() => {

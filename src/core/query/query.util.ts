@@ -16,7 +16,7 @@ export function safeAlphaNumeric(value: string | undefined): string | undefined 
 
 export function safeSearchTerm(value: string | undefined): string | undefined {
     if (!value) return undefined;
-    const sanitized = value.replace(/[^a-zA-Z0-9\s\-',.;:\/]/g, '').trim();
+    const sanitized = value.replace(/[^a-zA-Z0-9\s\-',.;:/]/g, '').trim();
     return sanitized.length > 0 ? sanitized : undefined;
 }
 

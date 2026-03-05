@@ -16,6 +16,15 @@ export class CardService {
         private readonly priceHistoryRepository: PriceHistoryRepositoryPort
     ) {}
 
+    async findByIds(ids: string[]): Promise<Card[]> {
+        this.LOGGER.debug(`Find ${ids.length} cards by ids.`);
+        try {
+            return await this.repository.findByIds(ids);
+        } catch (error) {
+            throw new Error(`Error finding cards by ids: ${error.message}`);
+        }
+    }
+
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
         try {

@@ -7,6 +7,7 @@ import { InventoryModule } from './inventory/inventory.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { SearchModule } from './search/search.module';
 import { SetModule } from './set/set.module';
+import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         SearchModule,
         SetModule,
+        TransactionModule,
         UserModule,
     ],
     exports: [
@@ -28,6 +30,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         SearchModule,
         SetModule,
+        TransactionModule,
         UserModule,
     ],
 })

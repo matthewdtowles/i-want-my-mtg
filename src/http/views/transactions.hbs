@@ -1,0 +1,222 @@
+{{#if hasTransactions}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">{{this.username}}'s Transactions</h3>
+        <p class="text-gray-700 dark:text-gray-300">Total Transactions: {{this.totalTransactions}}</p>
+    </section>
+    <div class="content-wrapper">
+        <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Date</th>
+                    <th class="table-header">Type</th>
+                    <th class="table-header">Card</th>
+                    <th class="table-header">Qty</th>
+                    <th class="table-header">Price</th>
+                    <th class="table-header">Total</th>
+                    <th class="table-header pr-2 xs-hide"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each transactions as |tx|}}
+                <tr class="table-row" data-transaction-id="{{tx.id}}" data-raw-price="{{tx.rawPricePerUnit}}" data-raw-fees="{{tx.rawFees}}" data-source="{{tx.source}}" data-notes="{{tx.notes}}">
+                    <td class="table-cell pl-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        <span class="tx-display">{{tx.date}}</span>
+                        <input type="date" class="tx-edit hidden w-28 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="date" value="{{tx.date}}" />
+                    </td>
+                    <td class="table-cell">
+                        {{#if (eq tx.type 'BUY')}}
+                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">BUY</span>
+                        {{else}}
+                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">SELL</span>
+                        {{/if}}
+                    </td>
+                    <td class="table-cell">
+                        {{#if tx.cardUrl}}
+                        <a href="{{tx.cardUrl}}" class="card-name-link">{{tx.cardName}}</a>
+                        {{else}}
+                        {{tx.cardName}}
+                        {{/if}}
+                        {{#if tx.isFoil}}
+                        <span class="foil-badge">Foil</span>
+                        {{/if}}
+                        {{#if tx.cardSetCode}}
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{toUpperCase tx.cardSetCode}})</span>
+                        {{/if}}
+                    </td>
+                    <td class="table-cell">
+                        <span class="tx-display">{{tx.quantity}}</span>
+                        <input type="number" class="tx-edit hidden w-16 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="quantity" value="{{tx.quantity}}" min="1" step="1" />
+                    </td>
+                    <td class="table-cell font-mono">
+                        <span class="tx-display">{{tx.pricePerUnit}}</span>
+                        <input type="number" class="tx-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200 font-mono" data-field="pricePerUnit" value="{{tx.rawPricePerUnit}}" min="0" step="0.01" />
+                    </td>
+                    <td class="table-cell font-mono">
+                        <span class="tx-total">{{tx.totalPrice}}</span>
+                    </td>
+                    <td class="table-cell pr-2 xs-hide">
+                        <span class="tx-display">
+                            <button type="button" class="edit-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 mr-1" title="Edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button type="button" class="delete-transaction-button text-gray-400 hover:text-red-500 dark:hover:text-red-400" data-transaction-id="{{tx.id}}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </span>
+                        <span class="tx-edit hidden">
+                            <button type="button" class="save-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 mr-1" title="Save">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="cancel-edit-button text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </span>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
+
+{{else}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <div class="text-center py-16 px-4">
+        <i class="fas fa-receipt text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">No transactions yet</h3>
+        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Record buy and sell transactions from card detail pages to track your profit & loss.</p>
+        <a href="/inventory" class="btn btn-primary inline-block mt-6">Go to Inventory</a>
+    </div>
+</section>
+{{/if}}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function toggleEditMode(row, editing) {
+        row.querySelectorAll('.tx-display').forEach(function (el) {
+            el.classList.toggle('hidden', editing);
+        });
+        row.querySelectorAll('.tx-edit').forEach(function (el) {
+            el.classList.toggle('hidden', !editing);
+        });
+    }
+
+    function formatDollar(val) {
+        return '$' + Number(val).toFixed(2);
+    }
+
+    document.body.addEventListener('click', async function (event) {
+        // Edit button
+        var editBtn = event.target.closest('.edit-transaction-button');
+        if (editBtn) {
+            event.stopImmediatePropagation();
+            var row = editBtn.closest('tr');
+            toggleEditMode(row, true);
+            return;
+        }
+
+        // Cancel button
+        var cancelBtn = event.target.closest('.cancel-edit-button');
+        if (cancelBtn) {
+            event.stopImmediatePropagation();
+            var row = cancelBtn.closest('tr');
+            // Reset inputs to original values
+            row.querySelectorAll('.tx-edit[data-field]').forEach(function (input) {
+                var displayEl = input.parentElement.querySelector('.tx-display');
+                if (input.dataset.field === 'quantity') {
+                    input.value = displayEl.textContent.trim();
+                } else if (input.dataset.field === 'pricePerUnit') {
+                    input.value = row.dataset.rawPrice;
+                } else if (input.dataset.field === 'date') {
+                    input.value = displayEl.textContent.trim();
+                }
+            });
+            toggleEditMode(row, false);
+            return;
+        }
+
+        // Save button
+        var saveBtn = event.target.closest('.save-transaction-button');
+        if (saveBtn) {
+            event.stopImmediatePropagation();
+            var row = saveBtn.closest('tr');
+            var txId = row.dataset.transactionId;
+            var body = {};
+
+            row.querySelectorAll('.tx-edit[data-field]').forEach(function (input) {
+                var field = input.dataset.field;
+                if (field === 'quantity') {
+                    body.quantity = parseInt(input.value, 10);
+                } else if (field === 'pricePerUnit') {
+                    body.pricePerUnit = parseFloat(input.value);
+                } else if (field === 'date') {
+                    body.date = input.value;
+                }
+            });
+
+            try {
+                var response = await fetch('/transactions/' + txId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                var data = await response.json();
+                if (data.success) {
+                    // Update displayed values
+                    var displays = row.querySelectorAll('.tx-display');
+                    var dateDisplay = row.querySelector('td:first-child .tx-display');
+                    var qtyDisplay = row.querySelector('td:nth-child(4) .tx-display');
+                    var priceDisplay = row.querySelector('td:nth-child(5) .tx-display');
+                    var totalDisplay = row.querySelector('.tx-total');
+
+                    if (body.date && dateDisplay) dateDisplay.textContent = body.date;
+                    if (body.quantity && qtyDisplay) qtyDisplay.textContent = body.quantity;
+                    if (body.pricePerUnit !== undefined) {
+                        if (priceDisplay) priceDisplay.textContent = formatDollar(body.pricePerUnit);
+                        row.dataset.rawPrice = body.pricePerUnit;
+                    }
+
+                    var qty = body.quantity || parseInt(qtyDisplay.textContent, 10);
+                    var price = body.pricePerUnit !== undefined ? body.pricePerUnit : parseFloat(row.dataset.rawPrice);
+                    if (totalDisplay) totalDisplay.textContent = formatDollar(qty * price);
+
+                    toggleEditMode(row, false);
+                } else {
+                    alert('Failed to update: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error updating transaction:', error);
+                alert('Error updating transaction.');
+            }
+            return;
+        }
+
+        // Delete button
+        var deleteBtn = event.target.closest('.delete-transaction-button');
+        if (!deleteBtn) return;
+        event.stopImmediatePropagation();
+
+        var txId = deleteBtn.dataset.transactionId;
+        if (!confirm('Delete this transaction?')) return;
+
+        try {
+            var response = await fetch('/transactions/' + txId, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            var data = await response.json();
+            if (data.success) {
+                var row = deleteBtn.closest('tr');
+                if (row) row.remove();
+            } else {
+                console.error('Failed to delete transaction:', data.error);
+            }
+        } catch (error) {
+            console.error('Error deleting transaction:', error);
+        }
+    });
+});
+</script>

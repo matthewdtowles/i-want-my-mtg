@@ -14,6 +14,8 @@ import { SearchOrchestrator } from './search/search.orchestrator';
 import { SetController } from './set/set.controller';
 import { SetOrchestrator } from './set/set.orchestrator';
 import { SpoilersController } from './set/spoilers.controller';
+import { TransactionController } from './transaction/transaction.controller';
+import { TransactionOrchestrator } from './transaction/transaction.orchestrator';
 import { UserController } from './user/user.controller';
 import { UserOrchestrator } from './user/user.orchestrator';
 
@@ -27,6 +29,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         SearchController,
         SetController,
         SpoilersController,
+        TransactionController,
         UserController,
     ],
     providers: [
@@ -35,6 +38,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         InventoryOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
+        TransactionOrchestrator,
         UserOrchestrator,
     ],
     exports: [
@@ -43,6 +47,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         InventoryOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
+        TransactionOrchestrator,
         UserOrchestrator,
     ],
 })

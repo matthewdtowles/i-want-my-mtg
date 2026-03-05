@@ -6,6 +6,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { isAuthenticated, toStringRecord } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
@@ -15,6 +16,7 @@ import { PaginationView } from 'src/http/list/pagination.view';
 import { SortableHeaderView } from 'src/http/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/list/table-headers-row.view';
+import { TransactionPresenter } from 'src/http/transaction/transaction.presenter';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
 import { CardViewDto } from './dto/card.view.dto';
@@ -27,7 +29,8 @@ export class CardOrchestrator {
 
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
-        @Inject(InventoryService) private readonly inventoryService: InventoryService
+        @Inject(InventoryService) private readonly inventoryService: InventoryService,
+        @Inject(TransactionService) private readonly transactionService: TransactionService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -72,6 +75,45 @@ export class CardOrchestrator {
             );
             const baseUrl = `/card/${singleCard.setCode}/${singleCard.number}`;
 
+            // Compute cost basis and untracked quantities if user is authenticated
+            let costBasis;
+            let untrackedNormal = 0;
+            let untrackedFoil = 0;
+            if (userId > 0) {
+                try {
+                    const marketPrice = singleCard.normalPriceRaw || singleCard.foilPriceRaw || 0;
+                    const summary = await this.transactionService.getCostBasis(
+                        userId,
+                        coreCard.id,
+                        false,
+                        marketPrice
+                    );
+                    costBasis = TransactionPresenter.toCostBasisResponse(summary, marketPrice);
+                } catch (err) {
+                    this.LOGGER.debug(`Cost basis unavailable: ${err?.message}`);
+                }
+
+                // Compute untracked inventory (inventory qty - transaction-derived qty)
+                try {
+                    const txQtyNormal = await this.transactionService.getRemainingQuantity(
+                        userId,
+                        coreCard.id,
+                        false
+                    );
+                    const txQtyFoil = await this.transactionService.getRemainingQuantity(
+                        userId,
+                        coreCard.id,
+                        true
+                    );
+                    const invNormal = singleCard.normalQuantity || 0;
+                    const invFoil = singleCard.foilQuantity || 0;
+                    untrackedNormal = Math.max(0, invNormal - txQtyNormal);
+                    untrackedFoil = Math.max(0, invFoil - txQtyFoil);
+                } catch (err) {
+                    this.LOGGER.debug(`Untracked qty unavailable: ${err?.message}`);
+                }
+            }
+
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -81,6 +123,9 @@ export class CardOrchestrator {
                     { label: singleCard.name, url: baseUrl },
                 ],
                 card: singleCard,
+                costBasis,
+                untrackedNormal,
+                untrackedFoil,
                 otherPrintings: allPrintings
                     .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                     .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),

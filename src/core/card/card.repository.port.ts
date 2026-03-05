@@ -71,6 +71,13 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     verifyCardsExist(ids: string[]): Promise<Set<string>>;
 
     /**
+     * Finds Card entities by their unique identifiers.
+     * @param ids Array of unique identifiers.
+     * @returns Promise resolving to an array of Card entities.
+     */
+    findByIds(ids: string[]): Promise<Card[]>;
+
+    /**
      * Deletes a Card entity by its unique identifier.
      * @param id Unique identifier of the card to delete.
      * @returns Promise resolving when the card is deleted.

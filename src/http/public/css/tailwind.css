@@ -2436,10 +2436,6 @@ input:where([type='file']):focus {
     gap: 0.25rem;
 }
 
-.gap-1\.5 {
-    gap: 0.375rem;
-}
-
 .gap-2 {
     gap: 0.5rem;
 }
@@ -3302,7 +3298,9 @@ input:where([type='file']):focus {
 /* ===== Buttons ===== */
 
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     border-radius: 0.5rem;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -4346,7 +4344,9 @@ input:where([type='file']):focus {
     border-radius: 9999px;
     font-size: 0.75rem;
     line-height: 1rem;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     border-radius: 0.5rem;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;

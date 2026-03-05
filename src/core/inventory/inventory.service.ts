@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Inventory } from './inventory.entity';
 import { InventoryRepositoryPort } from './inventory.repository.port';
@@ -9,21 +10,56 @@ export class InventoryService {
     private readonly LOGGER = getLogger(InventoryService.name);
 
     constructor(
-        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort
+        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
+        @Inject(TransactionRepositoryPort)
+        private readonly transactionRepository: TransactionRepositoryPort
     ) {}
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items.`);
         const toSave: Inventory[] = [];
         for (const item of inventoryItems) {
+            const minQty = await this.getTransactionDerivedQuantity(
+                item.userId,
+                item.cardId,
+                item.isFoil
+            );
             if (item.quantity > 0) {
+                if (item.quantity < minQty) {
+                    throw new Error(
+                        `Cannot set inventory to ${item.quantity}. ` +
+                            `${minQty} units are accounted for in transactions. ` +
+                            `Record a SELL transaction to reduce below this amount.`
+                    );
+                }
                 toSave.push(item);
             } else {
+                if (minQty > 0) {
+                    throw new Error(
+                        `Cannot remove inventory. ` +
+                            `${minQty} units are accounted for in transactions. ` +
+                            `Record a SELL transaction to reduce below this amount.`
+                    );
+                }
                 // await omitted intentionally
                 this.repository.delete(item.userId, item.cardId, item.isFoil);
             }
         }
         return await this.repository.save(toSave);
+    }
+
+    private async getTransactionDerivedQuantity(
+        userId: number,
+        cardId: string,
+        isFoil: boolean
+    ): Promise<number> {
+        const [buyLots, sells] = await Promise.all([
+            this.transactionRepository.findBuyLots(userId, cardId, isFoil),
+            this.transactionRepository.findSells(userId, cardId, isFoil),
+        ]);
+        const totalBought = buyLots.reduce((sum, t) => sum + t.quantity, 0);
+        const totalSold = sells.reduce((sum, t) => sum + t.quantity, 0);
+        return Math.max(0, totalBought - totalSold);
     }
 
     async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {
@@ -97,6 +133,14 @@ export class InventoryService {
             `delete inventory entry for user: ${userId}, card: ${cardId}, foil: ${isFoil}`
         );
         if (userId && cardId) {
+            const minQty = await this.getTransactionDerivedQuantity(userId, cardId, isFoil);
+            if (minQty > 0) {
+                throw new Error(
+                    `Cannot delete inventory. ` +
+                        `${minQty} units are accounted for in transactions. ` +
+                        `Record a SELL transaction to reduce below this amount.`
+                );
+            }
             try {
                 await this.repository.delete(userId, cardId, isFoil);
                 const foundItem: Inventory | null = await this.repository.findOne(

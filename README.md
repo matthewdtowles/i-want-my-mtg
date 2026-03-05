@@ -173,9 +173,9 @@ Removes foreign cards without prices, sets missing price data, empty sets, and d
 scry post-ingest-prune
 ```
 
-### `post-ingest-updates` — Update set sizes and prices
+### `post-ingest-updates` — Update set sizes, prices, and portfolio snapshots
 
-Fixes main set misclassifications, calculates set sizes, and updates set prices. Runs automatically after `ingest`, but can be run standalone.
+Fixes main set misclassifications, calculates set sizes, updates set prices, and takes daily portfolio value snapshots for all users. Runs automatically after `ingest`, but can be run standalone.
 
 ```bash
 scry post-ingest-updates
@@ -199,9 +199,9 @@ scry health --detailed   # Detailed health check
 scry health --price-history  # Check price_history table health (bloat, vacuum, retention)
 ```
 
-### `retention` — Apply price_history retention policy
+### `retention` — Apply price_history and portfolio_value_history retention policy
 
-Applies a tiered retention policy: keeps daily rows for 7 days, weekly (Mondays) for 7-28 days, and monthly (1st of month) for 28+ days.
+Applies a tiered retention policy to `price_history`, `set_price_history`, and `portfolio_value_history`: keeps daily rows for 7 days, weekly (Mondays) for 7-28 days, and monthly (1st of month) for 28+ days.
 
 ```bash
 scry retention

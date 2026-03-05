@@ -3,7 +3,7 @@
 This document tracks the implementation of transaction-based P&L tracking and
 portfolio value history. Work spans multiple PRs and sessions.
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 ---
 
@@ -122,19 +122,19 @@ is populated only for users who have transaction data.
 
 ### Phase 1 — Transaction Foundation (Database + Backend)
 
-- [ ] 1.1 Create migration `018_table_transaction.sql`
-- [ ] 1.2 Add `transaction` to initial schema file for fresh installs
-- [ ] 1.3 Create Transaction domain entity (`src/core/transaction/transaction.entity.ts`)
-- [ ] 1.4 Create Transaction ORM entity (`src/database/transaction/transaction.orm-entity.ts`)
-- [ ] 1.5 Create Transaction mapper (`src/database/transaction/transaction.mapper.ts`)
-- [ ] 1.6 Create TransactionRepositoryPort (`src/core/transaction/transaction.repository.port.ts`)
-- [ ] 1.7 Create TransactionRepository (`src/database/transaction/transaction.repository.ts`)
-- [ ] 1.8 Create TransactionService with CRUD + FIFO lot matching (`src/core/transaction/transaction.service.ts`)
-- [ ] 1.9 Create TransactionModule (`src/core/transaction/transaction.module.ts`)
-- [ ] 1.10 Register ORM entity and repository port binding in DatabaseModule
-- [ ] 1.11 Register TransactionModule in CoreModule
-- [ ] 1.12 Write unit tests for TransactionService (CRUD, FIFO logic, validation)
-- [ ] 1.13 Write unit tests for TransactionRepository (via mocked port in service tests)
+- [x] 1.1 Create migration `018_table_transaction.sql`
+- [x] 1.2 Add `transaction` to initial schema file for fresh installs
+- [x] 1.3 Create Transaction domain entity (`src/core/transaction/transaction.entity.ts`)
+- [x] 1.4 Create Transaction ORM entity (`src/database/transaction/transaction.orm-entity.ts`)
+- [x] 1.5 Create Transaction mapper (`src/database/transaction/transaction.mapper.ts`)
+- [x] 1.6 Create TransactionRepositoryPort (`src/core/transaction/transaction.repository.port.ts`)
+- [x] 1.7 Create TransactionRepository (`src/database/transaction/transaction.repository.ts`)
+- [x] 1.8 Create TransactionService with CRUD + FIFO lot matching (`src/core/transaction/transaction.service.ts`)
+- [x] 1.9 Create TransactionModule (`src/core/transaction/transaction.module.ts`)
+- [x] 1.10 Register ORM entity and repository port binding in DatabaseModule
+- [x] 1.11 Register TransactionModule in CoreModule
+- [x] 1.12 Write unit tests for TransactionService (CRUD, FIFO logic, validation)
+- [x] 1.13 Write unit tests for TransactionRepository (via mocked port in service tests)
 
 **PR boundary: Phase 1 can ship as a single PR.**
 
@@ -198,29 +198,29 @@ is populated only for users who have transaction data.
 
 #### 3A — Database & NestJS read layer
 
-- [ ] 3.1 Create migration `019_table_portfolio_value_history.sql`
-- [ ] 3.2 Add `portfolio_value_history` to initial schema file
-- [ ] 3.3 Create PortfolioValueHistory domain entity (`src/core/portfolio/`)
-- [ ] 3.4 Create ORM entity, mapper, repository port, repository
-- [ ] 3.5 Create PortfolioService with read methods (get history for user, date range)
-- [ ] 3.6 Create PortfolioModule, register in CoreModule and DatabaseModule
+- [x] 3.1 Create migration `019_table_portfolio_value_history.sql`
+- [x] 3.2 Add `portfolio_value_history` to initial schema file
+- [x] 3.3 Create PortfolioValueHistory domain entity (`src/core/portfolio/`)
+- [x] 3.4 Create ORM entity, mapper, repository port, repository
+- [x] 3.5 Create PortfolioService with read methods (get history for user, date range)
+- [x] 3.6 Create PortfolioModule, register in CoreModule and DatabaseModule
 
 #### 3B — Scry ETL snapshot step
 
-- [ ] 3.7 Add `portfolio` module to Scry (`scry/src/portfolio/`)
-- [ ] 3.8 Implement `calculate_portfolio_values()` — query all users' inventory value
-- [ ] 3.9 Implement `save_portfolio_value_history()` — UPSERT snapshots with COALESCE
-- [ ] 3.10 Add portfolio snapshot step to `post_ingest_updates()` in `cli/controller.rs`
-- [ ] 3.11 Implement retention for `portfolio_value_history` (same tiers as price_history)
-- [ ] 3.12 Add retention call to existing `retention` command handler
-- [ ] 3.13 Write Rust tests for portfolio snapshot and retention
+- [x] 3.7 Add `portfolio` module to Scry (`scry/src/portfolio/`)
+- [x] 3.8 Implement `calculate_portfolio_values()` — query all users' inventory value
+- [x] 3.9 Implement `save_portfolio_value_history()` — UPSERT snapshots with COALESCE
+- [x] 3.10 Add portfolio snapshot step to `post_ingest_updates()` in `cli/controller.rs`
+- [x] 3.11 Implement retention for `portfolio_value_history` (same tiers as price_history)
+- [x] 3.12 Add retention call to existing `retention` command handler
+- [x] 3.13 Write Rust tests for portfolio snapshot and retention
 
 #### 3C — Chart UI
 
-- [ ] 3.14 Create PortfolioController and PortfolioOrchestrator in HttpModule
-- [ ] 3.15 Create portfolio value chart view (line chart: value over time)
-- [ ] 3.16 Add chart to inventory page or as a dedicated /portfolio route
-- [ ] 3.17 Add cost basis line to chart (for users with transaction data)
+- [x] 3.14 Create PortfolioController and PortfolioOrchestrator in HttpModule
+- [x] 3.15 Create portfolio value chart view (line chart: value over time)
+- [x] 3.16 Add chart to inventory page or as a dedicated /portfolio route
+- [x] 3.17 Add cost basis line to chart (for users with transaction data)
 
 **PR boundary: 3A+3B as one PR, 3C as a follow-up.**
 

@@ -1,0 +1,38 @@
+{{#if hasHistory}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Portfolio value over time</p>
+    </section>
+    <div class="content-wrapper px-4 pb-6">
+        <div id="portfolio-chart-container">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Value History</h4>
+                <div class="flex gap-1">
+                    <button class="portfolio-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded">All</button>
+                </div>
+            </div>
+            <div id="portfolio-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
+            <div style="position: relative; height: 350px;">
+                <canvas id="portfolio-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="/public/js/portfolioChart.js" defer></script>
+{{else}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <div class="text-center py-16 px-4">
+        <i class="fas fa-chart-line text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">No portfolio history yet</h3>
+        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh.</p>
+        <a href="/inventory" class="btn btn-primary inline-block mt-6">Go to Inventory</a>
+    </div>
+</section>
+{{/if}}

@@ -161,7 +161,7 @@
 
         // Set returnUrl on login links so user returns to current page after login
         var currentPath = window.location.pathname + window.location.search;
-        if (currentPath && currentPath !== '/auth/login') {
+        if (currentPath && window.location.pathname !== '/auth/login') {
             document.querySelectorAll('.navbar-login-link').forEach(function(link) {
                 link.href = '/auth/login?returnUrl=' + encodeURIComponent(currentPath);
             });

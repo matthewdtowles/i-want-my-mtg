@@ -34,6 +34,7 @@ async function bootstrap() {
             eq: (a: any, b: any) => a === b,
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
+            encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
         },
     });
     app.engine('hbs', hbs.engine);

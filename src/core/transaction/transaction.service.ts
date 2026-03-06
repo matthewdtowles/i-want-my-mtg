@@ -109,12 +109,7 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
-        if (!existing.createdAt || isNaN(new Date(existing.createdAt).getTime())) {
-            throw new Error('Transactions can only be edited within 24 hours of creation.');
-        }
-        if (Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS) {
-            throw new Error('Transactions can only be edited within 24 hours of creation.');
-        }
+        this.assertWithinEditWindow(existing.createdAt, 'edited');
 
         if (fields.quantity !== undefined && fields.quantity <= 0) {
             throw new Error('Transaction quantity must be positive.');
@@ -177,12 +172,7 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
-        if (!existing.createdAt || isNaN(new Date(existing.createdAt).getTime())) {
-            throw new Error('Transactions can only be deleted within 24 hours of creation.');
-        }
-        if (Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS) {
-            throw new Error('Transactions can only be deleted within 24 hours of creation.');
-        }
+        this.assertWithinEditWindow(existing.createdAt, 'deleted');
 
         if (existing.type === 'BUY') {
             const remainingQty = await this.getRemainingQuantity(
@@ -297,6 +287,16 @@ export class TransactionService {
             unrealizedGain,
             realizedGain: totalRealizedGain,
         };
+    }
+
+    private assertWithinEditWindow(
+        createdAt: Date | undefined,
+        action: 'edited' | 'deleted'
+    ): void {
+        const timestamp = createdAt ? new Date(createdAt).getTime() : NaN;
+        if (isNaN(timestamp) || Date.now() - timestamp >= EDIT_WINDOW_MS) {
+            throw new Error(`Transactions can only be ${action} within 24 hours of creation.`);
+        }
     }
 
     /**

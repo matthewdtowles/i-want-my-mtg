@@ -5,6 +5,8 @@ import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionResponseDto } from './dto/transaction.response.dto';
 
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 export class TransactionPresenter {
     static toEntity(dto: TransactionRequestDto, userId: number): Transaction {
         return new Transaction({
@@ -51,6 +53,7 @@ export class TransactionPresenter {
                     : '',
             rawFees: transaction.fees ?? 0,
             notes: transaction.notes || '',
+            editable: TransactionPresenter.isEditable(transaction.createdAt),
         });
     }
 
@@ -104,5 +107,11 @@ export class TransactionPresenter {
         if (amount > 0) return 'positive';
         if (amount < 0) return 'negative';
         return 'neutral';
+    }
+
+    static isEditable(createdAt?: Date): boolean {
+        if (!createdAt) return true;
+        const created = createdAt instanceof Date ? createdAt : new Date(createdAt);
+        return Date.now() - created.getTime() < EDIT_WINDOW_MS;
     }
 }

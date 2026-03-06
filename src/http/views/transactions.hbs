@@ -3,6 +3,9 @@
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
         <h3 class="page-title">{{this.username}}'s Transactions</h3>
         <p class="text-gray-700 dark:text-gray-300">Total Transactions: {{this.totalTransactions}}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <i class="fas fa-info-circle mr-1"></i>Transactions can be edited or deleted within 24 hours of creation
+        </p>
     </section>
     <div class="content-wrapper">
         <div class="table-wrapper">
@@ -15,7 +18,7 @@
                     <th class="table-header">Qty</th>
                     <th class="table-header">Price</th>
                     <th class="table-header">Total</th>
-                    <th class="table-header pr-2 xs-hide"></th>
+                    <th class="table-header pr-2 tx-actions-cell"></th>
                 </tr>
             </thead>
             <tbody>
@@ -56,23 +59,29 @@
                     <td class="table-cell font-mono">
                         <span class="tx-total">{{tx.totalPrice}}</span>
                     </td>
-                    <td class="table-cell pr-2 xs-hide">
-                        <span class="tx-display">
-                            <button type="button" class="edit-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 mr-1" title="Edit">
+                    <td class="table-cell pr-2 tx-actions-cell">
+                        {{#if tx.editable}}
+                        <span class="tx-display inline-flex gap-1">
+                            <button type="button" class="edit-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Edit">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                             <button type="button" class="delete-transaction-button text-gray-400 hover:text-red-500 dark:hover:text-red-400" data-transaction-id="{{tx.id}}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </span>
-                        <span class="tx-edit hidden">
-                            <button type="button" class="save-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 mr-1" title="Save">
+                        <span class="tx-edit hidden inline-flex gap-1">
+                            <button type="button" class="save-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Save">
                                 <i class="fas fa-check"></i>
                             </button>
                             <button type="button" class="cancel-edit-button text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Cancel">
                                 <i class="fas fa-times"></i>
                             </button>
                         </span>
+                        {{else}}
+                        <span class="text-gray-300 dark:text-gray-600" title="Locked after 24 hours">
+                            <i class="fas fa-lock text-xs"></i>
+                        </span>
+                        {{/if}}
                     </td>
                 </tr>
                 {{/each}}

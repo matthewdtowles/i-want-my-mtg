@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showMessage(msgEl, 'Transaction recorded!', 'success');
                 form.querySelector('input[name="quantity"]').value = '1';
+                updateInventoryDisplay(body.type, body.quantity, body.isFoil);
             } else {
                 showMessage(msgEl, data.error || 'Failed to record transaction.', 'error');
             }
@@ -96,6 +97,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    function updateInventoryDisplay(type, quantity, isFoil) {
+        var formClass = isFoil ? 'quantity-form-foil' : 'quantity-form-normal';
+        var qtyForm = document.querySelector('.' + formClass);
+        if (!qtyForm) return;
+        var qtyInput = qtyForm.querySelector("input[name='quantity-owned']");
+        if (!qtyInput) return;
+        var current = parseInt(qtyInput.value, 10) || 0;
+        var delta = type === 'BUY' ? quantity : -quantity;
+        qtyInput.value = Math.max(0, current + delta);
+    }
 
     function showMessage(el, text, type) {
         if (!el) return;

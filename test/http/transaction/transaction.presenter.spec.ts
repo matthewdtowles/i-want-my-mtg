@@ -164,6 +164,27 @@ describe('TransactionPresenter', () => {
         });
     });
 
+    describe('isEditable', () => {
+        it('should return true when createdAt is undefined', () => {
+            expect(TransactionPresenter.isEditable(undefined)).toBe(true);
+        });
+
+        it('should return true when created less than 24 hours ago', () => {
+            const recent = new Date(Date.now() - 1000 * 60 * 60); // 1 hour ago
+            expect(TransactionPresenter.isEditable(recent)).toBe(true);
+        });
+
+        it('should return false when created more than 24 hours ago', () => {
+            const old = new Date(Date.now() - 1000 * 60 * 60 * 25); // 25 hours ago
+            expect(TransactionPresenter.isEditable(old)).toBe(false);
+        });
+
+        it('should return true at exactly 23 hours 59 minutes', () => {
+            const almostExpired = new Date(Date.now() - 1000 * 60 * 60 * 23 - 1000 * 60 * 59);
+            expect(TransactionPresenter.isEditable(almostExpired)).toBe(true);
+        });
+    });
+
     describe('gainSign', () => {
         it('should return positive for positive numbers', () => {
             expect(TransactionPresenter.gainSign(5)).toBe('positive');

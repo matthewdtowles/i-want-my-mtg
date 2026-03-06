@@ -20,6 +20,8 @@ export interface CostBasisSummary {
     readonly realizedGain: number;
 }
 
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class TransactionService {
     private readonly LOGGER = getLogger(TransactionService.name);
@@ -108,6 +110,13 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
+        if (
+            existing.createdAt &&
+            Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS
+        ) {
+            throw new Error('Transactions can only be edited within 24 hours of creation.');
+        }
+
         if (fields.quantity !== undefined && fields.quantity <= 0) {
             throw new Error('Transaction quantity must be positive.');
         }
@@ -167,6 +176,13 @@ export class TransactionService {
         const existing = await this.repository.findById(id);
         if (!existing || existing.userId !== userId) {
             throw new Error('Transaction not found.');
+        }
+
+        if (
+            existing.createdAt &&
+            Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS
+        ) {
+            throw new Error('Transactions can only be deleted within 24 hours of creation.');
         }
 
         if (existing.type === 'BUY') {

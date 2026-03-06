@@ -1,11 +1,10 @@
+import { EDIT_WINDOW_MS } from 'src/core/transaction/transaction.constants';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary } from 'src/core/transaction/transaction.service';
 import { toDollar } from 'src/http/base/http.util';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionResponseDto } from './dto/transaction.response.dto';
-
-const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export class TransactionPresenter {
     static toEntity(dto: TransactionRequestDto, userId: number): Transaction {
@@ -109,9 +108,10 @@ export class TransactionPresenter {
         return 'neutral';
     }
 
-    static isEditable(createdAt?: Date): boolean {
-        if (!createdAt) return true;
+    static isEditable(createdAt?: Date | string): boolean {
+        if (!createdAt) return false;
         const created = createdAt instanceof Date ? createdAt : new Date(createdAt);
+        if (isNaN(created.getTime())) return false;
         return Date.now() - created.getTime() < EDIT_WINDOW_MS;
     }
 }

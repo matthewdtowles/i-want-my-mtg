@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { getLogger } from 'src/logger/global-app-logger';
+import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction } from './transaction.entity';
 import { TransactionRepositoryPort } from './transaction.repository.port';
 
@@ -19,8 +20,6 @@ export interface CostBasisSummary {
     readonly unrealizedGain: number;
     readonly realizedGain: number;
 }
-
-const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class TransactionService {
@@ -110,10 +109,10 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
-        if (
-            existing.createdAt &&
-            Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS
-        ) {
+        if (!existing.createdAt || isNaN(new Date(existing.createdAt).getTime())) {
+            throw new Error('Transactions can only be edited within 24 hours of creation.');
+        }
+        if (Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS) {
             throw new Error('Transactions can only be edited within 24 hours of creation.');
         }
 
@@ -178,10 +177,10 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
-        if (
-            existing.createdAt &&
-            Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS
-        ) {
+        if (!existing.createdAt || isNaN(new Date(existing.createdAt).getTime())) {
+            throw new Error('Transactions can only be deleted within 24 hours of creation.');
+        }
+        if (Date.now() - new Date(existing.createdAt).getTime() >= EDIT_WINDOW_MS) {
             throw new Error('Transactions can only be deleted within 24 hours of creation.');
         }
 

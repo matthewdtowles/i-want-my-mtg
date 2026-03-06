@@ -165,8 +165,12 @@ describe('TransactionPresenter', () => {
     });
 
     describe('isEditable', () => {
-        it('should return true when createdAt is undefined', () => {
-            expect(TransactionPresenter.isEditable(undefined)).toBe(true);
+        it('should return false when createdAt is undefined', () => {
+            expect(TransactionPresenter.isEditable(undefined)).toBe(false);
+        });
+
+        it('should return false when createdAt is an invalid date string', () => {
+            expect(TransactionPresenter.isEditable('not-a-date')).toBe(false);
         });
 
         it('should return true when created less than 24 hours ago', () => {

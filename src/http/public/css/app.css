@@ -264,7 +264,8 @@ input[type='number'] {
         font-size: 0.7rem !important;
     }
 
-    .xs-hide {
+    .xs-hide,
+    .tx-actions-cell {
         display: none !important;
     }
 

@@ -36,8 +36,8 @@ export class CardPresenter {
             normalPrice: toDollar(price?.normal),
             normalQuantity:
                 card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
-            normalPriceRaw: price?.normal ? Math.ceil(price.normal * 100) / 100 : 0,
-            foilPriceRaw: price?.foil ? Math.ceil(price.foil * 100) / 100 : 0,
+            normalPriceRaw: price?.normal ? Math.round(price.normal * 100) / 100 : 0,
+            foilPriceRaw: price?.foil ? Math.round(price.foil * 100) / 100 : 0,
             ...this.formatPriceChange(price),
             tags: this.createTags(card),
         });

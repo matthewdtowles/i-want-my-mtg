@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showMessage(msgEl, 'Transaction recorded!', 'success');
                 form.querySelector('input[name="quantity"]').value = '1';
-                updateInventoryDisplay(body.type, body.quantity, body.isFoil);
+                if (!body.skipInventorySync) {
+                    updateInventoryDisplay(body.type, body.quantity, body.isFoil);
+                }
             } else {
                 showMessage(msgEl, data.error || 'Failed to record transaction.', 'error');
             }

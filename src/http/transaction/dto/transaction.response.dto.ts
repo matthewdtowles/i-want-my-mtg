@@ -34,6 +34,6 @@ export class TransactionResponseDto {
         this.fees = init.fees || '';
         this.rawFees = init.rawFees || 0;
         this.notes = init.notes || '';
-        this.editable = init.editable ?? true;
+        this.editable = init.editable ?? false;
     }
 }

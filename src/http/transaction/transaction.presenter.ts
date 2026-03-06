@@ -1,3 +1,4 @@
+import { EDIT_WINDOW_MS } from 'src/core/transaction/transaction.constants';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary } from 'src/core/transaction/transaction.service';
 import { toDollar } from 'src/http/base/http.util';
@@ -51,6 +52,7 @@ export class TransactionPresenter {
                     : '',
             rawFees: transaction.fees ?? 0,
             notes: transaction.notes || '',
+            editable: TransactionPresenter.isEditable(transaction.createdAt),
         });
     }
 
@@ -104,5 +106,12 @@ export class TransactionPresenter {
         if (amount > 0) return 'positive';
         if (amount < 0) return 'negative';
         return 'neutral';
+    }
+
+    static isEditable(createdAt?: Date | string): boolean {
+        if (!createdAt) return false;
+        const created = createdAt instanceof Date ? createdAt : new Date(createdAt);
+        if (isNaN(created.getTime())) return false;
+        return Date.now() - created.getTime() < EDIT_WINDOW_MS;
     }
 }

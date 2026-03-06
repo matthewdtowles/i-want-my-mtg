@@ -1,24 +1,66 @@
 <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
 <div id="set-header-container" class="relative">
-    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 pb-4 rounded-b-lg">
-        <h3 class="page-title pt-4">
-            <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
-            <span class="align-middle">{{set.name}}</span>
-            {{>tags item=set}}
-        </h3>
-        <ul class="mt-4 space-y-2">
-            <li class="text-gray-700 dark:text-gray-300">Block: {{set.block}}</li>
-            <li class="text-gray-700 dark:text-gray-300">Code: {{toUpperCase set.code}}</li>
-            <li class="text-gray-700 dark:text-gray-300">Release Date: {{set.releaseDate}}</li>
-            <li class="text-gray-700 dark:text-gray-300">Set Price: {{set.prices.defaultPrice}}</li>
-            {{#if authenticated}}
-            <li class="text-gray-700 dark:text-gray-300">Total Owned: {{set.ownedTotal}}/{{set.effectiveSize}}</li>
-            <li class="text-gray-700 dark:text-gray-300">Owned Value: {{set.ownedValue}}</li>
-            <li class="text-gray-700 dark:text-gray-300">{{>completionRate set}}</li>
-            {{/if}}
-        </ul>
+    <section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
+        <div class="text-center pt-4 pb-2">
+            <h3 class="page-title">
+                <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
+                <span class="align-middle">{{set.name}}</span>
+                {{>tags item=set}}
+            </h3>
+        </div>
 
-        <div class="mt-4 mx-auto max-w-md">
+        <div class="max-w-2xl mx-auto px-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card">
+                    <span class="stat-label">Block</span>
+                    <span class="stat-value text-sm">{{set.block}}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Code</span>
+                    <span class="stat-value">{{toUpperCase set.code}}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Released</span>
+                    <span class="stat-value text-sm">{{set.releaseDate}}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Set Price</span>
+                    <span class="stat-value">{{set.prices.defaultPrice}}</span>
+                </div>
+            </div>
+
+            {{#if authenticated}}
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Owned</span>
+                    <span class="stat-value">{{set.ownedTotal}}<span class="text-xs font-normal text-gray-400 dark:text-gray-500">/{{set.effectiveSize}}</span></span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Owned Value</span>
+                    <span class="stat-value">{{set.ownedValue}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Completion</span>
+                    <div class="mt-1">{{>completionRate set}}</div>
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if (gt set.prices.gridCols 1)}}
+            <div class="flex justify-center mb-4">
+                <button type="button" id="price-info-toggle"
+                    class="btn btn-secondary text-sm px-3 py-1.5"
+                    aria-label="View detailed set prices">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                    Price Info
+                </button>
+            </div>
+            {{/if}}
+
             <div class="action-card">
                 <span class="action-card-label">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,20 +70,52 @@
                     Collection
                 </span>
                 {{#if authenticated}}
-                <div class="flex flex-wrap gap-2 justify-center items-center">
-                    <form method="POST" action="/sets/{{set.code}}/inventory" class="inline-flex items-center gap-2">
-                        <label class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
-                            <input type="checkbox" name="foil" value="true" class="rounded" />
-                            Foil
-                        </label>
-                        <label class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
-                            <input type="checkbox" name="include_variants" value="true" class="rounded" />
-                            Variants
-                        </label>
+                <form method="POST" action="/sets/{{set.code}}/inventory">
+                    <div class="flex justify-center gap-4 mb-3">
+                        <span class="flex items-center gap-1.5">
+                            <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                                <input type="checkbox" name="foil" value="true" class="rounded" />
+                                Include foils
+                            </label>
+                            <span class="relative inline-block">
+                                <button type="button"
+                                    class="collection-tooltip-trigger text-gray-400 dark:text-gray-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                                    aria-label="Foil info">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <span class="collection-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-midnight-800 dark:bg-midnight-700 text-white text-xs rounded-lg p-2 shadow-lg z-10 w-48 text-center">
+                                    Also add foil versions of each card
+                                    <span class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-midnight-800 dark:bg-midnight-700 transform rotate-45"></span>
+                                </span>
+                            </span>
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                                <input type="checkbox" name="include_variants" value="true" class="rounded" />
+                                Include variants
+                            </label>
+                            <span class="relative inline-block">
+                                <button type="button"
+                                    class="collection-tooltip-trigger text-gray-400 dark:text-gray-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                                    aria-label="Variants info">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <span class="collection-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-midnight-800 dark:bg-midnight-700 text-white text-xs rounded-lg p-2 shadow-lg z-10 w-48 text-center">
+                                    Also add extended art, showcase, borderless, and other variant cards
+                                    <span class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-midnight-800 dark:bg-midnight-700 transform rotate-45"></span>
+                                </span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center items-center">
                         <button type="submit" class="btn btn-primary text-sm px-3 py-1.5">Add All Cards</button>
-                    </form>
-                    <a href="/sets/{{set.code}}/checklist" class="btn btn-secondary text-sm px-3 py-1.5">My Checklist</a>
-                </div>
+                        <a href="/sets/{{set.code}}/checklist" class="btn btn-secondary text-sm px-3 py-1.5">My Checklist</a>
+                    </div>
+                </form>
                 {{else}}
                 <div class="flex flex-wrap gap-2 justify-center">
                     <a href="/sets/{{set.code}}/checklist" class="btn btn-secondary text-sm px-3 py-1.5">Blank Checklist</a>
@@ -218,18 +292,6 @@
             </div>
         </div>
         {{! End Set Price Info }}
-        {{#if (gt set.prices.gridCols 1)}}
-        <button type="button" id="price-info-toggle"
-            class="btn btn-primary !inline-flex items-center space-x-2 px-3 py-1.5 text-sm mt-2"
-            aria-label="View detailed set prices">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                </path>
-            </svg>
-            <span class="font-semibold">Price Info</span>
-        </button>
-        {{/if}}
     </section>
 </div>
 
@@ -319,6 +381,14 @@
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/setPriceInfo.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    new TooltipManager({
+        triggerSelector: '.collection-tooltip-trigger',
+        tooltipSelector: '.collection-tooltip',
+    });
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="/public/js/setPriceHistoryChart.js" defer></script>

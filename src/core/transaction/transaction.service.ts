@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { getLogger } from 'src/logger/global-app-logger';
+import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction } from './transaction.entity';
 import { TransactionRepositoryPort } from './transaction.repository.port';
 
@@ -108,6 +109,8 @@ export class TransactionService {
             throw new Error('Transaction not found.');
         }
 
+        this.assertWithinEditWindow(existing.createdAt, 'edited');
+
         if (fields.quantity !== undefined && fields.quantity <= 0) {
             throw new Error('Transaction quantity must be positive.');
         }
@@ -168,6 +171,8 @@ export class TransactionService {
         if (!existing || existing.userId !== userId) {
             throw new Error('Transaction not found.');
         }
+
+        this.assertWithinEditWindow(existing.createdAt, 'deleted');
 
         if (existing.type === 'BUY') {
             const remainingQty = await this.getRemainingQuantity(
@@ -282,6 +287,16 @@ export class TransactionService {
             unrealizedGain,
             realizedGain: totalRealizedGain,
         };
+    }
+
+    private assertWithinEditWindow(
+        createdAt: Date | undefined,
+        action: 'edited' | 'deleted'
+    ): void {
+        const timestamp = createdAt ? new Date(createdAt).getTime() : NaN;
+        if (isNaN(timestamp) || Date.now() - timestamp >= EDIT_WINDOW_MS) {
+            throw new Error(`Transactions can only be ${action} within 24 hours of creation.`);
+        }
     }
 
     /**

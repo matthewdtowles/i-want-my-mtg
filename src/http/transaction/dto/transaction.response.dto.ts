@@ -15,6 +15,7 @@ export class TransactionResponseDto {
     readonly fees: string;
     readonly rawFees: number;
     readonly notes: string;
+    readonly editable: boolean;
 
     constructor(init: Partial<TransactionResponseDto>) {
         this.id = init.id || 0;
@@ -33,5 +34,6 @@ export class TransactionResponseDto {
         this.fees = init.fees || '';
         this.rawFees = init.rawFees || 0;
         this.notes = init.notes || '';
+        this.editable = init.editable ?? false;
     }
 }

@@ -10,6 +10,7 @@ describe('TransactionService', () => {
     let inventoryService: jest.Mocked<InventoryService>;
 
     const today = new Date('2025-06-01');
+    const recentCreatedAt = new Date(Date.now() - 1 * 60 * 60 * 1000); // 1 hour ago
 
     const buyLot1 = new Transaction({
         id: 1,
@@ -20,6 +21,7 @@ describe('TransactionService', () => {
         pricePerUnit: 5.0,
         isFoil: false,
         date: new Date('2025-01-01'),
+        createdAt: recentCreatedAt,
     });
 
     const buyLot2 = new Transaction({
@@ -31,6 +33,7 @@ describe('TransactionService', () => {
         pricePerUnit: 8.0,
         isFoil: false,
         date: new Date('2025-03-15'),
+        createdAt: recentCreatedAt,
     });
 
     const sellTx = new Transaction({
@@ -42,6 +45,7 @@ describe('TransactionService', () => {
         pricePerUnit: 10.0,
         isFoil: false,
         date: new Date('2025-06-01'),
+        createdAt: recentCreatedAt,
     });
 
     const mockRepository = {
@@ -226,6 +230,44 @@ describe('TransactionService', () => {
             );
         });
 
+        it('should reject edit when createdAt is missing', async () => {
+            const txNoCreatedAt = new Transaction({
+                ...buyLot1,
+                createdAt: undefined,
+            });
+            repository.findById.mockResolvedValue(txNoCreatedAt);
+
+            await expect(service.update(1, 1, { quantity: 5 })).rejects.toThrow(
+                'Transactions can only be edited within 24 hours of creation.'
+            );
+        });
+
+        it('should reject edit after 24-hour window', async () => {
+            const oldTx = new Transaction({
+                ...buyLot1,
+                createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+            });
+            repository.findById.mockResolvedValue(oldTx);
+
+            await expect(service.update(1, 1, { quantity: 5 })).rejects.toThrow(
+                'Transactions can only be edited within 24 hours of creation.'
+            );
+        });
+
+        it('should allow edit within 24-hour window', async () => {
+            const recentTx = new Transaction({
+                ...buyLot1,
+                createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            });
+            repository.findById.mockResolvedValue(recentTx);
+            const updatedTx = new Transaction({ ...recentTx, quantity: 5 });
+            repository.update.mockResolvedValue(updatedTx);
+
+            const result = await service.update(1, 1, { quantity: 5 });
+
+            expect(result.updated.quantity).toBe(5);
+        });
+
         it('should reject zero quantity', async () => {
             repository.findById.mockResolvedValue(buyLot1);
 
@@ -350,6 +392,32 @@ describe('TransactionService', () => {
             await service.delete(1, 1);
 
             expect(repository.delete).toHaveBeenCalledWith(1, 1);
+        });
+
+        it('should reject delete when createdAt is missing', async () => {
+            const txNoCreatedAt = new Transaction({
+                ...buyLot1,
+                createdAt: undefined,
+            });
+            repository.findById.mockResolvedValue(txNoCreatedAt);
+
+            await expect(service.delete(1, 1)).rejects.toThrow(
+                'Transactions can only be deleted within 24 hours of creation.'
+            );
+            expect(repository.delete).not.toHaveBeenCalled();
+        });
+
+        it('should reject delete after 24-hour window', async () => {
+            const oldTx = new Transaction({
+                ...buyLot1,
+                createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+            });
+            repository.findById.mockResolvedValue(oldTx);
+
+            await expect(service.delete(1, 1)).rejects.toThrow(
+                'Transactions can only be deleted within 24 hours of creation.'
+            );
+            expect(repository.delete).not.toHaveBeenCalled();
         });
 
         it('should throw if transaction not found', async () => {

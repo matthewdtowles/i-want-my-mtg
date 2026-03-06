@@ -2,6 +2,7 @@
     <h3 class="page-title">User Login</h3>
     <p class="page-subtitle">Please login to access your account</p>
     <form id="login-form" class="mt-6" method="post" novalidate>
+        <input type="hidden" name="returnUrl" value="{{this.returnUrl}}" />
         <div class="mb-4">
             <label class="input-label" for="user-email">Email</label>
             <input id="user-email" class="input-field" type="email" name="email" value="{{this.email}}" required maxlength="255" />

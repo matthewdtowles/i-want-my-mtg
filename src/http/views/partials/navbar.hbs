@@ -17,7 +17,7 @@
                 <a class="navbar-link" href="/user">My Account</a>
                 <a class="navbar-link" href="/auth/logout">Logout</a>
                 {{else}}
-                <a class="navbar-link" href="/auth/login">Sign In</a>
+                <a class="navbar-link navbar-login-link" href="/auth/login">Sign In</a>
                 <a class="navbar-link" href="/user/create">Create Account</a>
                 {{/if}}
                 <form method="get" action="/search" class="flex items-center">
@@ -79,7 +79,7 @@
         <a class="navbar-link-mobile" href="/user">My Account</a>
         <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
         {{else}}
-        <a class="navbar-link-mobile" href="/auth/login">Login</a>
+        <a class="navbar-link-mobile navbar-login-link" href="/auth/login">Login</a>
         <a class="navbar-link-mobile" href="/user/create">Create Account</a>
         {{/if}}
     </div>
@@ -157,6 +157,14 @@
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
+        }
+
+        // Set returnUrl on login links so user returns to current page after login
+        var currentPath = window.location.pathname + window.location.search;
+        if (currentPath && window.location.pathname !== '/auth/login') {
+            document.querySelectorAll('.navbar-login-link').forEach(function(link) {
+                link.href = '/auth/login?returnUrl=' + encodeURIComponent(currentPath);
+            });
         }
 
         // Desktop theme toggle

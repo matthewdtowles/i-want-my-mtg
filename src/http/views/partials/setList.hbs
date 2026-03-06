@@ -38,7 +38,10 @@
                         {{/if}}
                     </td>
                     {{#if ../../authenticated}}
-                    <td class="table-cell">{{>completionRate}}</td>
+                    <td class="table-cell">
+                        <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{this.ownedValue}}</span>
+                        <div class="mt-0.5">{{>completionRate}}</div>
+                    </td>
                     {{/if}}
                     <td class="table-cell xs-hide">{{this.releaseDate}}</td>
                 </tr>

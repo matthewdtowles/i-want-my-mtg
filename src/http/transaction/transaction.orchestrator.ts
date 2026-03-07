@@ -165,6 +165,50 @@ export class TransactionOrchestrator {
         }
     }
 
+    async exportCsv(req: AuthenticatedRequest): Promise<string> {
+        this.LOGGER.debug(`Export CSV for user ${req.user?.id}.`);
+        HttpErrorHandler.validateAuthenticatedRequest(req);
+        const transactions = await this.transactionService.findByUser(req.user.id);
+        const cardIds = [...new Set(transactions.map((t) => t.cardId))];
+        const cardMap = await this.buildCardMap(cardIds);
+
+        const headers = [
+            'Date',
+            'Type',
+            'Card Name',
+            'Set',
+            'Collector #',
+            'Foil',
+            'Quantity',
+            'Price Per Unit',
+            'Total',
+            'Fees',
+            'Source',
+            'Notes',
+        ];
+
+        const rows = transactions.map((t) => {
+            const card = cardMap.get(t.cardId);
+            const total = t.quantity * t.pricePerUnit;
+            return [
+                TransactionPresenter.formatDate(t.date),
+                t.type,
+                TransactionPresenter.escapeCsvField(card?.name || ''),
+                card?.setCode?.toUpperCase() || '',
+                card?.number || '',
+                t.isFoil ? 'Yes' : 'No',
+                String(t.quantity),
+                t.pricePerUnit.toFixed(2),
+                total.toFixed(2),
+                t.fees != null ? t.fees.toFixed(2) : '',
+                TransactionPresenter.escapeCsvField(t.source || ''),
+                TransactionPresenter.escapeCsvField(t.notes || ''),
+            ].join(',');
+        });
+
+        return [headers.join(','), ...rows].join('\n');
+    }
+
     private async buildCardMap(
         cardIds: string[]
     ): Promise<Map<string, { name: string; setCode: string; number: string }>> {

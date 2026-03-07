@@ -189,6 +189,28 @@ describe('TransactionPresenter', () => {
         });
     });
 
+    describe('escapeCsvField', () => {
+        it('should return plain string as-is', () => {
+            expect(TransactionPresenter.escapeCsvField('hello')).toBe('hello');
+        });
+
+        it('should wrap field with commas in quotes', () => {
+            expect(TransactionPresenter.escapeCsvField('hello, world')).toBe('"hello, world"');
+        });
+
+        it('should escape double quotes', () => {
+            expect(TransactionPresenter.escapeCsvField('say "hi"')).toBe('"say ""hi"""');
+        });
+
+        it('should wrap field with newlines in quotes', () => {
+            expect(TransactionPresenter.escapeCsvField('line1\nline2')).toBe('"line1\nline2"');
+        });
+
+        it('should return empty string as-is', () => {
+            expect(TransactionPresenter.escapeCsvField('')).toBe('');
+        });
+    });
+
     describe('gainSign', () => {
         it('should return positive for positive numbers', () => {
             expect(TransactionPresenter.gainSign(5)).toBe('positive');

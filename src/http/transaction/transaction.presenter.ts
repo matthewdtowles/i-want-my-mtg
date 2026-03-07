@@ -108,6 +108,13 @@ export class TransactionPresenter {
         return 'neutral';
     }
 
+    static escapeCsvField(value: string): string {
+        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+            return '"' + value.replace(/"/g, '""') + '"';
+        }
+        return value;
+    }
+
     static isEditable(createdAt?: Date | string): boolean {
         if (!createdAt) return false;
         const created = createdAt instanceof Date ? createdAt : new Date(createdAt);

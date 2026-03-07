@@ -114,6 +114,13 @@ impl CliController {
                 }
                 Ok(())
             }
+
+            Commands::PortfolioSummary {} => {
+                if let Err(e) = self.handle_portfolio_summary().await {
+                    error!("Portfolio summary computation failed: {}", e);
+                }
+                Ok(())
+            }
         }
     }
 
@@ -315,6 +322,15 @@ impl CliController {
         info!("Backfilling set_price_history from price_history...");
         let rows = self.set_service.backfill_set_price_history().await?;
         info!("Set price history backfill complete: {} rows affected", rows);
+        Ok(())
+    }
+
+    async fn handle_portfolio_summary(&self) -> Result<()> {
+        info!("Computing portfolio summaries for all users");
+        let (summaries_saved, performance_saved) =
+            self.portfolio_service.compute_portfolio_summaries().await?;
+        info!("Portfolio summaries saved: {}", summaries_saved);
+        info!("Card performance rows saved: {}", performance_saved);
         Ok(())
     }
 

@@ -3,7 +3,7 @@
 This document tracks the implementation of transaction-based P&L tracking and
 portfolio value history. Work spans multiple PRs and sessions.
 
-Last updated: 2026-03-06
+Last updated: 2026-03-07
 
 ---
 
@@ -327,18 +327,18 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4A — Snapshot Infrastructure
 
-- [ ] 4.1 Create migration for `portfolio_summary` and `portfolio_card_performance` tables
-- [ ] 4.2 Add tables to initial schema (`001_complete_schema.sql`)
-- [ ] 4.3 Create domain entities for PortfolioSummary and PortfolioCardPerformance (`src/core/portfolio/`)
-- [ ] 4.4 Create ORM entities, mappers, repository ports, and repositories (`src/database/portfolio/`)
-- [ ] 4.5 Register new ORM entities and repository port bindings in DatabaseModule
-- [ ] 4.6 Create `PortfolioSummaryService` with:
+- [x] 4.1 Create migration for `portfolio_summary` and `portfolio_card_performance` tables
+- [x] 4.2 Add tables to initial schema (`001_complete_schema.sql`)
+- [x] 4.3 Create domain entities for PortfolioSummary and PortfolioCardPerformance (`src/core/portfolio/`)
+- [x] 4.4 Create ORM entities, mappers, repository ports, and repositories (`src/database/portfolio/`)
+- [x] 4.5 Register new ORM entities and repository port bindings in DatabaseModule
+- [x] 4.6 Create `PortfolioSummaryService` with:
   - `computeSummary(userId)` — calculates portfolio summary + per-card performance from transactions, inventory, and current prices
   - `getSummary(userId)` — reads latest snapshot from DB
   - `getCardPerformance(userId, sortBy, limit)` — reads top/worst performers
   - `refreshSummary(userId)` — rate-limited on-demand computation (checks `refreshes_today` and cooldown)
-- [ ] 4.7 Add rate-limit config env vars (`PORTFOLIO_REFRESH_MAX_DAILY`, `PORTFOLIO_REFRESH_COOLDOWN_MINUTES`) to `.env.example`
-- [ ] 4.8 Write unit tests for PortfolioSummaryService (computation, rate limiting, edge cases)
+- [x] 4.7 Add rate-limit config env vars (`PORTFOLIO_REFRESH_MAX_DAILY`, `PORTFOLIO_REFRESH_COOLDOWN_MINUTES`) to `.env.example`
+- [x] 4.8 Write unit tests for PortfolioSummaryService (computation, rate limiting, edge cases)
 
 **PR boundary: 4A ships as one PR (infrastructure, no UI changes).**
 
@@ -346,22 +346,22 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4B — Portfolio Dashboard UI
 
-- [ ] 4.9 Expand `PortfolioOrchestrator.getPortfolioView` to include summary data and card performance
-- [ ] 4.10 Expand `PortfolioViewDto` with summary fields and performer lists
-- [ ] 4.11 Create `PortfolioPresenter` for formatting summary values (reuse gain/ROI formatting patterns from `TransactionPresenter`)
-- [ ] 4.12 Add summary cards section to `portfolio.hbs` above the chart:
+- [x] 4.9 Expand `PortfolioOrchestrator.getPortfolioView` to include summary data and card performance
+- [x] 4.10 Expand `PortfolioViewDto` with summary fields and performer lists
+- [x] 4.11 Create `PortfolioPresenter` for formatting summary values (reuse gain/ROI formatting patterns from `TransactionPresenter`)
+- [x] 4.12 Add summary cards section to `portfolio.hbs` above the chart:
   - Current Value, Total Invested, Total Gain/Loss (color-coded), ROI %
   - Realized Gains with year selector (All Time / 2026 / 2025 / ...)
   - Total Cards, Total Units
   - "Last updated" timestamp + "Refresh" button (disabled when on cooldown, shows remaining refreshes)
-- [ ] 4.13 Add top performers section (top 5-10 cards by total gain):
+- [x] 4.13 Add top performers section (top 5-10 cards by total gain):
   - Card name + set + link to card detail
   - Qty held, cost basis, current value, total gain, ROI %
-- [ ] 4.14 Add worst performers section (bottom 5-10 cards by total gain):
+- [x] 4.14 Add worst performers section (bottom 5-10 cards by total gain):
   - Same columns as top performers, reuse partial
-- [ ] 4.15 Add `POST /portfolio/refresh` endpoint to PortfolioController (triggers on-demand refresh, returns updated summary)
-- [ ] 4.16 Add `GET /portfolio/realized-gains?year=` endpoint for year-filtered realized gains
-- [ ] 4.17 Write unit tests for orchestrator, presenter, and controller
+- [x] 4.15 Add `POST /portfolio/refresh` endpoint to PortfolioController (triggers on-demand refresh, returns updated summary)
+- [x] 4.16 Add `GET /portfolio/realized-gains?year=` endpoint for year-filtered realized gains
+- [x] 4.17 Write unit tests for orchestrator, presenter, and controller
 
 **PR boundary: 4B ships as one PR.**
 
@@ -369,13 +369,13 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4C — Set-Level ROI Aggregation
 
-- [ ] 4.18 Add set-level aggregation method to `PortfolioSummaryService`:
+- [x] 4.18 Add set-level aggregation method to `PortfolioSummaryService`:
   - Groups `portfolio_card_performance` rows by set (join card -> set)
   - Aggregates: cards held, total invested, current value, gain/loss, ROI %
-- [ ] 4.19 Add set ROI section to `portfolio.hbs`:
+- [x] 4.19 Add set ROI section to `portfolio.hbs`:
   - Table sorted by total gain descending
   - Set name + link, cards held, invested, current value, gain/loss, ROI %
-- [ ] 4.20 Write unit tests for set-level aggregation
+- [x] 4.20 Write unit tests for set-level aggregation
 
 **PR boundary: 4C can ship with 4B or standalone.**
 
@@ -383,14 +383,14 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4D — Cash Flow View
 
-- [ ] 4.21 Add `getCashFlow(userId, groupBy)` to `TransactionRepositoryPort` and repository:
+- [x] 4.21 Add `getCashFlow(userId, groupBy)` to `TransactionRepositoryPort` and repository:
   - Aggregates transaction amounts by month (or week)
   - Returns: period, total_bought (outflow), total_sold (inflow), net
-- [ ] 4.22 Add cash flow section to `portfolio.hbs`:
+- [x] 4.22 Add cash flow section to `portfolio.hbs`:
   - Bar chart (Chart.js): buys vs sells by month
   - Net cash flow line overlay
-- [ ] 4.23 Add `GET /portfolio/cash-flow?groupBy=month` endpoint
-- [ ] 4.24 Write unit tests for cash flow aggregation
+- [x] 4.23 Add `GET /portfolio/cash-flow?groupBy=month` endpoint
+- [x] 4.24 Write unit tests for cash flow aggregation
 
 **PR boundary: 4D ships as one PR.**
 
@@ -398,12 +398,12 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4E — Export Transactions to CSV
 
-- [ ] 4.25 Add `GET /transactions/export` endpoint to TransactionController:
+- [x] 4.25 Add `GET /transactions/export` endpoint to TransactionController:
   - Returns `text/csv` with `Content-Disposition: attachment` header
   - Columns: Date, Type, Card Name, Set, Collector #, Foil, Quantity, Price Per Unit, Total, Fees, Source, Notes
-- [ ] 4.26 Add CSV builder method to TransactionOrchestrator (reuses existing `findByUser` + card lookup)
-- [ ] 4.27 Add "Export CSV" button to transactions page
-- [ ] 4.28 Write unit tests for CSV generation
+- [x] 4.26 Add CSV builder method to TransactionOrchestrator (reuses existing `findByUser` + card lookup)
+- [x] 4.27 Add "Export CSV" button to transactions page
+- [x] 4.28 Write unit tests for CSV generation
 
 **PR boundary: 4E ships as one PR.**
 
@@ -411,13 +411,13 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4F — Scry ETL Portfolio Summary Job
 
-- [ ] 4.29 Add `portfolio-summary` command to Scry CLI (separate from `ingest`)
-- [ ] 4.30 Implement bulk summary computation in Rust:
+- [x] 4.29 Add `portfolio-summary` command to Scry CLI (separate from `ingest`)
+- [x] 4.30 Implement bulk summary computation in Rust:
   - For each user with inventory: compute total_value, total_cost, total_realized_gain
   - Compute per-card performance rows
   - UPSERT into `portfolio_summary` and `portfolio_card_performance`
 - [ ] 4.31 Add to deploy scripts / cron configuration (runs after ingest, not coupled to it)
-- [ ] 4.32 Write Rust tests for portfolio summary computation
+- [x] 4.32 Write Rust tests for portfolio summary computation
 
 **PR boundary: 4F ships as one PR. Can be built in parallel with 4B.**
 
@@ -485,14 +485,12 @@ src/
 scry/src/
   portfolio/
     mod.rs
-    service.rs
-    repository.rs
+    service.rs                                  # Phase 3 + Phase 4F (portfolio-summary command)
+    repository.rs                               # Phase 3 + Phase 4F (summary/performance queries)
     domain/
+      mod.rs
       portfolio_value_snapshot.rs
-  portfolio_summary/                            # Phase 4 (4F)
-    mod.rs
-    service.rs
-    repository.rs
+      portfolio_summary.rs                      # Phase 4F (PortfolioSummaryRow, CardPerformanceRow)
 
 docker/postgres/migrations/
   018_table_transaction.sql
@@ -529,3 +527,40 @@ docker/postgres/migrations/
    useful for active traders but adds UI complexity. Start with monthly only.
 10. **Portfolio summary staleness indicator**: Show "Last updated X hours ago"
     with visual warning if data is >24h old (stale ETL run).
+
+---
+
+## Additional Considerations (Post Phase 4 Implementation)
+
+### Scry ETL vs NestJS computation parity
+The Scry ETL uses a simplified SQL-based average cost approach for realized gains
+and per-card performance, while the NestJS side does precise FIFO lot matching.
+For users with complex buy/sell histories (many partial sells at different prices),
+the two may produce slightly different numbers. This is acceptable for the ETL's
+bulk overnight computation, but worth noting:
+- The on-demand "Refresh" button always uses the precise NestJS FIFO computation
+- The ETL result is overwritten on next user-triggered refresh
+- If parity matters, consider implementing FIFO in Rust (complex in pure SQL)
+
+### Portfolio summary table cleanup on user deletion
+Both `portfolio_summary` and `portfolio_card_performance` have `ON DELETE CASCADE`
+from users, so user deletion is handled. However, if a user sells all cards and
+deletes all transactions, stale summary rows remain until the next ETL run or
+manual refresh. Consider adding cleanup logic to transaction delete flows.
+
+### Rate limit reset edge case
+The refresh rate limit resets based on `last_refresh_date < CURRENT_DATE`. This
+uses the database server's timezone. If the app server and database server are in
+different timezones, the reset time may be unintuitive. Both should use UTC.
+
+### CSV export scalability
+The current CSV export loads all transactions into memory before streaming. For
+users with thousands of transactions this is fine, but if bulk import (Open
+Question #2) is implemented, consider a streaming/cursor-based approach.
+
+### Remaining unchecked tasks
+- **2.29**: Unit tests for untracked quantity calculation and sync flow (card
+  orchestrator tests). Low priority — the feature works, tests are a gap.
+- **4.31**: Deploy scripts / cron configuration for `portfolio-summary` command.
+  Recommended: add a cron entry to run `cargo run -- portfolio-summary` after
+  the daily ingest completes (e.g., 15 minutes after ingest cron).

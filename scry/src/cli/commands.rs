@@ -86,4 +86,7 @@ pub enum Commands {
 
     /// Backfill set_price_history from price_history data
     BackfillSetPriceHistory {},
+
+    /// Compute portfolio summaries for all users (portfolio_summary + portfolio_card_performance)
+    PortfolioSummary {},
 }

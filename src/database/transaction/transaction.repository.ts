@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from 'src/core/transaction/transaction.entity';
-import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
+import {
+    CashFlowPeriod,
+    TransactionRepositoryPort,
+} from 'src/core/transaction/transaction.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
 import { TransactionMapper } from './transaction.mapper';
@@ -105,5 +108,30 @@ export class TransactionRepository implements TransactionRepositoryPort {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
         await this.repository.delete({ id, userId });
         this.LOGGER.debug(`Deleted transaction ${id}.`);
+    }
+
+    async getCashFlow(userId: number): Promise<CashFlowPeriod[]> {
+        this.LOGGER.debug(`Getting cash flow for user ${userId}.`);
+        const results = await this.repository.query(
+            `
+            SELECT
+                TO_CHAR(date, 'YYYY-MM') AS period,
+                COALESCE(SUM(CASE WHEN type = 'BUY' THEN quantity * price_per_unit ELSE 0 END), 0)::numeric AS "totalBought",
+                COALESCE(SUM(CASE WHEN type = 'SELL' THEN quantity * price_per_unit ELSE 0 END), 0)::numeric AS "totalSold",
+                COALESCE(SUM(CASE WHEN type = 'SELL' THEN quantity * price_per_unit ELSE -(quantity * price_per_unit) END), 0)::numeric AS "net"
+            FROM "transaction"
+            WHERE user_id = $1
+            GROUP BY TO_CHAR(date, 'YYYY-MM')
+            ORDER BY period ASC
+            `,
+            [userId]
+        );
+
+        return results.map((row: any) => ({
+            period: row.period,
+            totalBought: Number(row.totalBought),
+            totalSold: Number(row.totalSold),
+            net: Number(row.net),
+        }));
     }
 }

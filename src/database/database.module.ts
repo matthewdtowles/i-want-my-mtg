@@ -6,6 +6,8 @@ import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
 import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
 import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { PortfolioCardPerformanceRepositoryPort } from 'src/core/portfolio/portfolio-card-performance.repository.port';
+import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/portfolio-summary.repository.port';
 import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/portfolio-value-history.repository.port';
 import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
 import { UserRepositoryPort } from 'src/core/user/user.repository.port';
@@ -26,6 +28,10 @@ import { SetPriceHistoryRepository } from './set-price-history/set-price-history
 import { SetPriceOrmEntity } from './set/set-price.orm-entity';
 import { SetOrmEntity } from './set/set.orm-entity';
 import { SetRepository } from './set/set.repository';
+import { PortfolioCardPerformanceOrmEntity } from './portfolio/portfolio-card-performance.orm-entity';
+import { PortfolioCardPerformanceRepository } from './portfolio/portfolio-card-performance.repository';
+import { PortfolioSummaryOrmEntity } from './portfolio/portfolio-summary.orm-entity';
+import { PortfolioSummaryRepository } from './portfolio/portfolio-summary.repository';
 import { PortfolioValueHistoryOrmEntity } from './portfolio/portfolio-value-history.orm-entity';
 import { PortfolioValueHistoryRepository } from './portfolio/portfolio-value-history.repository';
 import { TransactionOrmEntity } from './transaction/transaction.orm-entity';
@@ -47,6 +53,8 @@ import { PendingUserRepository } from './user/pending-user.repository';
             SetOrmEntity,
             SetPriceOrmEntity,
             SetPriceHistoryOrmEntity,
+            PortfolioCardPerformanceOrmEntity,
+            PortfolioSummaryOrmEntity,
             PortfolioValueHistoryOrmEntity,
             TransactionOrmEntity,
             UserOrmEntity,
@@ -60,6 +68,11 @@ import { PendingUserRepository } from './user/pending-user.repository';
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
         { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
+        {
+            provide: PortfolioCardPerformanceRepositoryPort,
+            useClass: PortfolioCardPerformanceRepository,
+        },
+        { provide: PortfolioSummaryRepositoryPort, useClass: PortfolioSummaryRepository },
         { provide: PortfolioValueHistoryRepositoryPort, useClass: PortfolioValueHistoryRepository },
         { provide: TransactionRepositoryPort, useClass: TransactionRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
@@ -72,6 +85,8 @@ import { PendingUserRepository } from './user/pending-user.repository';
         PasswordResetRepositoryPort,
         SetPriceHistoryRepositoryPort,
         SetRepositoryPort,
+        PortfolioCardPerformanceRepositoryPort,
+        PortfolioSummaryRepositoryPort,
         PortfolioValueHistoryRepositoryPort,
         TransactionRepositoryPort,
         UserRepositoryPort,

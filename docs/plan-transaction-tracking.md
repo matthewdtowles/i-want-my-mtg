@@ -3,7 +3,7 @@
 This document tracks the implementation of transaction-based P&L tracking and
 portfolio value history. Work spans multiple PRs and sessions.
 
-Last updated: 2026-03-05
+Last updated: 2026-03-07
 
 ---
 
@@ -226,16 +226,211 @@ is populated only for users who have transaction data.
 
 ---
 
-### Phase 4 — P&L Analytics Dashboard (Future)
+### Phase 4 — P&L Analytics Dashboard
 
-- [ ] 4.1 Portfolio dashboard view: total invested, current value, total gain/loss, ROI %
-- [ ] 4.2 Top performers: cards with highest realized + unrealized gains
-- [ ] 4.3 Worst performers: cards with biggest losses
-- [ ] 4.4 Set-level ROI aggregation
-- [ ] 4.5 Cash flow view: money in vs money out over time
-- [ ] 4.6 Export transactions to CSV
+#### Design Decisions
 
-**Phase 4 is future scope. Tasks are placeholders — details TBD after Phases 1-3 ship.**
+##### Snapshot-first architecture (performance)
+Portfolio analytics are read from pre-computed snapshots, not calculated on every
+page load. Two snapshot producers exist:
+
+1. **Scry ETL** (`cargo run -- portfolio-summary`) — bulk-computes summaries for
+   all users. Designed to run as a cron job after ingestion but **not coupled to
+   the ingest command**. Can run independently on its own schedule.
+2. **NestJS on-demand refresh** — single-user computation triggered by the user
+   via a "Refresh" button. Rate-limited to prevent abuse:
+   - Max **3 refreshes per day** per user
+   - Minimum **1 hour** between refreshes
+   - Rate limits configured via environment variables (`PORTFOLIO_REFRESH_MAX_DAILY`,
+     `PORTFOLIO_REFRESH_COOLDOWN_MINUTES`) per 12-factor principles
+
+Both producers write to the same `portfolio_summary` table using UPSERT semantics.
+The NestJS read path always reads from the snapshot — never computes on the fly.
+
+##### Snapshot table: `portfolio_summary`
+Stores the latest computed summary per user. Separate from `portfolio_value_history`
+(which stores daily time-series data). One row per user, overwritten on each refresh.
+
+```
+portfolio_summary {
+    user_id             int PRIMARY KEY -> users(id) ON DELETE CASCADE
+    total_value         numeric(12,2) NOT NULL  -- current market value of holdings
+    total_cost          numeric(12,2)           -- total cost basis (null if no transactions)
+    total_realized_gain numeric(12,2)           -- sum of realized gains from all sells
+    total_cards         int NOT NULL             -- unique cards held
+    total_quantity      int NOT NULL             -- total units held
+    computed_at         timestamptz NOT NULL DEFAULT NOW()
+    refreshes_today     int NOT NULL DEFAULT 0
+    last_refresh_date   date NOT NULL DEFAULT CURRENT_DATE
+}
+```
+
+`refreshes_today` and `last_refresh_date` track rate limiting. When
+`last_refresh_date < CURRENT_DATE`, reset `refreshes_today` to 0.
+
+##### Realized gains by year
+Sells are filtered by calendar year to show annual realized gains. The FIFO cost
+basis for each sell is determined by matching against buy lots at query time (lot
+order is stable regardless of year filter). The year list is derived from the
+user's actual sell dates — no empty years shown.
+
+Scoped data when a year is selected:
+- **Realized gains**: filtered to sells in that year
+- **Total invested / current value / unrealized**: always all-time (reflect current holdings)
+
+##### Card performance data
+Per-card P&L data (for top/worst performers and set-level aggregation) is computed
+as part of the snapshot. Stored in a separate table to avoid unbounded JSON in the
+summary row:
+
+```
+portfolio_card_performance {
+    id                  serial PRIMARY KEY
+    user_id             int NOT NULL -> users(id) ON DELETE CASCADE
+    card_id             varchar NOT NULL -> card(id) ON DELETE CASCADE
+    is_foil             boolean NOT NULL
+    quantity            int NOT NULL
+    total_cost          numeric(10,2) NOT NULL
+    average_cost        numeric(10,2) NOT NULL
+    current_value       numeric(10,2) NOT NULL
+    unrealized_gain     numeric(10,2) NOT NULL
+    realized_gain       numeric(10,2) NOT NULL
+    roi_percent         numeric(8,2)             -- NULL if total_cost = 0
+    computed_at         timestamptz NOT NULL DEFAULT NOW()
+
+    UNIQUE (user_id, card_id, is_foil)
+}
+
+INDEX: (user_id, unrealized_gain + realized_gain DESC)  -- for top performers
+INDEX: (user_id, unrealized_gain + realized_gain ASC)   -- for worst performers
+```
+
+Rows are replaced in full on each snapshot computation (DELETE + INSERT for user,
+or UPSERT per card). This table is the source for tasks 4.2, 4.3, and 4.4.
+
+##### Realized gains by year storage
+Annual realized gains are derived at query time by filtering sells by date in the
+FIFO computation. This avoids storing year-level breakdowns in the snapshot since
+the transaction ledger is the source of truth and sell counts are bounded.
+
+##### DRY and 12-factor principles
+- **Single computation path**: one `PortfolioSummaryCalculator` (or equivalent)
+  in NestJS computes the summary. Both the on-demand refresh endpoint and the ETL
+  call the same logic (ETL via direct SQL mirroring the same algorithm).
+- **Config via env vars**: rate limits, refresh cooldowns, feature flags.
+- **Stateless web process**: no in-memory caching of summaries. Always read from DB.
+- **Backing service parity**: same PostgreSQL table written by ETL and web app.
+- **Separation of concerns**: computation in services, presentation in orchestrators/
+  presenters, storage in repositories.
+
+---
+
+#### 4A — Snapshot Infrastructure
+
+- [x] 4.1 Create migration for `portfolio_summary` and `portfolio_card_performance` tables
+- [x] 4.2 Add tables to initial schema (`001_complete_schema.sql`)
+- [x] 4.3 Create domain entities for PortfolioSummary and PortfolioCardPerformance (`src/core/portfolio/`)
+- [x] 4.4 Create ORM entities, mappers, repository ports, and repositories (`src/database/portfolio/`)
+- [x] 4.5 Register new ORM entities and repository port bindings in DatabaseModule
+- [x] 4.6 Create `PortfolioSummaryService` with:
+  - `computeSummary(userId)` — calculates portfolio summary + per-card performance from transactions, inventory, and current prices
+  - `getSummary(userId)` — reads latest snapshot from DB
+  - `getCardPerformance(userId, sortBy, limit)` — reads top/worst performers
+  - `refreshSummary(userId)` — rate-limited on-demand computation (checks `refreshes_today` and cooldown)
+- [x] 4.7 Add rate-limit config env vars (`PORTFOLIO_REFRESH_MAX_DAILY`, `PORTFOLIO_REFRESH_COOLDOWN_MINUTES`) to `.env.example`
+- [x] 4.8 Write unit tests for PortfolioSummaryService (computation, rate limiting, edge cases)
+
+**PR boundary: 4A ships as one PR (infrastructure, no UI changes).**
+
+---
+
+#### 4B — Portfolio Dashboard UI
+
+- [x] 4.9 Expand `PortfolioOrchestrator.getPortfolioView` to include summary data and card performance
+- [x] 4.10 Expand `PortfolioViewDto` with summary fields and performer lists
+- [x] 4.11 Create `PortfolioPresenter` for formatting summary values (reuse gain/ROI formatting patterns from `TransactionPresenter`)
+- [x] 4.12 Add summary cards section to `portfolio.hbs` above the chart:
+  - Current Value, Total Invested, Total Gain/Loss (color-coded), ROI %
+  - Realized Gains with year selector (All Time / 2026 / 2025 / ...)
+  - Total Cards, Total Units
+  - "Last updated" timestamp + "Refresh" button (disabled when on cooldown, shows remaining refreshes)
+- [x] 4.13 Add top performers section (top 5-10 cards by total gain):
+  - Card name + set + link to card detail
+  - Qty held, cost basis, current value, total gain, ROI %
+- [x] 4.14 Add worst performers section (bottom 5-10 cards by total gain):
+  - Same columns as top performers, reuse partial
+- [x] 4.15 Add `POST /portfolio/refresh` endpoint to PortfolioController (triggers on-demand refresh, returns updated summary)
+- [x] 4.16 Add `GET /portfolio/realized-gains?year=` endpoint for year-filtered realized gains
+- [x] 4.17 Write unit tests for orchestrator, presenter, and controller
+
+**PR boundary: 4B ships as one PR.**
+
+---
+
+#### 4C — Set-Level ROI Aggregation
+
+- [x] 4.18 Add set-level aggregation method to `PortfolioSummaryService`:
+  - Groups `portfolio_card_performance` rows by set (join card -> set)
+  - Aggregates: cards held, total invested, current value, gain/loss, ROI %
+- [x] 4.19 Add set ROI section to `portfolio.hbs`:
+  - Table sorted by total gain descending
+  - Set name + link, cards held, invested, current value, gain/loss, ROI %
+- [x] 4.20 Write unit tests for set-level aggregation
+
+**PR boundary: 4C can ship with 4B or standalone.**
+
+---
+
+#### 4D — Cash Flow View
+
+- [x] 4.21 Add `getCashFlow(userId, groupBy)` to `TransactionRepositoryPort` and repository:
+  - Aggregates transaction amounts by month (or week)
+  - Returns: period, total_bought (outflow), total_sold (inflow), net
+- [x] 4.22 Add cash flow section to `portfolio.hbs`:
+  - Bar chart (Chart.js): buys vs sells by month
+  - Net cash flow line overlay
+- [x] 4.23 Add `GET /portfolio/cash-flow?groupBy=month` endpoint
+- [x] 4.24 Write unit tests for cash flow aggregation
+
+**PR boundary: 4D ships as one PR.**
+
+---
+
+#### 4E — Export Transactions to CSV
+
+- [x] 4.25 Add `GET /transactions/export` endpoint to TransactionController:
+  - Returns `text/csv` with `Content-Disposition: attachment` header
+  - Columns: Date, Type, Card Name, Set, Collector #, Foil, Quantity, Price Per Unit, Total, Fees, Source, Notes
+- [x] 4.26 Add CSV builder method to TransactionOrchestrator (reuses existing `findByUser` + card lookup)
+- [x] 4.27 Add "Export CSV" button to transactions page
+- [x] 4.28 Write unit tests for CSV generation
+
+**PR boundary: 4E ships as one PR.**
+
+---
+
+#### 4F — Scry ETL Portfolio Summary Job
+
+- [x] 4.29 Add `portfolio-summary` command to Scry CLI (separate from `ingest`)
+- [x] 4.30 Implement bulk summary computation in Rust:
+  - For each user with inventory: compute total_value, total_cost, total_realized_gain
+  - Compute per-card performance rows
+  - UPSERT into `portfolio_summary` and `portfolio_card_performance`
+- [ ] 4.31 Add to deploy scripts / cron configuration (runs after ingest, not coupled to it)
+- [x] 4.32 Write Rust tests for portfolio summary computation
+
+**PR boundary: 4F ships as one PR. Can be built in parallel with 4B.**
+
+---
+
+#### Implementation Order
+
+1. **4A** — snapshot tables and service (foundation, no UI)
+2. **4B** — dashboard UI (highest user-visible impact)
+3. **4E** — CSV export (quick win, independent)
+4. **4C** — set-level ROI (groups existing data)
+5. **4D** — cash flow chart (new chart, new query)
+6. **4F** — Scry ETL job (can start in parallel with 4B once 4A is merged)
 
 ---
 
@@ -251,9 +446,14 @@ src/
       transaction.repository.port.ts
     portfolio/
       portfolio-value-history.entity.ts
+      portfolio-summary.entity.ts               # Phase 4
+      portfolio-card-performance.entity.ts      # Phase 4
       portfolio.service.ts
+      portfolio-summary.service.ts              # Phase 4
       portfolio.module.ts
       portfolio-value-history.repository.port.ts
+      portfolio-summary.repository.port.ts      # Phase 4
+      portfolio-card-performance.repository.port.ts  # Phase 4
   database/
     transaction/
       transaction.orm-entity.ts
@@ -263,6 +463,12 @@ src/
       portfolio-value-history.orm-entity.ts
       portfolio-value-history.repository.ts
       portfolio-value-history.mapper.ts
+      portfolio-summary.orm-entity.ts           # Phase 4
+      portfolio-summary.repository.ts           # Phase 4
+      portfolio-summary.mapper.ts               # Phase 4
+      portfolio-card-performance.orm-entity.ts  # Phase 4
+      portfolio-card-performance.repository.ts  # Phase 4
+      portfolio-card-performance.mapper.ts      # Phase 4
   http/
     transaction/
       transaction.controller.ts
@@ -274,18 +480,22 @@ src/
     portfolio/
       portfolio.controller.ts
       portfolio.orchestrator.ts
+      portfolio.presenter.ts                    # Phase 4
 
 scry/src/
   portfolio/
     mod.rs
-    service.rs
-    repository.rs
+    service.rs                                  # Phase 3 + Phase 4F (portfolio-summary command)
+    repository.rs                               # Phase 3 + Phase 4F (summary/performance queries)
     domain/
+      mod.rs
       portfolio_value_snapshot.rs
+      portfolio_summary.rs                      # Phase 4F (PortfolioSummaryRow, CardPerformanceRow)
 
 docker/postgres/migrations/
   018_table_transaction.sql
   019_table_portfolio_value_history.sql
+  020_table_portfolio_summary.sql               # Phase 4
 ```
 
 ---
@@ -297,12 +507,13 @@ docker/postgres/migrations/
    price, date, source, notes) added in Phase 2.5. No audit trail for MVP —
    edits overwrite in place.
 2. **Bulk transaction import**: CSV import for transactions (e.g., from
-   TCGPlayer order history)? Likely Phase 4 scope.
+   TCGPlayer order history)? Deferred — CSV export (4E) ships first.
 3. **Trade transactions**: A TRADE type where no cash changes hands but cards
    are exchanged. Deferred — BUY/SELL covers MVP.
 4. **Multi-currency**: USD only for now. Scryfall prices are USD.
-5. **Portfolio chart granularity**: Just total value, or also break down by
-   set / foil / rarity? Start with total, expand later.
+5. ~~**Portfolio chart granularity**: Just total value, or also break down by
+   set / foil / rarity?~~ **Resolved**: Phase 4 adds set-level ROI (4C). Foil/
+   rarity breakdowns deferred.
 6. ~~**Inventory-transaction relationship**: Should transactions affect
    inventory?~~ **Resolved**: Hybrid model — transactions sync inventory
    (BUY increments, SELL decrements) but direct inventory changes without
@@ -310,3 +521,46 @@ docker/postgres/migrations/
 7. **Sync prompt for backfill**: When syncing untracked inventory to transactions,
    the BUY transaction is created *without* incrementing inventory (items are
    already there). Need a `skipInventorySync` flag or separate code path.
+8. **Performer count**: Top/worst performers default to 10. Should this be
+   configurable by the user or fixed? Start fixed, revisit if requested.
+9. **Cash flow chart granularity**: Monthly grouping by default. Weekly option
+   useful for active traders but adds UI complexity. Start with monthly only.
+10. **Portfolio summary staleness indicator**: Show "Last updated X hours ago"
+    with visual warning if data is >24h old (stale ETL run).
+
+---
+
+## Additional Considerations (Post Phase 4 Implementation)
+
+### Scry ETL vs NestJS computation parity
+The Scry ETL uses a simplified SQL-based average cost approach for realized gains
+and per-card performance, while the NestJS side does precise FIFO lot matching.
+For users with complex buy/sell histories (many partial sells at different prices),
+the two may produce slightly different numbers. This is acceptable for the ETL's
+bulk overnight computation, but worth noting:
+- The on-demand "Refresh" button always uses the precise NestJS FIFO computation
+- The ETL result is overwritten on next user-triggered refresh
+- If parity matters, consider implementing FIFO in Rust (complex in pure SQL)
+
+### Portfolio summary table cleanup on user deletion
+Both `portfolio_summary` and `portfolio_card_performance` have `ON DELETE CASCADE`
+from users, so user deletion is handled. However, if a user sells all cards and
+deletes all transactions, stale summary rows remain until the next ETL run or
+manual refresh. Consider adding cleanup logic to transaction delete flows.
+
+### Rate limit reset edge case
+The refresh rate limit resets based on `last_refresh_date < CURRENT_DATE`. This
+uses the database server's timezone. If the app server and database server are in
+different timezones, the reset time may be unintuitive. Both should use UTC.
+
+### CSV export scalability
+The current CSV export loads all transactions into memory before streaming. For
+users with thousands of transactions this is fine, but if bulk import (Open
+Question #2) is implemented, consider a streaming/cursor-based approach.
+
+### Remaining unchecked tasks
+- **2.29**: Unit tests for untracked quantity calculation and sync flow (card
+  orchestrator tests). Low priority — the feature works, tests are a gap.
+- **4.31**: Deploy scripts / cron configuration for `portfolio-summary` command.
+  Recommended: add a cron entry to run `cargo run -- portfolio-summary` after
+  the daily ingest completes (e.g., 15 minutes after ingest cron).

@@ -1,4 +1,241 @@
-{{#if hasHistory}}
+{{#if hasSummary}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg pb-5">
+        <div class="text-center pt-4 pb-2">
+            <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Current Value</span>
+                    <span class="stat-value">{{this.summary.totalValue}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Total Invested</span>
+                    <span class="stat-value">{{this.summary.totalCost}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Unrealized P&L</span>
+                    <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">ROI</span>
+                    <span class="stat-value gain-{{this.summary.roiSign}}">{{this.summary.roi}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Realized Gains</span>
+                    <span class="stat-value gain-{{this.summary.realizedGainSign}}">{{this.summary.realizedGain}}</span>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <span class="stat-label">Cards / Units</span>
+                    <span class="stat-value">{{this.summary.totalCards}} / {{this.summary.totalQuantity}}</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+                <span>Updated: {{this.summary.computedAt}}</span>
+                {{#if this.summary.canRefresh}}
+                <button id="refresh-portfolio-btn" class="btn btn-secondary text-xs px-2 py-1">
+                    <i class="fas fa-sync-alt mr-1"></i>Refresh ({{this.summary.refreshesRemaining}} left)
+                </button>
+                {{else}}
+                <span class="text-gray-300 dark:text-gray-600">
+                    <i class="fas fa-sync-alt mr-1"></i>No refreshes remaining today
+                </span>
+                {{/if}}
+            </div>
+        </div>
+    </section>
+
+    {{#if hasHistory}}
+    <div class="content-wrapper px-4 pb-6">
+        <div id="portfolio-chart-container">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Value History</h4>
+                <div class="flex gap-1">
+                    <button class="portfolio-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                    <button class="portfolio-range px-2 py-1 text-xs rounded">All</button>
+                </div>
+            </div>
+            <div id="portfolio-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
+            <div style="position: relative; height: 350px;">
+                <canvas id="portfolio-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if topPerformers.length}}
+    <div class="content-wrapper px-4 pb-6">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <i class="fas fa-arrow-trend-up text-teal-500 mr-1"></i>Top Performers
+        </h4>
+        <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Qty</th>
+                    <th class="table-header">Cost Basis</th>
+                    <th class="table-header">Value</th>
+                    <th class="table-header">Gain</th>
+                    <th class="table-header pr-2">ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each topPerformers as |p|}}
+                <tr class="table-row">
+                    <td class="table-cell pl-2">
+                        {{#if p.cardUrl}}
+                        <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
+                        {{else}}
+                        {{p.cardName}}
+                        {{/if}}
+                        {{#if p.isFoil}}<span class="foil-badge">Foil</span>{{/if}}
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{p.cardSetCode}})</span>
+                    </td>
+                    <td class="table-cell">{{p.quantity}}</td>
+                    <td class="table-cell font-mono">{{p.totalCost}}</td>
+                    <td class="table-cell font-mono">{{p.currentValue}}</td>
+                    <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
+                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if setRoi.length}}
+    <div class="content-wrapper px-4 pb-6">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <i class="fas fa-layer-group text-teal-500 mr-1"></i>ROI by Set
+        </h4>
+        <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Set</th>
+                    <th class="table-header">Cards</th>
+                    <th class="table-header">Invested</th>
+                    <th class="table-header">Value</th>
+                    <th class="table-header">Gain</th>
+                    <th class="table-header pr-2">ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each setRoi as |s|}}
+                <tr class="table-row">
+                    <td class="table-cell pl-2">
+                        <a href="{{s.setUrl}}" class="card-name-link">{{s.setName}}</a>
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{s.setCode}})</span>
+                    </td>
+                    <td class="table-cell">{{s.cardsHeld}}</td>
+                    <td class="table-cell font-mono">{{s.totalCost}}</td>
+                    <td class="table-cell font-mono">{{s.currentValue}}</td>
+                    <td class="table-cell font-mono gain-{{s.gainSign}}">{{s.gain}}</td>
+                    <td class="table-cell pr-2 font-mono gain-{{s.roiSign}}">{{s.roi}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {{/if}}
+
+    <div class="content-wrapper px-4 pb-6">
+        <div id="cashflow-chart-container">
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                <i class="fas fa-money-bill-wave text-teal-500 mr-1"></i>Monthly Cash Flow
+            </h4>
+            <div style="position: relative; height: 300px;">
+                <canvas id="cashflow-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{#if worstPerformers.length}}
+    <div class="content-wrapper px-4 pb-6">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <i class="fas fa-arrow-trend-down text-hotpink-500 mr-1"></i>Worst Performers
+        </h4>
+        <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Qty</th>
+                    <th class="table-header">Cost Basis</th>
+                    <th class="table-header">Value</th>
+                    <th class="table-header">Gain</th>
+                    <th class="table-header pr-2">ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each worstPerformers as |p|}}
+                <tr class="table-row">
+                    <td class="table-cell pl-2">
+                        {{#if p.cardUrl}}
+                        <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
+                        {{else}}
+                        {{p.cardName}}
+                        {{/if}}
+                        {{#if p.isFoil}}<span class="foil-badge">Foil</span>{{/if}}
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{p.cardSetCode}})</span>
+                    </td>
+                    <td class="table-cell">{{p.quantity}}</td>
+                    <td class="table-cell font-mono">{{p.totalCost}}</td>
+                    <td class="table-cell font-mono">{{p.currentValue}}</td>
+                    <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
+                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {{/if}}
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="/public/js/portfolioChart.js" defer></script>
+<script src="/public/js/cashFlowChart.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var refreshBtn = document.getElementById('refresh-portfolio-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async function () {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Refreshing...';
+            try {
+                var response = await fetch('/portfolio/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                var data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Failed to refresh');
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Refresh';
+                }
+            } catch (error) {
+                alert('Error refreshing portfolio');
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Refresh';
+            }
+        });
+    }
+});
+</script>
+
+{{else if hasHistory}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
         <h3 class="page-title">{{this.username}}'s Portfolio</h3>

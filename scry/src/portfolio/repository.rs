@@ -14,39 +14,40 @@ impl PortfolioRepository {
         Self { db }
     }
 
-    pub async fn calculate_portfolio_values(&self) -> Result<Vec<PortfolioValueSnapshot>> {
+    /// Cost basis of currently held cards using average cost allocation.
+    /// For each card: (total_buy_cost × remaining_qty / total_bought), summed per user.
+    pub async fn calculate_holding_costs(&self) -> Result<Vec<(i32, rust_decimal::Decimal)>> {
         let qb = QueryBuilder::new(
-            "SELECT
-                i.user_id,
-                COALESCE(SUM(
-                    i.quantity * CASE WHEN i.foil THEN COALESCE(p.foil, p.normal, 0)
-                                      ELSE COALESCE(p.normal, p.foil, 0) END
-                ), 0)::numeric(12,2) AS total_value,
-                NULL::numeric(12,2) AS total_cost,
-                COALESCE(SUM(i.quantity), 0)::int AS total_cards,
-                CURRENT_DATE AS date
-            FROM inventory i
-            JOIN price p ON p.card_id = i.card_id
-            GROUP BY i.user_id",
-        );
-        self.db.fetch_all_query_builder(qb).await
-    }
-
-    pub async fn calculate_total_costs(&self) -> Result<Vec<(i32, rust_decimal::Decimal)>> {
-        let qb = QueryBuilder::new(
-            "SELECT
-                t.user_id,
-                COALESCE(SUM(
-                    CASE WHEN t.type = 'BUY' THEN t.quantity * t.price_per_unit
-                         WHEN t.type = 'SELL' THEN -t.quantity * t.price_per_unit
-                         ELSE 0 END
-                ), 0)::numeric(12,2) AS total_cost
-            FROM \"transaction\" t
-            GROUP BY t.user_id
-            HAVING SUM(CASE WHEN t.type = 'BUY' THEN t.quantity ELSE 0 END) > 0",
+            "WITH holdings AS (
+                SELECT user_id, card_id, is_foil,
+                    SUM(CASE WHEN type = 'BUY' THEN quantity ELSE 0 END) AS total_bought,
+                    SUM(CASE WHEN type = 'BUY' THEN quantity * price_per_unit ELSE 0 END) AS total_buy_cost,
+                    SUM(CASE WHEN type = 'SELL' THEN quantity ELSE 0 END) AS total_sold
+                FROM \"transaction\"
+                GROUP BY user_id, card_id, is_foil
+                HAVING SUM(CASE WHEN type = 'BUY' THEN quantity ELSE 0 END) > 0
+            )
+            SELECT
+                user_id,
+                SUM(CASE WHEN total_bought > total_sold
+                    THEN total_buy_cost * (total_bought - total_sold) / total_bought
+                    ELSE 0 END
+                )::numeric(12,2) AS total_cost
+            FROM holdings
+            GROUP BY user_id",
         );
         let rows: Vec<(i32, rust_decimal::Decimal)> = self.db.fetch_all_query_builder(qb).await?;
         Ok(rows)
+    }
+
+    /// Find user IDs whose portfolio summary was already computed today
+    /// (e.g. via on-demand refresh in the web app with FIFO precision).
+    pub async fn get_recently_refreshed_user_ids(&self) -> Result<Vec<i32>> {
+        let qb = QueryBuilder::new(
+            "SELECT user_id FROM portfolio_summary WHERE computed_at::date = CURRENT_DATE",
+        );
+        let rows: Vec<(i32,)> = self.db.fetch_all_query_builder(qb).await?;
+        Ok(rows.into_iter().map(|(id,)| id).collect())
     }
 
     pub async fn save_snapshots(&self, snapshots: &[PortfolioValueSnapshot]) -> Result<i64> {
@@ -125,37 +126,6 @@ impl PortfolioRepository {
             GROUP BY i.user_id",
         );
         self.db.fetch_all_query_builder(qb).await
-    }
-
-    /// Compute realized gains per user from transactions.
-    /// Approximation: realized gain ≈ total sell revenue - (avg buy cost × quantity sold) per card.
-    /// For precise FIFO, the NestJS side replays per-card lot matching.
-    pub async fn calculate_realized_gains(&self) -> Result<Vec<(i32, rust_decimal::Decimal)>> {
-        let qb = QueryBuilder::new(
-            "WITH per_card AS (
-                SELECT
-                    t.user_id,
-                    t.card_id,
-                    t.is_foil,
-                    SUM(CASE WHEN t.type = 'SELL' THEN t.quantity * t.price_per_unit ELSE 0 END) AS sell_revenue,
-                    SUM(CASE WHEN t.type = 'SELL' THEN t.quantity ELSE 0 END) AS qty_sold,
-                    CASE WHEN SUM(CASE WHEN t.type = 'BUY' THEN t.quantity ELSE 0 END) > 0
-                        THEN SUM(CASE WHEN t.type = 'BUY' THEN t.quantity * t.price_per_unit ELSE 0 END)
-                             / SUM(CASE WHEN t.type = 'BUY' THEN t.quantity ELSE 0 END)
-                        ELSE 0
-                    END AS avg_buy_cost
-                FROM \"transaction\" t
-                GROUP BY t.user_id, t.card_id, t.is_foil
-                HAVING SUM(CASE WHEN t.type = 'SELL' THEN t.quantity ELSE 0 END) > 0
-            )
-            SELECT
-                user_id,
-                SUM(sell_revenue - avg_buy_cost * qty_sold)::numeric(12,2) AS total_realized_gain
-            FROM per_card
-            GROUP BY user_id",
-        );
-        let rows: Vec<(i32, rust_decimal::Decimal)> = self.db.fetch_all_query_builder(qb).await?;
-        Ok(rows)
     }
 
     /// Compute per-card performance for all users who have transactions

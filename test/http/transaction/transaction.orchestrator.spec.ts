@@ -243,7 +243,7 @@ describe('TransactionOrchestrator', () => {
 
             const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
 
-            const lines = csv.split('\n');
+            const lines = csv.trim().split('\n');
             expect(lines).toHaveLength(1); // headers only
         });
     });

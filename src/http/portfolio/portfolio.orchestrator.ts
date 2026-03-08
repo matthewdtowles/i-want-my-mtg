@@ -170,25 +170,15 @@ export class PortfolioOrchestrator {
     }
 
     async getRealizedGains(
-        req: AuthenticatedRequest,
-        year?: number
-    ): Promise<{ realizedGain: string; realizedGainSign: string; year: number | null }> {
-        this.LOGGER.debug(`Get realized gains for user ${req.user?.id}, year: ${year}.`);
+        req: AuthenticatedRequest
+    ): Promise<{ realizedGain: string; realizedGainSign: string }> {
+        this.LOGGER.debug(`Get realized gains for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const transactions = await this.transactionService.findByUser(req.user.id);
-            const sells = transactions.filter((tx) => {
-                if (tx.type !== 'SELL') return false;
-                if (year) {
-                    const txDate = tx.date instanceof Date ? tx.date : new Date(tx.date);
-                    return txDate.getUTCFullYear() === year;
-                }
-                return true;
-            });
+            const sells = transactions.filter((tx) => tx.type === 'SELL');
 
-            // Compute realized gains from FIFO for filtered sells
             let totalRealizedGain = 0;
-            // Group sells by card+foil for FIFO computation
             const cardFoilKeys = new Set(sells.map((s) => `${s.cardId}:${s.isFoil}`));
 
             for (const key of cardFoilKeys) {
@@ -200,21 +190,12 @@ export class PortfolioOrchestrator {
                     cardId,
                     isFoil
                 );
-                // For year-filtered, we need to re-derive gains only for sells in the given year
-                // The full FIFO result includes all realized gains, which is what we want for all-time
-                if (!year) {
-                    totalRealizedGain += fifo.totalRealizedGain;
-                } else {
-                    // For year filtering, we need per-sell allocation which is complex
-                    // For now, use full realized gains when no year filter, approximate otherwise
-                    totalRealizedGain += fifo.totalRealizedGain;
-                }
+                totalRealizedGain += fifo.totalRealizedGain;
             }
 
             return {
                 realizedGain: TransactionPresenter.formatGain(totalRealizedGain),
                 realizedGainSign: TransactionPresenter.gainSign(totalRealizedGain),
-                year: year || null,
             };
         } catch (error) {
             this.LOGGER.debug(`Error getting realized gains: ${error?.message}`);

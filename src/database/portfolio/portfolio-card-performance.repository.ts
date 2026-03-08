@@ -31,11 +31,12 @@ export class PortfolioCardPerformanceRepository implements PortfolioCardPerforma
         );
 
         const order: 'ASC' | 'DESC' = sortBy === 'worst' ? 'ASC' : 'DESC';
-        const results = await this.repository.find({
-            where: { userId },
-            order: { unrealizedGain: order, realizedGain: order },
-            take: limit,
-        });
+        const results = await this.repository
+            .createQueryBuilder('pcp')
+            .where('pcp.user_id = :userId', { userId })
+            .orderBy('pcp.unrealized_gain + pcp.realized_gain', order)
+            .take(limit)
+            .getMany();
 
         return results.map(PortfolioCardPerformanceMapper.toCore);
     }

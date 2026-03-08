@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { stringify } from 'csv-stringify';
 import { CardService } from 'src/core/card/card.service';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -167,46 +168,49 @@ export class TransactionOrchestrator {
 
     async exportCsv(req: AuthenticatedRequest): Promise<string> {
         this.LOGGER.debug(`Export CSV for user ${req.user?.id}.`);
-        HttpErrorHandler.validateAuthenticatedRequest(req);
-        const transactions = await this.transactionService.findByUser(req.user.id);
-        const cardIds = [...new Set(transactions.map((t) => t.cardId))];
-        const cardMap = await this.buildCardMap(cardIds);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const transactions = await this.transactionService.findByUser(req.user.id);
+            const cardIds = [...new Set(transactions.map((t) => t.cardId))];
+            const cardMap = await this.buildCardMap(cardIds);
 
-        const headers = [
-            'Date',
-            'Type',
-            'Card Name',
-            'Set',
-            'Collector #',
-            'Foil',
-            'Quantity',
-            'Price Per Unit',
-            'Total',
-            'Fees',
-            'Source',
-            'Notes',
-        ];
+            const rows = transactions.map((t) => {
+                const card = cardMap.get(t.cardId);
+                const total = t.quantity * t.pricePerUnit;
+                return {
+                    Date: TransactionPresenter.formatDate(t.date),
+                    Type: t.type,
+                    'Card Name': TransactionPresenter.escapeCsvField(card?.name || ''),
+                    Set: card?.setCode?.toUpperCase() || '',
+                    'Collector #': card?.number || '',
+                    Foil: t.isFoil ? 'Yes' : 'No',
+                    Quantity: String(t.quantity),
+                    'Price Per Unit': t.pricePerUnit.toFixed(2),
+                    Total: total.toFixed(2),
+                    Fees: t.fees != null ? t.fees.toFixed(2) : '',
+                    Source: TransactionPresenter.escapeCsvField(t.source || ''),
+                    Notes: TransactionPresenter.escapeCsvField(t.notes || ''),
+                };
+            });
 
-        const rows = transactions.map((t) => {
-            const card = cardMap.get(t.cardId);
-            const total = t.quantity * t.pricePerUnit;
-            return [
-                TransactionPresenter.formatDate(t.date),
-                t.type,
-                TransactionPresenter.escapeCsvField(card?.name || ''),
-                card?.setCode?.toUpperCase() || '',
-                card?.number || '',
-                t.isFoil ? 'Yes' : 'No',
-                String(t.quantity),
-                t.pricePerUnit.toFixed(2),
-                total.toFixed(2),
-                t.fees != null ? t.fees.toFixed(2) : '',
-                TransactionPresenter.escapeCsvField(t.source || ''),
-                TransactionPresenter.escapeCsvField(t.notes || ''),
-            ].join(',');
-        });
-
-        return [headers.join(','), ...rows].join('\n');
+            return new Promise((resolve, reject) => {
+                stringify(
+                    rows,
+                    {
+                        header: true,
+                        columns: [
+                            'Date', 'Type', 'Card Name', 'Set', 'Collector #',
+                            'Foil', 'Quantity', 'Price Per Unit', 'Total',
+                            'Fees', 'Source', 'Notes',
+                        ],
+                    },
+                    (err, output) => (err ? reject(err) : resolve(output))
+                );
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error exporting CSV for user ${req.user?.id}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'exportCsv');
+        }
     }
 
     private async buildCardMap(

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/portfolio-summary.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PortfolioSummaryMapper } from './portfolio-summary.mapper';
 import { PortfolioSummaryOrmEntity } from './portfolio-summary.orm-entity';
 
@@ -24,10 +24,27 @@ export class PortfolioSummaryRepository implements PortfolioSummaryRepositoryPor
         return result ? PortfolioSummaryMapper.toCore(result) : null;
     }
 
+    async findByUserForUpdate(
+        userId: number,
+        manager: EntityManager
+    ): Promise<PortfolioSummary | null> {
+        this.LOGGER.debug(`Finding portfolio summary for user ${userId} with row lock.`);
+        const result = await manager
+            .createQueryBuilder(PortfolioSummaryOrmEntity, 'ps')
+            .setLock('pessimistic_write')
+            .where('ps.user_id = :userId', { userId })
+            .getOne();
+        return result ? PortfolioSummaryMapper.toCore(result) : null;
+    }
+
     async save(summary: PortfolioSummary): Promise<PortfolioSummary> {
         this.LOGGER.debug(`Saving portfolio summary for user ${summary.userId}.`);
         const orm = PortfolioSummaryMapper.toOrmEntity(summary);
         const saved = await this.repository.save(orm);
         return PortfolioSummaryMapper.toCore(saved);
+    }
+
+    getManager(): EntityManager {
+        return this.repository.manager;
     }
 }

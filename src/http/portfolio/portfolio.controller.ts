@@ -54,14 +54,9 @@ export class PortfolioController {
     @UseGuards(JwtAuthGuard)
     @Get('realized-gains')
     async getRealizedGains(
-        @Req() req: AuthenticatedRequest,
-        @Query('year') year?: string
-    ): Promise<{ realizedGain: string; realizedGainSign: string; year: number | null }> {
+        @Req() req: AuthenticatedRequest
+    ): Promise<{ realizedGain: string; realizedGainSign: string }> {
         this.LOGGER.log(`Get realized gains for user ${req.user?.id}.`);
-        const parsedYear = year ? parseInt(year, 10) : undefined;
-        return this.orchestrator.getRealizedGains(
-            req,
-            Number.isFinite(parsedYear) && parsedYear > 1900 ? parsedYear : undefined
-        );
+        return this.orchestrator.getRealizedGains(req);
     }
 }

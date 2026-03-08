@@ -109,7 +109,11 @@ export class TransactionPresenter {
     }
 
     static escapeCsvField(value: string): string {
-        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        // Mitigate CSV formula injection for spreadsheet apps
+        if (/^[=+\-@]/.test(value)) {
+            value = "'" + value;
+        }
+        if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
             return '"' + value.replace(/"/g, '""') + '"';
         }
         return value;

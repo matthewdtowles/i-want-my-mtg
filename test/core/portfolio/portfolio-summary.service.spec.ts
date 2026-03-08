@@ -19,9 +19,12 @@ describe('PortfolioSummaryService', () => {
     let inventoryService: jest.Mocked<InventoryService>;
     let transactionService: jest.Mocked<TransactionService>;
 
+    const mockTransaction = jest.fn((cb: (manager: any) => Promise<any>) => cb({}));
     const mockSummaryRepo = {
         findByUser: jest.fn(),
+        findByUserForUpdate: jest.fn(),
         save: jest.fn(),
+        getManager: jest.fn(() => ({ transaction: mockTransaction })),
     };
 
     const mockPerformanceRepo = {
@@ -280,7 +283,7 @@ describe('PortfolioSummaryService', () => {
 
     describe('refreshSummary', () => {
         it('should allow refresh when no previous summary exists', async () => {
-            summaryRepository.findByUser.mockResolvedValue(null);
+            summaryRepository.findByUserForUpdate.mockResolvedValue(null);
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
@@ -302,7 +305,7 @@ describe('PortfolioSummaryService', () => {
                 refreshesToday: 1,
                 lastRefreshDate: new Date(), // today
             });
-            summaryRepository.findByUser.mockResolvedValue(existing);
+            summaryRepository.findByUserForUpdate.mockResolvedValue(existing);
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
@@ -325,7 +328,7 @@ describe('PortfolioSummaryService', () => {
                 refreshesToday: 3,
                 lastRefreshDate: yesterday,
             });
-            summaryRepository.findByUser.mockResolvedValue(existing);
+            summaryRepository.findByUserForUpdate.mockResolvedValue(existing);
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
@@ -346,7 +349,7 @@ describe('PortfolioSummaryService', () => {
                 refreshesToday: 3,
                 lastRefreshDate: new Date(),
             });
-            summaryRepository.findByUser.mockResolvedValue(existing);
+            summaryRepository.findByUserForUpdate.mockResolvedValue(existing);
 
             await expect(service.refreshSummary(1)).rejects.toThrow(
                 'Daily refresh limit reached (3)'
@@ -363,7 +366,7 @@ describe('PortfolioSummaryService', () => {
                 refreshesToday: 1,
                 lastRefreshDate: new Date(),
             });
-            summaryRepository.findByUser.mockResolvedValue(existing);
+            summaryRepository.findByUserForUpdate.mockResolvedValue(existing);
 
             await expect(service.refreshSummary(1)).rejects.toThrow('Please wait');
         });

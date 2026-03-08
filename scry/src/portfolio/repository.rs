@@ -127,32 +127,32 @@ impl PortfolioRepository {
         self.db.fetch_all_query_builder(qb).await
     }
 
-    /// Compute realized gains per user from transactions using FIFO
+    /// Compute realized gains per user from transactions.
+    /// Approximation: realized gain ≈ total sell revenue - (avg buy cost × quantity sold) per card.
+    /// For precise FIFO, the NestJS side replays per-card lot matching.
     pub async fn calculate_realized_gains(&self) -> Result<Vec<(i32, rust_decimal::Decimal)>> {
-        // Net cost: total BUY cost minus total SELL cost
-        // Realized gain = total SELL revenue - cost of sold lots (FIFO)
-        // Simplified: use total sell revenue - total buy cost as an approximation
-        // For precise FIFO, we'd need per-card lot matching which is complex in SQL
-        // The NestJS side does precise FIFO; ETL uses this simpler aggregate
         let qb = QueryBuilder::new(
-            "SELECT
-                t.user_id,
-                COALESCE(SUM(
-                    CASE WHEN t.type = 'SELL' THEN t.quantity * t.price_per_unit ELSE 0 END
-                ) - SUM(
-                    CASE WHEN t.type = 'BUY' THEN t.quantity * t.price_per_unit ELSE 0 END
-                ) + (
-                    SELECT COALESCE(SUM(
-                        i2.quantity * CASE WHEN i2.foil THEN COALESCE(p2.foil, p2.normal, 0)
-                                          ELSE COALESCE(p2.normal, p2.foil, 0) END
-                    ), 0)
-                    FROM inventory i2
-                    JOIN price p2 ON p2.card_id = i2.card_id
-                    WHERE i2.user_id = t.user_id
-                ), 0)::numeric(12,2) AS total_realized_gain
-            FROM \"transaction\" t
-            GROUP BY t.user_id
-            HAVING SUM(CASE WHEN t.type = 'SELL' THEN t.quantity ELSE 0 END) > 0",
+            "WITH per_card AS (
+                SELECT
+                    t.user_id,
+                    t.card_id,
+                    t.is_foil,
+                    SUM(CASE WHEN t.type = 'SELL' THEN t.quantity * t.price_per_unit ELSE 0 END) AS sell_revenue,
+                    SUM(CASE WHEN t.type = 'SELL' THEN t.quantity ELSE 0 END) AS qty_sold,
+                    CASE WHEN SUM(CASE WHEN t.type = 'BUY' THEN t.quantity ELSE 0 END) > 0
+                        THEN SUM(CASE WHEN t.type = 'BUY' THEN t.quantity * t.price_per_unit ELSE 0 END)
+                             / SUM(CASE WHEN t.type = 'BUY' THEN t.quantity ELSE 0 END)
+                        ELSE 0
+                    END AS avg_buy_cost
+                FROM \"transaction\" t
+                GROUP BY t.user_id, t.card_id, t.is_foil
+                HAVING SUM(CASE WHEN t.type = 'SELL' THEN t.quantity ELSE 0 END) > 0
+            )
+            SELECT
+                user_id,
+                SUM(sell_revenue - avg_buy_cost * qty_sold)::numeric(12,2) AS total_realized_gain
+            FROM per_card
+            GROUP BY user_id",
         );
         let rows: Vec<(i32, rust_decimal::Decimal)> = self.db.fetch_all_query_builder(qb).await?;
         Ok(rows)

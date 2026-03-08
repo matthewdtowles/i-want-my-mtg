@@ -63,27 +63,29 @@ export class PortfolioSummaryService {
     async refreshSummary(userId: number): Promise<PortfolioSummary> {
         this.LOGGER.debug(`Refresh portfolio summary for user ${userId}.`);
 
-        const existing = await this.summaryRepository.findByUser(userId);
-        if (existing) {
-            this.assertCanRefresh(existing);
-        }
+        const manager = this.summaryRepository.getManager();
+        return manager.transaction(async (txManager) => {
+            const existing = await this.summaryRepository.findByUserForUpdate(userId, txManager);
+            if (existing) {
+                this.assertCanRefresh(existing);
+            }
 
-        const summary = await this.computeSummary(userId);
+            const summary = await this.computeSummary(userId);
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-        const isNewDay = !existing || existing.lastRefreshDate.getTime() < today.getTime();
+            const isNewDay = !existing || existing.lastRefreshDate.getTime() < today.getTime();
+            const refreshesToday = isNewDay ? 1 : (existing?.refreshesToday ?? 0) + 1;
 
-        const refreshesToday = isNewDay ? 1 : (existing?.refreshesToday ?? 0) + 1;
+            const summaryToSave = new PortfolioSummary({
+                ...summary,
+                refreshesToday,
+                lastRefreshDate: new Date(),
+            });
 
-        const summaryToSave = new PortfolioSummary({
-            ...summary,
-            refreshesToday,
-            lastRefreshDate: new Date(),
+            return this.summaryRepository.save(summaryToSave);
         });
-
-        return this.summaryRepository.save(summaryToSave);
     }
 
     async computeSummary(userId: number): Promise<{
@@ -113,23 +115,26 @@ export class PortfolioSummaryService {
             totalCost = 0;
             totalRealizedGain = 0;
 
-            // Group inventory by (cardId, isFoil) for per-card computation
+            // Prebuild maps for O(1) lookups
+            const inventoryMap = new Map<string, typeof inventoryItems[0]>();
             const cardFoilKeys = new Set<string>();
             for (const inv of inventoryItems) {
-                cardFoilKeys.add(`${inv.cardId}:${inv.isFoil}`);
+                const key = `${inv.cardId}:${inv.isFoil}`;
+                inventoryMap.set(key, inv);
+                cardFoilKeys.add(key);
             }
-            // Also include cards that were fully sold (have transactions but no inventory)
+            const transactionCardKeys = new Set<string>();
             for (const tx of transactions) {
-                cardFoilKeys.add(`${tx.cardId}:${tx.isFoil}`);
+                const key = `${tx.cardId}:${tx.isFoil}`;
+                transactionCardKeys.add(key);
+                cardFoilKeys.add(key);
             }
 
             for (const key of cardFoilKeys) {
                 const [cardId, foilStr] = key.split(':');
                 const isFoil = foilStr === 'true';
 
-                const inventoryItem = inventoryItems.find(
-                    (inv) => inv.cardId === cardId && inv.isFoil === isFoil
-                );
+                const inventoryItem = inventoryMap.get(key);
                 const quantity = inventoryItem?.quantity ?? 0;
 
                 // Get market price for current value
@@ -166,10 +171,7 @@ export class PortfolioSummaryService {
                         : null;
 
                 // Only include cards that have transaction data
-                const hasCardTransactions = transactions.some(
-                    (tx) => tx.cardId === cardId && tx.isFoil === isFoil
-                );
-                if (hasCardTransactions) {
+                if (transactionCardKeys.has(key)) {
                     performances.push(
                         new PortfolioCardPerformance({
                             userId,
@@ -192,10 +194,10 @@ export class PortfolioSummaryService {
         // Save per-card performance data
         await this.performanceRepository.replaceForUser(userId, performances);
 
-        let totalCards = 0;
+        const distinctCardIds = new Set(inventoryItems.map((inv) => inv.cardId));
+        const totalCards = distinctCardIds.size;
         let totalQuantity = 0;
         for (const inv of inventoryItems) {
-            totalCards++;
             totalQuantity += inv.quantity;
         }
 

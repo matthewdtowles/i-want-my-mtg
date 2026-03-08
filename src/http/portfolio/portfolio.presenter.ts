@@ -53,9 +53,9 @@ export class PortfolioPresenter {
         summary: PortfolioSummary,
         maxDailyRefreshes: number
     ): PortfolioSummaryViewData {
-        const hasCost = summary.totalCost != null && summary.totalCost > 0;
+        const hasCost = summary.totalCost != null;
         const totalGain = hasCost ? summary.totalValue - summary.totalCost : 0;
-        const roi = hasCost ? (totalGain / summary.totalCost) * 100 : 0;
+        const roi = hasCost && summary.totalCost > 0 ? (totalGain / summary.totalCost) * 100 : 0;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);

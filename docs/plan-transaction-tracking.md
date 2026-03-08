@@ -268,11 +268,14 @@ portfolio_summary {
 `refreshes_today` and `last_refresh_date` track rate limiting. When
 `last_refresh_date < CURRENT_DATE`, reset `refreshes_today` to 0.
 
-##### Realized gains by year
-Sells are filtered by calendar year to show annual realized gains. The FIFO cost
-basis for each sell is determined by matching against buy lots at query time (lot
-order is stable regardless of year filter). The year list is derived from the
-user's actual sell dates — no empty years shown.
+##### Realized gains by year (deferred)
+**Status: deferred.** The current implementation computes all-time realized gains
+only. Year-based filtering is a future enhancement.
+
+Design (for when implemented): Sells are filtered by calendar year to show annual
+realized gains. The FIFO cost basis for each sell is determined by matching
+against buy lots at query time (lot order is stable regardless of year filter).
+The year list is derived from the user's actual sell dates — no empty years shown.
 
 Scoped data when a year is selected:
 - **Realized gains**: filtered to sells in that year
@@ -308,10 +311,11 @@ INDEX: (user_id, unrealized_gain + realized_gain ASC)   -- for worst performers
 Rows are replaced in full on each snapshot computation (DELETE + INSERT for user,
 or UPSERT per card). This table is the source for tasks 4.2, 4.3, and 4.4.
 
-##### Realized gains by year storage
-Annual realized gains are derived at query time by filtering sells by date in the
-FIFO computation. This avoids storing year-level breakdowns in the snapshot since
-the transaction ledger is the source of truth and sell counts are bounded.
+##### Realized gains by year storage (deferred)
+When year filtering is implemented, annual realized gains will be derived at
+query time by filtering sells by date in the FIFO computation. This avoids
+storing year-level breakdowns in the snapshot since the transaction ledger is the
+source of truth and sell counts are bounded.
 
 ##### DRY and 12-factor principles
 - **Single computation path**: one `PortfolioSummaryCalculator` (or equivalent)

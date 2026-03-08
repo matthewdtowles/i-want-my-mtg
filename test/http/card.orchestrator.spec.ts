@@ -16,6 +16,7 @@ describe('CardOrchestrator', () => {
     let orchestrator: CardOrchestrator;
     let cardService: CardService;
     let inventoryService: InventoryService;
+    let transactionService: jest.Mocked<TransactionService>;
 
     const mockCardService = {
         findBySetCodeAndNumber: jest.fn(),
@@ -106,6 +107,7 @@ describe('CardOrchestrator', () => {
                             unrealizedGain: 0,
                             realizedGain: 0,
                         }),
+                        getRemainingQuantity: jest.fn().mockResolvedValue(0),
                     },
                 },
             ],
@@ -114,6 +116,7 @@ describe('CardOrchestrator', () => {
         orchestrator = module.get<CardOrchestrator>(CardOrchestrator);
         cardService = module.get<CardService>(CardService);
         inventoryService = module.get<InventoryService>(InventoryService);
+        transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
 
         (HttpErrorHandler.toHttpException as unknown as jest.Mock) =
             mockHttpErrorHandler.toHttpException;
@@ -336,6 +339,134 @@ describe('CardOrchestrator', () => {
             expect(result.tableHeadersRow).toBeDefined();
             expect(result.tableHeadersRow.headers).toBeDefined();
             expect(result.tableHeadersRow.headers.length).toBe(4);
+        });
+    });
+
+    describe('untracked quantity calculation', () => {
+        const cardWithFoil = new Card({
+            id: 'card1',
+            imgSrc: 'https://example.com/card1.png',
+            legalities: [],
+            name: 'Lightning Bolt',
+            setCode: 'TST',
+            number: '1',
+            manaCost: '{R}',
+            type: 'Instant',
+            rarity: CardRarity.Common,
+            artist: 'Christopher Rush',
+            prices: [],
+            sortNumber: '000001',
+            inMain: true,
+            hasFoil: true,
+            hasNonFoil: true,
+        });
+
+        const setupMocks = (
+            normalInv: number,
+            foilInv: number,
+            txNormal: number,
+            txFoil: number
+        ) => {
+            const inventory = [];
+            if (normalInv > 0)
+                inventory.push({ userId: 1, cardId: 'card1', quantity: normalInv, isFoil: false });
+            if (foilInv > 0)
+                inventory.push({ userId: 1, cardId: 'card1', quantity: foilInv, isFoil: true });
+
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(cardWithFoil);
+            mockCardService.findWithName.mockResolvedValue([cardWithFoil]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+            mockInventoryService.findForUser.mockResolvedValue(inventory);
+            transactionService.getRemainingQuantity
+                .mockResolvedValueOnce(txNormal)
+                .mockResolvedValueOnce(txFoil);
+        };
+
+        it('should compute untracked normal quantity when inventory > transactions', async () => {
+            setupMocks(5, 0, 2, 0);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(3);
+            expect(result.untrackedFoil).toBe(0);
+        });
+
+        it('should compute untracked foil quantity when inventory > transactions', async () => {
+            setupMocks(0, 4, 0, 1);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(3);
+        });
+
+        it('should compute untracked for both normal and foil simultaneously', async () => {
+            setupMocks(5, 3, 2, 1);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(3);
+            expect(result.untrackedFoil).toBe(2);
+        });
+
+        it('should return 0 untracked when inventory equals transaction quantity', async () => {
+            setupMocks(3, 2, 3, 2);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(0);
+        });
+
+        it('should never return negative untracked (transactions > inventory)', async () => {
+            setupMocks(1, 0, 5, 0);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(0);
+        });
+
+        it('should return 0 untracked when no inventory exists', async () => {
+            setupMocks(0, 0, 0, 0);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(0);
+        });
+
+        it('should handle getRemainingQuantity errors gracefully', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(cardWithFoil);
+            mockCardService.findWithName.mockResolvedValue([cardWithFoil]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+            mockInventoryService.findForUser.mockResolvedValue([
+                { userId: 1, cardId: 'card1', quantity: 5, isFoil: false },
+            ]);
+            transactionService.getRemainingQuantity.mockRejectedValue(new Error('DB error'));
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(0);
+        });
+
+        it('should not compute untracked for unauthenticated users', async () => {
+            const unauthenticatedReq = {
+                user: null,
+                query: { page: '1', limit: '10' },
+                isAuthenticated: () => false,
+            } as unknown as AuthenticatedRequest;
+
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(cardWithFoil);
+            mockCardService.findWithName.mockResolvedValue([cardWithFoil]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+
+            const result = await orchestrator.findSetCard(unauthenticatedReq, 'TST', '1');
+
+            expect(result.untrackedNormal).toBe(0);
+            expect(result.untrackedFoil).toBe(0);
+            expect(transactionService.getRemainingQuantity).not.toHaveBeenCalled();
         });
     });
 

@@ -199,9 +199,18 @@ export class TransactionOrchestrator {
                     {
                         header: true,
                         columns: [
-                            'Date', 'Type', 'Card Name', 'Set', 'Collector #',
-                            'Foil', 'Quantity', 'Price Per Unit', 'Total',
-                            'Fees', 'Source', 'Notes',
+                            'Date',
+                            'Type',
+                            'Card Name',
+                            'Set',
+                            'Collector #',
+                            'Foil',
+                            'Quantity',
+                            'Price Per Unit',
+                            'Total',
+                            'Fees',
+                            'Source',
+                            'Notes',
                         ],
                     },
                     (err, output) => (err ? reject(err) : resolve(output))

@@ -18,6 +18,7 @@ export interface PortfolioSummaryViewData {
     computedAt: string;
     canRefresh: boolean;
     refreshesRemaining: number;
+    isFifo: boolean;
 }
 
 export interface CardPerformanceViewData {
@@ -83,6 +84,7 @@ export class PortfolioPresenter {
             computedAt: PortfolioPresenter.formatTimestamp(summary.computedAt),
             canRefresh: refreshesRemaining > 0,
             refreshesRemaining,
+            isFifo: summary.computationMethod === 'fifo',
         };
     }
 

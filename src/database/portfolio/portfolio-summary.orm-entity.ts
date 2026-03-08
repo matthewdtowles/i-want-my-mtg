@@ -36,6 +36,9 @@ export class PortfolioSummaryOrmEntity {
     @Column({ name: 'last_refresh_date', type: 'date', default: () => 'CURRENT_DATE' })
     lastRefreshDate: Date;
 
+    @Column({ name: 'computation_method', type: 'varchar', length: 10, default: 'average' })
+    computationMethod: string;
+
     @OneToOne(() => UserOrmEntity, { onDelete: 'CASCADE' })
     @JoinColumn({
         name: 'user_id',

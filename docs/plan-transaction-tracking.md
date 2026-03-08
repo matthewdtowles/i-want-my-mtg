@@ -188,7 +188,7 @@ is populated only for users who have transaction data.
 - [x] 2.26 Add logic to card detail orchestrator to compute untracked quantity (inventory qty minus transaction-derived qty)
 - [x] 2.27 Show sync prompt on card detail page when untracked > 0: "N untracked — Record as buy?" with market price pre-filled
 - [x] 2.28 Handle sync form submission — creates BUY transaction(s) without double-incrementing inventory (since those items are already in inventory)
-- [ ] 2.29 Write unit tests for untracked quantity calculation and sync flow
+- [x] 2.29 Write unit tests for untracked quantity calculation and sync flow
 
 **PR boundary: Phase 2.5 ships as one or two PRs (bug fixes + editing, then inventory sync).**
 
@@ -416,7 +416,7 @@ the transaction ledger is the source of truth and sell counts are bounded.
   - For each user with inventory: compute total_value, total_cost, total_realized_gain
   - Compute per-card performance rows
   - UPSERT into `portfolio_summary` and `portfolio_card_performance`
-- [ ] 4.31 Add to deploy scripts / cron configuration (runs after ingest, not coupled to it)
+- [x] 4.31 Add to deploy scripts / cron configuration (runs after ingest, not coupled to it)
 - [x] 4.32 Write Rust tests for portfolio summary computation
 
 **PR boundary: 4F ships as one PR. Can be built in parallel with 4B.**
@@ -536,11 +536,12 @@ docker/postgres/migrations/
 The Scry ETL uses a simplified SQL-based average cost approach for realized gains
 and per-card performance, while the NestJS side does precise FIFO lot matching.
 For users with complex buy/sell histories (many partial sells at different prices),
-the two may produce slightly different numbers. This is acceptable for the ETL's
-bulk overnight computation, but worth noting:
-- The on-demand "Refresh" button always uses the precise NestJS FIFO computation
-- The ETL result is overwritten on next user-triggered refresh
-- If parity matters, consider implementing FIFO in Rust (complex in pure SQL)
+the two may produce slightly different numbers. This difference is now explicitly
+communicated to users via the `computation_method` column on `portfolio_summary`:
+- The ETL writes `computation_method = 'average'` when it computes summaries
+- The "Recalculate (FIFO)" button writes `computation_method = 'fifo'`
+- The UI shows a badge (Average/FIFO) and dynamic tooltip text based on the method
+- Users are educated that FIFO is the standard method for tracking real gains
 
 ### Portfolio summary table cleanup on user deletion
 Both `portfolio_summary` and `portfolio_card_performance` have `ON DELETE CASCADE`
@@ -558,9 +559,5 @@ The current CSV export loads all transactions into memory before streaming. For
 users with thousands of transactions this is fine, but if bulk import (Open
 Question #2) is implemented, consider a streaming/cursor-based approach.
 
-### Remaining unchecked tasks
-- **2.29**: Unit tests for untracked quantity calculation and sync flow (card
-  orchestrator tests). Low priority — the feature works, tests are a gap.
-- **4.31**: Deploy scripts / cron configuration for `portfolio-summary` command.
-  Recommended: add a cron entry to run `cargo run -- portfolio-summary` after
-  the daily ingest completes (e.g., 15 minutes after ingest cron).
+### All tasks complete
+All planned tasks are now checked off. The implementation is complete.

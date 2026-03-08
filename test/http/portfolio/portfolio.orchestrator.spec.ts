@@ -142,6 +142,32 @@ describe('PortfolioOrchestrator', () => {
             expect(result.summary.totalQuantity).toBe(50);
         });
 
+        it('should set isFifo false for average computation method', async () => {
+            portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(testSummary);
+            summaryService.getCardPerformance.mockResolvedValue([]);
+            summaryService.getSetRoi.mockResolvedValue([]);
+
+            const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
+
+            expect(result.summary.isFifo).toBe(false);
+        });
+
+        it('should set isFifo true for fifo computation method', async () => {
+            const fifoSummary = new PortfolioSummary({
+                ...testSummary,
+                computationMethod: 'fifo',
+            });
+            portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(fifoSummary);
+            summaryService.getCardPerformance.mockResolvedValue([]);
+            summaryService.getSetRoi.mockResolvedValue([]);
+
+            const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
+
+            expect(result.summary.isFifo).toBe(true);
+        });
+
         it('should throw on unauthenticated request', async () => {
             await expect(
                 orchestrator.getPortfolioView(mockUnauthenticatedRequest)

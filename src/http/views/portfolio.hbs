@@ -12,11 +12,11 @@
                     <span class="stat-value">{{this.summary.totalValue}}</span>
                 </div>
                 <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Total Invested</span>
+                    <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) — the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first — the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
                 </div>
                 <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Unrealized P&L</span>
+                    <span class="stat-label">Unrealized P&L{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Unrealized P&L calculated using FIFO (first-in, first-out) lot matching for accurate per-unit cost tracking."}}{{else}}{{>costBasisTooltip title="Based on Average Cost" description="Unrealized P&L uses average cost basis. Click Recalculate below for precise FIFO-based P&L, which is the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
                 </div>
                 <div class="stat-card stat-card-highlight">
@@ -33,15 +33,18 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-center gap-3 text-xs text-gray-400 dark:text-gray-500">
-                <span>Updated: {{this.summary.computedAt}}</span>
+            <div class="flex flex-col items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                <div class="flex items-center gap-2">
+                    <span>Updated: {{this.summary.computedAt}}</span>
+                    <span class="px-1.5 py-0.5 rounded {{#if this.summary.isFifo}}bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300{{else}}bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400{{/if}}">{{#if this.summary.isFifo}}FIFO{{else}}Average{{/if}}</span>
+                </div>
                 {{#if this.summary.canRefresh}}
-                <button id="refresh-portfolio-btn" class="btn btn-secondary text-xs px-2 py-1">
-                    <i class="fas fa-sync-alt mr-1"></i>Refresh ({{this.summary.refreshesRemaining}} left)
+                <button id="refresh-portfolio-btn" class="btn btn-secondary text-xs px-3 py-1.5">
+                    <i class="fas fa-calculator mr-1"></i>Recalculate (FIFO) · {{this.summary.refreshesRemaining}} left
                 </button>
                 {{else}}
                 <span class="text-gray-300 dark:text-gray-600">
-                    <i class="fas fa-sync-alt mr-1"></i>No refreshes remaining today
+                    <i class="fas fa-calculator mr-1"></i>No recalculations remaining today
                 </span>
                 {{/if}}
             </div>
@@ -79,7 +82,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Card</th>
                     <th class="table-header">Qty</th>
-                    <th class="table-header">Cost Basis</th>
+                    <th class="table-header">Cost Basis{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>
@@ -121,7 +124,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Set</th>
                     <th class="table-header">Cards</th>
-                    <th class="table-header">Invested</th>
+                    <th class="table-header">Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Set-level investment totals use FIFO cost basis aggregated from per-card lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Set-level investment totals use average cost basis. Recalculate for FIFO cost basis."}}{{/if}}</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>
@@ -169,7 +172,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Card</th>
                     <th class="table-header">Qty</th>
-                    <th class="table-header">Cost Basis</th>
+                    <th class="table-header">Cost Basis{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>
@@ -203,15 +206,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/portfolioChart.js" defer></script>
 <script src="/public/js/cashFlowChart.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    new TooltipManager({
+        triggerSelector: '.cost-basis-tooltip-trigger',
+        tooltipSelector: '.cost-basis-tooltip',
+    });
+
     var refreshBtn = document.getElementById('refresh-portfolio-btn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', async function () {
             refreshBtn.disabled = true;
-            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Refreshing...';
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Recalculating...';
             try {
                 var response = await fetch('/portfolio/refresh', {
                     method: 'POST',
@@ -221,14 +230,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert(data.error || 'Failed to refresh');
+                    alert(data.error || 'Failed to recalculate');
                     refreshBtn.disabled = false;
-                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Refresh';
+                    refreshBtn.innerHTML = '<i class="fas fa-calculator mr-1"></i>Recalculate (FIFO)';
                 }
             } catch (error) {
-                alert('Error refreshing portfolio');
+                alert('Error recalculating portfolio');
                 refreshBtn.disabled = false;
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Refresh';
+                refreshBtn.innerHTML = '<i class="fas fa-calculator mr-1"></i>Recalculate (FIFO)';
             }
         });
     }

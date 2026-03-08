@@ -16,6 +16,7 @@ export class PortfolioSummaryMapper {
                 orm.lastRefreshDate instanceof Date
                     ? orm.lastRefreshDate
                     : new Date(orm.lastRefreshDate),
+            computationMethod: (orm.computationMethod as 'average' | 'fifo') || 'average',
         });
     }
 
@@ -30,6 +31,7 @@ export class PortfolioSummaryMapper {
         orm.computedAt = entity.computedAt;
         orm.refreshesToday = entity.refreshesToday;
         orm.lastRefreshDate = entity.lastRefreshDate;
+        orm.computationMethod = entity.computationMethod;
         return orm;
     }
 }

@@ -203,7 +203,7 @@ impl PortfolioRepository {
             return Ok(0);
         }
         let mut qb = QueryBuilder::new(
-            "INSERT INTO portfolio_summary (user_id, total_value, total_cost, total_realized_gain, total_cards, total_quantity, computed_at, refreshes_today, last_refresh_date)",
+            "INSERT INTO portfolio_summary (user_id, total_value, total_cost, total_realized_gain, total_cards, total_quantity, computed_at, refreshes_today, last_refresh_date, computation_method)",
         );
         qb.push_values(summaries, |mut b, s| {
             b.push_bind(s.user_id)
@@ -214,7 +214,8 @@ impl PortfolioRepository {
                 .push_bind(s.total_quantity)
                 .push("NOW()")
                 .push("0")
-                .push("CURRENT_DATE");
+                .push("CURRENT_DATE")
+                .push_bind("average");
         });
         qb.push(
             " ON CONFLICT (user_id) DO UPDATE SET
@@ -223,7 +224,8 @@ impl PortfolioRepository {
                 total_realized_gain = EXCLUDED.total_realized_gain,
                 total_cards = EXCLUDED.total_cards,
                 total_quantity = EXCLUDED.total_quantity,
-                computed_at = NOW()",
+                computed_at = NOW(),
+                computation_method = 'average'",
         );
         self.db.execute_query_builder(qb).await
     }

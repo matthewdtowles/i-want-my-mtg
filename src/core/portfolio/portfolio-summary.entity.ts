@@ -1,5 +1,7 @@
 import { validateInit } from 'src/core/validation.util';
 
+export type ComputationMethod = 'average' | 'fifo';
+
 export class PortfolioSummary {
     readonly userId: number;
     readonly totalValue: number;
@@ -10,6 +12,7 @@ export class PortfolioSummary {
     readonly computedAt: Date;
     readonly refreshesToday: number;
     readonly lastRefreshDate: Date;
+    readonly computationMethod: ComputationMethod;
 
     constructor(init: Partial<PortfolioSummary>) {
         validateInit(init, ['userId', 'totalValue', 'totalCards', 'totalQuantity', 'computedAt']);
@@ -22,5 +25,6 @@ export class PortfolioSummary {
         this.computedAt = init.computedAt;
         this.refreshesToday = init.refreshesToday ?? 0;
         this.lastRefreshDate = init.lastRefreshDate ?? new Date();
+        this.computationMethod = init.computationMethod ?? 'average';
     }
 }

@@ -682,6 +682,7 @@ CREATE TABLE public.portfolio_summary (
     computed_at timestamptz NOT NULL DEFAULT NOW(),
     refreshes_today integer NOT NULL DEFAULT 0,
     last_refresh_date date NOT NULL DEFAULT CURRENT_DATE,
+    computation_method varchar(10) NOT NULL DEFAULT 'average',
     CONSTRAINT portfolio_summary_pkey PRIMARY KEY (user_id),
     CONSTRAINT fk_portfolio_summary_user FOREIGN KEY (user_id)
         REFERENCES public.users(id) ON DELETE CASCADE

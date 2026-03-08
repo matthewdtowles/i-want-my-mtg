@@ -204,3 +204,12 @@
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/priceHistoryChart.js" defer></script>
 <script src="/public/js/transactionForm.js" defer></script>
+<script src="/public/js/tooltipManager.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    new TooltipManager({
+        triggerSelector: '.cost-basis-tooltip-trigger',
+        tooltipSelector: '.cost-basis-tooltip',
+    });
+});
+</script>

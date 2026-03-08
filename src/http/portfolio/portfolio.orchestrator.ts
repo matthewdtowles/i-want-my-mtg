@@ -153,9 +153,7 @@ export class PortfolioOrchestrator {
         }
     }
 
-    async getCashFlow(
-        req: AuthenticatedRequest
-    ): Promise<{
+    async getCashFlow(req: AuthenticatedRequest): Promise<{
         cashFlow: { period: string; totalBought: number; totalSold: number; net: number }[];
     }> {
         this.LOGGER.debug(`Get cash flow for user ${req.user?.id}.`);

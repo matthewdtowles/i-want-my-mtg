@@ -113,7 +113,12 @@ export class TransactionPresenter {
         if (/^[=+\-@]/.test(value)) {
             value = "'" + value;
         }
-        if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+        if (
+            value.includes(',') ||
+            value.includes('"') ||
+            value.includes('\n') ||
+            value.includes('\r')
+        ) {
             return '"' + value.replace(/"/g, '""') + '"';
         }
         return value;

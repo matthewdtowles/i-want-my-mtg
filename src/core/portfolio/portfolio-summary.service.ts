@@ -82,6 +82,7 @@ export class PortfolioSummaryService {
                 ...summary,
                 refreshesToday,
                 lastRefreshDate: new Date(),
+                computationMethod: 'fifo',
             });
 
             return this.summaryRepository.save(summaryToSave);
@@ -116,7 +117,7 @@ export class PortfolioSummaryService {
             totalRealizedGain = 0;
 
             // Prebuild maps for O(1) lookups
-            const inventoryMap = new Map<string, typeof inventoryItems[0]>();
+            const inventoryMap = new Map<string, (typeof inventoryItems)[0]>();
             const cardFoilKeys = new Set<string>();
             for (const inv of inventoryItems) {
                 const key = `${inv.cardId}:${inv.isFoil}`;

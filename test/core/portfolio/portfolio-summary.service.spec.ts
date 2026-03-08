@@ -295,6 +295,18 @@ describe('PortfolioSummaryService', () => {
             expect(summaryRepository.save).toHaveBeenCalled();
         });
 
+        it('should set computationMethod to fifo on refresh', async () => {
+            summaryRepository.findByUserForUpdate.mockResolvedValue(null);
+            inventoryService.findAllForUser.mockResolvedValue([]);
+            inventoryService.totalOwnedValue.mockResolvedValue(0);
+            transactionService.findByUser.mockResolvedValue([]);
+            summaryRepository.save.mockImplementation(async (s) => s);
+
+            const result = await service.refreshSummary(1);
+
+            expect(result.computationMethod).toBe('fifo');
+        });
+
         it('should increment refreshes_today on same day', async () => {
             const existing = new PortfolioSummary({
                 userId: 1,

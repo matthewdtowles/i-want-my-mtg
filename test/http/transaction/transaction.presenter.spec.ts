@@ -194,20 +194,36 @@ describe('TransactionPresenter', () => {
             expect(TransactionPresenter.escapeCsvField('hello')).toBe('hello');
         });
 
-        it('should wrap field with commas in quotes', () => {
-            expect(TransactionPresenter.escapeCsvField('hello, world')).toBe('"hello, world"');
+        it('should pass through commas without quoting (csv-stringify handles quoting)', () => {
+            expect(TransactionPresenter.escapeCsvField('hello, world')).toBe('hello, world');
         });
 
-        it('should escape double quotes', () => {
-            expect(TransactionPresenter.escapeCsvField('say "hi"')).toBe('"say ""hi"""');
+        it('should pass through quotes without escaping (csv-stringify handles escaping)', () => {
+            expect(TransactionPresenter.escapeCsvField('say "hi"')).toBe('say "hi"');
         });
 
-        it('should wrap field with newlines in quotes', () => {
-            expect(TransactionPresenter.escapeCsvField('line1\nline2')).toBe('"line1\nline2"');
+        it('should pass through newlines without quoting (csv-stringify handles quoting)', () => {
+            expect(TransactionPresenter.escapeCsvField('line1\nline2')).toBe('line1\nline2');
         });
 
         it('should return empty string as-is', () => {
             expect(TransactionPresenter.escapeCsvField('')).toBe('');
+        });
+
+        it('should prefix = with single quote to prevent formula injection', () => {
+            expect(TransactionPresenter.escapeCsvField('=SUM(A1)')).toBe("'=SUM(A1)");
+        });
+
+        it('should prefix + with single quote to prevent formula injection', () => {
+            expect(TransactionPresenter.escapeCsvField('+cmd')).toBe("'+cmd");
+        });
+
+        it('should prefix - with single quote to prevent formula injection', () => {
+            expect(TransactionPresenter.escapeCsvField('-cmd')).toBe("'-cmd");
+        });
+
+        it('should prefix @ with single quote to prevent formula injection', () => {
+            expect(TransactionPresenter.escapeCsvField('@SUM(A1)')).toBe("'@SUM(A1)");
         });
     });
 

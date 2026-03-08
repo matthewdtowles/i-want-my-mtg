@@ -5,6 +5,7 @@ import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
+import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { PortfolioOrchestrator } from 'src/http/portfolio/portfolio.orchestrator';
@@ -13,6 +14,7 @@ describe('PortfolioOrchestrator', () => {
     let orchestrator: PortfolioOrchestrator;
     let portfolioService: jest.Mocked<PortfolioService>;
     let summaryService: jest.Mocked<PortfolioSummaryService>;
+    let transactionService: jest.Mocked<TransactionService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -81,6 +83,7 @@ describe('PortfolioOrchestrator', () => {
                     useValue: {
                         findByUser: jest.fn(),
                         getFifoLotAllocations: jest.fn(),
+                        getCashFlow: jest.fn(),
                     },
                 },
                 {
@@ -97,6 +100,7 @@ describe('PortfolioOrchestrator', () => {
         summaryService = module.get(
             PortfolioSummaryService
         ) as jest.Mocked<PortfolioSummaryService>;
+        transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
     });
 
     beforeEach(() => {
@@ -247,6 +251,114 @@ describe('PortfolioOrchestrator', () => {
 
             expect(result.success).toBe(false);
             expect(result.error).toContain('Daily refresh limit');
+        });
+    });
+
+    describe('getCashFlow', () => {
+        it('should return cash flow data from transaction service', async () => {
+            const mockCashFlow = [
+                { period: '2025-06', totalBought: 50.0, totalSold: 20.0, net: -30.0 },
+                { period: '2025-07', totalBought: 30.0, totalSold: 40.0, net: 10.0 },
+            ];
+            transactionService.getCashFlow.mockResolvedValue(mockCashFlow);
+
+            const result = await orchestrator.getCashFlow(mockAuthenticatedRequest);
+
+            expect(result.cashFlow).toEqual(mockCashFlow);
+            expect(transactionService.getCashFlow).toHaveBeenCalledWith(1);
+        });
+
+        it('should return empty cash flow when no transactions', async () => {
+            transactionService.getCashFlow.mockResolvedValue([]);
+
+            const result = await orchestrator.getCashFlow(mockAuthenticatedRequest);
+
+            expect(result.cashFlow).toEqual([]);
+        });
+
+        it('should throw on unauthenticated request', async () => {
+            await expect(orchestrator.getCashFlow(mockUnauthenticatedRequest)).rejects.toThrow();
+        });
+    });
+
+    describe('getRealizedGains', () => {
+        it('should compute total realized gains from FIFO allocations', async () => {
+            const sellTx = new Transaction({
+                id: 1,
+                userId: 1,
+                cardId: 'card-1',
+                type: 'SELL',
+                quantity: 2,
+                pricePerUnit: 10.0,
+                isFoil: false,
+                date: new Date('2025-06-01'),
+            });
+            transactionService.findByUser.mockResolvedValue([sellTx]);
+            transactionService.getFifoLotAllocations.mockResolvedValue({
+                lots: [],
+                totalSoldCost: 0,
+                totalRealizedGain: 5.5,
+            });
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('+$5.50');
+            expect(result.realizedGainSign).toBe('positive');
+            expect(transactionService.getFifoLotAllocations).toHaveBeenCalledWith(
+                1,
+                'card-1',
+                false
+            );
+        });
+
+        it('should aggregate gains across multiple card/foil combos', async () => {
+            const sells = [
+                new Transaction({
+                    id: 1,
+                    userId: 1,
+                    cardId: 'card-1',
+                    type: 'SELL',
+                    quantity: 1,
+                    pricePerUnit: 10.0,
+                    isFoil: false,
+                    date: new Date('2025-06-01'),
+                }),
+                new Transaction({
+                    id: 2,
+                    userId: 1,
+                    cardId: 'card-2',
+                    type: 'SELL',
+                    quantity: 1,
+                    pricePerUnit: 20.0,
+                    isFoil: true,
+                    date: new Date('2025-06-02'),
+                }),
+            ];
+            transactionService.findByUser.mockResolvedValue(sells);
+            transactionService.getFifoLotAllocations
+                .mockResolvedValueOnce({ lots: [], totalSoldCost: 0, totalRealizedGain: 3.0 })
+                .mockResolvedValueOnce({ lots: [], totalSoldCost: 0, totalRealizedGain: -1.0 });
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('+$2.00');
+            expect(result.realizedGainSign).toBe('positive');
+            expect(transactionService.getFifoLotAllocations).toHaveBeenCalledTimes(2);
+        });
+
+        it('should return zero when no sell transactions', async () => {
+            transactionService.findByUser.mockResolvedValue([]);
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('$0.00');
+            expect(result.realizedGainSign).toBe('neutral');
+        });
+
+        it('should throw on unauthenticated request', async () => {
+            await expect(
+                orchestrator.getRealizedGains(mockUnauthenticatedRequest)
+            ).rejects.toThrow();
         });
     });
 });

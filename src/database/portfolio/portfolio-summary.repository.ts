@@ -37,10 +37,11 @@ export class PortfolioSummaryRepository implements PortfolioSummaryRepositoryPor
         return result ? PortfolioSummaryMapper.toCore(result) : null;
     }
 
-    async save(summary: PortfolioSummary): Promise<PortfolioSummary> {
+    async save(summary: PortfolioSummary, manager?: EntityManager): Promise<PortfolioSummary> {
         this.LOGGER.debug(`Saving portfolio summary for user ${summary.userId}.`);
         const orm = PortfolioSummaryMapper.toOrmEntity(summary);
-        const saved = await this.repository.save(orm);
+        const repo = manager ? manager.getRepository(PortfolioSummaryOrmEntity) : this.repository;
+        const saved = await repo.save(orm);
         return PortfolioSummaryMapper.toCore(saved);
     }
 

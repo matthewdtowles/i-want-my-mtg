@@ -45,3 +45,10 @@ CREATE TABLE IF NOT EXISTS public.portfolio_card_performance (
 
 CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_user
     ON public.portfolio_card_performance (user_id);
+
+-- Expression indexes for top/worst performer queries (sorted by total gain)
+CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_best
+    ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) DESC);
+
+CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_worst
+    ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) ASC);

@@ -33,10 +33,11 @@ export class PortfolioOrchestrator {
         @Inject(TransactionService) private readonly transactionService: TransactionService,
         private readonly configService: ConfigService
     ) {
-        this.maxDailyRefreshes = parseInt(
+        const parsed = parseInt(
             this.configService.get<string>('PORTFOLIO_REFRESH_MAX_DAILY', '3'),
             10
         );
+        this.maxDailyRefreshes = Number.isFinite(parsed) ? parsed : 3;
         this.LOGGER.debug(`Initialized`);
     }
 
@@ -176,20 +177,22 @@ export class PortfolioOrchestrator {
             const transactions = await this.transactionService.findByUser(req.user.id);
             const sells = transactions.filter((tx) => tx.type === 'SELL');
 
-            let totalRealizedGain = 0;
-            const cardFoilKeys = new Set(sells.map((s) => `${s.cardId}:${s.isFoil}`));
+            const cardFoilKeys = [...new Set(sells.map((s) => `${s.cardId}:${s.isFoil}`))];
 
-            for (const key of cardFoilKeys) {
-                const [cardId, foilStr] = key.split(':');
-                const isFoil = foilStr === 'true';
-
-                const fifo = await this.transactionService.getFifoLotAllocations(
-                    req.user.id,
-                    cardId,
-                    isFoil
-                );
-                totalRealizedGain += fifo.totalRealizedGain;
-            }
+            const fifoResults = await Promise.all(
+                cardFoilKeys.map((key) => {
+                    const [cardId, foilStr] = key.split(':');
+                    return this.transactionService.getFifoLotAllocations(
+                        req.user.id,
+                        cardId,
+                        foilStr === 'true'
+                    );
+                })
+            );
+            const totalRealizedGain = fifoResults.reduce(
+                (sum, fifo) => sum + fifo.totalRealizedGain,
+                0
+            );
 
             return {
                 realizedGain: TransactionPresenter.formatGain(totalRealizedGain),

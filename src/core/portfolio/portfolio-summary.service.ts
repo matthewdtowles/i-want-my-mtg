@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EntityManager } from 'typeorm';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -29,14 +30,17 @@ export class PortfolioSummaryService {
         private readonly transactionService: TransactionService,
         private readonly configService: ConfigService
     ) {
-        this.maxDailyRefreshes = parseInt(
+        const parsedMaxDaily = parseInt(
             this.configService.get<string>('PORTFOLIO_REFRESH_MAX_DAILY', '3'),
             10
         );
-        this.cooldownMinutes = parseInt(
+        this.maxDailyRefreshes = Number.isFinite(parsedMaxDaily) ? parsedMaxDaily : 3;
+
+        const parsedCooldown = parseInt(
             this.configService.get<string>('PORTFOLIO_REFRESH_COOLDOWN_MINUTES', '60'),
             10
         );
+        this.cooldownMinutes = Number.isFinite(parsedCooldown) ? parsedCooldown : 60;
     }
 
     async getSummary(userId: number): Promise<PortfolioSummary | null> {
@@ -64,13 +68,13 @@ export class PortfolioSummaryService {
         this.LOGGER.debug(`Refresh portfolio summary for user ${userId}.`);
 
         const manager = this.summaryRepository.getManager();
-        return manager.transaction(async (txManager) => {
+        return manager.transaction(async (txManager: EntityManager) => {
             const existing = await this.summaryRepository.findByUserForUpdate(userId, txManager);
             if (existing) {
                 this.assertCanRefresh(existing);
             }
 
-            const summary = await this.computeSummary(userId);
+            const summary = await this.computeSummary(userId, txManager);
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -85,11 +89,14 @@ export class PortfolioSummaryService {
                 computationMethod: 'fifo',
             });
 
-            return this.summaryRepository.save(summaryToSave);
+            return this.summaryRepository.save(summaryToSave, txManager);
         });
     }
 
-    async computeSummary(userId: number): Promise<{
+    async computeSummary(
+        userId: number,
+        manager?: EntityManager
+    ): Promise<{
         userId: number;
         totalValue: number;
         totalCost: number | null;
@@ -193,7 +200,7 @@ export class PortfolioSummaryService {
         }
 
         // Save per-card performance data
-        await this.performanceRepository.replaceForUser(userId, performances);
+        await this.performanceRepository.replaceForUser(userId, performances, manager);
 
         const distinctCardIds = new Set(inventoryItems.map((inv) => inv.cardId));
         const totalCards = distinctCardIds.size;

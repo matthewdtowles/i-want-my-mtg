@@ -717,6 +717,12 @@ CREATE TABLE public.portfolio_card_performance (
 CREATE INDEX idx_portfolio_card_performance_user
     ON public.portfolio_card_performance (user_id);
 
+CREATE INDEX idx_portfolio_card_performance_best
+    ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) DESC);
+
+CREATE INDEX idx_portfolio_card_performance_worst
+    ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) ASC);
+
 
 --
 -- PostgreSQL database dump complete

@@ -351,7 +351,7 @@ the transaction ledger is the source of truth and sell counts are bounded.
 - [x] 4.11 Create `PortfolioPresenter` for formatting summary values (reuse gain/ROI formatting patterns from `TransactionPresenter`)
 - [x] 4.12 Add summary cards section to `portfolio.hbs` above the chart:
   - Current Value, Total Invested, Total Gain/Loss (color-coded), ROI %
-  - Realized Gains with year selector (All Time / 2026 / 2025 / ...)
+  - Realized Gains (all-time; year filtering deferred)
   - Total Cards, Total Units
   - "Last updated" timestamp + "Refresh" button (disabled when on cooldown, shows remaining refreshes)
 - [x] 4.13 Add top performers section (top 5-10 cards by total gain):
@@ -360,7 +360,7 @@ the transaction ledger is the source of truth and sell counts are bounded.
 - [x] 4.14 Add worst performers section (bottom 5-10 cards by total gain):
   - Same columns as top performers, reuse partial
 - [x] 4.15 Add `POST /portfolio/refresh` endpoint to PortfolioController (triggers on-demand refresh, returns updated summary)
-- [x] 4.16 Add `GET /portfolio/realized-gains?year=` endpoint for year-filtered realized gains
+- [x] 4.16 Add `GET /portfolio/realized-gains` endpoint for all-time realized gains (year filtering deferred)
 - [x] 4.17 Write unit tests for orchestrator, presenter, and controller
 
 **PR boundary: 4B ships as one PR.**
@@ -383,14 +383,14 @@ the transaction ledger is the source of truth and sell counts are bounded.
 
 #### 4D — Cash Flow View
 
-- [x] 4.21 Add `getCashFlow(userId, groupBy)` to `TransactionRepositoryPort` and repository:
-  - Aggregates transaction amounts by month (or week)
+- [x] 4.21 Add `getCashFlow(userId)` to `TransactionRepositoryPort` and repository:
+  - Aggregates transaction amounts by month
   - Returns: period, total_bought (outflow), total_sold (inflow), net
 - [x] 4.22 Add cash flow section to `portfolio.hbs`:
   - Bar chart (Chart.js): buys vs sells by month
   - Net cash flow line overlay
-- [x] 4.23 Add `GET /portfolio/cash-flow?groupBy=month` endpoint
-- [x] 4.24 Write unit tests for cash flow aggregation
+- [x] 4.23 Add `GET /portfolio/cash-flow` endpoint (monthly aggregation)
+- [ ] 4.24 Write unit tests for cash flow aggregation
 
 **PR boundary: 4D ships as one PR.**
 

@@ -108,18 +108,14 @@ export class TransactionPresenter {
         return 'neutral';
     }
 
+    /**
+     * Mitigate CSV formula injection for spreadsheet apps.
+     * Only prefixes dangerous leading characters; CSV quoting/escaping
+     * is handled by csv-stringify.
+     */
     static escapeCsvField(value: string): string {
-        // Mitigate CSV formula injection for spreadsheet apps
         if (/^[=+\-@]/.test(value)) {
-            value = "'" + value;
-        }
-        if (
-            value.includes(',') ||
-            value.includes('"') ||
-            value.includes('\n') ||
-            value.includes('\r')
-        ) {
-            return '"' + value.replace(/"/g, '""') + '"';
+            return "'" + value;
         }
         return value;
     }

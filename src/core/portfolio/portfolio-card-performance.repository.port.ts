@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { PortfolioCardPerformance } from './portfolio-card-performance.entity';
 
 export const PortfolioCardPerformanceRepositoryPort = 'PortfolioCardPerformanceRepositoryPort';
@@ -14,6 +15,10 @@ export interface SetRoiAggregation {
 
 export interface PortfolioCardPerformanceRepositoryPort {
     findByUser(userId: number, sortBy: string, limit: number): Promise<PortfolioCardPerformance[]>;
-    replaceForUser(userId: number, performances: PortfolioCardPerformance[]): Promise<void>;
+    replaceForUser(
+        userId: number,
+        performances: PortfolioCardPerformance[],
+        manager?: EntityManager
+    ): Promise<void>;
     aggregateBySet(userId: number): Promise<SetRoiAggregation[]>;
 }

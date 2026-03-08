@@ -6,7 +6,7 @@ import {
     SetRoiAggregation,
 } from 'src/core/portfolio/portfolio-card-performance.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PortfolioCardPerformanceMapper } from './portfolio-card-performance.mapper';
 import { PortfolioCardPerformanceOrmEntity } from './portfolio-card-performance.orm-entity';
 
@@ -78,17 +78,27 @@ export class PortfolioCardPerformanceRepository implements PortfolioCardPerforma
         }));
     }
 
-    async replaceForUser(userId: number, performances: PortfolioCardPerformance[]): Promise<void> {
+    async replaceForUser(
+        userId: number,
+        performances: PortfolioCardPerformance[],
+        manager?: EntityManager
+    ): Promise<void> {
         this.LOGGER.debug(
             `Replacing ${performances.length} card performance rows for user ${userId}.`
         );
 
-        await this.repository.manager.transaction(async (manager) => {
-            await manager.delete(PortfolioCardPerformanceOrmEntity, { userId });
+        const doReplace = async (mgr: EntityManager) => {
+            await mgr.delete(PortfolioCardPerformanceOrmEntity, { userId });
             if (performances.length > 0) {
                 const orms = performances.map(PortfolioCardPerformanceMapper.toOrmEntity);
-                await manager.save(PortfolioCardPerformanceOrmEntity, orms);
+                await mgr.save(PortfolioCardPerformanceOrmEntity, orms);
             }
-        });
+        };
+
+        if (manager) {
+            await doReplace(manager);
+        } else {
+            await this.repository.manager.transaction(doReplace);
+        }
     }
 }

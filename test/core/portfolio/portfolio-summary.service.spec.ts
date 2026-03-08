@@ -177,7 +177,7 @@ describe('PortfolioSummaryService', () => {
             expect(result.totalRealizedGain).toBeNull();
             expect(result.totalCards).toBe(1);
             expect(result.totalQuantity).toBe(3);
-            expect(performanceRepository.replaceForUser).toHaveBeenCalledWith(1, []);
+            expect(performanceRepository.replaceForUser).toHaveBeenCalledWith(1, [], undefined);
         });
 
         it('should compute summary with transactions and FIFO cost basis', async () => {
@@ -217,7 +217,8 @@ describe('PortfolioSummaryService', () => {
                         unrealizedGain: 4.0,
                         realizedGain: 3.0,
                     }),
-                ])
+                ]),
+                undefined
             );
         });
 
@@ -254,7 +255,8 @@ describe('PortfolioSummaryService', () => {
                 expect.arrayContaining([
                     expect.objectContaining({ cardId: 'card1', isFoil: false }),
                     expect.objectContaining({ cardId: 'card1', isFoil: true }),
-                ])
+                ]),
+                undefined
             );
         });
 
@@ -287,7 +289,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
-            summaryRepository.save.mockImplementation(async (s) => s);
+            summaryRepository.save.mockImplementation(async (s: any) => s);
 
             const result = await service.refreshSummary(1);
 
@@ -300,7 +302,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
-            summaryRepository.save.mockImplementation(async (s) => s);
+            summaryRepository.save.mockImplementation(async (s: any) => s);
 
             const result = await service.refreshSummary(1);
 
@@ -321,7 +323,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
-            summaryRepository.save.mockImplementation(async (s) => s);
+            summaryRepository.save.mockImplementation(async (s: any) => s);
 
             const result = await service.refreshSummary(1);
 
@@ -344,7 +346,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([]);
-            summaryRepository.save.mockImplementation(async (s) => s);
+            summaryRepository.save.mockImplementation(async (s: any) => s);
 
             const result = await service.refreshSummary(1);
 

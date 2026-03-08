@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { EntityManager } from 'typeorm';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PortfolioCardPerformance } from './portfolio-card-performance.entity';
@@ -132,10 +133,30 @@ export class PortfolioSummaryService {
                 cardFoilKeys.add(key);
             }
             const transactionCardKeys = new Set<string>();
+
+            // Group transactions by cardId:isFoil for in-memory FIFO
+            const buyLotsMap = new Map<string, Transaction[]>();
+            const sellsMap = new Map<string, Transaction[]>();
             for (const tx of transactions) {
                 const key = `${tx.cardId}:${tx.isFoil}`;
                 transactionCardKeys.add(key);
                 cardFoilKeys.add(key);
+
+                if (tx.type === 'BUY') {
+                    if (!buyLotsMap.has(key)) buyLotsMap.set(key, []);
+                    buyLotsMap.get(key).push(tx);
+                } else {
+                    if (!sellsMap.has(key)) sellsMap.set(key, []);
+                    sellsMap.get(key).push(tx);
+                }
+            }
+
+            // Sort buy lots and sells by date ASC for FIFO
+            for (const lots of buyLotsMap.values()) {
+                lots.sort((a, b) => a.date.getTime() - b.date.getTime());
+            }
+            for (const sells of sellsMap.values()) {
+                sells.sort((a, b) => a.date.getTime() - b.date.getTime());
             }
 
             for (const key of cardFoilKeys) {
@@ -154,11 +175,10 @@ export class PortfolioSummaryService {
 
                 const currentValue = quantity * marketPrice;
 
-                // Get FIFO cost basis
-                const fifo = await this.transactionService.getFifoLotAllocations(
-                    userId,
-                    cardId,
-                    isFoil
+                // Compute FIFO in-memory from grouped transactions
+                const fifo = PortfolioSummaryService.computeFifoFromTransactions(
+                    buyLotsMap.get(key) || [],
+                    sellsMap.get(key) || []
                 );
 
                 const lotTotalCost = fifo.lots.reduce(
@@ -218,6 +238,47 @@ export class PortfolioSummaryService {
             totalQuantity,
             computedAt: now,
         };
+    }
+
+    /**
+     * Compute FIFO lot allocations from pre-sorted buy/sell arrays (no DB queries).
+     * Buy lots and sells must be sorted by date ASC.
+     */
+    static computeFifoFromTransactions(
+        buyLots: Transaction[],
+        sells: Transaction[]
+    ): {
+        lots: Array<{ lotId: number; remaining: number; costPerUnit: number }>;
+        totalSoldCost: number;
+        totalRealizedGain: number;
+    } {
+        let totalSoldCost = 0;
+        let totalRealizedGain = 0;
+
+        const lotRemaining = buyLots.map((lot) => ({
+            lotId: lot.id,
+            remaining: lot.quantity,
+            costPerUnit: lot.pricePerUnit,
+        }));
+
+        let lotIndex = 0;
+        for (const sell of sells) {
+            let sellRemaining = sell.quantity;
+            while (sellRemaining > 0 && lotIndex < lotRemaining.length) {
+                const lot = lotRemaining[lotIndex];
+                const consumed = Math.min(lot.remaining, sellRemaining);
+                lot.remaining -= consumed;
+                sellRemaining -= consumed;
+                totalSoldCost += consumed * lot.costPerUnit;
+                totalRealizedGain += consumed * (sell.pricePerUnit - lot.costPerUnit);
+                if (lot.remaining === 0) {
+                    lotIndex++;
+                }
+            }
+        }
+
+        const lots = lotRemaining.filter((lot) => lot.remaining > 0);
+        return { lots, totalSoldCost, totalRealizedGain };
     }
 
     private assertCanRefresh(existing: PortfolioSummary): void {

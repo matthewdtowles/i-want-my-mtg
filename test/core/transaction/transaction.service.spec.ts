@@ -57,6 +57,7 @@ describe('TransactionService', () => {
         findByUser: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        getCashFlow: jest.fn(),
     };
 
     const mockInventoryService = {
@@ -643,6 +644,21 @@ describe('TransactionService', () => {
 
             expect(repository.findByUser).toHaveBeenCalledWith(1);
             expect(result).toEqual(transactions);
+        });
+    });
+
+    describe('getCashFlow', () => {
+        it('should delegate to repository.getCashFlow', async () => {
+            const mockCashFlow = [
+                { period: '2025-06', totalBought: 50.0, totalSold: 20.0, net: -30.0 },
+                { period: '2025-07', totalBought: 0, totalSold: 15.0, net: 15.0 },
+            ];
+            repository.getCashFlow.mockResolvedValue(mockCashFlow);
+
+            const result = await service.getCashFlow(1);
+
+            expect(repository.getCashFlow).toHaveBeenCalledWith(1);
+            expect(result).toEqual(mockCashFlow);
         });
     });
 

@@ -114,7 +114,7 @@ export class TransactionPresenter {
      * is handled by csv-stringify.
      */
     static escapeCsvField(value: string): string {
-        if (/^[=+\-@]/.test(value)) {
+        if (/^[\s\x00-\x1f]*[=+\-@]/.test(value)) {
             return "'" + value;
         }
         return value;

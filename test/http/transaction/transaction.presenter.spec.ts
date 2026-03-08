@@ -225,6 +225,18 @@ describe('TransactionPresenter', () => {
         it('should prefix @ with single quote to prevent formula injection', () => {
             expect(TransactionPresenter.escapeCsvField('@SUM(A1)')).toBe("'@SUM(A1)");
         });
+
+        it('should prefix when leading whitespace precedes dangerous char', () => {
+            expect(TransactionPresenter.escapeCsvField(' =SUM(A1)')).toBe("' =SUM(A1)");
+        });
+
+        it('should prefix when tab precedes dangerous char', () => {
+            expect(TransactionPresenter.escapeCsvField('\t+cmd')).toBe("'\t+cmd");
+        });
+
+        it('should prefix when control character precedes dangerous char', () => {
+            expect(TransactionPresenter.escapeCsvField('\x00@SUM(A1)')).toBe("'\x00@SUM(A1)");
+        });
     });
 
     describe('gainSign', () => {

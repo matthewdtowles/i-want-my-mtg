@@ -282,77 +282,42 @@ describe('PortfolioOrchestrator', () => {
     });
 
     describe('getRealizedGains', () => {
-        it('should compute total realized gains from FIFO allocations', async () => {
-            const sellTx = new Transaction({
-                id: 1,
-                userId: 1,
-                cardId: 'card-1',
-                type: 'SELL',
-                quantity: 2,
-                pricePerUnit: 10.0,
-                isFoil: false,
-                date: new Date('2025-06-01'),
-            });
-            transactionService.findByUser.mockResolvedValue([sellTx]);
-            transactionService.getFifoLotAllocations.mockResolvedValue({
-                lots: [],
-                totalSoldCost: 0,
-                totalRealizedGain: 5.5,
-            });
+        it('should read realized gains from portfolio summary snapshot', async () => {
+            summaryService.getSummary.mockResolvedValue(
+                new PortfolioSummary({
+                    ...testSummary,
+                    totalRealizedGain: 5.5,
+                })
+            );
 
             const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
 
             expect(result.realizedGain).toBe('+$5.50');
             expect(result.realizedGainSign).toBe('positive');
-            expect(transactionService.getFifoLotAllocations).toHaveBeenCalledWith(
-                1,
-                'card-1',
-                false
-            );
+            expect(summaryService.getSummary).toHaveBeenCalledWith(1);
         });
 
-        it('should aggregate gains across multiple card/foil combos', async () => {
-            const sells = [
-                new Transaction({
-                    id: 1,
-                    userId: 1,
-                    cardId: 'card-1',
-                    type: 'SELL',
-                    quantity: 1,
-                    pricePerUnit: 10.0,
-                    isFoil: false,
-                    date: new Date('2025-06-01'),
-                }),
-                new Transaction({
-                    id: 2,
-                    userId: 1,
-                    cardId: 'card-2',
-                    type: 'SELL',
-                    quantity: 1,
-                    pricePerUnit: 20.0,
-                    isFoil: true,
-                    date: new Date('2025-06-02'),
-                }),
-            ];
-            transactionService.findByUser.mockResolvedValue(sells);
-            transactionService.getFifoLotAllocations
-                .mockResolvedValueOnce({ lots: [], totalSoldCost: 0, totalRealizedGain: 3.0 })
-                .mockResolvedValueOnce({ lots: [], totalSoldCost: 0, totalRealizedGain: -1.0 });
-
-            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
-
-            expect(result.realizedGain).toBe('+$2.00');
-            expect(result.realizedGainSign).toBe('positive');
-            expect(transactionService.getFifoLotAllocations).toHaveBeenCalledTimes(2);
-        });
-
-        it('should return zero when no sell transactions', async () => {
-            transactionService.findByUser.mockResolvedValue([]);
+        it('should return zero when no summary exists', async () => {
+            summaryService.getSummary.mockResolvedValue(null);
 
             const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
 
             expect(result.realizedGain).toBe('$0.00');
             expect(result.realizedGainSign).toBe('neutral');
+        });
+
+        it('should handle negative realized gains', async () => {
+            summaryService.getSummary.mockResolvedValue(
+                new PortfolioSummary({
+                    ...testSummary,
+                    totalRealizedGain: -3.25,
+                })
+            );
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('-$3.25');
+            expect(result.realizedGainSign).toBe('negative');
         });
 
         it('should throw on unauthenticated request', async () => {

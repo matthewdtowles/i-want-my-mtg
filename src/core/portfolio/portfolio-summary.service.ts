@@ -132,11 +132,30 @@ export class PortfolioSummaryService {
                 cardFoilKeys.add(key);
             }
             const transactionCardKeys = new Set<string>();
+
+            // Group transactions by card/foil for batch FIFO computation
+            const buysByKey = new Map<string, typeof transactions>();
+            const sellsByKey = new Map<string, typeof transactions>();
             for (const tx of transactions) {
                 const key = `${tx.cardId}:${tx.isFoil}`;
                 transactionCardKeys.add(key);
                 cardFoilKeys.add(key);
+                if (tx.type === 'BUY') {
+                    const buys = buysByKey.get(key) || [];
+                    buys.push(tx);
+                    buysByKey.set(key, buys);
+                } else {
+                    const sells = sellsByKey.get(key) || [];
+                    sells.push(tx);
+                    sellsByKey.set(key, sells);
+                }
             }
+
+            // Sort buy/sell groups by date for FIFO ordering
+            const dateSorter = (a: { date: Date }, b: { date: Date }) =>
+                new Date(a.date).getTime() - new Date(b.date).getTime();
+            for (const buys of buysByKey.values()) buys.sort(dateSorter);
+            for (const sells of sellsByKey.values()) sells.sort(dateSorter);
 
             for (const key of cardFoilKeys) {
                 const [cardId, foilStr] = key.split(':');
@@ -154,11 +173,10 @@ export class PortfolioSummaryService {
 
                 const currentValue = quantity * marketPrice;
 
-                // Get FIFO cost basis
-                const fifo = await this.transactionService.getFifoLotAllocations(
-                    userId,
-                    cardId,
-                    isFoil
+                // Compute FIFO cost basis from pre-loaded transactions (no extra DB queries)
+                const fifo = this.transactionService.computeFifoFromTransactions(
+                    buysByKey.get(key) || [],
+                    sellsByKey.get(key) || []
                 );
 
                 const lotTotalCost = fifo.lots.reduce(

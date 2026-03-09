@@ -2,6 +2,13 @@ import { Transaction } from './transaction.entity';
 
 export const TransactionRepositoryPort = 'TransactionRepositoryPort';
 
+export interface CashFlowPeriod {
+    period: string;
+    totalBought: number;
+    totalSold: number;
+    net: number;
+}
+
 export interface TransactionRepositoryPort {
     /**
      * Save a transaction (insert or update)
@@ -42,4 +49,9 @@ export interface TransactionRepositoryPort {
      * Delete a transaction by ID
      */
     delete(id: number, userId: number): Promise<void>;
+
+    /**
+     * Aggregate transaction amounts by month for cash flow analysis
+     */
+    getCashFlow(userId: number): Promise<CashFlowPeriod[]>;
 }

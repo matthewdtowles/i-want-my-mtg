@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { stringify } from 'csv-stringify';
 import { CardService } from 'src/core/card/card.service';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -162,6 +163,62 @@ export class TransactionOrchestrator {
         } catch (error) {
             this.LOGGER.debug(`Error getting card transactions: ${error?.message}`);
             return [];
+        }
+    }
+
+    async exportCsv(req: AuthenticatedRequest): Promise<string> {
+        this.LOGGER.debug(`Export CSV for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const transactions = await this.transactionService.findByUser(req.user.id);
+            const cardIds = [...new Set(transactions.map((t) => t.cardId))];
+            const cardMap = await this.buildCardMap(cardIds);
+
+            const rows = transactions.map((t) => {
+                const card = cardMap.get(t.cardId);
+                const total = t.quantity * t.pricePerUnit;
+                return {
+                    Date: TransactionPresenter.formatDate(t.date),
+                    Type: t.type,
+                    'Card Name': TransactionPresenter.escapeCsvField(card?.name || ''),
+                    Set: card?.setCode?.toUpperCase() || '',
+                    'Collector #': card?.number || '',
+                    Foil: t.isFoil ? 'Yes' : 'No',
+                    Quantity: String(t.quantity),
+                    'Price Per Unit': t.pricePerUnit.toFixed(2),
+                    Total: total.toFixed(2),
+                    Fees: t.fees != null ? t.fees.toFixed(2) : '',
+                    Source: TransactionPresenter.escapeCsvField(t.source || ''),
+                    Notes: TransactionPresenter.escapeCsvField(t.notes || ''),
+                };
+            });
+
+            return new Promise((resolve, reject) => {
+                stringify(
+                    rows,
+                    {
+                        header: true,
+                        columns: [
+                            'Date',
+                            'Type',
+                            'Card Name',
+                            'Set',
+                            'Collector #',
+                            'Foil',
+                            'Quantity',
+                            'Price Per Unit',
+                            'Total',
+                            'Fees',
+                            'Source',
+                            'Notes',
+                        ],
+                    },
+                    (err, output) => (err ? reject(err) : resolve(output))
+                );
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error exporting CSV for user ${req.user?.id}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'exportCsv');
         }
     }
 

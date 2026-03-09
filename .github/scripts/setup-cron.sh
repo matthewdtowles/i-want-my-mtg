@@ -42,7 +42,7 @@ sudo chmod 755 /opt/scripts/scry
 
 # Set log directory and file permissions
 sudo chown ubuntu:ubuntu /var/log/i-want-my-mtg
-sudo touch /var/log/i-want-my-mtg/ingestion.log /var/log/i-want-my-mtg/retention.log /var/log/i-want-my-mtg/cleanup.log
+sudo touch /var/log/i-want-my-mtg/ingestion.log /var/log/i-want-my-mtg/retention.log /var/log/i-want-my-mtg/cleanup.log /var/log/i-want-my-mtg/portfolio.log
 sudo chown ubuntu:ubuntu /var/log/i-want-my-mtg/*.log
 
 log_info "Cron jobs installed successfully."

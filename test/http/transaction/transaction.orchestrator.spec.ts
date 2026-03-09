@@ -218,6 +218,36 @@ describe('TransactionOrchestrator', () => {
         });
     });
 
+    describe('exportCsv', () => {
+        it('should generate CSV with headers and transaction rows', async () => {
+            transactionService.findByUser.mockResolvedValue([testTransaction]);
+            cardService.findByIds.mockResolvedValue([
+                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
+            ]);
+
+            const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
+
+            expect(csv).toContain(
+                'Date,Type,Card Name,Set,Collector #,Foil,Quantity,Price Per Unit,Total,Fees,Source,Notes'
+            );
+            expect(csv).toContain('BUY');
+            expect(csv).toContain('Lightning Bolt');
+            expect(csv).toContain('LEA');
+            expect(csv).toContain('161');
+            expect(csv).toContain('No'); // not foil
+        });
+
+        it('should handle empty transactions', async () => {
+            transactionService.findByUser.mockResolvedValue([]);
+            cardService.findByIds.mockResolvedValue([]);
+
+            const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
+
+            const lines = csv.trim().split('\n');
+            expect(lines).toHaveLength(1); // headers only
+        });
+    });
+
     describe('getCardTransactions', () => {
         it('should return transactions for a card', async () => {
             transactionService.findByUserAndCard.mockResolvedValue([testTransaction]);

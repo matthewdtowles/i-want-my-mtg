@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Post, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { CashFlowPeriod } from 'src/core/transaction/transaction.repository.port';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -35,5 +36,28 @@ export class PortfolioController {
             req,
             Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined
         );
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('refresh')
+    async refresh(@Req() req: AuthenticatedRequest): Promise<{ success: boolean; error?: string }> {
+        this.LOGGER.log(`Refresh portfolio summary for user ${req.user?.id}.`);
+        return this.orchestrator.refresh(req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('cash-flow')
+    async getCashFlow(@Req() req: AuthenticatedRequest): Promise<{ cashFlow: CashFlowPeriod[] }> {
+        this.LOGGER.log(`Get cash flow for user ${req.user?.id}.`);
+        return this.orchestrator.getCashFlow(req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('realized-gains')
+    async getRealizedGains(
+        @Req() req: AuthenticatedRequest
+    ): Promise<{ realizedGain: string; realizedGainSign: string }> {
+        this.LOGGER.log(`Get realized gains for user ${req.user?.id}.`);
+        return this.orchestrator.getRealizedGains(req);
     }
 }

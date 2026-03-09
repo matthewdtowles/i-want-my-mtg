@@ -57,6 +57,7 @@ describe('TransactionService', () => {
         findByUser: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        getCashFlow: jest.fn(),
     };
 
     const mockInventoryService = {
@@ -646,6 +647,21 @@ describe('TransactionService', () => {
         });
     });
 
+    describe('getCashFlow', () => {
+        it('should delegate to repository.getCashFlow', async () => {
+            const mockCashFlow = [
+                { period: '2025-06', totalBought: 50.0, totalSold: 20.0, net: -30.0 },
+                { period: '2025-07', totalBought: 0, totalSold: 15.0, net: 15.0 },
+            ];
+            repository.getCashFlow.mockResolvedValue(mockCashFlow);
+
+            const result = await service.getCashFlow(1);
+
+            expect(repository.getCashFlow).toHaveBeenCalledWith(1);
+            expect(result).toEqual(mockCashFlow);
+        });
+    });
+
     describe('findByUserAndCard', () => {
         it('should return transactions for a user and card', async () => {
             const transactions = [buyLot1, buyLot2];
@@ -655,6 +671,55 @@ describe('TransactionService', () => {
 
             expect(repository.findByUserAndCard).toHaveBeenCalledWith(1, 'card-1', false);
             expect(result).toEqual(transactions);
+        });
+    });
+
+    describe('getCashFlow edge cases', () => {
+        it('should return empty array when user has no transactions', async () => {
+            repository.getCashFlow.mockResolvedValue([]);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result).toEqual([]);
+        });
+
+        it('should return single period for all activity in one month', async () => {
+            const singlePeriod = [
+                { period: '2025-01', totalBought: 100.0, totalSold: 0, net: -100.0 },
+            ];
+            repository.getCashFlow.mockResolvedValue(singlePeriod);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].period).toBe('2025-01');
+            expect(result[0].totalBought).toBe(100.0);
+            expect(result[0].totalSold).toBe(0);
+            expect(result[0].net).toBe(-100.0);
+        });
+
+        it('should handle periods with only sells (positive net)', async () => {
+            const sellOnly = [{ period: '2025-03', totalBought: 0, totalSold: 75.5, net: 75.5 }];
+            repository.getCashFlow.mockResolvedValue(sellOnly);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result[0].totalBought).toBe(0);
+            expect(result[0].totalSold).toBe(75.5);
+            expect(result[0].net).toBe(75.5);
+        });
+
+        it('should preserve chronological period ordering', async () => {
+            const periods = [
+                { period: '2025-01', totalBought: 10, totalSold: 0, net: -10 },
+                { period: '2025-02', totalBought: 20, totalSold: 5, net: -15 },
+                { period: '2025-03', totalBought: 0, totalSold: 30, net: 30 },
+            ];
+            repository.getCashFlow.mockResolvedValue(periods);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result.map((p) => p.period)).toEqual(['2025-01', '2025-02', '2025-03']);
         });
     });
 

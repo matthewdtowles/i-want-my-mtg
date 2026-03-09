@@ -114,6 +114,13 @@ impl CliController {
                 }
                 Ok(())
             }
+
+            Commands::PortfolioSummary {} => {
+                if let Err(e) = self.handle_portfolio_summary().await {
+                    error!("Portfolio summary computation failed: {}", e);
+                }
+                Ok(())
+            }
         }
     }
 
@@ -233,7 +240,10 @@ impl CliController {
         info!("Running VACUUM ANALYZE on portfolio_value_history...");
         match self.portfolio_service.vacuum().await {
             Ok(_) => info!("Portfolio value history VACUUM ANALYZE completed"),
-            Err(e) => warn!("Portfolio value history VACUUM ANALYZE failed (non-fatal): {}", e),
+            Err(e) => warn!(
+                "Portfolio value history VACUUM ANALYZE failed (non-fatal): {}",
+                e
+            ),
         }
         Ok(())
     }
@@ -300,10 +310,7 @@ impl CliController {
 
         let count_after = self.price_service.fetch_price_history_count().await?;
         let size_after = self.price_service.fetch_history_size().await?;
-        info!(
-            "Final price_history: {} rows, {}",
-            count_after, size_after
-        );
+        info!("Final price_history: {} rows, {}", count_after, size_after);
 
         info!("Starting set price history backfill from price_history...");
         self.handle_backfill_set_price_history().await?;
@@ -314,7 +321,19 @@ impl CliController {
     async fn handle_backfill_set_price_history(&self) -> Result<()> {
         info!("Backfilling set_price_history from price_history...");
         let rows = self.set_service.backfill_set_price_history().await?;
-        info!("Set price history backfill complete: {} rows affected", rows);
+        info!(
+            "Set price history backfill complete: {} rows affected",
+            rows
+        );
+        Ok(())
+    }
+
+    async fn handle_portfolio_summary(&self) -> Result<()> {
+        info!("Computing portfolio summaries for all users");
+        let (summaries_saved, performance_saved) =
+            self.portfolio_service.compute_portfolio_summaries().await?;
+        info!("Portfolio summaries saved: {}", summaries_saved);
+        info!("Card performance rows saved: {}", performance_saved);
         Ok(())
     }
 
@@ -464,10 +483,7 @@ impl CliController {
         );
 
         let portfolio_snapshots = self.portfolio_service.snapshot_portfolio_values().await?;
-        info!(
-            "Portfolio value snapshots saved: {}",
-            portfolio_snapshots
-        );
+        info!("Portfolio value snapshots saved: {}", portfolio_snapshots);
         Ok(())
     }
 }

@@ -1,12 +1,20 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { CardService } from 'src/core/card/card.service';
+import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
+import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
+import { Transaction } from 'src/core/transaction/transaction.entity';
+import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { PortfolioOrchestrator } from 'src/http/portfolio/portfolio.orchestrator';
 
 describe('PortfolioOrchestrator', () => {
     let orchestrator: PortfolioOrchestrator;
     let portfolioService: jest.Mocked<PortfolioService>;
+    let summaryService: jest.Mocked<PortfolioSummaryService>;
+    let transactionService: jest.Mocked<TransactionService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -37,14 +45,51 @@ describe('PortfolioOrchestrator', () => {
         }),
     ];
 
+    const testSummary = new PortfolioSummary({
+        userId: 1,
+        totalValue: 110.25,
+        totalCost: 80.0,
+        totalRealizedGain: 5.0,
+        totalCards: 27,
+        totalQuantity: 50,
+        computedAt: new Date(),
+        refreshesToday: 1,
+        lastRefreshDate: new Date(),
+    });
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PortfolioOrchestrator,
                 {
                     provide: PortfolioService,
+                    useValue: { getHistory: jest.fn() },
+                },
+                {
+                    provide: PortfolioSummaryService,
                     useValue: {
-                        getHistory: jest.fn(),
+                        getSummary: jest.fn(),
+                        getCardPerformance: jest.fn(),
+                        getSetRoi: jest.fn(),
+                        refreshSummary: jest.fn(),
+                    },
+                },
+                {
+                    provide: CardService,
+                    useValue: { findByIds: jest.fn() },
+                },
+                {
+                    provide: TransactionService,
+                    useValue: {
+                        findByUser: jest.fn(),
+                        getFifoLotAllocations: jest.fn(),
+                        getCashFlow: jest.fn(),
+                    },
+                },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string, defaultValue: string) => defaultValue),
                     },
                 },
             ],
@@ -52,6 +97,10 @@ describe('PortfolioOrchestrator', () => {
 
         orchestrator = module.get(PortfolioOrchestrator);
         portfolioService = module.get(PortfolioService) as jest.Mocked<PortfolioService>;
+        summaryService = module.get(
+            PortfolioSummaryService
+        ) as jest.Mocked<PortfolioSummaryService>;
+        transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
     });
 
     beforeEach(() => {
@@ -61,21 +110,66 @@ describe('PortfolioOrchestrator', () => {
     describe('getPortfolioView', () => {
         it('should return view with hasHistory true when history exists', async () => {
             portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(null);
 
             const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
 
             expect(result.authenticated).toBe(true);
             expect(result.username).toBe('Test User');
             expect(result.hasHistory).toBe(true);
+            expect(result.hasSummary).toBe(false);
             expect(result.breadcrumbs).toHaveLength(3);
         });
 
         it('should return view with hasHistory false when no history', async () => {
             portfolioService.getHistory.mockResolvedValue([]);
+            summaryService.getSummary.mockResolvedValue(null);
 
             const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
 
             expect(result.hasHistory).toBe(false);
+        });
+
+        it('should include summary data when summary exists', async () => {
+            portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(testSummary);
+            summaryService.getCardPerformance.mockResolvedValue([]);
+            summaryService.getSetRoi.mockResolvedValue([]);
+
+            const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
+
+            expect(result.hasSummary).toBe(true);
+            expect(result.summary).toBeDefined();
+            expect(result.summary.totalValue).toBe('$110.25');
+            expect(result.summary.totalCost).toBe('$80.00');
+            expect(result.summary.totalCards).toBe(27);
+            expect(result.summary.totalQuantity).toBe(50);
+        });
+
+        it('should set isFifo false for average computation method', async () => {
+            portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(testSummary);
+            summaryService.getCardPerformance.mockResolvedValue([]);
+            summaryService.getSetRoi.mockResolvedValue([]);
+
+            const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
+
+            expect(result.summary.isFifo).toBe(false);
+        });
+
+        it('should set isFifo true for fifo computation method', async () => {
+            const fifoSummary = new PortfolioSummary({
+                ...testSummary,
+                computationMethod: 'fifo',
+            });
+            portfolioService.getHistory.mockResolvedValue(testHistory);
+            summaryService.getSummary.mockResolvedValue(fifoSummary);
+            summaryService.getCardPerformance.mockResolvedValue([]);
+            summaryService.getSetRoi.mockResolvedValue([]);
+
+            const result = await orchestrator.getPortfolioView(mockAuthenticatedRequest);
+
+            expect(result.summary.isFifo).toBe(true);
         });
 
         it('should throw on unauthenticated request', async () => {
@@ -135,6 +229,118 @@ describe('PortfolioOrchestrator', () => {
 
         it('should throw on unauthenticated request', async () => {
             await expect(orchestrator.getHistory(mockUnauthenticatedRequest)).rejects.toThrow();
+        });
+    });
+
+    describe('refresh', () => {
+        it('should return success on successful refresh', async () => {
+            summaryService.refreshSummary.mockResolvedValue(testSummary);
+
+            const result = await orchestrator.refresh(mockAuthenticatedRequest);
+
+            expect(result.success).toBe(true);
+            expect(summaryService.refreshSummary).toHaveBeenCalledWith(1);
+        });
+
+        it('should return error on rate limit', async () => {
+            summaryService.refreshSummary.mockRejectedValue(
+                new Error('Daily refresh limit reached (3)')
+            );
+
+            const result = await orchestrator.refresh(mockAuthenticatedRequest);
+
+            expect(result.success).toBe(false);
+            expect(result.error).toContain('Daily refresh limit');
+        });
+    });
+
+    describe('getCashFlow', () => {
+        it('should return cash flow data from transaction service', async () => {
+            const mockCashFlow = [
+                { period: '2025-06', totalBought: 50.0, totalSold: 20.0, net: -30.0 },
+                { period: '2025-07', totalBought: 30.0, totalSold: 40.0, net: 10.0 },
+            ];
+            transactionService.getCashFlow.mockResolvedValue(mockCashFlow);
+
+            const result = await orchestrator.getCashFlow(mockAuthenticatedRequest);
+
+            expect(result.cashFlow).toEqual(mockCashFlow);
+            expect(transactionService.getCashFlow).toHaveBeenCalledWith(1);
+        });
+
+        it('should return empty cash flow when no transactions', async () => {
+            transactionService.getCashFlow.mockResolvedValue([]);
+
+            const result = await orchestrator.getCashFlow(mockAuthenticatedRequest);
+
+            expect(result.cashFlow).toEqual([]);
+        });
+
+        it('should preserve all period fields in response', async () => {
+            const mockCashFlow = [
+                { period: '2025-01', totalBought: 100.0, totalSold: 0, net: -100.0 },
+            ];
+            transactionService.getCashFlow.mockResolvedValue(mockCashFlow);
+
+            const result = await orchestrator.getCashFlow(mockAuthenticatedRequest);
+
+            expect(result.cashFlow).toHaveLength(1);
+            expect(result.cashFlow[0]).toEqual({
+                period: '2025-01',
+                totalBought: 100.0,
+                totalSold: 0,
+                net: -100.0,
+            });
+        });
+
+        it('should throw on unauthenticated request', async () => {
+            await expect(orchestrator.getCashFlow(mockUnauthenticatedRequest)).rejects.toThrow();
+        });
+    });
+
+    describe('getRealizedGains', () => {
+        it('should read realized gains from portfolio summary snapshot', async () => {
+            summaryService.getSummary.mockResolvedValue(
+                new PortfolioSummary({
+                    ...testSummary,
+                    totalRealizedGain: 5.5,
+                })
+            );
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('+$5.50');
+            expect(result.realizedGainSign).toBe('positive');
+            expect(summaryService.getSummary).toHaveBeenCalledWith(1);
+        });
+
+        it('should return zero when no summary exists', async () => {
+            summaryService.getSummary.mockResolvedValue(null);
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('$0.00');
+            expect(result.realizedGainSign).toBe('neutral');
+        });
+
+        it('should handle negative realized gains', async () => {
+            summaryService.getSummary.mockResolvedValue(
+                new PortfolioSummary({
+                    ...testSummary,
+                    totalRealizedGain: -3.25,
+                })
+            );
+
+            const result = await orchestrator.getRealizedGains(mockAuthenticatedRequest);
+
+            expect(result.realizedGain).toBe('-$3.25');
+            expect(result.realizedGainSign).toBe('negative');
+        });
+
+        it('should throw on unauthenticated request', async () => {
+            await expect(
+                orchestrator.getRealizedGains(mockUnauthenticatedRequest)
+            ).rejects.toThrow();
         });
     });
 });

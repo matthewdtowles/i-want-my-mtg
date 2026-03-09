@@ -12,8 +12,10 @@ import {
     Put,
     Render,
     Req,
+    Res,
     UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { TransactionApiResponseDto } from './dto/transaction.api-response.dto';
@@ -65,5 +67,14 @@ export class TransactionController {
         @Req() req: AuthenticatedRequest
     ): Promise<TransactionApiResponseDto> {
         return await this.orchestrator.delete(id, req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('export')
+    async exportCsv(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+        const csv = await this.orchestrator.exportCsv(req);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="transactions.csv"');
+        res.send(csv);
     }
 }

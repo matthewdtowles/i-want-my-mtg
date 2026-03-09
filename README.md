@@ -225,6 +225,37 @@ Deletes all data from the price_history table. Requires interactive confirmation
 scry truncate-history
 ```
 
+## Versioning
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) to automatically determine version bumps. When commits are merged to `main`, GitHub Actions reads commit messages to decide the next version.
+
+### Commit Message Format
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Version Bump Rules
+
+| Commit Prefix | Example | Bump |
+| ------------- | ------- | ---- |
+| `fix:` | `fix: tooltip alignment on card page` | Patch (1.0.0 → 1.0.1) |
+| `feat:` | `feat: add transaction history view` | Minor (1.0.0 → 1.1.0) |
+| `feat!:` or `BREAKING CHANGE` in footer | `feat!: redesign inventory API` | Major (1.0.0 → 2.0.0) |
+
+Other prefixes like `docs:`, `chore:`, `refactor:`, `test:`, `style:`, and `ci:` are valid and will default to a **patch** bump.
+
+### Tips
+
+- Use the type that best describes the change — `feat` for new functionality, `fix` for bug fixes
+- Scope is optional but useful: `feat(transactions): add FIFO cost basis`
+- If a PR has multiple commits, the highest bump wins (e.g., one `feat:` + several `fix:` = minor bump)
+- The version in `package.json` is the baseline — CI computes the next version from there
+
 ## Build & Deploy
 
 ### Production (Scry)

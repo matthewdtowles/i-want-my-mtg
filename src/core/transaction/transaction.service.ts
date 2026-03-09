@@ -4,7 +4,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction } from './transaction.entity';
-import { TransactionRepositoryPort } from './transaction.repository.port';
+import { CashFlowPeriod, TransactionRepositoryPort } from './transaction.repository.port';
 
 export interface LotAllocation {
     readonly lotId: number;
@@ -287,6 +287,52 @@ export class TransactionService {
             unrealizedGain,
             realizedGain: totalRealizedGain,
         };
+    }
+
+    /**
+     * Compute FIFO lot allocations from pre-loaded transaction arrays (no DB queries).
+     * buyLots and sells must be sorted by date ASC.
+     */
+    computeFifoFromTransactions(
+        buyLots: Transaction[],
+        sells: Transaction[]
+    ): {
+        lots: Array<{ lotId: number; remaining: number; costPerUnit: number }>;
+        totalSoldCost: number;
+        totalRealizedGain: number;
+    } {
+        let totalSoldCost = 0;
+        let totalRealizedGain = 0;
+
+        const lotRemaining = buyLots.map((lot) => ({
+            lotId: lot.id,
+            remaining: lot.quantity,
+            costPerUnit: lot.pricePerUnit,
+        }));
+
+        let lotIndex = 0;
+        for (const sell of sells) {
+            let sellRemaining = sell.quantity;
+            while (sellRemaining > 0 && lotIndex < lotRemaining.length) {
+                const lot = lotRemaining[lotIndex];
+                const consumed = Math.min(lot.remaining, sellRemaining);
+                lot.remaining -= consumed;
+                sellRemaining -= consumed;
+                totalSoldCost += consumed * lot.costPerUnit;
+                totalRealizedGain += consumed * (sell.pricePerUnit - lot.costPerUnit);
+                if (lot.remaining === 0) {
+                    lotIndex++;
+                }
+            }
+        }
+
+        const lots = lotRemaining.filter((lot) => lot.remaining > 0);
+        return { lots, totalSoldCost, totalRealizedGain };
+    }
+
+    async getCashFlow(userId: number): Promise<CashFlowPeriod[]> {
+        this.LOGGER.debug(`Get cash flow for user ${userId}.`);
+        return this.repository.getCashFlow(userId);
     }
 
     private assertWithinEditWindow(

@@ -163,7 +163,7 @@ export class InventoryOrchestrator {
             const remainingEntries = await Promise.all(
                 [...uniqueKeys.entries()].map(async ([key, { cardId, isFoil }]) => {
                     const qty = await this.transactionService.getRemainingQuantity(
-                        inputInvItems[0].userId,
+                        req.user.id,
                         cardId,
                         isFoil
                     );

@@ -75,6 +75,7 @@
     <div class="content-wrapper px-4 pb-6">
         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             <i class="fas fa-arrow-trend-up text-teal-500 mr-1"></i>Top Performers
+            {{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}
         </h4>
         <div class="table-wrapper">
         <table class="table-container w-full">
@@ -82,7 +83,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Card</th>
                     <th class="table-header">Qty</th>
-                    <th class="table-header">Cost Basis{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}</th>
+                    <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>
@@ -117,6 +118,7 @@
     <div class="content-wrapper px-4 pb-6">
         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             <i class="fas fa-layer-group text-teal-500 mr-1"></i>ROI by Set
+            {{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Set-level investment totals use FIFO cost basis aggregated from per-card lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Set-level investment totals use average cost basis. Recalculate for FIFO cost basis."}}{{/if}}
         </h4>
         <div class="table-wrapper">
         <table class="table-container w-full">
@@ -124,7 +126,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Set</th>
                     <th class="table-header">Cards</th>
-                    <th class="table-header">Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Set-level investment totals use FIFO cost basis aggregated from per-card lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Set-level investment totals use average cost basis. Recalculate for FIFO cost basis."}}{{/if}}</th>
+                    <th class="table-header">Invested</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>
@@ -165,6 +167,7 @@
     <div class="content-wrapper px-4 pb-6">
         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             <i class="fas fa-arrow-trend-down text-hotpink-500 mr-1"></i>Worst Performers
+            {{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}
         </h4>
         <div class="table-wrapper">
         <table class="table-container w-full">
@@ -172,7 +175,7 @@
                 <tr class="table-header-row">
                     <th class="table-header pl-2">Card</th>
                     <th class="table-header">Qty</th>
-                    <th class="table-header">Cost Basis{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) lot matching."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Cost basis shown here uses the average method. Recalculate for FIFO cost basis."}}{{/if}}</th>
+                    <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
                     <th class="table-header pr-2">ROI</th>

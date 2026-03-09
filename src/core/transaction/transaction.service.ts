@@ -205,7 +205,7 @@ export class TransactionService {
 
         const totalBought = buyLots.reduce((sum, t) => sum + t.quantity, 0);
         const totalSold = sells.reduce((sum, t) => sum + t.quantity, 0);
-        return totalBought - totalSold;
+        return Math.max(0, totalBought - totalSold);
     }
 
     /**

@@ -150,13 +150,30 @@ export class InventoryOrchestrator {
                 req.user.id
             );
 
-            // Validate against transaction-derived quantities before saving
+            // Validate against transaction-derived quantities before saving.
+            // De-duplicate by (cardId, isFoil) and fetch remaining quantities in parallel.
+            const uniqueKeys = new Map<string, { cardId: string; isFoil: boolean }>();
             for (const item of inputInvItems) {
-                const minQty = await this.transactionService.getRemainingQuantity(
-                    item.userId,
-                    item.cardId,
-                    item.isFoil
-                );
+                const key = `${item.cardId}:${item.isFoil}`;
+                if (!uniqueKeys.has(key)) {
+                    uniqueKeys.set(key, { cardId: item.cardId, isFoil: item.isFoil });
+                }
+            }
+
+            const remainingEntries = await Promise.all(
+                [...uniqueKeys.entries()].map(async ([key, { cardId, isFoil }]) => {
+                    const qty = await this.transactionService.getRemainingQuantity(
+                        inputInvItems[0].userId,
+                        cardId,
+                        isFoil
+                    );
+                    return [key, qty] as const;
+                })
+            );
+            const remainingByKey = new Map(remainingEntries);
+
+            for (const item of inputInvItems) {
+                const minQty = remainingByKey.get(`${item.cardId}:${item.isFoil}`) ?? 0;
                 if (item.quantity > 0 && item.quantity < minQty) {
                     throw new BadRequestException(
                         `Cannot set inventory to ${item.quantity}. ` +

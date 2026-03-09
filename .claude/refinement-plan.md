@@ -140,18 +140,25 @@ PortfolioModule → TransactionModule → InventoryModule
 
 ---
 
-## Phase 6: Repository Port Organization — DEFERRED
+## Phase 6: Repository Port Organization — DONE
 
 **Goal:** Consistent port file organization.
 
-**Status:** Not started. Lowest priority and lowest impact. Can be picked up in a future cleanup pass.
+**Status:** Complete. All port interfaces moved to `ports/` subdirectories.
 
-Currently portfolio has 3 port files loose in `src/core/portfolio/`. Inventory has its port in `src/core/inventory/`. Transaction has its port in `src/core/transaction/`.
+- Created `ports/` subdirectory in each core module: card, set, inventory, user, password-reset, portfolio, transaction
+- Moved all 12 `*.repository.port.ts` files into their module's `ports/` directory
+- Updated all imports across `src/` and `test/` (absolute `src/core/*/ports/` paths, relative `./ports/` and `../ports/` paths, and `../` back-references from port files to sibling entities)
+- `base.repository.port.ts` remains at `src/core/` root (shared across modules, not module-specific)
 
-**Action (when ready):**
-- Create `ports/` subdirectory in each core module for port interfaces
-- Move existing port files: `*.repository.port.ts` → `ports/` in each module
-- Update all imports across the codebase
+**Files moved:**
+- `src/core/card/{card,price-history}.repository.port.ts` → `src/core/card/ports/`
+- `src/core/set/{set,set-price-history}.repository.port.ts` → `src/core/set/ports/`
+- `src/core/inventory/inventory.repository.port.ts` → `src/core/inventory/ports/`
+- `src/core/user/{user,pending-user}.repository.port.ts` → `src/core/user/ports/`
+- `src/core/password-reset/password-reset.repository.port.ts` → `src/core/password-reset/ports/`
+- `src/core/portfolio/{portfolio-value-history,portfolio-card-performance,portfolio-summary}.repository.port.ts` → `src/core/portfolio/ports/`
+- `src/core/transaction/transaction.repository.port.ts` → `src/core/transaction/ports/`
 
 ---
 
@@ -164,4 +171,4 @@ Currently portfolio has 3 port files loose in `src/core/portfolio/`. Inventory h
 | 3 | Phase 4 (presenter fix) | Low — clean boundaries | Low — move utilities | DONE |
 | 4 | Phase 3 (decompose service) | Medium — cohesion | Medium — new service + tests | DONE |
 | 5 | Phase 5 (UI navigation) | High — user experience | Low — template changes | DONE |
-| 6 | Phase 6 (port org) | Low — consistency | Low — file moves | DEFERRED |
+| 6 | Phase 6 (port org) | Low — consistency | Low — file moves | DONE |

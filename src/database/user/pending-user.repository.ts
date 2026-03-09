@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PendingUser } from 'src/core/user/pending-user.entity';
-import { PendingUserRepositoryPort } from 'src/core/user/pending-user.repository.port';
+import { PendingUserRepositoryPort } from 'src/core/user/ports/pending-user.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { LessThan, Repository } from 'typeorm';
 import { PendingUserOrmEntity } from './pending-user.orm-entity';

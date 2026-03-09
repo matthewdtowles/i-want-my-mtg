@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { Format } from 'src/core/card/format.enum';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';

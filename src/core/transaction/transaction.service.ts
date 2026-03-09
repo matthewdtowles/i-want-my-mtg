@@ -4,7 +4,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction } from './transaction.entity';
-import { CashFlowPeriod, TransactionRepositoryPort } from './transaction.repository.port';
+import { CashFlowPeriod, TransactionRepositoryPort } from './ports/transaction.repository.port';
 
 export interface LotAllocation {
     readonly lotId: number;

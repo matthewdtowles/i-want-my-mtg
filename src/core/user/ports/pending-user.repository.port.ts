@@ -1,4 +1,4 @@
-import { PendingUser } from './pending-user.entity';
+import { PendingUser } from '../pending-user.entity';
 
 export const PendingUserRepositoryPort = 'PendingUserRepositoryPort';
 

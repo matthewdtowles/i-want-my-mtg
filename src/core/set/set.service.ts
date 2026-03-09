@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SetPriceHistory } from './set-price-history.entity';
-import { SetPriceHistoryRepositoryPort } from './set-price-history.repository.port';
+import { SetPriceHistoryRepositoryPort } from './ports/set-price-history.repository.port';
 import { Set } from './set.entity';
-import { SetRepositoryPort } from './set.repository.port';
+import { SetRepositoryPort } from './ports/set.repository.port';
 
 @Injectable()
 export class SetService {

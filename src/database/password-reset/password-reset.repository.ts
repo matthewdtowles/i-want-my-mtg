@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordReset } from 'src/core/password-reset/password-reset.entity';
-import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
+import { PasswordResetRepositoryPort } from 'src/core/password-reset/ports/password-reset.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { redactEmail } from 'src/shared/utils/redact-email.util';
 import { LessThan, Repository } from 'typeorm';

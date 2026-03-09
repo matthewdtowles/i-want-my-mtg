@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Post, Query, Render, Req, UseGuards } from '@nestjs/common';
-import { CashFlowPeriod } from 'src/core/transaction/transaction.repository.port';
+import { CashFlowPeriod } from 'src/core/transaction/ports/transaction.repository.port';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { getLogger } from 'src/logger/global-app-logger';

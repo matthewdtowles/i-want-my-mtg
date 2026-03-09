@@ -5,7 +5,7 @@ import {
 } from 'src/core/auth/verification-token.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PasswordReset } from './password-reset.entity';
-import { PasswordResetRepositoryPort } from './password-reset.repository.port';
+import { PasswordResetRepositoryPort } from './ports/password-reset.repository.port';
 
 @Injectable()
 export class PasswordResetService {

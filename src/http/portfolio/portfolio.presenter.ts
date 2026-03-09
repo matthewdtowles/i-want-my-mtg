@@ -1,5 +1,5 @@
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
-import { SetRoiAggregation } from 'src/core/portfolio/portfolio-card-performance.repository.port';
+import { SetRoiAggregation } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
-import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
+import { SetPriceHistoryRepositoryPort } from 'src/core/set/ports/set-price-history.repository.port';
 import { Repository } from 'typeorm';
 import { SetPriceHistoryMapper } from './set-price-history.mapper';
 import { SetPriceHistoryOrmEntity } from './set-price-history.orm-entity';

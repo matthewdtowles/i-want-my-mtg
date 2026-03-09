@@ -1,7 +1,7 @@
 import { BaseRepositoryPort } from 'src/core/base.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { Card } from './card.entity';
-import { Format } from './format.enum';
+import { Card } from '../card.entity';
+import { Format } from '../format.enum';
 
 export const CardRepositoryPort = 'CardRepositoryPort';
 

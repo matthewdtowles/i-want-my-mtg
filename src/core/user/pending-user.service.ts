@@ -6,7 +6,7 @@ import {
 } from 'src/core/auth/verification-token.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PendingUser } from './pending-user.entity';
-import { PendingUserRepositoryPort } from './pending-user.repository.port';
+import { PendingUserRepositoryPort } from './ports/pending-user.repository.port';
 
 @Injectable()
 export class PendingUserService {

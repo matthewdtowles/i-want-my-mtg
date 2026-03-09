@@ -1,6 +1,6 @@
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { BaseRepositoryPort } from 'src/core/base.repository.port';
-import { Set } from './set.entity';
+import { Set } from '../set.entity';
 
 export const SetRepositoryPort = 'SetRepositoryPort';
 

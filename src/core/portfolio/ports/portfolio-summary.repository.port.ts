@@ -1,5 +1,5 @@
 import { EntityManager } from 'typeorm';
-import { PortfolioSummary } from './portfolio-summary.entity';
+import { PortfolioSummary } from '../portfolio-summary.entity';
 
 export const PortfolioSummaryRepositoryPort = 'PortfolioSummaryRepositoryPort';
 

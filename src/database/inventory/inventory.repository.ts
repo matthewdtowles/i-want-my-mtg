@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Inventory } from 'src/core/inventory/inventory.entity';
-import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
+import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';

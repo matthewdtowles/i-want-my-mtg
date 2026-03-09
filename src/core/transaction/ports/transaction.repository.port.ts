@@ -1,4 +1,4 @@
-import { Transaction } from './transaction.entity';
+import { Transaction } from '../transaction.entity';
 
 export const TransactionRepositoryPort = 'TransactionRepositoryPort';
 

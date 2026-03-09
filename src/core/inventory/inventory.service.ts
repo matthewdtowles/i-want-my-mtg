@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Inventory } from './inventory.entity';
-import { InventoryRepositoryPort } from './inventory.repository.port';
+import { InventoryRepositoryPort } from './ports/inventory.repository.port';
 
 @Injectable()
 export class InventoryService {

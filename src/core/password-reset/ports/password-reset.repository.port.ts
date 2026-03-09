@@ -1,4 +1,4 @@
-import { PasswordReset } from './password-reset.entity';
+import { PasswordReset } from '../password-reset.entity';
 
 export const PasswordResetRepositoryPort = 'PasswordResetRepositoryPort';
 

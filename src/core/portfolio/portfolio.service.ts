@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PortfolioValueHistory } from './portfolio-value-history.entity';
-import { PortfolioValueHistoryRepositoryPort } from './portfolio-value-history.repository.port';
+import { PortfolioValueHistoryRepositoryPort } from './ports/portfolio-value-history.repository.port';
 
 @Injectable()
 export class PortfolioService {

@@ -1,6 +1,6 @@
 import { BaseRepositoryPort } from 'src/core/base.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { Inventory } from './inventory.entity';
+import { Inventory } from '../inventory.entity';
 
 export const InventoryRepositoryPort = 'InventoryRepositoryPort';
 

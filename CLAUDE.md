@@ -61,7 +61,7 @@ Repository Ports (src/core/*/ports)      — Interfaces (abstractions)
 Repositories (src/database/*)            — TypeORM implementations
 ```
 
-**Port-Adapter pattern**: Services depend on repository port interfaces (e.g., `CardRepositoryPort`). Concrete implementations are bound in `DatabaseModule` via NestJS DI:
+**Port-Adapter pattern**: Services depend on repository port interfaces (e.g., `CardRepositoryPort`) located in `ports/` subdirectories (e.g., `src/core/card/ports/card.repository.port.ts`). Concrete implementations are bound in `DatabaseModule` via NestJS DI:
 ```typescript
 { provide: CardRepositoryPort, useClass: CardRepository }
 ```

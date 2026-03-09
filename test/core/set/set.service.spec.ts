@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
-import { SetPriceHistoryRepositoryPort } from 'src/core/set/set-price-history.repository.port';
+import { SetPriceHistoryRepositoryPort } from 'src/core/set/ports/set-price-history.repository.port';
 import { Set } from 'src/core/set/set.entity';
-import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { SetService } from 'src/core/set/set.service';
 
 describe('SetService', () => {

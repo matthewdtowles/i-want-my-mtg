@@ -1,5 +1,5 @@
 import { EntityManager } from 'typeorm';
-import { PortfolioCardPerformance } from './portfolio-card-performance.entity';
+import { PortfolioCardPerformance } from '../portfolio-card-performance.entity';
 
 export const PortfolioCardPerformanceRepositoryPort = 'PortfolioCardPerformanceRepositoryPort';
 

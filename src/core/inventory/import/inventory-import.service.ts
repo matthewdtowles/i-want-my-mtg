@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
-import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
-import { InventoryRepositoryPort } from '../inventory.repository.port';
+import { InventoryRepositoryPort } from '../ports/inventory.repository.port';
 import { CardImportRow, ImportError, ImportResult, SetImportRow } from './inventory-import.types';
 
 const MAX_ROWS = 2000;

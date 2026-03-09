@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
-import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/portfolio-value-history.repository.port';
+import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/ports/portfolio-value-history.repository.port';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 
 describe('PortfolioService', () => {

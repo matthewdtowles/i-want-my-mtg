@@ -4,7 +4,7 @@ import { Transaction } from 'src/core/transaction/transaction.entity';
 import {
     CashFlowPeriod,
     TransactionRepositoryPort,
-} from 'src/core/transaction/transaction.repository.port';
+} from 'src/core/transaction/ports/transaction.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
 import { TransactionMapper } from './transaction.mapper';

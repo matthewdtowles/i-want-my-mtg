@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Inventory } from 'src/core/inventory/inventory.entity';
-import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
+import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 

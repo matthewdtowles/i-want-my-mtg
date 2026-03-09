@@ -9,10 +9,10 @@ import { PortfolioCardPerformance } from './portfolio-card-performance.entity';
 import {
     PortfolioCardPerformanceRepositoryPort,
     SetRoiAggregation,
-} from './portfolio-card-performance.repository.port';
+} from './ports/portfolio-card-performance.repository.port';
 import { PortfolioComputationService } from './portfolio-computation.service';
 import { PortfolioSummary } from './portfolio-summary.entity';
-import { PortfolioSummaryRepositoryPort } from './portfolio-summary.repository.port';
+import { PortfolioSummaryRepositoryPort } from './ports/portfolio-summary.repository.port';
 
 @Injectable()
 export class PortfolioSummaryService {

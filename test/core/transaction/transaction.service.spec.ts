@@ -699,9 +699,7 @@ describe('TransactionService', () => {
         });
 
         it('should handle periods with only sells (positive net)', async () => {
-            const sellOnly = [
-                { period: '2025-03', totalBought: 0, totalSold: 75.5, net: 75.5 },
-            ];
+            const sellOnly = [{ period: '2025-03', totalBought: 0, totalSold: 75.5, net: 75.5 }];
             repository.getCashFlow.mockResolvedValue(sellOnly);
 
             const result = await service.getCashFlow(1);

@@ -134,10 +134,10 @@ export class PortfolioPresenter {
     static formatTimestamp(date: Date): string {
         if (!date) return '';
         const d = date instanceof Date ? date : new Date(date);
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${d.getFullYear()}-${month}-${day} ${hours}:${minutes}`;
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        const hours = String(d.getUTCHours()).padStart(2, '0');
+        const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+        return `${d.getUTCFullYear()}-${month}-${day} ${hours}:${minutes}`;
     }
 }

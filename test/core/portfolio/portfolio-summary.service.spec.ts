@@ -40,6 +40,7 @@ describe('PortfolioSummaryService', () => {
     const mockTransactionService = {
         findByUser: jest.fn(),
         getFifoLotAllocations: jest.fn(),
+        computeFifoFromTransactions: jest.fn(),
     };
 
     const mockConfigService = {
@@ -190,7 +191,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([inv]);
             inventoryService.totalOwnedValue.mockResolvedValue(14.0);
             transactionService.findByUser.mockResolvedValue([buyTx, sellTx]);
-            transactionService.getFifoLotAllocations.mockResolvedValue({
+            transactionService.computeFifoFromTransactions.mockReturnValue({
                 lots: [{ lotId: 1, remaining: 2, costPerUnit: 5.0 }],
                 totalSoldCost: 5.0,
                 totalRealizedGain: 3.0,
@@ -234,13 +235,13 @@ describe('PortfolioSummaryService', () => {
             inventoryService.totalOwnedValue.mockResolvedValue(20.0);
             transactionService.findByUser.mockResolvedValue([buyNormal, buyFoil]);
 
-            transactionService.getFifoLotAllocations
-                .mockResolvedValueOnce({
+            transactionService.computeFifoFromTransactions
+                .mockReturnValueOnce({
                     lots: [{ lotId: 1, remaining: 2, costPerUnit: 4.0 }],
                     totalSoldCost: 0,
                     totalRealizedGain: 0,
                 })
-                .mockResolvedValueOnce({
+                .mockReturnValueOnce({
                     lots: [{ lotId: 2, remaining: 1, costPerUnit: 8.0 }],
                     totalSoldCost: 0,
                     totalRealizedGain: 0,
@@ -268,7 +269,7 @@ describe('PortfolioSummaryService', () => {
             inventoryService.findAllForUser.mockResolvedValue([]);
             inventoryService.totalOwnedValue.mockResolvedValue(0);
             transactionService.findByUser.mockResolvedValue([buyTx, sellTx]);
-            transactionService.getFifoLotAllocations.mockResolvedValue({
+            transactionService.computeFifoFromTransactions.mockReturnValue({
                 lots: [],
                 totalSoldCost: 10.0,
                 totalRealizedGain: 10.0,

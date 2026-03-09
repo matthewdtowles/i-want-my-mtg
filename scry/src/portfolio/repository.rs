@@ -183,7 +183,7 @@ impl PortfolioRepository {
                 (h.total_sell_revenue - CASE WHEN h.total_bought > 0
                     THEN h.total_buy_cost * h.total_sold / h.total_bought
                     ELSE 0 END)::numeric(10,2) AS realized_gain,
-                CASE WHEN h.total_bought > 0 AND h.total_buy_cost > 0
+                CASE WHEN h.quantity > 0 AND h.total_bought > 0 AND h.total_buy_cost > 0
                     THEN ((h.quantity * CASE WHEN h.is_foil
                         THEN COALESCE(p.foil, p.normal, 0)
                         ELSE COALESCE(p.normal, p.foil, 0) END

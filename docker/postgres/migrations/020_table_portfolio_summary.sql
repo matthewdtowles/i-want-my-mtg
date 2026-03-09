@@ -46,9 +46,8 @@ CREATE TABLE IF NOT EXISTS public.portfolio_card_performance (
 CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_user
     ON public.portfolio_card_performance (user_id);
 
--- Expression indexes for top/worst performer queries (sorted by total gain)
-CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_best
+-- Expression index for top/worst performer queries (sorted by total gain).
+-- Postgres can scan a single btree index in both directions, so one index
+-- covers both ORDER BY ... DESC (top) and ORDER BY ... ASC (worst).
+CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_gain
     ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) DESC);
-
-CREATE INDEX IF NOT EXISTS idx_portfolio_card_performance_worst
-    ON public.portfolio_card_performance (user_id, (unrealized_gain + realized_gain) ASC);

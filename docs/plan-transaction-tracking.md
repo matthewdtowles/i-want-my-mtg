@@ -394,7 +394,7 @@ source of truth and sell counts are bounded.
   - Bar chart (Chart.js): buys vs sells by month
   - Net cash flow line overlay
 - [x] 4.23 Add `GET /portfolio/cash-flow` endpoint (monthly aggregation)
-- [ ] 4.24 Write unit tests for cash flow aggregation
+- [x] 4.24 Write unit tests for cash flow aggregation
 
 **PR boundary: 4D ships as one PR.**
 
@@ -565,3 +565,29 @@ Question #2) is implemented, consider a streaming/cursor-based approach.
 
 ### All tasks complete
 All planned tasks are now checked off. The implementation is complete.
+
+---
+
+## PR Review Fixes (2026-03-08)
+
+### 1. Cash flow chart negative currency formatting
+**Issue**: Tooltip and y-axis in `cashFlowChart.js` used `'$' + value` which
+produces `$-30.00` for negatives, inconsistent with `TransactionPresenter.formatGain`
+which outputs `-$30.00`.
+**Fix**: Updated both the tooltip callback and y-axis tick callback to format
+negatives as `-$X.XX` (minus before dollar sign).
+
+### 2. Redundant expression indexes in migration 020
+**Issue**: Two expression indexes (`_best` DESC and `_worst` ASC) target the same
+sort key `(unrealized_gain + realized_gain)`. Postgres can scan a single btree
+index in both directions, so maintaining both adds write overhead with no benefit.
+**Fix**: Consolidated to a single index `idx_portfolio_card_performance_gain` (DESC)
+in both `020_table_portfolio_summary.sql` and `001_complete_schema.sql`. The migration
+is safe to run regardless of system state (uses `CREATE INDEX IF NOT EXISTS`).
+
+### 3. Portfolio presenter timezone inconsistency
+**Issue**: `PortfolioPresenter.formatTimestamp` used local-time getters (`getMonth`,
+`getDate`, `getHours`, `getMinutes`) while `TransactionPresenter.formatDate` uses
+UTC getters. This causes inconsistent rendering depending on server timezone.
+**Fix**: Switched to UTC getters (`getUTCMonth`, `getUTCDate`, `getUTCHours`,
+`getUTCMinutes`, `getUTCFullYear`). Updated test to use a UTC date string.

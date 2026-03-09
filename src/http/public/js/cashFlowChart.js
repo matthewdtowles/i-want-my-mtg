@@ -76,7 +76,10 @@
                         tooltip: {
                             callbacks: {
                                 label: function (ctx) {
-                                    return ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2);
+                                    var v = ctx.parsed.y;
+                                    var abs = Math.abs(v).toFixed(2);
+                                    var formatted = v < 0 ? '-$' + abs : '$' + abs;
+                                    return ctx.dataset.label + ': ' + formatted;
                                 },
                             },
                         },
@@ -92,7 +95,7 @@
                                 color: textColor,
                                 font: { size: 10 },
                                 callback: function (v) {
-                                    return '$' + v;
+                                    return v < 0 ? '-$' + Math.abs(v) : '$' + v;
                                 },
                             },
                         },

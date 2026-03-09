@@ -188,8 +188,8 @@ describe('PortfolioPresenter', () => {
     });
 
     describe('formatTimestamp', () => {
-        it('should format timestamp as YYYY-MM-DD HH:MM', () => {
-            const date = new Date(2026, 2, 7, 14, 30); // March 7, 2026 14:30
+        it('should format timestamp as YYYY-MM-DD HH:MM in UTC', () => {
+            const date = new Date('2026-03-07T14:30:00Z');
             const result = PortfolioPresenter.formatTimestamp(date);
             expect(result).toBe('2026-03-07 14:30');
         });

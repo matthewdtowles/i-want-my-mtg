@@ -174,25 +174,10 @@ export class PortfolioOrchestrator {
         this.LOGGER.debug(`Get realized gains for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const transactions = await this.transactionService.findByUser(req.user.id);
-            const sells = transactions.filter((tx) => tx.type === 'SELL');
 
-            const cardFoilKeys = [...new Set(sells.map((s) => `${s.cardId}:${s.isFoil}`))];
-
-            const fifoResults = await Promise.all(
-                cardFoilKeys.map((key) => {
-                    const [cardId, foilStr] = key.split(':');
-                    return this.transactionService.getFifoLotAllocations(
-                        req.user.id,
-                        cardId,
-                        foilStr === 'true'
-                    );
-                })
-            );
-            const totalRealizedGain = fifoResults.reduce(
-                (sum, fifo) => sum + fifo.totalRealizedGain,
-                0
-            );
+            // Read from portfolio_summary snapshot (single query) instead of N+1 FIFO queries
+            const summary = await this.summaryService.getSummary(req.user.id);
+            const totalRealizedGain = summary?.totalRealizedGain ?? 0;
 
             return {
                 realizedGain: TransactionPresenter.formatGain(totalRealizedGain),

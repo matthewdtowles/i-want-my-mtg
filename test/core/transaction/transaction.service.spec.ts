@@ -674,6 +674,57 @@ describe('TransactionService', () => {
         });
     });
 
+    describe('getCashFlow edge cases', () => {
+        it('should return empty array when user has no transactions', async () => {
+            repository.getCashFlow.mockResolvedValue([]);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result).toEqual([]);
+        });
+
+        it('should return single period for all activity in one month', async () => {
+            const singlePeriod = [
+                { period: '2025-01', totalBought: 100.0, totalSold: 0, net: -100.0 },
+            ];
+            repository.getCashFlow.mockResolvedValue(singlePeriod);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].period).toBe('2025-01');
+            expect(result[0].totalBought).toBe(100.0);
+            expect(result[0].totalSold).toBe(0);
+            expect(result[0].net).toBe(-100.0);
+        });
+
+        it('should handle periods with only sells (positive net)', async () => {
+            const sellOnly = [
+                { period: '2025-03', totalBought: 0, totalSold: 75.5, net: 75.5 },
+            ];
+            repository.getCashFlow.mockResolvedValue(sellOnly);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result[0].totalBought).toBe(0);
+            expect(result[0].totalSold).toBe(75.5);
+            expect(result[0].net).toBe(75.5);
+        });
+
+        it('should preserve chronological period ordering', async () => {
+            const periods = [
+                { period: '2025-01', totalBought: 10, totalSold: 0, net: -10 },
+                { period: '2025-02', totalBought: 20, totalSold: 5, net: -15 },
+                { period: '2025-03', totalBought: 0, totalSold: 30, net: 30 },
+            ];
+            repository.getCashFlow.mockResolvedValue(periods);
+
+            const result = await service.getCashFlow(1);
+
+            expect(result.map((p) => p.period)).toEqual(['2025-01', '2025-02', '2025-03']);
+        });
+    });
+
     describe('inventory sync', () => {
         it('should increment inventory on BUY create', async () => {
             const tx = new Transaction({

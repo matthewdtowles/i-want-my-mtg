@@ -4,7 +4,7 @@ import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-perf
 import {
     PortfolioCardPerformanceRepositoryPort,
     SetRoiAggregation,
-} from 'src/core/portfolio/portfolio-card-performance.repository.port';
+} from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EntityManager, Repository } from 'typeorm';
 import { PortfolioCardPerformanceMapper } from './portfolio-card-performance.mapper';

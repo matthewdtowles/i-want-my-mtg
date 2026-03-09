@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { CardService } from 'src/core/card/card.service';
 import { Format } from 'src/core/card/format.enum';
 import { Legality } from 'src/core/card/legality.entity';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
-import { PriceHistoryRepositoryPort } from 'src/core/card/price-history.repository.port';
+import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 

@@ -1,4 +1,4 @@
-import { PortfolioValueHistory } from './portfolio-value-history.entity';
+import { PortfolioValueHistory } from '../portfolio-value-history.entity';
 
 export const PortfolioValueHistoryRepositoryPort = 'PortfolioValueHistoryRepositoryPort';
 

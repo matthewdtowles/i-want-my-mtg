@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { Transaction } from 'src/core/transaction/transaction.entity';
-import { TransactionRepositoryPort } from 'src/core/transaction/transaction.repository.port';
+import { TransactionRepositoryPort } from 'src/core/transaction/ports/transaction.repository.port';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 
 describe('TransactionService', () => {

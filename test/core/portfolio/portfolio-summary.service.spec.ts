@@ -3,9 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
-import { PortfolioCardPerformanceRepositoryPort } from 'src/core/portfolio/portfolio-card-performance.repository.port';
+import { PortfolioCardPerformanceRepositoryPort } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
+import { PortfolioComputationService } from 'src/core/portfolio/portfolio-computation.service';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
-import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/portfolio-summary.repository.port';
+import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/ports/portfolio-summary.repository.port';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { Card } from 'src/core/card/card.entity';
 import { Price } from 'src/core/card/price.entity';
@@ -55,6 +56,7 @@ describe('PortfolioSummaryService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PortfolioSummaryService,
+                PortfolioComputationService,
                 { provide: PortfolioSummaryRepositoryPort, useValue: mockSummaryRepo },
                 { provide: PortfolioCardPerformanceRepositoryPort, useValue: mockPerformanceRepo },
                 { provide: InventoryService, useValue: mockInventoryService },

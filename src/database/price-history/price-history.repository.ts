@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PriceHistoryRepositoryPort } from 'src/core/card/price-history.repository.port';
+import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
 import { Repository } from 'typeorm';
 import { PriceHistoryMapper } from './price-history.mapper';

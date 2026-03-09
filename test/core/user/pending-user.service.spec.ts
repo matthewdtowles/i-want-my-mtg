@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { PendingUser } from 'src/core/user/pending-user.entity';
-import { PendingUserRepositoryPort } from 'src/core/user/pending-user.repository.port';
+import { PendingUserRepositoryPort } from 'src/core/user/ports/pending-user.repository.port';
 import { PendingUserService } from 'src/core/user/pending-user.service';
 
 jest.mock('bcrypt');

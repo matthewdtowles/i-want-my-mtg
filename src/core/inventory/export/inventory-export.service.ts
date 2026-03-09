@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { getLogger } from 'src/logger/global-app-logger';
-import { InventoryRepositoryPort } from '../inventory.repository.port';
+import { InventoryRepositoryPort } from '../ports/inventory.repository.port';
 
 @Injectable()
 export class InventoryExportService {

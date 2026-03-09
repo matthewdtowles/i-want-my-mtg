@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Card } from './card.entity';
-import { CardRepositoryPort } from './card.repository.port';
-import { PriceHistoryRepositoryPort } from './price-history.repository.port';
+import { CardRepositoryPort } from './ports/card.repository.port';
+import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
 import { Price } from './price.entity';
 
 @Injectable()

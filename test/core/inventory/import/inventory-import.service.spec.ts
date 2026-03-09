@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
-import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
+import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { Set } from 'src/core/set/set.entity';
-import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 
 function makeCard(overrides: Partial<Card> = {}): Card {
     return new Card({

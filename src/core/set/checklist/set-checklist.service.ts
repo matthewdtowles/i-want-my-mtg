@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
-import { CardRepositoryPort } from 'src/core/card/card.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { Inventory } from 'src/core/inventory/inventory.entity';
-import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
+import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 
 @Injectable()

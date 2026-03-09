@@ -12,7 +12,7 @@ import {
     PortfolioValueHistoryResponseDto,
 } from './dto/portfolio-value-history-response.dto';
 import { PortfolioViewDto } from './dto/portfolio.view.dto';
-import { TransactionPresenter } from 'src/http/transaction/transaction.presenter';
+import { formatGain, gainSign } from 'src/http/base/http.util';
 import {
     CardPerformanceViewData,
     PortfolioPresenter,
@@ -104,7 +104,6 @@ export class PortfolioOrchestrator {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
-                    { label: 'Inventory', url: '/inventory' },
                     { label: 'Portfolio', url: '/portfolio' },
                 ],
                 username: req.user.name,
@@ -180,8 +179,8 @@ export class PortfolioOrchestrator {
             const totalRealizedGain = summary?.totalRealizedGain ?? 0;
 
             return {
-                realizedGain: TransactionPresenter.formatGain(totalRealizedGain),
-                realizedGainSign: TransactionPresenter.gainSign(totalRealizedGain),
+                realizedGain: formatGain(totalRealizedGain),
+                realizedGainSign: gainSign(totalRealizedGain),
             };
         } catch (error) {
             this.LOGGER.debug(`Error getting realized gains: ${error?.message}`);

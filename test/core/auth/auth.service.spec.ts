@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/core/auth/auth.service';
 import { AuthToken } from 'src/core/auth/auth.types';
 import { User } from 'src/core/user/user.entity';
-import { UserRepositoryPort } from 'src/core/user/user.repository.port';
+import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { UserService } from 'src/core/user/user.service';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 

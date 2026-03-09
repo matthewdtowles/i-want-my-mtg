@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
-import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/portfolio-summary.repository.port';
+import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/ports/portfolio-summary.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EntityManager, Repository } from 'typeorm';
 import { PortfolioSummaryMapper } from './portfolio-summary.mapper';

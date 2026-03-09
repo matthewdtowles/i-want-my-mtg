@@ -1,4 +1,4 @@
-import { Price } from './price.entity';
+import { Price } from '../price.entity';
 
 export const PriceHistoryRepositoryPort = 'PriceHistoryRepositoryPort';
 

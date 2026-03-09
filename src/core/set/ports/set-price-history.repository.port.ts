@@ -1,4 +1,4 @@
-import { SetPriceHistory } from './set-price-history.entity';
+import { SetPriceHistory } from '../set-price-history.entity';
 
 export const SetPriceHistoryRepositoryPort = 'SetPriceHistoryRepositoryPort';
 

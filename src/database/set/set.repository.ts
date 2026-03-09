@@ -4,7 +4,7 @@ import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.polic
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { Set } from 'src/core/set/set.entity';
-import { SetRepositoryPort } from 'src/core/set/set.repository.port';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';

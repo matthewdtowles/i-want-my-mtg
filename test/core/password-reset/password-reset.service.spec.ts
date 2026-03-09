@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PasswordReset } from 'src/core/password-reset/password-reset.entity';
-import { PasswordResetRepositoryPort } from 'src/core/password-reset/password-reset.repository.port';
+import { PasswordResetRepositoryPort } from 'src/core/password-reset/ports/password-reset.repository.port';
 import { PasswordResetService } from 'src/core/password-reset/password-reset.service';
 
 jest.mock('src/core/auth/verification-token.util', () => ({

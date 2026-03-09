@@ -3,7 +3,7 @@ import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
-import { InventoryRepositoryPort } from 'src/core/inventory/inventory.repository.port';
+import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 
 function makeInventory(overrides: Partial<Inventory> = {}): Inventory {
     const card = new Card({

@@ -223,37 +223,7 @@ export class TransactionService {
     }> {
         const buyLots = await this.repository.findBuyLots(userId, cardId, isFoil);
         const sells = await this.repository.findSells(userId, cardId, isFoil);
-
-        let totalSoldCost = 0;
-        let totalRealizedGain = 0;
-
-        // Track remaining quantity per buy lot for FIFO consumption
-        const lotRemaining = buyLots.map((lot) => ({
-            lotId: lot.id,
-            remaining: lot.quantity,
-            costPerUnit: lot.pricePerUnit,
-        }));
-
-        // Iterate sells in date order; for each sell, consume buy lots FIFO
-        let lotIndex = 0;
-        for (const sell of sells) {
-            let sellRemaining = sell.quantity;
-            while (sellRemaining > 0 && lotIndex < lotRemaining.length) {
-                const lot = lotRemaining[lotIndex];
-                const consumed = Math.min(lot.remaining, sellRemaining);
-                lot.remaining -= consumed;
-                sellRemaining -= consumed;
-                totalSoldCost += consumed * lot.costPerUnit;
-                totalRealizedGain += consumed * (sell.pricePerUnit - lot.costPerUnit);
-                if (lot.remaining === 0) {
-                    lotIndex++;
-                }
-            }
-        }
-
-        const lots = lotRemaining.filter((lot) => lot.remaining > 0);
-
-        return { lots, totalSoldCost, totalRealizedGain };
+        return this.computeFifoFromTransactions(buyLots, sells);
     }
 
     /**

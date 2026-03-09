@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
@@ -11,6 +11,7 @@ import {
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Toast } from 'src/http/base/toast';
@@ -37,7 +38,8 @@ export class InventoryOrchestrator {
     constructor(
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
         @Inject(InventoryImportService) private readonly importService: InventoryImportService,
-        @Inject(InventoryExportService) private readonly exportService: InventoryExportService
+        @Inject(InventoryExportService) private readonly exportService: InventoryExportService,
+        @Inject(TransactionService) private readonly transactionService: TransactionService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -147,6 +149,30 @@ export class InventoryOrchestrator {
                 updateInventoryDtos,
                 req.user.id
             );
+
+            // Validate against transaction-derived quantities before saving
+            for (const item of inputInvItems) {
+                const minQty = await this.transactionService.getRemainingQuantity(
+                    item.userId,
+                    item.cardId,
+                    item.isFoil
+                );
+                if (item.quantity > 0 && item.quantity < minQty) {
+                    throw new BadRequestException(
+                        `Cannot set inventory to ${item.quantity}. ` +
+                            `${minQty} units are accounted for in transactions. ` +
+                            `Record a SELL transaction to reduce below this amount.`
+                    );
+                }
+                if (item.quantity <= 0 && minQty > 0) {
+                    throw new BadRequestException(
+                        `Cannot remove inventory. ` +
+                            `${minQty} units are accounted for in transactions. ` +
+                            `Record a SELL transaction to reduce below this amount.`
+                    );
+                }
+            }
+
             const updatedItems: Inventory[] = await this.inventoryService.save(inputInvItems);
             this.LOGGER.debug(
                 `Saved ${updatedItems.length} inventory items for user ${req.user.id}`
@@ -154,6 +180,7 @@ export class InventoryOrchestrator {
             return updatedItems;
         } catch (error) {
             this.LOGGER.debug(`Error saving inventory for user ${req.user?.id}: ${error?.message}`);
+            if (error instanceof HttpException) throw error;
             return HttpErrorHandler.toHttpException(error, 'save');
         }
     }
@@ -227,6 +254,21 @@ export class InventoryOrchestrator {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             if (!cardId) throw new BadRequestException('Card ID is required for deletion');
+
+            // Validate against transaction-derived quantities before deleting
+            const minQty = await this.transactionService.getRemainingQuantity(
+                req.user.id,
+                cardId,
+                isFoil
+            );
+            if (minQty > 0) {
+                throw new BadRequestException(
+                    `Cannot delete inventory. ` +
+                        `${minQty} units are accounted for in transactions. ` +
+                        `Record a SELL transaction to reduce below this amount.`
+                );
+            }
+
             await this.inventoryService.delete(req.user.id, cardId, isFoil);
             this.LOGGER.debug(
                 `Deleted inventory item for user ${req.user.id}, cardId: ${cardId}, isFoil: ${isFoil}`
@@ -236,6 +278,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(
                 `Error deleting inventory item for user ${req.user?.id}, cardId: ${cardId}, isFoil: ${isFoil}: ${error?.message}`
             );
+            if (error instanceof HttpException) throw error;
             return HttpErrorHandler.toHttpException(error, 'delete');
         }
     }

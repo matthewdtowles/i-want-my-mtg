@@ -10,6 +10,7 @@ import {
     PortfolioCardPerformanceRepositoryPort,
     SetRoiAggregation,
 } from './portfolio-card-performance.repository.port';
+import { PortfolioComputationService } from './portfolio-computation.service';
 import { PortfolioSummary } from './portfolio-summary.entity';
 import { PortfolioSummaryRepositoryPort } from './portfolio-summary.repository.port';
 
@@ -28,6 +29,8 @@ export class PortfolioSummaryService {
         private readonly inventoryService: InventoryService,
         @Inject(TransactionService)
         private readonly transactionService: TransactionService,
+        @Inject(PortfolioComputationService)
+        private readonly computationService: PortfolioComputationService,
         private readonly configService: ConfigService
     ) {
         const parsedMaxDaily = parseInt(
@@ -108,133 +111,29 @@ export class PortfolioSummaryService {
         this.LOGGER.debug(`Computing portfolio summary for user ${userId}.`);
 
         const allOptions = new SafeQueryOptions({ page: '1', limit: '100000' });
-        const inventoryItems = await this.inventoryService.findAllForUser(userId, allOptions);
-        const totalValue = await this.inventoryService.totalOwnedValue(userId);
+        const [inventoryItems, totalValue, transactions] = await Promise.all([
+            this.inventoryService.findAllForUser(userId, allOptions),
+            this.inventoryService.totalOwnedValue(userId),
+            this.transactionService.findByUser(userId),
+        ]);
 
-        const transactions = await this.transactionService.findByUser(userId);
-        const hasTransactions = transactions.length > 0;
+        const computed = this.computationService.compute(
+            userId,
+            inventoryItems,
+            transactions,
+            totalValue
+        );
 
-        let totalCost: number | null = null;
-        let totalRealizedGain: number | null = null;
-        const performances: PortfolioCardPerformance[] = [];
-        const now = new Date();
-
-        if (hasTransactions) {
-            totalCost = 0;
-            totalRealizedGain = 0;
-
-            // Prebuild maps for O(1) lookups
-            const inventoryMap = new Map<string, (typeof inventoryItems)[0]>();
-            const cardFoilKeys = new Set<string>();
-            for (const inv of inventoryItems) {
-                const key = `${inv.cardId}:${inv.isFoil}`;
-                inventoryMap.set(key, inv);
-                cardFoilKeys.add(key);
-            }
-            const transactionCardKeys = new Set<string>();
-
-            // Group transactions by card/foil for batch FIFO computation
-            const buysByKey = new Map<string, typeof transactions>();
-            const sellsByKey = new Map<string, typeof transactions>();
-            for (const tx of transactions) {
-                const key = `${tx.cardId}:${tx.isFoil}`;
-                transactionCardKeys.add(key);
-                cardFoilKeys.add(key);
-                if (tx.type === 'BUY') {
-                    const buys = buysByKey.get(key) || [];
-                    buys.push(tx);
-                    buysByKey.set(key, buys);
-                } else {
-                    const sells = sellsByKey.get(key) || [];
-                    sells.push(tx);
-                    sellsByKey.set(key, sells);
-                }
-            }
-
-            // Sort buy/sell groups by date for FIFO ordering
-            const dateSorter = (a: { date: Date }, b: { date: Date }) =>
-                new Date(a.date).getTime() - new Date(b.date).getTime();
-            for (const buys of buysByKey.values()) buys.sort(dateSorter);
-            for (const sells of sellsByKey.values()) sells.sort(dateSorter);
-
-            for (const key of cardFoilKeys) {
-                const [cardId, foilStr] = key.split(':');
-                const isFoil = foilStr === 'true';
-
-                const inventoryItem = inventoryMap.get(key);
-                const quantity = inventoryItem?.quantity ?? 0;
-
-                // Get market price for current value
-                let marketPrice = 0;
-                if (inventoryItem?.card?.prices?.[0]) {
-                    const price = inventoryItem.card.prices[0];
-                    marketPrice = isFoil ? (price.foil ?? 0) : (price.normal ?? price.foil ?? 0);
-                }
-
-                const currentValue = quantity * marketPrice;
-
-                // Compute FIFO cost basis from pre-loaded transactions (no extra DB queries)
-                const fifo = this.transactionService.computeFifoFromTransactions(
-                    buysByKey.get(key) || [],
-                    sellsByKey.get(key) || []
-                );
-
-                const lotTotalCost = fifo.lots.reduce(
-                    (sum, lot) => sum + lot.remaining * lot.costPerUnit,
-                    0
-                );
-                const lotQuantity = fifo.lots.reduce((sum, lot) => sum + lot.remaining, 0);
-                const averageCost = lotQuantity > 0 ? lotTotalCost / lotQuantity : 0;
-                const unrealizedGain = quantity * (marketPrice - averageCost);
-
-                totalCost += lotTotalCost;
-                totalRealizedGain += fifo.totalRealizedGain;
-
-                const cardTotalCost = lotTotalCost;
-                const roiPercent =
-                    cardTotalCost > 0
-                        ? ((currentValue - cardTotalCost) / cardTotalCost) * 100
-                        : null;
-
-                // Only include cards that have transaction data
-                if (transactionCardKeys.has(key)) {
-                    performances.push(
-                        new PortfolioCardPerformance({
-                            userId,
-                            cardId,
-                            isFoil,
-                            quantity,
-                            totalCost: lotTotalCost,
-                            averageCost,
-                            currentValue,
-                            unrealizedGain,
-                            realizedGain: fifo.totalRealizedGain,
-                            roiPercent,
-                            computedAt: now,
-                        })
-                    );
-                }
-            }
-        }
-
-        // Save per-card performance data
-        await this.performanceRepository.replaceForUser(userId, performances, manager);
-
-        const distinctCardIds = new Set(inventoryItems.map((inv) => inv.cardId));
-        const totalCards = distinctCardIds.size;
-        let totalQuantity = 0;
-        for (const inv of inventoryItems) {
-            totalQuantity += inv.quantity;
-        }
+        await this.performanceRepository.replaceForUser(userId, computed.performances, manager);
 
         return {
-            userId,
-            totalValue,
-            totalCost,
-            totalRealizedGain,
-            totalCards,
-            totalQuantity,
-            computedAt: now,
+            userId: computed.userId,
+            totalValue: computed.totalValue,
+            totalCost: computed.totalCost,
+            totalRealizedGain: computed.totalRealizedGain,
+            totalCards: computed.totalCards,
+            totalQuantity: computed.totalQuantity,
+            computedAt: computed.computedAt,
         };
     }
 

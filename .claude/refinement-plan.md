@@ -2,135 +2,166 @@
 
 ## Problem Summary
 
-1. **Portfolio is buried inside Inventory conceptually** — the breadcrumb says `Home > Inventory > Portfolio`, the portfolio link lives on the inventory page, and there's no top-level nav for portfolio. Yet portfolio is its own module in core/http/database. The UX doesn't match the architecture.
+1. ~~**Portfolio is buried inside Inventory conceptually** — the breadcrumb says `Home > Inventory > Portfolio`, the portfolio link lives on the inventory page, and there's no top-level nav for portfolio. Yet portfolio is its own module in core/http/database. The UX doesn't match the architecture.~~ **RESOLVED**
 
-2. **Transactions are disconnected from Portfolio** — transactions and portfolio are siblings in the UI nav but have no direct navigation between them, despite transactions being the data source for portfolio analytics.
+2. ~~**Transactions are disconnected from Portfolio** — transactions and portfolio are siblings in the UI nav but have no direct navigation between them, despite transactions being the data source for portfolio analytics.~~ **RESOLVED**
 
-3. **Circular dependencies via `forwardRef`** — `TransactionService → InventoryService` and `PortfolioModule → InventoryModule + TransactionModule` with forwardRefs. This is a code smell.
+3. ~~**Circular dependencies via `forwardRef`** — `TransactionService → InventoryService` and `PortfolioModule → InventoryModule + TransactionModule` with forwardRefs. This is a code smell.~~ **RESOLVED**
 
-4. **InventoryService depends on TransactionRepositoryPort directly** — bypasses the service layer to query transaction data for "min quantity" validation. Breaks hexagonal arch.
+4. ~~**InventoryService depends on TransactionRepositoryPort directly** — bypasses the service layer to query transaction data for "min quantity" validation. Breaks hexagonal arch.~~ **RESOLVED**
 
-5. **Duplicated FIFO logic** — `getFifoLotAllocations()` and `computeFifoFromTransactions()` in `TransactionService` are nearly identical algorithms, one with DB queries and one without.
+5. ~~**Duplicated FIFO logic** — `getFifoLotAllocations()` and `computeFifoFromTransactions()` in `TransactionService` are nearly identical algorithms, one with DB queries and one without.~~ **RESOLVED**
 
-6. **PortfolioSummaryService has too many responsibilities** — it computes FIFO, aggregates inventory values, manages rate limiting, and persists card performance data. Low cohesion.
+6. ~~**PortfolioSummaryService has too many responsibilities** — it computes FIFO, aggregates inventory values, manages rate limiting, and persists card performance data. Low cohesion.~~ **RESOLVED**
 
-7. **PortfolioOrchestrator imports TransactionPresenter** — cross-module presenter dependency for `formatGain`.
+7. ~~**PortfolioOrchestrator imports TransactionPresenter** — cross-module presenter dependency for `formatGain`.~~ **RESOLVED**
 
 ---
 
-## Phase 1: Break Circular Dependencies (Architecture)
+## Phase 1: Break Circular Dependencies (Architecture) — DONE
 
 **Goal:** Eliminate all `forwardRef` usage. Establish clear dependency direction.
 
-### 1a. Move cross-service validation to orchestrator layer
+**Status:** Complete. All tests passing (639/639).
 
-The reason `InventoryService` depends on `TransactionRepositoryPort` is to enforce "can't reduce inventory below transaction-derived quantity." This is a cross-cutting validation concern.
+### 1a. Move cross-service validation to orchestrator layer — DONE
 
-**Action:**
-- Remove `TransactionRepositoryPort` from `InventoryService` entirely
-- Expose `TransactionService.getRemainingQuantity()` (already exists) for orchestrator use
-- Move the transaction-derived quantity check into the orchestrator layer:
-  - `InventoryOrchestrator.save()` — call `transactionService.getRemainingQuantity()` first, reject if too low
+- Removed `TransactionRepositoryPort` from `InventoryService` entirely
+- `InventoryService.save()` and `delete()` are now simple data operations without transaction validation
+- Moved transaction-derived quantity check into `InventoryOrchestrator`:
+  - `InventoryOrchestrator.save()` calls `transactionService.getRemainingQuantity()`, throws `BadRequestException` if too low
   - `InventoryOrchestrator.delete()` — same check
-  - `TransactionService.adjustInventory()` — this internal call can skip the check since transactions are authoritative
-- This is consistent with the orchestrator pattern: orchestrators coordinate between services
+  - Added `HttpException` re-throw pattern in catch blocks so validation errors propagate correctly
+- `TransactionService.adjustInventory()` calls `inventoryService.save()` directly (skips check since transactions are authoritative)
 
-### 1b. Remove all `forwardRef` usage
+**Files changed:**
+- `src/core/inventory/inventory.service.ts` — removed `TransactionRepositoryPort` dep and `getTransactionDerivedQuantity()`
+- `src/http/inventory/inventory.orchestrator.ts` — added `TransactionService` injection and validation logic
+- `test/core/inventory/inventory.service.spec.ts` — removed `TransactionRepositoryPort` mock and transaction validation tests
+- `test/http/inventory.orchestrator.spec.ts` — added `TransactionService` mock and validation tests
 
-With InventoryService no longer depending on TransactionRepositoryPort:
-- `InventoryModule` has zero dependency on `TransactionModule`
-- `TransactionModule` imports `InventoryModule` (one-way, no forwardRef)
-- `PortfolioModule` imports both `InventoryModule` and `TransactionModule` (one-way, no forwardRef needed since neither depends on Portfolio)
+### 1b. Remove all `forwardRef` usage — DONE
 
-**Dependency direction:**
+- `TransactionModule` — removed `forwardRef(() => InventoryModule)`, uses direct `InventoryModule` import
+- `PortfolioModule` — removed `forwardRef` from both `InventoryModule` and `TransactionModule` imports
+
+**Dependency direction (no cycles):**
 ```
 PortfolioModule → TransactionModule → InventoryModule
-                ↘                  ↗
-                  InventoryModule
+              ↘                    ↗
+                InventoryModule
 ```
 
-No cycles. No forwardRef.
+**Files changed:**
+- `src/core/transaction/transaction.module.ts`
+- `src/core/portfolio/portfolio.module.ts`
 
 ---
 
-## Phase 2: Consolidate FIFO Logic (DRY)
+## Phase 2: Consolidate FIFO Logic (DRY) — DONE
 
 **Goal:** Single FIFO implementation.
 
-**Action:**
-- Keep `computeFifoFromTransactions()` as the single FIFO algorithm (pure, no DB)
-- Rewrite `getFifoLotAllocations()` to fetch data then delegate to `computeFifoFromTransactions()`
-- Same for `getCostBasis()` — fetch, then delegate
+**Status:** Complete. `getFifoLotAllocations()` now delegates to `computeFifoFromTransactions()`.
+
+- `computeFifoFromTransactions()` is the single FIFO algorithm (pure, no DB)
+- `getFifoLotAllocations()` fetches buy lots and sells from the repository, then delegates to `computeFifoFromTransactions()`
+- `getCostBasis()` already delegated to `getFifoLotAllocations()` — no change needed
+
+**Files changed:**
+- `src/core/transaction/transaction.service.ts` — rewrote `getFifoLotAllocations()` body
 
 ---
 
-## Phase 3: Decompose PortfolioSummaryService (Cohesion)
+## Phase 3: Decompose PortfolioSummaryService (Cohesion) — DONE
 
 **Goal:** Split into focused services.
 
-**Action:**
-- **`PortfolioSummaryService`** — reads/writes portfolio_summary, rate-limit checks, delegates computation
-- **`PortfolioComputationService`** — the `computeSummary()` method and FIFO aggregation logic. Pure calculation engine. Takes inventory + transactions as input, returns computed summary. No DB writes.
-- Keep `PortfolioService` (value history reads) as-is — it's already focused
+**Status:** Complete. Computation logic extracted to `PortfolioComputationService`.
 
-This gives us:
+- Created `PortfolioComputationService` with `compute()` method — pure computation engine that takes userId, inventory items, transactions, and total value; returns computed summary + per-card performance data. No DB reads or writes.
+- `PortfolioSummaryService.computeSummary()` now orchestrates: fetches data (parallelized with `Promise.all`), delegates to computation service, persists performance results
+- `PortfolioService` (value history reads) unchanged — already focused
+
+**Services after decomposition:**
 - `PortfolioComputationService` — pure computation, easily testable
 - `PortfolioSummaryService` — orchestrates refresh flow, rate limits, persistence
 - `PortfolioService` — value history reads
 
+**Files changed:**
+- `src/core/portfolio/portfolio-computation.service.ts` — new file
+- `src/core/portfolio/portfolio-summary.service.ts` — delegates to computation service
+- `src/core/portfolio/portfolio.module.ts` — added `PortfolioComputationService` provider
+- `test/core/portfolio/portfolio-summary.service.spec.ts` — added `PortfolioComputationService` to test providers
+
 ---
 
-## Phase 4: Fix Cross-Module Presenter Dependency
+## Phase 4: Fix Cross-Module Presenter Dependency — DONE
 
 **Goal:** No HTTP module should import another module's presenter.
 
-**Action:**
-- `PortfolioOrchestrator` uses `TransactionPresenter.formatGain()` and `TransactionPresenter.gainSign()`
-- Move shared formatting (`formatGain`, `formatCurrency`, `gainSign`) to `src/http/base/http.util.ts` (which already has `toDollar`, `completionRate`)
-- Both `TransactionPresenter` and `PortfolioPresenter` delegate to the shared utils
-- Remove the import of `TransactionPresenter` from `PortfolioOrchestrator`
+**Status:** Complete. Shared formatting moved to `http.util.ts`.
+
+- Moved `formatGain`, `formatRoi`, `gainSign` to `src/http/base/http.util.ts`
+- `TransactionPresenter` keeps static methods that delegate to the shared utils (backward compatible within transaction module)
+- `PortfolioPresenter` imports directly from `http.util.ts` — no more `TransactionPresenter` import
+- `PortfolioOrchestrator` imports `formatGain`/`gainSign` from `http.util.ts` — no more `TransactionPresenter` import
+
+**Files changed:**
+- `src/http/base/http.util.ts` — added `formatGain`, `formatRoi`, `gainSign`
+- `src/http/transaction/transaction.presenter.ts` — delegates to shared utils
+- `src/http/portfolio/portfolio.presenter.ts` — imports from `http.util.ts`
+- `src/http/portfolio/portfolio.orchestrator.ts` — imports from `http.util.ts`
 
 ---
 
-## Phase 5: UI Navigation & Conceptual Grouping
+## Phase 5: UI Navigation & Conceptual Grouping — DONE
 
 **Goal:** Portfolio and Transactions should feel related and accessible, not hidden under Inventory.
 
-**Action:**
-- **Update breadcrumbs:**
-  - Portfolio: `Home > Portfolio` (not `Home > Inventory > Portfolio`)
-  - Transactions: `Home > Transactions`
-  - Inventory: `Home > Inventory`
-- **Add cross-navigation links:**
-  - Portfolio page: link to Transactions ("View Transactions")
-  - Transactions page: link to Portfolio ("View Portfolio")
-  - Inventory page: keep link to Portfolio, add link to Transactions
-- **Consider a nav group** (if there's a nav bar): group Inventory, Portfolio, Transactions under a "Collection" dropdown or similar
+**Status:** Complete. Breadcrumbs updated and cross-navigation links added.
 
-This makes the three concepts peers rather than parent-child, which matches how the backend already treats them.
+- **Updated breadcrumbs:**
+  - Portfolio: `Home > Portfolio` (removed `Inventory` parent)
+  - Transactions: `Home > Transactions` (unchanged, was already correct)
+  - Inventory: `Home > Inventory` (unchanged, was already correct)
+- **Added cross-navigation links:**
+  - Portfolio page: links to Inventory + Transactions (above the refresh section)
+  - Transactions page: link to Portfolio (next to Export CSV button)
+  - Inventory page: link to Transactions (next to existing Portfolio link, renamed "Portfolio Chart" → "Portfolio")
+- **Nav group:** Not implemented — navbar already has top-level links for Inventory and Transactions; Portfolio is accessible from both pages. A nav dropdown can be considered in a future UX pass.
+
+**Files changed:**
+- `src/http/portfolio/portfolio.orchestrator.ts` — breadcrumb update
+- `src/http/views/portfolio.hbs` — cross-nav links
+- `src/http/views/inventory.hbs` — added Transactions link
+- `src/http/views/transactions.hbs` — added Portfolio link
+- `test/http/portfolio/portfolio.orchestrator.spec.ts` — breadcrumb count assertion updated
 
 ---
 
-## Phase 6: Repository Port Organization
+## Phase 6: Repository Port Organization — DEFERRED
 
 **Goal:** Consistent port file organization.
 
+**Status:** Not started. Lowest priority and lowest impact. Can be picked up in a future cleanup pass.
+
 Currently portfolio has 3 port files loose in `src/core/portfolio/`. Inventory has its port in `src/core/inventory/`. Transaction has its port in `src/core/transaction/`.
 
-**Action:**
+**Action (when ready):**
 - Create `ports/` subdirectory in each core module for port interfaces
 - Move existing port files: `*.repository.port.ts` → `ports/` in each module
-- Minor structural cleanup for consistency
+- Update all imports across the codebase
 
 ---
 
 ## Execution Priority
 
-| Priority | Phase | Impact | Risk |
-|----------|-------|--------|------|
-| 1 | Phase 1 (circular deps) | High — architectural correctness | Medium — touches service wiring |
-| 2 | Phase 2 (DRY FIFO) | Medium — maintainability | Low — pure refactor |
-| 3 | Phase 4 (presenter fix) | Low — clean boundaries | Low — move utilities |
-| 4 | Phase 3 (decompose service) | Medium — cohesion | Medium — new service + tests |
-| 5 | Phase 5 (UI navigation) | High — user experience | Low — template changes |
-| 6 | Phase 6 (port org) | Low — consistency | Low — file moves |
+| Priority | Phase | Impact | Risk | Status |
+|----------|-------|--------|------|--------|
+| 1 | Phase 1 (circular deps) | High — architectural correctness | Medium — touches service wiring | DONE |
+| 2 | Phase 2 (DRY FIFO) | Medium — maintainability | Low — pure refactor | DONE |
+| 3 | Phase 4 (presenter fix) | Low — clean boundaries | Low — move utilities | DONE |
+| 4 | Phase 3 (decompose service) | Medium — cohesion | Medium — new service + tests | DONE |
+| 5 | Phase 5 (UI navigation) | High — user experience | Low — template changes | DONE |
+| 6 | Phase 6 (port org) | Low — consistency | Low — file moves | DEFERRED |

@@ -1,8 +1,7 @@
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
 import { SetRoiAggregation } from 'src/core/portfolio/portfolio-card-performance.repository.port';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
-import { toDollar } from 'src/http/base/http.util';
-import { TransactionPresenter } from 'src/http/transaction/transaction.presenter';
+import { formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
 
 export interface PortfolioSummaryViewData {
     totalValue: string;
@@ -67,18 +66,14 @@ export class PortfolioPresenter {
         return {
             totalValue: toDollar(summary.totalValue),
             totalCost: hasCost ? toDollar(summary.totalCost) : '-',
-            totalGain: hasCost ? TransactionPresenter.formatGain(totalGain) : '-',
-            totalGainSign: hasCost ? TransactionPresenter.gainSign(totalGain) : 'neutral',
-            roi: hasCost ? TransactionPresenter.formatRoi(roi) : '-',
-            roiSign: hasCost ? TransactionPresenter.gainSign(roi) : 'neutral',
+            totalGain: hasCost ? formatGain(totalGain) : '-',
+            totalGainSign: hasCost ? gainSign(totalGain) : 'neutral',
+            roi: hasCost ? formatRoi(roi) : '-',
+            roiSign: hasCost ? gainSign(roi) : 'neutral',
             realizedGain:
-                summary.totalRealizedGain != null
-                    ? TransactionPresenter.formatGain(summary.totalRealizedGain)
-                    : '-',
+                summary.totalRealizedGain != null ? formatGain(summary.totalRealizedGain) : '-',
             realizedGainSign:
-                summary.totalRealizedGain != null
-                    ? TransactionPresenter.gainSign(summary.totalRealizedGain)
-                    : 'neutral',
+                summary.totalRealizedGain != null ? gainSign(summary.totalRealizedGain) : 'neutral',
             totalCards: summary.totalCards,
             totalQuantity: summary.totalQuantity,
             computedAt: PortfolioPresenter.formatTimestamp(summary.computedAt),
@@ -105,13 +100,10 @@ export class PortfolioPresenter {
             quantity: perf.quantity,
             totalCost: toDollar(perf.totalCost),
             currentValue: toDollar(perf.currentValue),
-            totalGain: TransactionPresenter.formatGain(totalGain),
-            totalGainSign: TransactionPresenter.gainSign(totalGain),
-            roi: perf.roiPercent != null ? TransactionPresenter.formatRoi(perf.roiPercent) : '-',
-            roiSign:
-                perf.roiPercent != null
-                    ? TransactionPresenter.gainSign(perf.roiPercent)
-                    : 'neutral',
+            totalGain: formatGain(totalGain),
+            totalGainSign: gainSign(totalGain),
+            roi: perf.roiPercent != null ? formatRoi(perf.roiPercent) : '-',
+            roiSign: perf.roiPercent != null ? gainSign(perf.roiPercent) : 'neutral',
         };
     }
 
@@ -123,11 +115,10 @@ export class PortfolioPresenter {
             cardsHeld: agg.cardsHeld,
             totalCost: toDollar(agg.totalCost),
             currentValue: toDollar(agg.currentValue),
-            gain: TransactionPresenter.formatGain(agg.gain),
-            gainSign: TransactionPresenter.gainSign(agg.gain),
-            roi: agg.roiPercent != null ? TransactionPresenter.formatRoi(agg.roiPercent) : '-',
-            roiSign:
-                agg.roiPercent != null ? TransactionPresenter.gainSign(agg.roiPercent) : 'neutral',
+            gain: formatGain(agg.gain),
+            gainSign: gainSign(agg.gain),
+            roi: agg.roiPercent != null ? formatRoi(agg.roiPercent) : '-',
+            roiSign: agg.roiPercent != null ? gainSign(agg.roiPercent) : 'neutral',
         };
     }
 

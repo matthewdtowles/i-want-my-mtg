@@ -1,11 +1,11 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
 import { InventoryModule } from 'src/core/inventory/inventory.module';
 import { getLogger } from 'src/logger/global-app-logger';
 import { TransactionService } from './transaction.service';
 
 @Module({
-    imports: [DatabaseModule, forwardRef(() => InventoryModule)],
+    imports: [DatabaseModule, InventoryModule],
     providers: [TransactionService],
     exports: [TransactionService],
 })

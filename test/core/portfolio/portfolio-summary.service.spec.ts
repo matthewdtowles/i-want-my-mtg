@@ -4,6 +4,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
 import { PortfolioCardPerformanceRepositoryPort } from 'src/core/portfolio/portfolio-card-performance.repository.port';
+import { PortfolioComputationService } from 'src/core/portfolio/portfolio-computation.service';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/portfolio-summary.repository.port';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
@@ -55,6 +56,7 @@ describe('PortfolioSummaryService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PortfolioSummaryService,
+                PortfolioComputationService,
                 { provide: PortfolioSummaryRepositoryPort, useValue: mockSummaryRepo },
                 { provide: PortfolioCardPerformanceRepositoryPort, useValue: mockPerformanceRepo },
                 { provide: InventoryService, useValue: mockInventoryService },

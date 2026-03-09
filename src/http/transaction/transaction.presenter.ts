@@ -1,7 +1,7 @@
 import { EDIT_WINDOW_MS } from 'src/core/transaction/transaction.constants';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary } from 'src/core/transaction/transaction.service';
-import { toDollar } from 'src/http/base/http.util';
+import { formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionResponseDto } from './dto/transaction.response.dto';
@@ -91,21 +91,15 @@ export class TransactionPresenter {
     }
 
     static formatGain(amount: number): string {
-        if (amount === 0) return '$0.00';
-        const prefix = amount > 0 ? '+' : '-';
-        return prefix + toDollar(Math.abs(amount));
+        return formatGain(amount);
     }
 
     static formatRoi(percentage: number): string {
-        if (percentage === 0) return '0.0%';
-        const prefix = percentage > 0 ? '+' : '-';
-        return `${prefix}${Math.abs(percentage).toFixed(1)}%`;
+        return formatRoi(percentage);
     }
 
     static gainSign(amount: number): string {
-        if (amount > 0) return 'positive';
-        if (amount < 0) return 'negative';
-        return 'neutral';
+        return gainSign(amount);
     }
 
     /**

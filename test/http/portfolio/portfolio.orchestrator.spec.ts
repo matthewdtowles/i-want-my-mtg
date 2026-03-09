@@ -5,7 +5,6 @@ import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
-import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { PortfolioOrchestrator } from 'src/http/portfolio/portfolio.orchestrator';
@@ -118,7 +117,7 @@ describe('PortfolioOrchestrator', () => {
             expect(result.username).toBe('Test User');
             expect(result.hasHistory).toBe(true);
             expect(result.hasSummary).toBe(false);
-            expect(result.breadcrumbs).toHaveLength(3);
+            expect(result.breadcrumbs).toHaveLength(2);
         });
 
         it('should return view with hasHistory false when no history', async () => {

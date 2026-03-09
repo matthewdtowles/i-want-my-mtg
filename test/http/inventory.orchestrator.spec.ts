@@ -7,6 +7,7 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryViewDto } from 'src/http/inventory/dto/inventory.view.dto';
 import { InventoryOrchestrator } from 'src/http/inventory/inventory.orchestrator';
@@ -14,6 +15,7 @@ import { InventoryOrchestrator } from 'src/http/inventory/inventory.orchestrator
 describe('InventoryOrchestrator', () => {
     let orchestrator: InventoryOrchestrator;
     let inventoryService: jest.Mocked<InventoryService>;
+    let transactionService: jest.Mocked<TransactionService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -48,15 +50,23 @@ describe('InventoryOrchestrator', () => {
                     provide: InventoryExportService,
                     useValue: { exportToCsv: jest.fn() },
                 },
+                {
+                    provide: TransactionService,
+                    useValue: {
+                        getRemainingQuantity: jest.fn().mockResolvedValue(0),
+                    },
+                },
             ],
         }).compile();
 
         orchestrator = module.get(InventoryOrchestrator);
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
+        transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
     });
 
     beforeEach(() => {
         jest.clearAllMocks();
+        transactionService.getRemainingQuantity.mockResolvedValue(0);
     });
 
     describe('findByUser', () => {
@@ -233,6 +243,78 @@ describe('InventoryOrchestrator', () => {
             await expect(
                 orchestrator.delete(mockAuthenticatedRequest, 'card1', false)
             ).rejects.toThrow('An unexpected error occurred');
+        });
+    });
+
+    describe('transaction-derived quantity validation', () => {
+        it('should prevent setting inventory below transaction-derived quantity', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(7);
+
+            await expect(
+                orchestrator.save(
+                    [{ cardId: 'card-1', quantity: 5, isFoil: false, userId: 1 }],
+                    mockAuthenticatedRequest
+                )
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('should allow setting inventory at or above transaction-derived quantity', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(7);
+            const validItem = {
+                userId: 1,
+                cardId: 'card-1',
+                isFoil: false,
+                quantity: 7,
+            } as Inventory;
+            inventoryService.save.mockResolvedValue([validItem]);
+
+            const result = await orchestrator.save(
+                [{ cardId: 'card-1', quantity: 7, isFoil: false, userId: 1 }],
+                mockAuthenticatedRequest
+            );
+            expect(result).toEqual([validItem]);
+        });
+
+        it('should prevent removing inventory when transactions exist', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(5);
+
+            await expect(
+                orchestrator.save(
+                    [{ cardId: 'card-1', quantity: 0, isFoil: false, userId: 1 }],
+                    mockAuthenticatedRequest
+                )
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('should allow any quantity when no transactions exist', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(0);
+            const item = { userId: 1, cardId: 'card-1', isFoil: false, quantity: 1 } as Inventory;
+            inventoryService.save.mockResolvedValue([item]);
+
+            const result = await orchestrator.save(
+                [{ cardId: 'card-1', quantity: 1, isFoil: false, userId: 1 }],
+                mockAuthenticatedRequest
+            );
+            expect(result).toEqual([item]);
+        });
+
+        it('should prevent deleting inventory when transactions exist', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(5);
+
+            await expect(
+                orchestrator.delete(mockAuthenticatedRequest, 'card-1', false)
+            ).rejects.toThrow(BadRequestException);
+            expect(inventoryService.delete).not.toHaveBeenCalled();
+        });
+
+        it('should allow deleting inventory when no transactions exist', async () => {
+            transactionService.getRemainingQuantity.mockResolvedValue(0);
+            inventoryService.delete.mockResolvedValue(true);
+
+            const result = await orchestrator.delete(mockAuthenticatedRequest, 'card-1', false);
+
+            expect(result).toBe(true);
+            expect(inventoryService.delete).toHaveBeenCalled();
         });
     });
 

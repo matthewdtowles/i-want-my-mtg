@@ -73,3 +73,21 @@ export function toStringRecord(query: Record<string, unknown>): Record<string, s
     }
     return result;
 }
+
+export function formatGain(amount: number): string {
+    if (amount === 0) return '$0.00';
+    const prefix = amount > 0 ? '+' : '-';
+    return prefix + toDollar(Math.abs(amount));
+}
+
+export function formatRoi(percentage: number): string {
+    if (percentage === 0) return '0.0%';
+    const prefix = percentage > 0 ? '+' : '-';
+    return `${prefix}${Math.abs(percentage).toFixed(1)}%`;
+}
+
+export function gainSign(amount: number): string {
+    if (amount > 0) return 'positive';
+    if (amount < 0) return 'negative';
+    return 'neutral';
+}

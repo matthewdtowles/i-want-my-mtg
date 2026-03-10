@@ -3,12 +3,17 @@
 ## Phase 1: Foundation & Infrastructure
 
 ### 1.1 Migrate DB from Docker to Managed Instance
-- [ ] Evaluate managed Postgres providers (AWS RDS, Lightsail Managed DB, etc.)
+- [x] Evaluate managed Postgres providers — chose AWS Lightsail Managed DB
+- [x] Upgrade local dev Postgres from 15 to 18 (docker-compose.yml)
+- [x] Fix docker-compose.yml DATABASE_URL to construct from POSTGRES_* vars (postgres hostname)
+- [x] Verify PG 18 compatibility (ingest, web app, user registration all working)
 - [ ] Plan migration strategy (dump/restore vs replication)
-- [ ] Set up managed instance and configure networking
-- [ ] Migrate data from Docker Postgres
-- [ ] Update deploy scripts and environment variables
-- [ ] Update Docker Compose to remove local Postgres for production (keep for dev)
+- [ ] Set up Lightsail managed PostgreSQL 18 instance
+- [ ] Configure networking (Lightsail web instance → managed DB)
+- [ ] Add SSL/TLS support for production DB connections (`?sslmode=require`)
+- [ ] Migrate production data (pg_dump/pg_restore)
+- [ ] Update deploy script — remove POSTGRES_* vars, DB_HOST/DB_PORT for production
+- [ ] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
 - [ ] Verify backups and point-in-time recovery
 - [ ] Update CLAUDE.md and documentation
 

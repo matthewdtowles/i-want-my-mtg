@@ -7,14 +7,18 @@
 - [x] Upgrade local dev Postgres from 15 to 18 (docker-compose.yml)
 - [x] Fix docker-compose.yml DATABASE_URL to construct from POSTGRES_* vars (postgres hostname)
 - [x] Verify PG 18 compatibility (ingest, web app, user registration all working)
-- [ ] Plan migration strategy (dump/restore vs replication)
-- [ ] Set up Lightsail managed PostgreSQL 18 instance
-- [ ] Configure networking (Lightsail web instance → managed DB)
-- [ ] Add SSL/TLS support for production DB connections (`?sslmode=require`)
-- [ ] Migrate production data (pg_dump/pg_restore)
-- [ ] Update deploy script — remove POSTGRES_* vars, DB_HOST/DB_PORT for production
+- [x] Plan migration strategy — chose pg_dump/pg_restore (simple, cross-version compatible)
+- [x] Set up Lightsail managed PostgreSQL 18 instance (`iwantmymtg-db`)
+- [x] Configure networking (Lightsail web instance → managed DB)
+- [x] Migrate production data (pg_dump/pg_restore — verified row counts match)
+- [x] Install postgresql-client on Lightsail web instance
+- [x] Add `db-managed` alias to deploy script for managed DB access
+- [ ] Point production app at managed DB (update .env DATABASE_URL with `?sslmode=require`)
+- [ ] Update deploy script — remove POSTGRES_* vars, update DB_HOST/DB_PORT for managed DB
 - [ ] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
+- [ ] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
 - [ ] Verify backups and point-in-time recovery
+- [ ] Decommission Docker postgres container and volume
 - [ ] Update CLAUDE.md and documentation
 
 ### 1.2 Split Scry into Separate Repository

@@ -40,6 +40,14 @@ else
     log_info "docker-pg-exec alias already exists, skipping."
 fi
 
+if ! grep -q 'db-managed' ~/.bashrc; then
+    log_info "Creating db-managed alias..."
+    echo "alias db-managed='psql -h ls-4b0aa29e0f1e478f364ad5c222fdc41a182ff73b.ce5k02o4maxz.us-east-1.rds.amazonaws.com -p 5432 -U iwmm_pg_user -d i_want_my_mtg'" >> ~/.bashrc
+    log_info "Alias db-managed added."
+else
+    log_info "db-managed alias already exists, skipping."
+fi
+
 # Stop existing containers
 log_info "Stopping existing containers..."
 docker compose down --remove-orphans || true

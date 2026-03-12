@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Supports two modes:
 # 1. DATABASE_URL set — connect directly (managed DB / prod)
-# 2. POSTGRES_* vars set — construct connection (Docker / dev)
+# 2. POSTGRES_* vars set — connect via libpq env vars (Docker / dev)
 
 if [ -n "${DATABASE_URL:-}" ]; then
   PSQL_CONN="$DATABASE_URL"
@@ -14,7 +14,8 @@ else
   : "${POSTGRES_DB:?}"
   POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
   POSTGRES_PORT="${POSTGRES_PORT:-5432}"
-  PSQL_CONN="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+  export PGPASSWORD="$POSTGRES_PASSWORD"
+  PSQL_CONN="-h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
   echo "Using POSTGRES_* vars for connection"
 fi
 
@@ -31,7 +32,8 @@ fi
 # run in lexical order
 for f in "${sql_files[@]}"; do
   echo "Applying: $f"
-  psql "$PSQL_CONN" -v ON_ERROR_STOP=1 -f "$f"
+  # shellcheck disable=SC2086
+  psql $PSQL_CONN -v ON_ERROR_STOP=1 -f "$f"
 done
 
 echo "Migrations complete."

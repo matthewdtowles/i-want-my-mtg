@@ -64,9 +64,9 @@ docker compose pull web
 log_info "Running database migrations..."
 source ~/.env
 export DATABASE_URL
-export MIGRATIONS_DIR="$HOME/docker/postgres/migrations"
-chmod +x docker/postgres/migrations/run_migrations.sh
-docker/postgres/migrations/run_migrations.sh
+export MIGRATIONS_DIR="$HOME/migrations"
+chmod +x migrations/run_migrations.sh
+migrations/run_migrations.sh
 
 # Start web service
 log_info "Starting web service..."

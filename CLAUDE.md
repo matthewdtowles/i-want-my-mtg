@@ -101,7 +101,7 @@ Tests live in `test/` mirroring the `src/` structure. Test files use `*.spec.ts`
 
 ## Database
 
-PostgreSQL 15. Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `docker/postgres/migrations/` (numbered sequentially, run via `docker compose run --rm migrate`). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
+PostgreSQL 15. Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially, run via `docker compose run --rm migrate` in dev or directly via `run_migrations.sh` in prod). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
 
 ### Price History
 

@@ -62,11 +62,6 @@ pub enum Commands {
     Health {
         #[arg(long, help = "Perform detailed health check")]
         detailed: bool,
-        #[arg(
-            long,
-            help = "Check price_history table health (bloat, vacuum, retention)"
-        )]
-        price_history: bool,
     },
 
     /// Apply tiered retention policy to price_history table

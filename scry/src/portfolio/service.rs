@@ -128,7 +128,4 @@ impl PortfolioService {
         Ok((weekly, monthly))
     }
 
-    pub async fn vacuum(&self) -> Result<()> {
-        self.repository.vacuum().await
-    }
 }

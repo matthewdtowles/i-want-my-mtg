@@ -74,11 +74,8 @@ impl CliController {
                 Ok(())
             }
 
-            Commands::Health {
-                detailed,
-                price_history,
-            } => {
-                if let Err(e) = self.handle_health(detailed, price_history).await {
+            Commands::Health { detailed } => {
+                if let Err(e) = self.handle_health(detailed).await {
                     error!("Health check failed: {}", e);
                 }
                 Ok(())
@@ -197,11 +194,8 @@ impl CliController {
         Ok(())
     }
 
-    async fn handle_health(&self, detailed: bool, price_history: bool) -> Result<()> {
-        if price_history {
-            let status = self.health_service.price_history_check().await?;
-            status.display();
-        } else if detailed {
+    async fn handle_health(&self, detailed: bool) -> Result<()> {
+        if detailed {
             let status = self.health_service.detailed_check().await?;
             status.display();
         } else {
@@ -217,7 +211,6 @@ impl CliController {
         info!("Weekly period: deleted {} rows", result.weekly_deleted);
         info!("Monthly period: deleted {} rows", result.monthly_deleted);
         info!("Total deleted: {}", result.total_deleted);
-        self.vacuum_history().await;
 
         info!("Starting set price history retention cleanup");
         let (weekly, monthly) = self.set_service.apply_set_price_history_retention().await?;
@@ -225,11 +218,6 @@ impl CliController {
             "Set price history: weekly deleted {} rows, monthly deleted {} rows",
             weekly, monthly
         );
-        info!("Running VACUUM ANALYZE on set_price_history...");
-        match self.set_service.vacuum_set_price_history().await {
-            Ok(_) => info!("Set price history VACUUM ANALYZE completed"),
-            Err(e) => warn!("Set price history VACUUM ANALYZE failed (non-fatal): {}", e),
-        }
 
         info!("Starting portfolio value history retention cleanup");
         let (pvh_weekly, pvh_monthly) = self.portfolio_service.apply_retention().await?;
@@ -237,14 +225,6 @@ impl CliController {
             "Portfolio value history: weekly deleted {} rows, monthly deleted {} rows",
             pvh_weekly, pvh_monthly
         );
-        info!("Running VACUUM ANALYZE on portfolio_value_history...");
-        match self.portfolio_service.vacuum().await {
-            Ok(_) => info!("Portfolio value history VACUUM ANALYZE completed"),
-            Err(e) => warn!(
-                "Portfolio value history VACUUM ANALYZE failed (non-fatal): {}",
-                e
-            ),
-        }
         Ok(())
     }
 
@@ -305,7 +285,6 @@ impl CliController {
             info!("Weekly period: deleted {} rows", result.weekly_deleted);
             info!("Monthly period: deleted {} rows", result.monthly_deleted);
             info!("Total deleted by retention: {}", result.total_deleted);
-            self.vacuum_history().await;
         }
 
         let count_after = self.price_service.fetch_price_history_count().await?;
@@ -335,14 +314,6 @@ impl CliController {
         info!("Portfolio summaries saved: {}", summaries_saved);
         info!("Card performance rows saved: {}", performance_saved);
         Ok(())
-    }
-
-    async fn vacuum_history(&self) {
-        info!("Running VACUUM ANALYZE on price_history...");
-        match self.price_service.vacuum_history().await {
-            Ok(_) => info!("VACUUM ANALYZE completed"),
-            Err(e) => warn!("VACUUM ANALYZE failed (non-fatal): {}", e),
-        }
     }
 
     async fn update_prices(&self) -> Result<()> {

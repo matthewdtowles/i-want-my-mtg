@@ -159,10 +159,6 @@ impl PriceRepository {
             .await
     }
 
-    pub async fn vacuum_price_history(&self) -> Result<()> {
-        self.db.execute_raw("VACUUM ANALYZE price_history").await
-    }
-
     pub async fn truncate_price_history(&self) -> Result<()> {
         self.db.execute_raw("TRUNCATE TABLE price_history").await
     }

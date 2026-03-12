@@ -170,10 +170,6 @@ impl SetService {
         Ok((weekly, monthly))
     }
 
-    pub async fn vacuum_set_price_history(&self) -> Result<()> {
-        self.repository.vacuum_set_price_history().await
-    }
-
     pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
         self.repository.update_set_price_change_weekly().await
     }

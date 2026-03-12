@@ -244,12 +244,6 @@ impl SetRepository {
             .await
     }
 
-    pub async fn vacuum_set_price_history(&self) -> Result<()> {
-        self.db
-            .execute_raw("VACUUM ANALYZE set_price_history")
-            .await
-    }
-
     pub async fn update_set_price_change_weekly(&self) -> Result<i64> {
         let qb = QueryBuilder::new(
             "UPDATE set_price sp \

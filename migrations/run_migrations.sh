@@ -6,9 +6,10 @@ set -euo pipefail
 # 2. POSTGRES_* vars set — connect via libpq env vars (Docker / dev)
 
 if [ -n "${DATABASE_URL:-}" ]; then
-  PSQL_CONN="$DATABASE_URL"
+  USE_URL=true
   echo "Using DATABASE_URL for connection"
 else
+  USE_URL=false
   : "${POSTGRES_USER:?}"
   : "${POSTGRES_PASSWORD:?}"
   : "${POSTGRES_DB:?}"
@@ -32,8 +33,12 @@ fi
 # run in lexical order
 for f in "${sql_files[@]}"; do
   echo "Applying: $f"
-  # shellcheck disable=SC2086
-  psql $PSQL_CONN -v ON_ERROR_STOP=1 -f "$f"
+  if [ "$USE_URL" = true ]; then
+    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"
+  else
+    # shellcheck disable=SC2086
+    psql $PSQL_CONN -v ON_ERROR_STOP=1 -f "$f"
+  fi
 done
 
 echo "Migrations complete."

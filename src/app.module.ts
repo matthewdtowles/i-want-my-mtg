@@ -33,6 +33,7 @@ import { getLogger } from './logger/global-app-logger';
                             configService.get('NODE_ENV') !== 'production'
                                 ? ['error', 'warn']
                                 : ['error'],
+                        ssl: { rejectUnauthorized: false },
                         extra: {
                             connectionLimit: 10,
                             queueLimit: 0,

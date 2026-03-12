@@ -20,6 +20,12 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Ensure psql is available for db-managed alias and ad-hoc queries
+if ! command -v psql &> /dev/null; then
+    log_info "Installing postgresql-client..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
+fi
+
 # Login to GHCR
 log_info "Logging in to GitHub Container Registry..."
 echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin

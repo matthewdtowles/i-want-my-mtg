@@ -18,7 +18,6 @@ services:
         volumes:
             - .:/app
             - /app/node_modules
-            - /app/scry
         depends_on:
             postgres:
                 condition: service_healthy
@@ -31,35 +30,25 @@ services:
                 max-size: '10m'
                 max-file: '3'
 
-    # Scry - ETL Application
+    # Scry - ETL Application (image from ghcr.io/matthewdtowles/scry)
     etl:
-        build:
-            context: ./scry
-            dockerfile: Dockerfile
-            target: development
+        image: ghcr.io/matthewdtowles/scry:latest
         environment:
             - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
             - SCRY_LOG=${SCRY_LOG}
-            - CARGO_NET_GIT_FETCH_WITH_CLI=true
-            - CARGO_HTTP_MULTIPLEXING=false
-
         env_file:
             - .env
         depends_on:
             postgres:
                 condition: service_healthy
         profiles: ['etl']
+        restart: 'no'
         logging:
             driver: 'json-file'
             options:
                 max-size: '10m'
                 max-file: '3'
-        volumes:
-            - ./scry:/app
-            - ./scry/target:/app/target
-            - cargo_registry:/usr/local/cargo/registry
-            - cargo_git:/usr/local/cargo/git
-        command: ['cargo', 'run', '--', 'ingest']
+        command: ['./scry', 'ingest']
 
     # PostgreSQL Database (shared by web and etl)
     postgres:
@@ -113,6 +102,3 @@ services:
 
 volumes:
     postgres_dev_data:
-    etl_target:
-    cargo_registry:
-    cargo_git:

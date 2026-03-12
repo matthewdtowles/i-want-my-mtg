@@ -4,9 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-I Want My MTG is a Magic: The Gathering collection tracker. It has two components:
-- **NestJS web app** (`src/`) — TypeScript backend with server-rendered Handlebars views, PostgreSQL via TypeORM
-- **Scry CLI** (`scry/`) — Rust ETL tool that ingests MTG data from Scryfall API into the database (has its own `scry/CLAUDE.md`)
+I Want My MTG is a Magic: The Gathering collection tracker — a NestJS web app with server-rendered Handlebars views and PostgreSQL via TypeORM. The ETL tool ([Scry](https://github.com/matthewdtowles/scry)) lives in a separate repository.
 
 ## Common Commands
 
@@ -25,24 +23,13 @@ npm run build:css                 # Build Tailwind CSS
 npm run start:dev                 # Watch mode for development
 ```
 
-### Scry (Rust ETL)
-
-```bash
-cd scry && cargo test             # Run Rust tests
-cd scry && cargo build --release  # Production build
-cd scry && cargo run -- ingest    # Ingest sets, cards, prices from Scryfall
-cd scry && cargo run -- cleanup -c  # Post-ingest data cleanup
-cd scry && cargo run -- health    # Check data integrity
-cd scry && cargo run -- retention # Apply retention to price_history, set_price_history, portfolio_value_history
-```
-
-### Docker (full stack)
+### Docker
 
 ```bash
 docker compose up -d              # Start dev environment (web, postgres, adminer, mailhog)
 docker compose exec web npm test  # Run tests in container
-docker compose run --rm etl cargo run -- ingest  # Run ETL
 docker compose run --rm migrate   # Execute database migrations
+./scripts/etl.sh ingest           # Run ETL (pulls scry image from ghcr.io)
 ```
 
 ## Architecture
@@ -91,10 +78,6 @@ The orchestrator layer sits between controllers and services. It handles present
 
 JWT-based auth using Passport.js. Guards: `JwtAuthGuard`, `LocalAuthGuard`, `OptionalJwtAuthGuard`. Tokens stored in HTTP cookies. New user registration uses a `pending_user` table for email verification with expiring tokens.
 
-### Scry CLI Architecture
-
-Modular Rust CLI using Clap. Main modules: `card/`, `set/`, `price/`, `health_check/`. Uses SQLx for type-safe database queries, streaming JSON parsing (actson) for memory-efficient Scryfall bulk data processing, and tokio async runtime. See `scry/CLAUDE.md` for detailed Scry architecture.
-
 ## Testing
 
 Tests live in `test/` mirroring the `src/` structure. Test files use `*.spec.ts` (unit) and `*.e2e-spec.ts` (e2e). Services are tested by mocking repository ports. Coverage excludes DTOs, ORM entities, modules, and port interfaces. Path alias `src/*` is configured in both `tsconfig.json` and Jest's `moduleNameMapper`.
@@ -125,11 +108,11 @@ Server-side rendered using Handlebars (`src/http/views/`). Layouts in `views/lay
 
 GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to main:
 1. **test** — Runs `npm test` in Docker
-2. **build** — Builds and pushes Docker images (web + etl) to `ghcr.io`
+2. **build** — Builds and pushes web Docker image to `ghcr.io`
 3. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`. Copies files to server, runs migrations against managed DB, starts web container.
 
 ## Environment
 
-**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (Rust log level), `SMTP_*` (email config), `APP_URL`.
+**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (passed to ETL container), `SMTP_*` (email config), `APP_URL`.
 
 **Local dev**: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (for Docker postgres), or individual `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` vars. See `.env.example`.

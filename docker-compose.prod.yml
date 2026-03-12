@@ -26,7 +26,7 @@ services:
 
     # Scry - ETL Application
     etl:
-        image: ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest
+        image: ghcr.io/matthewdtowles/scry:latest
         environment:
             - DATABASE_URL=${DATABASE_URL}
             - SCRY_LOG=${SCRY_LOG}

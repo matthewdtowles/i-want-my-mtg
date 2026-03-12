@@ -33,4 +33,4 @@ if [ $# -eq 0 ]; then
 fi
 
 echo "Running: scry $*"
-docker compose run --rm etl cargo run -- "$@"
+docker compose run --rm etl ./scry "$@"

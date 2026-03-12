@@ -27,14 +27,14 @@
 - [x] Update CLAUDE.md and documentation
 
 ### 1.2 Split Scry into Separate Repository
-- [ ] Create new `scry` repository
-- [ ] Move `scry/` directory contents to new repo root
-- [ ] Set up standalone CI/CD (build, test, Docker image push)
-- [ ] Update container registry tags and deploy script for separate ETL image
-- [ ] Remove `scry/` from web app repo
-- [ ] Update web app CI to remove ETL build step
-- [ ] Update web app Docker Compose to pull ETL image from new repo's registry
-- [ ] Update documentation in both repos
+- [x] Create new `scry` repository
+- [x] Move `scry/` directory contents to new repo root
+- [x] Set up standalone CI/CD (build, test, Docker image push)
+- [x] Update container registry tags and deploy script for separate ETL image
+- [x] Remove `scry/` from web app repo
+- [x] Update web app CI to remove ETL build step
+- [x] Update web app Docker Compose to pull ETL image from new repo's registry
+- [x] Update documentation in both repos
 
 ### 1.3 Integration Test Suite
 - [ ] Choose integration test strategy (e2e with real DB vs test containers)

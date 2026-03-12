@@ -44,22 +44,17 @@ npm test                                          # All unit tests
 npm test -- --testPathPattern='card.service'       # Single test file
 npm run test:e2e                                   # E2E tests
 npm run test:cov                                   # Unit tests with coverage
-cd scry && cargo test                              # Scry (Rust) tests
 ```
 
 ### ETL (Scry)
 
+The Scry ETL tool lives in a [separate repository](https://github.com/matthewdtowles/scry). To run it locally via Docker:
+
 ```bash
 ./scripts/etl.sh ingest           # Full ingest (sets, cards, prices)
 ./scripts/etl.sh ingest -s        # Sets only
-./scripts/etl.sh ingest -c        # Cards only
-./scripts/etl.sh ingest -p        # Prices only
-./scripts/etl.sh ingest -k mh3    # Cards for specific set
 ./scripts/etl.sh health           # Data integrity check
-./scripts/etl.sh health --detailed
-./scripts/etl.sh cleanup -c       # Clean up filtered sets/cards
-./scripts/etl.sh retention        # Apply retention to price_history, set_price_history, portfolio_value_history
-./scripts/etl.sh backfill         # Backfill price_history from MTGJSON
+./scripts/etl.sh retention        # Apply retention policy
 ```
 
 ### Logs
@@ -117,13 +112,6 @@ docker compose run --rm migrate
 
 ```bash
 docker compose exec web npm test
-docker compose run --rm etl cargo test
-```
-
-### ETL (via Docker)
-
-```bash
-docker compose run --rm etl cargo run -- <command>
 ```
 
 ### Email Testing
@@ -134,95 +122,6 @@ Local development uses [MailHog](https://github.com/mailhog/MailHog) to capture 
 - **SMTP**: `localhost:1025` (configured automatically in Docker)
 
 MailHog starts with `docker compose up -d`. No additional configuration needed.
-
-## Scry CLI Commands
-
-Scry is the Rust ETL tool that ingests MTG data from the Scryfall API. Run commands via Docker or directly if built locally:
-
-```bash
-# Via Docker
-docker compose run --rm etl cargo run -- <command>
-
-# Via script
-./scripts/etl.sh <command>
-
-# Directly (if built locally)
-./scry <command>
-```
-
-### `ingest` — Ingest MTG data from Scryfall
-
-With no flags, ingests all sets, cards, and prices. Automatically runs post-ingest pruning and updates afterward.
-
-```bash
-scry ingest              # Ingest everything (sets, cards, prices)
-scry ingest -s           # Ingest sets only
-scry ingest -c           # Ingest cards only
-scry ingest -p           # Ingest prices only
-scry ingest -k <CODE>    # Ingest cards for a specific set (e.g., -k mh3)
-scry ingest -r           # Reset all data before ingesting (requires confirmation)
-```
-
-Flags can be combined, e.g. `scry ingest -s -p` to ingest sets and prices.
-
-### `post-ingest-prune` — Prune unwanted ingested data
-
-Removes foreign cards without prices, sets missing price data, empty sets, and duplicate foil cards. Runs automatically after `ingest`, but can be run standalone.
-
-```bash
-scry post-ingest-prune
-```
-
-### `post-ingest-updates` — Update set sizes, prices, and portfolio snapshots
-
-Fixes main set misclassifications, calculates set sizes, updates set prices, and takes daily portfolio value snapshots for all users. Runs automatically after `ingest`, but can be run standalone.
-
-```bash
-scry post-ingest-updates
-```
-
-### `cleanup` — Remove previously saved sets/cards
-
-Only necessary if filtering rules have been updated to exclude sets or cards that were already ingested.
-
-```bash
-scry cleanup             # Clean up sets based on set filtering rules
-scry cleanup -c          # Also clean up individual cards based on card filtering rules
-scry cleanup -c -n 1000  # Card cleanup with custom batch size (default: 500)
-```
-
-### `health` — Check data integrity
-
-```bash
-scry health              # Basic health check
-scry health --detailed   # Detailed health check
-```
-
-### `retention` — Apply retention policy
-
-Applies a tiered retention policy to `price_history`, `set_price_history`, and `portfolio_value_history`: keeps daily rows for 7 days, weekly (Mondays) for 7-28 days, and monthly (1st of month) for 28+ days.
-
-```bash
-scry retention
-```
-
-### `backfill` — Backfill price_history from MTGJSON
-
-One-time operation that downloads AllPrices.json from MTGJSON and backfills the `price_history` table with historical price data. Averages prices across providers (TCGPlayer, Card Kingdom, Cardsphere) per card per date.
-
-```bash
-scry backfill                      # Backfill historical prices
-scry backfill --truncate           # Truncate price_history first (requires confirmation)
-scry backfill --skip-retention     # Skip retention policy after backfill
-```
-
-### `truncate-history` — Truncate the price_history table
-
-Deletes all data from the price_history table. Requires interactive confirmation.
-
-```bash
-scry truncate-history
-```
 
 ## Versioning
 
@@ -256,18 +155,6 @@ Other prefixes like `docs:`, `chore:`, `refactor:`, `test:`, `style:`, and `ci:`
 - The version in `package.json` is the baseline — CI computes the next version from there
 
 ## Build & Deploy
-
-### Production (Scry)
-
-```bash
-cd scry
-cargo build --release
-strip target/release/scry || true
-./target/release/scry --version
-scp target/release/scry lightsail-iwmm:~/
-ssh lightsail-iwmm
-./scry.sh
-```
 
 ### Production (Web)
 

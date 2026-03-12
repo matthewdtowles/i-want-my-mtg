@@ -102,12 +102,6 @@ impl PortfolioRepository {
             .await
     }
 
-    pub async fn vacuum(&self) -> Result<()> {
-        self.db
-            .execute_raw("VACUUM ANALYZE portfolio_value_history")
-            .await
-    }
-
     /// Compute portfolio summary data per user (total value, total cards, total quantity)
     pub async fn calculate_portfolio_summaries(&self) -> Result<Vec<PortfolioSummaryRow>> {
         let qb = QueryBuilder::new(

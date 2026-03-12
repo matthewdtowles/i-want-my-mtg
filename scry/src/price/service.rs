@@ -137,10 +137,6 @@ impl PriceService {
         self.repository.price_history_size().await
     }
 
-    pub async fn vacuum_history(&self) -> Result<()> {
-        self.repository.vacuum_price_history().await
-    }
-
     pub async fn apply_retention(&self) -> Result<RetentionResult> {
         info!("Starting retention cleanup on price_history");
 

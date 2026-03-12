@@ -101,7 +101,11 @@ Tests live in `test/` mirroring the `src/` structure. Test files use `*.spec.ts`
 
 ## Database
 
-PostgreSQL 15. Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially, run via `docker compose run --rm migrate` in dev or directly via `run_migrations.sh` in prod). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
+**Production**: AWS Lightsail Managed PostgreSQL 18 (`iwantmymtg-db`). Connected via `DATABASE_URL` with SSL (`ssl: { rejectUnauthorized: false }` in TypeORM config). Backups and autovacuum are handled by the managed service. Migrations run directly via `run_migrations.sh` during deploy.
+
+**Local dev**: PostgreSQL 18 via Docker (docker-compose.yml). Migrations run via `docker compose run --rm migrate`.
+
+Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
 
 ### Price History
 
@@ -122,8 +126,10 @@ Server-side rendered using Handlebars (`src/http/views/`). Layouts in `views/lay
 GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to main:
 1. **test** — Runs `npm test` in Docker
 2. **build** — Builds and pushes Docker images (web + etl) to `ghcr.io`
-3. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`
+3. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`. Copies files to server, runs migrations against managed DB, starts web container.
 
 ## Environment
 
-Key env vars (see `.env.example`): `DATABASE_URL` (or individual `DB_*` vars), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (Rust log level), `SMTP_*` (email config), `APP_URL`. Docker Postgres also needs `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`.
+**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (Rust log level), `SMTP_*` (email config), `APP_URL`.
+
+**Local dev**: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (for Docker postgres), or individual `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` vars. See `.env.example`.

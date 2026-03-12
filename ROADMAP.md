@@ -17,9 +17,14 @@
 - [x] Update deploy script — remove POSTGRES_* vars, update DB_HOST/DB_PORT for managed DB
 - [x] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
 - [x] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
-- [ ] Verify backups and point-in-time recovery
-- [ ] Decommission Docker postgres container and volume
-- [ ] Update CLAUDE.md and documentation
+- [x] Fix migration script quoting — DATABASE_URL `?sslmode=require` broke under `nullglob`
+- [x] Add SSL config for managed DB — `ssl: { rejectUnauthorized: false }` in TypeORM
+- [x] Fix sslmode conflict — strip `sslmode` from URL so TypeORM ssl config takes effect
+- [x] Remove VACUUM ANALYZE calls from Scry retention command (managed DB handles autovacuum)
+- [x] Remove `health --price-history` bloat/vacuum monitoring (not needed with managed DB)
+- [x] Decommission Docker postgres volumes on server (reclaimed ~1.4GB)
+- [x] Verify backups and point-in-time recovery (auto backups enabled, 5-min PITR for 7 days)
+- [x] Update CLAUDE.md and documentation
 
 ### 1.2 Split Scry into Separate Repository
 - [ ] Create new `scry` repository

@@ -51,19 +51,7 @@ impl ConnectionPool {
             .map_err(Into::into)
     }
 
-    pub async fn fetch_one_query_builder<T>(
-        &self,
-        mut query_builder: QueryBuilder<'_, Postgres>,
-    ) -> Result<T>
-    where
-        T: for<'r> FromRow<'r, PgRow> + Send + Unpin,
-    {
-        let query = query_builder.build_query_as::<T>();
-        query
-            .fetch_one(self.pool.as_ref())
-            .await
-            .map_err(Into::into)
-    }
+
 
     pub async fn execute_raw(&self, query: &str) -> Result<()> {
         sqlx::query(query).execute(&*self.pool).await?;

@@ -21,7 +21,8 @@ log_error() {
 }
 
 # Ensure psql is available for db-managed alias and ad-hoc queries
-if ! command -v psql &> /dev/null; then
+# Note: command -v psql may succeed due to pg_wrapper shim even without a real client
+if ! psql --version &> /dev/null; then
     log_info "Installing postgresql-client..."
     sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
 fi

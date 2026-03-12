@@ -29,9 +29,6 @@ required_vars=(
     "DATABASE_URL"
     "JWT_SECRET"
     "NODE_ENV"
-    "POSTGRES_DB"
-    "POSTGRES_USER"
-    "POSTGRES_PASSWORD"
     "SCRY_LOG"
     "LIGHTSAIL_GITHUB_TOKEN"
     "SMTP_HOST"
@@ -57,21 +54,13 @@ chmod 600 private_key
 log_info "Creating production .env file..."
 cat > .env <<'EOF'
 APP_NAME=i-want-my-mtg
-DB_HOST=postgres
-DB_PORT=5432
 LOG_FORMAT=json
 EOF
 
 # Add variables with proper escaping
-echo "DB_USERNAME=\"$POSTGRES_USER\"" >> .env
-echo "DB_PASSWORD=\"$POSTGRES_PASSWORD\"" >> .env
-echo "DB_NAME=\"$POSTGRES_DB\"" >> .env
 echo "DATABASE_URL=\"$DATABASE_URL\"" >> .env
 echo "JWT_SECRET=\"$JWT_SECRET\"" >> .env
 echo "NODE_ENV=\"$NODE_ENV\"" >> .env
-echo "POSTGRES_DB=\"$POSTGRES_DB\"" >> .env
-echo "POSTGRES_USER=\"$POSTGRES_USER\"" >> .env
-echo "POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"" >> .env
 echo "SCRY_LOG=\"$SCRY_LOG\"" >> .env
 echo "LIGHTSAIL_GITHUB_TOKEN=\"$LIGHTSAIL_GITHUB_TOKEN\"" >> .env
 
@@ -96,7 +85,7 @@ scp -o StrictHostKeyChecking=no -i private_key .github/scripts/remote-deploy.sh 
 # Make remote script executable and run deployment
 log_info "Running deployment on remote server..."
 ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP \
-    "chmod +x remote-deploy.sh && GITHUB_TOKEN=\"$GITHUB_TOKEN\" GITHUB_ACTOR=\"$GITHUB_ACTOR\" POSTGRES_USER=\"$POSTGRES_USER\" POSTGRES_DB=\"$POSTGRES_DB\" ./remote-deploy.sh"
+    "chmod +x remote-deploy.sh && GITHUB_TOKEN=\"$GITHUB_TOKEN\" GITHUB_ACTOR=\"$GITHUB_ACTOR\" ./remote-deploy.sh"
 
 # Cleanup
 log_info "Cleaning up..."

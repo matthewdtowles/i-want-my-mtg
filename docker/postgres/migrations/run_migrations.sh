@@ -1,14 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# environment expected via .env / docker-compose env_file
-: "${POSTGRES_USER:?}"
-: "${POSTGRES_PASSWORD:?}"
-: "${POSTGRES_DB:?}"
-POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
-POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+# Supports two modes:
+# 1. DATABASE_URL set — connect directly (managed DB / prod)
+# 2. POSTGRES_* vars set — connect via libpq env vars (Docker / dev)
 
-MIGRATIONS_DIR="/migrations"
+if [ -n "${DATABASE_URL:-}" ]; then
+  PSQL_CONN="$DATABASE_URL"
+  echo "Using DATABASE_URL for connection"
+else
+  : "${POSTGRES_USER:?}"
+  : "${POSTGRES_PASSWORD:?}"
+  : "${POSTGRES_DB:?}"
+  POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
+  POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+  export PGPASSWORD="$POSTGRES_PASSWORD"
+  PSQL_CONN="-h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+  echo "Using POSTGRES_* vars for connection"
+fi
+
+MIGRATIONS_DIR="${MIGRATIONS_DIR:-/migrations}"
 echo "Running migrations from ${MIGRATIONS_DIR}"
 
 shopt -s nullglob
@@ -21,7 +32,8 @@ fi
 # run in lexical order
 for f in "${sql_files[@]}"; do
   echo "Applying: $f"
-  PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -f "$f"
+  # shellcheck disable=SC2086
+  psql $PSQL_CONN -v ON_ERROR_STOP=1 -f "$f"
 done
 
 echo "Migrations complete."

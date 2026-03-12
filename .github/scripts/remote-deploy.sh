@@ -32,21 +32,19 @@ rm -f docker-compose.yml docker-compose.override.yml
 log_info "Setting up production compose file..."
 mv docker-compose.prod.yml docker-compose.yml
 
-if ! grep -q 'docker-pg-exec' ~/.bashrc; then
-    log_info "Creating docker-pg-exec alias..."
-    echo "alias docker-pg-exec='docker compose exec postgres psql -U \$POSTGRES_USER -d \$POSTGRES_DB'" >> ~/.bashrc
-    log_info "Alias docker-pg-exec added."
-else
-    log_info "docker-pg-exec alias already exists, skipping."
+# Remove legacy docker-pg-exec alias if present
+if grep -q 'docker-pg-exec' ~/.bashrc; then
+    log_info "Removing legacy docker-pg-exec alias..."
+    sed -i '/docker-pg-exec/d' ~/.bashrc
 fi
 
-if ! grep -q 'db-managed' ~/.bashrc; then
-    log_info "Creating db-managed alias..."
-    echo "alias db-managed='psql -h ls-4b0aa29e0f1e478f364ad5c222fdc41a182ff73b.ce5k02o4maxz.us-east-1.rds.amazonaws.com -p 5432 -U iwmm_pg_user -d i_want_my_mtg'" >> ~/.bashrc
-    log_info "Alias db-managed added."
-else
-    log_info "db-managed alias already exists, skipping."
+# Set up db-managed alias using DATABASE_URL from .env
+if grep -q 'db-managed' ~/.bashrc; then
+    log_info "Updating db-managed alias..."
+    sed -i '/db-managed/d' ~/.bashrc
 fi
+echo "alias db-managed='source ~/.env && psql \"\$DATABASE_URL\"'" >> ~/.bashrc
+log_info "Alias db-managed configured."
 
 # Stop existing containers
 log_info "Stopping existing containers..."
@@ -54,23 +52,15 @@ docker compose down --remove-orphans || true
 
 # Pull latest images
 log_info "Pulling latest images..."
-docker compose pull web postgres
+docker compose pull web
 
-# Start PostgreSQL
-log_info "Starting PostgreSQL..."
-docker compose up -d postgres
-
-# Wait for PostgreSQL
-log_info "Waiting for PostgreSQL to be ready..."
-timeout 60 bash -c 'until docker compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do echo "Waiting for DB..."; sleep 2; done'
-
-if [ $? -eq 0 ]; then
-    log_info "PostgreSQL is ready!"
-else
-    log_error "PostgreSQL failed to start!"
-    docker compose logs postgres
-    exit 1
-fi
+# Run database migrations against managed DB
+log_info "Running database migrations..."
+source ~/.env
+export DATABASE_URL
+export MIGRATIONS_DIR="$HOME/docker/postgres/migrations"
+chmod +x docker/postgres/migrations/run_migrations.sh
+docker/postgres/migrations/run_migrations.sh
 
 # Start web service
 log_info "Starting web service..."

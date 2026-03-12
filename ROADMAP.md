@@ -13,10 +13,10 @@
 - [x] Migrate production data (pg_dump/pg_restore — verified row counts match)
 - [x] Install postgresql-client on Lightsail web instance
 - [x] Add `db-managed` alias to deploy script for managed DB access
-- [ ] Point production app at managed DB (update .env DATABASE_URL with `?sslmode=require`)
-- [ ] Update deploy script — remove POSTGRES_* vars, update DB_HOST/DB_PORT for managed DB
-- [ ] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
-- [ ] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
+- [x] Point production app at managed DB (update .env DATABASE_URL with `?sslmode=require`)
+- [x] Update deploy script — remove POSTGRES_* vars, update DB_HOST/DB_PORT for managed DB
+- [x] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
+- [x] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
 - [ ] Verify backups and point-in-time recovery
 - [ ] Decommission Docker postgres container and volume
 - [ ] Update CLAUDE.md and documentation

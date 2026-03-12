@@ -167,9 +167,6 @@ jobs:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
                   JWT_SECRET: ${{ secrets.JWT_SECRET }}
                   NODE_ENV: ${{ secrets.NODE_ENV }}
-                  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-                  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
                   SCRY_LOG: ${{ secrets.SCRY_LOG }}
                   SMTP_HOST: ${{ secrets.SMTP_HOST }}
                   SMTP_PORT: 587

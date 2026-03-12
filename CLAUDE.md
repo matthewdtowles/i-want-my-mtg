@@ -33,7 +33,7 @@ cd scry && cargo build --release  # Production build
 cd scry && cargo run -- ingest    # Ingest sets, cards, prices from Scryfall
 cd scry && cargo run -- cleanup -c  # Post-ingest data cleanup
 cd scry && cargo run -- health    # Check data integrity
-cd scry && cargo run -- retention # Apply price_history + set_price_history retention policy
+cd scry && cargo run -- retention # Apply retention to price_history, set_price_history, portfolio_value_history
 ```
 
 ### Docker (full stack)

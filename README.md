@@ -58,7 +58,7 @@ cd scry && cargo test                              # Scry (Rust) tests
 ./scripts/etl.sh health           # Data integrity check
 ./scripts/etl.sh health --detailed
 ./scripts/etl.sh cleanup -c       # Clean up filtered sets/cards
-./scripts/etl.sh retention        # Apply price_history retention
+./scripts/etl.sh retention        # Apply retention to price_history, set_price_history, portfolio_value_history
 ./scripts/etl.sh backfill         # Backfill price_history from MTGJSON
 ```
 
@@ -196,10 +196,9 @@ scry cleanup -c -n 1000  # Card cleanup with custom batch size (default: 500)
 ```bash
 scry health              # Basic health check
 scry health --detailed   # Detailed health check
-scry health --price-history  # Check price_history table health (bloat, vacuum, retention)
 ```
 
-### `retention` — Apply price_history and portfolio_value_history retention policy
+### `retention` — Apply retention policy
 
 Applies a tiered retention policy to `price_history`, `set_price_history`, and `portfolio_value_history`: keeps daily rows for 7 days, weekly (Mondays) for 7-28 days, and monthly (1st of month) for 28+ days.
 

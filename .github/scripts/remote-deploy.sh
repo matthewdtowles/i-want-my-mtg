@@ -20,6 +20,12 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Ensure psql is available for db-managed alias and ad-hoc queries
+if ! command -v psql &> /dev/null; then
+    log_info "Installing postgresql-client..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
+fi
+
 # Login to GHCR
 log_info "Logging in to GitHub Container Registry..."
 echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
@@ -58,9 +64,9 @@ docker compose pull web
 log_info "Running database migrations..."
 source ~/.env
 export DATABASE_URL
-export MIGRATIONS_DIR="$HOME/docker/postgres/migrations"
-chmod +x docker/postgres/migrations/run_migrations.sh
-docker/postgres/migrations/run_migrations.sh
+export MIGRATIONS_DIR="$HOME/migrations"
+chmod +x migrations/run_migrations.sh
+migrations/run_migrations.sh
 
 # Start web service
 log_info "Starting web service..."

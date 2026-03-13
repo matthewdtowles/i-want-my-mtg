@@ -1,6 +1,6 @@
 {
     "name": "i-want-my-mtg",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "description": "MTG Collection Tracker",
     "author": "Matthew Towles",
     "private": true,
@@ -22,7 +22,11 @@
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "test:integ": "./scripts/test-integ.sh",
-        "typeorm": "NODE_OPTIONS='-r tsconfig-paths/register' typeorm-ts-node-commonjs"
+        "etl": "./scripts/etl.sh",
+        "typeorm": "NODE_OPTIONS='-r tsconfig-paths/register' typeorm-ts-node-commonjs",
+        "bump": "npm version patch --no-git-tag-version",
+        "bump:minor": "npm version minor --no-git-tag-version",
+        "bump:major": "npm version major --no-git-tag-version"
     },
     "dependencies": {
         "@nestjs/common": "^10.0.0",

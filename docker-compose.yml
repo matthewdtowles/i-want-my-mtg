@@ -48,6 +48,7 @@ services:
             options:
                 max-size: '10m'
                 max-file: '3'
+        working_dir: /app
         command: ['./scry', 'ingest']
 
     # PostgreSQL Database (shared by web and etl)

@@ -27,7 +27,7 @@ sudo cp ~/cron/clean_logs.sh /opt/scripts/clean_logs.sh
 sudo chmod 755 /opt/scripts/clean_logs.sh
 
 # Extract scry binary from ETL Docker image
-log_info "Extracting scry binary from ETL image..."
+log_info "Extracting scry binary from ghcr.io/matthewdtowles/scry:latest..."
 docker pull ghcr.io/matthewdtowles/scry:latest
 container_id=$(docker create ghcr.io/matthewdtowles/scry:latest)
 cleanup_docker() {

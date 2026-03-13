@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createTestApp, loginTestUser, TEST_USER, TEST_CARD_ID } from './setup';
+import { createTestApp, closeTestApp, loginTestUser, TEST_USER, TEST_CARD_ID } from './setup';
 
 describe('Auth and Inventory (e2e)', () => {
     let app: INestApplication;
@@ -10,7 +10,7 @@ describe('Auth and Inventory (e2e)', () => {
     }, 30000);
 
     afterAll(async () => {
-        await app?.close();
+        await closeTestApp(app);
     });
 
     describe('Auth flow', () => {

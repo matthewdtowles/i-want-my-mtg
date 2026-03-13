@@ -47,3 +47,11 @@ ON CONFLICT (set_code, date) DO NOTHING;
 INSERT INTO users (email, name, password, role)
 VALUES ('integ@test.com', 'IntegTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
 ON CONFLICT (email) DO NOTHING;
+
+-- Legality entries (required FK for some queries)
+INSERT INTO legality (card_id, format, status)
+VALUES
+    ('test-card-001', 'standard', 'legal'),
+    ('test-card-002', 'standard', 'legal'),
+    ('test-card-003', 'standard', 'legal')
+ON CONFLICT (card_id, format) DO NOTHING;

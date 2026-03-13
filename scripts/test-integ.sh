@@ -18,6 +18,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Remove orphaned containers from previous runs
+echo "Cleaning up orphaned containers..."
+docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
+
 echo "Starting test database..."
 docker compose -f "$COMPOSE_FILE" up -d --wait
 

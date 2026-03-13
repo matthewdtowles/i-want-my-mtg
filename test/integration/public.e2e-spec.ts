@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import {
     createTestApp,
+    closeTestApp,
     TEST_SET_CODE,
     TEST_CARD_SET_CODE,
     TEST_CARD_NUMBER,
@@ -16,7 +17,7 @@ describe('Public endpoints (e2e)', () => {
     }, 30000);
 
     afterAll(async () => {
-        await app?.close();
+        await closeTestApp(app);
     });
 
     describe('Home', () => {

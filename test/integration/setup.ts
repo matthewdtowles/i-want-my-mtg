@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { create } from 'express-handlebars';
 import { join } from 'path';
 import * as request from 'supertest';
+import { DataSource } from 'typeorm';
 import { AppModule } from 'src/app.module';
 import { HttpExceptionFilter } from 'src/http/http.exception.filter';
 
@@ -61,6 +62,23 @@ export async function createTestApp(): Promise<INestApplication> {
 
     await app.init();
     return app;
+}
+
+/**
+ * Close the test app and ensure the TypeORM DataSource is destroyed.
+ * Prevents connection pool leaks between test suites.
+ */
+export async function closeTestApp(app: INestApplication): Promise<void> {
+    if (!app) return;
+    try {
+        const ds = app.get(DataSource);
+        if (ds?.isInitialized) {
+            await ds.destroy();
+        }
+    } catch {
+        // DataSource may already be destroyed
+    }
+    await app.close().catch(() => {});
 }
 
 /**

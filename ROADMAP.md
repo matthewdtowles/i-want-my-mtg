@@ -41,11 +41,11 @@
 - [x] Set up test database provisioning (docker-compose.test.yml, postgres on port 5433 with tmpfs)
 - [x] Write integration tests for auth flow (login, logout, cookie handling, guard enforcement)
 - [x] Write integration tests for inventory CRUD (create, update, delete)
-- [ ] Write integration tests for transaction CRUD and FIFO calculations
-- [ ] Write integration tests for portfolio computation
+- [x] Write integration tests for transaction CRUD and FIFO calculations
+- [x] Write integration tests for portfolio computation
 - [x] Write integration tests for card/set search and filtering (public endpoints, search, spoilers)
-- [ ] Add integration test step to CI pipeline
-- [ ] Document how to run integration tests locally
+- [x] Add integration test step to CI pipeline
+- [x] Document how to run integration tests locally
 
 ### 1.4 Create API Layer
 - [ ] Design REST API structure (versioned: `/api/v1/`)

@@ -21,8 +21,63 @@ jobs:
             - name: Cleanup
               run: docker compose down -v
 
+    integration-test:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:18-alpine
+                env:
+                    POSTGRES_DB: iwantmymtg_test
+                    POSTGRES_USER: testuser
+                    POSTGRES_PASSWORD: testpass
+                options: >-
+                    --health-cmd "pg_isready -U testuser -d iwantmymtg_test"
+                    --health-interval 5s
+                    --health-timeout 3s
+                    --health-retries 10
+                    --shm-size 256mb
+                ports:
+                    - 5433:5432
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Initialize schema and run migrations
+              env:
+                  PGPASSWORD: testpass
+              run: |
+                  psql -h 127.0.0.1 -p 5433 -U testuser -d iwantmymtg_test -v ON_ERROR_STOP=1 -f docker/postgres/init/001_complete_schema.sql > /dev/null
+                  for f in migrations/*.sql; do
+                    psql -h 127.0.0.1 -p 5433 -U testuser -d iwantmymtg_test -v ON_ERROR_STOP=1 -f "$f" > /dev/null
+                  done
+
+            - name: Seed test data
+              env:
+                  PGPASSWORD: testpass
+              run: psql -h 127.0.0.1 -p 5433 -U testuser -d iwantmymtg_test -v ON_ERROR_STOP=1 -f test/integration/seed.sql > /dev/null
+
+            - name: Run integration tests
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_PORT: 5433
+                  DB_USERNAME: testuser
+                  DB_PASSWORD: testpass
+                  DB_NAME: iwantmymtg_test
+                  JWT_SECRET: integ-test-secret
+                  NODE_ENV: test
+              run: npx jest --config test/jest-e2e.json --runInBand
+
     tag:
-        needs: test
+        needs: [test, integration-test]
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         permissions:
@@ -51,7 +106,7 @@ jobs:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     build:
-        needs: test
+        needs: [test, integration-test]
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         permissions:

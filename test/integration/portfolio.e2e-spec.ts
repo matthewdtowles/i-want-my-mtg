@@ -6,7 +6,6 @@ import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID, TEST_CARD_ID_
 describe('Portfolio (e2e)', () => {
     let app: INestApplication;
     let authCookie: string;
-    const txIds: number[] = [];
 
     beforeAll(async () => {
         app = await createTestApp();
@@ -33,19 +32,20 @@ describe('Portfolio (e2e)', () => {
                     isFoil: false,
                     date: date.toISOString().split('T')[0],
                     skipInventorySync: true,
-                });
-            if (res.body.success) {
-                txIds.push(res.body.data.id);
-            }
+                })
+                .expect(201);
+            expect(res.body.success).toBe(true);
         }
 
         // Create inventory entries directly so portfolio has data to compute
         for (const cardId of [TEST_CARD_ID, TEST_CARD_ID_2]) {
-            await request(app.getHttpServer())
+            const res = await request(app.getHttpServer())
                 .post('/inventory')
                 .set('Cookie', authCookie)
                 .set('Content-Type', 'application/json')
-                .send([{ cardId, quantity: cardId === TEST_CARD_ID ? 3 : 3, isFoil: false, userId: 1 }]);
+                .send([{ cardId, quantity: 3, isFoil: false, userId: 1 }])
+                .expect(201);
+            expect(res.body.success).toBe(true);
         }
     }, 30000);
 

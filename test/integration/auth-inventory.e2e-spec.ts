@@ -27,7 +27,8 @@ describe('Auth and Inventory (e2e)', () => {
         it('POST /auth/login with invalid credentials does not set auth cookie', async () => {
             const res = await request(app.getHttpServer())
                 .post('/auth/login')
-                .send({ email: 'wrong@test.com', password: 'WrongPass1!' });
+                .send({ email: 'wrong@test.com', password: 'WrongPass1!' })
+                .expect(401);
             const cookies = res.headers['set-cookie'] || [];
             const authCookie = (Array.isArray(cookies) ? cookies : [cookies]).find((c: string) =>
                 c?.startsWith('authorization=')

@@ -144,7 +144,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
             expect(res.body.success).toBe(true);
         });
 
-        it('rejects SELL exceeding remaining quantity', async () => {
+        it('returns success:false when SELL exceeds remaining quantity', async () => {
             // Only 2 units remain (1 from lot2 + 1 from lot3), try to sell 5
             const res = await request(app.getHttpServer())
                 .post('/transactions')
@@ -159,7 +159,6 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                     skipInventorySync: true,
                 })
                 .expect(201);
-            // The endpoint returns 201 but with success: false
             expect(res.body.success).toBe(false);
             expect(res.body.error).toBeDefined();
         });

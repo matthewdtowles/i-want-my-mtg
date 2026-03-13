@@ -27,12 +27,12 @@ sudo cp ~/cron/clean_logs.sh /opt/scripts/clean_logs.sh
 sudo chmod 755 /opt/scripts/clean_logs.sh
 
 # Extract scry binary from ETL Docker image
-log_info "Extracting scry binary from ETL image..."
-docker pull ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest
-container_id=$(docker create ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest)
+log_info "Extracting scry binary from ghcr.io/matthewdtowles/scry:latest..."
+docker pull ghcr.io/matthewdtowles/scry:latest
+container_id=$(docker create ghcr.io/matthewdtowles/scry:latest)
 cleanup_docker() {
     docker rm "$container_id" 2>/dev/null || true
-    docker rmi ghcr.io/matthewdtowles/i-want-my-mtg/etl:latest 2>/dev/null || true
+    docker rmi ghcr.io/matthewdtowles/scry:latest 2>/dev/null || true
 }
 trap cleanup_docker EXIT
 sudo docker cp "${container_id}:/app/scry" /opt/scripts/scry

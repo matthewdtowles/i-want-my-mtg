@@ -1,0 +1,19 @@
+services:
+    postgres-test:
+        image: postgres:18-alpine
+        shm_size: 256mb
+        environment:
+            - POSTGRES_DB=iwantmymtg_test
+            - POSTGRES_USER=testuser
+            - POSTGRES_PASSWORD=testpass
+        ports:
+            - '5433:5432'
+        volumes:
+            - ./docker/postgres/init:/docker-entrypoint-initdb.d/
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U testuser -d iwantmymtg_test']
+            interval: 5s
+            timeout: 3s
+            retries: 10
+        tmpfs:
+            - /var/lib/postgresql

@@ -82,6 +82,19 @@ JWT-based auth using Passport.js. Guards: `JwtAuthGuard`, `LocalAuthGuard`, `Opt
 
 Tests live in `test/` mirroring the `src/` structure. Test files use `*.spec.ts` (unit) and `*.e2e-spec.ts` (e2e). Services are tested by mocking repository ports. Coverage excludes DTOs, ORM entities, modules, and port interfaces. Path alias `src/*` is configured in both `tsconfig.json` and Jest's `moduleNameMapper`.
 
+### Integration Tests
+
+Integration tests run against a real PostgreSQL database via Docker. They exercise full request/response cycles through the NestJS app (controllers, orchestrators, services, repositories).
+
+```bash
+./scripts/test-integ.sh                        # Run all integration tests
+./scripts/test-integ.sh --testPathPattern=transaction  # Run a single suite
+```
+
+The script handles container lifecycle automatically: starts a Postgres container on port 5433 (via `docker-compose.test.yml`), runs the schema init + migrations + seed data, executes Jest with `test/jest-e2e.json` config, and tears down the container on exit. Orphaned containers from previous runs are cleaned up on startup.
+
+Test suites: `test/integration/*.e2e-spec.ts`. Seed data: `test/integration/seed.sql`. Test app bootstrap: `test/integration/setup.ts`.
+
 ## Database
 
 **Production**: AWS Lightsail Managed PostgreSQL 18 (`iwantmymtg-db`). Connected via `DATABASE_URL` with SSL (`ssl: { rejectUnauthorized: false }` in TypeORM config). Backups and autovacuum are handled by the managed service. Migrations run directly via `run_migrations.sh` during deploy.

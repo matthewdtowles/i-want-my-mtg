@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUser } from './setup';
+import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID, TEST_CARD_ID_2 } from './setup';
 
 describe('Portfolio (e2e)', () => {
     let app: INestApplication;
@@ -15,9 +15,9 @@ describe('Portfolio (e2e)', () => {
         // Seed transactions for portfolio computation (skip inventory sync to avoid cleanup issues)
         const today = new Date();
         const lots = [
-            { cardId: 'test-card-001', daysAgo: 14, quantity: 2, pricePerUnit: 3.00 },
-            { cardId: 'test-card-001', daysAgo: 7, quantity: 1, pricePerUnit: 4.50 },
-            { cardId: 'test-card-002', daysAgo: 10, quantity: 3, pricePerUnit: 1.00 },
+            { cardId: TEST_CARD_ID, daysAgo: 14, quantity: 2, pricePerUnit: 3.00 },
+            { cardId: TEST_CARD_ID, daysAgo: 7, quantity: 1, pricePerUnit: 4.50 },
+            { cardId: TEST_CARD_ID_2, daysAgo: 10, quantity: 3, pricePerUnit: 1.00 },
         ];
         for (const lot of lots) {
             const date = new Date(today);
@@ -40,12 +40,12 @@ describe('Portfolio (e2e)', () => {
         }
 
         // Create inventory entries directly so portfolio has data to compute
-        for (const cardId of ['test-card-001', 'test-card-002']) {
+        for (const cardId of [TEST_CARD_ID, TEST_CARD_ID_2]) {
             await request(app.getHttpServer())
                 .post('/inventory')
                 .set('Cookie', authCookie)
                 .set('Content-Type', 'application/json')
-                .send([{ cardId, quantity: cardId === 'test-card-001' ? 3 : 3, isFoil: false, userId: 1 }]);
+                .send([{ cardId, quantity: cardId === TEST_CARD_ID ? 3 : 3, isFoil: false, userId: 1 }]);
         }
     }, 30000);
 

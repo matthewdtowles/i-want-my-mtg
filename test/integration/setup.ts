@@ -1,13 +1,10 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import * as cookieParser from 'cookie-parser';
-import { create } from 'express-handlebars';
-import { join } from 'path';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from 'src/app.module';
-import { HttpExceptionFilter } from 'src/http/http.exception.filter';
+import { configureApp } from 'src/app.config';
+import { join } from 'path';
 
 const VIEWS_DIR = join(process.cwd(), 'src', 'http', 'views');
 
@@ -17,7 +14,9 @@ export const TEST_USER = {
 };
 
 export const TEST_SET_CODE = 'TST';
-export const TEST_CARD_ID = 'test-card-001';
+export const TEST_CARD_ID = '00000000-0000-4000-a000-000000000001';
+export const TEST_CARD_ID_2 = '00000000-0000-4000-a000-000000000002';
+export const TEST_CARD_ID_3 = '00000000-0000-4000-a000-000000000003';
 export const TEST_CARD_SET_CODE = 'TST';
 export const TEST_CARD_NUMBER = '1';
 
@@ -26,39 +25,9 @@ export async function createTestApp(): Promise<INestApplication> {
         imports: [AppModule],
     }).compile();
 
-    const app = moduleFixture.createNestApplication<NestExpressApplication>();
+    const app = moduleFixture.createNestApplication();
 
-    app.useStaticAssets(join(process.cwd(), 'src', 'http', 'public'), {
-        prefix: '/public/',
-    });
-    app.setBaseViewsDir(VIEWS_DIR);
-
-    const hbs = create({
-        layoutsDir: join(VIEWS_DIR, 'layouts'),
-        partialsDir: join(VIEWS_DIR, 'partials'),
-        defaultLayout: 'main',
-        extname: '.hbs',
-        helpers: {
-            toUpperCase: (str: string) => str?.toUpperCase(),
-            toLowerCase: (str: string) => str?.toLowerCase(),
-            capitalize: (str: string) => str?.charAt(0).toUpperCase() + str?.slice(1),
-            eq: (a: any, b: any) => a === b,
-            gt: (a: any, b: any) => a > b,
-            lt: (a: any, b: any) => a < b,
-            encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
-        },
-    });
-    app.engine('hbs', hbs.engine);
-    app.setViewEngine('hbs');
-    app.use(cookieParser());
-    app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: false,
-            transform: true,
-        })
-    );
+    configureApp(app, VIEWS_DIR);
 
     await app.init();
     return app;

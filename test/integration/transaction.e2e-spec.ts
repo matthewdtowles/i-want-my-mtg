@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID } from './setup';
+import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID, TEST_CARD_ID_2, TEST_CARD_ID_3 } from './setup';
 
 describe('Transaction CRUD and FIFO (e2e)', () => {
     let app: INestApplication;
@@ -113,7 +113,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                     .post('/transactions')
                     .set('Cookie', authCookie)
                     .send({
-                        cardId: 'test-card-002',
+                        cardId: TEST_CARD_ID_2,
                         type: 'BUY',
                         quantity: lot.quantity,
                         pricePerUnit: lot.pricePerUnit,
@@ -132,7 +132,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .post('/transactions')
                 .set('Cookie', authCookie)
                 .send({
-                    cardId: 'test-card-002',
+                    cardId: TEST_CARD_ID_2,
                     type: 'SELL',
                     quantity: 4,
                     pricePerUnit: 5.00,
@@ -150,7 +150,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .post('/transactions')
                 .set('Cookie', authCookie)
                 .send({
-                    cardId: 'test-card-002',
+                    cardId: TEST_CARD_ID_2,
                     type: 'SELL',
                     quantity: 5,
                     pricePerUnit: 5.00,
@@ -171,7 +171,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .post('/transactions')
                 .set('Cookie', authCookie)
                 .send({
-                    cardId: 'test-card-003',
+                    cardId: TEST_CARD_ID_3,
                     type: 'BUY',
                     quantity: 2,
                     pricePerUnit: 0.25,

@@ -116,7 +116,7 @@ describe('Public endpoints (e2e)', () => {
         it('POST /inventory without auth returns 403', () => {
             return request(app.getHttpServer())
                 .post('/inventory')
-                .send([{ cardId: 'test-card-001', quantity: 1, isFoil: false, userId: 1 }])
+                .send([{ cardId: TEST_CARD_ID, quantity: 1, isFoil: false, userId: 1 }])
                 .expect(403);
         });
     });

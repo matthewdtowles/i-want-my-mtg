@@ -9,25 +9,25 @@ ON CONFLICT (code) DO NOTHING;
 -- Test cards in the set
 INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
 VALUES
-    ('test-card-001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'TST', 'Creature — Angel', 'normal', false, '001', true),
-    ('test-card-002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'TST', 'Creature — Sphinx', 'normal', false, '002', true),
-    ('test-card-003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'TST', 'Creature — Zombie', 'normal', false, '003', true)
+    ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'TST', 'Creature — Angel', 'normal', false, '001', true),
+    ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'TST', 'Creature — Sphinx', 'normal', false, '002', true),
+    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'TST', 'Creature — Zombie', 'normal', false, '003', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards
 INSERT INTO price (card_id, normal, foil, date)
 VALUES
-    ('test-card-001', 5.00, 10.00, CURRENT_DATE),
-    ('test-card-002', 1.50, 3.00, CURRENT_DATE),
-    ('test-card-003', 0.25, NULL, CURRENT_DATE)
+    ('00000000-0000-4000-a000-000000000001', 5.00, 10.00, CURRENT_DATE),
+    ('00000000-0000-4000-a000-000000000002', 1.50, 3.00, CURRENT_DATE),
+    ('00000000-0000-4000-a000-000000000003', 0.25, NULL, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Price history for test card
 INSERT INTO price_history (card_id, normal, foil, date)
 VALUES
-    ('test-card-001', 4.50, 9.00, CURRENT_DATE - INTERVAL '7 days'),
-    ('test-card-001', 4.75, 9.50, CURRENT_DATE - INTERVAL '3 days'),
-    ('test-card-001', 5.00, 10.00, CURRENT_DATE)
+    ('00000000-0000-4000-a000-000000000001', 4.50, 9.00, CURRENT_DATE - INTERVAL '7 days'),
+    ('00000000-0000-4000-a000-000000000001', 4.75, 9.50, CURRENT_DATE - INTERVAL '3 days'),
+    ('00000000-0000-4000-a000-000000000001', 5.00, 10.00, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Set price
@@ -51,7 +51,7 @@ ON CONFLICT (email) DO NOTHING;
 -- Legality entries (required FK for some queries)
 INSERT INTO legality (card_id, format, status)
 VALUES
-    ('test-card-001', 'standard', 'legal'),
-    ('test-card-002', 'standard', 'legal'),
-    ('test-card-003', 'standard', 'legal')
+    ('00000000-0000-4000-a000-000000000001', 'standard', 'legal'),
+    ('00000000-0000-4000-a000-000000000002', 'standard', 'legal'),
+    ('00000000-0000-4000-a000-000000000003', 'standard', 'legal')
 ON CONFLICT (card_id, format) DO NOTHING;

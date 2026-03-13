@@ -46,7 +46,7 @@ npm test -- --testPathPattern='card.service'       # Single test file
 npm run test:e2e                                   # E2E tests
 npm run test:cov                                   # Unit tests with coverage
 npm run test:integ                                 # Integration tests (Docker)
-npm run test:integ --testPathPattern=transaction   # Single integration suite
+npm run test:integ -- --testPathPattern=transaction   # Single integration suite
 ```
 
 ### ETL (Scry)

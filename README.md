@@ -35,15 +35,18 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 | `./scripts/migrate.sh` | Run database migrations |
 | `./scripts/reset-db.sh` | Destroy and recreate the database |
 | `./scripts/db-backup.sh` | Back up database to a SQL file |
+| `./scripts/test-integ.sh` | Run integration tests (requires Docker) |
 | `./scripts/lint.sh` | Run linting and format checks |
 
 ### Testing
 
 ```bash
-npm test                                          # All unit tests
+npm test                                           # All unit tests
 npm test -- --testPathPattern='card.service'       # Single test file
 npm run test:e2e                                   # E2E tests
 npm run test:cov                                   # Unit tests with coverage
+npm run test:integ                                 # Integration tests (Docker)
+npm run test:integ --testPathPattern=transaction   # Single integration suite
 ```
 
 ### ETL (Scry)
@@ -51,11 +54,18 @@ npm run test:cov                                   # Unit tests with coverage
 The Scry ETL tool lives in a [separate repository](https://github.com/matthewdtowles/scry). To run it locally via Docker:
 
 ```bash
-./scripts/etl.sh ingest           # Full ingest (sets, cards, prices)
-./scripts/etl.sh ingest -s        # Sets only
-./scripts/etl.sh health           # Data integrity check
-./scripts/etl.sh retention        # Apply retention policy
+npm run etl -- ingest               # Full ingest (sets, cards, prices + auto prune/updates)
+npm run etl -- post-ingest-prune    # Prune unwanted ingested data
+npm run etl -- post-ingest-updates  # Update set sizes, prices, and portfolio snapshots
+npm run etl -- cleanup              # Remove filtered sets/cards
+npm run etl -- health               # Data integrity check
+npm run etl -- retention            # Apply price_history retention policy
+npm run etl -- backfill             # Backfill price_history from MTGJSON (one-time)
+npm run etl -- truncate-history     # Clear price history (requires confirmation)
+npm run etl -- portfolio-summary    # Refresh portfolio value snapshots for all users
 ```
+
+Flags can be passed to any command (e.g., `npm run etl -- ingest -p` for prices only, `npm run etl -- ingest -k mh3` for a specific set). Run `npm run etl` with no arguments to see all available commands. See the [Scry README](https://github.com/matthewdtowles/scry) for full command and flag documentation.
 
 ### Logs
 
@@ -125,7 +135,17 @@ MailHog starts with `docker compose up -d`. No additional configuration needed.
 
 ## Versioning
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) to automatically determine version bumps. When commits are merged to `main`, GitHub Actions reads commit messages to decide the next version.
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) and manual version bumps via npm scripts. Version numbers are tracked in `package.json` and updated before merging to `main`.
+
+### Bumping the Version
+
+```bash
+npm run bump          # Patch bump (1.0.0 → 1.0.1) — bug fixes, minor changes
+npm run bump:minor    # Minor bump (1.0.0 → 1.1.0) — new features
+npm run bump:major    # Major bump (1.0.0 → 2.0.0) — breaking changes
+```
+
+These commands update the `version` field in `package.json` without creating a git tag. Include the version bump in your PR commit.
 
 ### Commit Message Format
 
@@ -137,22 +157,19 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) t
 [optional footer(s)]
 ```
 
-### Version Bump Rules
-
-| Commit Prefix | Example | Bump |
-| ------------- | ------- | ---- |
-| `fix:` | `fix: tooltip alignment on card page` | Patch (1.0.0 → 1.0.1) |
-| `feat:` | `feat: add transaction history view` | Minor (1.0.0 → 1.1.0) |
-| `feat!:` or `BREAKING CHANGE` in footer | `feat!: redesign inventory API` | Major (1.0.0 → 2.0.0) |
-
-Other prefixes like `docs:`, `chore:`, `refactor:`, `test:`, `style:`, and `ci:` are valid and will default to a **patch** bump.
+| Type | Use For | Version Bump |
+| ---- | ------- | ------------ |
+| `fix:` | Bug fixes | Patch |
+| `feat:` | New features | Minor |
+| `feat!:` or `BREAKING CHANGE` footer | Breaking changes | Major |
+| `docs:`, `chore:`, `refactor:`, `test:`, `style:`, `ci:` | Non-functional changes | Patch |
 
 ### Tips
 
 - Use the type that best describes the change — `feat` for new functionality, `fix` for bug fixes
 - Scope is optional but useful: `feat(transactions): add FIFO cost basis`
-- If a PR has multiple commits, the highest bump wins (e.g., one `feat:` + several `fix:` = minor bump)
-- The version in `package.json` is the baseline — CI computes the next version from there
+- Run the appropriate bump command before opening your PR
+- If a PR includes multiple types of changes, bump to the highest level (e.g., any `feat:` = minor bump)
 
 ## Build & Deploy
 

@@ -112,7 +112,30 @@
 - [ ] Consider in-app notifications in addition to email
 - [ ] Add unsubscribe/manage preferences flow
 
-### 2.6 Support Flavor Name
+### 2.6 Feature: Bulk Upload Transactions
+- [ ] Design bulk upload flow (CSV file format, UI for upload)
+- [ ] Create CSV template/documentation for expected format
+- [ ] Implement file upload endpoint and CSV parsing
+- [ ] Validate and preview parsed transactions before committing
+- [ ] Handle errors and partial failures (report which rows failed and why)
+- [ ] Add bulk upload UI to transactions page
+
+### 2.7 Toast Notifications for Failed Inventory Updates
+- [ ] Add toast/notification component to UI
+- [ ] Detect inventory update failures caused by transaction constraints (e.g., removing items that active transactions depend on)
+- [ ] Return descriptive error messages from backend explaining why the update was blocked
+- [ ] Display toast message to user with actionable context (e.g., "Cannot remove item — referenced by an active Buy transaction")
+- [ ] Ensure toast works across all inventory update paths (add, remove, adjust quantity)
+
+### 2.8 Improve Site Copy and UX Guidance
+- [ ] Audit current site copy for clarity and completeness
+- [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
+- [ ] Add contextual help text and tooltips to key pages
+- [ ] Improve empty states with helpful prompts (e.g., "No cards in inventory — search for cards to add")
+- [ ] Review navigation flow and improve discoverability of features
+- [ ] Update page headings, labels, and descriptions for consistency
+
+### 2.9 Support Flavor Name
 - [ ] Verify Scryfall API provides flavor_name data
 - [ ] Add flavor_name column to card table (migration)
 - [ ] Update Scry card ingestion to store flavor_name

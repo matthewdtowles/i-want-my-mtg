@@ -11,28 +11,30 @@ DB_PASS=testpass
 DB_NAME=iwantmymtg_test
 DB_SERVICE=postgres-test
 
+COMPOSE="docker compose -f $COMPOSE_FILE -p iwantmymtg-test"
+
 cleanup() {
     echo "Stopping test database..."
-    docker compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true
+    $COMPOSE down -v 2>/dev/null || true
 }
 trap cleanup EXIT
 
 # Remove orphaned containers from previous runs
 echo "Cleaning up orphaned containers..."
-docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
+$COMPOSE down -v --remove-orphans 2>/dev/null || true
 
 echo "Starting test database..."
-docker compose -f "$COMPOSE_FILE" up -d --wait
+$COMPOSE up -d --wait
 
 echo "Running migrations..."
 for f in "$MIGRATIONS_DIR"/*.sql; do
     echo "  Applying: $(basename "$f")"
-    docker compose -f "$COMPOSE_FILE" exec -T "$DB_SERVICE" \
+    $COMPOSE exec -T "$DB_SERVICE" \
         psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 < "$f" > /dev/null
 done
 
 echo "Seeding test data..."
-docker compose -f "$COMPOSE_FILE" exec -T "$DB_SERVICE" \
+$COMPOSE exec -T "$DB_SERVICE" \
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 < "$SEED_FILE" > /dev/null
 
 echo "Running integration tests..."

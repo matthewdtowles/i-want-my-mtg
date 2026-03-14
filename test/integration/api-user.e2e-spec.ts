@@ -1,14 +1,37 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createTestApp, closeTestApp, loginTestUserApi, TEST_USER } from './setup';
+import { createTestApp, closeTestApp, TEST_USER } from './setup';
+
+const MUTATION_USER = {
+    email: 'mutation@test.com',
+    password: 'TestPass1!',
+};
 
 describe('User API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
+    let mutationBearerToken: string;
+
+    async function loginApi(
+        testApp: INestApplication,
+        credentials: { email: string; password: string }
+    ): Promise<string> {
+        const res = await request(testApp.getHttpServer())
+            .post('/api/v1/auth/login')
+            .send(credentials)
+            .expect(200);
+
+        const token = res.body?.data?.accessToken;
+        if (!token) {
+            throw new Error('API login did not return access token');
+        }
+        return `Bearer ${token}`;
+    }
 
     beforeAll(async () => {
         app = await createTestApp();
-        bearerToken = await loginTestUserApi(app);
+        bearerToken = await loginApi(app, TEST_USER);
+        mutationBearerToken = await loginApi(app, MUTATION_USER);
     }, 30000);
 
     afterAll(async () => {
@@ -45,27 +68,16 @@ describe('User API (e2e)', () => {
     });
 
     describe('PATCH /api/v1/user', () => {
-        const originalName = 'IntegTestUser';
-
         it('updates user name', async () => {
             const res = await request(app.getHttpServer())
                 .patch('/api/v1/user')
-                .set('Authorization', bearerToken)
-                .send({ name: 'Updated Name', email: TEST_USER.email })
+                .set('Authorization', mutationBearerToken)
+                .send({ name: 'Updated Name', email: MUTATION_USER.email })
                 .expect(200);
 
             expect(res.body.success).toBe(true);
             expect(res.body.data).toHaveProperty('name', 'Updated Name');
-            expect(res.body.data).toHaveProperty('email', TEST_USER.email);
-        });
-
-        afterAll(async () => {
-            // Restore original name
-            await request(app.getHttpServer())
-                .patch('/api/v1/user')
-                .set('Authorization', bearerToken)
-                .send({ name: originalName, email: TEST_USER.email })
-                .expect(200);
+            expect(res.body.data).toHaveProperty('email', MUTATION_USER.email);
         });
     });
 
@@ -73,21 +85,12 @@ describe('User API (e2e)', () => {
         it('updates password', async () => {
             const res = await request(app.getHttpServer())
                 .patch('/api/v1/user/password')
-                .set('Authorization', bearerToken)
+                .set('Authorization', mutationBearerToken)
                 .send({ password: 'NewTestPass1!' })
                 .expect(200);
 
             expect(res.body.success).toBe(true);
             expect(res.body.data).toHaveProperty('updated', true);
-        });
-
-        afterAll(async () => {
-            // Restore original password so other tests can still login
-            await request(app.getHttpServer())
-                .patch('/api/v1/user/password')
-                .set('Authorization', bearerToken)
-                .send({ password: TEST_USER.password })
-                .expect(200);
         });
     });
 

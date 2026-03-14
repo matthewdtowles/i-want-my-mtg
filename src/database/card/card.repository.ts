@@ -61,13 +61,13 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findByIds(ids: string[], relations?: string[]): Promise<Card[]> {
+    async findByIds(ids: string[], options?: { includeLatestPrice?: boolean }): Promise<Card[]> {
         this.LOGGER.debug(`Finding ${ids.length} cards by ids.`);
         if (ids.length === 0) return [];
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.id IN (:...ids)`, { ids });
-        if (relations?.includes('prices')) {
+        if (options?.includeLatestPrice) {
             qb.leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',

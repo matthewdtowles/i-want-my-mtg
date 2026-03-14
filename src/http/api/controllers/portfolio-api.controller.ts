@@ -1,6 +1,9 @@
 import {
     Controller,
     Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
     Inject,
     InternalServerErrorException,
     Post,
@@ -9,7 +12,6 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { HttpException } from '@nestjs/common';
 import { CardService } from 'src/core/card/card.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
@@ -117,6 +119,7 @@ export class PortfolioApiController {
     }
 
     @Post('refresh')
+    @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Refresh portfolio summary' })
     @ApiResponse({ status: 200, description: 'Summary refreshed' })
     async refresh(

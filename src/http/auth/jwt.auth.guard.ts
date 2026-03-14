@@ -13,7 +13,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const hasBearerToken = request.headers.authorization?.startsWith('Bearer ');
         const hasCookieToken = !!request.cookies?.[AUTH_TOKEN_NAME];
         if (!hasBearerToken && !hasCookieToken) {
-            this.LOGGER.error(`No JWT found in Bearer header or cookies`);
+            this.LOGGER.debug(`No JWT found in Bearer header or cookies`);
             throw new UnauthorizedException('Authentication required');
         }
         return !!(await super.canActivate(context));

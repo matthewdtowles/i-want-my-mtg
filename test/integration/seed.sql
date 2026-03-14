@@ -48,6 +48,12 @@ INSERT INTO users (email, name, password, role)
 VALUES ('integ@test.com', 'IntegTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
 ON CONFLICT (email) DO NOTHING;
 
+-- Disposable test user for mutation tests (password: TestPass1!)
+-- Same bcrypt hash; this user can be freely modified/deleted without affecting other suites
+INSERT INTO users (email, name, password, role)
+VALUES ('mutation@test.com', 'MutationTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
+ON CONFLICT (email) DO NOTHING;
+
 -- Legality entries (required FK for some queries)
 INSERT INTO legality (card_id, format, status)
 VALUES

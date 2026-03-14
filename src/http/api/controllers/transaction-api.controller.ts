@@ -45,9 +45,7 @@ export class TransactionApiController {
         const cardIds = [...new Set(transactions.map((t) => t.cardId))];
         const cardMap = await this.buildCardMap(cardIds);
 
-        return ApiResponseDto.ok(
-            transactions.map((t) => this.toTransactionItem(t, cardMap))
-        );
+        return ApiResponseDto.ok(transactions.map((t) => this.toTransactionItem(t, cardMap)));
     }
 
     @Post()
@@ -114,8 +112,12 @@ export class TransactionApiController {
         const card = cards?.[0];
         const latestPrice = card?.prices?.[0];
         const marketPrice = isFoil
-            ? (latestPrice?.foil != null ? Number(latestPrice.foil) : 0)
-            : (latestPrice?.normal != null ? Number(latestPrice.normal) : 0);
+            ? latestPrice?.foil != null
+                ? Number(latestPrice.foil)
+                : 0
+            : latestPrice?.normal != null
+              ? Number(latestPrice.normal)
+              : 0;
 
         const summary = await this.transactionService.getCostBasis(
             req.user.id,

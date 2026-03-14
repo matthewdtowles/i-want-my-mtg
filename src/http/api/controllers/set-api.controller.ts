@@ -56,9 +56,7 @@ export class SetApiController {
     @ApiOperation({ summary: 'Get set detail by code' })
     @ApiResponse({ status: 200, description: 'Set detail' })
     @ApiResponse({ status: 404, description: 'Set not found' })
-    async findByCode(
-        @Param('code') code: string
-    ): Promise<ApiResponseDto<SetApiResponseDto>> {
+    async findByCode(@Param('code') code: string): Promise<ApiResponseDto<SetApiResponseDto>> {
         const set = await this.setService.findByCode(code);
         if (!set) {
             return ApiResponseDto.error('Set not found');

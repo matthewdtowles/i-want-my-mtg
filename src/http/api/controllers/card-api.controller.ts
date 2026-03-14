@@ -57,9 +57,7 @@ export class CardApiController {
     @Get(':cardId/prices')
     @ApiOperation({ summary: 'Get current prices for a card' })
     @ApiResponse({ status: 200, description: 'Card prices' })
-    async getPrices(
-        @Param('cardId') cardId: string
-    ): Promise<ApiResponseDto<CardApiResponseDto>> {
+    async getPrices(@Param('cardId') cardId: string): Promise<ApiResponseDto<CardApiResponseDto>> {
         const cards = await this.cardService.findByIds([cardId]);
         if (!cards || cards.length === 0) {
             return ApiResponseDto.error('Card not found');

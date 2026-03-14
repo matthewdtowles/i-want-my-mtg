@@ -26,9 +26,7 @@ import { InventoryItemApiDto } from '../dto/inventory-response.dto';
 @Controller('api/v1/inventory')
 @UseGuards(JwtAuthGuard)
 export class InventoryApiController {
-    constructor(
-        @Inject(InventoryService) private readonly inventoryService: InventoryService
-    ) {}
+    constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {}
 
     @Get()
     @ApiOperation({ summary: 'List inventory items' })

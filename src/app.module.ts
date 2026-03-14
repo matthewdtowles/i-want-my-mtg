@@ -26,8 +26,7 @@ import { getLogger } from './logger/global-app-logger';
                     // which rejects AWS managed DB certs. We handle SSL via TypeORM config instead.
                     const url = new URL(databaseUrl);
                     url.searchParams.delete('sslmode');
-                    const isProduction =
-                        configService.get('NODE_ENV') === 'production';
+                    const isProduction = configService.get('NODE_ENV') === 'production';
                     return {
                         type: 'postgres',
                         url: url.toString(),
@@ -35,9 +34,7 @@ import { getLogger } from './logger/global-app-logger';
                         synchronize: false,
                         dropSchema: false,
                         migrationsRun: false,
-                        logging: !isProduction
-                            ? ['error', 'warn']
-                            : ['error'],
+                        logging: !isProduction ? ['error', 'warn'] : ['error'],
                         ...(isProduction && {
                             ssl: { rejectUnauthorized: false },
                         }),

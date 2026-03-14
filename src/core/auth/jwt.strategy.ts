@@ -22,7 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 const authHeader = request?.headers?.authorization;
                 if (authHeader && authHeader.startsWith('Bearer ')) {
                     const token = authHeader.slice(7);
-                    this.LOGGER.debug(`Extracting JWT from Bearer header: ${token ? 'found' : 'not found'}`);
+                    this.LOGGER.debug(
+                        `Extracting JWT from Bearer header: ${token ? 'found' : 'not found'}`
+                    );
                     return token;
                 }
 

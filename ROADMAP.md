@@ -60,7 +60,7 @@
 - [x] Add API documentation (OpenAPI/Swagger at `/api/docs`)
 - [x] Add API-specific error response format (`ApiResponseDto` envelope)
 - [x] Add rate limiting for API endpoints (`ApiRateLimitGuard`)
-- [ ] Add API integration tests
+- [x] Add API integration tests
 
 ### 1.5 Future: SPA Migration
 - [ ] Evaluate migrating SSR views to SPA (React/Vue) consuming the API layer

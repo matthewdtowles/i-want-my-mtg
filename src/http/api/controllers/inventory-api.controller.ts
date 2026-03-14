@@ -12,7 +12,7 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -21,10 +21,12 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryRequestDto } from 'src/http/inventory/dto/inventory.request.dto';
 import { ApiResponseDto, PaginationMeta } from '../dto/api-response.dto';
 import { InventoryItemApiDto } from '../dto/inventory-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Inventory')
+@ApiBearerAuth()
 @Controller('api/v1/inventory')
-@UseGuards(JwtAuthGuard)
+@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
 export class InventoryApiController {
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {}
 

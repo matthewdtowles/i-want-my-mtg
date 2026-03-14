@@ -1,13 +1,15 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { Controller, Get, Inject, NotFoundException, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { ApiResponseDto, PaginationMeta } from '../dto/api-response.dto';
 import { CardApiResponseDto, PriceHistoryPointDto } from '../dto/card-response.dto';
 import { Card } from 'src/core/card/card.entity';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Cards')
 @Controller('api/v1/cards')
+@UseGuards(ApiRateLimitGuard)
 export class CardApiController {
     constructor(@Inject(CardService) private readonly cardService: CardService) {}
 
@@ -49,7 +51,7 @@ export class CardApiController {
     ): Promise<ApiResponseDto<CardApiResponseDto>> {
         const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
         if (!card) {
-            return ApiResponseDto.error('Card not found');
+            throw new NotFoundException('Card not found');
         }
         return ApiResponseDto.ok(this.toCardResponse(card));
     }
@@ -60,7 +62,7 @@ export class CardApiController {
     async getPrices(@Param('cardId') cardId: string): Promise<ApiResponseDto<CardApiResponseDto>> {
         const cards = await this.cardService.findByIds([cardId]);
         if (!cards || cards.length === 0) {
-            return ApiResponseDto.error('Card not found');
+            throw new NotFoundException('Card not found');
         }
         return ApiResponseDto.ok(this.toCardResponse(cards[0]));
     }

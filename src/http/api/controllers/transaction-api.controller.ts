@@ -14,7 +14,7 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -25,10 +25,12 @@ import { TransactionRequestDto } from 'src/http/transaction/dto/transaction.requ
 import { TransactionUpdateRequestDto } from 'src/http/transaction/dto/transaction.update-request.dto';
 import { ApiResponseDto } from '../dto/api-response.dto';
 import { CostBasisApiDto, TransactionApiItemDto } from '../dto/transaction-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Transactions')
+@ApiBearerAuth()
 @Controller('api/v1/transactions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
 export class TransactionApiController {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,

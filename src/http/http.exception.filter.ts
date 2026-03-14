@@ -30,11 +30,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
             : HttpStatus.INTERNAL_SERVER_ERROR;
         if (this.isApiRequest(request)) {
             response.status(status).json({
-                statusCode: status,
-                timestamp: new Date().toISOString(),
-                path: request.url,
-                message: exception.message || 'Internal Server Error',
-                status: ActionStatus.ERROR,
+                success: false,
+                error: exception.message || 'Internal Server Error',
             });
         } else if (this.isFormRoute(request.url)) {
             this.handleFormError(response, request, exception);

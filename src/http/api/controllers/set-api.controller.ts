@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { Controller, Get, Inject, NotFoundException, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -8,9 +8,11 @@ import { Card } from 'src/core/card/card.entity';
 import { ApiResponseDto, PaginationMeta } from '../dto/api-response.dto';
 import { SetApiResponseDto, SetPriceHistoryPointDto } from '../dto/set-response.dto';
 import { CardApiResponseDto } from '../dto/card-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Sets')
 @Controller('api/v1/sets')
+@UseGuards(ApiRateLimitGuard)
 export class SetApiController {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
@@ -59,7 +61,7 @@ export class SetApiController {
     async findByCode(@Param('code') code: string): Promise<ApiResponseDto<SetApiResponseDto>> {
         const set = await this.setService.findByCode(code);
         if (!set) {
-            return ApiResponseDto.error('Set not found');
+            throw new NotFoundException('Set not found');
         }
         return ApiResponseDto.ok(this.toSetResponse(set));
     }

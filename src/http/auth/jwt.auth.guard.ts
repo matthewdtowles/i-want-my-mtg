@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -14,7 +14,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const hasCookieToken = !!request.cookies?.[AUTH_TOKEN_NAME];
         if (!hasBearerToken && !hasCookieToken) {
             this.LOGGER.error(`No JWT found in Bearer header or cookies`);
-            return false;
+            throw new UnauthorizedException('Authentication required');
         }
         return !!(await super.canActivate(context));
     }

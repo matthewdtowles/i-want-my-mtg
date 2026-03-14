@@ -10,7 +10,7 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
@@ -19,10 +19,12 @@ import { UpdatePasswordRequestDto } from 'src/http/user/dto/update-password.requ
 import { UpdateUserRequestDto } from 'src/http/user/dto/update-user.request.dto';
 import { ApiResponseDto } from '../dto/api-response.dto';
 import { UserApiResponseDto } from '../dto/user-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('User')
+@ApiBearerAuth()
 @Controller('api/v1/user')
-@UseGuards(JwtAuthGuard)
+@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
 export class UserApiController {
     constructor(@Inject(UserService) private readonly userService: UserService) {}
 

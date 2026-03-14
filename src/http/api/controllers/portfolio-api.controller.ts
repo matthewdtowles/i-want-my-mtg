@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
@@ -13,10 +13,12 @@ import {
     PortfolioHistoryPointDto,
     PortfolioSummaryApiDto,
 } from '../dto/portfolio-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Portfolio')
+@ApiBearerAuth()
 @Controller('api/v1/portfolio')
-@UseGuards(JwtAuthGuard)
+@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
 export class PortfolioApiController {
     constructor(
         @Inject(PortfolioService) private readonly portfolioService: PortfolioService,

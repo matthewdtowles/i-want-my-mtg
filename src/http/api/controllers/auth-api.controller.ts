@@ -15,9 +15,11 @@ import { LocalAuthGuard } from 'src/http/auth/local.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto } from '../dto/api-response.dto';
 import { LoginRequestDto, LoginResponseDto } from '../dto/auth-response.dto';
+import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
+@UseGuards(ApiRateLimitGuard)
 export class AuthApiController {
     constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 

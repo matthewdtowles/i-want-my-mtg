@@ -48,19 +48,23 @@
 - [x] Document how to run integration tests locally
 
 ### 1.4 Create API Layer
-- [ ] Design REST API structure (versioned: `/api/v1/`)
-- [ ] Decide on auth strategy for API clients (JWT bearer tokens vs session cookies)
-- [ ] Implement API controllers separate from view controllers
-- [ ] Card endpoints: search, detail, prices, price history
-- [ ] Set endpoints: list, detail, cards in set, prices
-- [ ] Inventory endpoints: list, add, update, delete
-- [ ] Transaction endpoints: list, create, delete, cost basis
-- [ ] Portfolio endpoints: summary, value history, card performance
-- [ ] User/auth endpoints: login, register, profile
-- [ ] Add API documentation (OpenAPI/Swagger)
-- [ ] Add API-specific error response format
-- [ ] Add rate limiting for API endpoints
+- [x] Design REST API structure (versioned: `/api/v1/`)
+- [x] Decide on auth strategy for API clients (JWT bearer tokens + cookie fallback)
+- [x] Implement API controllers separate from view controllers
+- [x] Card endpoints: search, detail, prices, price history
+- [x] Set endpoints: list, detail, cards in set, prices
+- [x] Inventory endpoints: list, add, update, delete
+- [x] Transaction endpoints: list, create, update, delete, cost basis
+- [x] Portfolio endpoints: summary, value history, card performance, cash flow, realized gains, refresh
+- [x] User/auth endpoints: login, profile, update, password, delete
+- [x] Add API documentation (OpenAPI/Swagger at `/api/docs`)
+- [x] Add API-specific error response format (`ApiResponseDto` envelope)
+- [x] Add rate limiting for API endpoints (`ApiRateLimitGuard`)
 - [ ] Add API integration tests
+
+### 1.5 Future: SPA Migration
+- [ ] Evaluate migrating SSR views to SPA (React/Vue) consuming the API layer
+- [ ] Consider migrating to 100% Bearer token auth (drop cookie-based auth)
 
 ---
 

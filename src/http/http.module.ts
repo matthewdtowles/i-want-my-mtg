@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
 import { getLogger } from 'src/logger/global-app-logger';
+import { ApiModule } from './api/api.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { CardController } from './card/card.controller';
@@ -22,7 +23,7 @@ import { UserController } from './user/user.controller';
 import { UserOrchestrator } from './user/user.orchestrator';
 
 @Module({
-    imports: [ConfigModule, CoreModule],
+    imports: [ConfigModule, CoreModule, ApiModule],
     controllers: [
         AuthController,
         CardController,

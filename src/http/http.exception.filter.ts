@@ -51,6 +51,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     private isApiRequest(request: Request): boolean {
         return (
+            request.url.startsWith('/api/') ||
             request.headers.accept?.includes('application/json') ||
             request.headers['content-type']?.includes('application/json')
         );

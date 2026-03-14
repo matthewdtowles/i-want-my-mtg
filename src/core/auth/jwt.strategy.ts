@@ -18,18 +18,27 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ) {
         super({
             jwtFromRequest: (request) => {
+                // 1. Check Authorization: Bearer header first (API clients)
+                const authHeader = request?.headers?.authorization;
+                if (authHeader && authHeader.startsWith('Bearer ')) {
+                    const token = authHeader.slice(7);
+                    this.LOGGER.debug(`Extracting JWT from Bearer header: ${token ? 'found' : 'not found'}`);
+                    return token;
+                }
+
+                // 2. Fall back to cookie (SSR clients)
                 if (request && request.cookies) {
                     const jwt = request.cookies[AUTH_TOKEN_NAME];
                     this.LOGGER.debug(`Extracting JWT from cookie: ${jwt ? 'found' : 'not found'}`);
                     return jwt;
                 }
-                this.LOGGER.debug(`No cookies found in request`);
+                this.LOGGER.debug(`No JWT found in Bearer header or cookies`);
                 return null;
             },
             secretOrKey: configService.get<string>('JWT_SECRET'),
             ignoreExpiration: false,
         });
-        this.LOGGER.debug(`JWT Strategy initialized - reading from cookies`);
+        this.LOGGER.debug(`JWT Strategy initialized - reading from Bearer header and cookies`);
     }
 
     async validate(payload: JwtPayload): Promise<User> {

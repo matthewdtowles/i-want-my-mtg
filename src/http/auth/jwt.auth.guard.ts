@@ -10,9 +10,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<Request>();
-        const jwt = request.cookies[AUTH_TOKEN_NAME];
-        if (!jwt) {
-            this.LOGGER.error(`No JWT found in request cookies for token name: ${AUTH_TOKEN_NAME}`);
+        const hasBearerToken = request.headers.authorization?.startsWith('Bearer ');
+        const hasCookieToken = !!request.cookies?.[AUTH_TOKEN_NAME];
+        if (!hasBearerToken && !hasCookieToken) {
+            this.LOGGER.error(`No JWT found in Bearer header or cookies`);
             return false;
         }
         return !!(await super.canActivate(context));

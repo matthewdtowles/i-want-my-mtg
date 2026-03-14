@@ -41,21 +41,6 @@ export class CardApiController {
         );
     }
 
-    @Get(':setCode/:setNumber')
-    @ApiOperation({ summary: 'Get card by set code and collector number' })
-    @ApiResponse({ status: 200, description: 'Card detail' })
-    @ApiResponse({ status: 404, description: 'Card not found' })
-    async findBySetCodeAndNumber(
-        @Param('setCode') setCode: string,
-        @Param('setNumber') setNumber: string
-    ): Promise<ApiResponseDto<CardApiResponseDto>> {
-        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
-        if (!card) {
-            throw new NotFoundException('Card not found');
-        }
-        return ApiResponseDto.ok(this.toCardResponse(card));
-    }
-
     @Get(':cardId/prices')
     @ApiOperation({ summary: 'Get current prices for a card' })
     @ApiResponse({ status: 200, description: 'Card prices' })
@@ -89,6 +74,21 @@ export class CardApiController {
         }));
 
         return ApiResponseDto.ok(points);
+    }
+
+    @Get(':setCode/:setNumber')
+    @ApiOperation({ summary: 'Get card by set code and collector number' })
+    @ApiResponse({ status: 200, description: 'Card detail' })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async findBySetCodeAndNumber(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string
+    ): Promise<ApiResponseDto<CardApiResponseDto>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        return ApiResponseDto.ok(this.toCardResponse(card));
     }
 
     private toCardResponse(card: Card): CardApiResponseDto {

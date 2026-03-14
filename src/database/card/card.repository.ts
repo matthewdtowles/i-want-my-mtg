@@ -68,7 +68,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.id IN (:...ids)`, { ids });
         if (relations?.includes('prices')) {
-            qb.leftJoinAndSelect(`${this.TABLE}.prices`, 'prices');
+            qb.leftJoinAndSelect(
+                `${this.TABLE}.prices`,
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            );
         }
         const ormCards = await qb.getMany();
         const cards = ormCards.map(CardMapper.toCore);

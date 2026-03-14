@@ -100,7 +100,8 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .set('Cookie', authCookie)
                 .send({ cardId: TEST_CARD_ID, type: 'INVALID' })
                 .expect(400);
-            expect(res.body.statusCode).toBe(400);
+            expect(res.body.success).toBe(false);
+            expect(res.body.error).toBeDefined();
         });
     });
 

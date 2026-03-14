@@ -26,7 +26,7 @@ import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 @ApiTags('Inventory')
 @ApiBearerAuth()
 @Controller('api/v1/inventory')
-@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
 export class InventoryApiController {
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {}
 

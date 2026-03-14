@@ -30,7 +30,7 @@ import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 @ApiTags('Transactions')
 @ApiBearerAuth()
 @Controller('api/v1/transactions')
-@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
 export class TransactionApiController {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,

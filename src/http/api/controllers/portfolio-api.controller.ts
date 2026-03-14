@@ -18,7 +18,7 @@ import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 @ApiTags('Portfolio')
 @ApiBearerAuth()
 @Controller('api/v1/portfolio')
-@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
 export class PortfolioApiController {
     constructor(
         @Inject(PortfolioService) private readonly portfolioService: PortfolioService,

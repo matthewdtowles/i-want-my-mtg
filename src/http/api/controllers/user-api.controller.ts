@@ -24,7 +24,7 @@ import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
 @ApiTags('User')
 @ApiBearerAuth()
 @Controller('api/v1/user')
-@UseGuards(ApiRateLimitGuard, JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
 export class UserApiController {
     constructor(@Inject(UserService) private readonly userService: UserService) {}
 

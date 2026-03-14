@@ -91,7 +91,7 @@ describe('Portfolio API (e2e)', () => {
             const res = await request(app.getHttpServer())
                 .post('/api/v1/portfolio/refresh')
                 .set('Authorization', bearerToken)
-                .expect(201);
+                .expect(200);
 
             expect(res.body.success).toBe(true);
             expect(res.body.data).toHaveProperty('refreshed', true);

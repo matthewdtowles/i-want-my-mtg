@@ -6,6 +6,7 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    NotFoundException,
     Param,
     ParseIntPipe,
     Post,
@@ -99,17 +100,42 @@ export class TransactionApiController {
     }
 
     @Get('cost-basis/:cardId')
-    @ApiOperation({ summary: 'Get cost basis for a card' })
+    @ApiOperation({ summary: 'Get cost basis for a card by ID' })
     @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
     @ApiResponse({ status: 200, description: 'Cost basis data' })
-    async getCostBasis(
+    async getCostBasisById(
         @Param('cardId') cardId: string,
         @Query('isFoil') isFoilStr: string,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<CostBasisApiDto>> {
+        return this.getCostBasisForCard(cardId, isFoilStr, req);
+    }
+
+    @Get('cost-basis/:setCode/:setNumber')
+    @ApiOperation({ summary: 'Get cost basis for a card by set code and number' })
+    @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
+    @ApiResponse({ status: 200, description: 'Cost basis data' })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async getCostBasisBySetCodeAndNumber(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string,
+        @Query('isFoil') isFoilStr: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<CostBasisApiDto>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        return this.getCostBasisForCard(card.id, isFoilStr, req);
+    }
+
+    private async getCostBasisForCard(
+        cardId: string,
+        isFoilStr: string,
+        req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<CostBasisApiDto>> {
         const isFoil = isFoilStr === 'true';
 
-        // Get current market price from card data
         const cards = await this.cardService.findByIdsWithPrices([cardId]);
         const card = cards?.[0];
         const latestPrice = card?.prices?.[0];

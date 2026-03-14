@@ -43,9 +43,11 @@ export class CardApiController {
     }
 
     @Get(':cardId/prices')
-    @ApiOperation({ summary: 'Get current prices for a card' })
+    @ApiOperation({ summary: 'Get current prices for a card by ID' })
     @ApiResponse({ status: 200, description: 'Card prices' })
-    async getPrices(@Param('cardId') cardId: string): Promise<ApiResponseDto<CardApiResponseDto>> {
+    async getPricesById(
+        @Param('cardId') cardId: string
+    ): Promise<ApiResponseDto<CardApiResponseDto>> {
         const cards = await this.cardService.findByIdsWithPrices([cardId]);
         if (!cards || cards.length === 0) {
             throw new NotFoundException('Card not found');
@@ -54,20 +56,50 @@ export class CardApiController {
     }
 
     @Get(':cardId/price-history')
-    @ApiOperation({ summary: 'Get price history for a card' })
+    @ApiOperation({ summary: 'Get price history for a card by ID' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
-    async getPriceHistory(
+    async getPriceHistoryById(
         @Param('cardId') cardId: string,
         @Query('days') days?: string
     ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
-        const parsedDays = days ? parseInt(days, 10) : undefined;
-        const validDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined;
-        const prices = await this.cardService.findPriceHistory(cardId, validDays);
+        return this.getPriceHistoryForCard(cardId, days);
+    }
 
-        const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
+    @Get(':setCode/:setNumber/prices')
+    @ApiOperation({ summary: 'Get current prices for a card by set code and number' })
+    @ApiResponse({ status: 200, description: 'Card prices' })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async getPricesBySetCodeAndNumber(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string
+    ): Promise<ApiResponseDto<CardApiResponseDto>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        const cardsWithPrices = await this.cardService.findByIdsWithPrices([card.id]);
+        if (!cardsWithPrices || cardsWithPrices.length === 0) {
+            throw new NotFoundException('Card not found');
+        }
+        return ApiResponseDto.ok(this.toCardResponse(cardsWithPrices[0]));
+    }
 
-        return ApiResponseDto.ok(points);
+    @Get(':setCode/:setNumber/price-history')
+    @ApiOperation({ summary: 'Get price history for a card by set code and number' })
+    @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
+    @ApiResponse({ status: 200, description: 'Price history data' })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async getPriceHistoryBySetCodeAndNumber(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string,
+        @Query('days') days?: string
+    ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        return this.getPriceHistoryForCard(card.id, days);
     }
 
     @Get(':setCode/:setNumber')
@@ -83,6 +115,17 @@ export class CardApiController {
             throw new NotFoundException('Card not found');
         }
         return ApiResponseDto.ok(this.toCardResponse(card));
+    }
+
+    private async getPriceHistoryForCard(
+        cardId: string,
+        days?: string
+    ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
+        const parsedDays = days ? parseInt(days, 10) : undefined;
+        const validDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined;
+        const prices = await this.cardService.findPriceHistory(cardId, validDays);
+        const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
+        return ApiResponseDto.ok(points);
     }
 
     private toCardResponse(card: Card): CardApiResponseDto {

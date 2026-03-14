@@ -61,13 +61,16 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findByIds(ids: string[]): Promise<Card[]> {
+    async findByIds(ids: string[], relations?: string[]): Promise<Card[]> {
         this.LOGGER.debug(`Finding ${ids.length} cards by ids.`);
         if (ids.length === 0) return [];
-        const ormCards = await this.repository
+        const qb = this.repository
             .createQueryBuilder(this.TABLE)
-            .where(`${this.TABLE}.id IN (:...ids)`, { ids })
-            .getMany();
+            .where(`${this.TABLE}.id IN (:...ids)`, { ids });
+        if (relations?.includes('prices')) {
+            qb.leftJoinAndSelect(`${this.TABLE}.prices`, 'prices');
+        }
+        const ormCards = await qb.getMany();
         const cards = ormCards.map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${cards.length} cards by ids.`);
         return cards;

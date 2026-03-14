@@ -148,14 +148,7 @@ export class CardOrchestrator {
         this.LOGGER.debug(`Get price history for card ${cardId}, days=${days}.`);
         try {
             const prices = await this.cardService.findPriceHistory(cardId, days);
-            const points: PriceHistoryPointDto[] = prices.map((p) => ({
-                date:
-                    p.date instanceof Date
-                        ? `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`
-                        : String(p.date),
-                normal: p.normal != null ? Number(p.normal) : null,
-                foil: p.foil != null ? Number(p.foil) : null,
-            }));
+            const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
             return { cardId, prices: points };
         } catch (error) {
             this.LOGGER.debug(`Error getting price history for ${cardId}: ${error?.message}`);

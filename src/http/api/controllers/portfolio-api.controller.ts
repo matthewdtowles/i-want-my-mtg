@@ -1,11 +1,22 @@
-import { Controller, Get, Inject, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Inject,
+    InternalServerErrorException,
+    Post,
+    Query,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { HttpException } from '@nestjs/common';
 import { CardService } from 'src/core/card/card.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { PortfolioPresenter } from 'src/http/portfolio/portfolio.presenter';
 import { ApiResponseDto } from '../dto/api-response.dto';
 import {
     CardPerformanceApiDto,
@@ -59,12 +70,7 @@ export class PortfolioApiController {
         const validDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined;
         const history = await this.portfolioService.getHistory(req.user.id, validDays);
 
-        const points: PortfolioHistoryPointDto[] = history.map((h) => ({
-            date: h.date instanceof Date ? h.date.toISOString().split('T')[0] : String(h.date),
-            totalValue: h.totalValue,
-            totalCost: h.totalCost,
-            totalCards: h.totalCards,
-        }));
+        const points: PortfolioHistoryPointDto[] = history.map(PortfolioPresenter.toHistoryPoint);
 
         return ApiResponseDto.ok(points);
     }
@@ -118,10 +124,15 @@ export class PortfolioApiController {
     ): Promise<ApiResponseDto<{ refreshed: boolean }>> {
         try {
             await this.summaryService.refreshSummary(req.user.id);
-            return ApiResponseDto.ok({ refreshed: true });
         } catch (error) {
-            return ApiResponseDto.error(error?.message || 'Failed to refresh portfolio');
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to refresh portfolio'
+            );
         }
+        return ApiResponseDto.ok({ refreshed: true });
     }
 
     @Get('cash-flow')

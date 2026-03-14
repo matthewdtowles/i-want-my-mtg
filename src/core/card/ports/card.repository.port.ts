@@ -73,9 +73,10 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     /**
      * Finds Card entities by their unique identifiers.
      * @param ids Array of unique identifiers.
+     * @param relations Optional array of relation names to load.
      * @returns Promise resolving to an array of Card entities.
      */
-    findByIds(ids: string[]): Promise<Card[]>;
+    findByIds(ids: string[], relations?: string[]): Promise<Card[]>;
 
     /**
      * Deletes a Card entity by its unique identifier.

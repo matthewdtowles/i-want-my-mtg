@@ -1,4 +1,5 @@
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
+import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { SetRoiAggregation } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
@@ -48,7 +49,23 @@ export interface SetRoiViewData {
     roiSign: string;
 }
 
+export interface PortfolioHistoryPoint {
+    date: string;
+    totalValue: number;
+    totalCost: number | null;
+    totalCards: number;
+}
+
 export class PortfolioPresenter {
+    static toHistoryPoint(h: PortfolioValueHistory): PortfolioHistoryPoint {
+        return {
+            date: h.date instanceof Date ? h.date.toISOString().split('T')[0] : String(h.date),
+            totalValue: h.totalValue,
+            totalCost: h.totalCost,
+            totalCards: h.totalCards,
+        };
+    }
+
     static toSummaryView(
         summary: PortfolioSummary,
         maxDailyRefreshes: number

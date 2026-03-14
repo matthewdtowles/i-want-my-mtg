@@ -2,6 +2,7 @@ import { Controller, Get, Inject, NotFoundException, Param, Query, UseGuards } f
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { CardPresenter } from 'src/http/card/card.presenter';
 import { ApiResponseDto, PaginationMeta } from '../dto/api-response.dto';
 import { CardApiResponseDto, PriceHistoryPointDto } from '../dto/card-response.dto';
 import { Card } from 'src/core/card/card.entity';
@@ -45,7 +46,7 @@ export class CardApiController {
     @ApiOperation({ summary: 'Get current prices for a card' })
     @ApiResponse({ status: 200, description: 'Card prices' })
     async getPrices(@Param('cardId') cardId: string): Promise<ApiResponseDto<CardApiResponseDto>> {
-        const cards = await this.cardService.findByIds([cardId]);
+        const cards = await this.cardService.findByIdsWithPrices([cardId]);
         if (!cards || cards.length === 0) {
             throw new NotFoundException('Card not found');
         }
@@ -64,14 +65,7 @@ export class CardApiController {
         const validDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined;
         const prices = await this.cardService.findPriceHistory(cardId, validDays);
 
-        const points: PriceHistoryPointDto[] = prices.map((p) => ({
-            date:
-                p.date instanceof Date
-                    ? `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`
-                    : String(p.date),
-            normal: p.normal != null ? Number(p.normal) : null,
-            foil: p.foil != null ? Number(p.foil) : null,
-        }));
+        const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
 
         return ApiResponseDto.ok(points);
     }

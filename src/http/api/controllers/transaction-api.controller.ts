@@ -110,7 +110,7 @@ export class TransactionApiController {
         const isFoil = isFoilStr === 'true';
 
         // Get current market price from card data
-        const cards = await this.cardService.findByIds([cardId]);
+        const cards = await this.cardService.findByIdsWithPrices([cardId]);
         const card = cards?.[0];
         const latestPrice = card?.prices?.[0];
         const marketPrice = isFoil

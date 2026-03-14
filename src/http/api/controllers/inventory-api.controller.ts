@@ -18,7 +18,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { InventoryRequestDto } from 'src/http/inventory/dto/inventory.request.dto';
+import { InventoryRequestApiDto } from '../dto/inventory-request-api.dto';
 import { ApiResponseDto, PaginationMeta } from '../dto/api-response.dto';
 import { InventoryItemApiDto } from '../dto/inventory-response.dto';
 import { ApiRateLimitGuard } from '../guards/api-rate-limit.guard';
@@ -59,7 +59,7 @@ export class InventoryApiController {
     @ApiOperation({ summary: 'Add inventory items' })
     @ApiResponse({ status: 201, description: 'Items added' })
     async create(
-        @Body() dtos: InventoryRequestDto[],
+        @Body() dtos: InventoryRequestApiDto[],
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryItemApiDto[]>> {
         const items = dtos.map(
@@ -80,7 +80,7 @@ export class InventoryApiController {
     @ApiOperation({ summary: 'Update inventory items' })
     @ApiResponse({ status: 200, description: 'Items updated' })
     async update(
-        @Body() dtos: InventoryRequestDto[],
+        @Body() dtos: InventoryRequestApiDto[],
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryItemApiDto[]>> {
         const items = dtos.map(

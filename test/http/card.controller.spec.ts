@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CardController } from 'src/http/card/card.controller';
-import { CardOrchestrator } from 'src/http/card/card.orchestrator';
+import { CardController } from 'src/http/hbs/card/card.controller';
+import { CardOrchestrator } from 'src/http/hbs/card/card.orchestrator';
 
 describe('CardController', () => {
     let controller: CardController;

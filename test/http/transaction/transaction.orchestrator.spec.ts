@@ -3,7 +3,7 @@ import { CardService } from 'src/core/card/card.service';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { TransactionOrchestrator } from 'src/http/transaction/transaction.orchestrator';
+import { TransactionOrchestrator } from 'src/http/hbs/transaction/transaction.orchestrator';
 
 describe('TransactionOrchestrator', () => {
     let orchestrator: TransactionOrchestrator;

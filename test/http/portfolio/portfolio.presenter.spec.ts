@@ -1,6 +1,6 @@
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
-import { PortfolioPresenter } from 'src/http/portfolio/portfolio.presenter';
+import { PortfolioPresenter } from 'src/http/hbs/portfolio/portfolio.presenter';
 
 describe('PortfolioPresenter', () => {
     describe('toSummaryView', () => {

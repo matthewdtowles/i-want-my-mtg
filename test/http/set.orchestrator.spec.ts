@@ -11,11 +11,11 @@ import { Set } from 'src/core/set/set.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { SetBlockGroup } from 'src/http/set/dto/set-block-group.dto';
-import { SetListViewDto } from 'src/http/set/dto/set-list.view.dto';
-import { SetMetaResponseDto } from 'src/http/set/dto/set-meta.response.dto';
-import { SetViewDto } from 'src/http/set/dto/set.view.dto';
-import { SetOrchestrator } from 'src/http/set/set.orchestrator';
+import { SetBlockGroup } from 'src/http/hbs/set/dto/set-block-group.dto';
+import { SetListViewDto } from 'src/http/hbs/set/dto/set-list.view.dto';
+import { SetMetaResponseDto } from 'src/http/hbs/set/dto/set-meta.response.dto';
+import { SetViewDto } from 'src/http/hbs/set/dto/set.view.dto';
+import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
 
 describe('SetOrchestrator', () => {
     let orchestrator: SetOrchestrator;

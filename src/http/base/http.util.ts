@@ -91,3 +91,7 @@ export function gainSign(amount: number): string {
     if (amount < 0) return 'negative';
     return 'neutral';
 }
+
+export function buildCardUrl(setCode: string, number: string): string {
+    return `/card/${setCode.toLowerCase()}/${number}`;
+}

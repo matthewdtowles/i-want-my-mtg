@@ -1,5 +1,5 @@
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
-import { UploadRateLimitGuard } from 'src/http/inventory/guards/upload-rate-limit.guard';
+import { UploadRateLimitGuard } from 'src/http/hbs/inventory/guards/upload-rate-limit.guard';
 
 function makeContext(userId: number | undefined): ExecutionContext {
     return {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { SearchService } from 'src/core/search/search.service';
-import { SearchOrchestrator } from 'src/http/search/search.orchestrator';
+import { SearchOrchestrator } from 'src/http/hbs/search/search.orchestrator';
 
 describe('SearchOrchestrator', () => {
     let orchestrator: SearchOrchestrator;

@@ -11,11 +11,11 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { Toast } from 'src/http/base/toast';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
-import { CreateUserRequestDto } from 'src/http/user/dto/create-user.request.dto';
-import { UpdateUserRequestDto } from 'src/http/user/dto/update-user.request.dto';
-import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
-import { UserViewDto } from 'src/http/user/dto/user.view.dto';
-import { UserOrchestrator } from 'src/http/user/user.orchestrator';
+import { CreateUserRequestDto } from 'src/http/hbs/user/dto/create-user.request.dto';
+import { UpdateUserRequestDto } from 'src/http/hbs/user/dto/update-user.request.dto';
+import { UserResponseDto } from 'src/http/hbs/user/dto/user.response.dto';
+import { UserViewDto } from 'src/http/hbs/user/dto/user.view.dto';
+import { UserOrchestrator } from 'src/http/hbs/user/user.orchestrator';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 
 jest.mock('src/http/http.error.handler');

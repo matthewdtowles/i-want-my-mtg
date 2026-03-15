@@ -6,9 +6,9 @@ import { PasswordReset } from 'src/core/password-reset/password-reset.entity';
 import { PasswordResetService } from 'src/core/password-reset/password-reset.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
-import { AuthOrchestrator } from 'src/http/auth/auth.orchestrator';
-import { AuthResult } from 'src/http/auth/dto/auth.result';
-import { UserResponseDto } from 'src/http/user/dto/user.response.dto';
+import { AuthOrchestrator } from 'src/http/hbs/auth/auth.orchestrator';
+import { AuthResult } from 'src/http/hbs/auth/dto/auth.result';
+import { UserResponseDto } from 'src/http/hbs/user/dto/user.response.dto';
 import { AppLogger } from 'src/logger/app-logger';
 
 describe('AuthOrchestrator', () => {

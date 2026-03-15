@@ -2,8 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { SetController } from 'src/http/set/set.controller';
-import { SetOrchestrator } from 'src/http/set/set.orchestrator';
+import { SetController } from 'src/http/hbs/set/set.controller';
+import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
 
 function makeRes(): jest.Mocked<Response> {
     return {

@@ -10,6 +10,17 @@ cd "$PROJECT_ROOT"
 echo "=== I Want My MTG - Dev Environment Setup ==="
 echo ""
 
+# 0. Verify Docker is available and running
+if ! command -v docker &>/dev/null; then
+  echo "ERROR: Docker is not installed. Install Docker Desktop first: https://docs.docker.com/get-docker/"
+  exit 1
+fi
+
+if ! docker info &>/dev/null 2>&1; then
+  echo "ERROR: Docker daemon is not running. Start Docker Desktop and try again."
+  exit 1
+fi
+
 # 1. Create .env from example if missing
 if [ ! -f .env ]; then
   echo "[1/4] Creating .env from .env.example..."

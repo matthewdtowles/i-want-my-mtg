@@ -6,8 +6,8 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { CardOrchestrator } from 'src/http/card/card.orchestrator';
-import { CardViewDto } from 'src/http/card/dto/card.view.dto';
+import { CardOrchestrator } from 'src/http/hbs/card/card.orchestrator';
+import { CardViewDto } from 'src/http/hbs/card/dto/card.view.dto';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 
 jest.mock('src/http/http.error.handler');
@@ -288,7 +288,7 @@ describe('CardOrchestrator', () => {
                 { label: 'Home', url: '/' },
                 { label: 'Sets', url: '/sets' },
                 { label: 'TST', url: '/sets/TST' },
-                { label: 'Lightning Bolt', url: '/card/TST/1' },
+                { label: 'Lightning Bolt', url: '/card/tst/1' },
             ]);
         });
 

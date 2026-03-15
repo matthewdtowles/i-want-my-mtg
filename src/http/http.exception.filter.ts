@@ -10,11 +10,11 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
-import { ApiResponseDto } from './api/dto/api-response.dto';
-import { LoginFormViewDto } from './auth/dto/login-form.view.dto';
+import { ApiResponseDto } from './base/api-response.dto';
+import { LoginFormViewDto } from './hbs/auth/dto/login-form.view.dto';
 import { ActionStatus } from './base/action-status.enum';
 import { Toast } from './base/toast';
-import { CreateUserViewDto } from './user/dto/create-user.view.dto';
+import { CreateUserViewDto } from './hbs/user/dto/create-user.view.dto';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

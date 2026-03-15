@@ -7,7 +7,7 @@ import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-histor
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { PortfolioOrchestrator } from 'src/http/portfolio/portfolio.orchestrator';
+import { PortfolioOrchestrator } from 'src/http/hbs/portfolio/portfolio.orchestrator';
 
 describe('PortfolioOrchestrator', () => {
     let orchestrator: PortfolioOrchestrator;

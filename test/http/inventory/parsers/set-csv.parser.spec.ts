@@ -1,4 +1,4 @@
-import { SetCsvParser } from 'src/http/inventory/parsers/set-csv.parser';
+import { SetCsvParser } from 'src/http/hbs/inventory/parsers/set-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');

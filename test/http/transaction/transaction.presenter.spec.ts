@@ -1,6 +1,6 @@
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary } from 'src/core/transaction/transaction.service';
-import { TransactionPresenter } from 'src/http/transaction/transaction.presenter';
+import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 
 describe('TransactionPresenter', () => {
     describe('toEntity', () => {

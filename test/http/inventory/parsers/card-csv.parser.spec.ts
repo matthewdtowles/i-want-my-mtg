@@ -1,4 +1,4 @@
-import { CardCsvParser } from 'src/http/inventory/parsers/card-csv.parser';
+import { CardCsvParser } from 'src/http/hbs/inventory/parsers/card-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');

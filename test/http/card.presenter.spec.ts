@@ -1,5 +1,5 @@
 import { Price } from 'src/core/card/price.entity';
-import { CardPresenter } from 'src/http/card/card.presenter';
+import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 
 describe('CardPresenter', () => {
     describe('formatPriceChange', () => {

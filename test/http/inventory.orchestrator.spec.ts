@@ -9,8 +9,8 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { InventoryViewDto } from 'src/http/inventory/dto/inventory.view.dto';
-import { InventoryOrchestrator } from 'src/http/inventory/inventory.orchestrator';
+import { InventoryViewDto } from 'src/http/hbs/inventory/dto/inventory.view.dto';
+import { InventoryOrchestrator } from 'src/http/hbs/inventory/inventory.orchestrator';
 
 describe('InventoryOrchestrator', () => {
     let orchestrator: InventoryOrchestrator;

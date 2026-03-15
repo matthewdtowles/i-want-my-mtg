@@ -31,9 +31,7 @@ describe('API response envelope (e2e)', () => {
     });
 
     it('GET /api/v1/sets/:code returns ApiResponseDto on 404', async () => {
-        const res = await request(app.getHttpServer())
-            .get('/api/v1/sets/NONEXISTENT')
-            .expect(404);
+        const res = await request(app.getHttpServer()).get('/api/v1/sets/NONEXISTENT').expect(404);
 
         expect(res.body).toHaveProperty('success', false);
         expect(res.body).toHaveProperty('error');

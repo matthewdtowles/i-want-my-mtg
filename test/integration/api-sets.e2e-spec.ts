@@ -15,9 +15,7 @@ describe('Sets API (e2e)', () => {
 
     describe('GET /api/v1/sets', () => {
         it('returns paginated list of sets', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/sets')
-                .expect(200);
+            const res = await request(app.getHttpServer()).get('/api/v1/sets').expect(200);
 
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
@@ -40,9 +38,7 @@ describe('Sets API (e2e)', () => {
         });
 
         it('supports search via q parameter', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/sets?q=Test')
-                .expect(200);
+            const res = await request(app.getHttpServer()).get('/api/v1/sets?q=Test').expect(200);
 
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
@@ -135,13 +131,9 @@ describe('Sets API (e2e)', () => {
 
     describe('Auth guard enforcement', () => {
         it('does not require authentication for public set endpoints', async () => {
-            await request(app.getHttpServer())
-                .get('/api/v1/sets')
-                .expect(200);
+            await request(app.getHttpServer()).get('/api/v1/sets').expect(200);
 
-            await request(app.getHttpServer())
-                .get(`/api/v1/sets/${TEST_SET_CODE}`)
-                .expect(200);
+            await request(app.getHttpServer()).get(`/api/v1/sets/${TEST_SET_CODE}`).expect(200);
         });
     });
 });

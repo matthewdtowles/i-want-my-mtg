@@ -40,9 +40,7 @@ describe('User API (e2e)', () => {
 
     describe('Auth guard enforcement', () => {
         it('GET /api/v1/user without auth returns 401', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/user')
-                .expect(401);
+            const res = await request(app.getHttpServer()).get('/api/v1/user').expect(401);
 
             expect(res.body.success).toBe(false);
             expect(res.body.error).toBeDefined();

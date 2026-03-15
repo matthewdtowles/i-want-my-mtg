@@ -21,9 +21,7 @@ describe('Cards API (e2e)', () => {
 
     describe('GET /api/v1/cards', () => {
         it('returns search results with pagination', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/cards?q=Angel')
-                .expect(200);
+            const res = await request(app.getHttpServer()).get('/api/v1/cards?q=Angel').expect(200);
 
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
@@ -33,9 +31,7 @@ describe('Cards API (e2e)', () => {
         });
 
         it('returns empty array when no search term provided', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/cards')
-                .expect(200);
+            const res = await request(app.getHttpServer()).get('/api/v1/cards').expect(200);
 
             expect(res.body.success).toBe(true);
             expect(res.body.data).toEqual([]);

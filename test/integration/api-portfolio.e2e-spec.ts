@@ -1,7 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUserApi, TEST_CARD_ID, TEST_CARD_ID_2 } from './setup';
+import {
+    createTestApp,
+    closeTestApp,
+    loginTestUserApi,
+    TEST_CARD_ID,
+    TEST_CARD_ID_2,
+} from './setup';
 
 describe('Portfolio API (e2e)', () => {
     let app: INestApplication;
@@ -65,9 +71,7 @@ describe('Portfolio API (e2e)', () => {
 
     describe('Auth guard enforcement', () => {
         it('GET /api/v1/portfolio without auth returns 401', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/portfolio')
-                .expect(401);
+            const res = await request(app.getHttpServer()).get('/api/v1/portfolio').expect(401);
 
             expect(res.body.success).toBe(false);
             expect(res.body.error).toBeDefined();

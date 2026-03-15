@@ -128,12 +128,9 @@ export class PortfolioOrchestrator {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const history = await this.portfolioService.getHistory(req.user.id, days);
-            const points: PortfolioValueHistoryPointDto[] = history.map((h) => ({
-                date: h.date instanceof Date ? h.date.toISOString().split('T')[0] : String(h.date),
-                totalValue: h.totalValue,
-                totalCost: h.totalCost,
-                totalCards: h.totalCards,
-            }));
+            const points: PortfolioValueHistoryPointDto[] = history.map(
+                PortfolioPresenter.toHistoryPoint
+            );
             return { history: points };
         } catch (error) {
             this.LOGGER.debug(`Error getting portfolio history: ${error?.message}`);

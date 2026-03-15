@@ -68,3 +68,20 @@ export async function loginTestUser(app: INestApplication): Promise<string> {
     }
     return authCookie.split(';')[0];
 }
+
+/**
+ * Login via API endpoint and return a Bearer token string
+ * suitable for the Authorization header.
+ */
+export async function loginTestUserApi(app: INestApplication): Promise<string> {
+    const res = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({ email: TEST_USER.email, password: TEST_USER.password })
+        .expect(200);
+
+    const token = res.body?.data?.accessToken;
+    if (!token) {
+        throw new Error('API login did not return access token');
+    }
+    return `Bearer ${token}`;
+}

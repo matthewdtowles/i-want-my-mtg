@@ -11,8 +11,9 @@ export class OptionalAuthGuard extends AuthGuard('jwt') {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         try {
             const request = context.switchToHttp().getRequest<Request>();
-            const jwt = request.cookies[AUTH_TOKEN_NAME];
-            if (!jwt) {
+            const hasBearerToken = request.headers.authorization?.startsWith('Bearer ');
+            const hasCookieToken = !!request.cookies?.[AUTH_TOKEN_NAME];
+            if (!hasBearerToken && !hasCookieToken) {
                 this.LOGGER.debug(`No JWT found - allowing unauthenticated access`);
                 return true;
             }

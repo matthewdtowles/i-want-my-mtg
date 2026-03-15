@@ -97,27 +97,27 @@ describe('Public endpoints (e2e)', () => {
     });
 
     describe('Auth guard enforcement', () => {
-        it('GET /inventory without auth returns 403', () => {
-            return request(app.getHttpServer()).get('/inventory').expect(403);
+        it('GET /inventory without auth returns 401', () => {
+            return request(app.getHttpServer()).get('/inventory').expect(401);
         });
 
-        it('GET /user without auth returns 403', () => {
-            return request(app.getHttpServer()).get('/user').expect(403);
+        it('GET /user without auth returns 401', () => {
+            return request(app.getHttpServer()).get('/user').expect(401);
         });
 
-        it('GET /portfolio without auth returns 403', () => {
-            return request(app.getHttpServer()).get('/portfolio').expect(403);
+        it('GET /portfolio without auth returns 401', () => {
+            return request(app.getHttpServer()).get('/portfolio').expect(401);
         });
 
-        it('GET /transactions without auth returns 403', () => {
-            return request(app.getHttpServer()).get('/transactions').expect(403);
+        it('GET /transactions without auth returns 401', () => {
+            return request(app.getHttpServer()).get('/transactions').expect(401);
         });
 
-        it('POST /inventory without auth returns 403', () => {
+        it('POST /inventory without auth returns 401', () => {
             return request(app.getHttpServer())
                 .post('/inventory')
                 .send([{ cardId: TEST_CARD_ID, quantity: 1, isFoil: false, userId: 1 }])
-                .expect(403);
+                .expect(401);
         });
     });
 });

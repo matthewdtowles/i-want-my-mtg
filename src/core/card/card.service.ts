@@ -25,6 +25,15 @@ export class CardService {
         }
     }
 
+    async findByIdsWithPrices(ids: string[]): Promise<Card[]> {
+        this.LOGGER.debug(`Find ${ids.length} cards by ids with latest prices.`);
+        try {
+            return await this.repository.findByIds(ids, { includeLatestPrice: true });
+        } catch (error) {
+            throw new Error(`Error finding cards by ids with prices: ${error.message}`);
+        }
+    }
+
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
         try {

@@ -54,7 +54,10 @@ describe('Auth and Inventory (e2e)', () => {
             const cookies = res.headers['set-cookie'] || [];
             const clearCookie = (Array.isArray(cookies) ? cookies : [cookies]).find(
                 (c: string) =>
-                    c?.startsWith('authorization=') && (c.includes('Expires=') || c.includes('Max-Age=0') || c.includes('authorization=;'))
+                    c?.startsWith('authorization=') &&
+                    (c.includes('Expires=') ||
+                        c.includes('Max-Age=0') ||
+                        c.includes('authorization=;'))
             );
             expect(clearCookie).toBeDefined();
         });

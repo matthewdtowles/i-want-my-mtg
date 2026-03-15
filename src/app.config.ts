@@ -44,7 +44,9 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             exceptionFactory: (errors) => {
                 const firstError = errors[0];
                 const firstConstraint = Object.values(firstError.constraints || {})[0];
-                return new BadRequestException(makeUserFriendly(firstConstraint || 'Validation failed'));
+                return new BadRequestException(
+                    makeUserFriendly(firstConstraint || 'Validation failed')
+                );
             },
         })
     );

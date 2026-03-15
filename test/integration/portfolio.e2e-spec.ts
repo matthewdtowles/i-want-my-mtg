@@ -14,9 +14,9 @@ describe('Portfolio (e2e)', () => {
         // Seed transactions for portfolio computation (skip inventory sync to avoid cleanup issues)
         const today = new Date();
         const lots = [
-            { cardId: TEST_CARD_ID, daysAgo: 14, quantity: 2, pricePerUnit: 3.00 },
-            { cardId: TEST_CARD_ID, daysAgo: 7, quantity: 1, pricePerUnit: 4.50 },
-            { cardId: TEST_CARD_ID_2, daysAgo: 10, quantity: 3, pricePerUnit: 1.00 },
+            { cardId: TEST_CARD_ID, daysAgo: 14, quantity: 2, pricePerUnit: 3.0 },
+            { cardId: TEST_CARD_ID, daysAgo: 7, quantity: 1, pricePerUnit: 4.5 },
+            { cardId: TEST_CARD_ID_2, daysAgo: 10, quantity: 3, pricePerUnit: 1.0 },
         ];
         for (const lot of lots) {
             const date = new Date(today);

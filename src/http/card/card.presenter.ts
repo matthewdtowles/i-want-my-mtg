@@ -9,7 +9,24 @@ import { CardResponseDto, ManaToken } from './dto/card.response.dto';
 import { LegalityResponseDto } from './dto/legality.response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
 
+export interface PriceHistoryPoint {
+    date: string;
+    normal: number | null;
+    foil: number | null;
+}
+
 export class CardPresenter {
+    static toPriceHistoryPoint(p: Price): PriceHistoryPoint {
+        return {
+            date:
+                p.date instanceof Date
+                    ? `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`
+                    : String(p.date),
+            normal: p.normal != null ? Number(p.normal) : null,
+            foil: p.foil != null ? Number(p.foil) : null,
+        };
+    }
+
     static toCardResponse(
         card: Card,
         inventory: InventoryQuantities,

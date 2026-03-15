@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
+import { ApiResponseDto } from './api/dto/api-response.dto';
 import { LoginFormViewDto } from './auth/dto/login-form.view.dto';
 import { ActionStatus } from './base/action-status.enum';
 import { Toast } from './base/toast';
@@ -29,13 +30,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
         if (this.isApiRequest(request)) {
-            response.status(status).json({
-                statusCode: status,
-                timestamp: new Date().toISOString(),
-                path: request.url,
-                message: exception.message || 'Internal Server Error',
-                status: ActionStatus.ERROR,
-            });
+            response
+                .status(status)
+                .json(ApiResponseDto.error(exception.message || 'Internal Server Error'));
         } else if (this.isFormRoute(request.url)) {
             this.handleFormError(response, request, exception);
         } else {
@@ -51,6 +48,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     private isApiRequest(request: Request): boolean {
         return (
+            request.url.startsWith('/api/') ||
             request.headers.accept?.includes('application/json') ||
             request.headers['content-type']?.includes('application/json')
         );

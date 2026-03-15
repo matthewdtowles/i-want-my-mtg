@@ -1,7 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID, TEST_CARD_ID_2, TEST_CARD_ID_3 } from './setup';
+import {
+    createTestApp,
+    closeTestApp,
+    loginTestUser,
+    TEST_CARD_ID,
+    TEST_CARD_ID_2,
+    TEST_CARD_ID_3,
+} from './setup';
 
 describe('Transaction CRUD and FIFO (e2e)', () => {
     let app: INestApplication;
@@ -45,7 +52,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                     cardId: TEST_CARD_ID,
                     type: 'BUY',
                     quantity: 4,
-                    pricePerUnit: 3.50,
+                    pricePerUnit: 3.5,
                     isFoil: false,
                     date: new Date().toISOString().split('T')[0],
                     source: 'Test LGS',
@@ -93,7 +100,8 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .set('Cookie', authCookie)
                 .send({ cardId: TEST_CARD_ID, type: 'INVALID' })
                 .expect(400);
-            expect(res.body.statusCode).toBe(400);
+            expect(res.body.success).toBe(false);
+            expect(res.body.error).toBeDefined();
         });
     });
 
@@ -101,9 +109,9 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
         it('creates multiple BUY lots at different prices', async () => {
             const today = new Date();
             const lots = [
-                { daysAgo: 10, quantity: 3, pricePerUnit: 2.00 },
-                { daysAgo: 5, quantity: 2, pricePerUnit: 4.00 },
-                { daysAgo: 1, quantity: 1, pricePerUnit: 6.00 },
+                { daysAgo: 10, quantity: 3, pricePerUnit: 2.0 },
+                { daysAgo: 5, quantity: 2, pricePerUnit: 4.0 },
+                { daysAgo: 1, quantity: 1, pricePerUnit: 6.0 },
             ];
 
             for (const lot of lots) {
@@ -135,7 +143,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                     cardId: TEST_CARD_ID_2,
                     type: 'SELL',
                     quantity: 4,
-                    pricePerUnit: 5.00,
+                    pricePerUnit: 5.0,
                     isFoil: false,
                     date: new Date().toISOString().split('T')[0],
                     skipInventorySync: true,
@@ -153,7 +161,7 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                     cardId: TEST_CARD_ID_2,
                     type: 'SELL',
                     quantity: 5,
-                    pricePerUnit: 5.00,
+                    pricePerUnit: 5.0,
                     isFoil: false,
                     date: new Date().toISOString().split('T')[0],
                     skipInventorySync: true,

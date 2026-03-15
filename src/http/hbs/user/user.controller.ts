@@ -13,7 +13,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AUTH_TOKEN_NAME } from 'src/http/hbs/auth/dto/auth.types';
+import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';

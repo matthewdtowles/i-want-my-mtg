@@ -78,8 +78,8 @@ Flags can be passed to any command (e.g., `npm run etl -- ingest -p` for prices 
 ### Linting
 
 ```bash
-./scripts/lint.sh              # Check lint + formatting
-./scripts/lint.sh fix          # Auto-fix lint + formatting
+./scripts/lint.sh              # Lint (with --fix) + format check
+./scripts/lint.sh fix          # Lint (with --fix) + format write
 ```
 
 ### Database
@@ -109,10 +109,10 @@ docker compose build web           # Rebuild after dependency changes
 
 ```bash
 # Connect to psql
-docker exec -it i-want-my-mtg-postgres-1 psql -U iwmm_pg_user -d i_want_my_mtg
+docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 
-# Backup
-docker compose exec postgres pg_dump -U postgres i_want_my_mtg > backup.sql
+# Backup (or use ./scripts/db-backup.sh)
+docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
 
 # Run migrations
 docker compose run --rm migrate

@@ -17,7 +17,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { getAuthCookieOptions } from './auth.cookie.util';
 import { AuthOrchestrator } from './auth.orchestrator';
 import { AuthResult } from './dto/auth.result';
-import { AUTH_TOKEN_NAME } from './dto/auth.types';
+import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
 import { ForgotPasswordRequestDto } from './dto/forgot-password.request.dto';
 import { LoginFormViewDto } from './dto/login-form.view.dto';
 import { ResetPasswordRequestDto } from './dto/reset-password.request.dto';

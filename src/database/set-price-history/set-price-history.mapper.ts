@@ -6,10 +6,10 @@ export class SetPriceHistoryMapper {
         return new SetPriceHistory({
             id: ormEntity.id,
             setCode: ormEntity?.set?.code,
-            basePrice: ormEntity.basePrice,
-            totalPrice: ormEntity.totalPrice,
-            basePriceAll: ormEntity.basePriceAll,
-            totalPriceAll: ormEntity.totalPriceAll,
+            basePrice: ormEntity.basePrice != null ? Number(ormEntity.basePrice) : null,
+            totalPrice: ormEntity.totalPrice != null ? Number(ormEntity.totalPrice) : null,
+            basePriceAll: ormEntity.basePriceAll != null ? Number(ormEntity.basePriceAll) : null,
+            totalPriceAll: ormEntity.totalPriceAll != null ? Number(ormEntity.totalPriceAll) : null,
             date: ormEntity.date,
         });
     }

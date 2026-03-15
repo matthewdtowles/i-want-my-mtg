@@ -6,14 +6,14 @@ export class SetPriceMapper {
         if (!ormEntity) return null;
         return new SetPrice({
             setCode: ormEntity.setCode,
-            basePrice: ormEntity.basePrice,
-            totalPrice: ormEntity.totalPrice,
-            basePriceAll: ormEntity.basePriceAll,
-            totalPriceAll: ormEntity.totalPriceAll,
-            basePriceChangeWeekly: ormEntity.basePriceChangeWeekly,
-            totalPriceChangeWeekly: ormEntity.totalPriceChangeWeekly,
-            basePriceAllChangeWeekly: ormEntity.basePriceAllChangeWeekly,
-            totalPriceAllChangeWeekly: ormEntity.totalPriceAllChangeWeekly,
+            basePrice: ormEntity.basePrice != null ? Number(ormEntity.basePrice) : null,
+            totalPrice: ormEntity.totalPrice != null ? Number(ormEntity.totalPrice) : null,
+            basePriceAll: ormEntity.basePriceAll != null ? Number(ormEntity.basePriceAll) : null,
+            totalPriceAll: ormEntity.totalPriceAll != null ? Number(ormEntity.totalPriceAll) : null,
+            basePriceChangeWeekly: ormEntity.basePriceChangeWeekly != null ? Number(ormEntity.basePriceChangeWeekly) : null,
+            totalPriceChangeWeekly: ormEntity.totalPriceChangeWeekly != null ? Number(ormEntity.totalPriceChangeWeekly) : null,
+            basePriceAllChangeWeekly: ormEntity.basePriceAllChangeWeekly != null ? Number(ormEntity.basePriceAllChangeWeekly) : null,
+            totalPriceAllChangeWeekly: ormEntity.totalPriceAllChangeWeekly != null ? Number(ormEntity.totalPriceAllChangeWeekly) : null,
             lastUpdate: ormEntity.lastUpdate,
         });
     }

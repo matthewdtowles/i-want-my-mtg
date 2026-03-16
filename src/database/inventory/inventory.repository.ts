@@ -77,6 +77,7 @@ export class InventoryRepository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.card`, 'card')
             .leftJoinAndSelect('card.prices', 'prices')
+            .leftJoinAndSelect('card.set', 'set')
             .where(`${this.TABLE}.userId = :userId`, { userId });
 
         if (options.baseOnly) {

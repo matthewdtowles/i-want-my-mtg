@@ -2060,10 +2060,6 @@ input:where([type='file']):focus {
     z-index: 50;
 }
 
-.col-span-full {
-    grid-column: 1 / -1;
-}
-
 .mx-1 {
     margin-left: 0.25rem;
     margin-right: 0.25rem;
@@ -2897,11 +2893,6 @@ input:where([type='file']):focus {
 .py-6 {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
-}
-
-.py-8 {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
 }
 
 .pb-2 {

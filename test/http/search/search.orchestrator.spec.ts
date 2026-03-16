@@ -134,7 +134,7 @@ describe('SearchOrchestrator', () => {
             expect(result.authenticated).toBe(true);
         });
 
-        it('should build pagination with search term', async () => {
+        it('should build unified pagination from max of card and set totals', async () => {
             searchService.search.mockResolvedValue({
                 cards: [mockCard as any],
                 cardTotal: 50,
@@ -145,9 +145,23 @@ describe('SearchOrchestrator', () => {
             const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
             const result = await orchestrator.search(mockReq, optionsWithQ);
 
-            expect(result.cardPagination).toBeDefined();
-            expect(result.cardPagination.totalPages).toBe(2);
-            expect(result.setPagination).toBeDefined();
+            expect(result.pagination).toBeDefined();
+            expect(result.pagination.totalPages).toBe(2);
+        });
+
+        it('should use set total for pagination when sets have more pages', async () => {
+            searchService.search.mockResolvedValue({
+                cards: [mockCard as any],
+                cardTotal: 5,
+                sets: [mockSet as any],
+                setTotal: 100,
+            });
+
+            const optionsWithQ = new SearchQueryOptions({ page: '1', limit: '25', q: 'bolt' });
+            const result = await orchestrator.search(mockReq, optionsWithQ);
+
+            expect(result.pagination).toBeDefined();
+            expect(result.pagination.totalPages).toBe(4);
         });
     });
 

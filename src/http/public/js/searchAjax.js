@@ -13,47 +13,45 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             var input = newForm.querySelector('input[name="q"]');
             state.q = input ? input.value.trim() : '';
-            state.cardPage = 1;
-            state.setPage = 1;
+            state.page = 1;
             fetchBoth('replaceState');
         });
+    }
+
+    // Remove inline onchange from SSR limit select to prevent full-page reload
+    var ssrLimitSelect = container.querySelector('.pagination-container select#limit');
+    if (ssrLimitSelect) {
+        ssrLimitSelect.removeAttribute('onchange');
     }
 
     // Intercept limit select change
     document.addEventListener('change', function (e) {
         if (e.target.id !== 'limit') return;
+        var paginationParent = e.target.closest('.pagination-container');
+        if (!paginationParent || !container.contains(paginationParent)) return;
         e.preventDefault();
         state.limit = parseInt(e.target.value, 10) || 25;
-        state.cardPage = 1;
-        state.setPage = 1;
+        state.page = 1;
         fetchBoth('pushState');
     });
 
     // Intercept limit form submit
     document.addEventListener('submit', function (e) {
-        if (e.target.closest('.pagination-container')) {
+        var paginationParent = e.target.closest('.pagination-container');
+        if (paginationParent && container.contains(paginationParent)) {
             e.preventDefault();
         }
     });
 
-    // Intercept pagination clicks — distinguish card vs set section
+    // Intercept pagination clicks
     document.addEventListener('click', function (e) {
         var link = e.target.closest('.pagination-container a');
-        if (!link) return;
+        if (!link || !container.contains(link)) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
-        var page = parseInt(params.get('page'), 10) || 1;
+        state.page = parseInt(params.get('page'), 10) || 1;
         if (params.has('limit')) state.limit = parseInt(params.get('limit'), 10) || 25;
-
-        // Determine which section: card or set
-        var section = link.closest('#search-cards-section, #search-sets-section');
-        if (section && section.id === 'search-sets-section') {
-            state.setPage = page;
-            fetchSets('pushState');
-        } else {
-            state.cardPage = page;
-            fetchCards('pushState');
-        }
+        fetchBoth('pushState');
     });
 
     // Back/forward button
@@ -72,8 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var params = new URLSearchParams(window.location.search);
         return {
             q: params.get('q') || '',
-            cardPage: parseInt(params.get('cardPage'), 10) || parseInt(params.get('page'), 10) || 1,
-            setPage: parseInt(params.get('setPage'), 10) || parseInt(params.get('page'), 10) || 1,
+            page: parseInt(params.get('page'), 10) || 1,
             limit: parseInt(params.get('limit'), 10) || 25,
         };
     }
@@ -81,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildCardApiUrl() {
         var params = new URLSearchParams();
         params.set('q', state.q);
-        params.set('page', state.cardPage);
+        params.set('page', state.page);
         params.set('limit', state.limit);
         return '/api/v1/cards?' + params.toString();
     }
@@ -89,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildSetApiUrl() {
         var params = new URLSearchParams();
         params.set('q', state.q);
-        params.set('page', state.setPage);
+        params.set('page', state.page);
         params.set('limit', state.limit);
         return '/api/v1/sets?' + params.toString();
     }
@@ -97,8 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildBrowserUrl() {
         var params = new URLSearchParams();
         if (state.q) params.set('q', state.q);
-        if (state.cardPage > 1) params.set('cardPage', state.cardPage);
-        if (state.setPage > 1) params.set('setPage', state.setPage);
+        if (state.page > 1) params.set('page', state.page);
         if (state.limit !== 25) params.set('limit', state.limit);
         var qs = params.toString();
         return '/search' + (qs ? '?' + qs : '');
@@ -116,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateHistory(historyMethod);
             return;
         }
+        var scrollY = window.scrollY;
         pinHeight(container);
         showLoading();
         Promise.all([
@@ -132,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 renderResults(cardJson, setJson);
                 unpinHeight(container);
                 updateHistory(historyMethod);
+                window.scrollTo(0, scrollY);
             })
             .catch(function (err) {
                 console.error('Search error:', err);
@@ -139,56 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Failed to load search results. Please try again.'
                 );
                 unpinHeight(container);
-            });
-    }
-
-    function fetchCards(historyMethod) {
-        var cardsSection = document.getElementById('search-cards-section');
-        if (cardsSection) {
-            pinHeight(cardsSection);
-            var grid = cardsSection.querySelector('.grid, .text-center');
-            if (grid)
-                grid.innerHTML =
-                    '<div class="text-center py-8 col-span-full"><i class="fas fa-spinner fa-spin text-2xl text-teal-500"></i></div>';
-        }
-        fetch(buildCardApiUrl())
-            .then(function (r) {
-                return r.json();
-            })
-            .then(function (json) {
-                renderCardSection(json.data || [], json.meta);
-                updateHistory(historyMethod);
-                var el = document.getElementById('search-cards-section');
-                if (el) unpinHeight(el);
-            })
-            .catch(function (err) {
-                console.error('Card fetch error:', err);
-                if (cardsSection) unpinHeight(cardsSection);
-            });
-    }
-
-    function fetchSets(historyMethod) {
-        var setsSection = document.getElementById('search-sets-section');
-        if (setsSection) {
-            pinHeight(setsSection);
-            var grid = setsSection.querySelector('.grid, .text-center');
-            if (grid)
-                grid.innerHTML =
-                    '<div class="text-center py-8 col-span-full"><i class="fas fa-spinner fa-spin text-2xl text-teal-500"></i></div>';
-        }
-        fetch(buildSetApiUrl())
-            .then(function (r) {
-                return r.json();
-            })
-            .then(function (json) {
-                renderSetSection(json.data || [], json.meta);
-                updateHistory(historyMethod);
-                var el = document.getElementById('search-sets-section');
-                if (el) unpinHeight(el);
-            })
-            .catch(function (err) {
-                console.error('Set fetch error:', err);
-                if (setsSection) unpinHeight(setsSection);
+                window.scrollTo(0, scrollY);
             });
     }
 
@@ -243,39 +192,8 @@ document.addEventListener('DOMContentLoaded', function () {
             html += renderCardSectionHtml(cards, cardMeta);
             html += '</div>';
         }
+        html += renderPagination(cardMeta, setMeta);
         container.innerHTML = html;
-    }
-
-    function renderSetSection(sets, meta) {
-        var section = document.getElementById('search-sets-section');
-        if (!section) {
-            if (sets.length === 0) return;
-            section = document.createElement('div');
-            section.id = 'search-sets-section';
-            section.className = 'mb-8';
-            container.insertBefore(section, container.firstChild);
-        }
-        if (sets.length === 0) {
-            section.remove();
-            return;
-        }
-        section.innerHTML = renderSetSectionHtml(sets, meta);
-    }
-
-    function renderCardSection(cards, meta) {
-        var section = document.getElementById('search-cards-section');
-        if (!section) {
-            if (cards.length === 0) return;
-            section = document.createElement('div');
-            section.id = 'search-cards-section';
-            section.className = 'mb-8';
-            container.appendChild(section);
-        }
-        if (cards.length === 0) {
-            section.remove();
-            return;
-        }
-        section.innerHTML = renderCardSectionHtml(cards, meta);
     }
 
     function renderSetSectionHtml(sets, meta) {
@@ -290,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function () {
             html += renderSetCard(sets[i]);
         }
         html += '</div>';
-        html += renderPagination(meta, 'set');
         return html;
     }
 
@@ -306,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
             html += renderCardItem(cards[i]);
         }
         html += '</div>';
-        html += renderPagination(meta, 'card');
         return html;
     }
 
@@ -379,21 +295,25 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function renderPagination(meta, type) {
-        if (!meta || meta.totalPages <= 1) return '';
+    function renderPagination(cardMeta, setMeta) {
+        var cardTotal = cardMeta ? cardMeta.total : 0;
+        var setTotal = setMeta ? setMeta.total : 0;
+        var total = Math.max(cardTotal, setTotal);
+        var totalPages = Math.ceil(total / state.limit);
 
-        var page = meta.page;
-        var totalPages = meta.totalPages;
+        if (totalPages <= 1) return '';
+
+        var page = state.page;
         var html = '<section class="pagination-container">';
 
         if (page > 1) {
             html +=
                 '<a href="' +
-                paginationHref(page - 1, type) +
+                paginationHref(page - 1) +
                 '" class="pagination-btn pagination-btn-primary">&lt;</a>';
             html +=
                 '<a href="' +
-                paginationHref(1, type) +
+                paginationHref(1) +
                 '" class="pagination-btn pagination-btn-tertiary">1</a>';
         }
 
@@ -401,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (skipBack > 1 && skipBack < page) {
             html +=
                 '<a href="' +
-                paginationHref(skipBack, type) +
+                paginationHref(skipBack) +
                 '" class="pagination-btn pagination-btn-tertiary">' +
                 skipBack +
                 '</a>';
@@ -418,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
             html +=
                 '<a href="' +
-                paginationHref(skipForward, type) +
+                paginationHref(skipForward) +
                 '" class="pagination-btn pagination-btn-tertiary">' +
                 skipForward +
                 '</a>';
@@ -427,13 +347,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (page < totalPages) {
             html +=
                 '<a href="' +
-                paginationHref(totalPages, type) +
+                paginationHref(totalPages) +
                 '" class="pagination-btn pagination-btn-tertiary">' +
                 totalPages +
                 '</a>';
             html +=
                 '<a href="' +
-                paginationHref(page + 1, type) +
+                paginationHref(page + 1) +
                 '" class="pagination-btn pagination-btn-primary">&gt;</a>';
         }
 
@@ -460,11 +380,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return html;
     }
 
-    function paginationHref(page, type) {
+    function paginationHref(page) {
         var params = new URLSearchParams();
         params.set('page', String(page));
         params.set('limit', String(state.limit));
-        params.set('type', type);
         return '/search?' + params.toString();
     }
 

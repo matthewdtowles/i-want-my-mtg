@@ -111,42 +111,29 @@
 </div>
 {{/if}}
 
+<script src="/public/js/toast.js" defer></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const message = document.getElementById("response-message");
         const closeBtn = document.getElementById("toast-close-btn");
-        const progressBar = document.getElementById("toast-progress-bar");
-        let dismissTimer = null;
-
-        function getStatusDuration() {
-            if (message.classList.contains("bg-error")) return 10000;
-            if (message.classList.contains("bg-warning")) return 7000;
-            return 5000;
+        if (closeBtn) {
+            closeBtn.addEventListener("click", function () {
+                if (typeof window.dismissToast === 'function') window.dismissToast();
+            });
         }
 
-        function dismissToast() {
-            clearTimeout(dismissTimer);
-            message.classList.remove("toast-enter");
-            message.classList.add("toast-exit");
-            message.addEventListener("animationend", () => {
-                message.classList.add("hidden");
-                message.classList.remove("toast-exit");
-            }, { once: true });
-        }
-
-        function showToast() {
-            const duration = getStatusDuration();
-            message.style.setProperty("--toast-duration", duration + "ms");
-            message.classList.remove("hidden");
-            message.classList.add("toast-enter");
-            dismissTimer = setTimeout(dismissToast, duration);
-        }
-
-        closeBtn.addEventListener("click", dismissToast);
-
-        const toastText = message.querySelector(".toast-text");
-        if (toastText && toastText.textContent.trim().length > 0) {
-            showToast();
+        const message = document.getElementById("response-message");
+        if (message) {
+            const toastText = message.querySelector(".toast-text");
+            if (toastText && toastText.textContent.trim().length > 0) {
+                if (typeof window.showToast === 'function') {
+                    // Extract current status from bg- class for proper duration
+                    var status = 'info';
+                    if (message.classList.contains('bg-success')) status = 'success';
+                    else if (message.classList.contains('bg-error')) status = 'error';
+                    else if (message.classList.contains('bg-warning')) status = 'warning';
+                    window.showToast(toastText.textContent.trim(), status);
+                }
+            }
         }
 
         document.getElementById("mobile-menu-button").addEventListener("click", () => {

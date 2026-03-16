@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    var container = document.getElementById('set-card-list-ajax');
+    var container = document.getElementById('inventory-list-ajax');
     if (!container) return;
-
-    var setCode = container.dataset.setCode;
-    var authenticated = container.dataset.authenticated === 'true';
 
     var state = parseStateFromUrl();
 
@@ -44,14 +41,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Remove inline onchange from SSR limit select to prevent full-page reload
-    var ssrLimitSelect = container.querySelector('.pagination-container select#limit');
+    var ssrLimitSelect = document.querySelector('.pagination-container select#limit');
     if (ssrLimitSelect) {
         ssrLimitSelect.removeAttribute('onchange');
     }
 
     // Intercept sort clicks via event delegation on thead
     document.addEventListener('click', function (e) {
-        var link = e.target.closest('#set-card-list-ajax thead a.sort-btn');
+        var link = e.target.closest('#inventory-list-ajax thead a.sort-btn');
         if (!link) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^\?/, ''));
@@ -64,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept pagination clicks
     document.addEventListener('click', function (e) {
         var link = e.target.closest('.pagination-container a');
-        if (!link || !container.contains(link)) return;
+        if (!link || !container.parentElement.contains(link)) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
         state.page = parseInt(params.get('page'), 10) || 1;
@@ -76,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('change', function (e) {
         if (e.target.id !== 'limit') return;
         var paginationParent = e.target.closest('.pagination-container');
-        if (!paginationParent || !container.contains(paginationParent)) return;
+        if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
         e.preventDefault();
         state.limit = parseInt(e.target.value, 10) || 25;
         state.page = 1;
@@ -86,14 +83,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept limit form submit
     document.addEventListener('submit', function (e) {
         var paginationParent = e.target.closest('.pagination-container');
-        if (paginationParent && container.contains(paginationParent)) {
+        if (paginationParent && container.parentElement.contains(paginationParent)) {
             e.preventDefault();
         }
     });
 
     // Intercept baseOnly toggle clicks
     document.addEventListener('click', function (e) {
-        var link = e.target.closest('#set-card-list-ajax a[href*="baseOnly"]');
+        var link = e.target.closest('#inventory-list-ajax a[href*="baseOnly"]');
         if (!link) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
@@ -105,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Back/forward button
     window.addEventListener('popstate', function () {
         state = parseStateFromUrl();
-        // Sync filter input
         var fi = document.querySelector('#filter');
         if (fi) fi.value = state.filter;
         fetchAndRender(null);
@@ -133,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards?' + params.toString();
+        return '/api/v1/inventory?' + params.toString();
     }
 
     function buildBrowserUrl() {
@@ -147,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
         var qs = params.toString();
-        return '/sets/' + encodeURIComponent(setCode) + (qs ? '?' + qs : '');
+        return '/inventory' + (qs ? '?' + qs : '');
     }
 
     function fetchAndRender(historyMethod) {
@@ -164,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (json) {
                 if (!json.success) {
-                    showError(resultsEl, json.error || 'Failed to load cards');
+                    showError(resultsEl, json.error || 'Failed to load inventory');
                     if (resultsEl) resultsEl.style.minHeight = '';
                     return;
                 }
@@ -175,13 +171,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.history[historyMethod]({}, '', buildBrowserUrl());
                 }
                 if (resultsEl) resultsEl.style.minHeight = '';
-                if (authenticated && json.data && json.data.length > 0) {
-                    fetchAndRenderInventory(json.data);
-                }
             })
             .catch(function (err) {
-                console.error('Error fetching cards:', err);
-                showError(resultsEl, 'Failed to load cards. Please try again.');
+                console.error('Error fetching inventory:', err);
+                showError(resultsEl, 'Failed to load inventory. Please try again.');
+                if (typeof window.showToast === 'function')
+                    window.showToast('Failed to load inventory', 'error');
                 if (resultsEl) resultsEl.style.minHeight = '';
             });
     }
@@ -197,28 +192,26 @@ document.addEventListener('DOMContentLoaded', function () {
             '</div>';
     }
 
-    function renderTable(cards, meta) {
+    function renderTable(items, meta) {
         var resultsEl = document.getElementById('filter-results');
         if (!resultsEl) return;
 
-        if (!cards || cards.length === 0) {
+        if (!items || items.length === 0) {
             resultsEl.innerHTML =
                 '<div class="text-center py-16">' +
                 '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
-                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No cards match your search</p>' +
-                '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>' +
-                '<a href="/sets/' +
-                escapeHtml(setCode) +
-                '" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>' +
+                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your current filters</p>' +
+                '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>' +
+                '<a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>' +
                 '</div>';
             return;
         }
 
-        var html = '<div class="table-wrapper"><table class="table-container">';
+        var html = '<div class="table-wrapper"><table class="table-container w-full">';
         html += '<thead>' + renderTableHeaders() + '</thead>';
         html += '<tbody>';
-        for (var i = 0; i < cards.length; i++) {
-            html += renderCardRow(cards[i]);
+        for (var i = 0; i < items.length; i++) {
+            html += renderInventoryRow(items[i]);
         }
         html += '</tbody></table></div>';
         resultsEl.innerHTML = html;
@@ -226,14 +219,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderTableHeaders() {
         var headers = [
-            { key: '', label: 'Owned' },
-            { key: 'card.number', label: 'Card No.' },
+            { key: 'inventory.quantity', label: 'Owned' },
             { key: 'card.name', label: 'Card' },
-            { key: 'card.manaCost', label: 'Mana Cost', classes: 'xs-hide' },
-            { key: 'card.rarity', label: 'Rarity', classes: 'xs-hide' },
-            { key: 'price.normal', label: 'Normal', subtitle: '7d', classes: 'xs-hide' },
-            { key: 'price.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' },
-            { key: '', label: 'Price', classes: 'xs-show' },
+            { key: 'card.setCode', label: 'Set' },
+            { key: 'prices.normal', label: 'Price' },
+            { key: '', label: '', classes: 'xs-hide' },
         ];
 
         var html = '<tr class="table-header-row">';
@@ -262,9 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!state.baseOnly) params.set('baseOnly', 'false');
 
         var arrow = isActive ? (state.ascend ? '&#9650;' : '&#9660;') : '';
-        var subtitleHtml = header.subtitle
-            ? ' <span class="header-subtitle">(' + escapeHtml(header.subtitle) + '\u25B3)</span>'
-            : '';
         var classAttr = 'table-header' + (header.classes ? ' ' + header.classes : '');
 
         return (
@@ -275,7 +262,6 @@ document.addEventListener('DOMContentLoaded', function () {
             params.toString() +
             '" class="sort-btn">' +
             escapeHtml(header.label) +
-            subtitleHtml +
             ' <span class="sort-icon">' +
             arrow +
             '</span>' +
@@ -283,111 +269,114 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function renderCardRow(card) {
-        var url = '/card/' + encodeURIComponent(setCode) + '/' + encodeURIComponent(card.number);
-        var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
-
+    function renderInventoryRow(item) {
         var html = '<tr class="table-row">';
 
-        // Owned column — placeholder, replaced by fetchAndRenderInventory if authenticated
+        // Owned column - cardsOwned form
+        html += '<td class="table-cell">' + renderCardsOwnedForm(item) + '</td>';
+
+        // Card name with hover preview and tags
+        var imgSrc = item.imgSrc || '';
+        var url = item.url || '#';
         html +=
-            '<td class="table-cell owned-cell" data-card-id="' +
-            escapeHtml(card.id) +
-            '"' +
-            ' data-has-foil="' +
-            !!card.hasFoil +
-            '"' +
-            ' data-has-non-foil="' +
-            !!card.hasNonFoil +
-            '">&mdash;</td>';
-
-        // Card No.
-        html += '<td class="table-cell">' + escapeHtml(card.number) + '</td>';
-
-        // Card name with hover preview
-        html += '<td data-img-src="' + escapeHtml(card.imgSrc) + '" class="table-cell">';
-        html += '<a href="' + url + '" class="card-name-link">' + escapeHtml(card.name) + '</a>';
-        html += '<a href="' + url + '" class="card-img-link">';
+            '<td class="table-cell" data-id="' +
+            escapeHtml(item.cardId) +
+            '" data-img-src="' +
+            escapeHtml(imgSrc) +
+            '">';
+        html +=
+            '<a href="' +
+            escapeHtml(url) +
+            '" class="card-name-link">' +
+            escapeHtml(item.cardName || '') +
+            '</a>';
+        if (item.tags && item.tags.length > 0) {
+            for (var t = 0; t < item.tags.length; t++) {
+                html += '<span class="tag">' + escapeHtml(item.tags[t]) + '</span>';
+            }
+        }
+        html += '<a href="' + escapeHtml(url) + '" class="card-img-link">';
         html +=
             '<img src="' +
             escapeHtml(imgSrc) +
             '" alt="' +
-            escapeHtml(card.name) +
+            escapeHtml(item.cardName || '') +
             '" class="card-img-preview" />';
         html += '</a></td>';
 
-        // Mana Cost (xs-hide)
-        html += '<td class="table-cell xs-hide">' + renderManaCost(card.manaCost) + '</td>';
-
-        // Rarity (xs-hide)
-        html += '<td class="table-cell xs-hide">' + escapeHtml(card.rarity || '') + '</td>';
-
-        // Normal price (xs-hide)
-        html += '<td class="table-cell xs-hide">';
-        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
-            html += '<span class="price-normal">' + toDollar(card.prices.normal) + '</span>';
-            if (card.prices.normalChangeWeekly != null && card.prices.normalChangeWeekly !== 0) {
-                html += ' ' + renderPriceChange(card.prices.normalChangeWeekly);
-            }
+        // Set column
+        var keyruneCode = item.keyruneCode || item.setCode || '';
+        var rarity = item.rarity || '';
+        html += '<td class="table-cell">';
+        if (item.setCode) {
+            html +=
+                '<a href="/sets/' +
+                escapeHtml(item.setCode) +
+                '" class="table-link">' +
+                '<i class="ss ss-' +
+                escapeHtml(keyruneCode) +
+                ' ss-' +
+                escapeHtml(rarity) +
+                ' ss-fw"></i> ' +
+                escapeHtml(item.setCode.toUpperCase()) +
+                '</a>';
         }
         html += '</td>';
 
-        // Foil price (xs-hide)
-        html += '<td class="table-cell xs-hide">';
-        if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html += '<span class="price-foil">' + toDollar(card.prices.foil) + '</span>';
-            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
-                html += ' ' + renderPriceChange(card.prices.foilChangeWeekly);
-            }
-        }
+        // Price column
+        html += '<td class="table-cell">';
+        var priceValue = item.isFoil ? item.priceFoil : item.priceNormal;
+        var priceClass = item.isFoil ? 'price-foil' : 'price-normal';
+        html += '<span class="' + priceClass + '">' + toDollar(priceValue) + '</span>';
         html += '</td>';
 
-        // Combined price (xs-show, mobile)
-        html += '<td class="table-cell xs-show">';
-        if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html += '<span class="price-foil">' + toDollar(card.prices.foil) + '</span>';
-            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
-                html += ' ' + renderPriceChange(card.prices.foilChangeWeekly);
-            }
-        }
-        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
-            html += '<span class="price-normal">' + toDollar(card.prices.normal) + '</span>';
-        }
-        if (
-            card.prices &&
-            card.prices.normalChangeWeekly != null &&
-            card.prices.normalChangeWeekly !== 0
-        ) {
-            html += ' ' + renderPriceChange(card.prices.normalChangeWeekly);
-        }
-        html += '</td>';
+        // Delete column
+        html += '<td class="table-cell delete-inventory-entry xs-hide">';
+        html +=
+            '<form class="delete-inventory-form" data-item-id="' + escapeHtml(item.cardId) + '">';
+        html += '<input type="hidden" name="card-id" value="' + escapeHtml(item.cardId) + '" />';
+        html += '<input type="hidden" name="isFoil" value="' + item.isFoil + '" />';
+        html += '<button type="button" class="delete-inventory-button">';
+        html += '<i class="fas fa-trash-alt"></i>';
+        html += '</button></form></td>';
 
         html += '</tr>';
         return html;
     }
 
-    function renderManaCost(manaCost) {
-        if (!manaCost) return '';
-        // Parse mana symbols like {W}, {U}, {B}, {R}, {G}, {1}, {2}, etc.
-        return manaCost.replace(/\{([^}]+)\}/g, function (match, symbol) {
-            var cssClass = 'ms ms-' + symbol.toLowerCase().replace('/', '');
-            return '<i class="' + cssClass + ' ms-cost"></i>';
-        });
-    }
-
-    function renderPriceChange(change) {
-        if (change == null || change === 0) return '';
-        var abs = Math.abs(Math.round(change * 100) / 100);
-        var formatted = toDollar(abs);
-        if (change > 0) {
-            return '<span class="price-change price-change-positive">+' + formatted + '</span>';
-        } else {
-            return '<span class="price-change price-change-negative">-' + formatted + '</span>';
-        }
+    function renderCardsOwnedForm(item) {
+        var foilClass = item.isFoil ? 'foil' : 'normal';
+        var html =
+            '<form class="quantity-form quantity-form-' +
+            foilClass +
+            '"' +
+            ' data-item-id="' +
+            escapeHtml(item.cardId) +
+            '" data-foil="' +
+            item.isFoil +
+            '">';
+        html += '<input type="hidden" name="cardId" value="' + escapeHtml(item.cardId) + '" />';
+        html +=
+            '<button type="button" class="increment-quantity inventory-controller-button-' +
+            foilClass +
+            ' hover:text-purple-400 active:text-purple-600">+</button>';
+        html +=
+            '<input type="number" name="quantity-owned" class="quantity-owned" value="' +
+            item.quantity +
+            '" data-id="' +
+            escapeHtml(item.cardId) +
+            '" />';
+        html += '<input type="hidden" name="isFoil" value="' + item.isFoil + '" />';
+        html +=
+            '<button type="button" class="decrement-quantity inventory-controller-button-' +
+            foilClass +
+            ' hover:text-red-400 active:text-red-600">-</button>';
+        html += '</form>';
+        return html;
     }
 
     function renderPagination(meta) {
-        var paginationEl = container.querySelector('.pagination-container');
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
 
         if (!meta || meta.totalPages <= 1) {
             if (paginationEl) paginationEl.innerHTML = '';
@@ -457,10 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Limit selector
-        html +=
-            '<form method="get" action="/sets/' +
-            escapeHtml(setCode) +
-            '" class="flex items-center gap-2 mb-4 mt-2">';
+        html += '<form method="get" action="/inventory" class="flex items-center gap-2 mb-4 mt-2">';
         html +=
             '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
         [25, 50, 100].forEach(function (val) {
@@ -484,19 +470,18 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateBaseOnlyToggle() {
         var toggle = container.querySelector('a[href*="baseOnly"]');
         if (!toggle) return;
-        // Update the toggle URL and appearance
         var params = new URLSearchParams();
         if (state.filter) params.set('filter', state.filter);
         if (state.limit !== 25) params.set('limit', state.limit);
         if (state.baseOnly) {
             params.set('baseOnly', 'false');
-            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
+            toggle.setAttribute('href', '/inventory?' + params.toString());
             toggle.textContent = 'Show All Cards';
             toggle.className = toggle.className
                 .replace('btn-secondary', 'btn-primary')
                 .replace('btn-primary', 'btn-primary');
         } else {
-            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
+            toggle.setAttribute('href', '/inventory?' + params.toString());
             toggle.textContent = 'Base Set Only';
             toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
         }
@@ -512,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/sets/' + encodeURIComponent(setCode) + '?' + params.toString();
+        return '/inventory?' + params.toString();
     }
 
     function toDollar(amount) {
@@ -521,81 +506,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var str = rounded.toFixed(2);
         str = '$' + str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return str;
-    }
-
-    function fetchAndRenderInventory(cards) {
-        var cardIds = cards
-            .map(function (c) {
-                return c.id;
-            })
-            .filter(Boolean);
-        if (cardIds.length === 0) return;
-
-        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','))
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (json) {
-                if (!json.success || !json.data) return;
-                var quantityMap = {};
-                for (var i = 0; i < json.data.length; i++) {
-                    quantityMap[json.data[i].cardId] = json.data[i];
-                }
-                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
-                for (var j = 0; j < cells.length; j++) {
-                    var cell = cells[j];
-                    var cardId = cell.getAttribute('data-card-id');
-                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
-                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
-                    var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
-                    cell.innerHTML = renderOwnedForms(cardId, qty, hasFoil, hasNonFoil);
-                }
-            })
-            .catch(function (err) {
-                console.error('Error fetching inventory quantities:', err);
-            });
-    }
-
-    function renderOwnedForms(cardId, qty, hasFoil, hasNonFoil) {
-        var html = '';
-        if (hasNonFoil) {
-            html += renderOwnedForm(cardId, qty.normalQuantity, false);
-        }
-        if (hasFoil) {
-            html += renderOwnedForm(cardId, qty.foilQuantity, true);
-        }
-        return html;
-    }
-
-    function renderOwnedForm(cardId, quantity, isFoil) {
-        var foilClass = isFoil ? 'foil' : 'normal';
-        var html =
-            '<form class="quantity-form quantity-form-' +
-            foilClass +
-            '"' +
-            ' data-item-id="' +
-            escapeHtml(cardId) +
-            '" data-foil="' +
-            isFoil +
-            '">';
-        html += '<input type="hidden" name="cardId" value="' + escapeHtml(cardId) + '" />';
-        html +=
-            '<button type="button" class="increment-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-purple-400 active:text-purple-600">+</button>';
-        html +=
-            '<input type="number" name="quantity-owned" class="quantity-owned" value="' +
-            quantity +
-            '" data-id="' +
-            escapeHtml(cardId) +
-            '" />';
-        html += '<input type="hidden" name="isFoil" value="' + isFoil + '" />';
-        html +=
-            '<button type="button" class="decrement-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-red-400 active:text-red-600">-</button>';
-        html += '</form>';
-        return html;
     }
 
     function escapeHtml(str) {

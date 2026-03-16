@@ -45,8 +45,7 @@ export class SearchViewDto extends BaseViewDto {
     readonly sets: SearchSetResultDto[];
     readonly cardTotal: number;
     readonly setTotal: number;
-    readonly cardPagination?: PaginationView;
-    readonly setPagination?: PaginationView;
+    readonly pagination?: PaginationView;
 
     constructor(init: Partial<SearchViewDto>) {
         super(init);
@@ -55,7 +54,6 @@ export class SearchViewDto extends BaseViewDto {
         this.sets = init.sets || [];
         this.cardTotal = init.cardTotal || 0;
         this.setTotal = init.setTotal || 0;
-        this.cardPagination = init.cardPagination;
-        this.setPagination = init.setPagination;
+        this.pagination = init.pagination;
     }
 }

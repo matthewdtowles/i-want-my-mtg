@@ -82,6 +82,16 @@ describe('Inventory API (e2e)', () => {
             expect(item).toHaveProperty('cardName');
             expect(item).toHaveProperty('setCode');
             expect(item).toHaveProperty('cardNumber');
+            expect(item).toHaveProperty('imgSrc');
+            expect(item).toHaveProperty('rarity');
+            expect(item).toHaveProperty('keyruneCode');
+            expect(item).toHaveProperty('url');
+            expect(item).toHaveProperty('hasNonFoil');
+            expect(item).toHaveProperty('hasFoil');
+            expect(item).toHaveProperty('tags');
+            // priceNormal/priceFoil may be null but should be present
+            expect(item).toHaveProperty('priceNormal');
+            expect(item).toHaveProperty('priceFoil');
         });
 
         it('PATCH /api/v1/inventory updates inventory items', async () => {
@@ -104,6 +114,42 @@ describe('Inventory API (e2e)', () => {
 
             expect(res.body.success).toBe(true);
             expect(res.body.data).toHaveProperty('deleted', true);
+        });
+    });
+
+    describe('Batch quantities endpoint', () => {
+        it('GET /api/v1/inventory/quantities without auth returns 401', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/inventory/quantities?cardIds=${TEST_CARD_ID}`)
+                .expect(401);
+
+            expect(res.body.success).toBe(false);
+        });
+
+        it('GET /api/v1/inventory/quantities returns quantities for card IDs', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/inventory/quantities?cardIds=${TEST_CARD_ID}`)
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            if (res.body.data.length > 0) {
+                const item = res.body.data[0];
+                expect(item).toHaveProperty('cardId');
+                expect(item).toHaveProperty('foilQuantity');
+                expect(item).toHaveProperty('normalQuantity');
+            }
+        });
+
+        it('returns empty array for card IDs not in inventory', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/inventory/quantities?cardIds=nonexistent-card-id')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toEqual([]);
         });
     });
 

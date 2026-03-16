@@ -70,12 +70,23 @@
   - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
   - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
   - [x] Wire up setListPage.hbs template with container div and deferred script
-- [ ] Card search/list: AJAX paginate/sort/filter
-  - [ ] Convert card search/list pagination/sort/filter to AJAX
-- [ ] Inventory list: AJAX paginate/sort/filter + toast notifications on errors
-  - [ ] Add toast notification component for async feedback
-  - [ ] Convert inventory list pagination/sort/filter to AJAX
-  - [ ] Wire toast notifications to inventory update failures (transaction constraint errors)
+- [x] Card search/list: AJAX paginate/sort/filter
+  - [x] Add `keyruneCode` to Card API DTO (TDD — presenter maps from `card.set.keyruneCode` with `setCode` fallback)
+  - [x] Add `@ApiQuery` decorators for `filter` and `baseOnly` on set cards endpoint
+  - [x] Build `searchAjax.js` — intercepts form submit, independent card/set pagination, parallel API fetches
+  - [x] Build `setCardListAjax.js` — sort/filter/paginate/baseOnly via `/api/v1/sets/:code/cards`
+  - [x] Wire search.hbs and set.hbs templates with container divs and deferred scripts
+  - [x] Add integration tests for `keyruneCode`, filter, and baseOnly params
+  - [x] Scroll position preservation via `min-height` pinning during AJAX content swap
+- [x] Inventory list: AJAX paginate/sort/filter + toast notifications on errors
+  - [x] Extract global toast utility (`toast.js`) — `window.showToast`/`window.dismissToast` with status-based durations
+  - [x] Enrich Inventory API response with display fields (imgSrc, rarity, keyruneCode, prices, tags, url)
+  - [x] Add batch inventory quantities endpoint (`GET /api/v1/inventory/quantities?cardIds=...`)
+  - [x] Build `inventoryListAjax.js` — filter/sort/paginate/limit/baseOnly via `/api/v1/inventory`
+  - [x] Wire inventory +/- and delete controls for AJAX-rendered rows (event delegation compatibility)
+  - [x] Wire toast notifications to inventory update/delete failures
+  - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
+  - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
 - [ ] Transaction list: AJAX paginate/sort/filter
   - [ ] Convert transaction list pagination/sort/filter to AJAX
   - [ ] Cross-browser testing

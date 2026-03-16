@@ -17,7 +17,7 @@
     {{#if query}}
         {{!-- Sets Section --}}
         {{#if sets.length}}
-        <div class="mb-8">
+        <div id="search-sets-section" class="mb-8">
             <h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">
                 Sets
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{setTotal}} found)</span>
@@ -42,13 +42,12 @@
                 </a>
                 {{/each}}
             </div>
-            {{> pagination pagination=setPagination hasItems=setPagination.totalPages}}
         </div>
         {{/if}}
 
         {{!-- Cards Section --}}
         {{#if cards.length}}
-        <div class="mb-8">
+        <div id="search-cards-section" class="mb-8">
             <h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">
                 Cards
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{cardTotal}} found)</span>
@@ -71,9 +70,10 @@
                 </a>
                 {{/each}}
             </div>
-            {{> pagination pagination=cardPagination hasItems=cardPagination.totalPages}}
         </div>
         {{/if}}
+
+        {{> pagination hasItems=pagination.totalPages}}
 
         {{!-- Empty State --}}
         {{#unless sets.length}}

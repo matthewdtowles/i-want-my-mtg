@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateHistory(historyMethod);
             return;
         }
+        pinHeight(container);
         showLoading();
         Promise.all([
             fetch(buildCardApiUrl()).then(function (r) {
@@ -129,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var cardJson = results[0];
                 var setJson = results[1];
                 renderResults(cardJson, setJson);
+                unpinHeight(container);
                 updateHistory(historyMethod);
             })
             .catch(function (err) {
@@ -136,12 +138,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 container.innerHTML = renderError(
                     'Failed to load search results. Please try again.'
                 );
+                unpinHeight(container);
             });
     }
 
     function fetchCards(historyMethod) {
         var cardsSection = document.getElementById('search-cards-section');
         if (cardsSection) {
+            pinHeight(cardsSection);
             var grid = cardsSection.querySelector('.grid, .text-center');
             if (grid)
                 grid.innerHTML =
@@ -154,15 +158,19 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (json) {
                 renderCardSection(json.data || [], json.meta);
                 updateHistory(historyMethod);
+                var el = document.getElementById('search-cards-section');
+                if (el) unpinHeight(el);
             })
             .catch(function (err) {
                 console.error('Card fetch error:', err);
+                if (cardsSection) unpinHeight(cardsSection);
             });
     }
 
     function fetchSets(historyMethod) {
         var setsSection = document.getElementById('search-sets-section');
         if (setsSection) {
+            pinHeight(setsSection);
             var grid = setsSection.querySelector('.grid, .text-center');
             if (grid)
                 grid.innerHTML =
@@ -175,9 +183,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (json) {
                 renderSetSection(json.data || [], json.meta);
                 updateHistory(historyMethod);
+                var el = document.getElementById('search-sets-section');
+                if (el) unpinHeight(el);
             })
             .catch(function (err) {
                 console.error('Set fetch error:', err);
+                if (setsSection) unpinHeight(setsSection);
             });
     }
 
@@ -455,6 +466,14 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('limit', String(state.limit));
         params.set('type', type);
         return '/search?' + params.toString();
+    }
+
+    function pinHeight(el) {
+        el.style.minHeight = el.offsetHeight + 'px';
+    }
+
+    function unpinHeight(el) {
+        el.style.minHeight = '';
     }
 
     function escapeHtml(str) {

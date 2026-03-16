@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchAndRender(historyMethod) {
         var resultsEl = document.getElementById('filter-results');
         if (resultsEl) {
+            resultsEl.style.minHeight = resultsEl.offsetHeight + 'px';
             resultsEl.innerHTML =
                 '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
         }
@@ -159,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (json) {
                 if (!json.success) {
                     showError(resultsEl, json.error || 'Failed to load cards');
+                    if (resultsEl) resultsEl.style.minHeight = '';
                     return;
                 }
                 renderTable(json.data, json.meta);
@@ -167,10 +169,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (historyMethod) {
                     window.history[historyMethod]({}, '', buildBrowserUrl());
                 }
+                if (resultsEl) resultsEl.style.minHeight = '';
             })
             .catch(function (err) {
                 console.error('Error fetching cards:', err);
                 showError(resultsEl, 'Failed to load cards. Please try again.');
+                if (resultsEl) resultsEl.style.minHeight = '';
             });
     }
 

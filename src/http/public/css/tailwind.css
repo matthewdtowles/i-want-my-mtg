@@ -2060,6 +2060,10 @@ input:where([type='file']):focus {
     z-index: 50;
 }
 
+.col-span-full {
+    grid-column: 1 / -1;
+}
+
 .mx-1 {
     margin-left: 0.25rem;
     margin-right: 0.25rem;
@@ -2895,6 +2899,11 @@ input:where([type='file']):focus {
     padding-bottom: 1.5rem;
 }
 
+.py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
 .pb-2 {
     padding-bottom: 0.5rem;
 }
@@ -3139,6 +3148,11 @@ input:where([type='file']):focus {
 .text-purple-900 {
     --tw-text-opacity: 1;
     color: rgb(74 32 104 / var(--tw-text-opacity, 1));
+}
+
+.text-red-400 {
+    --tw-text-opacity: 1;
+    color: rgb(248 113 113 / var(--tw-text-opacity, 1));
 }
 
 .text-red-500 {

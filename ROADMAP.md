@@ -63,11 +63,13 @@
 - [x] Add API integration tests
 
 ### 1.5 Progressive Web Enhancement
-- [ ] Set list: AJAX paginate/sort/filter (builds core infrastructure)
-  - [ ] Build client-side data-fetching module (calls `/api/v1/` endpoints, handles auth cookie)
-  - [ ] Build client-side table rendering module (JSON → DOM, loading/error/empty states)
-  - [ ] Add URL state management (pushState for filters/pagination/sort, back button support)
-  - [ ] Convert set list pagination/sort/filter to AJAX
+- [x] Set list: AJAX paginate/sort/filter (builds core infrastructure)
+  - [x] Move SetTypeMapper to shared location (`src/http/base/`)
+  - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
+  - [x] Add owned data to Set API (TDD) — OptionalAuthGuard, InventoryService injection, completionRate
+  - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
+  - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
+  - [x] Wire up setListPage.hbs template with container div and deferred script
 - [ ] Card search/list: AJAX paginate/sort/filter
   - [ ] Convert card search/list pagination/sort/filter to AJAX
 - [ ] Inventory list: AJAX paginate/sort/filter + toast notifications on errors

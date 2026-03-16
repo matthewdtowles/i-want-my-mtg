@@ -13,6 +13,7 @@
         </div>
     </form>
 
+    <div id="search-ajax">
     {{#if query}}
         {{!-- Sets Section --}}
         {{#if sets.length}}
@@ -88,4 +89,7 @@
             <p class="text-gray-500 dark:text-gray-400 text-lg">Enter a search term to find cards and sets</p>
         </div>
     {{/if}}
+    </div>
 </section>
+
+<script src="/public/js/searchAjax.js" defer></script>

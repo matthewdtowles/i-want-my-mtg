@@ -1,45 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const container = document.getElementById('set-list-ajax');
+    var container = document.getElementById('set-card-list-ajax');
     if (!container) return;
 
-    const authenticated = container.dataset.authenticated === 'true';
+    var setCode = container.dataset.setCode;
+    var authenticated = container.dataset.authenticated === 'true';
 
-    // State
-    let state = parseStateFromUrl();
+    var state = parseStateFromUrl();
 
-    // Override filter.js by cloning the filter input (removes old listeners)
-    const oldFilter = document.getElementById('filter');
-    if (oldFilter) {
-        const newFilter = oldFilter.cloneNode(true);
-        oldFilter.parentNode.replaceChild(newFilter, oldFilter);
-
-        let debounceTimeout;
-        newFilter.addEventListener('input', function () {
-            clearTimeout(debounceTimeout);
-            const clearBtn = document.getElementById('clear-filter-btn');
-            if (clearBtn) clearBtn.style.display = this.value ? 'inline' : 'none';
-            debounceTimeout = setTimeout(function () {
-                state.filter = newFilter.value;
-                state.page = 1;
-                fetchAndRender('replaceState');
-            }, 300);
-        });
-
-        const clearBtn = document.getElementById('clear-filter-btn');
-        if (clearBtn) {
-            const newClearBtn = clearBtn.cloneNode(true);
-            clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
-            newClearBtn.addEventListener('click', function () {
-                newFilter.value = '';
-                newClearBtn.style.display = 'none';
-                state.filter = '';
-                state.page = 1;
-                fetchAndRender('replaceState');
-            });
-        }
-    }
-
-    // Prevent filter form submit
+    // Override filter.js by cloning the filter form (removes old listeners)
     var filterForm = document.getElementById('filter-form');
     if (filterForm) {
         var newForm = filterForm.cloneNode(true);
@@ -47,25 +15,26 @@ document.addEventListener('DOMContentLoaded', function () {
         newForm.addEventListener('submit', function (e) {
             e.preventDefault();
         });
-        // Re-bind filter input after form clone
-        var reFilter = newForm.querySelector('#filter');
-        if (reFilter) {
-            var debounceTimeout2;
-            reFilter.addEventListener('input', function () {
-                clearTimeout(debounceTimeout2);
-                var cb = newForm.querySelector('#clear-filter-btn');
-                if (cb) cb.style.display = this.value ? 'inline' : 'none';
-                debounceTimeout2 = setTimeout(function () {
-                    state.filter = reFilter.value;
+
+        var filterInput = newForm.querySelector('#filter');
+        if (filterInput) {
+            var debounceTimeout;
+            filterInput.addEventListener('input', function () {
+                clearTimeout(debounceTimeout);
+                var clearBtn = newForm.querySelector('#clear-filter-btn');
+                if (clearBtn) clearBtn.style.display = this.value ? 'inline' : 'none';
+                debounceTimeout = setTimeout(function () {
+                    state.filter = filterInput.value;
                     state.page = 1;
                     fetchAndRender('replaceState');
                 }, 300);
             });
-            var cb2 = newForm.querySelector('#clear-filter-btn');
-            if (cb2) {
-                cb2.addEventListener('click', function () {
-                    reFilter.value = '';
-                    cb2.style.display = 'none';
+
+            var clearBtn = newForm.querySelector('#clear-filter-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    filterInput.value = '';
+                    clearBtn.style.display = 'none';
                     state.filter = '';
                     state.page = 1;
                     fetchAndRender('replaceState');
@@ -76,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Intercept sort clicks via event delegation on thead
     document.addEventListener('click', function (e) {
-        var link = e.target.closest('thead a.sort-btn');
+        var link = e.target.closest('#set-card-list-ajax thead a.sort-btn');
         if (!link) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^\?/, ''));
@@ -88,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Intercept pagination clicks
     document.addEventListener('click', function (e) {
-        var link = e.target.closest('.pagination-container a');
+        var link = e.target.closest(
+            '#set-card-list-ajax .pagination-container a, #set-card-list-ajax ~ .pagination-container a'
+        );
         if (!link) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
@@ -100,6 +71,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept limit select change
     document.addEventListener('change', function (e) {
         if (e.target.id !== 'limit') return;
+        if (!e.target.closest('#set-card-list-ajax, #set-card-list-ajax ~ .pagination-container'))
+            return;
         e.preventDefault();
         state.limit = parseInt(e.target.value, 10) || 25;
         state.page = 1;
@@ -115,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Intercept baseOnly toggle clicks
     document.addEventListener('click', function (e) {
-        var link = e.target.closest('a[href*="baseOnly"]');
+        var link = e.target.closest('#set-card-list-ajax a[href*="baseOnly"]');
         if (!link) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
@@ -127,6 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Back/forward button
     window.addEventListener('popstate', function () {
         state = parseStateFromUrl();
+        // Sync filter input
+        var fi = document.querySelector('#filter');
+        if (fi) fi.value = state.filter;
         fetchAndRender(null);
     });
 
@@ -152,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/api/v1/sets?' + params.toString();
+        return '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards?' + params.toString();
     }
 
     function buildBrowserUrl() {
@@ -161,12 +137,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (state.limit !== 25) params.set('limit', state.limit);
         if (state.sort) {
             params.set('sort', state.sort);
-            params.set('ascend', state.ascend);
+            params.set('ascend', String(state.ascend));
         }
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
         var qs = params.toString();
-        return '/sets' + (qs ? '?' + qs : '');
+        return '/sets/' + encodeURIComponent(setCode) + (qs ? '?' + qs : '');
     }
 
     function fetchAndRender(historyMethod) {
@@ -182,18 +158,19 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (json) {
                 if (!json.success) {
-                    showError(resultsEl, json.error || 'Failed to load sets');
+                    showError(resultsEl, json.error || 'Failed to load cards');
                     return;
                 }
                 renderTable(json.data, json.meta);
                 renderPagination(json.meta);
+                updateBaseOnlyToggle();
                 if (historyMethod) {
                     window.history[historyMethod]({}, '', buildBrowserUrl());
                 }
             })
             .catch(function (err) {
-                console.error('Error fetching sets:', err);
-                showError(resultsEl, 'Failed to load sets. Please try again.');
+                console.error('Error fetching cards:', err);
+                showError(resultsEl, 'Failed to load cards. Please try again.');
             });
     }
 
@@ -208,26 +185,28 @@ document.addEventListener('DOMContentLoaded', function () {
             '</div>';
     }
 
-    function renderTable(sets, meta) {
+    function renderTable(cards, meta) {
         var resultsEl = document.getElementById('filter-results');
         if (!resultsEl) return;
 
-        if (!sets || sets.length === 0) {
+        if (!cards || cards.length === 0) {
             resultsEl.innerHTML =
                 '<div class="text-center py-16">' +
                 '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
-                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No sets match your search</p>' +
+                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No cards match your search</p>' +
                 '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>' +
-                '<a href="/sets" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>' +
+                '<a href="/sets/' +
+                escapeHtml(setCode) +
+                '" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>' +
                 '</div>';
             return;
         }
 
-        var html = '<div class="table-wrapper"><table class="min-w-full table-container">';
+        var html = '<div class="table-wrapper"><table class="table-container">';
         html += '<thead>' + renderTableHeaders() + '</thead>';
         html += '<tbody>';
-        for (var i = 0; i < sets.length; i++) {
-            html += renderSetRow(sets[i]);
+        for (var i = 0; i < cards.length; i++) {
+            html += renderCardRow(cards[i]);
         }
         html += '</tbody></table></div>';
         resultsEl.innerHTML = html;
@@ -235,22 +214,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderTableHeaders() {
         var headers = [
-            { key: 'set.name', label: 'Set' },
-            { key: 'setPrice.basePrice', label: 'Set Value', subtitle: '7d' },
+            { key: '', label: 'Owned' },
+            { key: 'card.number', label: 'Card No.' },
+            { key: 'card.name', label: 'Card' },
+            { key: 'card.manaCost', label: 'Mana Cost', classes: 'xs-hide' },
+            { key: 'card.rarity', label: 'Rarity', classes: 'xs-hide' },
+            { key: 'price.normal', label: 'Normal', subtitle: '7d', classes: 'xs-hide' },
+            { key: 'price.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' },
+            { key: '', label: 'Price', classes: 'xs-show' },
         ];
 
         var html = '<tr class="table-header-row">';
         for (var i = 0; i < headers.length; i++) {
-            html += renderSortableHeader(headers[i]);
+            var h = headers[i];
+            if (h.key) {
+                html += renderSortableHeader(h);
+            } else {
+                var classAttr = 'table-header' + (h.classes ? ' ' + h.classes : '');
+                html += '<th class="' + classAttr + '">' + escapeHtml(h.label) + '</th>';
+            }
         }
-        if (authenticated) {
-            html += '<th class="table-header">Owned Value</th>';
-        }
-        html += renderSortableHeader({
-            key: 'set.releaseDate',
-            label: 'Release Date',
-            classes: 'xs-hide pr-2',
-        });
         html += '</tr>';
         return html;
     }
@@ -270,10 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var subtitleHtml = header.subtitle
             ? ' <span class="header-subtitle">(' + escapeHtml(header.subtitle) + '\u25B3)</span>'
             : '';
-        var classAttr =
-            'table-header' +
-            (header.classes ? ' ' + header.classes : '') +
-            (header.key === 'set.name' ? ' pl-2' : '');
+        var classAttr = 'table-header' + (header.classes ? ' ' + header.classes : '');
 
         return (
             '<th class="' +
@@ -291,68 +271,90 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function renderSetRow(set) {
-        var keyruneCode = escapeHtml(set.keyruneCode || set.code);
-        var name = escapeHtml(set.name);
-        var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
-
-        var tagsHtml = '';
-        if (set.tags) {
-            for (var t = 0; t < set.tags.length; t++) {
-                tagsHtml += '<span class="tag">' + escapeHtml(set.tags[t]) + '</span>';
-            }
-        }
-
-        var priceHtml = formatPrice(set.prices);
-        var changeHtml = formatWeeklyChange(set.prices);
+    function renderCardRow(card) {
+        var url = '/card/' + encodeURIComponent(setCode) + '/' + encodeURIComponent(card.number);
+        var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
 
         var html = '<tr class="table-row">';
-        html += '<td class="table-cell"><i class="ss ss-' + keyruneCode + ' ss-fw"></i> ';
-        html += '<a href="' + url + '" class="table-link">' + name + '</a> ' + tagsHtml + '</td>';
-        html += '<td class="table-cell">' + priceHtml + ' ' + changeHtml + '</td>';
 
-        if (authenticated) {
-            html += '<td class="table-cell">';
-            if (set.ownedValue !== undefined && set.ownedValue !== null) {
-                html +=
-                    '<span class="text-sm font-medium text-gray-800 dark:text-gray-200">' +
-                    toDollar(set.ownedValue) +
-                    '</span>';
-                html +=
-                    '<div class="mt-0.5">' +
-                    renderCompletionBar(set.completionRate || 0) +
-                    '</div>';
+        // Owned column
+        html += '<td class="table-cell">&mdash;</td>';
+
+        // Card No.
+        html += '<td class="table-cell">' + escapeHtml(card.number) + '</td>';
+
+        // Card name with hover preview
+        html += '<td data-img-src="' + escapeHtml(card.imgSrc) + '" class="table-cell">';
+        html += '<a href="' + url + '" class="card-name-link">' + escapeHtml(card.name) + '</a>';
+        html += '<a href="' + url + '" class="card-img-link">';
+        html +=
+            '<img src="' +
+            escapeHtml(imgSrc) +
+            '" alt="' +
+            escapeHtml(card.name) +
+            '" class="card-img-preview" />';
+        html += '</a></td>';
+
+        // Mana Cost (xs-hide)
+        html += '<td class="table-cell xs-hide">' + renderManaCost(card.manaCost) + '</td>';
+
+        // Rarity (xs-hide)
+        html += '<td class="table-cell xs-hide">' + escapeHtml(card.rarity || '') + '</td>';
+
+        // Normal price (xs-hide)
+        html += '<td class="table-cell xs-hide">';
+        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+            html += '<span class="price-normal">' + toDollar(card.prices.normal) + '</span>';
+            if (card.prices.normalChangeWeekly != null && card.prices.normalChangeWeekly !== 0) {
+                html += ' ' + renderPriceChange(card.prices.normalChangeWeekly);
             }
-            html += '</td>';
         }
+        html += '</td>';
 
-        html += '<td class="table-cell xs-hide">' + escapeHtml(set.releaseDate || '') + '</td>';
+        // Foil price (xs-hide)
+        html += '<td class="table-cell xs-hide">';
+        if (card.hasFoil && card.prices && card.prices.foil != null) {
+            html += '<span class="price-foil">' + toDollar(card.prices.foil) + '</span>';
+            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                html += ' ' + renderPriceChange(card.prices.foilChangeWeekly);
+            }
+        }
+        html += '</td>';
+
+        // Combined price (xs-show, mobile)
+        html += '<td class="table-cell xs-show">';
+        if (card.hasFoil && card.prices && card.prices.foil != null) {
+            html += '<span class="price-foil">' + toDollar(card.prices.foil) + '</span>';
+            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                html += ' ' + renderPriceChange(card.prices.foilChangeWeekly);
+            }
+        }
+        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+            html += '<span class="price-normal">' + toDollar(card.prices.normal) + '</span>';
+        }
+        if (
+            card.prices &&
+            card.prices.normalChangeWeekly != null &&
+            card.prices.normalChangeWeekly !== 0
+        ) {
+            html += ' ' + renderPriceChange(card.prices.normalChangeWeekly);
+        }
+        html += '</td>';
+
         html += '</tr>';
         return html;
     }
 
-    function formatPrice(prices) {
-        if (!prices) return '-';
-        var val = prices.basePrice;
-        if (val == null || val <= 0) {
-            val = prices.basePriceAll;
-        }
-        if (val == null || val <= 0) {
-            val = prices.totalPrice;
-        }
-        if (val == null || val <= 0) {
-            val = prices.totalPriceAll;
-        }
-        if (val == null || val <= 0) return '-';
-        return toDollar(val);
+    function renderManaCost(manaCost) {
+        if (!manaCost) return '';
+        // Parse mana symbols like {W}, {U}, {B}, {R}, {G}, {1}, {2}, etc.
+        return manaCost.replace(/\{([^}]+)\}/g, function (match, symbol) {
+            var cssClass = 'ms ms-' + symbol.toLowerCase().replace('/', '');
+            return '<i class="' + cssClass + ' ms-cost"></i>';
+        });
     }
 
-    function formatWeeklyChange(prices) {
-        if (!prices) return '';
-        var change = prices.basePriceChangeWeekly;
-        if (change == null || change === 0) {
-            change = prices.totalPriceChangeWeekly;
-        }
+    function renderPriceChange(change) {
         if (change == null || change === 0) return '';
         var abs = Math.abs(Math.round(change * 100) / 100);
         var formatted = toDollar(abs);
@@ -363,21 +365,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function renderCompletionBar(rate) {
-        return (
-            '<div class="completion-bar-container flex items-center relative">' +
-            '<div class="completion-bar absolute top-0 left-0 h-full" style="width: ' +
-            rate +
-            '%;"></div>' +
-            '<span class="w-full text-center z-10 font-bold relative">' +
-            rate +
-            '%</span>' +
-            '</div>'
-        );
-    }
-
     function renderPagination(meta) {
-        var paginationEl = document.querySelector('.pagination-container');
+        // Find the pagination container that follows the set-card-list-ajax container
+        var paginationEl =
+            container.parentElement.querySelector('.pagination-container') ||
+            document.querySelector('#set-card-list-ajax ~ .pagination-container');
+
         if (!meta || meta.totalPages <= 1) {
             if (paginationEl) paginationEl.innerHTML = '';
             return;
@@ -389,10 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!paginationEl) {
             paginationEl = document.createElement('section');
             paginationEl.className = 'pagination-container';
-            var filterResults = document.getElementById('filter-results');
-            if (filterResults && filterResults.parentNode) {
-                filterResults.parentNode.insertBefore(paginationEl, filterResults.nextSibling);
-            }
+            container.parentNode.insertBefore(paginationEl, container.nextSibling);
         }
 
         var html = '';
@@ -449,7 +439,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Limit selector
-        html += '<form method="get" action="/sets" class="flex items-center gap-2 mb-4 mt-2">';
+        html +=
+            '<form method="get" action="/sets/' +
+            escapeHtml(setCode) +
+            '" class="flex items-center gap-2 mb-4 mt-2">';
         html +=
             '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
         [25, 50, 100].forEach(function (val) {
@@ -470,6 +463,27 @@ document.addEventListener('DOMContentLoaded', function () {
         paginationEl.innerHTML = html;
     }
 
+    function updateBaseOnlyToggle() {
+        var toggle = container.querySelector('a[href*="baseOnly"]');
+        if (!toggle) return;
+        // Update the toggle URL and appearance
+        var params = new URLSearchParams();
+        if (state.filter) params.set('filter', state.filter);
+        if (state.limit !== 25) params.set('limit', state.limit);
+        if (state.baseOnly) {
+            params.set('baseOnly', 'false');
+            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
+            toggle.textContent = 'Show All Cards';
+            toggle.className = toggle.className
+                .replace('btn-secondary', 'btn-primary')
+                .replace('btn-primary', 'btn-primary');
+        } else {
+            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
+            toggle.textContent = 'Base Set Only';
+            toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
+        }
+    }
+
     function paginationHref(page) {
         var params = new URLSearchParams();
         params.set('page', String(page));
@@ -480,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/sets?' + params.toString();
+        return '/sets/' + encodeURIComponent(setCode) + '?' + params.toString();
     }
 
     function toDollar(amount) {

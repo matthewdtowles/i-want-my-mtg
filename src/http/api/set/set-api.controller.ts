@@ -110,6 +110,8 @@ export class SetApiController {
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
+    @ApiQuery({ name: 'filter', required: false, description: 'Filter cards by name' })
+    @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base set cards' })
     @ApiResponse({ status: 200, description: 'Cards in set' })
     async findCardsInSet(
         @Param('code') code: string,

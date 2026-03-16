@@ -105,6 +105,22 @@ describe('CardApiPresenter', () => {
             expect(result.setName).toBeUndefined();
         });
 
+        it('should include keyruneCode from set when set is present', () => {
+            const card = createCard({
+                set: { name: 'Limited Edition Alpha', code: 'lea', keyruneCode: 'lea' } as Set,
+            });
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            expect(result.keyruneCode).toBe('lea');
+        });
+
+        it('should fall back to setCode for keyruneCode when set is absent', () => {
+            const card = createCard({ set: undefined });
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            expect(result.keyruneCode).toBe('lea');
+        });
+
         it('should include optional card fields', () => {
             const card = createCard({
                 manaCost: '{R}',

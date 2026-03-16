@@ -35,7 +35,7 @@ import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
 import { SetResponseDto } from './dto/set.response.dto';
 import { SetViewDto } from './dto/set.view.dto';
-import { SetTypeMapper } from './set-type.mapper';
+import { SetTypeMapper } from 'src/http/base/set-type.mapper';
 
 @Injectable()
 export class SetOrchestrator {

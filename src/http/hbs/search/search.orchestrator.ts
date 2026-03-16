@@ -9,7 +9,7 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BASE_IMAGE_URL, buildCardUrl, isAuthenticated } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SetTypeMapper } from 'src/http/hbs/set/set-type.mapper';
+import { SetTypeMapper } from 'src/http/base/set-type.mapper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SearchSuggestResponseDto, SuggestCardDto, SuggestSetDto } from './dto/search-suggest.dto';
 import { SearchCardResultDto, SearchSetResultDto, SearchViewDto } from './dto/search.view.dto';

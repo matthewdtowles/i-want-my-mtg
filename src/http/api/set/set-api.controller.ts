@@ -5,18 +5,24 @@ import {
     NotFoundException,
     Param,
     Query,
+    Req,
     UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
+import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetService } from 'src/core/set/set.service';
 import { Set } from 'src/core/set/set.entity';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { completionRate } from 'src/http/base/http.util';
 import { SetApiResponseDto, SetPriceHistoryPointDto } from './dto/set-response.dto';
+import { SetApiPresenter } from './set-api.presenter';
 import { CardApiResponseDto } from '../card/dto/card-response.dto';
 import { CardApiPresenter } from '../card/card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
 
@@ -26,18 +32,23 @@ import { parseDaysParam } from 'src/http/base/query.util';
 export class SetApiController {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
-        @Inject(CardService) private readonly cardService: CardService
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(InventoryService) private readonly inventoryService: InventoryService
     ) {}
 
     @Get()
+    @UseGuards(OptionalAuthGuard)
     @ApiOperation({ summary: 'List sets' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
+    @ApiQuery({ name: 'filter', required: false, description: 'Filter sets by name' })
+    @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base/main sets' })
     @ApiQuery({ name: 'q', required: false, description: 'Search query' })
     @ApiResponse({ status: 200, description: 'List of sets' })
     async findAll(
+        @Req() req: AuthenticatedRequest,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
         const options = new SafeQueryOptions(query);
@@ -58,10 +69,27 @@ export class SetApiController {
             ]);
         }
 
-        return ApiResponseDto.ok(
-            sets.map((s) => this.toSetResponse(s)),
-            new PaginationMeta(options.page, options.limit, total)
+        const userId = req.user?.id;
+        const data = await Promise.all(
+            sets.map(async (s) => {
+                const dto = SetApiPresenter.toSetApiResponse(s);
+                if (!userId) return dto;
+
+                const [ownedTotal, ownedValue] = await Promise.all([
+                    this.inventoryService.totalInventoryItemsForSet(userId, s.code),
+                    this.inventoryService.ownedValueForSet(userId, s.code),
+                ]);
+
+                return {
+                    ...dto,
+                    ownedTotal,
+                    ownedValue,
+                    completionRate: completionRate(ownedTotal, s.effectiveSize),
+                };
+            })
         );
+
+        return ApiResponseDto.ok(data, new PaginationMeta(options.page, options.limit, total));
     }
 
     @Get(':code')
@@ -73,7 +101,7 @@ export class SetApiController {
         if (!set) {
             throw new NotFoundException('Set not found');
         }
-        return ApiResponseDto.ok(this.toSetResponse(set));
+        return ApiResponseDto.ok(SetApiPresenter.toSetApiResponse(set));
     }
 
     @Get(':code/cards')
@@ -120,28 +148,5 @@ export class SetApiController {
         }));
 
         return ApiResponseDto.ok(points);
-    }
-
-    private toSetResponse(set: Set): SetApiResponseDto {
-        return {
-            code: set.code,
-            name: set.name,
-            type: set.type,
-            releaseDate: set.releaseDate,
-            baseSize: set.baseSize,
-            totalSize: set.totalSize,
-            keyruneCode: set.keyruneCode,
-            block: set.block,
-            prices: set.prices
-                ? {
-                      basePrice: set.prices.basePrice,
-                      totalPrice: set.prices.totalPrice,
-                      basePriceAll: set.prices.basePriceAll,
-                      totalPriceAll: set.prices.totalPriceAll,
-                      basePriceChangeWeekly: set.prices.basePriceChangeWeekly,
-                      totalPriceChangeWeekly: set.prices.totalPriceChangeWeekly,
-                  }
-                : undefined,
-        };
     }
 }

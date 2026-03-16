@@ -73,8 +73,6 @@
         </div>
         {{/if}}
 
-        {{> pagination hasItems=pagination.totalPages}}
-
         {{!-- Empty State --}}
         {{#unless sets.length}}
         {{#unless cards.length}}
@@ -90,6 +88,8 @@
         </div>
     {{/if}}
     </div>
+
+    {{> pagination hasItems=pagination.totalPages}}
 </section>
 
 <script src="/public/js/searchAjax.js" defer></script>

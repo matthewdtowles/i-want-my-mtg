@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Remove inline onchange from SSR limit select to prevent full-page reload
-    var ssrLimitSelect = container.querySelector('.pagination-container select#limit');
+    var ssrLimitSelect = container.parentElement.querySelector(
+        '.pagination-container select#limit'
+    );
     if (ssrLimitSelect) {
         ssrLimitSelect.removeAttribute('onchange');
     }
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('change', function (e) {
         if (e.target.id !== 'limit') return;
         var paginationParent = e.target.closest('.pagination-container');
-        if (!paginationParent || !container.contains(paginationParent)) return;
+        if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
         e.preventDefault();
         state.limit = parseInt(e.target.value, 10) || 25;
         state.page = 1;
@@ -38,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept limit form submit
     document.addEventListener('submit', function (e) {
         var paginationParent = e.target.closest('.pagination-container');
-        if (paginationParent && container.contains(paginationParent)) {
+        if (paginationParent && container.parentElement.contains(paginationParent)) {
             e.preventDefault();
         }
     });
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept pagination clicks
     document.addEventListener('click', function (e) {
         var link = e.target.closest('.pagination-container a');
-        if (!link || !container.contains(link)) return;
+        if (!link || !container.parentElement.contains(link)) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
         state.page = parseInt(params.get('page'), 10) || 1;
@@ -109,10 +111,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchBoth(historyMethod) {
         if (!state.q) {
             renderEmpty();
+            updatePagination(null, null);
             updateHistory(historyMethod);
             return;
         }
-        var scrollY = window.scrollY;
         pinHeight(container);
         showLoading();
         Promise.all([
@@ -127,9 +129,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 var cardJson = results[0];
                 var setJson = results[1];
                 renderResults(cardJson, setJson);
+                updatePagination(cardJson.meta, setJson.meta);
                 unpinHeight(container);
                 updateHistory(historyMethod);
-                window.scrollTo(0, scrollY);
             })
             .catch(function (err) {
                 console.error('Search error:', err);
@@ -137,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Failed to load search results. Please try again.'
                 );
                 unpinHeight(container);
-                window.scrollTo(0, scrollY);
             });
     }
 
@@ -192,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
             html += renderCardSectionHtml(cards, cardMeta);
             html += '</div>';
         }
-        html += renderPagination(cardMeta, setMeta);
         container.innerHTML = html;
     }
 
@@ -295,7 +295,21 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function renderPagination(cardMeta, setMeta) {
+    function updatePagination(cardMeta, setMeta) {
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
+        var html = renderPaginationHtml(cardMeta, setMeta);
+        if (!html) {
+            if (paginationEl) paginationEl.remove();
+            return;
+        }
+        if (paginationEl) {
+            paginationEl.outerHTML = html;
+        } else {
+            container.insertAdjacentHTML('afterend', html);
+        }
+    }
+
+    function renderPaginationHtml(cardMeta, setMeta) {
         var cardTotal = cardMeta ? cardMeta.total : 0;
         var setTotal = setMeta ? setMeta.total : 0;
         var total = Math.max(cardTotal, setTotal);

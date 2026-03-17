@@ -53,10 +53,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(
             `Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`
         );
-        const ormCard: CardOrmEntity = await this.repository.findOne({
-            where: { id: uuid },
-            relations: _relations ?? this.DEFAULT_RELATIONS,
-        });
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.id = :id`, { id: uuid });
+        this.applyRelationJoins(qb, _relations ?? this.DEFAULT_RELATIONS);
+        const ormCard = await qb.getOne();
         this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for id: ${uuid}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
@@ -84,7 +85,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Finding cards by set code: ${code}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
+            .leftJoinAndSelect(
+                `${this.TABLE}.prices`,
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            )
             .where(`${this.TABLE}.setCode = :code`, { code });
 
         if (options.baseOnly) {
@@ -101,7 +106,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Finding cards with name: ${name}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
+            .leftJoinAndSelect(
+                `${this.TABLE}.prices`,
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            )
             .where(`${this.TABLE}.name = :name`, { name });
 
         // Use price-desc helper for "other printings" sorted by value
@@ -119,10 +128,12 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         _relations: string[]
     ): Promise<Card | null> {
         this.LOGGER.debug(`Finding card by set code ${code} and number ${number}.`);
-        const ormCard: CardOrmEntity = await this.repository.findOne({
-            where: { set: { code }, number },
-            relations: _relations ?? this.DEFAULT_RELATIONS,
-        });
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            .where(`${this.TABLE}.setCode = :code`, { code })
+            .andWhere(`${this.TABLE}.number = :number`, { number });
+        this.applyRelationJoins(qb, _relations ?? this.DEFAULT_RELATIONS);
+        const ormCard = await qb.getOne();
         this.LOGGER.debug(
             `Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`
         );
@@ -240,7 +251,11 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Finding cards by name "${name}" in set ${setCode}.`);
         const ormCards = await this.repository
             .createQueryBuilder(this.TABLE)
-            .leftJoinAndSelect(`${this.TABLE}.prices`, 'prices')
+            .leftJoinAndSelect(
+                `${this.TABLE}.prices`,
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            )
             .where(`LOWER(${this.TABLE}.name) = LOWER(:name)`, { name })
             .andWhere(`${this.TABLE}.setCode = :setCode`, { setCode })
             .getMany();
@@ -253,5 +268,19 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.LOGGER.debug(`Deleting legality for card ${cardId} format ${format}.`);
         await this.legalityRepository.delete({ cardId, format });
         this.LOGGER.debug(`Deleted legality for card ${cardId} format ${format}.`);
+    }
+
+    private applyRelationJoins(qb: SelectQueryBuilder<CardOrmEntity>, relations: string[]): void {
+        for (const rel of relations) {
+            if (rel === 'prices') {
+                qb.leftJoinAndSelect(
+                    `${this.TABLE}.prices`,
+                    'prices',
+                    'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                );
+            } else {
+                qb.leftJoinAndSelect(`${this.TABLE}.${rel}`, rel);
+            }
+        }
     }
 }

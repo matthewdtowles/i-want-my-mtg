@@ -6,6 +6,8 @@ export class FilterView {
     readonly limit: number;
     readonly searchTerm: string;
     readonly baseOnly: boolean;
+    readonly sort: string;
+    readonly ascend: boolean | undefined;
     readonly placeholder: string;
 
     constructor(options: SafeQueryOptions, baseUrl: string, placeholder: string = 'Filter...') {
@@ -14,6 +16,8 @@ export class FilterView {
         this.limit = options.limit;
         this.searchTerm = options.filter || '';
         this.baseOnly = options.baseOnly;
+        this.sort = options.sort || '';
+        this.ascend = options.ascend;
         this.placeholder = placeholder;
     }
 }

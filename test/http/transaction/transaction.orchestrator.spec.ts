@@ -70,12 +70,22 @@ describe('TransactionOrchestrator', () => {
     describe('findByUser', () => {
         const defaultOptions = new SafeQueryOptions();
 
-        it('should return transaction view with items', async () => {
-            transactionService.findByUserPaginated.mockResolvedValue([testTransaction]);
+        it('should return transaction view with items using joined card data', async () => {
+            const txWithCard = Object.assign(
+                new Transaction({
+                    id: 1,
+                    userId: 1,
+                    cardId: 'card-1',
+                    type: 'BUY',
+                    quantity: 2,
+                    pricePerUnit: 5.0,
+                    isFoil: false,
+                    date: new Date('2025-06-01'),
+                }),
+                { cardName: 'Lightning Bolt', cardSetCode: 'lea', cardNumber: '161' }
+            );
+            transactionService.findByUserPaginated.mockResolvedValue([txWithCard]);
             transactionService.countByUser.mockResolvedValue(1);
-            cardService.findByIds.mockResolvedValue([
-                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
-            ]);
 
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, defaultOptions);
 
@@ -86,18 +96,19 @@ describe('TransactionOrchestrator', () => {
             expect(result.authenticated).toBe(true);
             expect(result.username).toBe('Test User');
             expect(result.pagination).toBeDefined();
+            expect(cardService.findByIds).not.toHaveBeenCalled();
         });
 
         it('should return empty view when no transactions', async () => {
             transactionService.findByUserPaginated.mockResolvedValue([]);
             transactionService.countByUser.mockResolvedValue(0);
-            cardService.findByIds.mockResolvedValue([]);
 
             const result = await orchestrator.findByUser(mockAuthenticatedRequest, defaultOptions);
 
             expect(result.hasTransactions).toBe(false);
             expect(result.totalTransactions).toBe(0);
             expect(result.transactions).toHaveLength(0);
+            expect(cardService.findByIds).not.toHaveBeenCalled();
         });
 
         it('should throw on unauthenticated request', async () => {

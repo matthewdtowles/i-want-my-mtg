@@ -30,8 +30,8 @@
 
     <form method="get" action="{{pagination.baseUrl}}" class="flex items-center gap-2 mb-4 mt-2">
         <input type="hidden" name="page" value="{{pagination.current}}">
-        {{#if filter}}
-        <input type="hidden" name="filter" value="{{filter.term}}">
+        {{#if filter.searchTerm}}
+        <input type="hidden" name="filter" value="{{filter.searchTerm}}">
         {{/if}}
         <select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2
                 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600

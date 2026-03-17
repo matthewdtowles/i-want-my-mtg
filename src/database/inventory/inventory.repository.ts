@@ -76,7 +76,11 @@ export class InventoryRepository
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.card`, 'card')
-            .leftJoinAndSelect('card.prices', 'prices')
+            .leftJoinAndSelect(
+                'card.prices',
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            )
             .leftJoinAndSelect('card.set', 'set')
             .where(`${this.TABLE}.userId = :userId`, { userId });
 
@@ -116,7 +120,8 @@ export class InventoryRepository
             ), 0) AS total_value
             FROM inventory i
             JOIN card c ON i.card_id = c.id
-            JOIN price p ON p.card_id = c.id
+            LEFT JOIN price p ON p.card_id = c.id
+                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
             WHERE i.user_id = $1
             `,
             [userId]
@@ -135,7 +140,8 @@ export class InventoryRepository
             ), 0) AS total_value
             FROM inventory i
             JOIN card c ON i.card_id = c.id
-            JOIN price p ON p.card_id = c.id
+            LEFT JOIN price p ON p.card_id = c.id
+                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
             WHERE i.user_id = $1
             AND c.set_code = $2
             `,
@@ -211,7 +217,8 @@ export class InventoryRepository
             ), 0) AS total_value
             FROM inventory i
             JOIN card c ON i.card_id = c.id
-            JOIN price p ON p.card_id = c.id
+            LEFT JOIN price p ON p.card_id = c.id
+                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
             WHERE i.user_id = $1
             AND c.set_code IN (${placeholders})
             GROUP BY c.set_code

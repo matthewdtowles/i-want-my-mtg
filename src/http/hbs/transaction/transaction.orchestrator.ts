@@ -39,16 +39,14 @@ export class TransactionOrchestrator {
                 this.transactionService.countByUser(req.user.id, options),
                 this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
             ]);
-            const cardIds = [...new Set(transactions.map((t) => t.cardId))];
-            const cardMap = await this.buildCardMap(cardIds);
 
             const responseItems: TransactionResponseDto[] = transactions.map((t) => {
-                const card = cardMap.get(t.cardId);
+                const tx = t as any;
                 return TransactionPresenter.toResponseDto(
                     t,
-                    card?.name,
-                    card?.setCode,
-                    card?.number
+                    tx.cardName,
+                    tx.cardSetCode,
+                    tx.cardNumber
                 );
             });
 

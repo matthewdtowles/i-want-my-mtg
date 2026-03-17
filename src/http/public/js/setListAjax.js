@@ -7,39 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // State
     let state = parseStateFromUrl();
 
-    // Override filter.js by cloning the filter input (removes old listeners)
-    const oldFilter = document.getElementById('filter');
-    if (oldFilter) {
-        const newFilter = oldFilter.cloneNode(true);
-        oldFilter.parentNode.replaceChild(newFilter, oldFilter);
-
-        let debounceTimeout;
-        newFilter.addEventListener('input', function () {
-            clearTimeout(debounceTimeout);
-            const clearBtn = document.getElementById('clear-filter-btn');
-            if (clearBtn) clearBtn.style.display = this.value ? 'inline' : 'none';
-            debounceTimeout = setTimeout(function () {
-                state.filter = newFilter.value;
-                state.page = 1;
-                fetchAndRender('replaceState');
-            }, 300);
-        });
-
-        const clearBtn = document.getElementById('clear-filter-btn');
-        if (clearBtn) {
-            const newClearBtn = clearBtn.cloneNode(true);
-            clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
-            newClearBtn.addEventListener('click', function () {
-                newFilter.value = '';
-                newClearBtn.style.display = 'none';
-                state.filter = '';
-                state.page = 1;
-                fetchAndRender('replaceState');
-            });
-        }
-    }
-
-    // Prevent filter form submit
+    // Clone the filter form to remove old listeners from filter.js, then re-bind
     var filterForm = document.getElementById('filter-form');
     if (filterForm) {
         var newForm = filterForm.cloneNode(true);

@@ -89,6 +89,8 @@ describe('SetOrchestrator', () => {
                         totalValueForSet: jest.fn(),
                         totalInventoryItemsForSet: jest.fn(),
                         ownedValueForSet: jest.fn(),
+                        inventoryTotalsForSets: jest.fn(),
+                        ownedValuesForSets: jest.fn(),
                     },
                 },
                 {
@@ -125,8 +127,8 @@ describe('SetOrchestrator', () => {
             setService.findBlockGroupKeys.mockResolvedValue(['TST']);
             setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
             setService.findMultiSetBlockKeys.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
-            inventoryService.ownedValueForSet.mockResolvedValue(0);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
 
             const result = await orchestrator.findSetList(
                 mockAuthenticatedRequest,
@@ -174,8 +176,8 @@ describe('SetOrchestrator', () => {
             });
             setService.findSets.mockResolvedValue([mockSet]);
             setService.totalSetsCount.mockResolvedValue(1);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
-            inventoryService.ownedValueForSet.mockResolvedValue(0);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
 
             const result = await orchestrator.findSetList(
                 mockAuthenticatedRequest,
@@ -195,8 +197,8 @@ describe('SetOrchestrator', () => {
     describe('findSpoilersList', () => {
         it('returns all spoiler sets without pagination', async () => {
             setService.findSpoilerSets.mockResolvedValue([mockSet]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
-            inventoryService.ownedValueForSet.mockResolvedValue(0);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
 
             const result = await orchestrator.findSpoilersList(mockAuthenticatedRequest, []);
 

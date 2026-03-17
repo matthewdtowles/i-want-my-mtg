@@ -372,6 +372,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Limit selector
         html += '<form method="get" action="/search" class="flex items-center gap-2 mb-4 mt-2">';
+        if (state.q) {
+            html += '<input type="hidden" name="q" value="' + escapeHtml(state.q) + '" />';
+        }
         html +=
             '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
         [25, 50, 100].forEach(function (val) {
@@ -394,6 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function paginationHref(page) {
         var params = new URLSearchParams();
+        if (state.q) params.set('q', state.q);
         params.set('page', String(page));
         params.set('limit', String(state.limit));
         return '/search?' + params.toString();

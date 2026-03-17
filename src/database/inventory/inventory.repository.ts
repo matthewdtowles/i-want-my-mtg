@@ -165,6 +165,67 @@ export class InventoryRepository
         return count;
     }
 
+    async totalInventoryCardsForSets(
+        userId: number,
+        setCodes: string[]
+    ): Promise<Map<string, number>> {
+        this.LOGGER.debug(
+            `Counting total inventory items for user ${userId} across ${setCodes.length} sets.`
+        );
+        if (setCodes.length === 0) return new Map();
+
+        const placeholders = setCodes.map((_, i) => `$${i + 2}`).join(', ');
+        const queryResult = await this.repository.query(
+            `
+            SELECT c.set_code, COUNT(*) AS total
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            WHERE i.user_id = $1
+            AND c.set_code IN (${placeholders})
+            GROUP BY c.set_code
+            `,
+            [userId, ...setCodes]
+        );
+
+        const map = new Map<string, number>();
+        for (const row of queryResult) {
+            map.set(row.set_code, Number(row.total));
+        }
+        return map;
+    }
+
+    async totalInventoryValuesForSets(
+        userId: number,
+        setCodes: string[]
+    ): Promise<Map<string, number>> {
+        this.LOGGER.debug(
+            `Getting inventory values for user ${userId} across ${setCodes.length} sets.`
+        );
+        if (setCodes.length === 0) return new Map();
+
+        const placeholders = setCodes.map((_, i) => `$${i + 2}`).join(', ');
+        const queryResult = await this.repository.query(
+            `
+            SELECT c.set_code, COALESCE(SUM(
+                ${PriceCalculationPolicy.inventoryItemValueExpression()} * i.quantity
+            ), 0) AS total_value
+            FROM inventory i
+            JOIN card c ON i.card_id = c.id
+            JOIN price p ON p.card_id = c.id
+            WHERE i.user_id = $1
+            AND c.set_code IN (${placeholders})
+            GROUP BY c.set_code
+            `,
+            [userId, ...setCodes]
+        );
+
+        const map = new Map<string, number>();
+        for (const row of queryResult) {
+            map.set(row.set_code, Number(row.total_value));
+        }
+        return map;
+    }
+
     async ensureAtLeastOne(
         items: Array<{ cardId: string; userId: number; isFoil: boolean }>
     ): Promise<{ saved: number; skipped: number }> {

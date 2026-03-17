@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -64,9 +65,21 @@ export class InventoryApiController {
         @Query('cardIds') cardIds: string,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryQuantityApiDto[]>> {
-        const ids = cardIds ? cardIds.split(',').filter((id) => id.trim()) : [];
+        const ids = cardIds
+            ? [
+                  ...new Set(
+                      cardIds
+                          .split(',')
+                          .map((id) => id.trim())
+                          .filter(Boolean)
+                  ),
+              ]
+            : [];
         if (ids.length === 0) {
             return ApiResponseDto.ok([]);
+        }
+        if (ids.length > 200) {
+            throw new BadRequestException('Maximum of 200 card IDs allowed per request');
         }
         const items = await this.inventoryService.findByCards(req.user.id, ids);
         return ApiResponseDto.ok(InventoryApiPresenter.toQuantityResponse(items));

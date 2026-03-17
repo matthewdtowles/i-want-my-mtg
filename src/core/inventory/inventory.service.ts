@@ -85,6 +85,18 @@ export class InventoryService {
         return totalValue;
     }
 
+    async inventoryTotalsForSets(userId: number, setCodes: string[]): Promise<Map<string, number>> {
+        this.LOGGER.debug(`Get inventory totals for ${setCodes.length} sets for user ${userId}.`);
+        if (!userId || setCodes.length === 0) return new Map();
+        return this.repository.totalInventoryCardsForSets(userId, setCodes);
+    }
+
+    async ownedValuesForSets(userId: number, setCodes: string[]): Promise<Map<string, number>> {
+        this.LOGGER.debug(`Get owned values for ${setCodes.length} sets for user ${userId}.`);
+        if (!userId || setCodes.length === 0) return new Map();
+        return this.repository.totalInventoryValuesForSets(userId, setCodes);
+    }
+
     async ownedValueForSet(userId: number, setCode: string): Promise<number> {
         this.LOGGER.debug(`Calculate owned value for user ${userId} in set ${setCode}.`);
         const ownedValue = await this.repository.totalInventoryValueForSet(userId, setCode);

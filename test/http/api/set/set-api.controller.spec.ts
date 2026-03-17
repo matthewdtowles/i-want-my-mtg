@@ -59,8 +59,8 @@ describe('SetApiController', () => {
                 {
                     provide: InventoryService,
                     useValue: {
-                        totalInventoryItemsForSet: jest.fn(),
-                        ownedValueForSet: jest.fn(),
+                        inventoryTotalsForSets: jest.fn(),
+                        ownedValuesForSets: jest.fn(),
                     },
                 },
                 {
@@ -80,12 +80,12 @@ describe('SetApiController', () => {
     });
 
     describe('findAll', () => {
-        it('should include owned data when authenticated', async () => {
+        it('should include owned data when authenticated using batch methods', async () => {
             const sets = [createSet()];
             setService.findSets.mockResolvedValue(sets);
             setService.totalSetsCount.mockResolvedValue(1);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(50);
-            inventoryService.ownedValueForSet.mockResolvedValue(75.25);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map([['mkm', 50]]));
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map([['mkm', 75.25]]));
 
             const req = makeReq(42);
             const result = await controller.findAll(req, {});
@@ -94,8 +94,8 @@ describe('SetApiController', () => {
             expect(result.data[0].ownedTotal).toBe(50);
             expect(result.data[0].ownedValue).toBe(75.25);
             expect(result.data[0].completionRate).toBeGreaterThan(0);
-            expect(inventoryService.totalInventoryItemsForSet).toHaveBeenCalledWith(42, 'mkm');
-            expect(inventoryService.ownedValueForSet).toHaveBeenCalledWith(42, 'mkm');
+            expect(inventoryService.inventoryTotalsForSets).toHaveBeenCalledWith(42, ['mkm']);
+            expect(inventoryService.ownedValuesForSets).toHaveBeenCalledWith(42, ['mkm']);
         });
 
         it('should not include owned data when unauthenticated', async () => {
@@ -110,7 +110,7 @@ describe('SetApiController', () => {
             expect(result.data[0].ownedTotal).toBeUndefined();
             expect(result.data[0].ownedValue).toBeUndefined();
             expect(result.data[0].completionRate).toBeUndefined();
-            expect(inventoryService.totalInventoryItemsForSet).not.toHaveBeenCalled();
+            expect(inventoryService.inventoryTotalsForSets).not.toHaveBeenCalled();
         });
 
         it('should use presenter to map set fields', async () => {

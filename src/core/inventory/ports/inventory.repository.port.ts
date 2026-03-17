@@ -81,6 +81,24 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
     totalInventoryCardsForSet(userId: number, setCode: string): Promise<number>;
 
     /**
+     * Get total inventory item counts for multiple sets in a single query.
+     *
+     * @param userId
+     * @param setCodes
+     * @returns map of setCode -> count of inventory items
+     */
+    totalInventoryCardsForSets(userId: number, setCodes: string[]): Promise<Map<string, number>>;
+
+    /**
+     * Get total inventory values for multiple sets in a single query.
+     *
+     * @param userId
+     * @param setCodes
+     * @returns map of setCode -> total value of inventory items
+     */
+    totalInventoryValuesForSets(userId: number, setCodes: string[]): Promise<Map<string, number>>;
+
+    /**
      * Delete inventory entity
      * Use when quantity is < 1
      *

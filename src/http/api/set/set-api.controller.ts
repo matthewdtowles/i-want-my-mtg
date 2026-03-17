@@ -70,24 +70,31 @@ export class SetApiController {
         }
 
         const userId = req.user?.id;
-        const data = await Promise.all(
-            sets.map(async (s) => {
-                const dto = SetApiPresenter.toSetApiResponse(s);
-                if (!userId) return dto;
+        let totalsMap = new Map<string, number>();
+        let valuesMap = new Map<string, number>();
 
-                const [ownedTotal, ownedValue] = await Promise.all([
-                    this.inventoryService.totalInventoryItemsForSet(userId, s.code),
-                    this.inventoryService.ownedValueForSet(userId, s.code),
-                ]);
+        if (userId) {
+            const setCodes = sets.map((s) => s.code);
+            [totalsMap, valuesMap] = await Promise.all([
+                this.inventoryService.inventoryTotalsForSets(userId, setCodes),
+                this.inventoryService.ownedValuesForSets(userId, setCodes),
+            ]);
+        }
 
-                return {
-                    ...dto,
-                    ownedTotal,
-                    ownedValue,
-                    completionRate: completionRate(ownedTotal, s.effectiveSize),
-                };
-            })
-        );
+        const data = sets.map((s) => {
+            const dto = SetApiPresenter.toSetApiResponse(s);
+            if (!userId) return dto;
+
+            const ownedTotal = totalsMap.get(s.code) ?? 0;
+            const ownedValue = valuesMap.get(s.code) ?? 0;
+
+            return {
+                ...dto,
+                ownedTotal,
+                ownedValue,
+                completionRate: completionRate(ownedTotal, s.effectiveSize),
+            };
+        });
 
         return ApiResponseDto.ok(data, new PaginationMeta(options.page, options.limit, total));
     }

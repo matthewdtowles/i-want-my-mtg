@@ -558,30 +558,38 @@ export class SetOrchestrator {
         userId: number,
         sets: Set[]
     ): Promise<SetMetaResponseDto[]> {
-        return Promise.all(sets.map((set) => this.createSetMetaResponseDto(userId, set)));
-    }
+        const setCodes = sets.map((s) => s.code);
+        let totalsMap = new Map<string, number>();
+        let valuesMap = new Map<string, number>();
 
-    private async createSetMetaResponseDto(userId: number, set: Set): Promise<SetMetaResponseDto> {
-        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        if (userId) {
+            [totalsMap, valuesMap] = await Promise.all([
+                this.inventoryService.inventoryTotalsForSets(userId, setCodes),
+                this.inventoryService.ownedValuesForSets(userId, setCodes),
+            ]);
+        }
 
-        const effectiveSize = set.effectiveSize;
+        return sets.map((set) => {
+            const ownedTotal = totalsMap.get(set.code) ?? 0;
+            const ownedValue = valuesMap.get(set.code) ?? 0;
 
-        return new SetMetaResponseDto({
-            baseSize: set.baseSize,
-            block: set.block ?? set.name,
-            code: set.code,
-            completionRate: completionRate(ownedTotal, effectiveSize),
-            isMain: set.isMain,
-            keyruneCode: set.keyruneCode ?? set.code,
-            name: set.name,
-            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
-            ownedTotal,
-            parentCode: set.parentCode,
-            prices: this.createSetPriceDto(set.prices),
-            releaseDate: set.releaseDate,
-            tags: SetTypeMapper.mapSetTypeToTags(set),
-            totalSize: set.totalSize,
-            url: `/sets/${set.code.toLowerCase()}`,
+            return new SetMetaResponseDto({
+                baseSize: set.baseSize,
+                block: set.block ?? set.name,
+                code: set.code,
+                completionRate: completionRate(ownedTotal, set.effectiveSize),
+                isMain: set.isMain,
+                keyruneCode: set.keyruneCode ?? set.code,
+                name: set.name,
+                ownedValue: toDollar(ownedValue),
+                ownedTotal,
+                parentCode: set.parentCode,
+                prices: this.createSetPriceDto(set.prices),
+                releaseDate: set.releaseDate,
+                tags: SetTypeMapper.mapSetTypeToTags(set),
+                totalSize: set.totalSize,
+                url: `/sets/${set.code.toLowerCase()}`,
+            });
         });
     }
 

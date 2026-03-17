@@ -94,7 +94,7 @@
   - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
   - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
   - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
-  - [ ] Cross-browser testing
+  - [x] Cross-browser testing
 
 ### 2.1 Add Pre-fetching for Performance
 - [ ] Audit current page load performance (identify bottlenecks)

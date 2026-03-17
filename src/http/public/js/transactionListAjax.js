@@ -2,95 +2,28 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('transaction-list-ajax');
     if (!container) return;
 
-    var state = parseStateFromUrl();
+    var state = AjaxUtils.parseStateFromUrl();
+    // Transactions don't use baseOnly
+    delete state.baseOnly;
 
-    // Override filter.js by cloning the filter form (removes old listeners)
-    var filterForm = document.getElementById('filter-form');
-    if (filterForm) {
-        var newForm = filterForm.cloneNode(true);
-        filterForm.parentNode.replaceChild(newForm, filterForm);
-        newForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-        });
+    AjaxUtils.setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
 
-        var filterInput = newForm.querySelector('#filter');
-        if (filterInput) {
-            var debounceTimeout;
-            filterInput.addEventListener('input', function () {
-                clearTimeout(debounceTimeout);
-                var clearBtn = newForm.querySelector('#clear-filter-btn');
-                if (clearBtn) clearBtn.style.display = this.value ? 'inline' : 'none';
-                debounceTimeout = setTimeout(function () {
-                    state.filter = filterInput.value;
-                    state.page = 1;
-                    fetchAndRender('replaceState');
-                }, 300);
-            });
-
-            var clearBtn = newForm.querySelector('#clear-filter-btn');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function () {
-                    filterInput.value = '';
-                    clearBtn.style.display = 'none';
-                    state.filter = '';
-                    state.page = 1;
-                    fetchAndRender('replaceState');
-                });
-            }
-        }
-    }
-
-    // Remove inline onchange from SSR limit select to prevent full-page reload
-    var ssrLimitSelect = document.querySelector('.pagination-container select#limit');
-    if (ssrLimitSelect) {
-        ssrLimitSelect.removeAttribute('onchange');
-    }
-
-    // Intercept sort clicks via event delegation on thead
-    document.addEventListener('click', function (e) {
-        var link = e.target.closest('#transaction-list-ajax thead a.sort-btn');
-        if (!link) return;
-        e.preventDefault();
-        var params = new URLSearchParams(link.getAttribute('href').replace(/^\?/, ''));
-        state.sort = params.get('sort') || '';
-        state.ascend = params.get('ascend') === 'true';
-        state.page = 1;
-        fetchAndRender('pushState');
+    AjaxUtils.setupSortInterceptor({
+        selector: '#transaction-list-ajax thead a.sort-btn',
+        state: state,
+        fetchFn: fetchAndRender,
     });
 
-    // Intercept pagination clicks
-    document.addEventListener('click', function (e) {
-        var link = e.target.closest('.pagination-container a');
-        if (!link || !container.parentElement.contains(link)) return;
-        e.preventDefault();
-        var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
-        state.page = parseInt(params.get('page'), 10) || 1;
-        if (params.has('limit')) state.limit = parseInt(params.get('limit'), 10) || 25;
-        fetchAndRender('pushState');
+    AjaxUtils.setupPaginationInterceptors({
+        container: container,
+        state: state,
+        fetchFn: fetchAndRender,
+        scopeToContainer: true,
     });
 
-    // Intercept limit select change
-    document.addEventListener('change', function (e) {
-        if (e.target.id !== 'limit') return;
-        var paginationParent = e.target.closest('.pagination-container');
-        if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
-        e.preventDefault();
-        state.limit = parseInt(e.target.value, 10) || 25;
-        state.page = 1;
-        fetchAndRender('pushState');
-    });
-
-    // Intercept limit form submit
-    document.addEventListener('submit', function (e) {
-        var paginationParent = e.target.closest('.pagination-container');
-        if (paginationParent && container.parentElement.contains(paginationParent)) {
-            e.preventDefault();
-        }
-    });
-
-    // Back/forward button
     window.addEventListener('popstate', function () {
-        state = parseStateFromUrl();
+        state = AjaxUtils.parseStateFromUrl();
+        delete state.baseOnly;
         var fi = document.querySelector('#filter');
         if (fi) fi.value = state.filter;
         fetchAndRender(null);
@@ -101,8 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var editBtn = e.target.closest('.edit-transaction-button');
         if (editBtn && container.contains(editBtn)) {
             e.stopImmediatePropagation();
-            var row = editBtn.closest('tr');
-            toggleEditMode(row, true);
+            toggleEditMode(editBtn.closest('tr'), true);
             return;
         }
 
@@ -139,17 +71,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function parseStateFromUrl() {
-        var params = new URLSearchParams(window.location.search);
-        return {
-            page: parseInt(params.get('page'), 10) || 1,
-            limit: parseInt(params.get('limit'), 10) || 25,
-            sort: params.get('sort') || '',
-            ascend: params.get('ascend') === 'true',
-            filter: params.get('filter') || '',
-        };
-    }
-
     function buildApiUrl() {
         var params = new URLSearchParams();
         params.set('page', state.page);
@@ -162,26 +83,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return '/api/v1/transactions?' + params.toString();
     }
 
-    function buildBrowserUrl() {
-        var params = new URLSearchParams();
-        if (state.page > 1) params.set('page', state.page);
-        if (state.limit !== 25) params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', String(state.ascend));
-        }
-        if (state.filter) params.set('filter', state.filter);
-        var qs = params.toString();
-        return '/transactions' + (qs ? '?' + qs : '');
-    }
-
     function fetchAndRender(historyMethod) {
         var resultsEl = document.getElementById('filter-results');
-        if (resultsEl) {
-            resultsEl.style.minHeight = resultsEl.offsetHeight + 'px';
-            resultsEl.innerHTML =
-                '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
-        }
+        AjaxUtils.showSpinner(resultsEl);
 
         fetch(buildApiUrl())
             .then(function (res) {
@@ -189,35 +93,63 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (json) {
                 if (!json.success) {
-                    showError(resultsEl, json.error || 'Failed to load transactions');
-                    if (resultsEl) resultsEl.style.minHeight = '';
+                    AjaxUtils.showError(resultsEl, json.error || 'Failed to load transactions');
+                    AjaxUtils.clearMinHeight(resultsEl);
                     return;
                 }
                 renderTable(json.data, json.meta);
-                renderPagination(json.meta);
+                var paginationHtml = AjaxUtils.renderPaginationHtml({
+                    page: json.meta.page,
+                    totalPages: json.meta.totalPages,
+                    limit: state.limit,
+                    hrefBuilder: paginationHref,
+                    formAction: '/transactions',
+                    hiddenFields: buildPaginationHiddenFields(),
+                });
+                AjaxUtils.updatePaginationEl({
+                    parentEl: container.parentElement,
+                    insertAfterEl: container,
+                    html: paginationHtml,
+                    scrollTargetEl: resultsEl,
+                });
                 if (historyMethod) {
-                    window.history[historyMethod]({}, '', buildBrowserUrl());
+                    window.history[historyMethod](
+                        {},
+                        '',
+                        AjaxUtils.buildBrowserUrl('/transactions', state),
+                    );
                 }
-                if (resultsEl) resultsEl.style.minHeight = '';
+                AjaxUtils.clearMinHeight(resultsEl);
             })
             .catch(function (err) {
                 console.error('Error fetching transactions:', err);
-                showError(resultsEl, 'Failed to load transactions. Please try again.');
+                AjaxUtils.showError(resultsEl, 'Failed to load transactions. Please try again.');
                 if (typeof window.showToast === 'function')
                     window.showToast('Failed to load transactions', 'error');
-                if (resultsEl) resultsEl.style.minHeight = '';
+                AjaxUtils.clearMinHeight(resultsEl);
             });
     }
 
-    function showError(el, message) {
-        if (!el) return;
-        el.innerHTML =
-            '<div class="text-center py-16">' +
-            '<i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>' +
-            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">' +
-            escapeHtml(message) +
-            '</p>' +
-            '</div>';
+    function buildPaginationHiddenFields() {
+        var fields = {};
+        if (state.sort) {
+            fields.sort = state.sort;
+            fields.ascend = String(state.ascend);
+        }
+        if (state.filter) fields.filter = state.filter;
+        return fields;
+    }
+
+    function paginationHref(page) {
+        var params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', String(state.limit));
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', String(state.ascend));
+        }
+        if (state.filter) params.set('filter', state.filter);
+        return '/transactions?' + params.toString();
     }
 
     function renderTable(items, meta) {
@@ -260,42 +192,13 @@ document.addEventListener('DOMContentLoaded', function () {
         for (var i = 0; i < headers.length; i++) {
             var h = headers[i];
             if (h.key) {
-                html += renderSortableHeader(h);
+                html += AjaxUtils.renderSortableHeader(h, state);
             } else {
-                var classAttr = 'table-header' + (h.classes ? ' ' + h.classes : '');
-                html += '<th class="' + classAttr + '">' + escapeHtml(h.label) + '</th>';
+                html += AjaxUtils.renderStaticHeader(h);
             }
         }
         html += '</tr>';
         return html;
-    }
-
-    function renderSortableHeader(header) {
-        var isActive = state.sort === header.key;
-        var nextAscend = isActive ? !state.ascend : true;
-        var params = new URLSearchParams();
-        params.set('page', '1');
-        params.set('limit', String(state.limit));
-        params.set('sort', header.key);
-        params.set('ascend', String(nextAscend));
-        if (state.filter) params.set('filter', state.filter);
-
-        var arrow = isActive ? (state.ascend ? '&#9650;' : '&#9660;') : '';
-        var classAttr = 'table-header' + (header.classes ? ' ' + header.classes : '');
-
-        return (
-            '<th class="' +
-            classAttr +
-            '">' +
-            '<a href="?' +
-            params.toString() +
-            '" class="sort-btn">' +
-            escapeHtml(header.label) +
-            ' <span class="sort-icon">' +
-            arrow +
-            '</span>' +
-            '</a></th>'
-        );
     }
 
     function renderTransactionRow(tx) {
@@ -308,17 +211,17 @@ document.addEventListener('DOMContentLoaded', function () {
             '" data-raw-fees="' +
             (tx.fees || 0) +
             '" data-source="' +
-            escapeHtml(tx.source || '') +
+            AjaxUtils.escapeHtml(tx.source || '') +
             '" data-notes="' +
-            escapeHtml(tx.notes || '') +
+            AjaxUtils.escapeHtml(tx.notes || '') +
             '">';
 
         // Date
         html += '<td class="table-cell pl-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">';
-        html += '<span class="tx-display">' + escapeHtml(tx.date) + '</span>';
+        html += '<span class="tx-display">' + AjaxUtils.escapeHtml(tx.date) + '</span>';
         html +=
             '<input type="date" class="tx-edit hidden w-28 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="date" value="' +
-            escapeHtml(tx.date) +
+            AjaxUtils.escapeHtml(tx.date) +
             '" />';
         html += '</td>';
 
@@ -338,12 +241,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (tx.cardUrl) {
             html +=
                 '<a href="' +
-                escapeHtml(tx.cardUrl) +
+                AjaxUtils.escapeHtml(tx.cardUrl) +
                 '" class="card-name-link">' +
-                escapeHtml(tx.cardName || '') +
+                AjaxUtils.escapeHtml(tx.cardName || '') +
                 '</a>';
         } else {
-            html += escapeHtml(tx.cardName || tx.cardId);
+            html += AjaxUtils.escapeHtml(tx.cardName || tx.cardId);
         }
         if (tx.isFoil) {
             html += ' <span class="foil-badge">Foil</span>';
@@ -351,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (tx.setCode) {
             html +=
                 ' <span class="text-gray-400 dark:text-gray-500 text-xs">(' +
-                escapeHtml(tx.setCode.toUpperCase()) +
+                AjaxUtils.escapeHtml(tx.setCode.toUpperCase()) +
                 ')</span>';
         }
         html += '</td>';
@@ -367,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Price
         html += '<td class="table-cell font-mono">';
-        html += '<span class="tx-display">' + toDollar(tx.pricePerUnit) + '</span>';
+        html += '<span class="tx-display">' + AjaxUtils.toDollar(tx.pricePerUnit) + '</span>';
         html +=
             '<input type="number" class="tx-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200 font-mono" data-field="pricePerUnit" value="' +
             tx.pricePerUnit +
@@ -376,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Total
         html += '<td class="table-cell font-mono">';
-        html += '<span class="tx-total">' + toDollar(total) + '</span>';
+        html += '<span class="tx-total">' + AjaxUtils.toDollar(total) + '</span>';
         html += '</td>';
 
         // Actions
@@ -404,111 +307,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         html += '</tr>';
         return html;
-    }
-
-    function renderPagination(meta) {
-        var paginationEl = container.parentElement.querySelector('.pagination-container');
-
-        if (!meta || meta.totalPages <= 1) {
-            if (paginationEl) paginationEl.innerHTML = '';
-            return;
-        }
-
-        var page = meta.page;
-        var totalPages = meta.totalPages;
-
-        if (!paginationEl) {
-            paginationEl = document.createElement('section');
-            paginationEl.className = 'pagination-container';
-            container.parentNode.insertBefore(paginationEl, container.nextSibling);
-        }
-
-        var html = '';
-
-        if (page > 1) {
-            html +=
-                '<a href="' +
-                paginationHref(page - 1) +
-                '" class="pagination-btn pagination-btn-primary">&lt;</a>';
-            html +=
-                '<a href="' +
-                paginationHref(1) +
-                '" class="pagination-btn pagination-btn-tertiary">1</a>';
-        }
-
-        var skipBack = page - Math.floor(totalPages / 3);
-        if (skipBack > 1 && skipBack < page) {
-            html +=
-                '<a href="' +
-                paginationHref(skipBack) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                skipBack +
-                '</a>';
-            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
-        }
-
-        html +=
-            '<span class="pagination-btn pagination-btn-current" aria-current="page">' +
-            page +
-            '</span>';
-
-        var skipForward = page + Math.floor(totalPages / 3);
-        if (skipForward < totalPages && skipForward > page) {
-            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
-            html +=
-                '<a href="' +
-                paginationHref(skipForward) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                skipForward +
-                '</a>';
-        }
-
-        if (page < totalPages) {
-            html +=
-                '<a href="' +
-                paginationHref(totalPages) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                totalPages +
-                '</a>';
-            html +=
-                '<a href="' +
-                paginationHref(page + 1) +
-                '" class="pagination-btn pagination-btn-primary">&gt;</a>';
-        }
-
-        // Limit selector
-        html +=
-            '<form method="get" action="/transactions" class="flex items-center gap-2 mb-4 mt-2">';
-        html +=
-            '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
-        [25, 50, 100].forEach(function (val) {
-            html +=
-                '<option value="' +
-                val +
-                '"' +
-                (state.limit === val ? ' selected' : '') +
-                '>' +
-                val +
-                '</option>';
-        });
-        html += '</select>';
-        html +=
-            '<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>';
-        html += '</form>';
-
-        paginationEl.innerHTML = html;
-    }
-
-    function paginationHref(page) {
-        var params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('limit', String(state.limit));
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', String(state.ascend));
-        }
-        if (state.filter) params.set('filter', state.filter);
-        return '/transactions?' + params.toString();
     }
 
     function toggleEditMode(row, editing) {
@@ -552,7 +350,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (body.date && dateDisplay) dateDisplay.textContent = body.date;
                 if (body.quantity && qtyDisplay) qtyDisplay.textContent = body.quantity;
                 if (body.pricePerUnit !== undefined) {
-                    if (priceDisplay) priceDisplay.textContent = toDollar(body.pricePerUnit);
+                    if (priceDisplay)
+                        priceDisplay.textContent = AjaxUtils.toDollar(body.pricePerUnit);
                     row.dataset.rawPrice = body.pricePerUnit;
                 }
 
@@ -561,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     body.pricePerUnit !== undefined
                         ? body.pricePerUnit
                         : parseFloat(row.dataset.rawPrice);
-                if (totalDisplay) totalDisplay.textContent = toDollar(qty * price);
+                if (totalDisplay) totalDisplay.textContent = AjaxUtils.toDollar(qty * price);
 
                 toggleEditMode(row, false);
             } else {
@@ -609,23 +408,5 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.showToast('Error deleting transaction', 'error');
             }
         }
-    }
-
-    function toDollar(amount) {
-        if (amount == null || amount === 0) return '-';
-        var rounded = Math.round(amount * 100) / 100;
-        var str = rounded.toFixed(2);
-        str = '$' + str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return str;
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
     }
 });

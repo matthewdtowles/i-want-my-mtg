@@ -472,18 +472,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!toggle) return;
         var params = new URLSearchParams();
         if (state.filter) params.set('filter', state.filter);
-        if (state.limit !== 25) params.set('limit', state.limit);
+        if (state.limit !== 25) params.set('limit', String(state.limit));
         if (state.baseOnly) {
             params.set('baseOnly', 'false');
             toggle.setAttribute('href', '/inventory?' + params.toString());
-            toggle.textContent = 'Show All Cards';
-            toggle.className = toggle.className
-                .replace('btn-secondary', 'btn-primary')
-                .replace('btn-primary', 'btn-primary');
-        } else {
-            toggle.setAttribute('href', '/inventory?' + params.toString());
-            toggle.textContent = 'Base Set Only';
+            toggle.textContent = 'Show All';
             toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
+        } else {
+            params.set('baseOnly', 'true');
+            toggle.setAttribute('href', '/inventory?' + params.toString());
+            toggle.textContent = 'Main Only';
+            toggle.className = toggle.className.replace('btn-secondary', 'btn-primary');
         }
     }
 

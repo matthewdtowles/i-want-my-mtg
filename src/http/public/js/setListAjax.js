@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 renderTable(json.data, json.meta);
                 renderPagination(json.meta);
+                updateBaseOnlyToggle();
                 if (historyMethod) {
                     window.history[historyMethod]({}, '', buildBrowserUrl());
                 }
@@ -472,6 +473,25 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '</form>';
 
         paginationEl.innerHTML = html;
+    }
+
+    function updateBaseOnlyToggle() {
+        var toggle = container.querySelector('a[href*="baseOnly"]');
+        if (!toggle) return;
+        var params = new URLSearchParams();
+        if (state.filter) params.set('filter', state.filter);
+        if (state.limit !== 25) params.set('limit', String(state.limit));
+        if (state.baseOnly) {
+            params.set('baseOnly', 'false');
+            toggle.setAttribute('href', '/sets?' + params.toString());
+            toggle.textContent = 'Show All';
+            toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
+        } else {
+            params.set('baseOnly', 'true');
+            toggle.setAttribute('href', '/sets?' + params.toString());
+            toggle.textContent = 'Main Only';
+            toggle.className = toggle.className.replace('btn-secondary', 'btn-primary');
+        }
     }
 
     function paginationHref(page) {

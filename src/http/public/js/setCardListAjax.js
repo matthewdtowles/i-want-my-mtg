@@ -44,7 +44,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Remove inline onchange from SSR limit select to prevent full-page reload
-    var ssrLimitSelect = container.querySelector('.pagination-container select#limit');
+    var ssrLimitSelect = container.parentElement.querySelector(
+        '.pagination-container select#limit'
+    );
     if (ssrLimitSelect) {
         ssrLimitSelect.removeAttribute('onchange');
     }
@@ -64,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept pagination clicks
     document.addEventListener('click', function (e) {
         var link = e.target.closest('.pagination-container a');
-        if (!link || !container.contains(link)) return;
+        if (!link || !container.parentElement.contains(link)) return;
         e.preventDefault();
         var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
         state.page = parseInt(params.get('page'), 10) || 1;
@@ -76,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('change', function (e) {
         if (e.target.id !== 'limit') return;
         var paginationParent = e.target.closest('.pagination-container');
-        if (!paginationParent || !container.contains(paginationParent)) return;
+        if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
         e.preventDefault();
         state.limit = parseInt(e.target.value, 10) || 25;
         state.page = 1;
@@ -86,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Intercept limit form submit
     document.addEventListener('submit', function (e) {
         var paginationParent = e.target.closest('.pagination-container');
-        if (paginationParent && container.contains(paginationParent)) {
+        if (paginationParent && container.parentElement.contains(paginationParent)) {
             e.preventDefault();
         }
     });
@@ -174,9 +176,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (historyMethod) {
                     window.history[historyMethod]({}, '', buildBrowserUrl());
                 }
-                if (resultsEl) resultsEl.style.minHeight = '';
                 if (authenticated && json.data && json.data.length > 0) {
-                    fetchAndRenderInventory(json.data);
+                    fetchAndRenderInventory(json.data, function () {
+                        if (resultsEl) resultsEl.style.minHeight = '';
+                    });
+                } else {
+                    if (resultsEl) resultsEl.style.minHeight = '';
                 }
             })
             .catch(function (err) {
@@ -387,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderPagination(meta) {
-        var paginationEl = container.querySelector('.pagination-container');
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
 
         if (!meta || meta.totalPages <= 1) {
             if (paginationEl) paginationEl.innerHTML = '';
@@ -484,21 +489,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateBaseOnlyToggle() {
         var toggle = container.querySelector('a[href*="baseOnly"]');
         if (!toggle) return;
-        // Update the toggle URL and appearance
         var params = new URLSearchParams();
         if (state.filter) params.set('filter', state.filter);
-        if (state.limit !== 25) params.set('limit', state.limit);
+        if (state.limit !== 25) params.set('limit', String(state.limit));
         if (state.baseOnly) {
             params.set('baseOnly', 'false');
             toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
-            toggle.textContent = 'Show All Cards';
-            toggle.className = toggle.className
-                .replace('btn-secondary', 'btn-primary')
-                .replace('btn-primary', 'btn-primary');
-        } else {
-            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
-            toggle.textContent = 'Base Set Only';
+            toggle.textContent = 'Show All';
             toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
+        } else {
+            params.set('baseOnly', 'true');
+            toggle.setAttribute('href', '/sets/' + setCode + '?' + params.toString());
+            toggle.textContent = 'Main Only';
+            toggle.className = toggle.className.replace('btn-secondary', 'btn-primary');
         }
     }
 
@@ -523,13 +526,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return str;
     }
 
-    function fetchAndRenderInventory(cards) {
+    function fetchAndRenderInventory(cards, onComplete) {
         var cardIds = cards
             .map(function (c) {
                 return c.id;
             })
             .filter(Boolean);
-        if (cardIds.length === 0) return;
+        if (cardIds.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
 
         fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','))
             .then(function (res) {
@@ -553,6 +559,9 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(function (err) {
                 console.error('Error fetching inventory quantities:', err);
+            })
+            .finally(function () {
+                if (onComplete) onComplete();
             });
     }
 

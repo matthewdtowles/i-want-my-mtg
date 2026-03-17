@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    var container = document.getElementById('search-ajax');
+    var container = document.getElementById('filter-results');
     if (!container) return;
 
     var state = parseStateFromUrl();
@@ -115,8 +115,9 @@ document.addEventListener('DOMContentLoaded', function () {
             updateHistory(historyMethod);
             return;
         }
-        pinHeight(container);
-        showLoading();
+        container.style.minHeight = container.offsetHeight + 'px';
+        container.innerHTML =
+            '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
         Promise.all([
             fetch(buildCardApiUrl()).then(function (r) {
                 return r.json();
@@ -130,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var setJson = results[1];
                 renderResults(cardJson, setJson);
                 updatePagination(cardJson.meta, setJson.meta);
-                unpinHeight(container);
+                container.style.minHeight = '';
                 updateHistory(historyMethod);
             })
             .catch(function (err) {
@@ -138,13 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 container.innerHTML = renderError(
                     'Failed to load search results. Please try again.'
                 );
-                unpinHeight(container);
+                container.style.minHeight = '';
             });
-    }
-
-    function showLoading() {
-        container.innerHTML =
-            '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
     }
 
     function renderEmpty() {
@@ -299,13 +295,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var paginationEl = container.parentElement.querySelector('.pagination-container');
         var html = renderPaginationHtml(cardMeta, setMeta);
         if (!html) {
-            if (paginationEl) paginationEl.remove();
+            if (paginationEl) paginationEl.innerHTML = '';
             return;
         }
         if (paginationEl) {
-            paginationEl.outerHTML = html;
+            paginationEl.innerHTML = html;
         } else {
-            container.insertAdjacentHTML('afterend', html);
+            paginationEl = document.createElement('section');
+            paginationEl.className = 'pagination-container';
+            container.parentNode.insertBefore(paginationEl, container.nextSibling);
+            paginationEl.innerHTML = html;
         }
     }
 
@@ -318,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (totalPages <= 1) return '';
 
         var page = state.page;
-        var html = '<section class="pagination-container">';
+        var html = '';
 
         if (page > 1) {
             html +=
@@ -390,7 +389,6 @@ document.addEventListener('DOMContentLoaded', function () {
             '<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>';
         html += '</form>';
 
-        html += '</section>';
         return html;
     }
 
@@ -399,14 +397,6 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('page', String(page));
         params.set('limit', String(state.limit));
         return '/search?' + params.toString();
-    }
-
-    function pinHeight(el) {
-        el.style.minHeight = el.offsetHeight + 'px';
-    }
-
-    function unpinHeight(el) {
-        el.style.minHeight = '';
     }
 
     function escapeHtml(str) {

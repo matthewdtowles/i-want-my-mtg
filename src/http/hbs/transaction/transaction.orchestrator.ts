@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { CardService } from 'src/core/card/card.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { FilterView } from 'src/http/hbs/list/filter.view';
+import { PaginationView } from 'src/http/hbs/list/pagination.view';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
@@ -24,11 +27,18 @@ export class TransactionOrchestrator {
         this.LOGGER.debug(`Initialized`);
     }
 
-    async findByUser(req: AuthenticatedRequest): Promise<TransactionViewDto> {
+    async findByUser(
+        req: AuthenticatedRequest,
+        options: SafeQueryOptions
+    ): Promise<TransactionViewDto> {
         this.LOGGER.debug(`Find transactions for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const transactions = await this.transactionService.findByUser(req.user.id);
+            const [transactions, totalCount, unfilteredCount] = await Promise.all([
+                this.transactionService.findByUserPaginated(req.user.id, options),
+                this.transactionService.countByUser(req.user.id, options),
+                this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
+            ]);
             const cardIds = [...new Set(transactions.map((t) => t.cardId))];
             const cardMap = await this.buildCardMap(cardIds);
 
@@ -42,16 +52,20 @@ export class TransactionOrchestrator {
                 );
             });
 
+            const baseUrl = '/transactions';
+
             return new TransactionViewDto({
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
-                    { label: 'Transactions', url: '/transactions' },
+                    { label: 'Transactions', url: baseUrl },
                 ],
                 transactions: responseItems,
                 username: req.user.name,
-                totalTransactions: transactions.length,
-                hasTransactions: transactions.length > 0,
+                totalTransactions: totalCount,
+                hasTransactions: unfilteredCount > 0,
+                filter: new FilterView(options, baseUrl, 'Filter by card name...'),
+                pagination: new PaginationView(options, baseUrl, totalCount),
             });
         } catch (error) {
             this.LOGGER.debug(

@@ -1,3 +1,4 @@
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction } from '../transaction.entity';
 
 export const TransactionRepositoryPort = 'TransactionRepositoryPort';
@@ -49,6 +50,16 @@ export interface TransactionRepositoryPort {
      * Delete a transaction by ID
      */
     delete(id: number, userId: number): Promise<void>;
+
+    /**
+     * Find transactions for a user with pagination, sorting, and filtering
+     */
+    findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]>;
+
+    /**
+     * Count transactions for a user with the same filters
+     */
+    countByUser(userId: number, options: SafeQueryOptions): Promise<number>;
 
     /**
      * Aggregate transaction amounts by month for cash flow analysis

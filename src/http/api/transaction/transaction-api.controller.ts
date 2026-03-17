@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
@@ -24,8 +25,9 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { TransactionRequestDto } from 'src/http/hbs/transaction/dto/transaction.request.dto';
 import { TransactionUpdateRequestDto } from 'src/http/hbs/transaction/dto/transaction.update-request.dto';
-import { ApiResponseDto } from 'src/http/base/api-response.dto';
+import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { CostBasisApiDto, TransactionApiItemDto } from './dto/transaction-response.dto';
+import { TransactionApiPresenter } from './transaction-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 
 @ApiTags('Transactions')
@@ -40,15 +42,26 @@ export class TransactionApiController {
 
     @Get()
     @ApiOperation({ summary: 'List all transactions' })
+    @ApiQuery({ name: 'page', required: false })
+    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'sort', required: false })
+    @ApiQuery({ name: 'ascend', required: false })
+    @ApiQuery({ name: 'filter', required: false })
     @ApiResponse({ status: 200, description: 'Transaction list' })
     async findAll(
+        @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
-        const transactions = await this.transactionService.findByUser(req.user.id);
-        const cardIds = [...new Set(transactions.map((t) => t.cardId))];
-        const cardMap = await this.buildCardMap(cardIds);
+        const options = new SafeQueryOptions(query);
+        const [transactions, total] = await Promise.all([
+            this.transactionService.findByUserPaginated(req.user.id, options),
+            this.transactionService.countByUser(req.user.id, options),
+        ]);
 
-        return ApiResponseDto.ok(transactions.map((t) => this.toTransactionItem(t, cardMap)));
+        return ApiResponseDto.ok(
+            transactions.map((t) => TransactionApiPresenter.toTransactionItem(t)),
+            new PaginationMeta(options.page, options.limit, total)
+        );
     }
 
     @Post()
@@ -63,7 +76,7 @@ export class TransactionApiController {
         const saved = await this.transactionService.create(entity, {
             skipInventorySync: dto.skipInventorySync,
         });
-        return ApiResponseDto.ok(this.toTransactionItem(saved, new Map()));
+        return ApiResponseDto.ok(TransactionApiPresenter.toTransactionItem(saved));
     }
 
     @Put(':id')
@@ -84,7 +97,7 @@ export class TransactionApiController {
         if (dto.notes !== undefined) fields.notes = dto.notes;
 
         const { updated } = await this.transactionService.update(id, req.user.id, fields);
-        return ApiResponseDto.ok(this.toTransactionItem(updated, new Map()));
+        return ApiResponseDto.ok(TransactionApiPresenter.toTransactionItem(updated));
     }
 
     @Delete(':id')
@@ -161,39 +174,5 @@ export class TransactionApiController {
             unrealizedGain: summary.unrealizedGain,
             realizedGain: summary.realizedGain,
         });
-    }
-
-    private toTransactionItem(
-        t: Transaction,
-        cardMap: Map<string, { name: string; setCode: string }>
-    ): TransactionApiItemDto {
-        const card = cardMap.get(t.cardId);
-        return {
-            id: t.id,
-            cardId: t.cardId,
-            type: t.type,
-            quantity: t.quantity,
-            pricePerUnit: t.pricePerUnit,
-            isFoil: t.isFoil,
-            date: TransactionPresenter.formatDate(t.date),
-            source: t.source,
-            fees: t.fees,
-            notes: t.notes,
-            cardName: card?.name,
-            setCode: card?.setCode,
-            editable: TransactionPresenter.isEditable(t.createdAt),
-        };
-    }
-
-    private async buildCardMap(
-        cardIds: string[]
-    ): Promise<Map<string, { name: string; setCode: string }>> {
-        const cardMap = new Map<string, { name: string; setCode: string }>();
-        if (cardIds.length === 0) return cardMap;
-        const cards = await this.cardService.findByIds(cardIds);
-        for (const card of cards) {
-            cardMap.set(card.id, { name: card.name, setCode: card.setCode });
-        }
-        return cardMap;
     }
 }

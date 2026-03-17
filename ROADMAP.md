@@ -87,8 +87,13 @@
   - [x] Wire toast notifications to inventory update/delete failures
   - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
   - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
-- [ ] Transaction list: AJAX paginate/sort/filter
-  - [ ] Convert transaction list pagination/sort/filter to AJAX
+- [x] Transaction list: AJAX paginate/sort/filter
+  - [x] Add TX_DATE, TX_TYPE, TX_CARD, TX_PRICE sort options
+  - [x] Add paginated query methods to TransactionRepositoryPort and implement with QueryBuilderHelper
+  - [x] Build TransactionApiPresenter (TDD — 10 tests) with card join data (cardUrl, cardNumber)
+  - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
+  - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
+  - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
   - [ ] Cross-browser testing
 
 ### 2.1 Add Pre-fetching for Performance

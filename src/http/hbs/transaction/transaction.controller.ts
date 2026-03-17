@@ -10,12 +10,14 @@ import {
     ParseIntPipe,
     Post,
     Put,
+    Query,
     Render,
     Req,
     Res,
     UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -34,8 +36,12 @@ export class TransactionController {
     @UseGuards(JwtAuthGuard)
     @Get()
     @Render('transactions')
-    async findByUser(@Req() req: AuthenticatedRequest): Promise<TransactionViewDto> {
-        return await this.orchestrator.findByUser(req);
+    async findByUser(
+        @Query() query: Record<string, string>,
+        @Req() req: AuthenticatedRequest
+    ): Promise<TransactionViewDto> {
+        const options = new SafeQueryOptions(query);
+        return await this.orchestrator.findByUser(req, options);
     }
 
     @UseGuards(JwtAuthGuard)

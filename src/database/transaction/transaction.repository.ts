@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SortOptions } from 'src/core/query/sort-options.enum';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import {
     CashFlowPeriod,
@@ -7,12 +9,19 @@ import {
 } from 'src/core/transaction/ports/transaction.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
+import { QueryBuilderHelper } from '../query/query-builder.helper';
 import { TransactionMapper } from './transaction.mapper';
 import { TransactionOrmEntity } from './transaction.orm-entity';
 
 @Injectable()
 export class TransactionRepository implements TransactionRepositoryPort {
     private readonly LOGGER = getLogger(TransactionRepository.name);
+    private readonly queryHelper = new QueryBuilderHelper<TransactionOrmEntity>({
+        table: 'transaction',
+        filterColumn: 'transaction_card.name',
+        defaultSort: SortOptions.TX_DATE,
+        defaultSortDesc: true,
+    });
 
     constructor(
         @InjectRepository(TransactionOrmEntity)
@@ -108,6 +117,35 @@ export class TransactionRepository implements TransactionRepositoryPort {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
         await this.repository.delete({ id, userId });
         this.LOGGER.debug(`Deleted transaction ${id}.`);
+    }
+
+    async findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]> {
+        this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
+        const qb = this.repository
+            .createQueryBuilder('transaction')
+            .leftJoinAndSelect('transaction.card', 'transaction_card')
+            .where('transaction.userId = :userId', { userId });
+        this.queryHelper.applyOptions(qb, options);
+        const results = await qb.getMany();
+        return results.map((orm) => {
+            const core = TransactionMapper.toCore(orm);
+            if (orm.card) {
+                (core as any).cardName = orm.card.name;
+                (core as any).cardSetCode = orm.card.setCode;
+                (core as any).cardNumber = orm.card.number;
+            }
+            return core;
+        });
+    }
+
+    async countByUser(userId: number, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting transactions for user ${userId}.`);
+        const qb = this.repository
+            .createQueryBuilder('transaction')
+            .leftJoin('transaction.card', 'transaction_card')
+            .where('transaction.userId = :userId', { userId });
+        this.queryHelper.applyFilters(qb, options.filter);
+        return qb.getCount();
     }
 
     async getCashFlow(userId: number): Promise<CashFlowPeriod[]> {

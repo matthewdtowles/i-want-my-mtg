@@ -56,6 +56,9 @@ export class CardApiResponseDto {
 
     @ApiPropertyOptional()
     readonly setName?: string;
+
+    @ApiPropertyOptional()
+    readonly keyruneCode?: string;
 }
 
 export class PriceHistoryPointDto {

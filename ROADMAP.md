@@ -62,27 +62,41 @@
 - [x] Add rate limiting for API endpoints (`ApiRateLimitGuard`)
 - [x] Add API integration tests
 
-### 1.5 Future: SPA Migration
-- [ ] Evaluate migrating SSR views to SPA (React/Vue) consuming the API layer
-- [ ] Consider migrating to 100% Bearer token auth (drop cookie-based auth)
+### 1.5 Progressive Web Enhancement
+- [x] Set list: AJAX paginate/sort/filter (builds core infrastructure)
+  - [x] Move SetTypeMapper to shared location (`src/http/base/`)
+  - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
+  - [x] Add owned data to Set API (TDD) — OptionalAuthGuard, InventoryService injection, completionRate
+  - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
+  - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
+  - [x] Wire up setListPage.hbs template with container div and deferred script
+- [x] Card search/list: AJAX paginate/sort/filter
+  - [x] Add `keyruneCode` to Card API DTO (TDD — presenter maps from `card.set.keyruneCode` with `setCode` fallback)
+  - [x] Add `@ApiQuery` decorators for `filter` and `baseOnly` on set cards endpoint
+  - [x] Build `searchAjax.js` — intercepts form submit, independent card/set pagination, parallel API fetches
+  - [x] Build `setCardListAjax.js` — sort/filter/paginate/baseOnly via `/api/v1/sets/:code/cards`
+  - [x] Wire search.hbs and set.hbs templates with container divs and deferred scripts
+  - [x] Add integration tests for `keyruneCode`, filter, and baseOnly params
+  - [x] Scroll position preservation via `min-height` pinning during AJAX content swap
+- [x] Inventory list: AJAX paginate/sort/filter + toast notifications on errors
+  - [x] Extract global toast utility (`toast.js`) — `window.showToast`/`window.dismissToast` with status-based durations
+  - [x] Enrich Inventory API response with display fields (imgSrc, rarity, keyruneCode, prices, tags, url)
+  - [x] Add batch inventory quantities endpoint (`GET /api/v1/inventory/quantities?cardIds=...`)
+  - [x] Build `inventoryListAjax.js` — filter/sort/paginate/limit/baseOnly via `/api/v1/inventory`
+  - [x] Wire inventory +/- and delete controls for AJAX-rendered rows (event delegation compatibility)
+  - [x] Wire toast notifications to inventory update/delete failures
+  - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
+  - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
+- [x] Transaction list: AJAX paginate/sort/filter
+  - [x] Add TX_DATE, TX_TYPE, TX_CARD, TX_PRICE sort options
+  - [x] Add paginated query methods to TransactionRepositoryPort and implement with QueryBuilderHelper
+  - [x] Build TransactionApiPresenter (TDD — 10 tests) with card join data (cardUrl, cardNumber)
+  - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
+  - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
+  - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
+  - [x] Cross-browser testing
 
----
-
-## Phase 2: Web App Improvements
-
-### 2.1 Convert Pagination/Sorting/Filtering to AJAX
-- [ ] Identify all paginated views (cards, sets, inventory, transactions)
-- [ ] Create shared client-side JS module for AJAX table loading
-- [ ] Add JSON response support to existing controllers (or use API layer)
-- [ ] Convert card list pagination/sort/filter to AJAX
-- [ ] Convert set list pagination/sort/filter to AJAX
-- [ ] Convert inventory list pagination/sort/filter to AJAX
-- [ ] Convert transaction list pagination/sort/filter to AJAX
-- [ ] Add loading states and error handling in UI
-- [ ] Update URL query params on AJAX navigation (back button support)
-- [ ] Test across browsers
-
-### 2.2 Add Pre-fetching for Performance
+### 2.1 Add Pre-fetching for Performance
 - [ ] Audit current page load performance (identify bottlenecks)
 - [ ] Add link pre-fetching for likely navigation targets
 - [ ] Evaluate and add resource hints (preconnect, prefetch, preload)
@@ -90,7 +104,7 @@
 - [ ] Consider service worker for offline card data caching
 - [ ] Measure improvement
 
-### 2.3 SEO
+### 2.2 SEO
 - [ ] Add meta tags (title, description, og:image) to all public pages
 - [ ] Add structured data (JSON-LD) for card pages
 - [ ] Generate sitemap.xml for public card and set pages
@@ -99,7 +113,7 @@
 - [ ] Add canonical URLs
 - [ ] Submit sitemap to Google Search Console
 
-### 2.4 Feature: Binder View
+### 2.3 Feature: Binder View
 - [ ] Design binder layout (grid of card images, page-like grouping)
 - [ ] Implement binder view component/template
 - [ ] Add toggle between list view and binder view
@@ -107,7 +121,7 @@
 - [ ] Add binder view for inventory (user's collection)
 - [ ] Persist view preference per user
 
-### 2.5 Feature: Price Notifications
+### 2.4 Feature: Price Notifications
 - [ ] Design notification data model (user preferences, thresholds, history)
 - [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
 - [ ] Implement price change detection during ingestion
@@ -116,7 +130,7 @@
 - [ ] Consider in-app notifications in addition to email
 - [ ] Add unsubscribe/manage preferences flow
 
-### 2.6 Feature: Bulk Upload Transactions
+### 2.5 Feature: Bulk Upload Transactions
 - [ ] Design bulk upload flow (CSV file format, UI for upload)
 - [ ] Create CSV template/documentation for expected format
 - [ ] Implement file upload endpoint and CSV parsing
@@ -124,14 +138,7 @@
 - [ ] Handle errors and partial failures (report which rows failed and why)
 - [ ] Add bulk upload UI to transactions page
 
-### 2.7 Toast Notifications for Failed Inventory Updates
-- [ ] Add toast/notification component to UI
-- [ ] Detect inventory update failures caused by transaction constraints (e.g., removing items that active transactions depend on)
-- [ ] Return descriptive error messages from backend explaining why the update was blocked
-- [ ] Display toast message to user with actionable context (e.g., "Cannot remove item — referenced by an active Buy transaction")
-- [ ] Ensure toast works across all inventory update paths (add, remove, adjust quantity)
-
-### 2.8 Improve Site Copy and UX Guidance
+### 2.6 Improve Site Copy and UX Guidance
 - [ ] Audit current site copy for clarity and completeness
 - [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
 - [ ] Add contextual help text and tooltips to key pages
@@ -139,7 +146,7 @@
 - [ ] Review navigation flow and improve discoverability of features
 - [ ] Update page headings, labels, and descriptions for consistency
 
-### 2.9 Support Flavor Name
+### 2.7 Support Flavor Name
 - [ ] Verify Scryfall API provides flavor_name data
 - [ ] Add flavor_name column to card table (migration)
 - [ ] Update Scry card ingestion to store flavor_name

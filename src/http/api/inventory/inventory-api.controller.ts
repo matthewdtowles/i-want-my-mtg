@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -21,6 +22,8 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryRequestApiDto } from './dto/inventory-request-api.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { InventoryItemApiDto } from './dto/inventory-response.dto';
+import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
+import { InventoryApiPresenter } from './inventory-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 
 @ApiTags('Inventory')
@@ -49,9 +52,37 @@ export class InventoryApiController {
         ]);
 
         return ApiResponseDto.ok(
-            items.map((item) => this.toInventoryItem(item)),
+            items.map((item) => InventoryApiPresenter.toInventoryItem(item)),
             new PaginationMeta(options.page, options.limit, total)
         );
+    }
+
+    @Get('quantities')
+    @ApiOperation({ summary: 'Get inventory quantities for a batch of card IDs' })
+    @ApiQuery({ name: 'cardIds', required: true, description: 'Comma-separated card IDs' })
+    @ApiResponse({ status: 200, description: 'Inventory quantities by card ID' })
+    async getQuantities(
+        @Query('cardIds') cardIds: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<InventoryQuantityApiDto[]>> {
+        const ids = cardIds
+            ? [
+                  ...new Set(
+                      cardIds
+                          .split(',')
+                          .map((id) => id.trim())
+                          .filter(Boolean)
+                  ),
+              ]
+            : [];
+        if (ids.length === 0) {
+            return ApiResponseDto.ok([]);
+        }
+        if (ids.length > 200) {
+            throw new BadRequestException('Maximum of 200 card IDs allowed per request');
+        }
+        const items = await this.inventoryService.findByCards(req.user.id, ids);
+        return ApiResponseDto.ok(InventoryApiPresenter.toQuantityResponse(items));
     }
 
     @Post()
@@ -72,7 +103,7 @@ export class InventoryApiController {
                 })
         );
         const saved = await this.inventoryService.save(items);
-        return ApiResponseDto.ok(saved.map((item) => this.toInventoryItem(item)));
+        return ApiResponseDto.ok(saved.map((item) => InventoryApiPresenter.toInventoryItem(item)));
     }
 
     @Patch()
@@ -93,7 +124,7 @@ export class InventoryApiController {
                 })
         );
         const saved = await this.inventoryService.save(items);
-        return ApiResponseDto.ok(saved.map((item) => this.toInventoryItem(item)));
+        return ApiResponseDto.ok(saved.map((item) => InventoryApiPresenter.toInventoryItem(item)));
     }
 
     @Delete()
@@ -106,16 +137,5 @@ export class InventoryApiController {
     ): Promise<ApiResponseDto<{ deleted: boolean }>> {
         const success = await this.inventoryService.delete(req.user.id, body.cardId, body.isFoil);
         return ApiResponseDto.ok({ deleted: success });
-    }
-
-    private toInventoryItem(item: Inventory): InventoryItemApiDto {
-        return {
-            cardId: item.cardId,
-            quantity: item.quantity,
-            isFoil: item.isFoil,
-            cardName: item.card?.name,
-            setCode: item.card?.setCode,
-            cardNumber: item.card?.number,
-        };
     }
 }

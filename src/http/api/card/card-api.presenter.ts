@@ -32,6 +32,7 @@ export class CardApiPresenter {
                   }
                 : undefined,
             setName: card.set?.name,
+            keyruneCode: card.set?.keyruneCode ?? card.setCode,
         };
     }
 }

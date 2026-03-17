@@ -18,4 +18,31 @@ export class InventoryItemApiDto {
 
     @ApiPropertyOptional()
     readonly cardNumber?: string;
+
+    @ApiPropertyOptional()
+    readonly imgSrc?: string;
+
+    @ApiPropertyOptional()
+    readonly rarity?: string;
+
+    @ApiPropertyOptional()
+    readonly keyruneCode?: string;
+
+    @ApiPropertyOptional()
+    readonly priceNormal?: number;
+
+    @ApiPropertyOptional()
+    readonly priceFoil?: number;
+
+    @ApiPropertyOptional()
+    readonly tags?: string[];
+
+    @ApiPropertyOptional()
+    readonly hasNonFoil?: boolean;
+
+    @ApiPropertyOptional()
+    readonly hasFoil?: boolean;
+
+    @ApiPropertyOptional()
+    readonly url?: string;
 }

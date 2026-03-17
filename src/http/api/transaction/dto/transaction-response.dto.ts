@@ -38,6 +38,12 @@ export class TransactionApiItemDto {
     readonly setCode?: string;
 
     @ApiPropertyOptional()
+    readonly cardUrl?: string;
+
+    @ApiPropertyOptional()
+    readonly cardNumber?: string;
+
+    @ApiPropertyOptional()
     readonly editable?: boolean;
 }
 

@@ -30,6 +30,15 @@ describe('Cards API (e2e)', () => {
             expect(res.body.meta).toHaveProperty('total');
         });
 
+        it('returns keyruneCode in card search results', async () => {
+            const res = await request(app.getHttpServer()).get('/api/v1/cards?q=Angel').expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            const card = res.body.data[0];
+            expect(card).toHaveProperty('keyruneCode');
+            expect(typeof card.keyruneCode).toBe('string');
+        });
+
         it('returns empty array when no search term provided', async () => {
             const res = await request(app.getHttpServer()).get('/api/v1/cards').expect(200);
 
@@ -61,6 +70,7 @@ describe('Cards API (e2e)', () => {
             expect(res.body.data).toHaveProperty('number', TEST_CARD_NUMBER);
             expect(res.body.data).toHaveProperty('type');
             expect(res.body.data).toHaveProperty('rarity');
+            expect(res.body.data).toHaveProperty('keyruneCode');
         });
 
         it('includes prices when available', async () => {

@@ -28,8 +28,11 @@ describe('InventoryService', () => {
         save: jest.fn(),
         findOne: jest.fn(),
         findByCard: jest.fn(),
+        findByCards: jest.fn(),
         findByUser: jest.fn(),
         delete: jest.fn(),
+        totalInventoryCardsForSets: jest.fn(),
+        totalInventoryValuesForSets: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -131,6 +134,60 @@ describe('InventoryService', () => {
             const result = await service.findAllForUser(null, mockQueryOptions);
             expect(repository.findByUser).not.toHaveBeenCalled();
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('inventoryTotalsForSets', () => {
+        it('should return totals map from repository', async () => {
+            const expected = new Map([
+                ['TST', 5],
+                ['ABC', 10],
+            ]);
+            repository.totalInventoryCardsForSets.mockResolvedValue(expected);
+
+            const result = await service.inventoryTotalsForSets(1, ['TST', 'ABC']);
+
+            expect(repository.totalInventoryCardsForSets).toHaveBeenCalledWith(1, ['TST', 'ABC']);
+            expect(result).toEqual(expected);
+        });
+
+        it('should return empty map when userId is falsy', async () => {
+            const result = await service.inventoryTotalsForSets(0, ['TST']);
+            expect(repository.totalInventoryCardsForSets).not.toHaveBeenCalled();
+            expect(result).toEqual(new Map());
+        });
+
+        it('should return empty map when setCodes is empty', async () => {
+            const result = await service.inventoryTotalsForSets(1, []);
+            expect(repository.totalInventoryCardsForSets).not.toHaveBeenCalled();
+            expect(result).toEqual(new Map());
+        });
+    });
+
+    describe('ownedValuesForSets', () => {
+        it('should return values map from repository', async () => {
+            const expected = new Map([
+                ['TST', 100.5],
+                ['ABC', 200.75],
+            ]);
+            repository.totalInventoryValuesForSets.mockResolvedValue(expected);
+
+            const result = await service.ownedValuesForSets(1, ['TST', 'ABC']);
+
+            expect(repository.totalInventoryValuesForSets).toHaveBeenCalledWith(1, ['TST', 'ABC']);
+            expect(result).toEqual(expected);
+        });
+
+        it('should return empty map when userId is falsy', async () => {
+            const result = await service.ownedValuesForSets(0, ['TST']);
+            expect(repository.totalInventoryValuesForSets).not.toHaveBeenCalled();
+            expect(result).toEqual(new Map());
+        });
+
+        it('should return empty map when setCodes is empty', async () => {
+            const result = await service.ownedValuesForSets(1, []);
+            expect(repository.totalInventoryValuesForSets).not.toHaveBeenCalled();
+            expect(result).toEqual(new Map());
         });
     });
 

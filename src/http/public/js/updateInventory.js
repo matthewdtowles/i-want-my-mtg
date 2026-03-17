@@ -47,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } catch (error) {
                 console.error(`Error deleting card ${cardId}:`, error.message);
+                if (typeof window.showToast === 'function')
+                    window.showToast(error.message, 'error');
             }
         }
     });
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return updatedInventory ? updatedInventory.quantity : quantity;
         } catch (error) {
             console.error(`Error in addInventoryItem => ${error}`);
+            if (typeof window.showToast === 'function') window.showToast(error.message, 'error');
             return quantity;
         }
     }
@@ -85,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (error) {
             console.error(`Error in removeInventoryItem => ${error}`);
+            if (typeof window.showToast === 'function') window.showToast(error.message, 'error');
             return quantity;
         }
     }

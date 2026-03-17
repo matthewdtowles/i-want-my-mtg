@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction } from './transaction.entity';
@@ -96,6 +97,16 @@ export class TransactionService {
     async findByUser(userId: number): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding all transactions for user ${userId}.`);
         return this.repository.findByUser(userId);
+    }
+
+    async findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]> {
+        this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
+        return this.repository.findByUserPaginated(userId, options);
+    }
+
+    async countByUser(userId: number, options: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting transactions for user ${userId}.`);
+        return this.repository.countByUser(userId, options);
     }
 
     async update(

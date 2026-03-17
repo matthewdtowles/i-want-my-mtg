@@ -21,7 +21,9 @@
             </a>
         </div>
     </section>
-    <div class="content-wrapper">
+    <div id="transaction-list-ajax" class="content-wrapper">
+        {{>filter}}
+        <div id="filter-results">
         <div class="table-wrapper">
         <table class="table-container w-full">
             <thead>
@@ -102,7 +104,9 @@
             </tbody>
         </table>
         </div>
+        </div>
     </div>
+    {{>pagination hasItems=this.transactions.length}}
 </section>
 
 {{else}}
@@ -116,130 +120,4 @@
 </section>
 {{/if}}
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    function toggleEditMode(row, editing) {
-        row.querySelectorAll('.tx-display').forEach(function (el) {
-            el.classList.toggle('hidden', editing);
-        });
-        row.querySelectorAll('.tx-edit').forEach(function (el) {
-            el.classList.toggle('hidden', !editing);
-        });
-    }
-
-    function formatDollar(val) {
-        return '$' + Number(val).toFixed(2);
-    }
-
-    document.body.addEventListener('click', async function (event) {
-        // Edit button
-        var editBtn = event.target.closest('.edit-transaction-button');
-        if (editBtn) {
-            event.stopImmediatePropagation();
-            var row = editBtn.closest('tr');
-            toggleEditMode(row, true);
-            return;
-        }
-
-        // Cancel button
-        var cancelBtn = event.target.closest('.cancel-edit-button');
-        if (cancelBtn) {
-            event.stopImmediatePropagation();
-            var row = cancelBtn.closest('tr');
-            // Reset inputs to original values
-            row.querySelectorAll('.tx-edit[data-field]').forEach(function (input) {
-                var displayEl = input.parentElement.querySelector('.tx-display');
-                if (input.dataset.field === 'quantity') {
-                    input.value = displayEl.textContent.trim();
-                } else if (input.dataset.field === 'pricePerUnit') {
-                    input.value = row.dataset.rawPrice;
-                } else if (input.dataset.field === 'date') {
-                    input.value = displayEl.textContent.trim();
-                }
-            });
-            toggleEditMode(row, false);
-            return;
-        }
-
-        // Save button
-        var saveBtn = event.target.closest('.save-transaction-button');
-        if (saveBtn) {
-            event.stopImmediatePropagation();
-            var row = saveBtn.closest('tr');
-            var txId = row.dataset.transactionId;
-            var body = {};
-
-            row.querySelectorAll('.tx-edit[data-field]').forEach(function (input) {
-                var field = input.dataset.field;
-                if (field === 'quantity') {
-                    body.quantity = parseInt(input.value, 10);
-                } else if (field === 'pricePerUnit') {
-                    body.pricePerUnit = parseFloat(input.value);
-                } else if (field === 'date') {
-                    body.date = input.value;
-                }
-            });
-
-            try {
-                var response = await fetch('/transactions/' + txId, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-                var data = await response.json();
-                if (data.success) {
-                    // Update displayed values
-                    var displays = row.querySelectorAll('.tx-display');
-                    var dateDisplay = row.querySelector('td:first-child .tx-display');
-                    var qtyDisplay = row.querySelector('td:nth-child(4) .tx-display');
-                    var priceDisplay = row.querySelector('td:nth-child(5) .tx-display');
-                    var totalDisplay = row.querySelector('.tx-total');
-
-                    if (body.date && dateDisplay) dateDisplay.textContent = body.date;
-                    if (body.quantity && qtyDisplay) qtyDisplay.textContent = body.quantity;
-                    if (body.pricePerUnit !== undefined) {
-                        if (priceDisplay) priceDisplay.textContent = formatDollar(body.pricePerUnit);
-                        row.dataset.rawPrice = body.pricePerUnit;
-                    }
-
-                    var qty = body.quantity || parseInt(qtyDisplay.textContent, 10);
-                    var price = body.pricePerUnit !== undefined ? body.pricePerUnit : parseFloat(row.dataset.rawPrice);
-                    if (totalDisplay) totalDisplay.textContent = formatDollar(qty * price);
-
-                    toggleEditMode(row, false);
-                } else {
-                    alert('Failed to update: ' + (data.error || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error updating transaction:', error);
-                alert('Error updating transaction.');
-            }
-            return;
-        }
-
-        // Delete button
-        var deleteBtn = event.target.closest('.delete-transaction-button');
-        if (!deleteBtn) return;
-        event.stopImmediatePropagation();
-
-        var txId = deleteBtn.dataset.transactionId;
-        if (!confirm('Delete this transaction?')) return;
-
-        try {
-            var response = await fetch('/transactions/' + txId, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            var data = await response.json();
-            if (data.success) {
-                var row = deleteBtn.closest('tr');
-                if (row) row.remove();
-            } else {
-                console.error('Failed to delete transaction:', data.error);
-            }
-        } catch (error) {
-            console.error('Error deleting transaction:', error);
-        }
-    });
-});
-</script>
+<script src="/public/js/transactionListAjax.js" defer></script>

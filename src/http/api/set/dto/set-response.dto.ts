@@ -45,8 +45,26 @@ export class SetApiResponseDto {
     @ApiPropertyOptional()
     readonly block?: string;
 
+    @ApiPropertyOptional()
+    readonly parentCode?: string;
+
+    @ApiProperty()
+    readonly isMain: boolean;
+
+    @ApiProperty({ type: [String] })
+    readonly tags: string[];
+
     @ApiPropertyOptional({ type: SetPriceApiDto })
     readonly prices?: SetPriceApiDto;
+
+    @ApiPropertyOptional()
+    readonly ownedTotal?: number;
+
+    @ApiPropertyOptional()
+    readonly ownedValue?: number;
+
+    @ApiPropertyOptional()
+    readonly completionRate?: number;
 }
 
 export class SetPriceHistoryPointDto {

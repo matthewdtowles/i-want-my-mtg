@@ -295,7 +295,7 @@
     </section>
 </div>
 
-<div class="content-wrapper">
+<div id="set-card-list-ajax" data-set-code="{{set.code}}" data-authenticated="{{authenticated}}" class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1">
             {{>filter}}
@@ -374,9 +374,9 @@
         {{/if}}
     </div>
 </div>
-
 {{>pagination hasItems=set.cards.length}}
 
+<script src="/public/js/setCardListAjax.js" defer></script>
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>

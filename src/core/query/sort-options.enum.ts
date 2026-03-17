@@ -9,6 +9,10 @@ export enum SortOptions {
     SET = 'set.name',
     SET_CODE = 'set.code',
     SET_BASE_PRICE = 'setPrice.basePrice',
+    TX_DATE = 'transaction.date',
+    TX_TYPE = 'transaction.type',
+    TX_CARD = 'transaction_card.name',
+    TX_PRICE = 'transaction.pricePerUnit',
 }
 
 export const SortOptionLabels: Record<SortOptions, string> = {
@@ -22,4 +26,8 @@ export const SortOptionLabels: Record<SortOptions, string> = {
     [SortOptions.SET]: 'Set',
     [SortOptions.SET_CODE]: 'Code',
     [SortOptions.SET_BASE_PRICE]: 'Set Value',
+    [SortOptions.TX_DATE]: 'Date',
+    [SortOptions.TX_TYPE]: 'Type',
+    [SortOptions.TX_CARD]: 'Card',
+    [SortOptions.TX_PRICE]: 'Price',
 };

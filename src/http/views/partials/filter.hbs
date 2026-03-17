@@ -18,5 +18,11 @@
     <input type="hidden" name="page" value="{{filter.page}}" />
     <input type="hidden" name="limit" value="{{filter.limit}}" />
     <input type="hidden" name="baseOnly" value="{{filter.baseOnly}}" />
+    {{#if filter.sort}}
+    <input type="hidden" name="sort" value="{{filter.sort}}" />
+    {{/if}}
+    {{#if (eq filter.ascend false)}}
+    <input type="hidden" name="ascend" value="false" />
+    {{/if}}
 </form>
 <script src="/public/js/filter.js" defer></script>

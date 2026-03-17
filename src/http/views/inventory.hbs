@@ -77,7 +77,7 @@
             <input id="import-sets-file" type="file" name="file" accept=".csv" onchange="this.form.submit()" />
         </form>
     </section>
-    <div class="content-wrapper">
+    <div id="inventory-list-ajax" class="content-wrapper">
         <div class="flex items-center gap-2">
             <div class="flex-1">
                 {{>filter}}
@@ -142,9 +142,8 @@
             {{/if}}
         </div>
     </div>
+    {{>pagination hasItems=this.cards.length}}
 </section>
-
-{{>pagination hasItems=this.cards.length}}
 
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
@@ -195,6 +194,7 @@
 
 <script src="/public/js/cardPreview.js" defer></script>
 <script src="/public/js/updateInventory.js" defer></script>
+<script src="/public/js/inventoryListAjax.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

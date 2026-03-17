@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardService } from 'src/core/card/card.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -40,6 +41,8 @@ describe('TransactionOrchestrator', () => {
                     useValue: {
                         create: jest.fn(),
                         findByUser: jest.fn(),
+                        findByUserPaginated: jest.fn(),
+                        countByUser: jest.fn(),
                         findByUserAndCard: jest.fn(),
                         update: jest.fn(),
                         delete: jest.fn(),
@@ -65,13 +68,26 @@ describe('TransactionOrchestrator', () => {
     });
 
     describe('findByUser', () => {
-        it('should return transaction view with items', async () => {
-            transactionService.findByUser.mockResolvedValue([testTransaction]);
-            cardService.findByIds.mockResolvedValue([
-                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
-            ]);
+        const defaultOptions = new SafeQueryOptions();
 
-            const result = await orchestrator.findByUser(mockAuthenticatedRequest);
+        it('should return transaction view with items using joined card data', async () => {
+            const txWithCard = Object.assign(
+                new Transaction({
+                    id: 1,
+                    userId: 1,
+                    cardId: 'card-1',
+                    type: 'BUY',
+                    quantity: 2,
+                    pricePerUnit: 5.0,
+                    isFoil: false,
+                    date: new Date('2025-06-01'),
+                }),
+                { cardName: 'Lightning Bolt', cardSetCode: 'lea', cardNumber: '161' }
+            );
+            transactionService.findByUserPaginated.mockResolvedValue([txWithCard]);
+            transactionService.countByUser.mockResolvedValue(1);
+
+            const result = await orchestrator.findByUser(mockAuthenticatedRequest, defaultOptions);
 
             expect(result.hasTransactions).toBe(true);
             expect(result.totalTransactions).toBe(1);
@@ -79,21 +95,26 @@ describe('TransactionOrchestrator', () => {
             expect(result.transactions[0].cardName).toBe('Lightning Bolt');
             expect(result.authenticated).toBe(true);
             expect(result.username).toBe('Test User');
+            expect(result.pagination).toBeDefined();
+            expect(cardService.findByIds).not.toHaveBeenCalled();
         });
 
         it('should return empty view when no transactions', async () => {
-            transactionService.findByUser.mockResolvedValue([]);
-            cardService.findByIds.mockResolvedValue([]);
+            transactionService.findByUserPaginated.mockResolvedValue([]);
+            transactionService.countByUser.mockResolvedValue(0);
 
-            const result = await orchestrator.findByUser(mockAuthenticatedRequest);
+            const result = await orchestrator.findByUser(mockAuthenticatedRequest, defaultOptions);
 
             expect(result.hasTransactions).toBe(false);
             expect(result.totalTransactions).toBe(0);
             expect(result.transactions).toHaveLength(0);
+            expect(cardService.findByIds).not.toHaveBeenCalled();
         });
 
         it('should throw on unauthenticated request', async () => {
-            await expect(orchestrator.findByUser(mockUnauthenticatedRequest)).rejects.toThrow();
+            await expect(
+                orchestrator.findByUser(mockUnauthenticatedRequest, defaultOptions)
+            ).rejects.toThrow();
         });
     });
 

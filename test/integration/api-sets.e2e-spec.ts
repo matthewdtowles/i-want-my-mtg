@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createTestApp, closeTestApp, TEST_SET_CODE, TEST_CARD_ID } from './setup';
+import { createTestApp, closeTestApp, TEST_SET_CODE } from './setup';
 
 describe('Sets API (e2e)', () => {
     let app: INestApplication;
@@ -106,6 +106,38 @@ describe('Sets API (e2e)', () => {
 
             expect(res.body.data.length).toBeLessThanOrEqual(1);
             expect(res.body.meta.limit).toBe(1);
+        });
+
+        it('returns keyruneCode in card responses', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE}/cards`)
+                .expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            const card = res.body.data[0];
+            expect(card).toHaveProperty('keyruneCode');
+            expect(typeof card.keyruneCode).toBe('string');
+        });
+
+        it('supports filter parameter', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE}/cards?filter=Angel`)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            for (const card of res.body.data) {
+                expect(card.name.toLowerCase()).toContain('angel');
+            }
+        });
+
+        it('supports baseOnly parameter', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE}/cards?baseOnly=true`)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
         });
     });
 

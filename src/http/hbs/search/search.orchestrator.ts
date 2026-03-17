@@ -9,7 +9,7 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BASE_IMAGE_URL, buildCardUrl, isAuthenticated } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SetTypeMapper } from 'src/http/hbs/set/set-type.mapper';
+import { SetTypeMapper } from 'src/http/base/set-type.mapper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { SearchSuggestResponseDto, SuggestCardDto, SuggestSetDto } from './dto/search-suggest.dto';
 import { SearchCardResultDto, SearchSetResultDto, SearchViewDto } from './dto/search.view.dto';
@@ -55,6 +55,8 @@ export class SearchOrchestrator {
             const result = await this.searchService.search(term, options);
             const baseUrl = '/search';
 
+            const paginationTotal = Math.max(result.cardTotal, result.setTotal);
+
             return new SearchViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -66,8 +68,7 @@ export class SearchOrchestrator {
                 sets: result.sets.map((set) => this.toSetResult(set)),
                 cardTotal: result.cardTotal,
                 setTotal: result.setTotal,
-                cardPagination: new PaginationView(options, baseUrl, result.cardTotal),
-                setPagination: new PaginationView(options, baseUrl, result.setTotal),
+                pagination: new PaginationView(options, baseUrl, paginationTotal),
             });
         } catch (error) {
             this.LOGGER.debug(`Error searching for "${term}": ${error?.message}`);

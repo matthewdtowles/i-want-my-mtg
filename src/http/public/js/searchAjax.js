@@ -18,47 +18,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Remove inline onchange from SSR limit select to prevent full-page reload
-    var ssrLimitSelect = container.parentElement.querySelector(
-        '.pagination-container select#limit'
-    );
-    if (ssrLimitSelect) {
-        ssrLimitSelect.removeAttribute('onchange');
-    }
-
-    // Intercept limit select change
-    document.addEventListener('change', function (e) {
-        if (e.target.id !== 'limit') return;
-        var paginationParent = e.target.closest('.pagination-container');
-        if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
-        e.preventDefault();
-        state.limit = parseInt(e.target.value, 10) || 25;
-        state.page = 1;
-        fetchBoth('pushState');
-    });
-
-    // Intercept limit form submit
-    document.addEventListener('submit', function (e) {
-        var paginationParent = e.target.closest('.pagination-container');
-        if (paginationParent && container.parentElement.contains(paginationParent)) {
-            e.preventDefault();
-        }
-    });
-
-    // Intercept pagination clicks
-    document.addEventListener('click', function (e) {
-        var link = e.target.closest('.pagination-container a');
-        if (!link || !container.parentElement.contains(link)) return;
-        e.preventDefault();
-        var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
-        state.page = parseInt(params.get('page'), 10) || 1;
-        if (params.has('limit')) state.limit = parseInt(params.get('limit'), 10) || 25;
-        fetchBoth('pushState');
+    AjaxUtils.setupPaginationInterceptors({
+        container: container,
+        state: state,
+        fetchFn: fetchBoth,
+        scopeToContainer: true,
     });
 
     // Back/forward button
     window.addEventListener('popstate', function () {
-        state = parseStateFromUrl();
+        syncStateFromUrl(state);
         var input = document.querySelector('form input[name="q"]');
         if (input) input.value = state.q;
         if (state.q) {
@@ -75,6 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
             page: parseInt(params.get('page'), 10) || 1,
             limit: parseInt(params.get('limit'), 10) || 25,
         };
+    }
+
+    function syncStateFromUrl(target) {
+        var fresh = parseStateFromUrl();
+        var keys = Object.keys(fresh);
+        for (var i = 0; i < keys.length; i++) {
+            target[keys[i]] = fresh[keys[i]];
+        }
     }
 
     function buildCardApiUrl() {
@@ -115,9 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateHistory(historyMethod);
             return;
         }
-        container.style.minHeight = container.offsetHeight + 'px';
-        container.innerHTML =
-            '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
+        AjaxUtils.showSpinner(container);
         Promise.all([
             fetch(buildCardApiUrl()).then(function (r) {
                 return r.json();
@@ -131,15 +106,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 var setJson = results[1];
                 renderResults(cardJson, setJson);
                 updatePagination(cardJson.meta, setJson.meta);
-                container.style.minHeight = '';
+                AjaxUtils.clearMinHeight(container);
                 updateHistory(historyMethod);
+                AjaxUtils.smoothScroll(container, 'start');
             })
             .catch(function (err) {
                 console.error('Search error:', err);
-                container.innerHTML = renderError(
-                    'Failed to load search results. Please try again.'
-                );
-                container.style.minHeight = '';
+                AjaxUtils.showError(container, 'Failed to load search results. Please try again.');
+                AjaxUtils.clearMinHeight(container);
             });
     }
 
@@ -150,28 +124,15 @@ document.addEventListener('DOMContentLoaded', function () {
             '</div>';
     }
 
-    function renderError(message) {
-        return (
-            '<div class="text-center py-16">' +
-            '<i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>' +
-            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">' +
-            escapeHtml(message) +
-            '</p>' +
-            '</div>'
-        );
-    }
-
     function renderResults(cardJson, setJson) {
         var cards = cardJson.success ? cardJson.data || [] : [];
         var sets = setJson.success ? setJson.data || [] : [];
-        var cardMeta = cardJson.meta;
-        var setMeta = setJson.meta;
 
         if (cards.length === 0 && sets.length === 0) {
             container.innerHTML =
                 '<div class="text-center py-12">' +
                 '<p class="text-gray-500 dark:text-gray-400 text-lg">No results found for "' +
-                escapeHtml(state.q) +
+                AjaxUtils.escapeHtml(state.q) +
                 '"</p>' +
                 '<p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Try a different search term</p>' +
                 '</div>';
@@ -181,12 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var html = '';
         if (sets.length > 0) {
             html += '<div id="search-sets-section" class="mb-8">';
-            html += renderSetSectionHtml(sets, setMeta);
+            html += renderSetSectionHtml(sets, setJson.meta);
             html += '</div>';
         }
         if (cards.length > 0) {
             html += '<div id="search-cards-section" class="mb-8">';
-            html += renderCardSectionHtml(cards, cardMeta);
+            html += renderCardSectionHtml(cards, cardJson.meta);
             html += '</div>';
         }
         container.innerHTML = html;
@@ -223,12 +184,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderSetCard(set) {
-        var keyruneCode = escapeHtml(set.keyruneCode || set.code);
+        var keyruneCode = AjaxUtils.escapeHtml(set.keyruneCode || set.code);
         var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
         var tagsHtml = '';
         if (set.tags) {
             for (var t = 0; t < set.tags.length; t++) {
-                tagsHtml += '<span class="tag">' + escapeHtml(set.tags[t]) + '</span>';
+                tagsHtml += '<span class="tag">' + AjaxUtils.escapeHtml(set.tags[t]) + '</span>';
             }
         }
         return (
@@ -243,11 +204,11 @@ document.addEventListener('DOMContentLoaded', function () {
             ' ss-2x ss-foil text-gray-700 dark:text-gray-300"></i>' +
             '<div class="flex-1 min-w-0">' +
             '<div class="font-medium text-gray-900 dark:text-gray-100 truncate">' +
-            escapeHtml(set.name) +
+            AjaxUtils.escapeHtml(set.name) +
             '</div>' +
             '<div class="text-xs text-gray-500 dark:text-gray-400">' +
-            escapeHtml(set.code.toUpperCase()) +
-            (set.releaseDate ? ' &middot; ' + escapeHtml(set.releaseDate) : '') +
+            AjaxUtils.escapeHtml(set.code.toUpperCase()) +
+            (set.releaseDate ? ' &middot; ' + AjaxUtils.escapeHtml(set.releaseDate) : '') +
             '</div></div>' +
             tagsHtml +
             '</a>'
@@ -258,8 +219,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var imgSrc = 'https://cards.scryfall.io/small/front/' + card.imgSrc;
         var url =
             '/card/' + encodeURIComponent(card.setCode) + '/' + encodeURIComponent(card.number);
-        var keyruneCode = escapeHtml(card.keyruneCode || card.setCode);
-        var rarity = escapeHtml(card.rarity || '');
+        var keyruneCode = AjaxUtils.escapeHtml(card.keyruneCode || card.setCode);
+        var rarity = AjaxUtils.escapeHtml(card.rarity || '');
 
         return (
             '<a href="' +
@@ -269,14 +230,14 @@ document.addEventListener('DOMContentLoaded', function () {
             'bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600 ' +
             'hover:border-teal-400 dark:hover:border-teal-500 transition-colors">' +
             '<img src="' +
-            escapeHtml(imgSrc) +
+            AjaxUtils.escapeHtml(imgSrc) +
             '" alt="' +
-            escapeHtml(card.name) +
+            AjaxUtils.escapeHtml(card.name) +
             '" ' +
             'class="rounded w-full max-w-[146px] mb-2" loading="lazy" />' +
             '<div class="text-center w-full">' +
             '<div class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">' +
-            escapeHtml(card.name) +
+            AjaxUtils.escapeHtml(card.name) +
             '</div>' +
             '<div class="text-xs text-gray-500 dark:text-gray-400">' +
             '<i class="ss ss-' +
@@ -284,115 +245,36 @@ document.addEventListener('DOMContentLoaded', function () {
             ' ss-' +
             rarity +
             ' ss-fw"></i> ' +
-            escapeHtml(card.setCode.toUpperCase()) +
+            AjaxUtils.escapeHtml(card.setCode.toUpperCase()) +
             ' #' +
-            escapeHtml(card.number) +
+            AjaxUtils.escapeHtml(card.number) +
             '</div></div></a>'
         );
     }
 
     function updatePagination(cardMeta, setMeta) {
-        var paginationEl = container.parentElement.querySelector('.pagination-container');
-        var html = renderPaginationHtml(cardMeta, setMeta);
-        if (!html) {
-            if (paginationEl) paginationEl.innerHTML = '';
-            return;
-        }
-        if (paginationEl) {
-            paginationEl.innerHTML = html;
-        } else {
-            paginationEl = document.createElement('section');
-            paginationEl.className = 'pagination-container';
-            container.parentNode.insertBefore(paginationEl, container.nextSibling);
-            paginationEl.innerHTML = html;
-        }
-    }
-
-    function renderPaginationHtml(cardMeta, setMeta) {
         var cardTotal = cardMeta ? cardMeta.total : 0;
         var setTotal = setMeta ? setMeta.total : 0;
         var total = Math.max(cardTotal, setTotal);
         var totalPages = Math.ceil(total / state.limit);
 
-        if (totalPages <= 1) return '';
+        var hiddenFields = {};
+        if (state.q) hiddenFields.q = state.q;
 
-        var page = state.page;
-        var html = '';
-
-        if (page > 1) {
-            html +=
-                '<a href="' +
-                paginationHref(page - 1) +
-                '" class="pagination-btn pagination-btn-primary">&lt;</a>';
-            html +=
-                '<a href="' +
-                paginationHref(1) +
-                '" class="pagination-btn pagination-btn-tertiary">1</a>';
-        }
-
-        var skipBack = page - Math.floor(totalPages / 3);
-        if (skipBack > 1 && skipBack < page) {
-            html +=
-                '<a href="' +
-                paginationHref(skipBack) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                skipBack +
-                '</a>';
-            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
-        }
-
-        html +=
-            '<span class="pagination-btn pagination-btn-current" aria-current="page">' +
-            page +
-            '</span>';
-
-        var skipForward = page + Math.floor(totalPages / 3);
-        if (skipForward < totalPages && skipForward > page) {
-            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
-            html +=
-                '<a href="' +
-                paginationHref(skipForward) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                skipForward +
-                '</a>';
-        }
-
-        if (page < totalPages) {
-            html +=
-                '<a href="' +
-                paginationHref(totalPages) +
-                '" class="pagination-btn pagination-btn-tertiary">' +
-                totalPages +
-                '</a>';
-            html +=
-                '<a href="' +
-                paginationHref(page + 1) +
-                '" class="pagination-btn pagination-btn-primary">&gt;</a>';
-        }
-
-        // Limit selector
-        html += '<form method="get" action="/search" class="flex items-center gap-2 mb-4 mt-2">';
-        if (state.q) {
-            html += '<input type="hidden" name="q" value="' + escapeHtml(state.q) + '" />';
-        }
-        html +=
-            '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
-        [25, 50, 100].forEach(function (val) {
-            html +=
-                '<option value="' +
-                val +
-                '"' +
-                (state.limit === val ? ' selected' : '') +
-                '>' +
-                val +
-                '</option>';
+        var html = AjaxUtils.renderPaginationHtml({
+            page: state.page,
+            totalPages: totalPages,
+            limit: state.limit,
+            hrefBuilder: paginationHref,
+            formAction: '/search',
+            hiddenFields: hiddenFields,
         });
-        html += '</select>';
-        html +=
-            '<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>';
-        html += '</form>';
 
-        return html;
+        AjaxUtils.updatePaginationEl({
+            parentEl: container.parentElement,
+            insertAfterEl: container,
+            html: html,
+        });
     }
 
     function paginationHref(page) {
@@ -401,15 +283,5 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('page', String(page));
         params.set('limit', String(state.limit));
         return '/search?' + params.toString();
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
     }
 });

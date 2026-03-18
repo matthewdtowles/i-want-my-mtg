@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     AjaxUtils.setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
 
     AjaxUtils.setupSortInterceptor({
-        selector: 'thead a.sort-btn',
+        selector: '#set-list-ajax thead a.sort-btn',
         state: state,
         fetchFn: fetchAndRender,
     });
@@ -17,17 +17,19 @@ document.addEventListener('DOMContentLoaded', function () {
         container: container,
         state: state,
         fetchFn: fetchAndRender,
-        scopeToContainer: false,
+        scopeToContainer: true,
     });
 
     AjaxUtils.setupBaseOnlyInterceptor({
-        selector: 'a[href*="baseOnly"]',
+        selector: '#set-list-ajax a[href*="baseOnly"]',
         state: state,
         fetchFn: fetchAndRender,
     });
 
     window.addEventListener('popstate', function () {
-        state = AjaxUtils.parseStateFromUrl();
+        AjaxUtils.syncStateFromUrl(state);
+        var fi = document.querySelector('#filter');
+        if (fi) fi.value = state.filter;
         fetchAndRender(null);
     });
 
@@ -189,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderPagination(meta) {
-        var paginationEl = document.querySelector('.pagination-container');
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
 
         if (!meta || meta.totalPages <= 1) {
             if (paginationEl) paginationEl.innerHTML = '';
@@ -206,8 +208,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         AjaxUtils.updatePaginationEl({
             paginationEl: paginationEl,
-            parentEl: container,
-            insertAfterEl: document.getElementById('filter-results'),
+            parentEl: container.parentElement,
+            insertAfterEl: container,
             html: html,
             scrollTargetEl: document.getElementById('filter-results'),
         });

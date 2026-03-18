@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'rounded-lg',
                 'p-2'
             );
-            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            AjaxUtils.smoothScroll(section, 'nearest');
             setTimeout(function () {
                 section.classList.remove(
                     'ring-2',

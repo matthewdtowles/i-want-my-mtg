@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('popstate', function () {
-        state = AjaxUtils.parseStateFromUrl();
+        AjaxUtils.syncStateFromUrl(state);
         var fi = document.querySelector('#filter');
         if (fi) fi.value = state.filter;
         fetchAndRender(null);
@@ -189,8 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<td class="table-cell">';
         var priceValue = item.isFoil ? item.priceFoil : item.priceNormal;
         var priceClass = item.isFoil ? 'price-foil' : 'price-normal';
-        html +=
-            '<span class="' + priceClass + '">' + AjaxUtils.toDollar(priceValue) + '</span>';
+        html += '<span class="' + priceClass + '">' + AjaxUtils.toDollar(priceValue) + '</span>';
         html += '</td>';
 
         // Delete column

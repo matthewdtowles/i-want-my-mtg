@@ -3,8 +3,17 @@
  * Used by all *Ajax.js page scripts to avoid duplication.
  */
 var AjaxUtils = (function () {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function smoothScroll(el, block) {
+        el.scrollIntoView({
+            behavior: prefersReducedMotion.matches ? 'auto' : 'smooth',
+            block: block || 'start',
+        });
+    }
+
     function escapeHtml(str) {
-        if (!str) return '';
+        if (str == null) return '';
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -156,22 +165,6 @@ var AjaxUtils = (function () {
     }
 
     /**
-     * Find or create a pagination container element relative to a parent.
-     * @param {HTMLElement} parentEl - The parent element to search within
-     * @param {HTMLElement} insertAfterEl - Element to insert the container after if created
-     * @returns {HTMLElement}
-     */
-    function getOrCreatePaginationEl(parentEl, insertAfterEl) {
-        var el = parentEl.querySelector('.pagination-container');
-        if (!el) {
-            el = document.createElement('section');
-            el.className = 'pagination-container';
-            insertAfterEl.parentNode.insertBefore(el, insertAfterEl.nextSibling);
-        }
-        return el;
-    }
-
-    /**
      * Update pagination element with rendered HTML. Handles empty/clearing.
      * Scrolls the results container into view after rendering.
      * @param {object} opts
@@ -182,7 +175,8 @@ var AjaxUtils = (function () {
      * @param {HTMLElement} [opts.scrollTargetEl] - Element to scroll into view after render
      */
     function updatePaginationEl(opts) {
-        var paginationEl = opts.paginationEl || opts.parentEl.querySelector('.pagination-container');
+        var paginationEl =
+            opts.paginationEl || opts.parentEl.querySelector('.pagination-container');
 
         if (!opts.html) {
             if (paginationEl) paginationEl.innerHTML = '';
@@ -192,13 +186,16 @@ var AjaxUtils = (function () {
         if (!paginationEl) {
             paginationEl = document.createElement('section');
             paginationEl.className = 'pagination-container';
-            opts.insertAfterEl.parentNode.insertBefore(paginationEl, opts.insertAfterEl.nextSibling);
+            opts.insertAfterEl.parentNode.insertBefore(
+                paginationEl,
+                opts.insertAfterEl.nextSibling
+            );
         }
 
         paginationEl.innerHTML = opts.html;
 
         if (opts.scrollTargetEl) {
-            opts.scrollTargetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            smoothScroll(opts.scrollTargetEl, 'start');
         }
     }
 
@@ -303,7 +300,8 @@ var AjaxUtils = (function () {
             if (e.target.id !== 'limit') return;
             if (scopeToContainer) {
                 var paginationParent = e.target.closest('.pagination-container');
-                if (!paginationParent || !container.parentElement.contains(paginationParent)) return;
+                if (!paginationParent || !container.parentElement.contains(paginationParent))
+                    return;
             }
             e.preventDefault();
             state.limit = parseInt(e.target.value, 10) || 25;
@@ -399,6 +397,7 @@ var AjaxUtils = (function () {
         document.addEventListener('click', function (e) {
             var link = e.target.closest(opts.selector);
             if (!link) return;
+            if (link.closest('.pagination-container')) return;
             e.preventDefault();
             var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
             opts.state.baseOnly = params.has('baseOnly')
@@ -459,6 +458,20 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Update an existing state object in-place from URL parameters.
+     * Preserves object identity so closures (interceptors) stay in sync.
+     * @param {object} state - The state object to update
+     * @param {string[]} [extraKeys] - Additional keys to parse
+     */
+    function syncStateFromUrl(state, extraKeys) {
+        var fresh = parseStateFromUrl(extraKeys);
+        var keys = Object.keys(fresh);
+        for (var i = 0; i < keys.length; i++) {
+            state[keys[i]] = fresh[keys[i]];
+        }
+    }
+
+    /**
      * Build a browser URL from state for history.pushState/replaceState.
      * @param {string} basePath - The base path (e.g. '/sets', '/inventory')
      * @param {object} state - Current state object
@@ -515,13 +528,13 @@ var AjaxUtils = (function () {
     }
 
     return {
+        smoothScroll: smoothScroll,
         escapeHtml: escapeHtml,
         toDollar: toDollar,
         showError: showError,
         showSpinner: showSpinner,
         clearMinHeight: clearMinHeight,
         renderPaginationHtml: renderPaginationHtml,
-        getOrCreatePaginationEl: getOrCreatePaginationEl,
         updatePaginationEl: updatePaginationEl,
         renderSortableHeader: renderSortableHeader,
         renderStaticHeader: renderStaticHeader,
@@ -531,6 +544,7 @@ var AjaxUtils = (function () {
         setupBaseOnlyInterceptor: setupBaseOnlyInterceptor,
         updateBaseOnlyToggle: updateBaseOnlyToggle,
         parseStateFromUrl: parseStateFromUrl,
+        syncStateFromUrl: syncStateFromUrl,
         buildBrowserUrl: buildBrowserUrl,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,

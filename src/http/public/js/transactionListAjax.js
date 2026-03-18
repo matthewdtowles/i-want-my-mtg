@@ -22,8 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('popstate', function () {
-        state = AjaxUtils.parseStateFromUrl();
-        delete state.baseOnly;
+        AjaxUtils.syncStateFromUrl(state);
         var fi = document.querySelector('#filter');
         if (fi) fi.value = state.filter;
         fetchAndRender(null);
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.history[historyMethod](
                         {},
                         '',
-                        AjaxUtils.buildBrowserUrl('/transactions', state),
+                        AjaxUtils.buildBrowserUrl('/transactions', state)
                     );
                 }
                 AjaxUtils.clearMinHeight(resultsEl);

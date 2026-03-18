@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Back/forward button
     window.addEventListener('popstate', function () {
-        state = parseStateFromUrl();
+        syncStateFromUrl(state);
         var input = document.querySelector('form input[name="q"]');
         if (input) input.value = state.q;
         if (state.q) {
@@ -44,6 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
             page: parseInt(params.get('page'), 10) || 1,
             limit: parseInt(params.get('limit'), 10) || 25,
         };
+    }
+
+    function syncStateFromUrl(target) {
+        var fresh = parseStateFromUrl();
+        var keys = Object.keys(fresh);
+        for (var i = 0; i < keys.length; i++) {
+            target[keys[i]] = fresh[keys[i]];
+        }
     }
 
     function buildCardApiUrl() {
@@ -100,14 +108,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 updatePagination(cardJson.meta, setJson.meta);
                 AjaxUtils.clearMinHeight(container);
                 updateHistory(historyMethod);
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                AjaxUtils.smoothScroll(container, 'start');
             })
             .catch(function (err) {
                 console.error('Search error:', err);
-                AjaxUtils.showError(
-                    container,
-                    'Failed to load search results. Please try again.'
-                );
+                AjaxUtils.showError(container, 'Failed to load search results. Please try again.');
                 AjaxUtils.clearMinHeight(container);
             });
     }

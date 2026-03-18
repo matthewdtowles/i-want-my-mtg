@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('popstate', function () {
-        state = AjaxUtils.parseStateFromUrl();
+        AjaxUtils.syncStateFromUrl(state);
         var fi = document.querySelector('#filter');
         if (fi) fi.value = state.filter;
         fetchAndRender(null);
@@ -174,8 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<td class="table-cell">' + AjaxUtils.escapeHtml(card.number) + '</td>';
 
         // Card name with hover preview
-        html +=
-            '<td data-img-src="' + AjaxUtils.escapeHtml(card.imgSrc) + '" class="table-cell">';
+        html += '<td data-img-src="' + AjaxUtils.escapeHtml(card.imgSrc) + '" class="table-cell">';
         html +=
             '<a href="' +
             url +
@@ -202,9 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<td class="table-cell xs-hide">';
         if (card.hasNonFoil && card.prices && card.prices.normal != null) {
             html +=
-                '<span class="price-normal">' +
-                AjaxUtils.toDollar(card.prices.normal) +
-                '</span>';
+                '<span class="price-normal">' + AjaxUtils.toDollar(card.prices.normal) + '</span>';
             if (card.prices.normalChangeWeekly != null && card.prices.normalChangeWeekly !== 0) {
                 html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
             }
@@ -214,8 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Foil price (xs-hide)
         html += '<td class="table-cell xs-hide">';
         if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html +=
-                '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+            html += '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
             if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
                 html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
             }
@@ -225,17 +221,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Combined price (xs-show, mobile)
         html += '<td class="table-cell xs-show">';
         if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html +=
-                '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+            html += '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
             if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
                 html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
             }
         }
         if (card.hasNonFoil && card.prices && card.prices.normal != null) {
             html +=
-                '<span class="price-normal">' +
-                AjaxUtils.toDollar(card.prices.normal) +
-                '</span>';
+                '<span class="price-normal">' + AjaxUtils.toDollar(card.prices.normal) + '</span>';
         }
         if (
             card.prices &&
@@ -358,9 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
             isFoil +
             '">';
         html +=
-            '<input type="hidden" name="cardId" value="' +
-            AjaxUtils.escapeHtml(cardId) +
-            '" />';
+            '<input type="hidden" name="cardId" value="' + AjaxUtils.escapeHtml(cardId) + '" />';
         html +=
             '<button type="button" class="increment-quantity inventory-controller-button-' +
             foilClass +

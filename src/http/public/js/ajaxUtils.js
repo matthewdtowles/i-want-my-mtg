@@ -527,6 +527,249 @@ var AjaxUtils = (function () {
         );
     }
 
+    /**
+     * Build an API URL from a base path and state.
+     * @param {string} apiPath - API endpoint path (e.g. '/api/v1/sets')
+     * @param {object} state - Current state object
+     * @returns {string} URL string
+     */
+    function buildApiUrl(apiPath, state) {
+        var params = new URLSearchParams();
+        params.set('page', state.page);
+        params.set('limit', state.limit);
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', state.ascend);
+        }
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        return apiPath + '?' + params.toString();
+    }
+
+    /**
+     * Build a pagination link href from state.
+     * @param {string} basePath - Browser URL base path
+     * @param {object} state - Current state object
+     * @param {number} page - Target page number
+     * @returns {string} URL string
+     */
+    function buildPaginationHref(basePath, state, page) {
+        var params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', String(state.limit));
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', String(state.ascend));
+        }
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        return basePath + '?' + params.toString();
+    }
+
+    /**
+     * Render a table header row from header definitions.
+     * Headers with a `key` property are sortable; others are static.
+     * @param {Array} headers - Array of {key?, label, subtitle?, classes?}
+     * @param {object} state - Current state for sort indicators
+     * @returns {string} HTML string
+     */
+    function renderTableHeaderRow(headers, state) {
+        var html = '<tr class="table-header-row">';
+        for (var i = 0; i < headers.length; i++) {
+            var h = headers[i];
+            if (h.key) {
+                html += renderSortableHeader(h, state);
+            } else {
+                html += renderStaticHeader(h);
+            }
+        }
+        html += '</tr>';
+        return html;
+    }
+
+    /**
+     * Render an empty state message in a container.
+     * @param {HTMLElement} el - Container element
+     * @param {object} opts
+     * @param {string} opts.message - Main message text
+     * @param {string} [opts.hint] - Secondary hint text
+     * @param {string} [opts.clearHref] - URL for the clear/reset button
+     * @param {string} [opts.clearLabel] - Label for the clear button (default: 'Clear Filter')
+     */
+    function renderEmptyState(el, opts) {
+        el.innerHTML =
+            '<div class="text-center py-16">' +
+            '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
+            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">' +
+            escapeHtml(opts.message) +
+            '</p>' +
+            '<p class="text-gray-400 dark:text-gray-500 mt-2">' +
+            escapeHtml(opts.hint || 'Try a different search term or clear your filter.') +
+            '</p>' +
+            (opts.clearHref
+                ? '<a href="' +
+                  escapeHtml(opts.clearHref) +
+                  '" class="btn btn-secondary mt-6 inline-block">' +
+                  escapeHtml(opts.clearLabel || 'Clear Filter') +
+                  '</a>'
+                : '') +
+            '</div>';
+    }
+
+    /**
+     * Initialize a standard AJAX list page with pagination, filtering, sorting,
+     * and optional baseOnly toggle.
+     *
+     * Handles the full lifecycle: state parsing, interceptor setup,
+     * fetch/render/pagination/history, and popstate. Page-specific rendering
+     * is provided via config.renderContent.
+     *
+     * @param {object} config
+     * @param {HTMLElement} config.container - The AJAX container element
+     * @param {string} config.apiPath - API endpoint path (e.g. '/api/v1/sets')
+     * @param {string} config.basePath - Browser URL base path (e.g. '/sets')
+     * @param {function} config.renderContent - function(resultsEl, data, meta) that renders page content
+     * @param {boolean} [config.hasBaseOnly=true] - Whether the page has a baseOnly toggle
+     * @param {boolean} [config.hasFilter=true] - Whether the page has a filter form
+     * @param {string} [config.errorMessage] - Error message shown on fetch failure
+     * @param {function} [config.onSuccess] - Callback after successful render: function(data, meta, done).
+     *   Must call done() to clear the spinner min-height. If omitted, min-height is cleared automatically.
+     * @returns {object|null} { container, state, fetchAndRender } or null if container not found
+     */
+    function initListPage(config) {
+        var container = config.container;
+        if (!container) return null;
+
+        var containerId = container.id;
+        var apiPath = config.apiPath;
+        var basePath = config.basePath;
+        var hasBaseOnly = config.hasBaseOnly !== false;
+        var hasFilter = config.hasFilter !== false;
+        var errorMsg = config.errorMessage || 'Failed to load data';
+
+        var state = parseStateFromUrl();
+
+        if (hasFilter) {
+            setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
+        }
+
+        setupSortInterceptor({
+            selector: '#' + containerId + ' thead a.sort-btn',
+            state: state,
+            fetchFn: fetchAndRender,
+        });
+
+        setupPaginationInterceptors({
+            container: container,
+            state: state,
+            fetchFn: fetchAndRender,
+            scopeToContainer: true,
+        });
+
+        if (hasBaseOnly) {
+            setupBaseOnlyInterceptor({
+                selector: '#' + containerId + ' a[href*="baseOnly"]',
+                state: state,
+                fetchFn: fetchAndRender,
+            });
+        }
+
+        window.addEventListener('popstate', function () {
+            syncStateFromUrl(state);
+            if (hasFilter) {
+                var fi = document.querySelector('#filter');
+                if (fi) fi.value = state.filter;
+            }
+            fetchAndRender(null);
+        });
+
+        function fetchAndRender(historyMethod) {
+            var resultsEl = document.getElementById('filter-results');
+            showSpinner(resultsEl);
+
+            fetch(buildApiUrl(apiPath, state))
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (json) {
+                    if (!json.success) {
+                        showError(resultsEl, json.error || errorMsg);
+                        clearMinHeight(resultsEl);
+                        return;
+                    }
+
+                    config.renderContent(resultsEl, json.data, json.meta);
+                    doRenderPagination(json.meta);
+
+                    if (hasBaseOnly) {
+                        updateBaseOnlyToggle({
+                            container: container,
+                            state: state,
+                            basePath: basePath,
+                        });
+                    }
+
+                    if (historyMethod) {
+                        window.history[historyMethod]({}, '', buildBrowserUrl(basePath, state));
+                    }
+
+                    if (config.onSuccess) {
+                        config.onSuccess(json.data, json.meta, function () {
+                            clearMinHeight(resultsEl);
+                        });
+                    } else {
+                        clearMinHeight(resultsEl);
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Fetch error (' + apiPath + '):', err);
+                    showError(resultsEl, errorMsg + '. Please try again.');
+                    clearMinHeight(resultsEl);
+                });
+        }
+
+        function doRenderPagination(meta) {
+            var paginationEl = container.parentElement.querySelector('.pagination-container');
+
+            if (!meta || meta.totalPages <= 1) {
+                if (paginationEl) paginationEl.innerHTML = '';
+                return;
+            }
+
+            var hiddenFields = {};
+            if (state.sort) {
+                hiddenFields.sort = state.sort;
+                hiddenFields.ascend = String(state.ascend);
+            }
+            if (state.filter) hiddenFields.filter = state.filter;
+
+            var html = renderPaginationHtml({
+                page: meta.page,
+                totalPages: meta.totalPages,
+                limit: state.limit,
+                hrefBuilder: function (page) {
+                    return buildPaginationHref(basePath, state, page);
+                },
+                formAction: basePath,
+                hiddenFields: hiddenFields,
+            });
+
+            updatePaginationEl({
+                paginationEl: paginationEl,
+                parentEl: container.parentElement,
+                insertAfterEl: container,
+                html: html,
+                scrollTargetEl: document.getElementById('filter-results'),
+            });
+        }
+
+        return {
+            container: container,
+            state: state,
+            fetchAndRender: fetchAndRender,
+        };
+    }
+
     return {
         smoothScroll: smoothScroll,
         escapeHtml: escapeHtml,
@@ -546,7 +789,12 @@ var AjaxUtils = (function () {
         parseStateFromUrl: parseStateFromUrl,
         syncStateFromUrl: syncStateFromUrl,
         buildBrowserUrl: buildBrowserUrl,
+        buildApiUrl: buildApiUrl,
+        buildPaginationHref: buildPaginationHref,
+        renderTableHeaderRow: renderTableHeaderRow,
+        renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,
+        initListPage: initListPage,
     };
 })();

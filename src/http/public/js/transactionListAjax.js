@@ -2,31 +2,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('transaction-list-ajax');
     if (!container) return;
 
-    var state = AjaxUtils.parseStateFromUrl();
-    // Transactions don't use baseOnly
-    delete state.baseOnly;
-
-    AjaxUtils.setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
-
-    AjaxUtils.setupSortInterceptor({
-        selector: '#transaction-list-ajax thead a.sort-btn',
-        state: state,
-        fetchFn: fetchAndRender,
-    });
-
-    AjaxUtils.setupPaginationInterceptors({
+    var page = AjaxUtils.initListPage({
         container: container,
-        state: state,
-        fetchFn: fetchAndRender,
-        scopeToContainer: true,
+        apiPath: '/api/v1/transactions',
+        basePath: '/transactions',
+        hasBaseOnly: false,
+        renderContent: renderTable,
+        errorMessage: 'Failed to load transactions',
     });
-
-    window.addEventListener('popstate', function () {
-        AjaxUtils.syncStateFromUrl(state);
-        var fi = document.querySelector('#filter');
-        if (fi) fi.value = state.filter;
-        fetchAndRender(null);
-    });
+    if (!page) return;
 
     // Edit/save/cancel/delete handlers via event delegation
     document.addEventListener('click', function (e) {
@@ -70,113 +54,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function buildApiUrl() {
-        var params = new URLSearchParams();
-        params.set('page', state.page);
-        params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', state.ascend);
-        }
-        if (state.filter) params.set('filter', state.filter);
-        return '/api/v1/transactions?' + params.toString();
-    }
-
-    function fetchAndRender(historyMethod) {
-        var resultsEl = document.getElementById('filter-results');
-        AjaxUtils.showSpinner(resultsEl);
-
-        fetch(buildApiUrl())
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (json) {
-                if (!json.success) {
-                    AjaxUtils.showError(resultsEl, json.error || 'Failed to load transactions');
-                    AjaxUtils.clearMinHeight(resultsEl);
-                    return;
-                }
-                renderTable(json.data, json.meta);
-                var paginationHtml = AjaxUtils.renderPaginationHtml({
-                    page: json.meta.page,
-                    totalPages: json.meta.totalPages,
-                    limit: state.limit,
-                    hrefBuilder: paginationHref,
-                    formAction: '/transactions',
-                    hiddenFields: buildPaginationHiddenFields(),
-                });
-                AjaxUtils.updatePaginationEl({
-                    parentEl: container.parentElement,
-                    insertAfterEl: container,
-                    html: paginationHtml,
-                    scrollTargetEl: resultsEl,
-                });
-                if (historyMethod) {
-                    window.history[historyMethod](
-                        {},
-                        '',
-                        AjaxUtils.buildBrowserUrl('/transactions', state)
-                    );
-                }
-                AjaxUtils.clearMinHeight(resultsEl);
-            })
-            .catch(function (err) {
-                console.error('Error fetching transactions:', err);
-                AjaxUtils.showError(resultsEl, 'Failed to load transactions. Please try again.');
-                if (typeof window.showToast === 'function')
-                    window.showToast('Failed to load transactions', 'error');
-                AjaxUtils.clearMinHeight(resultsEl);
-            });
-    }
-
-    function buildPaginationHiddenFields() {
-        var fields = {};
-        if (state.sort) {
-            fields.sort = state.sort;
-            fields.ascend = String(state.ascend);
-        }
-        if (state.filter) fields.filter = state.filter;
-        return fields;
-    }
-
-    function paginationHref(page) {
-        var params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('limit', String(state.limit));
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', String(state.ascend));
-        }
-        if (state.filter) params.set('filter', state.filter);
-        return '/transactions?' + params.toString();
-    }
-
-    function renderTable(items, meta) {
-        var resultsEl = document.getElementById('filter-results');
-        if (!resultsEl) return;
-
+    function renderTable(resultsEl, items) {
         if (!items || items.length === 0) {
-            resultsEl.innerHTML =
-                '<div class="text-center py-16">' +
-                '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
-                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No transactions match your current filters</p>' +
-                '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>' +
-                '<a href="/transactions" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>' +
-                '</div>';
+            AjaxUtils.renderEmptyState(resultsEl, {
+                message: 'No transactions match your current filters',
+                hint: 'Try a different search term or adjust your filters.',
+                clearHref: '/transactions',
+                clearLabel: 'Clear Filters',
+            });
             return;
         }
 
-        var html = '<div class="table-wrapper"><table class="table-container w-full">';
-        html += '<thead>' + renderTableHeaders() + '</thead>';
-        html += '<tbody>';
-        for (var i = 0; i < items.length; i++) {
-            html += renderTransactionRow(items[i]);
-        }
-        html += '</tbody></table></div>';
-        resultsEl.innerHTML = html;
-    }
-
-    function renderTableHeaders() {
         var headers = [
             { key: 'transaction.date', label: 'Date' },
             { key: 'transaction.type', label: 'Type' },
@@ -187,17 +75,14 @@ document.addEventListener('DOMContentLoaded', function () {
             { key: '', label: '', classes: 'tx-actions-cell' },
         ];
 
-        var html = '<tr class="table-header-row">';
-        for (var i = 0; i < headers.length; i++) {
-            var h = headers[i];
-            if (h.key) {
-                html += AjaxUtils.renderSortableHeader(h, state);
-            } else {
-                html += AjaxUtils.renderStaticHeader(h);
-            }
+        var html = '<div class="table-wrapper"><table class="table-container w-full">';
+        html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
+        html += '<tbody>';
+        for (var i = 0; i < items.length; i++) {
+            html += renderTransactionRow(items[i]);
         }
-        html += '</tr>';
-        return html;
+        html += '</tbody></table></div>';
+        resultsEl.innerHTML = html;
     }
 
     function renderTransactionRow(tx) {

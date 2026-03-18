@@ -4,130 +4,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var setCode = container.dataset.setCode;
     var authenticated = container.dataset.authenticated === 'true';
-    var state = AjaxUtils.parseStateFromUrl();
 
-    AjaxUtils.setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
-
-    AjaxUtils.setupSortInterceptor({
-        selector: '#set-card-list-ajax thead a.sort-btn',
-        state: state,
-        fetchFn: fetchAndRender,
-    });
-
-    AjaxUtils.setupPaginationInterceptors({
+    var page = AjaxUtils.initListPage({
         container: container,
-        state: state,
-        fetchFn: fetchAndRender,
-        scopeToContainer: true,
+        apiPath: '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards',
+        basePath: '/sets/' + encodeURIComponent(setCode),
+        renderContent: renderTable,
+        errorMessage: 'Failed to load cards',
+        onSuccess: function (data, meta, done) {
+            if (authenticated && data && data.length > 0) {
+                fetchAndRenderInventory(data, done);
+            } else {
+                done();
+            }
+        },
     });
+    if (!page) return;
 
-    AjaxUtils.setupBaseOnlyInterceptor({
-        selector: '#set-card-list-ajax a[href*="baseOnly"]',
-        state: state,
-        fetchFn: fetchAndRender,
-    });
-
-    window.addEventListener('popstate', function () {
-        AjaxUtils.syncStateFromUrl(state);
-        var fi = document.querySelector('#filter');
-        if (fi) fi.value = state.filter;
-        fetchAndRender(null);
-    });
-
-    function buildApiUrl() {
-        var params = new URLSearchParams();
-        params.set('page', state.page);
-        params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', state.ascend);
-        }
-        if (state.filter) params.set('filter', state.filter);
-        if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards?' + params.toString();
-    }
-
-    function buildBrowserUrl() {
-        var params = new URLSearchParams();
-        if (state.page > 1) params.set('page', state.page);
-        if (state.limit !== 25) params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', String(state.ascend));
-        }
-        if (state.filter) params.set('filter', state.filter);
-        if (!state.baseOnly) params.set('baseOnly', 'false');
-        var qs = params.toString();
-        return '/sets/' + encodeURIComponent(setCode) + (qs ? '?' + qs : '');
-    }
-
-    function fetchAndRender(historyMethod) {
-        var resultsEl = document.getElementById('filter-results');
-        AjaxUtils.showSpinner(resultsEl);
-
-        fetch(buildApiUrl())
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (json) {
-                if (!json.success) {
-                    AjaxUtils.showError(resultsEl, json.error || 'Failed to load cards');
-                    AjaxUtils.clearMinHeight(resultsEl);
-                    return;
-                }
-                renderTable(json.data, json.meta);
-                renderPagination(json.meta);
-                AjaxUtils.updateBaseOnlyToggle({
-                    container: container,
-                    state: state,
-                    basePath: '/sets/' + setCode,
-                });
-                if (historyMethod) {
-                    window.history[historyMethod]({}, '', buildBrowserUrl());
-                }
-                if (authenticated && json.data && json.data.length > 0) {
-                    fetchAndRenderInventory(json.data, function () {
-                        AjaxUtils.clearMinHeight(resultsEl);
-                    });
-                } else {
-                    AjaxUtils.clearMinHeight(resultsEl);
-                }
-            })
-            .catch(function (err) {
-                console.error('Error fetching cards:', err);
-                AjaxUtils.showError(resultsEl, 'Failed to load cards. Please try again.');
-                AjaxUtils.clearMinHeight(resultsEl);
-            });
-    }
-
-    function renderTable(cards, meta) {
-        var resultsEl = document.getElementById('filter-results');
-        if (!resultsEl) return;
-
+    function renderTable(resultsEl, cards) {
         if (!cards || cards.length === 0) {
-            resultsEl.innerHTML =
-                '<div class="text-center py-16">' +
-                '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
-                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No cards match your search</p>' +
-                '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>' +
-                '<a href="/sets/' +
-                AjaxUtils.escapeHtml(setCode) +
-                '" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>' +
-                '</div>';
+            AjaxUtils.renderEmptyState(resultsEl, {
+                message: 'No cards match your search',
+                clearHref: '/sets/' + AjaxUtils.escapeHtml(setCode),
+            });
             return;
         }
 
-        var html = '<div class="table-wrapper"><table class="table-container">';
-        html += '<thead>' + renderTableHeaders() + '</thead>';
-        html += '<tbody>';
-        for (var i = 0; i < cards.length; i++) {
-            html += renderCardRow(cards[i]);
-        }
-        html += '</tbody></table></div>';
-        resultsEl.innerHTML = html;
-    }
-
-    function renderTableHeaders() {
         var headers = [
             { key: '', label: 'Owned' },
             { key: 'card.number', label: 'Card No.' },
@@ -139,17 +41,14 @@ document.addEventListener('DOMContentLoaded', function () {
             { key: '', label: 'Price', classes: 'xs-show' },
         ];
 
-        var html = '<tr class="table-header-row">';
-        for (var i = 0; i < headers.length; i++) {
-            var h = headers[i];
-            if (h.key) {
-                html += AjaxUtils.renderSortableHeader(h, state);
-            } else {
-                html += AjaxUtils.renderStaticHeader(h);
-            }
+        var html = '<div class="table-wrapper"><table class="table-container">';
+        html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
+        html += '<tbody>';
+        for (var i = 0; i < cards.length; i++) {
+            html += renderCardRow(cards[i]);
         }
-        html += '</tr>';
-        return html;
+        html += '</tbody></table></div>';
+        resultsEl.innerHTML = html;
     }
 
     function renderCardRow(card) {
@@ -249,44 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
             var cssClass = 'ms ms-' + symbol.toLowerCase().replace('/', '');
             return '<i class="' + cssClass + ' ms-cost"></i>';
         });
-    }
-
-    function renderPagination(meta) {
-        var paginationEl = container.parentElement.querySelector('.pagination-container');
-
-        if (!meta || meta.totalPages <= 1) {
-            if (paginationEl) paginationEl.innerHTML = '';
-            return;
-        }
-
-        var html = AjaxUtils.renderPaginationHtml({
-            page: meta.page,
-            totalPages: meta.totalPages,
-            limit: state.limit,
-            hrefBuilder: paginationHref,
-            formAction: '/sets/' + AjaxUtils.escapeHtml(setCode),
-        });
-
-        AjaxUtils.updatePaginationEl({
-            paginationEl: paginationEl,
-            parentEl: container.parentElement,
-            insertAfterEl: container,
-            html: html,
-            scrollTargetEl: document.getElementById('filter-results'),
-        });
-    }
-
-    function paginationHref(page) {
-        var params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('limit', String(state.limit));
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', String(state.ascend));
-        }
-        if (state.filter) params.set('filter', state.filter);
-        if (!state.baseOnly) params.set('baseOnly', 'false');
-        return '/sets/' + encodeURIComponent(setCode) + '?' + params.toString();
     }
 
     function fetchAndRenderInventory(cards, onComplete) {

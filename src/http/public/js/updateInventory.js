@@ -105,7 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }),
         });
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
         }
         const data = await response.json();
         console.log(`Response from deleteInventory:`, data);
@@ -165,7 +166,8 @@ document.addEventListener('DOMContentLoaded', function () {
             ]),
         });
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
         }
         const responseData = await response.json();
         console.log('Response data:', responseData);

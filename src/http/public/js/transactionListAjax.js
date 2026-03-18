@@ -224,8 +224,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            var data = await response.json();
-            if (data.success) {
+            var data = await response.json().catch(function () {
+                return null;
+            });
+            if (response.ok && data && data.success) {
                 var dateDisplay = row.querySelector('td:first-child .tx-display');
                 var qtyDisplay = row.querySelector('td:nth-child(4) .tx-display');
                 var priceDisplay = row.querySelector('td:nth-child(5) .tx-display');
@@ -248,19 +250,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 toggleEditMode(row, false);
             } else {
-                var msg = data.error || 'Unknown error';
+                var msg = (data && data.error) || 'Failed to update transaction.';
                 if (typeof window.showToast === 'function') {
-                    window.showToast('Failed to update: ' + msg, 'error');
+                    window.showToast(msg, 'error');
                 } else {
-                    alert('Failed to update: ' + msg);
+                    alert(msg);
                 }
             }
         } catch (error) {
             console.error('Error updating transaction:', error);
             if (typeof window.showToast === 'function') {
-                window.showToast('Error updating transaction', 'error');
+                window.showToast(error.message || 'Error updating transaction.', 'error');
             } else {
-                alert('Error updating transaction.');
+                alert(error.message || 'Error updating transaction.');
             }
         }
     }
@@ -274,22 +276,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
             });
-            var data = await response.json();
-            if (data.success) {
+            var data = await response.json().catch(function () {
+                return null;
+            });
+            if (response.ok && data && data.success) {
                 var row = deleteBtn.closest('tr');
                 if (row) row.remove();
             } else {
-                var msg = data.error || 'Failed to delete transaction';
+                var msg = (data && data.error) || 'Failed to delete transaction.';
                 if (typeof window.showToast === 'function') {
                     window.showToast(msg, 'error');
                 } else {
-                    console.error('Failed to delete transaction:', msg);
+                    alert(msg);
                 }
             }
         } catch (error) {
             console.error('Error deleting transaction:', error);
             if (typeof window.showToast === 'function') {
-                window.showToast('Error deleting transaction', 'error');
+                window.showToast(error.message || 'Error deleting transaction.', 'error');
             }
         }
     }

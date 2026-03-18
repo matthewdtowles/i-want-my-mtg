@@ -7,7 +7,9 @@ async function updateMessage(response, messageEl, method) {
         messageEl.textContent = result.message;
         messageEl.classList.add(className);
     } else {
-        messageEl.textContent = `Failed to ${method} user`;
+        const errorData = await response.json().catch(() => null);
+        messageEl.textContent =
+            errorData?.error || errorData?.message || `Failed to ${method} user.`;
         messageEl.classList.add('bg-error');
     }
 }

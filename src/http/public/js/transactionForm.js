@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 showMessage(msgEl, 'Transaction recorded!', 'success');
                 form.querySelector('input[name="quantity"]').value = '1';
                 if (!body.skipInventorySync) {
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (error) {
             console.error('Error recording transaction:', error);
-            showMessage(msgEl, 'Failed to record transaction.', 'error');
+            showMessage(msgEl, error.message || 'Failed to record transaction.', 'error');
         }
     });
 
@@ -85,17 +85,26 @@ document.addEventListener('DOMContentLoaded', function () {
                     body: JSON.stringify(body),
                 });
                 var data = await response.json();
-                if (data.success) {
+                if (response.ok && data.success) {
                     var container = this.closest('[id^="sync-"]');
                     if (container) container.remove();
                     var msgEl = document.getElementById('transaction-form-message');
                     showMessage(msgEl, 'Inventory synced as transaction!', 'success');
                 } else {
-                    alert('Failed to sync: ' + (data.error || 'Unknown error'));
+                    var syncMsg = data.error || 'Failed to sync inventory.';
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(syncMsg, 'error');
+                    } else {
+                        alert('Failed to sync: ' + syncMsg);
+                    }
                 }
             } catch (error) {
                 console.error('Error syncing inventory:', error);
-                alert('Error syncing inventory.');
+                if (typeof window.showToast === 'function') {
+                    window.showToast(error.message || 'Error syncing inventory.', 'error');
+                } else {
+                    alert('Error syncing inventory.');
+                }
             }
         });
     });

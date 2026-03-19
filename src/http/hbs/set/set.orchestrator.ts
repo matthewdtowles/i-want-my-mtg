@@ -215,6 +215,9 @@ export class SetOrchestrator {
             const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
             const baseUrl = `/sets/${set.code}`;
 
+            const hasAnyNormalPrice = setResponse.cards?.some((c) => c.normalPriceRaw > 0) ?? false;
+            const hasAnyFoilPrice = setResponse.cards?.some((c) => c.foilPriceRaw > 0) ?? false;
+
             this.LOGGER.debug(`Found ${cards.length} cards for set ${set.code}.`);
 
             return new SetViewDto({
@@ -231,9 +234,15 @@ export class SetOrchestrator {
                     { label: setResponse.name, url: baseUrl },
                 ],
                 set: setResponse,
+                hasAnyNormalPrice,
+                hasAnyFoilPrice,
                 pagination: new PaginationView(effectiveOptions, baseUrl, currentCount),
                 filter: new FilterView(effectiveOptions, baseUrl),
-                tableHeadersRow: this.buildSetDetailTableHeaders(effectiveOptions),
+                tableHeadersRow: this.buildSetDetailTableHeaders(
+                    effectiveOptions,
+                    hasAnyNormalPrice,
+                    hasAnyFoilPrice
+                ),
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
@@ -541,17 +550,32 @@ export class SetOrchestrator {
         return headers;
     }
 
-    private buildSetDetailTableHeaders(options: SafeQueryOptions): TableHeadersRowView {
-        return new TableHeadersRowView([
+    private buildSetDetailTableHeaders(
+        options: SafeQueryOptions,
+        hasAnyNormalPrice = true,
+        hasAnyFoilPrice = true
+    ): TableHeadersRowView {
+        const headers = [
             new TableHeaderView('Owned'),
             new SortableHeaderView(options, SortOptions.NUMBER),
             new SortableHeaderView(options, SortOptions.CARD),
             new TableHeaderView('Mana Cost', ['xs-hide']),
             new TableHeaderView('Rarity', ['xs-hide']),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'),
-            new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d'),
-            new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d'),
-        ]);
+        ];
+        if (hasAnyNormalPrice) {
+            headers.push(new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'));
+        }
+        if (hasAnyFoilPrice) {
+            headers.push(
+                new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d')
+            );
+        }
+        if (hasAnyNormalPrice || hasAnyFoilPrice) {
+            headers.push(
+                new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d')
+            );
+        }
+        return new TableHeadersRowView(headers);
     }
 
     private async createSetMetaResponseDtos(

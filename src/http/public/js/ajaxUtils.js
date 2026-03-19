@@ -418,6 +418,7 @@ var AjaxUtils = (function () {
     function updateBaseOnlyToggle(opts) {
         var toggle = opts.container.querySelector('a[href*="baseOnly"]');
         if (!toggle) return;
+        toggle.classList.remove('hidden');
         var params = new URLSearchParams();
         if (opts.state.filter) params.set('filter', opts.state.filter);
         if (opts.state.limit !== 25) params.set('limit', String(opts.state.limit));
@@ -492,6 +493,157 @@ var AjaxUtils = (function () {
         if (state.baseOnly === false) params.set('baseOnly', 'false');
         var qs = params.toString();
         return basePath + (qs ? '?' + qs : '');
+    }
+
+    /**
+     * Clone the quantity form template and populate it.
+     * @param {string} cardId
+     * @param {number} quantity
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createQuantityForm(cardId, quantity, isFoil) {
+        var tpl = document.getElementById('tpl-quantity-form');
+        var clone = tpl.content.cloneNode(true);
+        var foilClass = isFoil ? 'foil' : 'normal';
+        var form = clone.querySelector('form');
+        form.classList.add('quantity-form-' + foilClass);
+        form.setAttribute('data-item-id', cardId);
+        form.setAttribute('data-foil', String(isFoil));
+        form.querySelector('input[name="cardId"]').setAttribute('value', cardId);
+        var incBtn = form.querySelector('.increment-quantity');
+        incBtn.classList.add('inventory-controller-button-' + foilClass);
+        var qtyInput = form.querySelector('.quantity-owned');
+        qtyInput.setAttribute('value', quantity);
+        qtyInput.setAttribute('data-id', cardId);
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
+        var decBtn = form.querySelector('.decrement-quantity');
+        decBtn.classList.add('inventory-controller-button-' + foilClass);
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Clone the delete inventory form template and populate it.
+     * @param {string} cardId
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createDeleteForm(cardId, isFoil) {
+        var tpl = document.getElementById('tpl-delete-inventory');
+        var clone = tpl.content.cloneNode(true);
+        var form = clone.querySelector('form');
+        form.setAttribute('data-item-id', cardId);
+        form.querySelector('input[name="card-id"]').setAttribute('value', cardId);
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Clone the transaction row template and populate it.
+     * @param {object} tx - Transaction object
+     * @returns {string} outerHTML string
+     */
+    function createTransactionRow(tx) {
+        var tpl = document.getElementById('tpl-transaction-row');
+        var clone = tpl.content.cloneNode(true);
+        var row = clone.querySelector('tr');
+        var total = tx.quantity * tx.pricePerUnit;
+
+        // Data attributes on <tr>
+        row.setAttribute('data-transaction-id', tx.id);
+        row.setAttribute('data-raw-price', tx.pricePerUnit);
+        row.setAttribute('data-raw-fees', tx.fees || 0);
+        row.setAttribute('data-source', tx.source || '');
+        row.setAttribute('data-notes', tx.notes || '');
+
+        // Date
+        var dateDisplays = row.querySelectorAll('td:first-child .tx-display');
+        if (dateDisplays.length) dateDisplays[0].textContent = tx.date;
+        var dateInput = row.querySelector('input[data-field="date"]');
+        if (dateInput) dateInput.setAttribute('value', tx.date);
+
+        // Type
+        if (tx.type === 'BUY') {
+            var sellBadge = row.querySelector('.tx-type-sell');
+            if (sellBadge) sellBadge.classList.add('hidden');
+        } else {
+            var buyBadge = row.querySelector('.tx-type-buy');
+            if (buyBadge) buyBadge.classList.add('hidden');
+            var sellEl = row.querySelector('.tx-type-sell');
+            if (sellEl) sellEl.classList.remove('hidden');
+        }
+
+        // Card
+        if (tx.cardUrl) {
+            var cardLink = row.querySelector('.tx-card-link');
+            cardLink.href = tx.cardUrl;
+            cardLink.textContent = tx.cardName || '';
+            cardLink.classList.remove('hidden');
+        } else {
+            var cardText = row.querySelector('.tx-card-text');
+            cardText.textContent = tx.cardName || tx.cardId;
+        }
+
+        // Foil badge
+        if (tx.isFoil) {
+            row.querySelector('.tx-foil-badge').classList.remove('hidden');
+        }
+
+        // Set code
+        if (tx.setCode) {
+            var setCodeEl = row.querySelector('.tx-set-code');
+            setCodeEl.textContent = '(' + tx.setCode.toUpperCase() + ')';
+            setCodeEl.classList.remove('hidden');
+        }
+
+        // Qty
+        var qtyDisplays = row.querySelectorAll('td:nth-child(4) .tx-display');
+        if (qtyDisplays.length) qtyDisplays[0].textContent = tx.quantity;
+        var qtyInput = row.querySelector('input[data-field="quantity"]');
+        if (qtyInput) qtyInput.setAttribute('value', tx.quantity);
+
+        // Price
+        var priceDisplays = row.querySelectorAll('td:nth-child(5) .tx-display');
+        if (priceDisplays.length) priceDisplays[0].textContent = toDollar(tx.pricePerUnit);
+        var priceInput = row.querySelector('input[data-field="pricePerUnit"]');
+        if (priceInput) priceInput.setAttribute('value', tx.pricePerUnit);
+
+        // Total
+        var totalEl = row.querySelector('.tx-total');
+        if (totalEl) totalEl.textContent = toDollar(total);
+
+        // Actions
+        if (tx.editable) {
+            var editableActions = row.querySelector('.tx-editable-actions');
+            editableActions.classList.remove('hidden');
+            var deleteBtn = row.querySelector('.delete-transaction-button');
+            deleteBtn.setAttribute('data-transaction-id', tx.id);
+        } else {
+            var lockedIcon = row.querySelector('.tx-locked-icon');
+            lockedIcon.classList.remove('hidden');
+        }
+
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Render tag badges from an array of tag strings.
+     * @param {string[]} tags
+     * @returns {string} HTML string
+     */
+    function renderTags(tags) {
+        if (!tags || !tags.length) return '';
+        var html = '';
+        for (var i = 0; i < tags.length; i++) {
+            html += '<span class="tag">' + escapeHtml(tags[i]) + '</span>';
+        }
+        return html;
     }
 
     /**
@@ -687,7 +839,7 @@ var AjaxUtils = (function () {
             var resultsEl = document.getElementById('filter-results');
             showSpinner(resultsEl);
 
-            fetch(buildApiUrl(apiPath, state))
+            fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
                 .then(function (res) {
                     return res.json();
                 })
@@ -792,6 +944,10 @@ var AjaxUtils = (function () {
         buildApiUrl: buildApiUrl,
         buildPaginationHref: buildPaginationHref,
         renderTableHeaderRow: renderTableHeaderRow,
+        createQuantityForm: createQuantityForm,
+        createDeleteForm: createDeleteForm,
+        createTransactionRow: createTransactionRow,
+        renderTags: renderTags,
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,

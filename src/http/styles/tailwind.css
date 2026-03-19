@@ -474,7 +474,7 @@
 }
 
 .table-header {
-    @apply px-1.5 py-2 sm:px-3 sm:py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500;
+    @apply px-1.5 py-2 sm:px-3 sm:py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 border-b-2 border-teal-400 dark:border-teal-500 first:pl-2 last:pr-2;
 }
 
 .header-subtitle {
@@ -501,7 +501,7 @@
 }
 
 .table-cell {
-    @apply px-1.5 py-2 sm:px-3 sm:py-3;
+    @apply px-1.5 py-2 sm:px-3 sm:py-3 first:pl-2 last:pr-2;
 }
 
 /* ===== Set Block Headers ===== */

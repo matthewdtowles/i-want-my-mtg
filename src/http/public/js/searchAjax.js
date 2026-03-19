@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('filter-results');
     if (!container) return;
 
-    var state = parseStateFromUrl();
+    var state = AjaxUtils.parseStateFromUrl(['q']);
 
     // Intercept search form submit
     var searchForm = document.querySelector('form[action="/search"]');
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Back/forward button
     window.addEventListener('popstate', function () {
-        syncStateFromUrl(state);
+        AjaxUtils.syncStateFromUrl(state, ['q']);
         var input = document.querySelector('form input[name="q"]');
         if (input) input.value = state.q;
         if (state.q) {
@@ -36,23 +36,6 @@ document.addEventListener('DOMContentLoaded', function () {
             renderEmpty();
         }
     });
-
-    function parseStateFromUrl() {
-        var params = new URLSearchParams(window.location.search);
-        return {
-            q: params.get('q') || '',
-            page: parseInt(params.get('page'), 10) || 1,
-            limit: parseInt(params.get('limit'), 10) || 25,
-        };
-    }
-
-    function syncStateFromUrl(target) {
-        var fresh = parseStateFromUrl();
-        var keys = Object.keys(fresh);
-        for (var i = 0; i < keys.length; i++) {
-            target[keys[i]] = fresh[keys[i]];
-        }
-    }
 
     function buildCardApiUrl() {
         var params = new URLSearchParams();
@@ -70,18 +53,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return '/api/v1/sets?' + params.toString();
     }
 
-    function buildBrowserUrl() {
-        var params = new URLSearchParams();
-        if (state.q) params.set('q', state.q);
-        if (state.page > 1) params.set('page', state.page);
-        if (state.limit !== 25) params.set('limit', state.limit);
-        var qs = params.toString();
-        return '/search' + (qs ? '?' + qs : '');
-    }
-
     function updateHistory(historyMethod) {
         if (historyMethod) {
-            window.history[historyMethod]({}, '', buildBrowserUrl());
+            window.history[historyMethod]({}, '', AjaxUtils.buildBrowserUrl('/search', state));
         }
     }
 
@@ -119,8 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderEmpty() {
         container.innerHTML =
-            '<div class="text-center py-12">' +
-            '<p class="text-gray-500 dark:text-gray-400 text-lg">Enter a search term to find cards and sets</p>' +
+            '<div class="text-center py-16">' +
+            '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
+            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">Enter a search term to find cards and sets</p>' +
             '</div>';
     }
 
@@ -130,11 +105,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (cards.length === 0 && sets.length === 0) {
             container.innerHTML =
-                '<div class="text-center py-12">' +
-                '<p class="text-gray-500 dark:text-gray-400 text-lg">No results found for "' +
+                '<div class="text-center py-16">' +
+                '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
+                '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No results found for "' +
                 AjaxUtils.escapeHtml(state.q) +
                 '"</p>' +
-                '<p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Try a different search term</p>' +
+                '<p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term</p>' +
                 '</div>';
             return;
         }
@@ -186,12 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderSetCard(set) {
         var keyruneCode = AjaxUtils.escapeHtml(set.keyruneCode || set.code);
         var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
-        var tagsHtml = '';
-        if (set.tags) {
-            for (var t = 0; t < set.tags.length; t++) {
-                tagsHtml += '<span class="tag">' + AjaxUtils.escapeHtml(set.tags[t]) + '</span>';
-            }
-        }
+        var tagsHtml = AjaxUtils.renderTags(set.tags);
         return (
             '<a href="' +
             url +

@@ -96,6 +96,28 @@
   - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
   - [x] Cross-browser testing
 
+### 1.6 Frontend Consolidation
+- [x] Remove duplicated AjaxUtils functions from searchAjax.js
+- [x] Add renderTags() helper to AjaxUtils and replace inline tag loops
+- [x] Fix hover class inconsistency in inventoryCtrl.hbs
+- [x] HTML template elements for quantity and delete forms (template cloning)
+- [x] Populate deleteInventoryEntry.hbs partial
+- [x] Fix mana cost rendering divergence in setCardListAjax.js
+- [x] CSS consolidation — extract history-range-btn base class for price history buttons
+- [x] Standardize content wrapper elements (div → section)
+- [x] Standardize page heading levels (all pages use h1 for primary heading)
+- [x] Standardize table structures (w-full, first/last cell padding in CSS)
+- [x] Standardize empty state patterns (py-16, icon + message + hint)
+- [x] Standardize script loading (defer on all external script tags)
+- [x] Standardize filter form wrapping in transactions.hbs
+- [x] Delete orphaned partials (priceInfoTooltip, importExportTooltip)
+- [x] Add `concat` Handlebars helper for inline string building
+- [x] Extract `emptyState.hbs` partial — consolidate 8 empty state patterns
+- [x] Extract `statCard.hbs` partial — consolidate simple stat card markup
+- [x] Consistent Normal→Foil ordering (inventoryCtrl, set.hbs mobile, AJAX)
+- [x] Dynamic price/foil column visibility (set page, card page, AJAX)
+- [x] Transaction row `<template>` conversion (template cloning in ajaxUtils)
+
 ### 2.1 Add Pre-fetching for Performance
 - [ ] Audit current page load performance (identify bottlenecks)
 - [ ] Add link pre-fetching for likely navigation targets

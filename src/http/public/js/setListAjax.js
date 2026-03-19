@@ -46,12 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var name = AjaxUtils.escapeHtml(set.name);
         var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
 
-        var tagsHtml = '';
-        if (set.tags) {
-            for (var t = 0; t < set.tags.length; t++) {
-                tagsHtml += '<span class="tag">' + AjaxUtils.escapeHtml(set.tags[t]) + '</span>';
-            }
-        }
+        var tagsHtml = AjaxUtils.renderTags(set.tags);
 
         var priceHtml = formatPrice(set.prices);
         var changeHtml = formatWeeklyChange(set.prices);

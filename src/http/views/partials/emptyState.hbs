@@ -1,0 +1,17 @@
+<div class="text-center py-16{{#if padX}} px-4{{/if}}">
+    {{#if icon}}
+    <i class="fas fa-{{icon}} {{#if iconSize}}{{iconSize}}{{else}}text-4xl{{/if}} {{#if iconColor}}{{iconColor}}{{else}}text-gray-300 dark:text-gray-600{{/if}} mb-4"></i>
+    {{/if}}
+    {{#if heading}}
+    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">{{heading}}</h3>
+    {{/if}}
+    {{#if message}}
+    <p class="text-lg text-gray-600 dark:text-gray-400 font-medium{{#unless heading}} mt-4{{/unless}}">{{message}}</p>
+    {{/if}}
+    {{#if hint}}
+    <p class="text-gray-400 dark:text-gray-500 mt-2{{#if hintWide}} max-w-md mx-auto{{/if}}">{{hint}}</p>
+    {{/if}}
+    {{#if buttonHref}}
+    <a href="{{buttonHref}}" class="btn {{#if buttonClass}}{{buttonClass}}{{else}}btn-secondary{{/if}} mt-6 inline-block">{{buttonText}}</a>
+    {{/if}}
+</div>

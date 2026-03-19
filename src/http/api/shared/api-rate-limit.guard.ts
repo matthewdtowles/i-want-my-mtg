@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
 
-const MAX_REQUESTS_USER = 60;
-const MAX_REQUESTS_IP = 30;
+const MAX_REQUESTS_USER = 200;
+const MAX_REQUESTS_IP = 60;
 const WINDOW_MS = 60 * 1000; // 1 minute
 const CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -50,7 +50,7 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         if (timestamps.length >= MAX_REQUESTS_USER) {
             this.LOGGER.warn(`API rate limit exceeded for user ${userId}.`);
             throw new HttpException(
-                'Too Many Requests: API rate limit is 60 requests per minute',
+                'Too Many Requests: API rate limit is 200 requests per minute',
                 HttpStatus.TOO_MANY_REQUESTS
             );
         }

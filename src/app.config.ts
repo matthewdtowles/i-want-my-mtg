@@ -30,6 +30,14 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
             encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
+            concat: (...args: any[]) => {
+                const maybeOptions = args[args.length - 1];
+                const values =
+                    maybeOptions && typeof maybeOptions === 'object' && 'hash' in maybeOptions
+                        ? args.slice(0, -1)
+                        : args;
+                return values.map((value) => (value == null ? '' : String(value))).join('');
+            },
         },
     });
     expressApp.engine('hbs', hbs.engine);

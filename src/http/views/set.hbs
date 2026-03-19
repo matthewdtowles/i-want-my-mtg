@@ -2,31 +2,19 @@
 <div id="set-header-container" class="relative">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
         <div class="text-center pt-4 pb-2">
-            <h3 class="page-title">
+            <h1 class="page-title">
                 <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
                 <span class="align-middle">{{set.name}}</span>
                 {{>tags item=set}}
-            </h3>
+            </h1>
         </div>
 
         <div class="max-w-2xl mx-auto px-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                <div class="stat-card">
-                    <span class="stat-label">Block</span>
-                    <span class="stat-value text-sm">{{set.block}}</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Code</span>
-                    <span class="stat-value">{{toUpperCase set.code}}</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Released</span>
-                    <span class="stat-value text-sm">{{set.releaseDate}}</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Set Price</span>
-                    <span class="stat-value">{{set.prices.defaultPrice}}</span>
-                </div>
+                {{>statCard label="Block" value=set.block valueClass="text-sm"}}
+                {{>statCard label="Code" value=(toUpperCase set.code)}}
+                {{>statCard label="Released" value=set.releaseDate valueClass="text-sm"}}
+                {{>statCard label="Set Price" value=set.prices.defaultPrice}}
             </div>
 
             {{#if authenticated}}
@@ -35,10 +23,7 @@
                     <span class="stat-label">Owned</span>
                     <span class="stat-value">{{set.ownedTotal}}<span class="text-xs font-normal text-gray-400 dark:text-gray-500">/{{set.effectiveSize}}</span></span>
                 </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Owned Value</span>
-                    <span class="stat-value">{{set.ownedValue}}</span>
-                </div>
+                {{>statCard label="Owned Value" value=set.ownedValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Completion</span>
                     <div class="mt-1">{{>completionRate set}}</div>
@@ -277,10 +262,10 @@
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
                             <div class="flex gap-1">
-                                <button class="set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded">All</button>
+                                <button class="history-range-btn set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded">All</button>
                             </div>
                         </div>
                         <div id="set-price-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
@@ -311,7 +296,7 @@
     <div id="filter-results">
         {{#if set.cards.length}}
         <div class="table-wrapper">
-        <table class="table-container">
+        <table class="table-container w-full">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each set.cards}}
@@ -329,6 +314,7 @@
                     </td>
                     <td class="table-cell xs-hide">{{>manaCost card=this}}</td>
                     <td class="table-cell xs-hide">{{this.rarity}}</td>
+                    {{#if ../hasAnyNormalPrice}}
                     <td class="table-cell xs-hide">
                         {{#if this.hasNormal}}
                         <span class="price-normal">{{this.normalPrice}}</span>
@@ -337,6 +323,8 @@
                         {{/if}}
                         {{/if}}
                     </td>
+                    {{/if}}
+                    {{#if ../hasAnyFoilPrice}}
                     <td class="table-cell xs-hide">
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
@@ -345,32 +333,30 @@
                         {{/if}}
                         {{/if}}
                     </td>
+                    {{/if}}
+                    {{#if ../hasAnyPrice}}
                     <td class="table-cell xs-show">
+                        {{#if this.hasNormal}}
+                        <span class="price-normal">{{this.normalPrice}}</span>
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
+                        {{/if}}
+                        {{/if}}
                         {{#if this.hasFoil}}
                         <span class="price-foil">{{this.foilPrice}}</span>
                         {{#if this.foilPriceChangeWeekly}}
                         <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
                         {{/if}}
                         {{/if}}
-                        {{#if this.hasNormal}}
-                        <span class="price-normal">{{this.normalPrice}}</span>
-                        {{/if}}
-                        {{#if this.priceChangeWeekly}}
-                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
-                        {{/if}}
                     </td>
+                    {{/if}}
                 </tr>
                 {{/each}}
             </tbody>
         </table>
         </div>
         {{else}}
-        <div class="text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No cards match your search</p>
-            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
-            <a href="/sets/{{set.code}}" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
-        </div>
+        {{>emptyState icon="search" message="No cards match your search" hint="Try a different search term or clear your filter." buttonHref=(concat "/sets/" set.code) buttonText="Clear Filter"}}
         {{/if}}
     </div>
 </div>
@@ -390,6 +376,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/setPriceHistoryChart.js" defer></script>

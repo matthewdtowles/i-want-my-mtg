@@ -114,6 +114,26 @@ export class CardOrchestrator {
                 }
             }
 
+            const otherPrintings = allPrintings
+                .filter((card) => card.setCode !== setCode || card.number !== setNumber)
+                .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
+
+            const hasAnyNormalPrice = otherPrintings.some((c) => c.normalPriceRaw > 0);
+            const hasAnyFoilPrice = otherPrintings.some((c) => c.foilPriceRaw > 0);
+
+            const printingHeaders = [
+                new SortableHeaderView(options, SortOptions.CARD_SET, ['pl-2']),
+                new TableHeaderView('Card'),
+            ];
+            if (hasAnyNormalPrice) {
+                printingHeaders.push(new SortableHeaderView(options, SortOptions.PRICE));
+            }
+            if (hasAnyFoilPrice) {
+                printingHeaders.push(
+                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['pr-2'])
+                );
+            }
+
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs: [
@@ -126,17 +146,12 @@ export class CardOrchestrator {
                 costBasis,
                 untrackedNormal,
                 untrackedFoil,
-                otherPrintings: allPrintings
-                    .filter((card) => card.setCode !== setCode || card.number !== setNumber)
-                    .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL)),
+                otherPrintings,
+                hasAnyNormalPrice,
+                hasAnyFoilPrice,
                 pagination: new PaginationView(options, baseUrl, totalPrintings),
                 filter: new FilterView(options, baseUrl),
-                tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.CARD_SET, ['pl-2']),
-                    new TableHeaderView('Card'),
-                    new SortableHeaderView(options, SortOptions.PRICE),
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['pr-2']),
-                ]),
+                tableHeadersRow: new TableHeadersRowView(printingHeaders),
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);

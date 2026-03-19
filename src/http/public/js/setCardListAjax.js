@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var setCode = container.dataset.setCode;
     var authenticated = container.dataset.authenticated === 'true';
+    var hasAnyNormal = true;
+    var hasAnyFoil = true;
 
     var page = AjaxUtils.initListPage({
         container: container,
@@ -30,16 +32,36 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        hasAnyNormal = cards.some(function (c) {
+            return c.prices && c.prices.normal != null;
+        });
+        hasAnyFoil = cards.some(function (c) {
+            return c.prices && c.prices.foil != null;
+        });
+        var hasAnyNormalPrice = hasAnyNormal;
+        var hasAnyFoilPrice = hasAnyFoil;
+
         var headers = [
             { key: '', label: 'Owned' },
-            { key: 'card.number', label: 'Card No.' },
+            { key: 'card.sortNumber', label: 'Card No.' },
             { key: 'card.name', label: 'Card' },
-            { key: 'card.manaCost', label: 'Mana Cost', classes: 'xs-hide' },
-            { key: 'card.rarity', label: 'Rarity', classes: 'xs-hide' },
-            { key: 'price.normal', label: 'Normal', subtitle: '7d', classes: 'xs-hide' },
-            { key: 'price.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' },
-            { key: '', label: 'Price', classes: 'xs-show' },
+            { key: '', label: 'Mana Cost', classes: 'xs-hide' },
+            { key: '', label: 'Rarity', classes: 'xs-hide' },
         ];
+        if (hasAnyNormalPrice) {
+            headers.push({
+                key: 'prices.normal',
+                label: 'Normal',
+                subtitle: '7d',
+                classes: 'xs-hide',
+            });
+        }
+        if (hasAnyFoilPrice) {
+            headers.push({ key: 'prices.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' });
+        }
+        if (hasAnyNormalPrice || hasAnyFoilPrice) {
+            headers.push({ key: '', label: 'Price', classes: 'xs-show' });
+        }
 
         var html = '<div class="table-wrapper"><table class="table-container">';
         html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
@@ -97,46 +119,60 @@ document.addEventListener('DOMContentLoaded', function () {
             '<td class="table-cell xs-hide">' + AjaxUtils.escapeHtml(card.rarity || '') + '</td>';
 
         // Normal price (xs-hide)
-        html += '<td class="table-cell xs-hide">';
-        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
-            html +=
-                '<span class="price-normal">' + AjaxUtils.toDollar(card.prices.normal) + '</span>';
-            if (card.prices.normalChangeWeekly != null && card.prices.normalChangeWeekly !== 0) {
-                html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
+        if (hasAnyNormal) {
+            html += '<td class="table-cell xs-hide">';
+            if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+                html +=
+                    '<span class="price-normal">' +
+                    AjaxUtils.toDollar(card.prices.normal) +
+                    '</span>';
+                if (
+                    card.prices.normalChangeWeekly != null &&
+                    card.prices.normalChangeWeekly !== 0
+                ) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
+                }
             }
+            html += '</td>';
         }
-        html += '</td>';
 
         // Foil price (xs-hide)
-        html += '<td class="table-cell xs-hide">';
-        if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html += '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
-            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
-                html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+        if (hasAnyFoil) {
+            html += '<td class="table-cell xs-hide">';
+            if (card.hasFoil && card.prices && card.prices.foil != null) {
+                html +=
+                    '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+                if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+                }
             }
+            html += '</td>';
         }
-        html += '</td>';
 
-        // Combined price (xs-show, mobile)
-        html += '<td class="table-cell xs-show">';
-        if (card.hasFoil && card.prices && card.prices.foil != null) {
-            html += '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
-            if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
-                html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+        // Combined price (xs-show, mobile) — Normal first, then Foil
+        if (hasAnyNormal || hasAnyFoil) {
+            html += '<td class="table-cell xs-show">';
+            if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+                html +=
+                    '<span class="price-normal">' +
+                    AjaxUtils.toDollar(card.prices.normal) +
+                    '</span>';
+                if (
+                    card.prices.normalChangeWeekly != null &&
+                    card.prices.normalChangeWeekly !== 0
+                ) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
+                }
             }
+            if (card.hasFoil && card.prices && card.prices.foil != null) {
+                html +=
+                    '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+                if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+                }
+            }
+            html += '</td>';
         }
-        if (card.hasNonFoil && card.prices && card.prices.normal != null) {
-            html +=
-                '<span class="price-normal">' + AjaxUtils.toDollar(card.prices.normal) + '</span>';
-        }
-        if (
-            card.prices &&
-            card.prices.normalChangeWeekly != null &&
-            card.prices.normalChangeWeekly !== 0
-        ) {
-            html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
-        }
-        html += '</td>';
 
         html += '</tr>';
         return html;
@@ -144,9 +180,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderManaCost(manaCost) {
         if (!manaCost) return '';
-        return manaCost.replace(/\{([^}]+)\}/g, function (match, symbol) {
-            var cssClass = 'ms ms-' + symbol.toLowerCase().replace('/', '');
-            return '<i class="' + cssClass + ' ms-cost"></i>';
+        return manaCost.replace(/\/\/|\{([^}]+)\}/g, function (match, symbol) {
+            if (!symbol) return '<span class="mana-sep">' + AjaxUtils.escapeHtml(match) + '</span>';
+            var lower = symbol.toLowerCase().replace('/', '');
+            var isHalf = lower.startsWith('h');
+            return (
+                '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>'
+            );
         });
     }
 
@@ -161,8 +201,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','))
+        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','), {
+            credentials: 'same-origin',
+        })
             .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
                 return res.json();
             })
             .then(function (json) {
@@ -183,6 +228,19 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(function (err) {
                 console.error('Error fetching inventory quantities:', err);
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var j = 0; j < cells.length; j++) {
+                    var cell = cells[j];
+                    var cardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    cell.innerHTML = renderOwnedForms(
+                        cardId,
+                        { foilQuantity: 0, normalQuantity: 0 },
+                        hasFoil,
+                        hasNonFoil
+                    );
+                }
             })
             .finally(function () {
                 if (onComplete) onComplete();
@@ -201,34 +259,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderOwnedForm(cardId, quantity, isFoil) {
-        var foilClass = isFoil ? 'foil' : 'normal';
-        var html =
-            '<form class="quantity-form quantity-form-' +
-            foilClass +
-            '"' +
-            ' data-item-id="' +
-            AjaxUtils.escapeHtml(cardId) +
-            '" data-foil="' +
-            isFoil +
-            '">';
-        html +=
-            '<input type="hidden" name="cardId" value="' + AjaxUtils.escapeHtml(cardId) + '" />';
-        html +=
-            '<button type="button" class="increment-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-purple-400 active:text-purple-600">+</button>';
-        html +=
-            '<input type="number" name="quantity-owned" class="quantity-owned" value="' +
-            quantity +
-            '" data-id="' +
-            AjaxUtils.escapeHtml(cardId) +
-            '" />';
-        html += '<input type="hidden" name="isFoil" value="' + isFoil + '" />';
-        html +=
-            '<button type="button" class="decrement-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-red-400 active:text-red-600">-</button>';
-        html += '</form>';
-        return html;
+        return AjaxUtils.createQuantityForm(cardId, quantity, isFoil);
     }
 });

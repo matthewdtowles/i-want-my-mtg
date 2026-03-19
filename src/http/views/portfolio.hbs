@@ -2,15 +2,12 @@
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg pb-5">
         <div class="text-center pt-4 pb-2">
-            <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+            <h1 class="page-title">{{this.username}}'s Portfolio</h1>
         </div>
 
         <div class="max-w-3xl mx-auto px-4">
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Current Value</span>
-                    <span class="stat-value">{{this.summary.totalValue}}</span>
-                </div>
+                {{>statCard label="Current Value" value=this.summary.totalValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) — the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first — the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
@@ -19,18 +16,9 @@
                     <span class="stat-label">Unrealized P&L{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Unrealized P&L calculated using FIFO (first-in, first-out) lot matching for accurate per-unit cost tracking."}}{{else}}{{>costBasisTooltip title="Based on Average Cost" description="Unrealized P&L uses average cost basis. Click Recalculate below for precise FIFO-based P&L, which is the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
                 </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">ROI</span>
-                    <span class="stat-value gain-{{this.summary.roiSign}}">{{this.summary.roi}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Realized Gains</span>
-                    <span class="stat-value gain-{{this.summary.realizedGainSign}}">{{this.summary.realizedGain}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Cards / Units</span>
-                    <span class="stat-value">{{this.summary.totalCards}} / {{this.summary.totalQuantity}}</span>
-                </div>
+                {{>statCard label="ROI" value=this.summary.roi highlight=true valueClass=(concat "gain-" this.summary.roiSign)}}
+                {{>statCard label="Realized Gains" value=this.summary.realizedGain highlight=true valueClass=(concat "gain-" this.summary.realizedGainSign)}}
+                {{>statCard label="Cards / Units" value=(concat this.summary.totalCards " / " this.summary.totalQuantity) highlight=true}}
             </div>
 
             <div class="flex justify-center gap-2 mb-4">
@@ -96,18 +84,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Card</th>
                     <th class="table-header">Qty</th>
                     <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each topPerformers as |p|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         {{#if p.cardUrl}}
                         <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
                         {{else}}
@@ -120,7 +108,7 @@
                     <td class="table-cell font-mono">{{p.totalCost}}</td>
                     <td class="table-cell font-mono">{{p.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                    <td class="table-cell font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -139,18 +127,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Set</th>
+                    <th class="table-header">Set</th>
                     <th class="table-header">Cards</th>
                     <th class="table-header">Invested</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each setRoi as |s|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         <a href="{{s.setUrl}}" class="card-name-link">{{s.setName}}</a>
                         <span class="text-gray-400 dark:text-gray-500 text-xs">({{s.setCode}})</span>
                     </td>
@@ -158,7 +146,7 @@
                     <td class="table-cell font-mono">{{s.totalCost}}</td>
                     <td class="table-cell font-mono">{{s.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{s.gainSign}}">{{s.gain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{s.roiSign}}">{{s.roi}}</td>
+                    <td class="table-cell font-mono gain-{{s.roiSign}}">{{s.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -188,18 +176,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Card</th>
                     <th class="table-header">Qty</th>
                     <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each worstPerformers as |p|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         {{#if p.cardUrl}}
                         <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
                         {{else}}
@@ -212,7 +200,7 @@
                     <td class="table-cell font-mono">{{p.totalCost}}</td>
                     <td class="table-cell font-mono">{{p.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                    <td class="table-cell font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -222,8 +210,8 @@
     {{/if}}
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/portfolioChart.js" defer></script>
 <script src="/public/js/cashFlowChart.js" defer></script>
@@ -265,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {{else if hasHistory}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
-        <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+        <h1 class="page-title">{{this.username}}'s Portfolio</h1>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Portfolio value over time</p>
     </section>
     <div class="content-wrapper px-4 pb-6">
@@ -287,16 +275,11 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/portfolioChart.js" defer></script>
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
-    <div class="text-center py-16 px-4">
-        <i class="fas fa-chart-line text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
-        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">No portfolio history yet</h3>
-        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh.</p>
-        <a href="/inventory" class="btn btn-primary inline-block mt-6">Go to Inventory</a>
-    </div>
+    {{>emptyState icon="chart-line" iconSize="text-5xl" iconColor="text-teal-300 dark:text-teal-600" padX=true heading="No portfolio history yet" hint="Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh." hintWide=true buttonHref="/inventory" buttonText="Go to Inventory" buttonClass="btn-primary"}}
 </section>
 {{/if}}

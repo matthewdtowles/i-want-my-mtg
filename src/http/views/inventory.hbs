@@ -2,19 +2,13 @@
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg pb-5">
         <div class="text-center pt-4 pb-2">
-            <h3 class="page-title">{{this.username}}'s Inventory</h3>
+            <h1 class="page-title">{{this.username}}'s Inventory</h1>
         </div>
 
         <div class="max-w-2xl mx-auto px-4">
             <div class="grid grid-cols-3 gap-3 mb-4">
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Total Cards</span>
-                    <span class="stat-value">{{this.ownedTotal}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Value</span>
-                    <span class="stat-value">{{this.ownedValue}}</span>
-                </div>
+                {{>statCard label="Total Cards" value=this.ownedTotal highlight=true}}
+                {{>statCard label="Value" value=this.ownedValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Completion</span>
                     <div class="mt-1">{{>completionRate}}</div>
@@ -82,13 +76,12 @@
             <div class="flex-1">
                 {{>filter}}
             </div>
-            {{#if baseOnlyToggle.visible}}
             <a href="{{baseOnlyToggle.url}}"
                class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
-                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4">
+                      whitespace-nowrap h-[42px] flex items-center justify-center flex-shrink-0 mb-4
+                      {{#unless baseOnlyToggle.visible}} hidden{{/unless}}">
                 {{baseOnlyToggle.text}}
             </a>
-            {{/if}}
         </div>
         <div id="filter-results">
             {{#if cards.length}}
@@ -118,14 +111,7 @@
                             </span>
                         </td>
                         <td class="table-cell delete-inventory-entry xs-hide">
-                            <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
-                                <input type="hidden" name="card-id" value="{{card.cardId}}" />
-                                <input type="hidden" name="isFoil" value="{{card.isFoil}}" />
-
-                                <button type="button" class="delete-inventory-button">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
+                            {{>deleteInventoryEntry card=card}}
                         </td>
                     </tr>
                     {{/each}}
@@ -133,12 +119,7 @@
             </table>
             </div>
             {{else}}
-            <div class="text-center py-16">
-                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your current filters</p>
-                <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>
-                <a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>
-            </div>
+            {{>emptyState icon="search" message="No items match your current filters" hint="Try a different search term or adjust your filters." buttonHref="/inventory" buttonText="Clear Filters"}}
             {{/if}}
         </div>
     </div>
@@ -150,7 +131,7 @@
     <div class="bg-teal-50 dark:bg-midnight-900 rounded-lg pb-5">
         <div class="text-center pt-8 pb-2">
             <i class="fas fa-box-open text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
-            <h3 class="page-title mt-4">{{this.username}}'s collection is empty</h3>
+            <h3 class="page-title mt-4">{{this.username}}'s collection is empty</h1>
             <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Browse sets to find cards and start tracking your collection.</p>
             <a href="/sets" class="btn btn-primary inline-block mt-6">Browse Sets</a>
         </div>

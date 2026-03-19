@@ -69,7 +69,10 @@ export class InventoryOrchestrator {
                 ),
                 this.inventoryService.totalCards(),
                 this.inventoryService.totalOwnedValue(userId),
-                this.inventoryService.totalInventoryItems(userId, new SafeQueryOptions()),
+                this.inventoryService.totalInventoryItems(
+                    userId,
+                    new SafeQueryOptions({ baseOnly: 'false' })
+                ),
             ]);
 
             const cards: InventoryResponseDto[] = inventoryItems.map((item) =>

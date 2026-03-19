@@ -43,21 +43,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var headers = [
             { key: '', label: 'Owned' },
-            { key: 'card.number', label: 'Card No.' },
+            { key: 'card.sortNumber', label: 'Card No.' },
             { key: 'card.name', label: 'Card' },
-            { key: 'card.manaCost', label: 'Mana Cost', classes: 'xs-hide' },
-            { key: 'card.rarity', label: 'Rarity', classes: 'xs-hide' },
+            { key: '', label: 'Mana Cost', classes: 'xs-hide' },
+            { key: '', label: 'Rarity', classes: 'xs-hide' },
         ];
         if (hasAnyNormalPrice) {
             headers.push({
-                key: 'price.normal',
+                key: 'prices.normal',
                 label: 'Normal',
                 subtitle: '7d',
                 classes: 'xs-hide',
             });
         }
         if (hasAnyFoilPrice) {
-            headers.push({ key: 'price.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' });
+            headers.push({ key: 'prices.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' });
         }
         if (hasAnyNormalPrice || hasAnyFoilPrice) {
             headers.push({ key: '', label: 'Price', classes: 'xs-show' });
@@ -201,8 +201,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','))
+        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','), {
+            credentials: 'same-origin',
+        })
             .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
                 return res.json();
             })
             .then(function (json) {
@@ -223,6 +228,19 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(function (err) {
                 console.error('Error fetching inventory quantities:', err);
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var j = 0; j < cells.length; j++) {
+                    var cell = cells[j];
+                    var cardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    cell.innerHTML = renderOwnedForms(
+                        cardId,
+                        { foilQuantity: 0, normalQuantity: 0 },
+                        hasFoil,
+                        hasNonFoil
+                    );
+                }
             })
             .finally(function () {
                 if (onComplete) onComplete();

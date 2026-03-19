@@ -126,14 +126,17 @@ export class SetApiController {
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
         const options = new SafeQueryOptions(query);
 
+        const set = await this.setService.findByCode(code);
+        const effectiveOptions = set && !set.isMain ? options.withBaseOnly(false) : options;
+
         const [cards, total] = await Promise.all([
-            this.cardService.findBySet(code, options),
-            this.cardService.totalInSet(code, options),
+            this.cardService.findBySet(code, effectiveOptions),
+            this.cardService.totalInSet(code, effectiveOptions),
         ]);
 
         return ApiResponseDto.ok(
             cards.map((c) => CardApiPresenter.toCardApiResponse(c)),
-            new PaginationMeta(options.page, options.limit, total)
+            new PaginationMeta(effectiveOptions.page, effectiveOptions.limit, total)
         );
     }
 

@@ -418,6 +418,7 @@ var AjaxUtils = (function () {
     function updateBaseOnlyToggle(opts) {
         var toggle = opts.container.querySelector('a[href*="baseOnly"]');
         if (!toggle) return;
+        toggle.classList.remove('hidden');
         var params = new URLSearchParams();
         if (opts.state.filter) params.set('filter', opts.state.filter);
         if (opts.state.limit !== 25) params.set('limit', String(opts.state.limit));
@@ -508,14 +509,14 @@ var AjaxUtils = (function () {
         var form = clone.querySelector('form');
         form.classList.add('quantity-form-' + foilClass);
         form.setAttribute('data-item-id', cardId);
-        form.setAttribute('data-foil', isFoil);
-        form.querySelector('input[name="cardId"]').value = cardId;
+        form.setAttribute('data-foil', String(isFoil));
+        form.querySelector('input[name="cardId"]').setAttribute('value', cardId);
         var incBtn = form.querySelector('.increment-quantity');
         incBtn.classList.add('inventory-controller-button-' + foilClass);
         var qtyInput = form.querySelector('.quantity-owned');
-        qtyInput.value = quantity;
+        qtyInput.setAttribute('value', quantity);
         qtyInput.setAttribute('data-id', cardId);
-        form.querySelector('input[name="isFoil"]').value = isFoil;
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
         var decBtn = form.querySelector('.decrement-quantity');
         decBtn.classList.add('inventory-controller-button-' + foilClass);
         var wrapper = document.createElement('div');
@@ -534,8 +535,8 @@ var AjaxUtils = (function () {
         var clone = tpl.content.cloneNode(true);
         var form = clone.querySelector('form');
         form.setAttribute('data-item-id', cardId);
-        form.querySelector('input[name="card-id"]').value = cardId;
-        form.querySelector('input[name="isFoil"]').value = isFoil;
+        form.querySelector('input[name="card-id"]').setAttribute('value', cardId);
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
         var wrapper = document.createElement('div');
         wrapper.appendChild(clone);
         return wrapper.innerHTML;
@@ -563,7 +564,7 @@ var AjaxUtils = (function () {
         var dateDisplays = row.querySelectorAll('td:first-child .tx-display');
         if (dateDisplays.length) dateDisplays[0].textContent = tx.date;
         var dateInput = row.querySelector('input[data-field="date"]');
-        if (dateInput) dateInput.value = tx.date;
+        if (dateInput) dateInput.setAttribute('value', tx.date);
 
         // Type
         if (tx.type === 'BUY') {
@@ -603,13 +604,13 @@ var AjaxUtils = (function () {
         var qtyDisplays = row.querySelectorAll('td:nth-child(4) .tx-display');
         if (qtyDisplays.length) qtyDisplays[0].textContent = tx.quantity;
         var qtyInput = row.querySelector('input[data-field="quantity"]');
-        if (qtyInput) qtyInput.value = tx.quantity;
+        if (qtyInput) qtyInput.setAttribute('value', tx.quantity);
 
         // Price
         var priceDisplays = row.querySelectorAll('td:nth-child(5) .tx-display');
         if (priceDisplays.length) priceDisplays[0].textContent = toDollar(tx.pricePerUnit);
         var priceInput = row.querySelector('input[data-field="pricePerUnit"]');
-        if (priceInput) priceInput.value = tx.pricePerUnit;
+        if (priceInput) priceInput.setAttribute('value', tx.pricePerUnit);
 
         // Total
         var totalEl = row.querySelector('.tx-total');
@@ -838,7 +839,7 @@ var AjaxUtils = (function () {
             var resultsEl = document.getElementById('filter-results');
             showSpinner(resultsEl);
 
-            fetch(buildApiUrl(apiPath, state))
+            fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
                 .then(function (res) {
                     return res.json();
                 })

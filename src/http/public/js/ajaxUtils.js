@@ -495,6 +495,67 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Clone the quantity form template and populate it.
+     * @param {string} cardId
+     * @param {number} quantity
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createQuantityForm(cardId, quantity, isFoil) {
+        var tpl = document.getElementById('tpl-quantity-form');
+        var clone = tpl.content.cloneNode(true);
+        var foilClass = isFoil ? 'foil' : 'normal';
+        var form = clone.querySelector('form');
+        form.classList.add('quantity-form-' + foilClass);
+        form.setAttribute('data-item-id', cardId);
+        form.setAttribute('data-foil', isFoil);
+        form.querySelector('input[name="cardId"]').value = cardId;
+        var incBtn = form.querySelector('.increment-quantity');
+        incBtn.classList.add('inventory-controller-button-' + foilClass);
+        var qtyInput = form.querySelector('.quantity-owned');
+        qtyInput.value = quantity;
+        qtyInput.setAttribute('data-id', cardId);
+        form.querySelector('input[name="isFoil"]').value = isFoil;
+        var decBtn = form.querySelector('.decrement-quantity');
+        decBtn.classList.add('inventory-controller-button-' + foilClass);
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Clone the delete inventory form template and populate it.
+     * @param {string} cardId
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createDeleteForm(cardId, isFoil) {
+        var tpl = document.getElementById('tpl-delete-inventory');
+        var clone = tpl.content.cloneNode(true);
+        var form = clone.querySelector('form');
+        form.setAttribute('data-item-id', cardId);
+        form.querySelector('input[name="card-id"]').value = cardId;
+        form.querySelector('input[name="isFoil"]').value = isFoil;
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Render tag badges from an array of tag strings.
+     * @param {string[]} tags
+     * @returns {string} HTML string
+     */
+    function renderTags(tags) {
+        if (!tags || !tags.length) return '';
+        var html = '';
+        for (var i = 0; i < tags.length; i++) {
+            html += '<span class="tag">' + escapeHtml(tags[i]) + '</span>';
+        }
+        return html;
+    }
+
+    /**
      * Render a price change badge.
      * @param {number} change - Price change amount
      * @returns {string} HTML string
@@ -792,6 +853,9 @@ var AjaxUtils = (function () {
         buildApiUrl: buildApiUrl,
         buildPaginationHref: buildPaginationHref,
         renderTableHeaderRow: renderTableHeaderRow,
+        createQuantityForm: createQuantityForm,
+        createDeleteForm: createDeleteForm,
+        renderTags: renderTags,
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,

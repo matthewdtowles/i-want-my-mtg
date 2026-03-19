@@ -40,6 +40,26 @@
         {{>footer}}
     </footer>
 
+    <template id="tpl-quantity-form">
+        <form class="quantity-form">
+            <input type="hidden" name="cardId" />
+            <button type="button" class="increment-quantity hover:text-purple-400 active:text-purple-600">+</button>
+            <input type="number" name="quantity-owned" class="quantity-owned" />
+            <input type="hidden" name="isFoil" />
+            <button type="button" class="decrement-quantity hover:text-red-400 active:text-red-600">-</button>
+        </form>
+    </template>
+
+    <template id="tpl-delete-inventory">
+        <form class="delete-inventory-form">
+            <input type="hidden" name="card-id" />
+            <input type="hidden" name="isFoil" />
+            <button type="button" class="delete-inventory-button">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </form>
+    </template>
+
     <script src="/public/js/searchSuggest.js"></script>
 </body>
 

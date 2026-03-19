@@ -113,79 +113,72 @@ input[type='number'] {
     background: #00733e;
 }
 
-.price-history-range {
+.history-range-btn {
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
     font-weight: 500;
     border-radius: 0.375rem;
-    border: 1px solid #d1d5db;
-    background: transparent;
-    color: #374151;
     cursor: pointer;
     transition:
         background-color 0.15s,
         color 0.15s;
+    color: #374151;
 }
 
-.price-history-range:hover {
-    background: #f3f4f6;
-}
-
-.price-history-range.active {
+.history-range-btn.active {
     background: #0d9488;
     color: #fff;
     border-color: #0d9488;
+}
+
+.history-range-btn:hover {
+    background: #f3f4f6;
+}
+
+.history-range-btn.active:hover {
+    background: #0d9488;
+}
+
+.dark .history-range-btn {
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+.dark .history-range-btn:hover {
+    background: #374151;
+}
+
+.dark .history-range-btn.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #f0fdfb;
+}
+
+.dark .history-range-btn.active:hover {
+    background: #0f766e;
+}
+
+.price-history-range {
+    border: 1px solid #d1d5db;
+    background: transparent;
 }
 
 .dark .price-history-range {
     border-color: #4b5563;
-    color: #d1d5db;
-}
-
-.dark .price-history-range:hover {
-    background: #374151;
-}
-
-.dark .price-history-range.active {
-    background: #0f766e;
-    border-color: #0f766e;
-    color: #f0fdfb;
 }
 
 .set-price-history-range {
-    cursor: pointer;
     border: 1px solid transparent;
-    transition:
-        background-color 0.15s,
-        color 0.15s;
     background: #e5e7eb;
-    color: #374151;
-}
-
-.set-price-history-range:hover {
-    background: #f3f4f6;
-}
-
-.set-price-history-range.active {
-    background: #0d9488;
-    color: #fff;
-    border-color: #0d9488;
 }
 
 .dark .set-price-history-range {
-    border-color: #4b5563;
-    color: #d1d5db;
     background: #374151;
+    border-color: #4b5563;
 }
 
 .dark .set-price-history-range:hover {
     background: #4b5563;
-}
-
-.dark .set-price-history-range.active {
-    background: #0f766e;
-    border-color: #0f766e;
-    color: #f0fdfb;
 }
 
 .chart-tooltip {

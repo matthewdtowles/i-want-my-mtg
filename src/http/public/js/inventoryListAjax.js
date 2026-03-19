@@ -61,11 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '" class="card-name-link">' +
             AjaxUtils.escapeHtml(item.cardName || '') +
             '</a>';
-        if (item.tags && item.tags.length > 0) {
-            for (var t = 0; t < item.tags.length; t++) {
-                html += '<span class="tag">' + AjaxUtils.escapeHtml(item.tags[t]) + '</span>';
-            }
-        }
+        html += AjaxUtils.renderTags(item.tags);
         html += '<a href="' + AjaxUtils.escapeHtml(url) + '" class="card-img-link">';
         html +=
             '<img src="' +
@@ -103,54 +99,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Delete column
         html += '<td class="table-cell delete-inventory-entry xs-hide">';
-        html +=
-            '<form class="delete-inventory-form" data-item-id="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '">';
-        html +=
-            '<input type="hidden" name="card-id" value="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '" />';
-        html += '<input type="hidden" name="isFoil" value="' + item.isFoil + '" />';
-        html += '<button type="button" class="delete-inventory-button">';
-        html += '<i class="fas fa-trash-alt"></i>';
-        html += '</button></form></td>';
+        html += AjaxUtils.createDeleteForm(item.cardId, item.isFoil);
+        html += '</td>';
 
         html += '</tr>';
         return html;
     }
 
     function renderCardsOwnedForm(item) {
-        var foilClass = item.isFoil ? 'foil' : 'normal';
-        var html =
-            '<form class="quantity-form quantity-form-' +
-            foilClass +
-            '"' +
-            ' data-item-id="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '" data-foil="' +
-            item.isFoil +
-            '">';
-        html +=
-            '<input type="hidden" name="cardId" value="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '" />';
-        html +=
-            '<button type="button" class="increment-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-purple-400 active:text-purple-600">+</button>';
-        html +=
-            '<input type="number" name="quantity-owned" class="quantity-owned" value="' +
-            item.quantity +
-            '" data-id="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '" />';
-        html += '<input type="hidden" name="isFoil" value="' + item.isFoil + '" />';
-        html +=
-            '<button type="button" class="decrement-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-red-400 active:text-red-600">-</button>';
-        html += '</form>';
-        return html;
+        return AjaxUtils.createQuantityForm(item.cardId, item.quantity, item.isFoil);
     }
 });

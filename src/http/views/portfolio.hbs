@@ -2,7 +2,7 @@
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg pb-5">
         <div class="text-center pt-4 pb-2">
-            <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+            <h1 class="page-title">{{this.username}}'s Portfolio</h1>
         </div>
 
         <div class="max-w-3xl mx-auto px-4">
@@ -96,18 +96,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Card</th>
                     <th class="table-header">Qty</th>
                     <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each topPerformers as |p|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         {{#if p.cardUrl}}
                         <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
                         {{else}}
@@ -120,7 +120,7 @@
                     <td class="table-cell font-mono">{{p.totalCost}}</td>
                     <td class="table-cell font-mono">{{p.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                    <td class="table-cell font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -139,18 +139,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Set</th>
+                    <th class="table-header">Set</th>
                     <th class="table-header">Cards</th>
                     <th class="table-header">Invested</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each setRoi as |s|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         <a href="{{s.setUrl}}" class="card-name-link">{{s.setName}}</a>
                         <span class="text-gray-400 dark:text-gray-500 text-xs">({{s.setCode}})</span>
                     </td>
@@ -158,7 +158,7 @@
                     <td class="table-cell font-mono">{{s.totalCost}}</td>
                     <td class="table-cell font-mono">{{s.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{s.gainSign}}">{{s.gain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{s.roiSign}}">{{s.roi}}</td>
+                    <td class="table-cell font-mono gain-{{s.roiSign}}">{{s.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -188,18 +188,18 @@
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Card</th>
+                    <th class="table-header">Card</th>
                     <th class="table-header">Qty</th>
                     <th class="table-header">Cost Basis</th>
                     <th class="table-header">Value</th>
                     <th class="table-header">Gain</th>
-                    <th class="table-header pr-2">ROI</th>
+                    <th class="table-header">ROI</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each worstPerformers as |p|}}
                 <tr class="table-row">
-                    <td class="table-cell pl-2">
+                    <td class="table-cell">
                         {{#if p.cardUrl}}
                         <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
                         {{else}}
@@ -212,7 +212,7 @@
                     <td class="table-cell font-mono">{{p.totalCost}}</td>
                     <td class="table-cell font-mono">{{p.currentValue}}</td>
                     <td class="table-cell font-mono gain-{{p.totalGainSign}}">{{p.totalGain}}</td>
-                    <td class="table-cell pr-2 font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
+                    <td class="table-cell font-mono gain-{{p.roiSign}}">{{p.roi}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -222,8 +222,8 @@
     {{/if}}
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/tooltipManager.js" defer></script>
 <script src="/public/js/portfolioChart.js" defer></script>
 <script src="/public/js/cashFlowChart.js" defer></script>
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {{else if hasHistory}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
-        <h3 class="page-title">{{this.username}}'s Portfolio</h3>
+        <h1 class="page-title">{{this.username}}'s Portfolio</h1>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Portfolio value over time</p>
     </section>
     <div class="content-wrapper px-4 pb-6">
@@ -287,8 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/portfolioChart.js" defer></script>
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">

@@ -144,9 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderManaCost(manaCost) {
         if (!manaCost) return '';
-        return manaCost.replace(/\{([^}]+)\}/g, function (match, symbol) {
-            var cssClass = 'ms ms-' + symbol.toLowerCase().replace('/', '');
-            return '<i class="' + cssClass + ' ms-cost"></i>';
+        return manaCost.replace(/\/\/|\{([^}]+)\}/g, function (match, symbol) {
+            if (!symbol) return '<span class="mana-sep">' + AjaxUtils.escapeHtml(match) + '</span>';
+            var lower = symbol.toLowerCase().replace('/', '');
+            var isHalf = lower.startsWith('h');
+            return (
+                '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>'
+            );
         });
     }
 
@@ -201,34 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderOwnedForm(cardId, quantity, isFoil) {
-        var foilClass = isFoil ? 'foil' : 'normal';
-        var html =
-            '<form class="quantity-form quantity-form-' +
-            foilClass +
-            '"' +
-            ' data-item-id="' +
-            AjaxUtils.escapeHtml(cardId) +
-            '" data-foil="' +
-            isFoil +
-            '">';
-        html +=
-            '<input type="hidden" name="cardId" value="' + AjaxUtils.escapeHtml(cardId) + '" />';
-        html +=
-            '<button type="button" class="increment-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-purple-400 active:text-purple-600">+</button>';
-        html +=
-            '<input type="number" name="quantity-owned" class="quantity-owned" value="' +
-            quantity +
-            '" data-id="' +
-            AjaxUtils.escapeHtml(cardId) +
-            '" />';
-        html += '<input type="hidden" name="isFoil" value="' + isFoil + '" />';
-        html +=
-            '<button type="button" class="decrement-quantity inventory-controller-button-' +
-            foilClass +
-            ' hover:text-red-400 active:text-red-600">-</button>';
-        html += '</form>';
-        return html;
+        return AjaxUtils.createQuantityForm(cardId, quantity, isFoil);
     }
 });

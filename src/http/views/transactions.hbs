@@ -1,7 +1,7 @@
 {{#if hasTransactions}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
-        <h3 class="page-title">{{this.username}}'s Transactions</h3>
+        <h1 class="page-title">{{this.username}}'s Transactions</h1>
         <p class="text-gray-700 dark:text-gray-300">Total Transactions: {{this.totalTransactions}}</p>
         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
             <i class="fas fa-info-circle mr-1"></i>Transactions can be edited or deleted within 24 hours of creation
@@ -22,25 +22,27 @@
         </div>
     </section>
     <div id="transaction-list-ajax" class="content-wrapper">
-        {{>filter}}
+        <div class="flex items-center gap-2">
+            <div class="flex-1">{{>filter}}</div>
+        </div>
         <div id="filter-results">
         <div class="table-wrapper">
         <table class="table-container w-full">
             <thead>
                 <tr class="table-header-row">
-                    <th class="table-header pl-2">Date</th>
+                    <th class="table-header">Date</th>
                     <th class="table-header">Type</th>
                     <th class="table-header">Card</th>
                     <th class="table-header">Qty</th>
                     <th class="table-header">Price</th>
                     <th class="table-header">Total</th>
-                    <th class="table-header pr-2 tx-actions-cell"></th>
+                    <th class="table-header tx-actions-cell"></th>
                 </tr>
             </thead>
             <tbody>
                 {{#each transactions as |tx|}}
                 <tr class="table-row" data-transaction-id="{{tx.id}}" data-raw-price="{{tx.rawPricePerUnit}}" data-raw-fees="{{tx.rawFees}}" data-source="{{tx.source}}" data-notes="{{tx.notes}}">
-                    <td class="table-cell pl-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    <td class="table-cell text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         <span class="tx-display">{{tx.date}}</span>
                         <input type="date" class="tx-edit hidden w-28 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="date" value="{{tx.date}}" />
                     </td>
@@ -75,7 +77,7 @@
                     <td class="table-cell font-mono">
                         <span class="tx-total">{{tx.totalPrice}}</span>
                     </td>
-                    <td class="table-cell pr-2 tx-actions-cell">
+                    <td class="table-cell tx-actions-cell">
                         {{#if tx.editable}}
                         <span class="tx-display inline-flex gap-1">
                             <button type="button" class="edit-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Edit">

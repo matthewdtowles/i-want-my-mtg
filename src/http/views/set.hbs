@@ -2,11 +2,11 @@
 <div id="set-header-container" class="relative">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
         <div class="text-center pt-4 pb-2">
-            <h3 class="page-title">
+            <h1 class="page-title">
                 <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
                 <span class="align-middle">{{set.name}}</span>
                 {{>tags item=set}}
-            </h3>
+            </h1>
         </div>
 
         <div class="max-w-2xl mx-auto px-4">
@@ -277,10 +277,10 @@
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
                             <div class="flex gap-1">
-                                <button class="set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
-                                <button class="set-price-history-range px-2 py-1 text-xs rounded">All</button>
+                                <button class="history-range-btn set-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                                <button class="history-range-btn set-price-history-range px-2 py-1 text-xs rounded">All</button>
                             </div>
                         </div>
                         <div id="set-price-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
@@ -311,7 +311,7 @@
     <div id="filter-results">
         {{#if set.cards.length}}
         <div class="table-wrapper">
-        <table class="table-container">
+        <table class="table-container w-full">
             <thead>{{>tableHeadersRow}}</thead>
             <tbody>
                 {{#each set.cards}}
@@ -390,6 +390,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/setPriceHistoryChart.js" defer></script>

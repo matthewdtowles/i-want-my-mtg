@@ -1,5 +1,5 @@
 <section class="content-wrapper">
-    <h3 class="page-title mb-4">Search</h3>
+    <h1 class="page-title mb-4">Search</h1>
 
     <form method="get" action="/search" class="mb-6">
         <div class="flex gap-2">
@@ -76,15 +76,17 @@
         {{!-- Empty State --}}
         {{#unless sets.length}}
         {{#unless cards.length}}
-        <div class="text-center py-12">
-            <p class="text-gray-500 dark:text-gray-400 text-lg">No results found for "{{query}}"</p>
-            <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Try a different search term</p>
+        <div class="text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No results found for "{{query}}"</p>
+            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term</p>
         </div>
         {{/unless}}
         {{/unless}}
     {{else}}
-        <div class="text-center py-12">
-            <p class="text-gray-500 dark:text-gray-400 text-lg">Enter a search term to find cards and sets</p>
+        <div class="text-center py-16">
+            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">Enter a search term to find cards and sets</p>
         </div>
     {{/if}}
     </div>

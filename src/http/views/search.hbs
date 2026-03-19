@@ -76,18 +76,11 @@
         {{!-- Empty State --}}
         {{#unless sets.length}}
         {{#unless cards.length}}
-        <div class="text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No results found for "{{query}}"</p>
-            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term</p>
-        </div>
+        {{>emptyState icon="search" message=(concat "No results found for \"" query "\"") hint="Try a different search term"}}
         {{/unless}}
         {{/unless}}
     {{else}}
-        <div class="text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">Enter a search term to find cards and sets</p>
-        </div>
+        {{>emptyState icon="search" message="Enter a search term to find cards and sets"}}
     {{/if}}
     </div>
 

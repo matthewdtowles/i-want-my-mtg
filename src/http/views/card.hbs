@@ -174,17 +174,21 @@
                         {{>tags item=p}}
                         <span> (<a class="table-link" href="/sets/{{p.setCode}}">{{toUpperCase p.setCode}}</a>)</span>
                     </td>
+                    {{#if ../hasAnyNormalPrice}}
                     <td class="table-cell">
                         {{#if p.hasNormal}}
                         <span class="price-normal">{{p.normalPrice}}</span>
                         {{/if}}
                     </td>
+                    {{/if}}
+                    {{#if ../hasAnyFoilPrice}}
                     <td class="table-cell">
                         {{#if p.hasFoil}}
                         <span class="price-foil">{{p.foilPrice}}</span>
                         <span class="foil-badge xs-hide">Foil</span>
                         {{/if}}
                     </td>
+                    {{/if}}
                 </tr>
                 {{/each}}
             </tbody>

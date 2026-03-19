@@ -7,14 +7,8 @@
 
         <div class="max-w-2xl mx-auto px-4">
             <div class="grid grid-cols-3 gap-3 mb-4">
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Total Cards</span>
-                    <span class="stat-value">{{this.ownedTotal}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Value</span>
-                    <span class="stat-value">{{this.ownedValue}}</span>
-                </div>
+                {{>statCard label="Total Cards" value=this.ownedTotal highlight=true}}
+                {{>statCard label="Value" value=this.ownedValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Completion</span>
                     <div class="mt-1">{{>completionRate}}</div>
@@ -126,12 +120,7 @@
             </table>
             </div>
             {{else}}
-            <div class="text-center py-16">
-                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No items match your current filters</p>
-                <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or adjust your filters.</p>
-                <a href="/inventory" class="btn btn-secondary mt-6 inline-block">Clear Filters</a>
-            </div>
+            {{>emptyState icon="search" message="No items match your current filters" hint="Try a different search term or adjust your filters." buttonHref="/inventory" buttonText="Clear Filters"}}
             {{/if}}
         </div>
     </div>

@@ -542,6 +542,96 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Clone the transaction row template and populate it.
+     * @param {object} tx - Transaction object
+     * @returns {string} outerHTML string
+     */
+    function createTransactionRow(tx) {
+        var tpl = document.getElementById('tpl-transaction-row');
+        var clone = tpl.content.cloneNode(true);
+        var row = clone.querySelector('tr');
+        var total = tx.quantity * tx.pricePerUnit;
+
+        // Data attributes on <tr>
+        row.setAttribute('data-transaction-id', tx.id);
+        row.setAttribute('data-raw-price', tx.pricePerUnit);
+        row.setAttribute('data-raw-fees', tx.fees || 0);
+        row.setAttribute('data-source', tx.source || '');
+        row.setAttribute('data-notes', tx.notes || '');
+
+        // Date
+        var dateDisplays = row.querySelectorAll('td:first-child .tx-display');
+        if (dateDisplays.length) dateDisplays[0].textContent = tx.date;
+        var dateInput = row.querySelector('input[data-field="date"]');
+        if (dateInput) dateInput.value = tx.date;
+
+        // Type
+        if (tx.type === 'BUY') {
+            var sellBadge = row.querySelector('.tx-type-sell');
+            if (sellBadge) sellBadge.classList.add('hidden');
+        } else {
+            var buyBadge = row.querySelector('.tx-type-buy');
+            if (buyBadge) buyBadge.classList.add('hidden');
+            var sellEl = row.querySelector('.tx-type-sell');
+            if (sellEl) sellEl.classList.remove('hidden');
+        }
+
+        // Card
+        if (tx.cardUrl) {
+            var cardLink = row.querySelector('.tx-card-link');
+            cardLink.href = tx.cardUrl;
+            cardLink.textContent = tx.cardName || '';
+            cardLink.classList.remove('hidden');
+        } else {
+            var cardText = row.querySelector('.tx-card-text');
+            cardText.textContent = tx.cardName || tx.cardId;
+        }
+
+        // Foil badge
+        if (tx.isFoil) {
+            row.querySelector('.tx-foil-badge').classList.remove('hidden');
+        }
+
+        // Set code
+        if (tx.setCode) {
+            var setCodeEl = row.querySelector('.tx-set-code');
+            setCodeEl.textContent = '(' + tx.setCode.toUpperCase() + ')';
+            setCodeEl.classList.remove('hidden');
+        }
+
+        // Qty
+        var qtyDisplays = row.querySelectorAll('td:nth-child(4) .tx-display');
+        if (qtyDisplays.length) qtyDisplays[0].textContent = tx.quantity;
+        var qtyInput = row.querySelector('input[data-field="quantity"]');
+        if (qtyInput) qtyInput.value = tx.quantity;
+
+        // Price
+        var priceDisplays = row.querySelectorAll('td:nth-child(5) .tx-display');
+        if (priceDisplays.length) priceDisplays[0].textContent = toDollar(tx.pricePerUnit);
+        var priceInput = row.querySelector('input[data-field="pricePerUnit"]');
+        if (priceInput) priceInput.value = tx.pricePerUnit;
+
+        // Total
+        var totalEl = row.querySelector('.tx-total');
+        if (totalEl) totalEl.textContent = toDollar(total);
+
+        // Actions
+        if (tx.editable) {
+            var editableActions = row.querySelector('.tx-editable-actions');
+            editableActions.classList.remove('hidden');
+            var deleteBtn = row.querySelector('.delete-transaction-button');
+            deleteBtn.setAttribute('data-transaction-id', tx.id);
+        } else {
+            var lockedIcon = row.querySelector('.tx-locked-icon');
+            lockedIcon.classList.remove('hidden');
+        }
+
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
      * Render tag badges from an array of tag strings.
      * @param {string[]} tags
      * @returns {string} HTML string
@@ -855,6 +945,7 @@ var AjaxUtils = (function () {
         renderTableHeaderRow: renderTableHeaderRow,
         createQuantityForm: createQuantityForm,
         createDeleteForm: createDeleteForm,
+        createTransactionRow: createTransactionRow,
         renderTags: renderTags,
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,

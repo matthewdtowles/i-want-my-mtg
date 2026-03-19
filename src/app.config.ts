@@ -30,6 +30,7 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
             encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
+            concat: (...args: any[]) => args.filter((a) => typeof a === 'string').join(''),
         },
     });
     expressApp.engine('hbs', hbs.engine);

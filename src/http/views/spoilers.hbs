@@ -28,10 +28,6 @@
         {{/each}}
     </div>
     {{else}}
-    <div class="text-center py-16">
-        <p class="text-lg text-gray-600 dark:text-gray-400 font-medium">No upcoming sets found</p>
-        <p class="text-gray-400 dark:text-gray-500 mt-2">Check back later for new spoilers.</p>
-        <a href="/sets" class="btn btn-secondary mt-6 inline-block">View Released Sets</a>
-    </div>
+    {{>emptyState message="No upcoming sets found" hint="Check back later for new spoilers." buttonHref="/sets" buttonText="View Released Sets"}}
     {{/if}}
 </section>

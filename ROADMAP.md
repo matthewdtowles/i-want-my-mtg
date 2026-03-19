@@ -110,6 +110,13 @@
 - [x] Standardize empty state patterns (py-16, icon + message + hint)
 - [x] Standardize script loading (defer on all external script tags)
 - [x] Standardize filter form wrapping in transactions.hbs
+- [x] Delete orphaned partials (priceInfoTooltip, importExportTooltip)
+- [x] Add `concat` Handlebars helper for inline string building
+- [x] Extract `emptyState.hbs` partial — consolidate 8 empty state patterns
+- [x] Extract `statCard.hbs` partial — consolidate simple stat card markup
+- [x] Consistent Normal→Foil ordering (inventoryCtrl, set.hbs mobile, AJAX)
+- [x] Dynamic price/foil column visibility (set page, card page, AJAX)
+- [x] Transaction row `<template>` conversion (template cloning in ajaxUtils)
 
 ### 2.1 Add Pre-fetching for Performance
 - [ ] Audit current page load performance (identify bottlenecks)

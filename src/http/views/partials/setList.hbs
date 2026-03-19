@@ -51,12 +51,7 @@
         </table>
         </div>
         {{else}}
-        <div class="text-center py-16">
-            <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">No sets match your search</p>
-            <p class="text-gray-400 dark:text-gray-500 mt-2">Try a different search term or clear your filter.</p>
-            <a href="/sets" class="btn btn-secondary mt-6 inline-block">Clear Filter</a>
-        </div>
+        {{>emptyState icon="search" message="No sets match your search" hint="Try a different search term or clear your filter." buttonHref="/sets" buttonText="Clear Filter"}}
         {{/if}}
     </div>
 </div>

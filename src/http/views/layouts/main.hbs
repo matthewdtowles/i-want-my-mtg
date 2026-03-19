@@ -60,6 +60,47 @@
         </form>
     </template>
 
+    <template id="tpl-transaction-row">
+        <tr class="table-row">
+            <td class="table-cell pl-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                <span class="tx-display"></span>
+                <input type="date" class="tx-edit hidden w-28 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="date" />
+            </td>
+            <td class="table-cell">
+                <span class="tx-type-buy inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">BUY</span>
+                <span class="tx-type-sell hidden inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">SELL</span>
+            </td>
+            <td class="table-cell">
+                <a class="tx-card-link card-name-link hidden"></a>
+                <span class="tx-card-text"></span>
+                <span class="tx-foil-badge foil-badge hidden">Foil</span>
+                <span class="tx-set-code text-gray-400 dark:text-gray-500 text-xs hidden"></span>
+            </td>
+            <td class="table-cell">
+                <span class="tx-display"></span>
+                <input type="number" class="tx-edit hidden w-16 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="quantity" min="1" step="1" />
+            </td>
+            <td class="table-cell font-mono">
+                <span class="tx-display"></span>
+                <input type="number" class="tx-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200 font-mono" data-field="pricePerUnit" min="0" step="0.01" />
+            </td>
+            <td class="table-cell font-mono">
+                <span class="tx-total"></span>
+            </td>
+            <td class="table-cell pr-2 tx-actions-cell">
+                <span class="tx-editable-actions tx-display inline-flex gap-1 hidden">
+                    <button type="button" class="edit-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="delete-transaction-button text-gray-400 hover:text-red-500 dark:hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                </span>
+                <span class="tx-editable-edit tx-edit hidden inline-flex gap-1">
+                    <button type="button" class="save-transaction-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Save"><i class="fas fa-check"></i></button>
+                    <button type="button" class="cancel-edit-button text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Cancel"><i class="fas fa-times"></i></button>
+                </span>
+                <span class="tx-locked-icon hidden text-gray-300 dark:text-gray-600" title="Locked after 24 hours"><i class="fas fa-lock text-xs"></i></span>
+            </td>
+        </tr>
+    </template>
+
     <script src="/public/js/searchSuggest.js"></script>
 </body>
 

@@ -9,6 +9,8 @@ export class CardViewDto extends ListView {
     readonly costBasis?: CostBasisResponseDto;
     readonly untrackedNormal?: number;
     readonly untrackedFoil?: number;
+    readonly hasAnyNormalPrice?: boolean;
+    readonly hasAnyFoilPrice?: boolean;
 
     constructor(init: Partial<CardViewDto>) {
         super(init);
@@ -17,5 +19,7 @@ export class CardViewDto extends ListView {
         this.costBasis = init.costBasis;
         this.untrackedNormal = init.untrackedNormal || 0;
         this.untrackedFoil = init.untrackedFoil || 0;
+        this.hasAnyNormalPrice = init.hasAnyNormalPrice ?? true;
+        this.hasAnyFoilPrice = init.hasAnyFoilPrice ?? true;
     }
 }

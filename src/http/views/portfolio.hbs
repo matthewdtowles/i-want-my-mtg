@@ -7,10 +7,7 @@
 
         <div class="max-w-3xl mx-auto px-4">
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Current Value</span>
-                    <span class="stat-value">{{this.summary.totalValue}}</span>
-                </div>
+                {{>statCard label="Current Value" value=this.summary.totalValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) — the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first — the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
@@ -19,18 +16,9 @@
                     <span class="stat-label">Unrealized P&L{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Unrealized P&L calculated using FIFO (first-in, first-out) lot matching for accurate per-unit cost tracking."}}{{else}}{{>costBasisTooltip title="Based on Average Cost" description="Unrealized P&L uses average cost basis. Click Recalculate below for precise FIFO-based P&L, which is the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
                 </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">ROI</span>
-                    <span class="stat-value gain-{{this.summary.roiSign}}">{{this.summary.roi}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Realized Gains</span>
-                    <span class="stat-value gain-{{this.summary.realizedGainSign}}">{{this.summary.realizedGain}}</span>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Cards / Units</span>
-                    <span class="stat-value">{{this.summary.totalCards}} / {{this.summary.totalQuantity}}</span>
-                </div>
+                {{>statCard label="ROI" value=this.summary.roi highlight=true valueClass=(concat "gain-" this.summary.roiSign)}}
+                {{>statCard label="Realized Gains" value=this.summary.realizedGain highlight=true valueClass=(concat "gain-" this.summary.realizedGainSign)}}
+                {{>statCard label="Cards / Units" value=(concat this.summary.totalCards " / " this.summary.totalQuantity) highlight=true}}
             </div>
 
             <div class="flex justify-center gap-2 mb-4">
@@ -292,11 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
 <script src="/public/js/portfolioChart.js" defer></script>
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
-    <div class="text-center py-16 px-4">
-        <i class="fas fa-chart-line text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
-        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mt-4">No portfolio history yet</h3>
-        <p class="text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh.</p>
-        <a href="/inventory" class="btn btn-primary inline-block mt-6">Go to Inventory</a>
-    </div>
+    {{>emptyState icon="chart-line" iconSize="text-5xl" iconColor="text-teal-300 dark:text-teal-600" padX=true heading="No portfolio history yet" hint="Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh." hintWide=true buttonHref="/inventory" buttonText="Go to Inventory" buttonClass="btn-primary"}}
 </section>
 {{/if}}

@@ -1,0 +1,51 @@
+How to test each piece
+
+  1. Cache headers — static assets
+
+  Open DevTools > Network tab, load any page, click a static asset (CSS/JS/image) and check the response headers:
+
+  curl -I http://localhost:3000/public/css/tailwind.css
+
+  You should see Cache-Control: public, max-age=604800 (7 days) and ETag/Last-Modified headers.
+
+  2. Cache headers — API responses
+
+  # Public (unauthenticated) — should show max-age=60
+  curl -I http://localhost:3000/api/v1/sets
+
+  # Authenticated — should show private, no-cache
+  curl -I -H "Cookie: jwt=<your-token>" http://localhost:3000/api/v1/inventory
+
+  3. Link prefetching
+
+  Open DevTools > Network tab, filter by "Other" or "prefetch". After page load you should see <link rel="prefetch"> requests for nav targets (/, /sets, /spoilers, etc.). Hover over any internal link and
+  watch a new prefetch appear after ~65ms.
+
+  4. Service worker
+
+  DevTools > Application > Service Workers — should show sw.js registered and active. Check "Cache Storage" to see static-v1, api-v1, images-v1 caches populating as you browse.
+
+  To test offline: in the Application tab, check "Offline", then navigate — you should see the offline fallback page. Previously visited pages/API data should still load from cache.
+
+  5. Lighthouse measurement (the remaining roadmap item)
+
+  # Install Lighthouse CLI if you don't have it
+  npm install -g lighthouse
+
+  # Run against local dev
+  lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html
+
+  # Or just use DevTools > Lighthouse tab — run "Performance" and "Best Practices" audits
+
+  Key metrics to compare before/after: FCP (First Contentful Paint), LCP (Largest Contentful Paint), TTI (Time to Interactive), and the "Serve static assets with an efficient cache policy" audit.
+
+  6. Quick smoke test via dev server
+
+  npm run start:dev
+
+  Then in a browser:
+  1. Load the home page — check Network tab for sw.js registration, prefetch links, cache headers
+  2. Navigate to /sets — should feel faster on second load (cached assets)
+  3. Open Application > Cache Storage — verify assets are cached
+  4. Go offline (Application > Service Worker > Offline checkbox) — navigate and confirm offline page renders
+  5. Go back online, visit a card page with a Scryfall image, then go offline again — the image should still load from the images-v1 cache

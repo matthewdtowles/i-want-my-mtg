@@ -119,12 +119,28 @@
 - [x] Transaction row `<template>` conversion (template cloning in ajaxUtils)
 
 ### 2.1 Add Pre-fetching for Performance
-- [ ] Audit current page load performance (identify bottlenecks)
-- [ ] Add link pre-fetching for likely navigation targets
-- [ ] Evaluate and add resource hints (preconnect, prefetch, preload)
-- [ ] Add caching headers for static assets and API responses
-- [ ] Consider service worker for offline card data caching
-- [ ] Measure improvement
+- [x] Resource hints in `<head>` (`main.hbs`)
+  - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
+  - [x] Add `preload` for critical CSS (tailwind.css, app.css)
+  - [ ] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
+- [x] Cache headers for static assets
+  - [x] Configure `maxAge` on Express static middleware (`app.config.ts`)
+  - [ ] Add cache-busting query param or versioning strategy for CSS/JS
+- [x] Cache headers for API responses
+  - [x] Add `CacheControlInterceptor` for GET API endpoints (short TTL, stale-while-revalidate)
+  - [x] Set `no-store` for authenticated/user-specific endpoints
+- [x] Link prefetching module (`prefetch.js`)
+  - [x] Prefetch visible nav links on idle via `requestIdleCallback`
+  - [x] Prefetch on hover/touchstart for any internal `<a>` link
+  - [x] Respect `Save-Data` header and `prefers-reduced-data`
+  - [x] Wire into `main.hbs` layout
+- [x] Service worker for offline caching
+  - [x] Register service worker from `main.hbs`
+  - [x] Precache static assets (CSS, JS, logo) with versioned cache name
+  - [x] Cache-first strategy for static assets, network-first for API/pages
+  - [x] Offline fallback page
+  - [x] Cache card image URLs on visit for offline browsing
+- [ ] Measure improvement (Lighthouse before/after)
 
 ### 2.2 SEO
 - [ ] Add meta tags (title, description, og:image) to all public pages

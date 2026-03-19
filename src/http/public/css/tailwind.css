@@ -2834,6 +2834,11 @@ input:where([type='file']):focus {
     padding-right: 1rem;
 }
 
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
 .py-0\.5 {
     padding-top: 0.125rem;
     padding-bottom: 0.125rem;
@@ -2877,6 +2882,11 @@ input:where([type='file']):focus {
 .py-6 {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
+}
+
+.py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
 .pb-2 {
@@ -2977,6 +2987,11 @@ input:where([type='file']):focus {
 
 .text-5xl {
     font-size: 3rem;
+    line-height: 1;
+}
+
+.text-6xl {
+    font-size: 3.75rem;
     line-height: 1;
 }
 
@@ -7185,6 +7200,11 @@ input:where([type='file']):focus {
 .hover\:bg-amber-600:hover {
     --tw-bg-opacity: 1;
     background-color: rgb(217 119 6 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-teal-600:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(32 153 143 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:text-gray-600:hover {

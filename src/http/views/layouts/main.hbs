@@ -10,8 +10,14 @@
     {{else}}
     <meta name="robots" content="noindex">
     {{/if}}
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="/public/css/tailwind.css" as="style" />
+    <link rel="preload" href="/public/css/app.css" as="style" />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/npm/keyrune@latest/css/keyrune.css" rel="stylesheet" type="text/css" />
     <link href="/public/css/tailwind.css" rel="stylesheet" type="text/css" />
@@ -102,6 +108,14 @@
     </template>
 
     <script src="/public/js/searchSuggest.js"></script>
+    <script src="/public/js/prefetch.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+            });
+        }
+    </script>
 </body>
 
 </html>

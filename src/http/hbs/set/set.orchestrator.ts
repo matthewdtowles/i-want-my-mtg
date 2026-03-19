@@ -215,8 +215,8 @@ export class SetOrchestrator {
             const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
             const baseUrl = `/sets/${set.code}`;
 
-            const hasAnyNormalPrice = setResponse.cards?.some((c) => c.hasNormal) ?? false;
-            const hasAnyFoilPrice = setResponse.cards?.some((c) => c.hasFoil) ?? false;
+            const hasAnyNormalPrice = setResponse.cards?.some((c) => c.normalPriceRaw > 0) ?? false;
+            const hasAnyFoilPrice = setResponse.cards?.some((c) => c.foilPriceRaw > 0) ?? false;
 
             this.LOGGER.debug(`Found ${cards.length} cards for set ${set.code}.`);
 

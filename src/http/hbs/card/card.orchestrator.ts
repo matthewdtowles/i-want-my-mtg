@@ -118,8 +118,8 @@ export class CardOrchestrator {
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
 
-            const hasAnyNormalPrice = otherPrintings.some((c) => c.hasNormal);
-            const hasAnyFoilPrice = otherPrintings.some((c) => c.hasFoil);
+            const hasAnyNormalPrice = otherPrintings.some((c) => c.normalPriceRaw > 0);
+            const hasAnyFoilPrice = otherPrintings.some((c) => c.foilPriceRaw > 0);
 
             const printingHeaders = [
                 new SortableHeaderView(options, SortOptions.CARD_SET, ['pl-2']),

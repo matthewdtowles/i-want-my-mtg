@@ -1,14 +1,20 @@
 async function updateMessage(response, messageEl, method) {
     messageEl.classList.remove('bg-info', 'bg-success', 'bg-error');
 
-    if (response.ok) {
-        const result = await response.json();
-        const className = result.status ? `bg-${result.status}` : 'bg-info';
-        messageEl.textContent = result.message;
-        messageEl.classList.add(className);
-    } else {
-        messageEl.textContent = `Failed to ${method} user`;
+    const result = await response.json().catch(() => null);
+
+    if (result && result.success === false) {
+        messageEl.textContent = result.error || result.message || `Failed to ${method} user.`;
         messageEl.classList.add('bg-error');
+    } else if (result && result.success) {
+        messageEl.textContent = result.message || `User ${method}d successfully.`;
+        messageEl.classList.add('bg-success');
+    } else if (!response.ok) {
+        messageEl.textContent = result?.error || result?.message || `Failed to ${method} user.`;
+        messageEl.classList.add('bg-error');
+    } else {
+        messageEl.textContent = result?.message || `User ${method}d successfully.`;
+        messageEl.classList.add('bg-info');
     }
 }
 

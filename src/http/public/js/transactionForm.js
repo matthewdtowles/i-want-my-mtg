@@ -43,16 +43,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            const data = await response.json();
+            const data = await response.json().catch(() => null);
 
-            if (data.success) {
+            if (data && data.success) {
                 showMessage(msgEl, 'Transaction recorded!', 'success');
                 form.querySelector('input[name="quantity"]').value = '1';
                 if (!body.skipInventorySync) {
                     updateInventoryDisplay(body.type, body.quantity, body.isFoil);
                 }
             } else {
-                showMessage(msgEl, data.error || 'Failed to record transaction.', 'error');
+                const errMsg =
+                    data?.error ||
+                    data?.message ||
+                    `HTTP ${response.status}: ${response.statusText}`;
+                showMessage(msgEl, errMsg, 'error');
             }
         } catch (error) {
             console.error('Error recording transaction:', error);
@@ -84,18 +88,32 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
                 });
-                var data = await response.json();
-                if (data.success) {
+                var data = await response.json().catch(function () {
+                    return null;
+                });
+                if (data && data.success) {
                     var container = this.closest('[id^="sync-"]');
                     if (container) container.remove();
                     var msgEl = document.getElementById('transaction-form-message');
                     showMessage(msgEl, 'Inventory synced as transaction!', 'success');
                 } else {
-                    alert('Failed to sync: ' + (data.error || 'Unknown error'));
+                    var syncMsg =
+                        (data && data.error) ||
+                        (data && data.message) ||
+                        'HTTP ' + response.status + ': ' + response.statusText;
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(syncMsg, 'error');
+                    } else {
+                        alert('Failed to sync: ' + syncMsg);
+                    }
                 }
             } catch (error) {
                 console.error('Error syncing inventory:', error);
-                alert('Error syncing inventory.');
+                if (typeof window.showToast === 'function') {
+                    window.showToast('Error syncing inventory.', 'error');
+                } else {
+                    alert('Error syncing inventory.');
+                }
             }
         });
     });

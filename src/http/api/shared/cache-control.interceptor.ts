@@ -35,6 +35,10 @@ export class CacheControlInterceptor implements NestInterceptor {
                 const req = context.switchToHttp().getRequest();
                 const res = context.switchToHttp().getResponse();
 
+                if (res.headersSent) {
+                    return;
+                }
+
                 if (req.method !== 'GET') {
                     res.setHeader('Cache-Control', 'no-store');
                     return;

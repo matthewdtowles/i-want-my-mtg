@@ -14,7 +14,11 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
 
     expressApp.useStaticAssets(join(viewsDir, '..', 'public'), {
         prefix: '/public/',
+        maxAge: '7d',
+        etag: true,
+        lastModified: true,
     });
+
     expressApp.setBaseViewsDir(viewsDir);
 
     const hbs = create({

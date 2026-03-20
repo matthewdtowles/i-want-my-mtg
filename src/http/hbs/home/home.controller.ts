@@ -1,4 +1,6 @@
-import { Controller, Get, Header, Inject, Render, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Inject, Render, Req, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
+import { join } from 'path';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
@@ -24,6 +26,20 @@ export class HomeController {
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
         return setListView;
+    }
+
+    @Get('offline')
+    @Render('offline')
+    getOfflinePage(): { title: string } {
+        return { title: 'Offline - I Want My MTG' };
+    }
+
+    @Get('sw.js')
+    @Header('Content-Type', 'application/javascript')
+    @Header('Cache-Control', 'no-cache')
+    @Header('Service-Worker-Allowed', '/')
+    getServiceWorker(@Res() res: Response): void {
+        res.sendFile(join(__dirname, '..', '..', 'public', 'sw.js'));
     }
 
     @Get('robots.txt')

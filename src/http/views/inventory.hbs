@@ -173,11 +173,11 @@
 </section>
 {{/if}}
 
-<script src="/public/js/cardPreview.js" defer></script>
-<script src="/public/js/updateInventory.js" defer></script>
-<script src="/public/js/ajaxUtils.js" defer></script>
-<script src="/public/js/inventoryListAjax.js" defer></script>
-<script src="/public/js/tooltipManager.js" defer></script>
+<script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/inventoryListAjax.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new TooltipManager({

@@ -212,9 +212,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-<script src="/public/js/tooltipManager.js" defer></script>
-<script src="/public/js/portfolioChart.js" defer></script>
-<script src="/public/js/cashFlowChart.js" defer></script>
+<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/portfolioChart.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/cashFlowChart.js?v={{assetVersion}}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new TooltipManager({
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-<script src="/public/js/portfolioChart.js" defer></script>
+<script src="/public/js/portfolioChart.js?v={{assetVersion}}" defer></script>
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     {{>emptyState icon="chart-line" iconSize="text-5xl" iconColor="text-teal-300 dark:text-teal-600" padX=true heading="No portfolio history yet" hint="Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh." hintWide=true buttonHref="/inventory" buttonText="Go to Inventory" buttonClass="btn-primary"}}

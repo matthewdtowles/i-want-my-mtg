@@ -5,6 +5,9 @@ import { create } from 'express-handlebars';
 import { join } from 'path';
 import { HttpExceptionFilter } from './http/http.exception.filter';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require(join(__dirname, '..', 'package.json'));
+
 /**
  * Shared app configuration used by both bootstrap (main.ts) and integration test setup.
  * Keeps Handlebars helpers, validation pipe, filters, and middleware in sync.
@@ -34,6 +37,7 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
             encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
+            assetVersion: () => version,
             concat: (...args: any[]) => {
                 const maybeOptions = args[args.length - 1];
                 const values =

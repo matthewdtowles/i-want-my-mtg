@@ -362,12 +362,12 @@
 </div>
 {{>pagination hasItems=set.cards.length}}
 
-<script src="/public/js/ajaxUtils.js" defer></script>
-<script src="/public/js/setCardListAjax.js" defer></script>
-<script src="/public/js/cardPreview.js" defer></script>
-<script src="/public/js/updateInventory.js" defer></script>
-<script src="/public/js/tooltipManager.js" defer></script>
-<script src="/public/js/setPriceInfo.js" defer></script>
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/setCardListAjax.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/setPriceInfo.js?v={{assetVersion}}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new TooltipManager({
@@ -378,4 +378,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-<script src="/public/js/setPriceHistoryChart.js" defer></script>
+<script src="/public/js/setPriceHistoryChart.js?v={{assetVersion}}" defer></script>

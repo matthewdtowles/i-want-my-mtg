@@ -103,7 +103,7 @@ self.addEventListener('fetch', function (event) {
 });
 
 function cacheFirst(cacheName, request) {
-    return caches.match(request).then(function (cached) {
+    return caches.match(request, { ignoreSearch: true }).then(function (cached) {
         if (cached) return cached;
         return fetch(request).then(function (response) {
             if (response.ok) {

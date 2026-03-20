@@ -122,10 +122,10 @@
 - [x] Resource hints in `<head>` (`main.hbs`)
   - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
   - [x] Add `preload` for critical CSS (tailwind.css, app.css)
-  - [ ] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
+  - [x] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
 - [x] Cache headers for static assets
   - [x] Configure `maxAge` on Express static middleware (`app.config.ts`)
-  - [ ] Add cache-busting query param or versioning strategy for CSS/JS
+  - [x] Add cache-busting query param or versioning strategy for CSS/JS
 - [x] Cache headers for API responses
   - [x] Add `CacheControlInterceptor` for GET API endpoints (short TTL, stale-while-revalidate)
   - [x] Set `no-store` for authenticated/user-specific endpoints
@@ -142,7 +142,40 @@
   - [x] Cache card image URLs on visit for offline browsing
 - [ ] Measure improvement (Lighthouse before/after)
 
-### 2.2 SEO
+### 2.2 Lighthouse Performance Optimization
+- [ ] Run Lighthouse audit and document baseline scores
+- [ ] Optimize render-blocking resources (defer non-critical CSS/JS)
+- [ ] Optimize image loading (lazy loading, proper sizing, modern formats)
+- [ ] Reduce unused CSS/JS payload
+- [ ] Minimize main-thread work and reduce JavaScript execution time
+- [ ] Verify improvements with follow-up Lighthouse audit
+
+### 2.3 Card Image Interactivity & Resolution
+- [ ] Display higher-resolution card images (use Scryfall `normal` or `large` size)
+- [ ] Add smooth hover zoom/enlarge effect on card images (desktop)
+- [ ] Add tap-to-enlarge modal for card images (mobile)
+- [ ] Add subtle card image animations (fade-in on load, hover lift/shadow)
+- [ ] Polish card detail page layout — clean, modern feel (inspired by Perplexity aesthetic)
+- [ ] Ensure image interactions respect `prefers-reduced-motion`
+
+### 2.4 Standardize Card Links
+- [ ] Create reusable card link partial/template with consistent markup
+- [ ] Show card image preview on hover (desktop tooltip/popover)
+- [ ] First tap on mobile shows image preview, second tap navigates
+- [ ] Use card link partial across all pages (search, set, inventory, transactions)
+- [ ] Ensure consistent styling and behavior site-wide
+
+### 2.5 Accessibility Optimization
+- [ ] Run Lighthouse accessibility audit and document baseline score
+- [ ] Add proper ARIA labels and roles to interactive elements
+- [ ] Ensure sufficient color contrast ratios (WCAG AA)
+- [ ] Add keyboard navigation support for all interactive features
+- [ ] Add focus indicators and skip-to-content link
+- [ ] Ensure all images have meaningful alt text
+- [ ] Verify screen reader compatibility for AJAX-updated content
+- [ ] Verify improvements with follow-up Lighthouse audit
+
+### 2.6 SEO
 - [ ] Add meta tags (title, description, og:image) to all public pages
 - [ ] Add structured data (JSON-LD) for card pages
 - [ ] Generate sitemap.xml for public card and set pages
@@ -151,7 +184,7 @@
 - [ ] Add canonical URLs
 - [ ] Submit sitemap to Google Search Console
 
-### 2.3 Feature: Binder View
+### 2.7 Feature: Binder View
 - [ ] Design binder layout (grid of card images, page-like grouping)
 - [ ] Implement binder view component/template
 - [ ] Add toggle between list view and binder view
@@ -159,7 +192,7 @@
 - [ ] Add binder view for inventory (user's collection)
 - [ ] Persist view preference per user
 
-### 2.4 Feature: Price Notifications
+### 2.8 Feature: Price Notifications
 - [ ] Design notification data model (user preferences, thresholds, history)
 - [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
 - [ ] Implement price change detection during ingestion
@@ -168,7 +201,7 @@
 - [ ] Consider in-app notifications in addition to email
 - [ ] Add unsubscribe/manage preferences flow
 
-### 2.5 Feature: Bulk Upload Transactions
+### 2.9 Feature: Bulk Upload Transactions
 - [ ] Design bulk upload flow (CSV file format, UI for upload)
 - [ ] Create CSV template/documentation for expected format
 - [ ] Implement file upload endpoint and CSV parsing
@@ -176,7 +209,7 @@
 - [ ] Handle errors and partial failures (report which rows failed and why)
 - [ ] Add bulk upload UI to transactions page
 
-### 2.6 Improve Site Copy and UX Guidance
+### 2.10 Improve Site Copy and UX Guidance
 - [ ] Audit current site copy for clarity and completeness
 - [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
 - [ ] Add contextual help text and tooltips to key pages
@@ -184,7 +217,7 @@
 - [ ] Review navigation flow and improve discoverability of features
 - [ ] Update page headings, labels, and descriptions for consistency
 
-### 2.7 Support Flavor Name
+### 2.11 Support Flavor Name
 - [ ] Verify Scryfall API provides flavor_name data
 - [ ] Add flavor_name column to card table (migration)
 - [ ] Update Scry card ingestion to store flavor_name

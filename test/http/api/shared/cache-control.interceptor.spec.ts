@@ -48,10 +48,7 @@ describe('CacheControlInterceptor', () => {
     it('should set private cache header for authenticated GET', (done) => {
         const { context, setHeader } = createMockContext({ user: { id: 1 } });
         interceptor.intercept(context, createNext()).subscribe(() => {
-            expect(setHeader).toHaveBeenCalledWith(
-                'Cache-Control',
-                'private, no-store'
-            );
+            expect(setHeader).toHaveBeenCalledWith('Cache-Control', 'private, no-store');
             done();
         });
     });

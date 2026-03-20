@@ -46,7 +46,7 @@ export class CacheControlInterceptor implements NestInterceptor {
 
                 const isAuthenticated = !!req.user;
                 if (isAuthenticated) {
-                    res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+                    res.setHeader('Cache-Control', 'private, no-store');
                     return;
                 }
 

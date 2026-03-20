@@ -50,7 +50,7 @@ describe('CacheControlInterceptor', () => {
         interceptor.intercept(context, createNext()).subscribe(() => {
             expect(setHeader).toHaveBeenCalledWith(
                 'Cache-Control',
-                'private, no-cache, must-revalidate'
+                'private, no-store'
             );
             done();
         });

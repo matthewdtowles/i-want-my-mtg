@@ -24,13 +24,13 @@ var PRECACHE_URLS = [
 
 var OFFLINE_PAGE = '/offline';
 
-// Install: precache static assets
+// Install: precache static assets and offline page
 self.addEventListener('install', function (event) {
     event.waitUntil(
         caches
             .open(STATIC_CACHE)
             .then(function (cache) {
-                return cache.addAll(PRECACHE_URLS);
+                return cache.addAll(PRECACHE_URLS.concat([OFFLINE_PAGE]));
             })
             .then(function () {
                 return self.skipWaiting();
@@ -121,10 +121,13 @@ function networkFirst(cacheName, request) {
     return fetch(request)
         .then(function (response) {
             if (response.ok) {
-                var clone = response.clone();
-                caches.open(cacheName).then(function (cache) {
-                    cache.put(request, clone);
-                });
+                var cc = response.headers.get('Cache-Control') || '';
+                if (cc.indexOf('no-store') === -1 && cc.indexOf('private') === -1) {
+                    var clone = response.clone();
+                    caches.open(cacheName).then(function (cache) {
+                        cache.put(request, clone);
+                    });
+                }
             }
             return response;
         })

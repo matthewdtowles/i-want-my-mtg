@@ -3,7 +3,7 @@
  *
  * - On idle: prefetches visible nav links via IntersectionObserver
  * - On hover/touchstart: prefetches any internal <a> link
- * - Respects Save-Data and prefers-reduced-data
+ * - Respects Save-Data
  * - Deduplicates requests; skips already-visited pages (in-memory set)
  */
 (function () {

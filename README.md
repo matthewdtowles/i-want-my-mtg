@@ -37,6 +37,7 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 | `./scripts/db-backup.sh` | Back up database to a SQL file |
 | `./scripts/test-integ.sh` | Run integration tests (requires Docker) |
 | `./scripts/lint.sh` | Run linting and format checks |
+| `./scripts/lighthouse.sh` | Run Lighthouse audits (mobile + desktop) |
 
 ### Testing
 
@@ -81,6 +82,24 @@ Flags can be passed to any command (e.g., `npm run etl -- ingest -p` for prices 
 ./scripts/lint.sh              # Lint (with --fix) + format check
 ./scripts/lint.sh fix          # Lint (with --fix) + format write
 ```
+
+### Lighthouse Audits
+
+Run Lighthouse performance, accessibility, best practices, and SEO audits against all key pages. Reports are generated for both mobile and desktop.
+
+```bash
+npm run lighthouse                              # Audit localhost:3000 (public pages)
+npm run lighthouse -- --auth                    # Include authenticated pages (prompts for credentials)
+npm run lighthouse -- --base-url=https://...    # Audit a remote URL
+npm run lighthouse -- --category=performance    # Only run performance audits
+```
+
+Requires Chrome/Chromium and `lighthouse` (`npm install -g lighthouse` or it uses `npx`).
+
+Reports are saved to `lighthouse-reports/<timestamp>/` with separate `mobile/` and `desktop/` directories, each containing:
+- HTML reports (open in browser for full details)
+- JSON reports (for programmatic comparison)
+- `summary.csv` and `summary.txt` (score overview)
 
 ### Database
 

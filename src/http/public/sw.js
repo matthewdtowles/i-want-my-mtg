@@ -19,7 +19,7 @@ var PRECACHE_URLS = [
     '/public/js/toast.js',
     '/public/js/searchSuggest.js',
     '/public/js/prefetch.js',
-    '/public/images/logo.png',
+    '/public/images/logo.webp',
 ];
 
 var OFFLINE_PAGE = '/offline';

@@ -22,6 +22,8 @@ export class HomeController {
         const options: SafeQueryOptions = new SafeQueryOptions(req.query);
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
         setListView.indexable = true;
+        setListView.title = 'I Want My MTG — Magic: The Gathering Collection Tracker';
+        setListView.metaDescription = 'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';
         this.LOGGER.log(
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
@@ -40,6 +42,13 @@ export class HomeController {
     @Header('Service-Worker-Allowed', '/')
     getServiceWorker(@Res() res: Response): void {
         res.sendFile(join(__dirname, '..', '..', 'public', 'sw.js'));
+    }
+
+    @Get('favicon.ico')
+    @Header('Content-Type', 'image/x-icon')
+    @Header('Cache-Control', 'public, max-age=604800')
+    getFavicon(@Res() res: Response): void {
+        res.sendFile(join(__dirname, '..', '..', 'public', 'favicon.ico'));
     }
 
     @Get('robots.txt')

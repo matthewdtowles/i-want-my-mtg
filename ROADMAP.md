@@ -143,7 +143,7 @@
 - [x] Measure improvement (Lighthouse before/after)
 
 ### 2.2 Lighthouse Performance Optimization
-- [ ] Run Lighthouse audit and document baseline scores
+- [x] Run Lighthouse audit and document baseline scores
 - [x] Optimize render-blocking resources (defer non-critical CSS/JS)
   - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
   - [x] Make Google Fonts non-render-blocking (`media="print" onload="this.media='all'"`)
@@ -151,16 +151,32 @@
   - [x] Switch Font Awesome from `all.min.css` to `fontawesome.min.css` + `solid.min.css` (only solid icons used)
   - [x] Upgrade Font Awesome from 6.0.0-beta3 to 6.7.2
   - [x] Pin CDN dependencies to specific versions (keyrune@3.18.0, mana-font@1.18.0)
+  - [x] Add `<noscript>` fallbacks for deferred CSS (Google Fonts, keyrune, FA)
 - [x] Optimize image loading (lazy loading, proper sizing, modern formats)
   - [x] Add `loading="lazy"` to card images on set, card (other printings), and inventory pages
   - [x] Add `width`/`height` attributes to all images to prevent CLS (logo, card detail, card previews, search results)
   - [x] Add `fetchpriority="high"` to card detail hero image (LCP element)
   - [x] Add `loading="lazy"` + dimensions to AJAX-rendered images (searchAjax, setCardListAjax, inventoryListAjax)
+  - [x] Convert logo and background images to WebP (logo: 206KB→56KB, background: 55KB→21KB)
 - [x] Reduce unused CSS/JS payload
   - [x] Fix Tailwind content paths (removed `node_modules/@tailwindcss/**/*.js` — 200KB → 122KB, 39% reduction)
   - [x] Remove unused `@tailwindcss/aspect-ratio` plugin
+  - [x] Add `--minify` to Tailwind build (122KB → 97KB)
 - [x] Minimize main-thread work and reduce JavaScript execution time
   - [x] Defer `searchSuggest.js` eliminates parser-blocking script on every page
+- [x] Fix SEO issues
+  - [x] Add dynamic `<title>` tags to all pages via `BaseViewDto`
+  - [x] Add `<meta name="description">` to all public pages
+  - [x] Set `indexable: true` (robots index/follow) on public pages
+- [x] Fix accessibility issues
+  - [x] Fix heading hierarchy (h4→h2 on search page, mismatched closing tags on card page)
+  - [x] Add `aria-label` to buttons with icon-only content (mobile menu, quantity inputs)
+  - [x] Fix color contrast ratios (`.header-subtitle`, `.table-link`)
+  - [x] Fix `aria-label` mismatch on set page price-info-toggle
+- [x] Fix Best Practices issues
+  - [x] Fix CORS errors from protocol-relative CDN URLs (changed to explicit `https://`)
+  - [x] Add favicon.ico to fix 404 console error (generated from logo, served at `/favicon.ico`)
+  - [x] Add `<link rel="icon">` to layout
 - [ ] Verify improvements with follow-up Lighthouse audit
 
 ### 2.3 Card Image Interactivity & Resolution

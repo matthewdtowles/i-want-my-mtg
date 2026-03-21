@@ -207,6 +207,7 @@ export class UserOrchestrator {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
                 indexable: false,
+                title: 'My Account — I Want My MTG',
                 user,
             };
         } catch (error) {

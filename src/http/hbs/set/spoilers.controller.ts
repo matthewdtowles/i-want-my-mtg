@@ -12,10 +12,14 @@ export class SpoilersController {
     @Get()
     @Render('spoilers')
     async findSpoilers(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
-        return await this.setOrchestrator.findSpoilersList(req, [
+        const view = await this.setOrchestrator.findSpoilersList(req, [
             { label: 'Home', url: '/' },
             { label: 'Sets', url: '/sets' },
             { label: 'Spoilers', url: '/spoilers' },
         ]);
+        view.title = 'Upcoming Sets — I Want My MTG';
+        view.metaDescription = 'Preview upcoming Magic: The Gathering sets before they release.';
+        view.indexable = true;
+        return view;
     }
 }

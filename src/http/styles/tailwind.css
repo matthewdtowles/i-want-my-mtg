@@ -478,7 +478,7 @@
 }
 
 .header-subtitle {
-    @apply text-[0.6rem] font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500;
+    @apply text-[0.6rem] font-normal normal-case tracking-normal text-gray-600 dark:text-gray-400;
 }
 
 .table-header-row {
@@ -486,7 +486,7 @@
 }
 
 .table-link {
-    @apply text-teal-600 dark:text-teal-400 hover:underline hover:text-teal-700 dark:hover:text-teal-300 transition-colors;
+    @apply text-teal-700 dark:text-teal-400 hover:underline hover:text-teal-800 dark:hover:text-teal-300 transition-colors;
 }
 
 .table-row {

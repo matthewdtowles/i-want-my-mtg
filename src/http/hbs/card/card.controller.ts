@@ -38,6 +38,7 @@ export class CardController {
         view.title = `${cardName} (${setName}) — I Want My MTG`;
         view.metaDescription = `${cardName} from ${setName} — prices, legalities, and other printings.`;
         view.indexable = true;
+        view.lcpImageUrl = view.card?.imgSrc;
         return view;
     }
 }

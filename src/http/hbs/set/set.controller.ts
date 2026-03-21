@@ -48,7 +48,8 @@ export class SetController {
             options
         );
         view.title = 'Sets — I Want My MTG';
-        view.metaDescription = 'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
+        view.metaDescription =
+            'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
         view.indexable = true;
         return view;
     }

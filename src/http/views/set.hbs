@@ -258,6 +258,7 @@
                     {{! Price History Chart }}
                     <div id="set-price-history-chart" data-set-code="{{set.code}}"
                         data-base-size="{{set.baseSize}}" data-total-size="{{set.totalSize}}"
+                        data-chart-src="/public/js/setPriceHistoryChart.js?v={{assetVersion}}"
                         class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h4>
@@ -376,6 +377,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-<script src="/public/js/setPriceHistoryChart.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/chartLoader.js?v={{assetVersion}}" defer></script>

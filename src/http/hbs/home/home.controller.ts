@@ -23,7 +23,8 @@ export class HomeController {
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
         setListView.indexable = true;
         setListView.title = 'I Want My MTG — Magic: The Gathering Collection Tracker';
-        setListView.metaDescription = 'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';
+        setListView.metaDescription =
+            'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';
         this.LOGGER.log(
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );

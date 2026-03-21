@@ -151,7 +151,7 @@ for preset in "${PRESETS[@]}"; do
     } > "${SUMMARY_FILE}"
 
     echo ""
-    echo "--- ${preset^^} ---"
+    echo "--- $(echo "$preset" | tr '[:lower:]' '[:upper:]') ---"
 
     for entry in "${PAGES[@]}"; do
         IFS='|' read -r name path <<< "${entry}"
@@ -205,7 +205,7 @@ echo "Reports: ${REPORT_DIR}/"
 echo ""
 
 for preset in "${PRESETS[@]}"; do
-    echo "--- ${preset^^} scores ---"
+    echo "--- $(echo "$preset" | tr '[:lower:]' '[:upper:]') scores ---"
     cat "${REPORT_DIR}/${preset}/summary.txt"
     echo ""
 done

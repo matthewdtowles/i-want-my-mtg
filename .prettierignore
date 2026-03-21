@@ -4,3 +4,5 @@ build
 coverage
 scry
 *.min.js
+src/http/public/css/tailwind.css
+src/http/public/js

@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as compression from 'compression';
 import 'dotenv/config';
+import * as express from 'express';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { configureApp } from './app.config';
@@ -11,7 +14,12 @@ import { GlobalAppLogger } from './logger/global-app-logger';
 import { UserContextInterceptor } from './logger/user-context.interceptor';
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const server = express();
+    server.use(compression());
+    const app = await NestFactory.create<NestExpressApplication>(
+        AppModule,
+        new ExpressAdapter(server)
+    );
 
     app.useLogger(GlobalAppLogger);
 

@@ -18,12 +18,17 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cards.scryfall.io">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cards.scryfall.io" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    {{#if lcpImageUrl}}
+    <link rel="preload" href="{{lcpImageUrl}}" as="image" fetchpriority="high" />
+    {{/if}}
     <link rel="preload" href="/public/css/tailwind.css?v={{assetVersion}}" as="style" />
     <link rel="preload" href="/public/css/app.css?v={{assetVersion}}" as="style" />
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/keyrune@3.18.0/fonts/keyrune.woff2" as="font" type="font/woff2" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <link href="/public/css/tailwind.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
     <link href="/public/css/app.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />

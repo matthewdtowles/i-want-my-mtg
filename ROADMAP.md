@@ -140,14 +140,27 @@
   - [x] Cache-first strategy for static assets, network-first for API/pages
   - [x] Offline fallback page
   - [x] Cache card image URLs on visit for offline browsing
-- [ ] Measure improvement (Lighthouse before/after)
+- [x] Measure improvement (Lighthouse before/after)
 
 ### 2.2 Lighthouse Performance Optimization
 - [ ] Run Lighthouse audit and document baseline scores
-- [ ] Optimize render-blocking resources (defer non-critical CSS/JS)
-- [ ] Optimize image loading (lazy loading, proper sizing, modern formats)
-- [ ] Reduce unused CSS/JS payload
-- [ ] Minimize main-thread work and reduce JavaScript execution time
+- [x] Optimize render-blocking resources (defer non-critical CSS/JS)
+  - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
+  - [x] Make Google Fonts non-render-blocking (`media="print" onload="this.media='all'"`)
+  - [x] Make mana-font CSS non-render-blocking on card/set pages
+  - [x] Switch Font Awesome from `all.min.css` to `fontawesome.min.css` + `solid.min.css` (only solid icons used)
+  - [x] Upgrade Font Awesome from 6.0.0-beta3 to 6.7.2
+  - [x] Pin CDN dependencies to specific versions (keyrune@3.18.0, mana-font@1.18.0)
+- [x] Optimize image loading (lazy loading, proper sizing, modern formats)
+  - [x] Add `loading="lazy"` to card images on set, card (other printings), and inventory pages
+  - [x] Add `width`/`height` attributes to all images to prevent CLS (logo, card detail, card previews, search results)
+  - [x] Add `fetchpriority="high"` to card detail hero image (LCP element)
+  - [x] Add `loading="lazy"` + dimensions to AJAX-rendered images (searchAjax, setCardListAjax, inventoryListAjax)
+- [x] Reduce unused CSS/JS payload
+  - [x] Fix Tailwind content paths (removed `node_modules/@tailwindcss/**/*.js` — 200KB → 122KB, 39% reduction)
+  - [x] Remove unused `@tailwindcss/aspect-ratio` plugin
+- [x] Minimize main-thread work and reduce JavaScript execution time
+  - [x] Defer `searchSuggest.js` eliminates parser-blocking script on every page
 - [ ] Verify improvements with follow-up Lighthouse audit
 
 ### 2.3 Card Image Interactivity & Resolution

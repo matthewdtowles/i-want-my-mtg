@@ -1,4 +1,4 @@
-<link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+<link href="//cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" media="print" onload="this.media='all'" />
 <div id="set-header-container" class="relative">
     <section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
         <div class="text-center pt-4 pb-2">
@@ -309,7 +309,7 @@
                         <a href="{{this.url}}" class="card-name-link">{{this.name}}</a>
                         {{>tags item=this}}
                         <a href="{{this.url}}" class="card-img-link">
-                            <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" />
+                            <img src="{{this.imgSrc}}" alt="{{this.name}}" class="card-img-preview" loading="lazy" width="256" height="357" />
                         </a>
                     </td>
                     <td class="table-cell xs-hide">{{>manaCost card=this}}</td>

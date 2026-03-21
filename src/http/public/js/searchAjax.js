@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '" alt="' +
             AjaxUtils.escapeHtml(card.name) +
             '" ' +
-            'class="rounded w-full max-w-[146px] mb-2" loading="lazy" />' +
+            'class="rounded w-full max-w-[146px] mb-2" loading="lazy" width="146" height="204" />' +
             '<div class="text-center w-full">' +
             '<div class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">' +
             AjaxUtils.escapeHtml(card.name) +

@@ -95,7 +95,8 @@ if [ "${AUTH}" = true ]; then
         -c "${COOKIE_JAR}" \
         -L --max-redirs 5 \
         -X POST "${BASE_URL}/auth/login" \
-        -d "username=${LH_EMAIL}&password=${LH_PASSWORD}")
+        --data-urlencode "username=${LH_EMAIL}" \
+        --data-urlencode "password=${LH_PASSWORD}")
 
     AUTH_COOKIE=$(awk '/authorization/ {print $NF}' "${COOKIE_JAR}" 2>/dev/null || true)
 

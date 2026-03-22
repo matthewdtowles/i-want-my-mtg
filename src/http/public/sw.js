@@ -7,7 +7,8 @@
  * - HTML pages: Network-first with offline fallback
  * - Card images (Scryfall): Cache on visit, serve from cache when available
  */
-var CACHE_VERSION = 'v1';
+var APP_VERSION = '1.12.0';
+var CACHE_VERSION = 'v1-' + APP_VERSION;
 var STATIC_CACHE = 'static-' + CACHE_VERSION;
 var API_CACHE = 'api-' + CACHE_VERSION;
 var IMAGE_CACHE = 'images-' + CACHE_VERSION;
@@ -103,13 +104,16 @@ self.addEventListener('fetch', function (event) {
 });
 
 function cacheFirst(cacheName, request) {
-    return caches.match(request, { ignoreSearch: true }).then(function (cached) {
+    var url = new URL(request.url);
+    url.search = '';
+    var normalizedRequest = new Request(url.toString(), { headers: request.headers });
+    return caches.match(normalizedRequest).then(function (cached) {
         if (cached) return cached;
         return fetch(request).then(function (response) {
             if (response.ok) {
                 var clone = response.clone();
                 caches.open(cacheName).then(function (cache) {
-                    cache.put(request, clone);
+                    cache.put(normalizedRequest, clone);
                 });
             }
             return response;

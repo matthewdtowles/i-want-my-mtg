@@ -3,6 +3,7 @@
 ## Phase 1: Foundation & Infrastructure
 
 ### 1.1 Migrate DB from Docker to Managed Instance
+
 - [x] Evaluate managed Postgres providers — chose AWS Lightsail Managed DB
 - [x] Upgrade local dev Postgres from 15 to 18 (docker-compose.yml)
 - [x] Fix docker-compose.yml DATABASE_URL to construct from POSTGRES_* vars (postgres hostname)
@@ -27,6 +28,7 @@
 - [x] Update CLAUDE.md and documentation
 
 ### 1.2 Split Scry into Separate Repository
+
 - [x] Create new `scry` repository
 - [x] Move `scry/` directory contents to new repo root
 - [x] Set up standalone CI/CD (build, test, Docker image push)
@@ -37,6 +39,7 @@
 - [x] Update documentation in both repos
 
 ### 1.3 Integration Test Suite
+
 - [x] Choose integration test strategy — e2e with real DB via Docker test container
 - [x] Set up test database provisioning (docker-compose.test.yml, postgres on port 5433 with tmpfs)
 - [x] Write integration tests for auth flow (login, logout, cookie handling, guard enforcement)
@@ -48,6 +51,7 @@
 - [x] Document how to run integration tests locally
 
 ### 1.4 Create API Layer
+
 - [x] Design REST API structure (versioned: `/api/v1/`)
 - [x] Decide on auth strategy for API clients (JWT bearer tokens + cookie fallback)
 - [x] Implement API controllers separate from view controllers
@@ -63,6 +67,7 @@
 - [x] Add API integration tests
 
 ### 1.5 Progressive Web Enhancement
+
 - [x] Set list: AJAX paginate/sort/filter (builds core infrastructure)
   - [x] Move SetTypeMapper to shared location (`src/http/base/`)
   - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
@@ -97,6 +102,7 @@
   - [x] Cross-browser testing
 
 ### 1.6 Frontend Consolidation
+
 - [x] Remove duplicated AjaxUtils functions from searchAjax.js
 - [x] Add renderTags() helper to AjaxUtils and replace inline tag loops
 - [x] Fix hover class inconsistency in inventoryCtrl.hbs
@@ -119,6 +125,7 @@
 - [x] Transaction row `<template>` conversion (template cloning in ajaxUtils)
 
 ### 2.1 Add Pre-fetching for Performance
+
 - [x] Resource hints in `<head>` (`main.hbs`)
   - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
   - [x] Add `preload` for critical CSS (tailwind.css, app.css)
@@ -143,6 +150,7 @@
 - [x] Measure improvement (Lighthouse before/after)
 
 ### 2.2 Lighthouse Performance Optimization
+
 - [x] Run Lighthouse audit and document baseline scores
 - [x] Optimize render-blocking resources (defer non-critical CSS/JS)
   - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
@@ -180,6 +188,7 @@
 - [ ] Verify improvements with follow-up Lighthouse audit
 
 ### 2.3 Card Image Interactivity & Resolution
+
 - [ ] Display higher-resolution card images (use Scryfall `normal` or `large` size)
 - [ ] Add smooth hover zoom/enlarge effect on card images (desktop)
 - [ ] Add tap-to-enlarge modal for card images (mobile)
@@ -188,6 +197,7 @@
 - [ ] Ensure image interactions respect `prefers-reduced-motion`
 
 ### 2.4 Standardize Card Links
+
 - [ ] Create reusable card link partial/template with consistent markup
 - [ ] Show card image preview on hover (desktop tooltip/popover)
 - [ ] First tap on mobile shows image preview, second tap navigates
@@ -195,6 +205,7 @@
 - [ ] Ensure consistent styling and behavior site-wide
 
 ### 2.5 Accessibility Optimization
+
 - [ ] Run Lighthouse accessibility audit and document baseline score
 - [ ] Add proper ARIA labels and roles to interactive elements
 - [ ] Ensure sufficient color contrast ratios (WCAG AA)
@@ -205,6 +216,7 @@
 - [ ] Verify improvements with follow-up Lighthouse audit
 
 ### 2.6 SEO
+
 - [ ] Add meta tags (title, description, og:image) to all public pages
 - [ ] Add structured data (JSON-LD) for card pages
 - [ ] Generate sitemap.xml for public card and set pages
@@ -214,6 +226,7 @@
 - [ ] Submit sitemap to Google Search Console
 
 ### 2.7 Feature: Binder View
+
 - [ ] Design binder layout (grid of card images, page-like grouping)
 - [ ] Implement binder view component/template
 - [ ] Add toggle between list view and binder view
@@ -222,6 +235,7 @@
 - [ ] Persist view preference per user
 
 ### 2.8 Feature: Price Notifications
+
 - [ ] Design notification data model (user preferences, thresholds, history)
 - [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
 - [ ] Implement price change detection during ingestion
@@ -231,6 +245,7 @@
 - [ ] Add unsubscribe/manage preferences flow
 
 ### 2.9 Feature: Bulk Upload Transactions
+
 - [ ] Design bulk upload flow (CSV file format, UI for upload)
 - [ ] Create CSV template/documentation for expected format
 - [ ] Implement file upload endpoint and CSV parsing
@@ -239,6 +254,7 @@
 - [ ] Add bulk upload UI to transactions page
 
 ### 2.10 Improve Site Copy and UX Guidance
+
 - [ ] Audit current site copy for clarity and completeness
 - [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
 - [ ] Add contextual help text and tooltips to key pages
@@ -247,6 +263,7 @@
 - [ ] Update page headings, labels, and descriptions for consistency
 
 ### 2.11 Support Flavor Name
+
 - [ ] Verify Scryfall API provides flavor_name data
 - [ ] Add flavor_name column to card table (migration)
 - [ ] Update Scry card ingestion to store flavor_name
@@ -258,6 +275,7 @@
 ## Phase 3: Data Expansion
 
 ### 3.1 Add Support for Sealed Product
+
 - [ ] Research Scryfall or other data sources for sealed product data
 - [ ] Design sealed product data model (tables, relationships to sets)
 - [ ] Create database migration for sealed product tables
@@ -271,6 +289,7 @@
 ## Phase 4: Architecture
 
 ### 4.1 Evaluate Removing NestJS Dependency
+
 - [ ] Audit current NestJS features used (DI, guards, pipes, interceptors, etc.)
 - [ ] Evaluate lightweight alternatives (Fastify standalone, Express + tsyringe, etc.)
 - [ ] Compare dependency tree size (before/after)
@@ -280,6 +299,7 @@
 - [ ] If keeping: document decision and rationale
 
 ### 4.2 Scry: Interactive Mode
+
 - [ ] Design interactive CLI menu (select commands, configure options)
 - [ ] Add interactive mode entry point (`cargo run -- interactive` or default)
 - [ ] Add interactive selection for ingestion targets (sets, cards, prices)
@@ -291,6 +311,7 @@
 ## Phase 5: Platform Expansion
 
 ### 5.1 Desktop App
+
 - [ ] Choose framework (Electron vs Tauri)
 - [ ] Scaffold desktop app project in new repo
 - [ ] Integrate with API layer for data
@@ -300,6 +321,7 @@
 - [ ] Distribution strategy (GitHub releases, auto-update)
 
 ### 5.2 Apple Mobile App
+
 - [ ] Choose framework (Swift native vs React Native vs Flutter)
 - [ ] Scaffold iOS app project in new repo
 - [ ] Integrate with API layer
@@ -309,6 +331,7 @@
 - [ ] App Store submission
 
 ### 5.3 Android Mobile App
+
 - [ ] Choose framework (Kotlin native vs React Native vs Flutter)
 - [ ] Scaffold Android app project in new repo
 - [ ] Integrate with API layer
@@ -318,6 +341,7 @@
 - [ ] Play Store submission
 
 ### 5.4 Import Inventory by Picture
+
 - [ ] Research card recognition APIs/libraries (Scryfall image matching, ML models)
 - [ ] Design image upload and processing flow
 - [ ] Implement image capture UI (web + mobile)

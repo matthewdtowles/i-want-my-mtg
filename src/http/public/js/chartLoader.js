@@ -1,1 +1,53 @@
-!function(){"use strict";var t=!1,n=!1,e=[],r=document.querySelectorAll("[data-chart-src]");function c(t,n){var e=document.createElement("script");e.src=t,n&&(e.onload=n),document.head.appendChild(e)}r.length&&r.forEach(function(r){var a=new IntersectionObserver(function(s){if(s[0].isIntersecting){a.disconnect();var i=r.getAttribute("data-chart-src");t?c(i):(e.push(i),n||(n=!0,c("https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js",function(){c("https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js",function(){t=!0,n=!1,e.forEach(function(t){c(t)}),e=[]})})))}},{rootMargin:"200px"});a.observe(r)})}();
+(function () {
+    'use strict';
+
+    var loaded = false;
+    var loading = false;
+    var queue = [];
+    var CHART_JS_URL = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+    var ADAPTER_URL =
+        'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js';
+
+    var containers = document.querySelectorAll('[data-chart-src]');
+    if (!containers.length) return;
+
+    containers.forEach(function (el) {
+        var observer = new IntersectionObserver(
+            function (entries) {
+                if (entries[0].isIntersecting) {
+                    observer.disconnect();
+                    var src = el.getAttribute('data-chart-src');
+                    if (loaded) {
+                        injectScript(src);
+                    } else {
+                        queue.push(src);
+                        if (!loading) loadChartLibrary();
+                    }
+                }
+            },
+            { rootMargin: '200px' }
+        );
+        observer.observe(el);
+    });
+
+    function loadChartLibrary() {
+        loading = true;
+        injectScript(CHART_JS_URL, function () {
+            injectScript(ADAPTER_URL, function () {
+                loaded = true;
+                loading = false;
+                queue.forEach(function (src) {
+                    injectScript(src);
+                });
+                queue = [];
+            });
+        });
+    }
+
+    function injectScript(src, onload) {
+        var s = document.createElement('script');
+        s.src = src;
+        if (onload) s.onload = onload;
+        document.head.appendChild(s);
+    }
+})();

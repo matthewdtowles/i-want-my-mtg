@@ -1,1 +1,203 @@
-!function(){"use strict";function e(e){var t=document.createElement("div");return t.appendChild(document.createTextNode(e)),t.innerHTML}function t(t){var n=t.parentElement;n.style.position="relative";var s=document.createElement("div");s.className="search-suggest-dropdown hidden",n.appendChild(s);var a=null,r=null,i=-1;function c(){return s.querySelectorAll(".suggest-item, .suggest-search-all")}function o(e){var t=c();0!==t.length&&(function(){for(var e=c(),t=0;t<e.length;t++)e[t].classList.remove("suggest-active")}(),t[i=e].classList.add("suggest-active"),t[i].scrollIntoView({block:"nearest"}))}function l(){s.classList.add("hidden"),i=-1}function u(){s.classList.remove("hidden"),s.style.left="0",s.style.right="auto",s.getBoundingClientRect().right>window.innerWidth-8&&(s.style.left="auto",s.style.right="0")}function d(t){r&&r.abort(),r=new AbortController,fetch("/search/suggest?q="+encodeURIComponent(t),{signal:r.signal}).then(function(e){return e.json()}).then(function(t){!function(t){var n="",a=t.cards&&t.cards.length>0,r=t.sets&&t.sets.length>0;if(a){n+='<div class="suggest-section-header">Cards</div>';for(var c=0;c<t.cards.length;c++){var o=t.cards[c];n+='<a href="'+e(o.url)+'" class="suggest-item"><i class="ss ss-'+e(o.keyruneCode)+" ss-"+e(o.rarity)+' ss-fw"></i><span class="suggest-item-name">'+e(o.name)+'</span><span class="suggest-set-code">'+e(o.setCode).toUpperCase()+"</span></a>"}}if(r){n+='<div class="suggest-section-header">Sets</div>';for(var l=0;l<t.sets.length;l++){var d=t.sets[l];n+='<a href="'+e(d.url)+'" class="suggest-item"><i class="ss ss-'+e(d.keyruneCode)+' ss-fw"></i><span class="suggest-item-name">'+e(d.name)+'</span><span class="suggest-set-code">'+e(d.code).toUpperCase()+"</span></a>"}}var g=e(t.query||"");n+='<a href="/search?q='+encodeURIComponent(t.query||"")+'" class="suggest-search-all">Search for &ldquo;'+g+"&rdquo;</a>",s.innerHTML=n,i=-1,u()}(t)}).catch(function(e){"AbortError"!==e.name&&l()})}t.addEventListener("input",function(){var e=t.value.trim();clearTimeout(a),e.length<2?l():a=setTimeout(function(){d(e)},300)}),t.addEventListener("keydown",function(e){if("Escape"!==e.key){if(!s.classList.contains("hidden")){var t=c();0!==t.length&&("ArrowDown"===e.key?(e.preventDefault(),o(i<t.length-1?i+1:0)):"ArrowUp"===e.key?(e.preventDefault(),o(i>0?i-1:t.length-1)):"Enter"===e.key&&i>=0&&(e.preventDefault(),t[i].click()))}}else l()}),document.addEventListener("click",function(e){n.contains(e.target)||l()}),t.addEventListener("focus",function(){t.value.trim().length>=2&&s.innerHTML&&u()})}document.addEventListener("DOMContentLoaded",function(){for(var e=document.querySelectorAll('input[name="q"]'),n=0;n<e.length;n++)t(e[n])})}();
+(function () {
+    'use strict';
+
+    var DEBOUNCE_MS = 300;
+    var MIN_CHARS = 2;
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    function initSearchSuggest(input) {
+        var wrapper = input.parentElement;
+        wrapper.style.position = 'relative';
+
+        var dropdown = document.createElement('div');
+        dropdown.className = 'search-suggest-dropdown hidden';
+        wrapper.appendChild(dropdown);
+
+        var debounceTimer = null;
+        var controller = null;
+        var activeIndex = -1;
+
+        function getItems() {
+            return dropdown.querySelectorAll('.suggest-item, .suggest-search-all');
+        }
+
+        function clearActive() {
+            var items = getItems();
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.remove('suggest-active');
+            }
+        }
+
+        function setActive(index) {
+            var items = getItems();
+            if (items.length === 0) return;
+            clearActive();
+            activeIndex = index;
+            items[activeIndex].classList.add('suggest-active');
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+
+        function hideDropdown() {
+            dropdown.classList.add('hidden');
+            activeIndex = -1;
+        }
+
+        function showDropdown() {
+            dropdown.classList.remove('hidden');
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+            var rect = dropdown.getBoundingClientRect();
+            if (rect.right > window.innerWidth - 8) {
+                dropdown.style.left = 'auto';
+                dropdown.style.right = '0';
+            }
+        }
+
+        function renderDropdown(data) {
+            var html = '';
+            var hasCards = data.cards && data.cards.length > 0;
+            var hasSets = data.sets && data.sets.length > 0;
+
+            if (hasCards) {
+                html += '<div class="suggest-section-header">Cards</div>';
+                for (var i = 0; i < data.cards.length; i++) {
+                    var card = data.cards[i];
+                    html +=
+                        '<a href="' +
+                        escapeHtml(card.url) +
+                        '" class="suggest-item">' +
+                        '<i class="ss ss-' +
+                        escapeHtml(card.keyruneCode) +
+                        ' ss-' +
+                        escapeHtml(card.rarity) +
+                        ' ss-fw"></i>' +
+                        '<span class="suggest-item-name">' +
+                        escapeHtml(card.name) +
+                        '</span>' +
+                        '<span class="suggest-set-code">' +
+                        escapeHtml(card.setCode).toUpperCase() +
+                        '</span>' +
+                        '</a>';
+                }
+            }
+
+            if (hasSets) {
+                html += '<div class="suggest-section-header">Sets</div>';
+                for (var j = 0; j < data.sets.length; j++) {
+                    var set = data.sets[j];
+                    html +=
+                        '<a href="' +
+                        escapeHtml(set.url) +
+                        '" class="suggest-item">' +
+                        '<i class="ss ss-' +
+                        escapeHtml(set.keyruneCode) +
+                        ' ss-fw"></i>' +
+                        '<span class="suggest-item-name">' +
+                        escapeHtml(set.name) +
+                        '</span>' +
+                        '<span class="suggest-set-code">' +
+                        escapeHtml(set.code).toUpperCase() +
+                        '</span>' +
+                        '</a>';
+                }
+            }
+
+            var query = escapeHtml(data.query || '');
+            html +=
+                '<a href="/search?q=' +
+                encodeURIComponent(data.query || '') +
+                '" class="suggest-search-all">' +
+                'Search for &ldquo;' +
+                query +
+                '&rdquo;' +
+                '</a>';
+
+            dropdown.innerHTML = html;
+            activeIndex = -1;
+            showDropdown();
+        }
+
+        function fetchSuggestions(term) {
+            if (controller) {
+                controller.abort();
+            }
+            controller = new AbortController();
+
+            fetch('/search/suggest?q=' + encodeURIComponent(term), {
+                signal: controller.signal,
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (data) {
+                    renderDropdown(data);
+                })
+                .catch(function (err) {
+                    if (err.name !== 'AbortError') {
+                        hideDropdown();
+                    }
+                });
+        }
+
+        input.addEventListener('input', function () {
+            var term = input.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (term.length < MIN_CHARS) {
+                hideDropdown();
+                return;
+            }
+
+            debounceTimer = setTimeout(function () {
+                fetchSuggestions(term);
+            }, DEBOUNCE_MS);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                hideDropdown();
+                return;
+            }
+
+            if (dropdown.classList.contains('hidden')) return;
+
+            var items = getItems();
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActive(activeIndex < items.length - 1 ? activeIndex + 1 : 0);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActive(activeIndex > 0 ? activeIndex - 1 : items.length - 1);
+            } else if (e.key === 'Enter' && activeIndex >= 0) {
+                e.preventDefault();
+                items[activeIndex].click();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrapper.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+
+        input.addEventListener('focus', function () {
+            if (input.value.trim().length >= MIN_CHARS && dropdown.innerHTML) {
+                showDropdown();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var inputs = document.querySelectorAll('input[name="q"]');
+        for (var i = 0; i < inputs.length; i++) {
+            initSearchSuggest(inputs[i]);
+        }
+    });
+})();

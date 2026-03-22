@@ -1,1 +1,264 @@
-document.addEventListener("DOMContentLoaded",function(){var e=document.getElementById("set-card-list-ajax");if(e)var a=e.dataset.setCode,t="true"===e.dataset.authenticated,l=!0,s=!0,r=AjaxUtils.initListPage({container:e,apiPath:"/api/v1/sets/"+encodeURIComponent(a)+"/cards",basePath:"/sets/"+encodeURIComponent(a),renderContent:function(e,t){if(t&&0!==t.length){l=t.some(function(e){return e.prices&&null!=e.prices.normal}),s=t.some(function(e){return e.prices&&null!=e.prices.foil});var i=l,c=s,o=[{key:"",label:"Owned"},{key:"card.sortNumber",label:"Card No."},{key:"card.name",label:"Card"},{key:"",label:"Mana Cost",classes:"xs-hide"},{key:"",label:"Rarity",classes:"xs-hide"}];i&&o.push({key:"prices.normal",label:"Normal",subtitle:"7d",classes:"xs-hide"}),c&&o.push({key:"prices.foil",label:"Foil",subtitle:"7d",classes:"xs-hide"}),(i||c)&&o.push({key:"",label:"Price",classes:"xs-show"});var d='<div class="table-wrapper"><table class="table-container">';d+="<thead>"+AjaxUtils.renderTableHeaderRow(o,r.state)+"</thead>",d+="<tbody>";for(var u=0;u<t.length;u++)d+=n(t[u]);d+="</tbody></table></div>",e.innerHTML=d}else AjaxUtils.renderEmptyState(e,{message:"No cards match your search",clearHref:"/sets/"+AjaxUtils.escapeHtml(a)})},errorMessage:"Failed to load cards",onSuccess:function(e,a,l){t&&e&&e.length>0?function(e,a){var t=e.map(function(e){return e.id}).filter(Boolean);0!==t.length?fetch("/api/v1/inventory/quantities?cardIds="+t.join(","),{credentials:"same-origin"}).then(function(e){if(!e.ok)throw new Error("HTTP "+e.status);return e.json()}).then(function(e){if(e.success&&e.data){for(var a={},t=0;t<e.data.length;t++)a[e.data[t].cardId]=e.data[t];for(var l=document.querySelectorAll("#set-card-list-ajax .owned-cell"),s=0;s<l.length;s++){var r=l[s],n=r.getAttribute("data-card-id"),c="true"===r.getAttribute("data-has-foil"),o="true"===r.getAttribute("data-has-non-foil"),d=a[n]||{foilQuantity:0,normalQuantity:0};r.innerHTML=i(n,d,c,o)}}}).catch(function(e){console.error("Error fetching inventory quantities:",e);for(var a=document.querySelectorAll("#set-card-list-ajax .owned-cell"),t=0;t<a.length;t++){var l=a[t],s=l.getAttribute("data-card-id"),r="true"===l.getAttribute("data-has-foil"),n="true"===l.getAttribute("data-has-non-foil");l.innerHTML=i(s,{foilQuantity:0,normalQuantity:0},r,n)}}).finally(function(){a&&a()}):a&&a()}(e,l):l()}});function n(e){var t,r="/card/"+encodeURIComponent(a)+"/"+encodeURIComponent(e.number),n="https://cards.scryfall.io/normal/front/"+e.imgSrc,i='<tr class="table-row">';return i+='<td class="table-cell owned-cell" data-card-id="'+AjaxUtils.escapeHtml(e.id)+'" data-has-foil="'+!!e.hasFoil+'" data-has-non-foil="'+!!e.hasNonFoil+'">&mdash;</td>',i+='<td class="table-cell">'+AjaxUtils.escapeHtml(e.number)+"</td>",i+='<td data-img-src="'+AjaxUtils.escapeHtml(e.imgSrc)+'" class="table-cell">',i+='<a href="'+r+'" class="card-name-link">'+AjaxUtils.escapeHtml(e.name)+"</a>",i+='<a href="'+r+'" class="card-img-link">',i+='<img src="'+AjaxUtils.escapeHtml(n)+'" alt="'+AjaxUtils.escapeHtml(e.name)+'" class="card-img-preview" loading="lazy" width="256" height="357" />',i+="</a></td>",i+='<td class="table-cell xs-hide">'+((t=e.manaCost)?t.replace(/\/\/|\{([^}]+)\}/g,function(e,a){if(!a)return'<span class="mana-sep">'+AjaxUtils.escapeHtml(e)+"</span>";var t=a.toLowerCase().replace("/",""),l=t.startsWith("h");return'<i class="ms ms-cost ms-shadow ms-'+t+(l?" ms-half":"")+'"></i>'}):"")+"</td>",i+='<td class="table-cell xs-hide">'+AjaxUtils.escapeHtml(e.rarity||"")+"</td>",l&&(i+='<td class="table-cell xs-hide">',e.hasNonFoil&&e.prices&&null!=e.prices.normal&&(i+='<span class="price-normal">'+AjaxUtils.toDollar(e.prices.normal)+"</span>",null!=e.prices.normalChangeWeekly&&0!==e.prices.normalChangeWeekly&&(i+=" "+AjaxUtils.renderPriceChange(e.prices.normalChangeWeekly))),i+="</td>"),s&&(i+='<td class="table-cell xs-hide">',e.hasFoil&&e.prices&&null!=e.prices.foil&&(i+='<span class="price-foil">'+AjaxUtils.toDollar(e.prices.foil)+"</span>",null!=e.prices.foilChangeWeekly&&0!==e.prices.foilChangeWeekly&&(i+=" "+AjaxUtils.renderPriceChange(e.prices.foilChangeWeekly))),i+="</td>"),(l||s)&&(i+='<td class="table-cell xs-show">',e.hasNonFoil&&e.prices&&null!=e.prices.normal&&(i+='<span class="price-normal">'+AjaxUtils.toDollar(e.prices.normal)+"</span>",null!=e.prices.normalChangeWeekly&&0!==e.prices.normalChangeWeekly&&(i+=" "+AjaxUtils.renderPriceChange(e.prices.normalChangeWeekly))),e.hasFoil&&e.prices&&null!=e.prices.foil&&(i+='<span class="price-foil">'+AjaxUtils.toDollar(e.prices.foil)+"</span>",null!=e.prices.foilChangeWeekly&&0!==e.prices.foilChangeWeekly&&(i+=" "+AjaxUtils.renderPriceChange(e.prices.foilChangeWeekly))),i+="</td>"),i+"</tr>"}function i(e,a,t,l){var s="";return l&&(s+=c(e,a.normalQuantity,!1)),t&&(s+=c(e,a.foilQuantity,!0)),s}function c(e,a,t){return AjaxUtils.createQuantityForm(e,a,t)}});
+document.addEventListener('DOMContentLoaded', function () {
+    var container = document.getElementById('set-card-list-ajax');
+    if (!container) return;
+
+    var setCode = container.dataset.setCode;
+    var authenticated = container.dataset.authenticated === 'true';
+    var hasAnyNormal = true;
+    var hasAnyFoil = true;
+
+    var page = AjaxUtils.initListPage({
+        container: container,
+        apiPath: '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards',
+        basePath: '/sets/' + encodeURIComponent(setCode),
+        renderContent: renderTable,
+        errorMessage: 'Failed to load cards',
+        onSuccess: function (data, meta, done) {
+            if (authenticated && data && data.length > 0) {
+                fetchAndRenderInventory(data, done);
+            } else {
+                done();
+            }
+        },
+    });
+    if (!page) return;
+
+    function renderTable(resultsEl, cards) {
+        if (!cards || cards.length === 0) {
+            AjaxUtils.renderEmptyState(resultsEl, {
+                message: 'No cards match your search',
+                clearHref: '/sets/' + AjaxUtils.escapeHtml(setCode),
+            });
+            return;
+        }
+
+        hasAnyNormal = cards.some(function (c) {
+            return c.prices && c.prices.normal != null;
+        });
+        hasAnyFoil = cards.some(function (c) {
+            return c.prices && c.prices.foil != null;
+        });
+        var hasAnyNormalPrice = hasAnyNormal;
+        var hasAnyFoilPrice = hasAnyFoil;
+
+        var headers = [
+            { key: '', label: 'Owned' },
+            { key: 'card.sortNumber', label: 'Card No.' },
+            { key: 'card.name', label: 'Card' },
+            { key: '', label: 'Mana Cost', classes: 'xs-hide' },
+            { key: '', label: 'Rarity', classes: 'xs-hide' },
+        ];
+        if (hasAnyNormalPrice) {
+            headers.push({
+                key: 'prices.normal',
+                label: 'Normal',
+                subtitle: '7d',
+                classes: 'xs-hide',
+            });
+        }
+        if (hasAnyFoilPrice) {
+            headers.push({ key: 'prices.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' });
+        }
+        if (hasAnyNormalPrice || hasAnyFoilPrice) {
+            headers.push({ key: '', label: 'Price', classes: 'xs-show' });
+        }
+
+        var html = '<div class="table-wrapper"><table class="table-container">';
+        html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
+        html += '<tbody>';
+        for (var i = 0; i < cards.length; i++) {
+            html += renderCardRow(cards[i]);
+        }
+        html += '</tbody></table></div>';
+        resultsEl.innerHTML = html;
+    }
+
+    function renderCardRow(card) {
+        var url = '/card/' + encodeURIComponent(setCode) + '/' + encodeURIComponent(card.number);
+        var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
+
+        var html = '<tr class="table-row">';
+
+        // Owned column — placeholder, replaced by fetchAndRenderInventory if authenticated
+        html +=
+            '<td class="table-cell owned-cell" data-card-id="' +
+            AjaxUtils.escapeHtml(card.id) +
+            '"' +
+            ' data-has-foil="' +
+            !!card.hasFoil +
+            '"' +
+            ' data-has-non-foil="' +
+            !!card.hasNonFoil +
+            '">&mdash;</td>';
+
+        // Card No.
+        html += '<td class="table-cell">' + AjaxUtils.escapeHtml(card.number) + '</td>';
+
+        // Card name with hover preview
+        html += '<td data-img-src="' + AjaxUtils.escapeHtml(card.imgSrc) + '" class="table-cell">';
+        html +=
+            '<a href="' +
+            url +
+            '" class="card-name-link">' +
+            AjaxUtils.escapeHtml(card.name) +
+            '</a>';
+        html += '<a href="' + url + '" class="card-img-link">';
+        html +=
+            '<img src="' +
+            AjaxUtils.escapeHtml(imgSrc) +
+            '" alt="' +
+            AjaxUtils.escapeHtml(card.name) +
+            '" class="card-img-preview" loading="lazy" width="256" height="357" />';
+        html += '</a></td>';
+
+        // Mana Cost (xs-hide)
+        html += '<td class="table-cell xs-hide">' + renderManaCost(card.manaCost) + '</td>';
+
+        // Rarity (xs-hide)
+        html +=
+            '<td class="table-cell xs-hide">' + AjaxUtils.escapeHtml(card.rarity || '') + '</td>';
+
+        // Normal price (xs-hide)
+        if (hasAnyNormal) {
+            html += '<td class="table-cell xs-hide">';
+            if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+                html +=
+                    '<span class="price-normal">' +
+                    AjaxUtils.toDollar(card.prices.normal) +
+                    '</span>';
+                if (
+                    card.prices.normalChangeWeekly != null &&
+                    card.prices.normalChangeWeekly !== 0
+                ) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
+                }
+            }
+            html += '</td>';
+        }
+
+        // Foil price (xs-hide)
+        if (hasAnyFoil) {
+            html += '<td class="table-cell xs-hide">';
+            if (card.hasFoil && card.prices && card.prices.foil != null) {
+                html +=
+                    '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+                if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+                }
+            }
+            html += '</td>';
+        }
+
+        // Combined price (xs-show, mobile) — Normal first, then Foil
+        if (hasAnyNormal || hasAnyFoil) {
+            html += '<td class="table-cell xs-show">';
+            if (card.hasNonFoil && card.prices && card.prices.normal != null) {
+                html +=
+                    '<span class="price-normal">' +
+                    AjaxUtils.toDollar(card.prices.normal) +
+                    '</span>';
+                if (
+                    card.prices.normalChangeWeekly != null &&
+                    card.prices.normalChangeWeekly !== 0
+                ) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
+                }
+            }
+            if (card.hasFoil && card.prices && card.prices.foil != null) {
+                html +=
+                    '<span class="price-foil">' + AjaxUtils.toDollar(card.prices.foil) + '</span>';
+                if (card.prices.foilChangeWeekly != null && card.prices.foilChangeWeekly !== 0) {
+                    html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
+                }
+            }
+            html += '</td>';
+        }
+
+        html += '</tr>';
+        return html;
+    }
+
+    function renderManaCost(manaCost) {
+        if (!manaCost) return '';
+        return manaCost.replace(/\/\/|\{([^}]+)\}/g, function (match, symbol) {
+            if (!symbol) return '<span class="mana-sep">' + AjaxUtils.escapeHtml(match) + '</span>';
+            var lower = symbol.toLowerCase().replace('/', '');
+            var isHalf = lower.startsWith('h');
+            return (
+                '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>'
+            );
+        });
+    }
+
+    function fetchAndRenderInventory(cards, onComplete) {
+        var cardIds = cards
+            .map(function (c) {
+                return c.id;
+            })
+            .filter(Boolean);
+        if (cardIds.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','), {
+            credentials: 'same-origin',
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
+                return res.json();
+            })
+            .then(function (json) {
+                if (!json.success || !json.data) return;
+                var quantityMap = {};
+                for (var i = 0; i < json.data.length; i++) {
+                    quantityMap[json.data[i].cardId] = json.data[i];
+                }
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var j = 0; j < cells.length; j++) {
+                    var cell = cells[j];
+                    var cardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
+                    cell.innerHTML = renderOwnedForms(cardId, qty, hasFoil, hasNonFoil);
+                }
+            })
+            .catch(function (err) {
+                console.error('Error fetching inventory quantities:', err);
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var j = 0; j < cells.length; j++) {
+                    var cell = cells[j];
+                    var cardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    cell.innerHTML = renderOwnedForms(
+                        cardId,
+                        { foilQuantity: 0, normalQuantity: 0 },
+                        hasFoil,
+                        hasNonFoil
+                    );
+                }
+            })
+            .finally(function () {
+                if (onComplete) onComplete();
+            });
+    }
+
+    function renderOwnedForms(cardId, qty, hasFoil, hasNonFoil) {
+        var html = '';
+        if (hasNonFoil) {
+            html += renderOwnedForm(cardId, qty.normalQuantity, false);
+        }
+        if (hasFoil) {
+            html += renderOwnedForm(cardId, qty.foilQuantity, true);
+        }
+        return html;
+    }
+
+    function renderOwnedForm(cardId, quantity, isFoil) {
+        return AjaxUtils.createQuantityForm(cardId, quantity, isFoil);
+    }
+});

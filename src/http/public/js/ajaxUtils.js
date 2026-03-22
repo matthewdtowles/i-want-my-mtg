@@ -1,1 +1,956 @@
-var AjaxUtils=function(){var e=window.matchMedia("(prefers-reduced-motion: reduce)");function t(t,a){t.scrollIntoView({behavior:e.matches?"auto":"smooth",block:a||"start"})}function a(e){return null==e?"":String(e).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}function r(e){return null==e||0===e?"-":"$"+(Math.round(100*e)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",")}function n(e,t){e&&(e.innerHTML='<div class="text-center py-16"><i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i><p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">'+a(t)+"</p></div>")}function i(e){e&&(e.style.minHeight=e.offsetHeight+"px",e.innerHTML='<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>')}function s(e){e&&(e.style.minHeight="")}function l(e){var t=e.page,r=e.totalPages,n=e.limit,i=e.hrefBuilder,s=e.formAction,l=e.hiddenFields||{};if(!r||r<=1)return"";var o="";t>1&&(o+='<a href="'+i(t-1)+'" class="pagination-btn pagination-btn-primary">&lt;</a>',o+='<a href="'+i(1)+'" class="pagination-btn pagination-btn-tertiary">1</a>');var c=t-Math.floor(r/3);c>1&&c<t&&(o+='<a href="'+i(c)+'" class="pagination-btn pagination-btn-tertiary">'+c+"</a>",o+='<span class="text-gray-400 dark:text-gray-500">...</span>'),o+='<span class="pagination-btn pagination-btn-current" aria-current="page">'+t+"</span>";var d=t+Math.floor(r/3);d<r&&d>t&&(o+='<span class="text-gray-400 dark:text-gray-500">...</span>',o+='<a href="'+i(d)+'" class="pagination-btn pagination-btn-tertiary">'+d+"</a>"),t<r&&(o+='<a href="'+i(r)+'" class="pagination-btn pagination-btn-tertiary">'+r+"</a>",o+='<a href="'+i(t+1)+'" class="pagination-btn pagination-btn-primary">&gt;</a>'),o+='<form method="get" action="'+a(s)+'" class="flex items-center gap-2 mb-4 mt-2">';for(var u=Object.keys(l),f=0;f<u.length;f++){var p=u[f],g=l[p];null!=g&&""!==g&&(o+='<input type="hidden" name="'+a(p)+'" value="'+a(String(g))+'" />')}return o+='<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">',[25,50,100].forEach(function(e){o+='<option value="'+e+'"'+(n===e?" selected":"")+">"+e+"</option>"}),o+="</select>",o+='<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>',o+="</form>"}function o(e){var a=e.paginationEl||e.parentEl.querySelector(".pagination-container");e.html?(a||((a=document.createElement("section")).className="pagination-container",e.insertAfterEl.parentNode.insertBefore(a,e.insertAfterEl.nextSibling)),a.innerHTML=e.html,e.scrollTargetEl&&t(e.scrollTargetEl,"start")):a&&(a.innerHTML="")}function c(e,t,r){var n=t.sort===e.key,i=!n||!t.ascend,s=new URLSearchParams;if(s.set("page","1"),s.set("limit",String(t.limit)),s.set("sort",e.key),s.set("ascend",String(i)),t.filter&&s.set("filter",t.filter),!1===t.baseOnly&&s.set("baseOnly","false"),r)for(var l=0;l<r.length;l++){var o=r[l];void 0!==t[o]&&null!==t[o]&&""!==t[o]&&s.set(o,String(t[o]))}var c=n?t.ascend?"&#9650;":"&#9660;":"",d=e.subtitle?' <span class="header-subtitle">('+a(e.subtitle)+"△)</span>":"";return'<th class="table-header'+(e.classes?" "+e.classes:"")+("set.name"===e.key?" pl-2":"")+'"><a href="?'+s.toString()+'" class="sort-btn">'+a(e.label)+d+' <span class="sort-icon">'+c+"</span></a></th>"}function d(e){return'<th class="table-header'+(e.classes?" "+e.classes:"")+'">'+a(e.label)+"</th>"}function u(e){var t=e.container,a=e.state,r=e.fetchFn,n=!1!==e.scopeToContainer,i=n?t.parentElement.querySelector(".pagination-container select#limit"):document.querySelector(".pagination-container select#limit");i&&i.removeAttribute("onchange"),document.addEventListener("click",function(e){var i=e.target.closest(".pagination-container a");if(i&&(!n||t.parentElement.contains(i))){e.preventDefault();var s=new URLSearchParams(i.getAttribute("href").replace(/^[^?]*\?/,""));a.page=parseInt(s.get("page"),10)||1,s.has("limit")&&(a.limit=parseInt(s.get("limit"),10)||25),r("pushState")}}),document.addEventListener("change",function(e){if("limit"===e.target.id){if(n){var i=e.target.closest(".pagination-container");if(!i||!t.parentElement.contains(i))return}e.preventDefault(),a.limit=parseInt(e.target.value,10)||25,a.page=1,r("pushState")}}),document.addEventListener("submit",function(e){var a=e.target.closest(".pagination-container");a&&(n&&!t.parentElement.contains(a)||e.preventDefault())})}function f(e){var t=e.state,a=e.fetchFn,r=document.getElementById("filter-form");if(r){var n=r.cloneNode(!0);r.parentNode.replaceChild(n,r),n.addEventListener("submit",function(e){e.preventDefault()});var i=n.querySelector("#filter");if(i){var s;i.addEventListener("input",function(){clearTimeout(s);var e=n.querySelector("#clear-filter-btn");e&&(e.style.display=this.value?"inline":"none"),s=setTimeout(function(){t.filter=i.value,t.page=1,a("replaceState")},300)});var l=n.querySelector("#clear-filter-btn");l&&l.addEventListener("click",function(){i.value="",l.style.display="none",t.filter="",t.page=1,a("replaceState")})}}}function p(e){document.addEventListener("click",function(t){var a=t.target.closest(e.selector);if(a){t.preventDefault();var r=new URLSearchParams(a.getAttribute("href").replace(/^\?/,""));e.state.sort=r.get("sort")||"",e.state.ascend="true"===r.get("ascend"),e.state.page=1,e.fetchFn("pushState")}})}function g(e){document.addEventListener("click",function(t){var a=t.target.closest(e.selector);if(a&&!a.closest(".pagination-container")){t.preventDefault();var r=new URLSearchParams(a.getAttribute("href").replace(/^[^?]*\?/,""));e.state.baseOnly=!r.has("baseOnly")||"false"!==r.get("baseOnly"),e.state.page=1,e.fetchFn("pushState")}})}function m(e){var t=e.container.querySelector('a[href*="baseOnly"]');if(t){t.classList.remove("hidden");var a=new URLSearchParams;e.state.filter&&a.set("filter",e.state.filter),25!==e.state.limit&&a.set("limit",String(e.state.limit)),e.state.baseOnly?(a.set("baseOnly","false"),t.setAttribute("href",e.basePath+"?"+a.toString()),t.textContent="Show All",t.className=t.className.replace("btn-primary","btn-secondary")):(a.set("baseOnly","true"),t.setAttribute("href",e.basePath+"?"+a.toString()),t.textContent="Main Only",t.className=t.className.replace("btn-secondary","btn-primary"))}}function y(e){var t=new URLSearchParams(window.location.search),a={page:parseInt(t.get("page"),10)||1,limit:parseInt(t.get("limit"),10)||25,sort:t.get("sort")||"",ascend:"true"===t.get("ascend"),filter:t.get("filter")||"",baseOnly:!t.has("baseOnly")||"false"!==t.get("baseOnly")};if(e)for(var r=0;r<e.length;r++)a[e[r]]=t.get(e[r])||"";return a}function h(e,t){for(var a=y(t),r=Object.keys(a),n=0;n<r.length;n++)e[r[n]]=a[r[n]]}function v(e,t,a){a=a||{};var r=new URLSearchParams;t.q&&r.set("q",t.q),t.page>1&&r.set("page",t.page),t.limit!==(a.limit||25)&&r.set("limit",t.limit),t.sort&&(r.set("sort",t.sort),r.set("ascend",String(t.ascend))),t.filter&&r.set("filter",t.filter),!1===t.baseOnly&&r.set("baseOnly","false");var n=r.toString();return e+(n?"?"+n:"")}function b(e,t){var a=new URLSearchParams;return a.set("page",t.page),a.set("limit",t.limit),t.sort&&(a.set("sort",t.sort),a.set("ascend",t.ascend)),t.filter&&a.set("filter",t.filter),!1===t.baseOnly&&a.set("baseOnly","false"),e+"?"+a.toString()}function S(e,t,a){var r=new URLSearchParams;return r.set("page",String(a)),r.set("limit",String(t.limit)),t.sort&&(r.set("sort",t.sort),r.set("ascend",String(t.ascend))),t.filter&&r.set("filter",t.filter),!1===t.baseOnly&&r.set("baseOnly","false"),e+"?"+r.toString()}return{smoothScroll:t,escapeHtml:a,toDollar:r,showError:n,showSpinner:i,clearMinHeight:s,renderPaginationHtml:l,updatePaginationEl:o,renderSortableHeader:c,renderStaticHeader:d,setupPaginationInterceptors:u,setupFilterInterceptor:f,setupSortInterceptor:p,setupBaseOnlyInterceptor:g,updateBaseOnlyToggle:m,parseStateFromUrl:y,syncStateFromUrl:h,buildBrowserUrl:v,buildApiUrl:b,buildPaginationHref:S,renderTableHeaderRow:function(e,t){for(var a='<tr class="table-header-row">',r=0;r<e.length;r++){var n=e[r];n.key?a+=c(n,t):a+=d(n)}return a+"</tr>"},createQuantityForm:function(e,t,a){var r=document.getElementById("tpl-quantity-form").content.cloneNode(!0),n=a?"foil":"normal",i=r.querySelector("form");i.classList.add("quantity-form-"+n),i.setAttribute("data-item-id",e),i.setAttribute("data-foil",String(a)),i.querySelector('input[name="cardId"]').setAttribute("value",e),i.querySelector(".increment-quantity").classList.add("inventory-controller-button-"+n);var s=i.querySelector(".quantity-owned");s.setAttribute("value",t),s.setAttribute("data-id",e),i.querySelector('input[name="isFoil"]').setAttribute("value",String(a)),i.querySelector(".decrement-quantity").classList.add("inventory-controller-button-"+n);var l=document.createElement("div");return l.appendChild(r),l.innerHTML},createDeleteForm:function(e,t){var a=document.getElementById("tpl-delete-inventory").content.cloneNode(!0),r=a.querySelector("form");r.setAttribute("data-item-id",e),r.querySelector('input[name="card-id"]').setAttribute("value",e),r.querySelector('input[name="isFoil"]').setAttribute("value",String(t));var n=document.createElement("div");return n.appendChild(a),n.innerHTML},createTransactionRow:function(e){var t=document.getElementById("tpl-transaction-row").content.cloneNode(!0),a=t.querySelector("tr"),n=e.quantity*e.pricePerUnit;a.setAttribute("data-transaction-id",e.id),a.setAttribute("data-raw-price",e.pricePerUnit),a.setAttribute("data-raw-fees",e.fees||0),a.setAttribute("data-source",e.source||""),a.setAttribute("data-notes",e.notes||"");var i=a.querySelectorAll("td:first-child .tx-display");i.length&&(i[0].textContent=e.date);var s=a.querySelector('input[data-field="date"]');if(s&&s.setAttribute("value",e.date),"BUY"===e.type){var l=a.querySelector(".tx-type-sell");l&&l.classList.add("hidden")}else{var o=a.querySelector(".tx-type-buy");o&&o.classList.add("hidden");var c=a.querySelector(".tx-type-sell");c&&c.classList.remove("hidden")}if(e.cardUrl){var d=a.querySelector(".tx-card-link");d.href=e.cardUrl,d.textContent=e.cardName||"",d.classList.remove("hidden")}else a.querySelector(".tx-card-text").textContent=e.cardName||e.cardId;if(e.isFoil&&a.querySelector(".tx-foil-badge").classList.remove("hidden"),e.setCode){var u=a.querySelector(".tx-set-code");u.textContent="("+e.setCode.toUpperCase()+")",u.classList.remove("hidden")}var f=a.querySelectorAll("td:nth-child(4) .tx-display");f.length&&(f[0].textContent=e.quantity);var p=a.querySelector('input[data-field="quantity"]');p&&p.setAttribute("value",e.quantity);var g=a.querySelectorAll("td:nth-child(5) .tx-display");g.length&&(g[0].textContent=r(e.pricePerUnit));var m=a.querySelector('input[data-field="pricePerUnit"]');m&&m.setAttribute("value",e.pricePerUnit);var y=a.querySelector(".tx-total");y&&(y.textContent=r(n)),e.editable?(a.querySelector(".tx-editable-actions").classList.remove("hidden"),a.querySelector(".delete-transaction-button").setAttribute("data-transaction-id",e.id)):a.querySelector(".tx-locked-icon").classList.remove("hidden");var h=document.createElement("div");return h.appendChild(t),h.innerHTML},renderTags:function(e){if(!e||!e.length)return"";for(var t="",r=0;r<e.length;r++)t+='<span class="tag">'+a(e[r])+"</span>";return t},renderEmptyState:function(e,t){e.innerHTML='<div class="text-center py-16"><i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i><p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">'+a(t.message)+'</p><p class="text-gray-400 dark:text-gray-500 mt-2">'+a(t.hint||"Try a different search term or clear your filter.")+"</p>"+(t.clearHref?'<a href="'+a(t.clearHref)+'" class="btn btn-secondary mt-6 inline-block">'+a(t.clearLabel||"Clear Filter")+"</a>":"")+"</div>"},renderPriceChange:function(e){if(null==e||0===e)return"";var t=r(Math.abs(Math.round(100*e)/100));return e>0?'<span class="price-change price-change-positive">+'+t+"</span>":'<span class="price-change price-change-negative">-'+t+"</span>"},renderCompletionBar:function(e){return'<div class="completion-bar-container flex items-center relative"><div class="completion-bar absolute top-0 left-0 h-full" style="width: '+e+'%;"></div><span class="w-full text-center z-10 font-bold relative">'+e+"%</span></div>"},initListPage:function(e){var t=e.container;if(!t)return null;var a=t.id,r=e.apiPath,c=e.basePath,d=!1!==e.hasBaseOnly,x=!1!==e.hasFilter,q=e.errorMessage||"Failed to load data",L=y();function E(a){var u=document.getElementById("filter-results");i(u),fetch(b(r,L),{credentials:"same-origin"}).then(function(e){return e.json()}).then(function(r){if(!r.success)return n(u,r.error||q),void s(u);e.renderContent(u,r.data,r.meta),function(e){var a=t.parentElement.querySelector(".pagination-container");if(!e||e.totalPages<=1)a&&(a.innerHTML="");else{var r={};L.sort&&(r.sort=L.sort,r.ascend=String(L.ascend)),L.filter&&(r.filter=L.filter);var n=l({page:e.page,totalPages:e.totalPages,limit:L.limit,hrefBuilder:function(e){return S(c,L,e)},formAction:c,hiddenFields:r});o({paginationEl:a,parentEl:t.parentElement,insertAfterEl:t,html:n,scrollTargetEl:document.getElementById("filter-results")})}}(r.meta),d&&m({container:t,state:L,basePath:c}),a&&window.history[a]({},"",v(c,L)),e.onSuccess?e.onSuccess(r.data,r.meta,function(){s(u)}):s(u)}).catch(function(e){console.error("Fetch error ("+r+"):",e),n(u,q+". Please try again."),s(u)})}return x&&f({state:L,fetchFn:E}),p({selector:"#"+a+" thead a.sort-btn",state:L,fetchFn:E}),u({container:t,state:L,fetchFn:E,scopeToContainer:!0}),d&&g({selector:"#"+a+' a[href*="baseOnly"]',state:L,fetchFn:E}),window.addEventListener("popstate",function(){if(h(L),x){var e=document.querySelector("#filter");e&&(e.value=L.filter)}E(null)}),{container:t,state:L,fetchAndRender:E}}}}();
+/**
+ * Shared AJAX utilities for pagination, formatting, and common rendering.
+ * Used by all *Ajax.js page scripts to avoid duplication.
+ */
+var AjaxUtils = (function () {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function smoothScroll(el, block) {
+        el.scrollIntoView({
+            behavior: prefersReducedMotion.matches ? 'auto' : 'smooth',
+            block: block || 'start',
+        });
+    }
+
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function toDollar(amount) {
+        if (amount == null || amount === 0) return '-';
+        var rounded = Math.round(amount * 100) / 100;
+        var str = rounded.toFixed(2);
+        str = '$' + str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return str;
+    }
+
+    function showError(el, message) {
+        if (!el) return;
+        el.innerHTML =
+            '<div class="text-center py-16">' +
+            '<i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>' +
+            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">' +
+            escapeHtml(message) +
+            '</p>' +
+            '</div>';
+    }
+
+    function showSpinner(el) {
+        if (!el) return;
+        el.style.minHeight = el.offsetHeight + 'px';
+        el.innerHTML =
+            '<div class="text-center py-16"><i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i></div>';
+    }
+
+    function clearMinHeight(el) {
+        if (el) el.style.minHeight = '';
+    }
+
+    /**
+     * Render pagination HTML given a page/totalPages/limit state and a href builder.
+     * @param {object} opts
+     * @param {number} opts.page - Current page
+     * @param {number} opts.totalPages - Total pages
+     * @param {number} opts.limit - Current limit
+     * @param {function} opts.hrefBuilder - function(page) => href string
+     * @param {string} opts.formAction - form action URL for the limit selector
+     * @param {object} [opts.hiddenFields] - hidden fields for the limit form {name: value}
+     * @returns {string} HTML string
+     */
+    function renderPaginationHtml(opts) {
+        var page = opts.page;
+        var totalPages = opts.totalPages;
+        var limit = opts.limit;
+        var hrefBuilder = opts.hrefBuilder;
+        var formAction = opts.formAction;
+        var hiddenFields = opts.hiddenFields || {};
+
+        if (!totalPages || totalPages <= 1) return '';
+
+        var html = '';
+
+        if (page > 1) {
+            html +=
+                '<a href="' +
+                hrefBuilder(page - 1) +
+                '" class="pagination-btn pagination-btn-primary">&lt;</a>';
+            html +=
+                '<a href="' +
+                hrefBuilder(1) +
+                '" class="pagination-btn pagination-btn-tertiary">1</a>';
+        }
+
+        var skipBack = page - Math.floor(totalPages / 3);
+        if (skipBack > 1 && skipBack < page) {
+            html +=
+                '<a href="' +
+                hrefBuilder(skipBack) +
+                '" class="pagination-btn pagination-btn-tertiary">' +
+                skipBack +
+                '</a>';
+            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
+        }
+
+        html +=
+            '<span class="pagination-btn pagination-btn-current" aria-current="page">' +
+            page +
+            '</span>';
+
+        var skipForward = page + Math.floor(totalPages / 3);
+        if (skipForward < totalPages && skipForward > page) {
+            html += '<span class="text-gray-400 dark:text-gray-500">...</span>';
+            html +=
+                '<a href="' +
+                hrefBuilder(skipForward) +
+                '" class="pagination-btn pagination-btn-tertiary">' +
+                skipForward +
+                '</a>';
+        }
+
+        if (page < totalPages) {
+            html +=
+                '<a href="' +
+                hrefBuilder(totalPages) +
+                '" class="pagination-btn pagination-btn-tertiary">' +
+                totalPages +
+                '</a>';
+            html +=
+                '<a href="' +
+                hrefBuilder(page + 1) +
+                '" class="pagination-btn pagination-btn-primary">&gt;</a>';
+        }
+
+        // Limit selector
+        html +=
+            '<form method="get" action="' +
+            escapeHtml(formAction) +
+            '" class="flex items-center gap-2 mb-4 mt-2">';
+        var fieldNames = Object.keys(hiddenFields);
+        for (var i = 0; i < fieldNames.length; i++) {
+            var name = fieldNames[i];
+            var value = hiddenFields[name];
+            if (value !== undefined && value !== null && value !== '') {
+                html +=
+                    '<input type="hidden" name="' +
+                    escapeHtml(name) +
+                    '" value="' +
+                    escapeHtml(String(value)) +
+                    '" />';
+            }
+        }
+        html +=
+            '<select id="limit" name="limit" class="input-field w-20 text-center py-1 pl-0 pr-2 text-xs sm:text-sm bg-white dark:bg-midnight-800 border border-teal-300 dark:border-teal-600 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none text-gray-900 dark:text-gray-100">';
+        [25, 50, 100].forEach(function (val) {
+            html +=
+                '<option value="' +
+                val +
+                '"' +
+                (limit === val ? ' selected' : '') +
+                '>' +
+                val +
+                '</option>';
+        });
+        html += '</select>';
+        html +=
+            '<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>';
+        html += '</form>';
+
+        return html;
+    }
+
+    /**
+     * Update pagination element with rendered HTML. Handles empty/clearing.
+     * Scrolls the results container into view after rendering.
+     * @param {object} opts
+     * @param {HTMLElement} opts.paginationEl - The pagination container element (or null)
+     * @param {HTMLElement} opts.parentEl - Parent to search for .pagination-container
+     * @param {HTMLElement} opts.insertAfterEl - Element to insert pagination after if it doesn't exist
+     * @param {string} opts.html - Rendered pagination HTML (empty string = no pagination)
+     * @param {HTMLElement} [opts.scrollTargetEl] - Element to scroll into view after render
+     */
+    function updatePaginationEl(opts) {
+        var paginationEl =
+            opts.paginationEl || opts.parentEl.querySelector('.pagination-container');
+
+        if (!opts.html) {
+            if (paginationEl) paginationEl.innerHTML = '';
+            return;
+        }
+
+        if (!paginationEl) {
+            paginationEl = document.createElement('section');
+            paginationEl.className = 'pagination-container';
+            opts.insertAfterEl.parentNode.insertBefore(
+                paginationEl,
+                opts.insertAfterEl.nextSibling
+            );
+        }
+
+        paginationEl.innerHTML = opts.html;
+
+        if (opts.scrollTargetEl) {
+            smoothScroll(opts.scrollTargetEl, 'start');
+        }
+    }
+
+    /**
+     * Render a sortable table header <th> element.
+     * @param {object} header - {key, label, subtitle?, classes?}
+     * @param {object} state - Current state with sort, ascend, limit, filter, baseOnly
+     * @param {string[]} [extraParams] - Additional state keys to include in sort href
+     * @returns {string} HTML string
+     */
+    function renderSortableHeader(header, state, extraParams) {
+        var isActive = state.sort === header.key;
+        var nextAscend = isActive ? !state.ascend : true;
+        var params = new URLSearchParams();
+        params.set('page', '1');
+        params.set('limit', String(state.limit));
+        params.set('sort', header.key);
+        params.set('ascend', String(nextAscend));
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+
+        if (extraParams) {
+            for (var i = 0; i < extraParams.length; i++) {
+                var key = extraParams[i];
+                if (state[key] !== undefined && state[key] !== null && state[key] !== '') {
+                    params.set(key, String(state[key]));
+                }
+            }
+        }
+
+        var arrow = isActive ? (state.ascend ? '&#9650;' : '&#9660;') : '';
+        var subtitleHtml = header.subtitle
+            ? ' <span class="header-subtitle">(' + escapeHtml(header.subtitle) + '\u25B3)</span>'
+            : '';
+        var classAttr =
+            'table-header' +
+            (header.classes ? ' ' + header.classes : '') +
+            (header.key === 'set.name' ? ' pl-2' : '');
+
+        return (
+            '<th class="' +
+            classAttr +
+            '">' +
+            '<a href="?' +
+            params.toString() +
+            '" class="sort-btn">' +
+            escapeHtml(header.label) +
+            subtitleHtml +
+            ' <span class="sort-icon">' +
+            arrow +
+            '</span>' +
+            '</a></th>'
+        );
+    }
+
+    /**
+     * Render a non-sortable table header <th> element.
+     * @param {object} header - {label, classes?}
+     * @returns {string} HTML string
+     */
+    function renderStaticHeader(header) {
+        var classAttr = 'table-header' + (header.classes ? ' ' + header.classes : '');
+        return '<th class="' + classAttr + '">' + escapeHtml(header.label) + '</th>';
+    }
+
+    /**
+     * Setup common AJAX interception for pagination, limit, and limit form submit.
+     * @param {object} opts
+     * @param {HTMLElement} opts.container - The AJAX container element
+     * @param {object} opts.state - The state object (mutated by handlers)
+     * @param {function} opts.fetchFn - Function to call after state change: fetchFn(historyMethod)
+     * @param {boolean} [opts.scopeToContainer] - If true, scope pagination/limit events to container's parent
+     */
+    function setupPaginationInterceptors(opts) {
+        var container = opts.container;
+        var state = opts.state;
+        var fetchFn = opts.fetchFn;
+        var scopeToContainer = opts.scopeToContainer !== false;
+
+        // Remove inline onchange from SSR limit select
+        var ssrLimitSelect = scopeToContainer
+            ? container.parentElement.querySelector('.pagination-container select#limit')
+            : document.querySelector('.pagination-container select#limit');
+        if (ssrLimitSelect) {
+            ssrLimitSelect.removeAttribute('onchange');
+        }
+
+        // Intercept pagination clicks
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('.pagination-container a');
+            if (!link) return;
+            if (scopeToContainer && !container.parentElement.contains(link)) return;
+            e.preventDefault();
+            var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
+            state.page = parseInt(params.get('page'), 10) || 1;
+            if (params.has('limit')) state.limit = parseInt(params.get('limit'), 10) || 25;
+            fetchFn('pushState');
+        });
+
+        // Intercept limit select change
+        document.addEventListener('change', function (e) {
+            if (e.target.id !== 'limit') return;
+            if (scopeToContainer) {
+                var paginationParent = e.target.closest('.pagination-container');
+                if (!paginationParent || !container.parentElement.contains(paginationParent))
+                    return;
+            }
+            e.preventDefault();
+            state.limit = parseInt(e.target.value, 10) || 25;
+            state.page = 1;
+            fetchFn('pushState');
+        });
+
+        // Intercept limit form submit
+        document.addEventListener('submit', function (e) {
+            var paginationParent = e.target.closest('.pagination-container');
+            if (paginationParent) {
+                if (!scopeToContainer || container.parentElement.contains(paginationParent)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+
+    /**
+     * Setup filter form interception (clone form, bind debounced input, clear button).
+     * @param {object} opts
+     * @param {object} opts.state - State object with .filter and .page
+     * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
+     */
+    function setupFilterInterceptor(opts) {
+        var state = opts.state;
+        var fetchFn = opts.fetchFn;
+
+        var filterForm = document.getElementById('filter-form');
+        if (!filterForm) return;
+
+        var newForm = filterForm.cloneNode(true);
+        filterForm.parentNode.replaceChild(newForm, filterForm);
+        newForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+        });
+
+        var filterInput = newForm.querySelector('#filter');
+        if (filterInput) {
+            var debounceTimeout;
+            filterInput.addEventListener('input', function () {
+                clearTimeout(debounceTimeout);
+                var clearBtn = newForm.querySelector('#clear-filter-btn');
+                if (clearBtn) clearBtn.style.display = this.value ? 'inline' : 'none';
+                debounceTimeout = setTimeout(function () {
+                    state.filter = filterInput.value;
+                    state.page = 1;
+                    fetchFn('replaceState');
+                }, 300);
+            });
+
+            var clearBtn = newForm.querySelector('#clear-filter-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    filterInput.value = '';
+                    clearBtn.style.display = 'none';
+                    state.filter = '';
+                    state.page = 1;
+                    fetchFn('replaceState');
+                });
+            }
+        }
+    }
+
+    /**
+     * Setup sort header click interception.
+     * @param {object} opts
+     * @param {string} opts.selector - CSS selector to scope sort link clicks (e.g. '#my-container thead a.sort-btn')
+     * @param {object} opts.state - State object with .sort, .ascend, .page
+     * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
+     */
+    function setupSortInterceptor(opts) {
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest(opts.selector);
+            if (!link) return;
+            e.preventDefault();
+            var params = new URLSearchParams(link.getAttribute('href').replace(/^\?/, ''));
+            opts.state.sort = params.get('sort') || '';
+            opts.state.ascend = params.get('ascend') === 'true';
+            opts.state.page = 1;
+            opts.fetchFn('pushState');
+        });
+    }
+
+    /**
+     * Setup baseOnly toggle interception.
+     * @param {object} opts
+     * @param {string} opts.selector - CSS selector for baseOnly links
+     * @param {object} opts.state - State object with .baseOnly, .page
+     * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
+     */
+    function setupBaseOnlyInterceptor(opts) {
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest(opts.selector);
+            if (!link) return;
+            if (link.closest('.pagination-container')) return;
+            e.preventDefault();
+            var params = new URLSearchParams(link.getAttribute('href').replace(/^[^?]*\?/, ''));
+            opts.state.baseOnly = params.has('baseOnly')
+                ? params.get('baseOnly') !== 'false'
+                : true;
+            opts.state.page = 1;
+            opts.fetchFn('pushState');
+        });
+    }
+
+    /**
+     * Update baseOnly toggle link text and href.
+     * @param {object} opts
+     * @param {HTMLElement} opts.container - Element to search for the toggle link
+     * @param {object} opts.state - State with baseOnly, filter, limit
+     * @param {string} opts.basePath - Base URL path (e.g. '/sets', '/inventory')
+     */
+    function updateBaseOnlyToggle(opts) {
+        var toggle = opts.container.querySelector('a[href*="baseOnly"]');
+        if (!toggle) return;
+        toggle.classList.remove('hidden');
+        var params = new URLSearchParams();
+        if (opts.state.filter) params.set('filter', opts.state.filter);
+        if (opts.state.limit !== 25) params.set('limit', String(opts.state.limit));
+        if (opts.state.baseOnly) {
+            params.set('baseOnly', 'false');
+            toggle.setAttribute('href', opts.basePath + '?' + params.toString());
+            toggle.textContent = 'Show All';
+            toggle.className = toggle.className.replace('btn-primary', 'btn-secondary');
+        } else {
+            params.set('baseOnly', 'true');
+            toggle.setAttribute('href', opts.basePath + '?' + params.toString());
+            toggle.textContent = 'Main Only';
+            toggle.className = toggle.className.replace('btn-secondary', 'btn-primary');
+        }
+    }
+
+    /**
+     * Parse common state from URL parameters.
+     * @param {string[]} [extraKeys] - Additional keys to parse (beyond page, limit, sort, ascend, filter, baseOnly)
+     * @returns {object} Parsed state
+     */
+    function parseStateFromUrl(extraKeys) {
+        var params = new URLSearchParams(window.location.search);
+        var state = {
+            page: parseInt(params.get('page'), 10) || 1,
+            limit: parseInt(params.get('limit'), 10) || 25,
+            sort: params.get('sort') || '',
+            ascend: params.get('ascend') === 'true',
+            filter: params.get('filter') || '',
+            baseOnly: params.has('baseOnly') ? params.get('baseOnly') !== 'false' : true,
+        };
+        if (extraKeys) {
+            for (var i = 0; i < extraKeys.length; i++) {
+                state[extraKeys[i]] = params.get(extraKeys[i]) || '';
+            }
+        }
+        return state;
+    }
+
+    /**
+     * Update an existing state object in-place from URL parameters.
+     * Preserves object identity so closures (interceptors) stay in sync.
+     * @param {object} state - The state object to update
+     * @param {string[]} [extraKeys] - Additional keys to parse
+     */
+    function syncStateFromUrl(state, extraKeys) {
+        var fresh = parseStateFromUrl(extraKeys);
+        var keys = Object.keys(fresh);
+        for (var i = 0; i < keys.length; i++) {
+            state[keys[i]] = fresh[keys[i]];
+        }
+    }
+
+    /**
+     * Build a browser URL from state for history.pushState/replaceState.
+     * @param {string} basePath - The base path (e.g. '/sets', '/inventory')
+     * @param {object} state - Current state object
+     * @param {object} [defaults] - Default values to omit from URL
+     * @returns {string} URL string
+     */
+    function buildBrowserUrl(basePath, state, defaults) {
+        defaults = defaults || {};
+        var params = new URLSearchParams();
+        if (state.q) params.set('q', state.q);
+        if (state.page > 1) params.set('page', state.page);
+        if (state.limit !== (defaults.limit || 25)) params.set('limit', state.limit);
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', String(state.ascend));
+        }
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        var qs = params.toString();
+        return basePath + (qs ? '?' + qs : '');
+    }
+
+    /**
+     * Clone the quantity form template and populate it.
+     * @param {string} cardId
+     * @param {number} quantity
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createQuantityForm(cardId, quantity, isFoil) {
+        var tpl = document.getElementById('tpl-quantity-form');
+        var clone = tpl.content.cloneNode(true);
+        var foilClass = isFoil ? 'foil' : 'normal';
+        var form = clone.querySelector('form');
+        form.classList.add('quantity-form-' + foilClass);
+        form.setAttribute('data-item-id', cardId);
+        form.setAttribute('data-foil', String(isFoil));
+        form.querySelector('input[name="cardId"]').setAttribute('value', cardId);
+        var incBtn = form.querySelector('.increment-quantity');
+        incBtn.classList.add('inventory-controller-button-' + foilClass);
+        var qtyInput = form.querySelector('.quantity-owned');
+        qtyInput.setAttribute('value', quantity);
+        qtyInput.setAttribute('data-id', cardId);
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
+        var decBtn = form.querySelector('.decrement-quantity');
+        decBtn.classList.add('inventory-controller-button-' + foilClass);
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Clone the delete inventory form template and populate it.
+     * @param {string} cardId
+     * @param {boolean} isFoil
+     * @returns {string} outerHTML string
+     */
+    function createDeleteForm(cardId, isFoil) {
+        var tpl = document.getElementById('tpl-delete-inventory');
+        var clone = tpl.content.cloneNode(true);
+        var form = clone.querySelector('form');
+        form.setAttribute('data-item-id', cardId);
+        form.querySelector('input[name="card-id"]').setAttribute('value', cardId);
+        form.querySelector('input[name="isFoil"]').setAttribute('value', String(isFoil));
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Clone the transaction row template and populate it.
+     * @param {object} tx - Transaction object
+     * @returns {string} outerHTML string
+     */
+    function createTransactionRow(tx) {
+        var tpl = document.getElementById('tpl-transaction-row');
+        var clone = tpl.content.cloneNode(true);
+        var row = clone.querySelector('tr');
+        var total = tx.quantity * tx.pricePerUnit;
+
+        // Data attributes on <tr>
+        row.setAttribute('data-transaction-id', tx.id);
+        row.setAttribute('data-raw-price', tx.pricePerUnit);
+        row.setAttribute('data-raw-fees', tx.fees || 0);
+        row.setAttribute('data-source', tx.source || '');
+        row.setAttribute('data-notes', tx.notes || '');
+
+        // Date
+        var dateDisplays = row.querySelectorAll('td:first-child .tx-display');
+        if (dateDisplays.length) dateDisplays[0].textContent = tx.date;
+        var dateInput = row.querySelector('input[data-field="date"]');
+        if (dateInput) dateInput.setAttribute('value', tx.date);
+
+        // Type
+        if (tx.type === 'BUY') {
+            var sellBadge = row.querySelector('.tx-type-sell');
+            if (sellBadge) sellBadge.classList.add('hidden');
+        } else {
+            var buyBadge = row.querySelector('.tx-type-buy');
+            if (buyBadge) buyBadge.classList.add('hidden');
+            var sellEl = row.querySelector('.tx-type-sell');
+            if (sellEl) sellEl.classList.remove('hidden');
+        }
+
+        // Card
+        if (tx.cardUrl) {
+            var cardLink = row.querySelector('.tx-card-link');
+            cardLink.href = tx.cardUrl;
+            cardLink.textContent = tx.cardName || '';
+            cardLink.classList.remove('hidden');
+        } else {
+            var cardText = row.querySelector('.tx-card-text');
+            cardText.textContent = tx.cardName || tx.cardId;
+        }
+
+        // Foil badge
+        if (tx.isFoil) {
+            row.querySelector('.tx-foil-badge').classList.remove('hidden');
+        }
+
+        // Set code
+        if (tx.setCode) {
+            var setCodeEl = row.querySelector('.tx-set-code');
+            setCodeEl.textContent = '(' + tx.setCode.toUpperCase() + ')';
+            setCodeEl.classList.remove('hidden');
+        }
+
+        // Qty
+        var qtyDisplays = row.querySelectorAll('td:nth-child(4) .tx-display');
+        if (qtyDisplays.length) qtyDisplays[0].textContent = tx.quantity;
+        var qtyInput = row.querySelector('input[data-field="quantity"]');
+        if (qtyInput) qtyInput.setAttribute('value', tx.quantity);
+
+        // Price
+        var priceDisplays = row.querySelectorAll('td:nth-child(5) .tx-display');
+        if (priceDisplays.length) priceDisplays[0].textContent = toDollar(tx.pricePerUnit);
+        var priceInput = row.querySelector('input[data-field="pricePerUnit"]');
+        if (priceInput) priceInput.setAttribute('value', tx.pricePerUnit);
+
+        // Total
+        var totalEl = row.querySelector('.tx-total');
+        if (totalEl) totalEl.textContent = toDollar(total);
+
+        // Actions
+        if (tx.editable) {
+            var editableActions = row.querySelector('.tx-editable-actions');
+            editableActions.classList.remove('hidden');
+            var deleteBtn = row.querySelector('.delete-transaction-button');
+            deleteBtn.setAttribute('data-transaction-id', tx.id);
+        } else {
+            var lockedIcon = row.querySelector('.tx-locked-icon');
+            lockedIcon.classList.remove('hidden');
+        }
+
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Render tag badges from an array of tag strings.
+     * @param {string[]} tags
+     * @returns {string} HTML string
+     */
+    function renderTags(tags) {
+        if (!tags || !tags.length) return '';
+        var html = '';
+        for (var i = 0; i < tags.length; i++) {
+            html += '<span class="tag">' + escapeHtml(tags[i]) + '</span>';
+        }
+        return html;
+    }
+
+    /**
+     * Render a price change badge.
+     * @param {number} change - Price change amount
+     * @returns {string} HTML string
+     */
+    function renderPriceChange(change) {
+        if (change == null || change === 0) return '';
+        var abs = Math.abs(Math.round(change * 100) / 100);
+        var formatted = toDollar(abs);
+        if (change > 0) {
+            return '<span class="price-change price-change-positive">+' + formatted + '</span>';
+        }
+        return '<span class="price-change price-change-negative">-' + formatted + '</span>';
+    }
+
+    /**
+     * Render completion bar.
+     * @param {number} rate - Completion percentage
+     * @returns {string} HTML string
+     */
+    function renderCompletionBar(rate) {
+        return (
+            '<div class="completion-bar-container flex items-center relative">' +
+            '<div class="completion-bar absolute top-0 left-0 h-full" style="width: ' +
+            rate +
+            '%;"></div>' +
+            '<span class="w-full text-center z-10 font-bold relative">' +
+            rate +
+            '%</span>' +
+            '</div>'
+        );
+    }
+
+    /**
+     * Build an API URL from a base path and state.
+     * @param {string} apiPath - API endpoint path (e.g. '/api/v1/sets')
+     * @param {object} state - Current state object
+     * @returns {string} URL string
+     */
+    function buildApiUrl(apiPath, state) {
+        var params = new URLSearchParams();
+        params.set('page', state.page);
+        params.set('limit', state.limit);
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', state.ascend);
+        }
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        return apiPath + '?' + params.toString();
+    }
+
+    /**
+     * Build a pagination link href from state.
+     * @param {string} basePath - Browser URL base path
+     * @param {object} state - Current state object
+     * @param {number} page - Target page number
+     * @returns {string} URL string
+     */
+    function buildPaginationHref(basePath, state, page) {
+        var params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', String(state.limit));
+        if (state.sort) {
+            params.set('sort', state.sort);
+            params.set('ascend', String(state.ascend));
+        }
+        if (state.filter) params.set('filter', state.filter);
+        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        return basePath + '?' + params.toString();
+    }
+
+    /**
+     * Render a table header row from header definitions.
+     * Headers with a `key` property are sortable; others are static.
+     * @param {Array} headers - Array of {key?, label, subtitle?, classes?}
+     * @param {object} state - Current state for sort indicators
+     * @returns {string} HTML string
+     */
+    function renderTableHeaderRow(headers, state) {
+        var html = '<tr class="table-header-row">';
+        for (var i = 0; i < headers.length; i++) {
+            var h = headers[i];
+            if (h.key) {
+                html += renderSortableHeader(h, state);
+            } else {
+                html += renderStaticHeader(h);
+            }
+        }
+        html += '</tr>';
+        return html;
+    }
+
+    /**
+     * Render an empty state message in a container.
+     * @param {HTMLElement} el - Container element
+     * @param {object} opts
+     * @param {string} opts.message - Main message text
+     * @param {string} [opts.hint] - Secondary hint text
+     * @param {string} [opts.clearHref] - URL for the clear/reset button
+     * @param {string} [opts.clearLabel] - Label for the clear button (default: 'Clear Filter')
+     */
+    function renderEmptyState(el, opts) {
+        el.innerHTML =
+            '<div class="text-center py-16">' +
+            '<i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>' +
+            '<p class="text-lg text-gray-600 dark:text-gray-400 font-medium mt-4">' +
+            escapeHtml(opts.message) +
+            '</p>' +
+            '<p class="text-gray-400 dark:text-gray-500 mt-2">' +
+            escapeHtml(opts.hint || 'Try a different search term or clear your filter.') +
+            '</p>' +
+            (opts.clearHref
+                ? '<a href="' +
+                  escapeHtml(opts.clearHref) +
+                  '" class="btn btn-secondary mt-6 inline-block">' +
+                  escapeHtml(opts.clearLabel || 'Clear Filter') +
+                  '</a>'
+                : '') +
+            '</div>';
+    }
+
+    /**
+     * Initialize a standard AJAX list page with pagination, filtering, sorting,
+     * and optional baseOnly toggle.
+     *
+     * Handles the full lifecycle: state parsing, interceptor setup,
+     * fetch/render/pagination/history, and popstate. Page-specific rendering
+     * is provided via config.renderContent.
+     *
+     * @param {object} config
+     * @param {HTMLElement} config.container - The AJAX container element
+     * @param {string} config.apiPath - API endpoint path (e.g. '/api/v1/sets')
+     * @param {string} config.basePath - Browser URL base path (e.g. '/sets')
+     * @param {function} config.renderContent - function(resultsEl, data, meta) that renders page content
+     * @param {boolean} [config.hasBaseOnly=true] - Whether the page has a baseOnly toggle
+     * @param {boolean} [config.hasFilter=true] - Whether the page has a filter form
+     * @param {string} [config.errorMessage] - Error message shown on fetch failure
+     * @param {function} [config.onSuccess] - Callback after successful render: function(data, meta, done).
+     *   Must call done() to clear the spinner min-height. If omitted, min-height is cleared automatically.
+     * @returns {object|null} { container, state, fetchAndRender } or null if container not found
+     */
+    function initListPage(config) {
+        var container = config.container;
+        if (!container) return null;
+
+        var containerId = container.id;
+        var apiPath = config.apiPath;
+        var basePath = config.basePath;
+        var hasBaseOnly = config.hasBaseOnly !== false;
+        var hasFilter = config.hasFilter !== false;
+        var errorMsg = config.errorMessage || 'Failed to load data';
+
+        var state = parseStateFromUrl();
+
+        if (hasFilter) {
+            setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
+        }
+
+        setupSortInterceptor({
+            selector: '#' + containerId + ' thead a.sort-btn',
+            state: state,
+            fetchFn: fetchAndRender,
+        });
+
+        setupPaginationInterceptors({
+            container: container,
+            state: state,
+            fetchFn: fetchAndRender,
+            scopeToContainer: true,
+        });
+
+        if (hasBaseOnly) {
+            setupBaseOnlyInterceptor({
+                selector: '#' + containerId + ' a[href*="baseOnly"]',
+                state: state,
+                fetchFn: fetchAndRender,
+            });
+        }
+
+        window.addEventListener('popstate', function () {
+            syncStateFromUrl(state);
+            if (hasFilter) {
+                var fi = document.querySelector('#filter');
+                if (fi) fi.value = state.filter;
+            }
+            fetchAndRender(null);
+        });
+
+        function fetchAndRender(historyMethod) {
+            var resultsEl = document.getElementById('filter-results');
+            showSpinner(resultsEl);
+
+            fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (json) {
+                    if (!json.success) {
+                        showError(resultsEl, json.error || errorMsg);
+                        clearMinHeight(resultsEl);
+                        return;
+                    }
+
+                    config.renderContent(resultsEl, json.data, json.meta);
+                    doRenderPagination(json.meta);
+
+                    if (hasBaseOnly) {
+                        updateBaseOnlyToggle({
+                            container: container,
+                            state: state,
+                            basePath: basePath,
+                        });
+                    }
+
+                    if (historyMethod) {
+                        window.history[historyMethod]({}, '', buildBrowserUrl(basePath, state));
+                    }
+
+                    if (config.onSuccess) {
+                        config.onSuccess(json.data, json.meta, function () {
+                            clearMinHeight(resultsEl);
+                        });
+                    } else {
+                        clearMinHeight(resultsEl);
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Fetch error (' + apiPath + '):', err);
+                    showError(resultsEl, errorMsg + '. Please try again.');
+                    clearMinHeight(resultsEl);
+                });
+        }
+
+        function doRenderPagination(meta) {
+            var paginationEl = container.parentElement.querySelector('.pagination-container');
+
+            if (!meta || meta.totalPages <= 1) {
+                if (paginationEl) paginationEl.innerHTML = '';
+                return;
+            }
+
+            var hiddenFields = {};
+            if (state.sort) {
+                hiddenFields.sort = state.sort;
+                hiddenFields.ascend = String(state.ascend);
+            }
+            if (state.filter) hiddenFields.filter = state.filter;
+
+            var html = renderPaginationHtml({
+                page: meta.page,
+                totalPages: meta.totalPages,
+                limit: state.limit,
+                hrefBuilder: function (page) {
+                    return buildPaginationHref(basePath, state, page);
+                },
+                formAction: basePath,
+                hiddenFields: hiddenFields,
+            });
+
+            updatePaginationEl({
+                paginationEl: paginationEl,
+                parentEl: container.parentElement,
+                insertAfterEl: container,
+                html: html,
+                scrollTargetEl: document.getElementById('filter-results'),
+            });
+        }
+
+        return {
+            container: container,
+            state: state,
+            fetchAndRender: fetchAndRender,
+        };
+    }
+
+    return {
+        smoothScroll: smoothScroll,
+        escapeHtml: escapeHtml,
+        toDollar: toDollar,
+        showError: showError,
+        showSpinner: showSpinner,
+        clearMinHeight: clearMinHeight,
+        renderPaginationHtml: renderPaginationHtml,
+        updatePaginationEl: updatePaginationEl,
+        renderSortableHeader: renderSortableHeader,
+        renderStaticHeader: renderStaticHeader,
+        setupPaginationInterceptors: setupPaginationInterceptors,
+        setupFilterInterceptor: setupFilterInterceptor,
+        setupSortInterceptor: setupSortInterceptor,
+        setupBaseOnlyInterceptor: setupBaseOnlyInterceptor,
+        updateBaseOnlyToggle: updateBaseOnlyToggle,
+        parseStateFromUrl: parseStateFromUrl,
+        syncStateFromUrl: syncStateFromUrl,
+        buildBrowserUrl: buildBrowserUrl,
+        buildApiUrl: buildApiUrl,
+        buildPaginationHref: buildPaginationHref,
+        renderTableHeaderRow: renderTableHeaderRow,
+        createQuantityForm: createQuantityForm,
+        createDeleteForm: createDeleteForm,
+        createTransactionRow: createTransactionRow,
+        renderTags: renderTags,
+        renderEmptyState: renderEmptyState,
+        renderPriceChange: renderPriceChange,
+        renderCompletionBar: renderCompletionBar,
+        initListPage: initListPage,
+    };
+})();

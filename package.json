@@ -9,7 +9,7 @@
         "prebuild": "chown -R $(whoami):$(whoami) ./dist || true",
         "build": "nest build",
         "build:css": "npx tailwindcss -i ./src/http/styles/tailwind.css -o ./src/http/public/css/tailwind.css --minify",
-        "build:js": "for f in src/http/public/js/*.js; do npx terser \"$f\" --compress --mangle -o \"$f\"; done",
+        "build:js": "mkdir -p dist/http/public/js && for f in src/http/public/js/*.js; do npx terser \"$f\" --compress --mangle -o \"dist/http/public/js/$(basename $f)\"; done",
         "build:assets": "npm run build:css && npm run build:js",
         "format": "prettier --write \"src/**/*.{js,ts,json,css}\" \"test/**/*.ts\"",
         "format:check": "prettier --check \"src/**/*.{js,ts,json,css}\" \"test/**/*.ts\"",

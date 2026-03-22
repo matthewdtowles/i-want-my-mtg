@@ -1,1 +1,483 @@
-!function(){var e=null,t=0,a={normal:"Normal",foil:"Foil"},r={Normal:"normal",Foil:"foil"};function n(e){document.querySelectorAll(".price-info [data-price-type]").forEach(function(t){t.getAttribute("data-price-type")===e?(t.classList.remove("price-tile-inactive"),t.classList.add("price-tile-active")):(t.classList.remove("price-tile-active"),t.classList.add("price-tile-inactive"))})}function o(){e&&e.data.datasets.forEach(function(e,a){a===t?(e.borderColor=e._fullColor,e.borderWidth=3):(e.borderColor=e._fullColor+"80",e.borderWidth=1.5)})}function i(){var e=document.getElementById("card-price-legend");e&&e.querySelectorAll("[data-dataset-index]").forEach(function(e){parseInt(e.getAttribute("data-dataset-index"),10)===t?e.classList.add("legend-item-active"):e.classList.remove("legend-item-active")})}function l(a){var l=document.getElementById("card-price-legend");l&&(l.innerHTML="",a.forEach(function(a,d){var c=document.createElement("span");c.className="inline-flex items-center gap-1 text-gray-700 dark:text-gray-300 cursor-pointer",c.setAttribute("data-dataset-index",d),d===t&&c.classList.add("legend-item-active");var s=document.createElement("span");s.className="inline-block w-3 h-3 rounded-sm flex-shrink-0",s.style.backgroundColor=a._fullColor,c.appendChild(s);var u=document.createElement("span");u.textContent=a.label,c.appendChild(u),c.addEventListener("click",function(){if(e){var l=e.getDatasetMeta(d);d===t?(l.hidden=null===l.hidden?!a.hidden:null,c.style.opacity=l.hidden?"0.4":"1",l.hidden&&(t=function(){if(!e)return 0;for(var t=0;t<e.data.datasets.length;t++)if(!e.getDatasetMeta(t).hidden)return t;return 0}())):(t=d,l.hidden&&(l.hidden=null,c.style.opacity="1")),o(),e.update("none"),i();var s=e.data.datasets[t].label,u=r[s];u&&n(u)}}),c.addEventListener("mouseenter",function(){e&&(e.data.datasets.forEach(function(e,t){t===d?(e.borderColor=e._fullColor,e.borderWidth=3):(e.borderColor=e._fullColor+"80",e.borderWidth=1.5)}),e.update("none"))}),c.addEventListener("mouseleave",function(){e&&(o(),e.update("none"))}),l.appendChild(c)}))}function d(e){var t=e.tooltip,a=e.chart.canvas,r=function(e){var t=e.parentElement,a=t.querySelector(".chart-tooltip");return a||((a=document.createElement("div")).className="chart-tooltip",a.style.opacity="0",t.appendChild(a)),a}(a);if(0!==t.opacity){if(t.body){if(r.innerHTML="",t.title&&t.title.length){var n=document.createElement("div");n.className="chart-tooltip-title",n.textContent=t.title[0],r.appendChild(n)}t.body.map(function(e){return e.lines}).forEach(function(e,a){var n=document.createElement("div");n.className="chart-tooltip-body-item";var o=t.labelColors[a]?t.labelColors[a].borderColor:"#fff",i=document.createElement("span");i.className="chart-tooltip-swatch",i.style.backgroundColor=o,n.appendChild(i);var l=document.createElement("span");l.textContent=e[0],l.style.color=t.labelTextColors?t.labelTextColors[a]:"#fff",n.appendChild(l),r.appendChild(n)})}r.style.opacity="1";var o=a.getBoundingClientRect(),i=a.parentElement.getBoundingClientRect(),l=o.left-i.left,d=o.top-i.top,c=l+t.caretX,s=r.offsetWidth,u=a.parentElement.offsetWidth,p=c;c+s/2>u&&(p=u-s/2),r.style.left=p+"px",r.style.top=d+t.caretY+"px",r.style.transform="translate(-50%, -110%)"}else r.style.opacity="0"}function c(r,n){var o="/card/"+r+"/price-history";n&&(o+="?days="+n);var i=document.getElementById("price-history-chart");i&&fetch(o).then(function(e){return e.json()}).then(function(r){r.prices&&0!==r.prices.length?function(r){var n=document.getElementById("price-history-canvas");if(n){var o=n.getContext("2d"),i=function(){var e=document.documentElement.classList.contains("dark");return{normal:e?"#2cc8ca":"#0d9488",foil:e?"#a95de0":"#7c3aed",grid:e?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.1)",text:e?"#d1d5db":"#374151"}}(),c=[],s=[],u=!1,p=!1;r.prices.forEach(function(e){null!=e.normal&&(c.push({x:e.date,y:e.normal}),u=!0),null!=e.foil&&(s.push({x:e.date,y:e.foil}),p=!0)});var f=r.prices.length>90?0:2,m=[];u&&m.push({label:"Normal",data:c,borderColor:i.normal,backgroundColor:i.normal+"20",borderWidth:3,pointRadius:f,tension:.3,_fullColor:i.normal}),p&&m.push({label:"Foil",data:s,borderColor:i.foil+"80",backgroundColor:i.foil+"20",borderWidth:1.5,pointRadius:f,tension:.3,_fullColor:i.foil});var y=document.querySelector(".price-info .price-tile-active[data-price-type]"),h=y?y.getAttribute("data-price-type"):"normal",v=a[h]||"Normal";t=0,m.forEach(function(e,a){e.label===v&&(t=a)}),m.forEach(function(e,a){a===t?(e.borderColor=e._fullColor,e.borderWidth=3):(e.borderColor=e._fullColor+"80",e.borderWidth=1.5)}),l(m),e&&e.destroy(),e=new Chart(o,{type:"line",data:{datasets:m},options:{responsive:!0,maintainAspectRatio:!1,interaction:{mode:"nearest",axis:"x",intersect:!1},plugins:{legend:{display:!1},tooltip:{enabled:!1,external:d,callbacks:{label:function(e){var t=e.parsed.y;return null==t?e.dataset.label+": N/A":e.dataset.label+": $"+t.toFixed(2)},labelTextColor:function(e){return e.dataset._fullColor}}}},scales:{x:{type:"time",time:{unit:r.prices.length>365?"month":"day",tooltipFormat:"MMM d, yyyy",displayFormats:{day:"MMM d",month:"MMM yyyy"}},ticks:{color:i.text,maxTicksLimit:12},grid:{color:i.grid}},y:{ticks:{color:i.text,callback:function(e){return"$"+e.toFixed(2)}},grid:{color:i.grid},beginAtZero:!0}}}})}}(r):i.innerHTML='<p class="text-gray-500 dark:text-gray-400 text-sm">No price history available.</p>'}).catch(function(){i.innerHTML='<p class="text-gray-500 dark:text-gray-400 text-sm">Failed to load price history.</p>'})}function s(){var t=document.getElementById("price-history-chart");if(t){var a=t.getAttribute("data-card-id");if(a){c(a,"7");var r=document.querySelectorAll(".price-history-range");r.forEach(function(t){t.addEventListener("click",function(){var n=t.getAttribute("data-days");r.forEach(function(e){e.classList.remove("active")}),t.classList.add("active"),function(){var t=document.getElementById("price-history-canvas");if(t){var a=t.parentElement.querySelector(".chart-tooltip");a&&(a.style.opacity="0")}e&&(e.setActiveElements([]),e.tooltip.setActiveElements([],{x:0,y:0}),e.update("none"))}(),c(a,n||void 0)})})}}}window.setActiveCardPriceType=function(l){if(e){var d=-1;if("number"==typeof l)d=l;else{var c=a[l];if(!c)return;e.data.datasets.forEach(function(e,t){e.label===c&&(d=t)})}if(!(d<0||d>=e.data.datasets.length)){var s=e.getDatasetMeta(d);if(s.hidden){s.hidden=null;var u=document.getElementById("card-price-legend");if(u){var p=u.querySelector('[data-dataset-index="'+d+'"]');p&&(p.style.opacity="1")}}t=d,o(),e.update("none"),i();var f=e.data.datasets[d].label,m=r[f];m&&n(m)}}},"loading"===document.readyState?document.addEventListener("DOMContentLoaded",s):s()}();
+(function () {
+    var chart = null;
+    var activeDatasetIndex = 0;
+
+    var PRICE_TYPE_TO_LABEL = {
+        normal: 'Normal',
+        foil: 'Foil',
+    };
+
+    var LABEL_TO_PRICE_TYPE = {
+        Normal: 'normal',
+        Foil: 'foil',
+    };
+
+    function isDarkMode() {
+        return document.documentElement.classList.contains('dark');
+    }
+
+    function getColors() {
+        var dark = isDarkMode();
+        return {
+            normal: dark ? '#2cc8ca' : '#0d9488',
+            foil: dark ? '#a95de0' : '#7c3aed',
+            grid: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            text: dark ? '#d1d5db' : '#374151',
+        };
+    }
+
+    function updateTileStates(activePriceType) {
+        var tiles = document.querySelectorAll('.price-info [data-price-type]');
+        tiles.forEach(function (tile) {
+            var type = tile.getAttribute('data-price-type');
+            if (type === activePriceType) {
+                tile.classList.remove('price-tile-inactive');
+                tile.classList.add('price-tile-active');
+            } else {
+                tile.classList.remove('price-tile-active');
+                tile.classList.add('price-tile-inactive');
+            }
+        });
+    }
+
+    function applyActiveDatasetStyles() {
+        if (!chart) return;
+        chart.data.datasets.forEach(function (d, j) {
+            if (j === activeDatasetIndex) {
+                d.borderColor = d._fullColor;
+                d.borderWidth = 3;
+            } else {
+                d.borderColor = d._fullColor + '80';
+                d.borderWidth = 1.5;
+            }
+        });
+    }
+
+    function updateLegendActiveState() {
+        var legendEl = document.getElementById('card-price-legend');
+        if (!legendEl) return;
+        var items = legendEl.querySelectorAll('[data-dataset-index]');
+        items.forEach(function (item) {
+            var idx = parseInt(item.getAttribute('data-dataset-index'), 10);
+            if (idx === activeDatasetIndex) {
+                item.classList.add('legend-item-active');
+            } else {
+                item.classList.remove('legend-item-active');
+            }
+        });
+    }
+
+    function getFirstVisibleIndex() {
+        if (!chart) return 0;
+        for (var i = 0; i < chart.data.datasets.length; i++) {
+            var meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) return i;
+        }
+        return 0;
+    }
+
+    function setActiveCardPriceType(priceTypeOrIndex) {
+        if (!chart) return;
+
+        var targetIndex = -1;
+
+        if (typeof priceTypeOrIndex === 'number') {
+            targetIndex = priceTypeOrIndex;
+        } else {
+            var targetLabel = PRICE_TYPE_TO_LABEL[priceTypeOrIndex];
+            if (!targetLabel) return;
+            chart.data.datasets.forEach(function (ds, i) {
+                if (ds.label === targetLabel) targetIndex = i;
+            });
+        }
+
+        if (targetIndex < 0 || targetIndex >= chart.data.datasets.length) return;
+
+        // Make sure the dataset is visible
+        var meta = chart.getDatasetMeta(targetIndex);
+        if (meta.hidden) {
+            meta.hidden = null;
+            var legendEl = document.getElementById('card-price-legend');
+            if (legendEl) {
+                var item = legendEl.querySelector('[data-dataset-index="' + targetIndex + '"]');
+                if (item) item.style.opacity = '1';
+            }
+        }
+
+        activeDatasetIndex = targetIndex;
+        applyActiveDatasetStyles();
+        chart.update('none');
+        updateLegendActiveState();
+
+        // Sync tile states
+        var activeLabel = chart.data.datasets[targetIndex].label;
+        var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
+        if (activePriceType) {
+            updateTileStates(activePriceType);
+        }
+    }
+
+    // Expose globally for tile onclick
+    window.setActiveCardPriceType = setActiveCardPriceType;
+
+    function buildHtmlLegend(datasets) {
+        var legendEl = document.getElementById('card-price-legend');
+        if (!legendEl) return;
+        legendEl.innerHTML = '';
+
+        datasets.forEach(function (ds, i) {
+            var item = document.createElement('span');
+            item.className =
+                'inline-flex items-center gap-1 text-gray-700 dark:text-gray-300 cursor-pointer';
+            item.setAttribute('data-dataset-index', i);
+
+            if (i === activeDatasetIndex) {
+                item.classList.add('legend-item-active');
+            }
+
+            var swatch = document.createElement('span');
+            swatch.className = 'inline-block w-3 h-3 rounded-sm flex-shrink-0';
+            swatch.style.backgroundColor = ds._fullColor;
+            item.appendChild(swatch);
+
+            var label = document.createElement('span');
+            label.textContent = ds.label;
+            item.appendChild(label);
+
+            // Legend click to set active dataset
+            item.addEventListener('click', function () {
+                if (!chart) return;
+
+                var meta = chart.getDatasetMeta(i);
+                if (i === activeDatasetIndex) {
+                    // Clicking the active item toggles its visibility
+                    meta.hidden = meta.hidden === null ? !ds.hidden : null;
+                    item.style.opacity = meta.hidden ? '0.4' : '1';
+                    if (meta.hidden) {
+                        activeDatasetIndex = getFirstVisibleIndex();
+                    }
+                } else {
+                    // Make this the active dataset
+                    activeDatasetIndex = i;
+                    if (meta.hidden) {
+                        meta.hidden = null;
+                        item.style.opacity = '1';
+                    }
+                }
+
+                applyActiveDatasetStyles();
+                chart.update('none');
+                updateLegendActiveState();
+
+                // Sync tile states
+                var activeLabel = chart.data.datasets[activeDatasetIndex].label;
+                var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
+                if (activePriceType) {
+                    updateTileStates(activePriceType);
+                }
+            });
+
+            // Legend hover to highlight dataset
+            item.addEventListener('mouseenter', function () {
+                if (!chart) return;
+                chart.data.datasets.forEach(function (d, j) {
+                    if (j === i) {
+                        d.borderColor = d._fullColor;
+                        d.borderWidth = 3;
+                    } else {
+                        d.borderColor = d._fullColor + '80';
+                        d.borderWidth = 1.5;
+                    }
+                });
+                chart.update('none');
+            });
+            item.addEventListener('mouseleave', function () {
+                if (!chart) return;
+                applyActiveDatasetStyles();
+                chart.update('none');
+            });
+
+            legendEl.appendChild(item);
+        });
+    }
+
+    function hideTooltip() {
+        var canvas = document.getElementById('price-history-canvas');
+        if (canvas) {
+            var tip = canvas.parentElement.querySelector('.chart-tooltip');
+            if (tip) {
+                tip.style.opacity = '0';
+            }
+        }
+        if (chart) {
+            chart.setActiveElements([]);
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.update('none');
+        }
+    }
+
+    function getOrCreateTooltipEl(canvas) {
+        var container = canvas.parentElement;
+        var el = container.querySelector('.chart-tooltip');
+        if (!el) {
+            el = document.createElement('div');
+            el.className = 'chart-tooltip';
+            el.style.opacity = '0';
+            container.appendChild(el);
+        }
+        return el;
+    }
+
+    function externalTooltipHandler(context) {
+        var tooltip = context.tooltip;
+        var canvas = context.chart.canvas;
+        var tooltipEl = getOrCreateTooltipEl(canvas);
+
+        if (tooltip.opacity === 0) {
+            tooltipEl.style.opacity = '0';
+            return;
+        }
+
+        // Build content
+        if (tooltip.body) {
+            tooltipEl.innerHTML = '';
+
+            if (tooltip.title && tooltip.title.length) {
+                var titleEl = document.createElement('div');
+                titleEl.className = 'chart-tooltip-title';
+                titleEl.textContent = tooltip.title[0];
+                tooltipEl.appendChild(titleEl);
+            }
+
+            var bodyLines = tooltip.body.map(function (b) {
+                return b.lines;
+            });
+            bodyLines.forEach(function (lines, i) {
+                var item = document.createElement('div');
+                item.className = 'chart-tooltip-body-item';
+                var color = tooltip.labelColors[i] ? tooltip.labelColors[i].borderColor : '#fff';
+                var swatch = document.createElement('span');
+                swatch.className = 'chart-tooltip-swatch';
+                swatch.style.backgroundColor = color;
+                item.appendChild(swatch);
+                var text = document.createElement('span');
+                text.textContent = lines[0];
+                text.style.color = tooltip.labelTextColors ? tooltip.labelTextColors[i] : '#fff';
+                item.appendChild(text);
+                tooltipEl.appendChild(item);
+            });
+        }
+
+        tooltipEl.style.opacity = '1';
+
+        // Position tooltip above the hovered point
+        var canvasRect = canvas.getBoundingClientRect();
+        var containerRect = canvas.parentElement.getBoundingClientRect();
+        var offsetX = canvasRect.left - containerRect.left;
+        var offsetY = canvasRect.top - containerRect.top;
+        var caretLeft = offsetX + tooltip.caretX;
+        var tooltipWidth = tooltipEl.offsetWidth;
+        var containerWidth = canvas.parentElement.offsetWidth;
+
+        // Center above the point, but shift left if it would overflow the right edge
+        var left = caretLeft;
+        if (caretLeft + tooltipWidth / 2 > containerWidth) {
+            left = containerWidth - tooltipWidth / 2;
+        }
+
+        tooltipEl.style.left = left + 'px';
+        tooltipEl.style.top = offsetY + tooltip.caretY + 'px';
+        tooltipEl.style.transform = 'translate(-50%, -110%)';
+    }
+
+    function renderChart(data) {
+        var canvas = document.getElementById('price-history-canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        var colors = getColors();
+
+        var normalPoints = [];
+        var foilPoints = [];
+        var hasNormal = false;
+        var hasFoil = false;
+
+        data.prices.forEach(function (p) {
+            if (p.normal != null) {
+                normalPoints.push({ x: p.date, y: p.normal });
+                hasNormal = true;
+            }
+            if (p.foil != null) {
+                foilPoints.push({ x: p.date, y: p.foil });
+                hasFoil = true;
+            }
+        });
+
+        var pointRadius = data.prices.length > 90 ? 0 : 2;
+        var datasets = [];
+        if (hasNormal) {
+            datasets.push({
+                label: 'Normal',
+                data: normalPoints,
+                borderColor: colors.normal,
+                backgroundColor: colors.normal + '20',
+                borderWidth: 3,
+                pointRadius: pointRadius,
+                tension: 0.3,
+                _fullColor: colors.normal,
+            });
+        }
+        if (hasFoil) {
+            datasets.push({
+                label: 'Foil',
+                data: foilPoints,
+                borderColor: colors.foil + '80',
+                backgroundColor: colors.foil + '20',
+                borderWidth: 1.5,
+                pointRadius: pointRadius,
+                tension: 0.3,
+                _fullColor: colors.foil,
+            });
+        }
+
+        // Determine active dataset index based on current tile selection
+        var activeTile = document.querySelector('.price-info .price-tile-active[data-price-type]');
+        var activePriceType = activeTile ? activeTile.getAttribute('data-price-type') : 'normal';
+        var activeLabel = PRICE_TYPE_TO_LABEL[activePriceType] || 'Normal';
+        activeDatasetIndex = 0;
+        datasets.forEach(function (ds, i) {
+            if (ds.label === activeLabel) activeDatasetIndex = i;
+        });
+
+        // Apply initial active styles
+        datasets.forEach(function (ds, i) {
+            if (i === activeDatasetIndex) {
+                ds.borderColor = ds._fullColor;
+                ds.borderWidth = 3;
+            } else {
+                ds.borderColor = ds._fullColor + '80';
+                ds.borderWidth = 1.5;
+            }
+        });
+
+        buildHtmlLegend(datasets);
+
+        if (chart) {
+            chart.destroy();
+        }
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: false,
+                        external: externalTooltipHandler,
+                        callbacks: {
+                            label: function (context) {
+                                var value = context.parsed.y;
+                                if (value == null) return context.dataset.label + ': N/A';
+                                return context.dataset.label + ': $' + value.toFixed(2);
+                            },
+                            labelTextColor: function (context) {
+                                return context.dataset._fullColor;
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: data.prices.length > 365 ? 'month' : 'day',
+                            tooltipFormat: 'MMM d, yyyy',
+                            displayFormats: {
+                                day: 'MMM d',
+                                month: 'MMM yyyy',
+                            },
+                        },
+                        ticks: {
+                            color: colors.text,
+                            maxTicksLimit: 12,
+                        },
+                        grid: { color: colors.grid },
+                    },
+                    y: {
+                        ticks: {
+                            color: colors.text,
+                            callback: function (value) {
+                                return '$' + value.toFixed(2);
+                            },
+                        },
+                        grid: { color: colors.grid },
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
+
+    function fetchAndRender(cardId, days) {
+        var url = '/card/' + cardId + '/price-history';
+        if (days) {
+            url += '?days=' + days;
+        }
+
+        var container = document.getElementById('price-history-chart');
+        if (!container) return;
+
+        fetch(url)
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                if (!data.prices || data.prices.length === 0) {
+                    container.innerHTML =
+                        '<p class="text-gray-500 dark:text-gray-400 text-sm">No price history available.</p>';
+                    return;
+                }
+                renderChart(data);
+            })
+            .catch(function () {
+                container.innerHTML =
+                    '<p class="text-gray-500 dark:text-gray-400 text-sm">Failed to load price history.</p>';
+            });
+    }
+
+    function initPriceHistory() {
+        var container = document.getElementById('price-history-chart');
+        if (!container) return;
+
+        var cardId = container.getAttribute('data-card-id');
+        if (!cardId) return;
+
+        fetchAndRender(cardId, '7');
+
+        var buttons = document.querySelectorAll('.price-history-range');
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var days = btn.getAttribute('data-days');
+                buttons.forEach(function (b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+                hideTooltip();
+                fetchAndRender(cardId, days || undefined);
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPriceHistory);
+    } else {
+        initPriceHistory();
+    }
+})();

@@ -1,1 +1,99 @@
-document.addEventListener("DOMContentLoaded",function(){var e=document.getElementById("set-list-ajax");if(e)var t="true"===e.dataset.authenticated,a=AjaxUtils.initListPage({container:e,apiPath:"/api/v1/sets",basePath:"/sets",renderContent:function(e,s){if(s&&0!==s.length){var r=[{key:"set.name",label:"Set"},{key:"setPrice.basePrice",label:"Set Value",subtitle:"7d"}];t&&r.push({key:"",label:"Owned Value"}),r.push({key:"set.releaseDate",label:"Release Date",classes:"xs-hide pr-2"});var n='<div class="table-wrapper"><table class="min-w-full table-container">';n+="<thead>"+AjaxUtils.renderTableHeaderRow(r,a.state)+"</thead>",n+="<tbody>";for(var i=0;i<s.length;i++)n+=l(s[i]);n+="</tbody></table></div>",e.innerHTML=n}else AjaxUtils.renderEmptyState(e,{message:"No sets match your search",clearHref:"/sets"})},errorMessage:"Failed to load sets"});function l(e){var a=AjaxUtils.escapeHtml(e.keyruneCode||e.code),l=AjaxUtils.escapeHtml(e.name),s='<tr class="table-row">';return s+='<td class="table-cell"><i class="ss ss-'+a+' ss-fw"></i> ',s+='<a href="/sets/'+encodeURIComponent(e.code.toLowerCase())+'" class="table-link">'+l+"</a> "+AjaxUtils.renderTags(e.tags)+"</td>",s+='<td class="table-cell">'+function(e){if(!e)return"-";var t=e.basePrice;return(null==t||t<=0)&&(t=e.basePriceAll),(null==t||t<=0)&&(t=e.totalPrice),(null==t||t<=0)&&(t=e.totalPriceAll),null==t||t<=0?"-":AjaxUtils.toDollar(t)}(e.prices)+" "+function(e){if(!e)return"";var t=e.basePriceChangeWeekly;return null!=t&&0!==t||(t=e.totalPriceChangeWeekly),null==t||0===t?"":AjaxUtils.renderPriceChange(t)}(e.prices)+"</td>",t&&(s+='<td class="table-cell">',void 0!==e.ownedValue&&null!==e.ownedValue&&(s+='<span class="text-sm font-medium text-gray-800 dark:text-gray-200">'+AjaxUtils.toDollar(e.ownedValue)+"</span>",s+='<div class="mt-0.5">'+AjaxUtils.renderCompletionBar(e.completionRate||0)+"</div>"),s+="</td>"),(s+='<td class="table-cell xs-hide">'+AjaxUtils.escapeHtml(e.releaseDate||"")+"</td>")+"</tr>"}});
+document.addEventListener('DOMContentLoaded', function () {
+    var container = document.getElementById('set-list-ajax');
+    if (!container) return;
+
+    var authenticated = container.dataset.authenticated === 'true';
+
+    var page = AjaxUtils.initListPage({
+        container: container,
+        apiPath: '/api/v1/sets',
+        basePath: '/sets',
+        renderContent: renderTable,
+        errorMessage: 'Failed to load sets',
+    });
+    if (!page) return;
+
+    function renderTable(resultsEl, sets) {
+        if (!sets || sets.length === 0) {
+            AjaxUtils.renderEmptyState(resultsEl, {
+                message: 'No sets match your search',
+                clearHref: '/sets',
+            });
+            return;
+        }
+
+        var headers = [
+            { key: 'set.name', label: 'Set' },
+            { key: 'setPrice.basePrice', label: 'Set Value', subtitle: '7d' },
+        ];
+        if (authenticated) {
+            headers.push({ key: '', label: 'Owned Value' });
+        }
+        headers.push({ key: 'set.releaseDate', label: 'Release Date', classes: 'xs-hide pr-2' });
+
+        var html = '<div class="table-wrapper"><table class="min-w-full table-container">';
+        html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
+        html += '<tbody>';
+        for (var i = 0; i < sets.length; i++) {
+            html += renderSetRow(sets[i]);
+        }
+        html += '</tbody></table></div>';
+        resultsEl.innerHTML = html;
+    }
+
+    function renderSetRow(set) {
+        var keyruneCode = AjaxUtils.escapeHtml(set.keyruneCode || set.code);
+        var name = AjaxUtils.escapeHtml(set.name);
+        var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
+
+        var tagsHtml = AjaxUtils.renderTags(set.tags);
+
+        var priceHtml = formatPrice(set.prices);
+        var changeHtml = formatWeeklyChange(set.prices);
+
+        var html = '<tr class="table-row">';
+        html += '<td class="table-cell"><i class="ss ss-' + keyruneCode + ' ss-fw"></i> ';
+        html += '<a href="' + url + '" class="table-link">' + name + '</a> ' + tagsHtml + '</td>';
+        html += '<td class="table-cell">' + priceHtml + ' ' + changeHtml + '</td>';
+
+        if (authenticated) {
+            html += '<td class="table-cell">';
+            if (set.ownedValue !== undefined && set.ownedValue !== null) {
+                html +=
+                    '<span class="text-sm font-medium text-gray-800 dark:text-gray-200">' +
+                    AjaxUtils.toDollar(set.ownedValue) +
+                    '</span>';
+                html +=
+                    '<div class="mt-0.5">' +
+                    AjaxUtils.renderCompletionBar(set.completionRate || 0) +
+                    '</div>';
+            }
+            html += '</td>';
+        }
+
+        html +=
+            '<td class="table-cell xs-hide">' +
+            AjaxUtils.escapeHtml(set.releaseDate || '') +
+            '</td>';
+        html += '</tr>';
+        return html;
+    }
+
+    function formatPrice(prices) {
+        if (!prices) return '-';
+        var val = prices.basePrice;
+        if (val == null || val <= 0) val = prices.basePriceAll;
+        if (val == null || val <= 0) val = prices.totalPrice;
+        if (val == null || val <= 0) val = prices.totalPriceAll;
+        if (val == null || val <= 0) return '-';
+        return AjaxUtils.toDollar(val);
+    }
+
+    function formatWeeklyChange(prices) {
+        if (!prices) return '';
+        var change = prices.basePriceChangeWeekly;
+        if (change == null || change === 0) change = prices.totalPriceChangeWeekly;
+        if (change == null || change === 0) return '';
+        return AjaxUtils.renderPriceChange(change);
+    }
+});

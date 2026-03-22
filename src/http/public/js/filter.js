@@ -1,1 +1,74 @@
-document.addEventListener("DOMContentLoaded",function(){const e=document.getElementById("filter"),t=document.getElementById("filter-form"),n=document.getElementById("clear-filter-btn");let r;function o(e){const n=new URLSearchParams;n.set("filter",e),n.set("page",1),n.set("limit",t.querySelector('input[name="limit"]').value);const r=new URLSearchParams(window.location.search);r.has("baseOnly")&&n.set("baseOnly",r.get("baseOnly")),r.has("sort")&&n.set("sort",r.get("sort")),r.has("ascend")&&n.set("ascend",r.get("ascend"));const o=t.action+"?"+n.toString();console.log("Fetching URL:",o),fetch(o).then(e=>e.text()).then(e=>{const t=(new DOMParser).parseFromString(e,"text/html"),n=t.querySelector("#filter-results"),r=document.querySelector("#filter-results");n&&r&&r.replaceWith(n);const s=t.querySelector(".pagination-container"),i=document.querySelector(".pagination-container");s&&i&&i.replaceWith(s),window.history.replaceState({},"",o)}).catch(e=>{console.error("Error fetching filtered results:",e)})}e.addEventListener("input",function(){clearTimeout(r),n.style.display=this.value?"inline":"none",r=setTimeout(()=>{o(this.value)},300)}),n.addEventListener("click",function(){e.value="",n.style.display="none",o("")}),t.addEventListener("submit",function(e){e.preventDefault()})});
+document.addEventListener('DOMContentLoaded', function () {
+    const filterInput = document.getElementById('filter');
+    const form = document.getElementById('filter-form');
+    const clearBtn = document.getElementById('clear-filter-btn');
+
+    let debounceTimeout;
+
+    function fetchFilteredResults(filter) {
+        const params = new URLSearchParams();
+        params.set('filter', filter);
+        params.set('page', 1);
+        params.set('limit', form.querySelector('input[name="limit"]').value);
+
+        // Preserve all parameters from current URL
+        const currentParams = new URLSearchParams(window.location.search);
+
+        if (currentParams.has('baseOnly')) {
+            params.set('baseOnly', currentParams.get('baseOnly'));
+        }
+        if (currentParams.has('sort')) {
+            params.set('sort', currentParams.get('sort'));
+        }
+        if (currentParams.has('ascend')) {
+            params.set('ascend', currentParams.get('ascend'));
+        }
+
+        const url = form.action + '?' + params.toString();
+        console.log('Fetching URL:', url);
+        fetch(url)
+            .then((response) => response.text())
+            .then((html) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Replace the filter-results container (handles both table and empty state)
+                const newResults = doc.querySelector('#filter-results');
+                const existingResults = document.querySelector('#filter-results');
+                if (newResults && existingResults) {
+                    existingResults.replaceWith(newResults);
+                }
+
+                // Replace pagination
+                const newPagination = doc.querySelector('.pagination-container');
+                const existingPagination = document.querySelector('.pagination-container');
+                if (newPagination && existingPagination) {
+                    existingPagination.replaceWith(newPagination);
+                }
+
+                // Update the URL without reloading
+                window.history.replaceState({}, '', url);
+            })
+            .catch((error) => {
+                console.error('Error fetching filtered results:', error);
+            });
+    }
+
+    filterInput.addEventListener('input', function () {
+        clearTimeout(debounceTimeout);
+        clearBtn.style.display = this.value ? 'inline' : 'none';
+        debounceTimeout = setTimeout(() => {
+            fetchFilteredResults(this.value);
+        }, 300);
+    });
+
+    clearBtn.addEventListener('click', function () {
+        filterInput.value = '';
+        clearBtn.style.display = 'none';
+        fetchFilteredResults('');
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+    });
+});

@@ -1,1 +1,179 @@
-document.addEventListener("DOMContentLoaded",function(){async function t(t,e){const o=await fetch("/inventory",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({cardId:t,isFoil:e})});if(!o.ok){const t=await o.json().catch(()=>null);throw new Error(t?.error||`HTTP ${o.status}: ${o.statusText}`)}const n=await o.json();if(console.log("Response from deleteInventory:",n),!n.success)throw new Error(n.error||"Unknown error");return n}function e(t,e){var o=document.getElementById("transaction-form");if(o){var n=o.querySelector('select[name="type"]');n&&(n.value=t);var r=o.querySelector('select[name="isFoil"]');r&&(r.value=String(e));var a=o.querySelector('input[name="pricePerUnit"]');if(a){var s=e?a.dataset.foilPrice:a.dataset.normalPrice;s&&(a.value=s)}var i=document.getElementById("transaction-form-section");i&&(i.classList.add("ring-2","ring-teal-400","dark:ring-teal-500","rounded-lg","p-2"),AjaxUtils.smoothScroll(i,"nearest"),setTimeout(function(){i.classList.remove("ring-2","ring-teal-400","dark:ring-teal-500","rounded-lg","p-2")},3e3))}}async function o(t,e,o,n){const r=await fetch("/inventory",{method:n,headers:{"Content-Type":"application/json"},body:JSON.stringify([{cardId:e,isFoil:o,quantity:t}])});if(!r.ok){const t=await r.json().catch(()=>null);throw new Error(t?.error||`HTTP ${r.status}: ${r.statusText}`)}const a=await r.json();return console.log("Response data:",a),a.success&&a.data&&a.data.length>0?a.data[0]:null}document.body.addEventListener("click",async function(n){const r=n.target.closest(".increment-quantity"),a=n.target.closest(".decrement-quantity");if(r){n.stopImmediatePropagation();const t=r.closest(".quantity-form"),a=t.querySelector("input[name='quantity-owned']"),s=t.querySelector("input[name='cardId']").value,i="true"===t.querySelector("input[name='isFoil']").value;console.log(`Incrementing quantity from ${a.value} for card ${s}`);const c=await async function(t,e,n){try{const r=parseInt(t),a=0===r?"POST":"PATCH",s=await o(r+1,e,n,a);return s?s.quantity:t}catch(e){return console.error(`Error in addInventoryItem => ${e}`),"function"==typeof window.showToast&&window.showToast(e.message,"error"),t}}(a.value,s,i);a.value=c,e("BUY",i)}if(a){n.stopImmediatePropagation();const r=a.closest(".quantity-form"),s=r.querySelector("input[name='quantity-owned']"),i=r.querySelector("input[name='cardId']").value,c="true"===r.querySelector("input[name='isFoil']").value;console.log(`Decrementing quantity from ${s.value} for card ${i}`);const l=await async function(e,n,r){try{const a=parseInt(e);if(isNaN(a)||a<=0)return"0";const s=a-1;if(console.log(`Updating quantity to ${s} for card ${n}`),0===s)return await t(n,r),"0";{const t=await o(s,n,r,"PATCH");return console.log("Response from update:",t),t&&void 0!==t.quantity?t.quantity.toString():s.toString()}}catch(t){return console.error(`Error in removeInventoryItem => ${t}`),"function"==typeof window.showToast&&window.showToast(t.message,"error"),e}}(s.value,i,c);s.value=l,e("SELL",c)}}),document.body.addEventListener("click",async function(e){const o=e.target.closest(".delete-inventory-button");if(o){e.stopImmediatePropagation();const n=o.closest(".delete-inventory-form"),r=n.querySelector("input[name='card-id']").value,a="true"===n.querySelector("input[name='isFoil']").value;console.log(`Deleting card ${r} from inventory`);try{await t(r,a);const e=n.closest("tr");e?(e.remove(),console.log(`Card ${r} successfully deleted from inventory`)):console.warn(`Could not find table row for card ${r}`)}catch(t){console.error(`Error deleting card ${r}:`,t.message),"function"==typeof window.showToast&&window.showToast(t.message,"error")}}})});
+document.addEventListener('DOMContentLoaded', function () {
+    // Use event delegation for quantity forms
+    document.body.addEventListener('click', async function (event) {
+        const incrementButton = event.target.closest('.increment-quantity');
+        const decrementButton = event.target.closest('.decrement-quantity');
+        if (incrementButton) {
+            event.stopImmediatePropagation();
+            const form = incrementButton.closest('.quantity-form');
+            const quantityOwned = form.querySelector("input[name='quantity-owned']");
+            const cardId = form.querySelector("input[name='cardId']").value;
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
+            console.log(`Incrementing quantity from ${quantityOwned.value} for card ${cardId}`);
+            const updatedQuantity = await addInventoryItem(quantityOwned.value, cardId, isFoil);
+            quantityOwned.value = updatedQuantity;
+            showTransactionPrompt('BUY', isFoil);
+        }
+        if (decrementButton) {
+            event.stopImmediatePropagation();
+            const form = decrementButton.closest('.quantity-form');
+            const quantityOwned = form.querySelector("input[name='quantity-owned']");
+            const cardId = form.querySelector("input[name='cardId']").value;
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
+            console.log(`Decrementing quantity from ${quantityOwned.value} for card ${cardId}`);
+            const updatedQuantity = await removeInventoryItem(quantityOwned.value, cardId, isFoil);
+            quantityOwned.value = updatedQuantity;
+            showTransactionPrompt('SELL', isFoil);
+        }
+    });
+
+    // Use event delegation for delete buttons
+    document.body.addEventListener('click', async function (event) {
+        const deleteButton = event.target.closest('.delete-inventory-button');
+        if (deleteButton) {
+            event.stopImmediatePropagation();
+            const form = deleteButton.closest('.delete-inventory-form');
+            const cardId = form.querySelector("input[name='card-id']").value;
+            const isFoil = form.querySelector("input[name='isFoil']").value === 'true';
+            console.log(`Deleting card ${cardId} from inventory`);
+            try {
+                await deleteInventoryItem(cardId, isFoil);
+                const tableRow = form.closest('tr');
+                if (tableRow) {
+                    tableRow.remove();
+                    console.log(`Card ${cardId} successfully deleted from inventory`);
+                } else {
+                    console.warn(`Could not find table row for card ${cardId}`);
+                }
+            } catch (error) {
+                console.error(`Error deleting card ${cardId}:`, error.message);
+                if (typeof window.showToast === 'function')
+                    window.showToast(error.message, 'error');
+            }
+        }
+    });
+
+    async function addInventoryItem(quantity, cardId, isFoil) {
+        try {
+            const qtyInt = parseInt(quantity);
+            const method = qtyInt === 0 ? 'POST' : 'PATCH';
+            const updatedInventory = await updateInventory(qtyInt + 1, cardId, isFoil, method);
+            return updatedInventory ? updatedInventory.quantity : quantity;
+        } catch (error) {
+            console.error(`Error in addInventoryItem => ${error}`);
+            if (typeof window.showToast === 'function') window.showToast(error.message, 'error');
+            return quantity;
+        }
+    }
+
+    async function removeInventoryItem(quantity, cardId, isFoil) {
+        try {
+            const currentQty = parseInt(quantity);
+            if (isNaN(currentQty) || currentQty <= 0) {
+                return '0';
+            }
+            const qtyInt = currentQty - 1;
+            console.log(`Updating quantity to ${qtyInt} for card ${cardId}`);
+            if (qtyInt === 0) {
+                await deleteInventoryItem(cardId, isFoil);
+                return '0';
+            } else {
+                const updatedInventory = await updateInventory(qtyInt, cardId, isFoil, 'PATCH');
+                console.log('Response from update:', updatedInventory);
+                if (updatedInventory && typeof updatedInventory.quantity !== 'undefined') {
+                    return updatedInventory.quantity.toString();
+                } else {
+                    return qtyInt.toString();
+                }
+            }
+        } catch (error) {
+            console.error(`Error in removeInventoryItem => ${error}`);
+            if (typeof window.showToast === 'function') window.showToast(error.message, 'error');
+            return quantity;
+        }
+    }
+
+    async function deleteInventoryItem(cardId, isFoil) {
+        const response = await fetch('/inventory', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cardId: cardId,
+                isFoil: isFoil,
+            }),
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log(`Response from deleteInventory:`, data);
+        if (!data.success) {
+            throw new Error(data.error || 'Unknown error');
+        }
+        return data;
+    }
+
+    function showTransactionPrompt(type, isFoil) {
+        var txForm = document.getElementById('transaction-form');
+        if (!txForm) return;
+        var typeSelect = txForm.querySelector('select[name="type"]');
+        if (typeSelect) typeSelect.value = type;
+        var foilSelect = txForm.querySelector('select[name="isFoil"]');
+        if (foilSelect) foilSelect.value = String(isFoil);
+        // Update price based on foil selection
+        var priceInput = txForm.querySelector('input[name="pricePerUnit"]');
+        if (priceInput) {
+            var price = isFoil ? priceInput.dataset.foilPrice : priceInput.dataset.normalPrice;
+            if (price) priceInput.value = price;
+        }
+        var section = document.getElementById('transaction-form-section');
+        if (section) {
+            section.classList.add(
+                'ring-2',
+                'ring-teal-400',
+                'dark:ring-teal-500',
+                'rounded-lg',
+                'p-2'
+            );
+            AjaxUtils.smoothScroll(section, 'nearest');
+            setTimeout(function () {
+                section.classList.remove(
+                    'ring-2',
+                    'ring-teal-400',
+                    'dark:ring-teal-500',
+                    'rounded-lg',
+                    'p-2'
+                );
+            }, 3000);
+        }
+    }
+
+    async function updateInventory(quantity, cardId, isFoil, method) {
+        const response = await fetch('/inventory', {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([
+                {
+                    cardId: cardId,
+                    isFoil: isFoil,
+                    quantity: quantity,
+                },
+            ]),
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
+        if (responseData.success && responseData.data && responseData.data.length > 0) {
+            return responseData.data[0];
+        }
+        return null;
+    }
+});

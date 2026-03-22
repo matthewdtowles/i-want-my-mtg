@@ -1,1 +1,81 @@
-async function updateMessage(e,t,a){t.classList.remove("bg-info","bg-success","bg-error");const s=await e.json().catch(()=>null);s&&!1===s.success?(t.textContent=s.error||s.message||`Failed to ${a} user.`,t.classList.add("bg-error")):s&&s.success?(t.textContent=s.message||`User ${a}d successfully.`,t.classList.add("bg-success")):e.ok?(t.textContent=s?.message||`User ${a}d successfully.`,t.classList.add("bg-info")):(t.textContent=s?.error||s?.message||`Failed to ${a} user.`,t.classList.add("bg-error"))}document.addEventListener("DOMContentLoaded",()=>{const e=window.FormValidator,t=document.getElementById("response-message");if(!e||!t)return;const a=document.getElementById("user-name"),s=document.getElementById("user-email"),n=document.getElementById("new-password"),d=document.getElementById("user-update-form");d&&a&&s&&d.addEventListener("submit",async n=>{n.preventDefault();let d=!0;if(e.validateField(a,e.validateUsername)||(d=!1),e.validateField(s,e.validateEmail)||(d=!1),!d)return;const r=new FormData(n.target),o=Object.fromEntries(r.entries());updateMessage(await fetch("/user",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}),t,"update")});const r=document.getElementById("password-update-form");r&&n&&r.addEventListener("submit",async a=>{if(a.preventDefault(),!e.validateField(n,e.validatePassword))return;const s=new FormData(a.target),d=Object.fromEntries(s.entries());updateMessage(await fetch("/user/password",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}),t,"update")});const o=document.getElementById("delete-user-btn");o&&o.addEventListener("click",async e=>{e.preventDefault(),updateMessage(await fetch("/user",{method:"DELETE"}),t,"delete")}),a&&e.attachBlurValidation(a,e.validateUsername),s&&e.attachBlurValidation(s,e.validateEmail),n&&e.attachBlurValidation(n,e.validatePassword)});
+async function updateMessage(response, messageEl, method) {
+    messageEl.classList.remove('bg-info', 'bg-success', 'bg-error');
+
+    const result = await response.json().catch(() => null);
+
+    if (result && result.success === false) {
+        messageEl.textContent = result.error || result.message || `Failed to ${method} user.`;
+        messageEl.classList.add('bg-error');
+    } else if (result && result.success) {
+        messageEl.textContent = result.message || `User ${method}d successfully.`;
+        messageEl.classList.add('bg-success');
+    } else if (!response.ok) {
+        messageEl.textContent = result?.error || result?.message || `Failed to ${method} user.`;
+        messageEl.classList.add('bg-error');
+    } else {
+        messageEl.textContent = result?.message || `User ${method}d successfully.`;
+        messageEl.classList.add('bg-info');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const FV = window.FormValidator;
+    const messageEl = document.getElementById('response-message');
+    if (!FV || !messageEl) return;
+
+    const nameEl = document.getElementById('user-name');
+    const emailEl = document.getElementById('user-email');
+    const passwordEl = document.getElementById('new-password');
+
+    const userUpdateForm = document.getElementById('user-update-form');
+    if (userUpdateForm && nameEl && emailEl) {
+        userUpdateForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            let valid = true;
+            if (!FV.validateField(nameEl, FV.validateUsername)) valid = false;
+            if (!FV.validateField(emailEl, FV.validateEmail)) valid = false;
+            if (!valid) return;
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            const response = await fetch('/user', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            updateMessage(response, messageEl, 'update');
+        });
+    }
+
+    const passwordUpdateForm = document.getElementById('password-update-form');
+    if (passwordUpdateForm && passwordEl) {
+        passwordUpdateForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!FV.validateField(passwordEl, FV.validatePassword)) return;
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            const response = await fetch('/user/password', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            updateMessage(response, messageEl, 'update');
+        });
+    }
+
+    const deleteUserBtn = document.getElementById('delete-user-btn');
+    if (deleteUserBtn) {
+        deleteUserBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const response = await fetch('/user', {
+                method: 'DELETE',
+            });
+            updateMessage(response, messageEl, 'delete');
+        });
+    }
+
+    if (nameEl) FV.attachBlurValidation(nameEl, FV.validateUsername);
+    if (emailEl) FV.attachBlurValidation(emailEl, FV.validateEmail);
+    if (passwordEl) FV.attachBlurValidation(passwordEl, FV.validatePassword);
+});

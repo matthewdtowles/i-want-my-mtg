@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             AjaxUtils.escapeHtml(imgSrc) +
             '" alt="' +
             AjaxUtils.escapeHtml(item.cardName || '') +
-            '" class="card-img-preview" />';
+            '" class="card-img-preview" loading="lazy" width="256" height="357" />';
         html += '</a></td>';
 
         // Set column

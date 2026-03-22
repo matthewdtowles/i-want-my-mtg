@@ -3,8 +3,6 @@ module.exports = {
     darkMode: 'class',
     content: [
         './src/**/*.{html,ts,js,hbs}',
-        './views/**/*.{hbs,html}',
-        './node_modules/@tailwindcss/**/*.js',
     ],
     theme: {
         extend: {
@@ -72,6 +70,5 @@ module.exports = {
     plugins: [
         require('@tailwindcss/typography'),
         require('@tailwindcss/forms'),
-        require('@tailwindcss/aspect-ratio'),
     ],
 }

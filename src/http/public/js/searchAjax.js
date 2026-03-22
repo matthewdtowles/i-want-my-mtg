@@ -132,10 +132,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderSetSectionHtml(sets, meta) {
         var total = meta ? meta.total : sets.length;
         var html =
-            '<h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">' +
+            '<h2 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">' +
             'Sets <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(' +
             total +
-            ' found)</span></h4>';
+            ' found)</span></h2>';
         html += '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">';
         for (var i = 0; i < sets.length; i++) {
             html += renderSetCard(sets[i]);
@@ -147,10 +147,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderCardSectionHtml(cards, meta) {
         var total = meta ? meta.total : cards.length;
         var html =
-            '<h4 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">' +
+            '<h2 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">' +
             'Cards <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(' +
             total +
-            ' found)</span></h4>';
+            ' found)</span></h2>';
         html += '<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">';
         for (var i = 0; i < cards.length; i++) {
             html += renderCardItem(cards[i]);
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '" alt="' +
             AjaxUtils.escapeHtml(card.name) +
             '" ' +
-            'class="rounded w-full max-w-[146px] mb-2" loading="lazy" />' +
+            'class="rounded w-full max-w-[146px] mb-2" loading="lazy" width="146" height="204" />' +
             '<div class="text-center w-full">' +
             '<div class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">' +
             AjaxUtils.escapeHtml(card.name) +

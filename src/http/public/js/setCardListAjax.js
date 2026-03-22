@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
             AjaxUtils.escapeHtml(imgSrc) +
             '" alt="' +
             AjaxUtils.escapeHtml(card.name) +
-            '" class="card-img-preview" />';
+            '" class="card-img-preview" loading="lazy" width="256" height="357" />';
         html += '</a></td>';
 
         // Mana Cost (xs-hide)

@@ -1,5 +1,5 @@
 # Multi-stage build for NestJS
-FROM node:22-alpine AS base
+FROM node:24-alpine3.23 AS base
 RUN npm install -g npm@latest
 WORKDIR /app
 COPY package*.json ./
@@ -16,7 +16,7 @@ CMD ["npm", "run", "start:dev"]
 # Build stage
 FROM dependencies AS build
 COPY . .
-RUN npm run build
+RUN npm run build && npm run build:css:min && npm run build:js
 
 # Production stage
 FROM base AS production
@@ -24,5 +24,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/http/public ./dist/http/public
+COPY --from=build /app/dist/http/public/js ./dist/http/public/js
+COPY --from=build /app/dist/http/public/css ./dist/http/public/css
 EXPOSE 3000
 CMD ["npm", "run", "start:prod"]

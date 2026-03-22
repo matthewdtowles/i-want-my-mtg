@@ -96,7 +96,7 @@
                             <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
                             {{>tags item=card}}
                             <a href="{{card.url}}" class="card-img-link">
-                                <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" />
+                                <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" loading="lazy" width="256" height="357" />
                             </a>
                         </td>
                         <td class="table-cell">
@@ -173,11 +173,11 @@
 </section>
 {{/if}}
 
-<script src="/public/js/cardPreview.js" defer></script>
-<script src="/public/js/updateInventory.js" defer></script>
-<script src="/public/js/ajaxUtils.js" defer></script>
-<script src="/public/js/inventoryListAjax.js" defer></script>
-<script src="/public/js/tooltipManager.js" defer></script>
+<script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/inventoryListAjax.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new TooltipManager({

@@ -8,7 +8,7 @@
         class="increment-quantity inventory-controller-button-normal hover:text-purple-400 active:text-purple-600">+</button>
 
     <input type="number" name="quantity-owned" class="quantity-owned"
-        value="{{card.normalQuantity}}" data-id="{{card.cardId}}" />
+        value="{{card.normalQuantity}}" data-id="{{card.cardId}}" aria-label="Normal quantity owned" />
 
     <input type="hidden" name="isFoil" value="false" />
     <button type="button"
@@ -26,7 +26,7 @@
         class="increment-quantity inventory-controller-button-foil hover:text-purple-400 active:text-purple-600">+</button>
 
     <input type="number" name="quantity-owned" class="quantity-owned"
-        value="{{card.foilQuantity}}" data-id="{{card.cardId}}" />
+        value="{{card.foilQuantity}}" data-id="{{card.cardId}}" aria-label="Foil quantity owned" />
 
     <input type="hidden" name="isFoil" value="true" />
     <button type="button"

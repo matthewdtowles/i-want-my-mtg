@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    {{#if metaDescription}}
+    <meta name="description" content="{{metaDescription}}">
+    {{/if}}
     {{#if indexable}}
     <meta name="robots" content="index, follow">
     {{else}}
@@ -14,15 +18,29 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cards.scryfall.io">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="/public/css/tailwind.css" as="style" />
-    <link rel="preload" href="/public/css/app.css" as="style" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="//cdn.jsdelivr.net/npm/keyrune@latest/css/keyrune.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/tailwind.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/app.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" >
+    <link rel="preconnect" href="https://cards.scryfall.io" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    {{#if lcpImageUrl}}
+    <link rel="preload" href="{{lcpImageUrl}}" as="image" fetchpriority="high" />
+    {{/if}}
+    <link rel="preload" href="/public/css/tailwind.css?v={{assetVersion}}" as="style" />
+    <link rel="preload" href="/public/css/app.css?v={{assetVersion}}" as="style" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <link href="/public/css/tailwind.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
+    <link href="/public/css/app.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/keyrune@3.18.0/css/keyrune.css" rel="stylesheet" type="text/css" media="print" onload="this.media='all'" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/fontawesome.min.css" rel="stylesheet" media="print" onload="this.media='all'" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/solid.min.css" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/keyrune@3.18.0/css/keyrune.css" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/fontawesome.min.css" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/solid.min.css" rel="stylesheet" />
+    </noscript>
     <script>
         (function() {
             var theme = localStorage.getItem('theme');
@@ -50,7 +68,7 @@
         <form class="quantity-form">
             <input type="hidden" name="cardId" />
             <button type="button" class="increment-quantity hover:text-purple-400 active:text-purple-600">+</button>
-            <input type="number" name="quantity-owned" class="quantity-owned" />
+            <input type="number" name="quantity-owned" class="quantity-owned" aria-label="Quantity owned" />
             <input type="hidden" name="isFoil" />
             <button type="button" class="decrement-quantity hover:text-red-400 active:text-red-600">-</button>
         </form>
@@ -107,8 +125,8 @@
         </tr>
     </template>
 
-    <script src="/public/js/searchSuggest.js"></script>
-    <script src="/public/js/prefetch.js" defer></script>
+    <script src="/public/js/searchSuggest.js?v={{assetVersion}}" defer></script>
+    <script src="/public/js/prefetch.js?v={{assetVersion}}" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {

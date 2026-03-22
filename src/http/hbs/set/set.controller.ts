@@ -39,7 +39,7 @@ export class SetController {
         @Req() req: AuthenticatedRequest
     ): Promise<SetListViewDto> {
         const options = new SafeQueryOptions(query);
-        return await this.setOrchestrator.findSetList(
+        const view = await this.setOrchestrator.findSetList(
             req,
             [
                 { label: 'Home', url: '/' },
@@ -47,6 +47,11 @@ export class SetController {
             ],
             options
         );
+        view.title = 'Sets — I Want My MTG';
+        view.metaDescription =
+            'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
+        view.indexable = true;
+        return view;
     }
 
     @UseGuards(JwtAuthGuard)
@@ -101,6 +106,10 @@ export class SetController {
         @Req() req: AuthenticatedRequest
     ): Promise<SetViewDto> {
         const options = new SafeQueryOptions(query);
-        return await this.setOrchestrator.findBySetCode(req, code, options);
+        const view = await this.setOrchestrator.findBySetCode(req, code, options);
+        view.title = `${view.set?.name || code.toUpperCase()} — I Want My MTG`;
+        view.metaDescription = `View cards, prices, and collection stats for ${view.set?.name || code.toUpperCase()}.`;
+        view.indexable = true;
+        return view;
     }
 }

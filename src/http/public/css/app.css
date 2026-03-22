@@ -82,6 +82,31 @@ input[type='number'] {
     color: #f0fdfb;
 }
 
+/* Reserve space for keyrune set icons before deferred CSS loads */
+.ss {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    vertical-align: middle;
+}
+.ss-2x { font-size: 2em; }
+.ss-3x { font-size: 3em; }
+
+/* Reserve space for mana icons before deferred CSS loads */
+.ms {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    vertical-align: middle;
+}
+.ms-cost {
+    width: 1.3em;
+    height: 1.3em;
+    line-height: 1.35em;
+}
+
 .dark .ss-common {
     color: #d1d5db;
 }

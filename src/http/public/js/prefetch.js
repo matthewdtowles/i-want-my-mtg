@@ -12,6 +12,12 @@
     // Bail out if the user has Save-Data enabled
     if (navigator.connection && navigator.connection.saveData) return;
 
+    // Detect slow connections to skip eager nav prefetching
+    var isSlowConnection =
+        navigator.connection &&
+        navigator.connection.effectiveType &&
+        navigator.connection.effectiveType !== '4g';
+
     var prefetched = new Set();
     var hoverTimer = null;
 
@@ -82,7 +88,9 @@
         };
 
     scheduleIdle(function () {
-        prefetchNavLinks();
+        if (!isSlowConnection) {
+            prefetchNavLinks();
+        }
 
         // Delegate hover/touch on document for all links
         document.addEventListener('pointerenter', onPointerEnter, true);

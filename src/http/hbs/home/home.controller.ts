@@ -22,7 +22,6 @@ export class HomeController {
         const options: SafeQueryOptions = new SafeQueryOptions(req.query);
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
         setListView.indexable = true;
-        setListView.lcpImageUrl = '/public/images/soloJazzDesign.webp';
         setListView.title = 'I Want My MTG — Magic: The Gathering Collection Tracker';
         setListView.metaDescription =
             'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';

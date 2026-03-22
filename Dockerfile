@@ -1,5 +1,5 @@
 # Multi-stage build for NestJS
-FROM node:22-alpine AS base
+FROM node:24-alpine3.23 AS base
 RUN npm install -g npm@latest
 WORKDIR /app
 COPY package*.json ./

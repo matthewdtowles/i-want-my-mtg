@@ -16,7 +16,7 @@ CMD ["npm", "run", "start:dev"]
 # Build stage
 FROM dependencies AS build
 COPY . .
-RUN npm run build:css && npm run build && npm run build:js
+RUN npm run build && npm run build:css:min && npm run build:js
 
 # Production stage
 FROM base AS production
@@ -25,5 +25,6 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/http/public ./dist/http/public
 COPY --from=build /app/dist/http/public/js ./dist/http/public/js
+COPY --from=build /app/dist/http/public/css ./dist/http/public/css
 EXPOSE 3000
 CMD ["npm", "run", "start:prod"]

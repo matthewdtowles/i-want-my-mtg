@@ -47,7 +47,7 @@ PAGES=(
     "sets|/sets"
     "set-detail|/sets/fdn"
     "search|/search?q=lightning+bolt"
-    "card-detail|/card/fdn/176"
+    "card-detail|/card/ecl/273"
     "spoilers|/spoilers"
     "login|/auth/login"
 )

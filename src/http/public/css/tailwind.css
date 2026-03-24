@@ -2081,17 +2081,9 @@ input:where([type='file']):focus {
   --tw-gradient-to: #5c2883 var(--tw-gradient-to-position);
 }
 
-.bg-cover {
-  background-size: cover;
-}
-
 .bg-clip-text {
   -webkit-background-clip: text;
           background-clip: text;
-}
-
-.bg-center {
-  background-position: center;
 }
 
 .p-1 {
@@ -2482,10 +2474,6 @@ input:where([type='file']):focus {
 .placeholder-purple-300::placeholder {
   --tw-placeholder-opacity: 1;
   color: rgb(219 181 245 / var(--tw-placeholder-opacity, 1));
-}
-
-.opacity-20 {
-  opacity: 0.2;
 }
 
 .shadow-2xl {
@@ -5034,10 +5022,6 @@ input:where([type='file']):focus {
 .dark\:placeholder-gray-400:is(.dark *)::placeholder {
   --tw-placeholder-opacity: 1;
   color: rgb(156 163 175 / var(--tw-placeholder-opacity, 1));
-}
-
-.dark\:opacity-10:is(.dark *) {
-  opacity: 0.1;
 }
 
 .dark\:shadow-glow-teal:is(.dark *) {

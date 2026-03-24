@@ -88,9 +88,14 @@
         };
 
     scheduleIdle(function () {
-        if (!isSlowConnection) {
-            prefetchNavLinks();
-        }
+        // Delay eager nav prefetch to avoid competing with critical page resources.
+        // On simulated slow 4G (Lighthouse), immediate prefetch adds ~281KB of
+        // competing requests during the FCP/LCP window.
+        setTimeout(function () {
+            if (!isSlowConnection) {
+                prefetchNavLinks();
+            }
+        }, 3000);
 
         // Delegate hover/touch on document for all links
         document.addEventListener('pointerenter', onPointerEnter, true);

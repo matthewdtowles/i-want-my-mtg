@@ -185,7 +185,13 @@
   - [x] Fix CORS errors from protocol-relative CDN URLs (changed to explicit `https://`)
   - [x] Add favicon.ico to fix 404 console error (generated from logo, served at `/favicon.ico`)
   - [x] Add `<link rel="icon">` to layout
-- [ ] Verify improvements with follow-up Lighthouse audit
+- [x] Verify improvements with follow-up Lighthouse audit
+  - [x] Local: all pages 95+ mobile/desktop (card-detail 91 mobile due to external Scryfall image)
+  - [x] Self-hosted mana-font with woff2 (408KB → 187KB)
+  - [x] Fixed set-detail CLS (0.291 → 0 desktop) by matching placeholder styles to final font CSS
+  - [x] Delayed eager prefetch (3s) to avoid competing with critical resources on slow 4G
+  - [x] Optimized logo image (55KB → 4KB, resized to 160x160 for 80x80 display)
+  - [ ] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
 
 ### 2.3 Card Image Interactivity & Resolution
 
@@ -206,22 +212,24 @@
 
 ### 2.5 Accessibility Optimization
 
-- [ ] Run Lighthouse accessibility audit and document baseline score
-- [ ] Add proper ARIA labels and roles to interactive elements
-- [ ] Ensure sufficient color contrast ratios (WCAG AA)
+- [x] Run Lighthouse accessibility audit and document baseline score (95-96 on most pages, 100 on spoilers)
+- [x] Add proper ARIA labels and roles to interactive elements (done in 2.2: icon-only buttons, quantity inputs, price-info toggle)
+- [x] Fix heading hierarchy (done in 2.2: h4→h2 on search, mismatched tags on card page)
+- [ ] Fix remaining color contrast failures (btn-secondary, header-subtitle, btn-primary on login — blocking 96→100)
 - [ ] Add keyboard navigation support for all interactive features
 - [ ] Add focus indicators and skip-to-content link
-- [ ] Ensure all images have meaningful alt text
+- [x] Ensure all images have meaningful alt text (done in 2.2: width/height and alt on all images)
 - [ ] Verify screen reader compatibility for AJAX-updated content
 - [ ] Verify improvements with follow-up Lighthouse audit
 
 ### 2.6 SEO
 
-- [ ] Add meta tags (title, description, og:image) to all public pages
+- [x] Add meta tags (title, description) to all public pages (done in 2.2: dynamic `<title>`, `<meta description>`, robots directives)
+- [ ] Add Open Graph tags (og:image, og:title, og:description) to public pages
 - [ ] Add structured data (JSON-LD) for card pages
 - [ ] Generate sitemap.xml for public card and set pages
 - [ ] Add robots.txt
-- [ ] Ensure server-rendered HTML is crawlable (already SSR, so mostly meta/structure)
+- [x] Ensure server-rendered HTML is crawlable (already SSR; meta tags and indexable flags in place)
 - [ ] Add canonical URLs
 - [ ] Submit sitemap to Google Search Console
 

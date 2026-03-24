@@ -16,7 +16,7 @@ CMD ["npm", "run", "start:dev"]
 # Build stage
 FROM dependencies AS build
 COPY . .
-RUN npm run build && npm run build:css:min && npm run build:js
+RUN npm run build:mana && npm run build && npm run build:css:min && npm run build:js
 
 # Production stage
 FROM base AS production

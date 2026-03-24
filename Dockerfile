@@ -15,6 +15,7 @@ CMD ["npm", "run", "start:dev"]
 
 # Build stage
 FROM dependencies AS build
+RUN apk add --no-cache bash perl
 COPY . .
 RUN npm run build:mana && npm run build && npm run build:css:min && npm run build:js
 

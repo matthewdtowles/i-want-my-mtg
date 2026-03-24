@@ -1,3 +1,9 @@
+{{~!--
+  Trash icon button that deletes an inventory entry.
+
+  Parameters:
+    card — { cardId, isFoil }
+--~}}
 <form class="delete-inventory-form" data-item-id="{{card.cardId}}">
     <input type="hidden" name="card-id" value="{{card.cardId}}" />
     <input type="hidden" name="isFoil" value="{{card.isFoil}}" />

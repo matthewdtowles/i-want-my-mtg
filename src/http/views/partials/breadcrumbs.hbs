@@ -1,3 +1,10 @@
+{{~!--
+  Breadcrumb navigation trail.
+
+  Parameters:
+    breadcrumbs — array of { label: string, url: string }
+                  Last item renders as active (no link).
+--~}}
 <nav class="breadcrumb-layout" aria-label="breadcrumb">
     <div class="breadcrumb">
         {{#each breadcrumbs}}

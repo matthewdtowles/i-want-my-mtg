@@ -1,3 +1,10 @@
+{{~!--
+  Inline transaction recording form on card detail page.
+
+  Parameters:
+    authenticated — boolean, only renders for logged-in users
+    card          — { cardId, normalPriceRaw, foilPriceRaw, hasFoil }
+--~}}
 {{#if authenticated}}
 <div id="transaction-form-section" class="mt-4 border-t border-gray-200 dark:border-midnight-600 pt-4">
     <div class="flex items-center justify-between mb-3">

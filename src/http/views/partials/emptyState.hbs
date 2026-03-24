@@ -1,3 +1,19 @@
+{{~!--
+  Empty state placeholder with icon, message, and optional CTA button.
+
+  Parameters:
+    icon        — Font Awesome icon name (e.g. "search", "box-open")
+    iconSize    — optional CSS class for icon size (default: "text-4xl")
+    iconColor   — optional CSS class for icon color (default: gray)
+    heading     — optional large heading text
+    message     — main message text
+    padX        — if truthy, adds horizontal padding
+    hint        — optional secondary hint text
+    hintWide    — if truthy, constrains hint width
+    buttonHref  — optional CTA button URL
+    buttonClass — optional button CSS class (default: "btn-secondary")
+    buttonText  — CTA button label
+--~}}
 <div class="text-center py-16{{#if padX}} px-4{{/if}}">
     {{#if icon}}
     <i class="fas fa-{{icon}} {{#if iconSize}}{{iconSize}}{{else}}text-4xl{{/if}} {{#if iconColor}}{{iconColor}}{{else}}text-gray-300 dark:text-gray-600{{/if}} mb-4"></i>

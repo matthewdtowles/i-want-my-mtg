@@ -42,12 +42,13 @@ describe('TransactionPresenter', () => {
                 source: 'lgs',
             });
 
-            const dto = TransactionPresenter.toResponseDto(tx, 'Lightning Bolt', 'lea', '161');
+            const dto = TransactionPresenter.toResponseDto(tx, 'Lightning Bolt', 'lea', '161', 'abc123.jpg');
 
             expect(dto.id).toBe(1);
             expect(dto.cardName).toBe('Lightning Bolt');
             expect(dto.cardSetCode).toBe('lea');
             expect(dto.cardUrl).toBe('/card/lea/161');
+            expect(dto.imgSrc).toBe('https://cards.scryfall.io/normal/front/abc123.jpg');
             expect(dto.type).toBe('BUY');
             expect(dto.quantity).toBe(2);
             expect(dto.pricePerUnit).toBe('$5.00');
@@ -93,6 +94,7 @@ describe('TransactionPresenter', () => {
             expect(dto.cardName).toBe('');
             expect(dto.cardSetCode).toBe('');
             expect(dto.cardUrl).toBe('');
+            expect(dto.imgSrc).toBe('');
         });
     });
 

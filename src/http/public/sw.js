@@ -7,7 +7,7 @@
  * - HTML pages: Network-first with offline fallback
  * - Card images (Scryfall): Cache on visit, serve from cache when available
  */
-var APP_VERSION = '1.12.0';
+var APP_VERSION = '__APP_VERSION__';
 var CACHE_VERSION = 'v1-' + APP_VERSION;
 var STATIC_CACHE = 'static-' + CACHE_VERSION;
 var API_CACHE = 'api-' + CACHE_VERSION;
@@ -26,12 +26,17 @@ var PRECACHE_URLS = [
 var OFFLINE_PAGE = '/offline';
 
 // Install: precache static assets and offline page
+// Use cache: 'reload' to bypass the browser HTTP cache so version bumps
+// always fetch fresh files even when the HTTP cache has stale copies.
 self.addEventListener('install', function (event) {
     event.waitUntil(
         caches
             .open(STATIC_CACHE)
             .then(function (cache) {
-                return cache.addAll(PRECACHE_URLS.concat([OFFLINE_PAGE]));
+                var requests = PRECACHE_URLS.concat([OFFLINE_PAGE]).map(function (url) {
+                    return new Request(url, { cache: 'reload' });
+                });
+                return cache.addAll(requests);
             })
             .then(function () {
                 return self.skipWaiting();
@@ -109,7 +114,8 @@ function cacheFirst(cacheName, request) {
     var normalizedRequest = new Request(url.toString(), { headers: request.headers });
     return caches.match(normalizedRequest).then(function (cached) {
         if (cached) return cached;
-        return fetch(request).then(function (response) {
+        // Bypass browser HTTP cache on cache miss to avoid serving stale files
+        return fetch(request.url, { cache: 'reload' }).then(function (response) {
             if (response.ok) {
                 var clone = response.clone();
                 caches.open(cacheName).then(function (cache) {

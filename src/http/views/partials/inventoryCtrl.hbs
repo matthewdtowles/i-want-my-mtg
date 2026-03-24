@@ -1,3 +1,10 @@
+{{~!--
+  Normal + foil quantity controls for a card in a set list.
+  Renders one or two +/- forms depending on card variants.
+
+  Parameters:
+    card — { cardId, hasNormal, hasFoil, normalQuantity, foilQuantity }
+--~}}
 {{#if card.hasNormal}}
 <form class="quantity-form quantity-form-normal"
     data-item-id="{{card.cardId}}" data-foil="false">

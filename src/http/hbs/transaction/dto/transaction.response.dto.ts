@@ -4,6 +4,7 @@ export class TransactionResponseDto {
     readonly cardName: string;
     readonly cardSetCode: string;
     readonly cardUrl: string;
+    readonly imgSrc: string;
     readonly type: string;
     readonly quantity: number;
     readonly pricePerUnit: string;
@@ -23,6 +24,7 @@ export class TransactionResponseDto {
         this.cardName = init.cardName || '';
         this.cardSetCode = init.cardSetCode || '';
         this.cardUrl = init.cardUrl || '';
+        this.imgSrc = init.imgSrc || '';
         this.type = init.type || '';
         this.quantity = init.quantity || 0;
         this.pricePerUnit = init.pricePerUnit || '';

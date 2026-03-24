@@ -95,21 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<td class="table-cell">' + AjaxUtils.escapeHtml(card.number) + '</td>';
 
         // Card name with hover preview
-        html += '<td data-img-src="' + AjaxUtils.escapeHtml(card.imgSrc) + '" class="table-cell">';
-        html +=
-            '<a href="' +
-            url +
-            '" class="card-name-link">' +
-            AjaxUtils.escapeHtml(card.name) +
-            '</a>';
-        html += '<a href="' + url + '" class="card-img-link">';
-        html +=
-            '<img src="' +
-            AjaxUtils.escapeHtml(imgSrc) +
-            '" alt="' +
-            AjaxUtils.escapeHtml(card.name) +
-            '" class="card-img-preview" loading="lazy" width="256" height="357" />';
-        html += '</a></td>';
+        html += '<td class="table-cell">';
+        html += AjaxUtils.renderCardLink(url, card.name, imgSrc);
+        html += '</td>';
 
         // Mana Cost (xs-hide)
         html += '<td class="table-cell xs-hide">' + renderManaCost(card.manaCost) + '</td>';

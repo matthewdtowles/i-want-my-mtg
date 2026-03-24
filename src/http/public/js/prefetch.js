@@ -65,6 +65,7 @@
 
     // Hover/touch prefetching for any internal link
     function onPointerEnter(e) {
+        if (!e.target || !e.target.closest) return;
         var anchor = e.target.closest('a[href]');
         if (!anchor || !shouldPrefetch(anchor.href)) return;
 
@@ -103,6 +104,7 @@
         document.addEventListener(
             'touchstart',
             function (e) {
+                if (!e.target || !e.target.closest) return;
                 var anchor = e.target.closest('a[href]');
                 if (anchor && shouldPrefetch(anchor.href)) {
                     prefetchUrl(anchor.href);

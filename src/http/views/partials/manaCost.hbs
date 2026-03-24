@@ -1,3 +1,10 @@
+{{~!--
+  Renders mana cost symbols using the mana-font icon set.
+
+  Parameters:
+    card.manaCost — array of { symbol: string, isHalf: boolean, sep: string }
+                    Each entry is either a mana symbol or a separator.
+--~}}
 <span class="mana-cost">
     {{#if card.manaCost}}
     {{#each card.manaCost}}

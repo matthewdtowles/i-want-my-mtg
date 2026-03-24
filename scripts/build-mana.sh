@@ -28,7 +28,7 @@ cp "$MANA_DIR/fonts/mana.woff2" "$FONT_DIR/mana.woff2"
     printf '@font-face{font-family:"Mana";src:url("/public/fonts/mana.woff2") format("woff2"),url("https://cdn.jsdelivr.net/npm/mana-font@%s/fonts/mana.woff?v=%s") format("woff");font-weight:normal;font-style:normal}' \
         "$MANA_VERSION" "$MANA_VERSION"
     sed '1s/^\xEF\xBB\xBF//' "$MANA_DIR/css/mana.min.css" \
-        | perl -pe 's/@font-face\{[^}]*\}//g' \
+        | perl -pe 's/\@font-face\{[^}]*\}//g' \
         | sed 's|/\*# sourceMappingURL=.*\*/||g'
 } > "$CSS_OUT"
 

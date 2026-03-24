@@ -92,12 +92,8 @@
                     {{#each cards as |card|}}
                     <tr class="table-row">
                         <td class="table-cell">{{>cardsOwned card=card}}</td>
-                        <td class="table-cell" data-id="{{card.cardId}}" data-img-src="{{card.imgSrc}}">
-                            <a href="{{card.url}}" class="card-name-link">{{card.name}}</a>
-                            {{>tags item=card}}
-                            <a href="{{card.url}}" class="card-img-link">
-                                <img src="{{card.imgSrc}}" alt="{{card.name}}" class="card-img-preview" loading="lazy" width="256" height="357" />
-                            </a>
+                        <td class="table-cell">
+                            {{>cardLink url=card.url name=card.name imgSrc=card.imgSrc item=card}}
                         </td>
                         <td class="table-cell">
                             <a href="/sets/{{card.setCode}}" class="table-link">
@@ -173,7 +169,6 @@
 </section>
 {{/if}}
 
-<script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/inventoryListAjax.js?v={{assetVersion}}" defer></script>

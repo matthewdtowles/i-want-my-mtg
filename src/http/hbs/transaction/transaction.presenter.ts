@@ -2,7 +2,7 @@ import { EDIT_WINDOW_MS } from 'src/core/transaction/transaction.constants';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import { CostBasisSummary } from 'src/core/transaction/transaction.service';
 import { formatUtcDate } from 'src/http/base/date.util';
-import { buildCardUrl, formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
+import { BASE_IMAGE_URL, buildCardUrl, formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionResponseDto } from './dto/transaction.response.dto';
@@ -27,7 +27,8 @@ export class TransactionPresenter {
         transaction: Transaction,
         cardName?: string,
         cardSetCode?: string,
-        cardNumber?: string
+        cardNumber?: string,
+        cardImgSrc?: string
     ): TransactionResponseDto {
         const total = transaction.quantity * transaction.pricePerUnit;
         const setCode = cardSetCode || '';
@@ -37,6 +38,7 @@ export class TransactionPresenter {
             cardName: cardName || '',
             cardSetCode: setCode,
             cardUrl: setCode && cardNumber ? buildCardUrl(setCode, cardNumber) : '',
+            imgSrc: cardImgSrc ? `${BASE_IMAGE_URL}/normal/front/${cardImgSrc}` : '',
             type: transaction.type,
             quantity: transaction.quantity,
             pricePerUnit: toDollar(transaction.pricePerUnit),

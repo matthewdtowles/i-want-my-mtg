@@ -1,3 +1,10 @@
+{{~!--
+  Table header row — renders sortable or static headers based on presence of href.
+
+  Parameters:
+    tableHeadersRow.headers — array of { text, subtitle?, classes?: string[], href?, ascend? }
+                              If href is present, renders as sortableHeader; otherwise tableHeader.
+--~}}
 <tr class="table-header-row">
     {{#each tableHeadersRow.headers as |header|}}
     {{#if header.href}}

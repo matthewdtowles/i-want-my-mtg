@@ -647,6 +647,24 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Render a standardized card name link with optional image preview support.
+     * @param {string} url - Card detail page URL
+     * @param {string} name - Card display name
+     * @param {string} [imgSrc] - Full image URL for hover preview
+     * @param {string[]} [tags] - Array of tag strings
+     * @returns {string} HTML string
+     */
+    function renderCardLink(url, name, imgSrc, tags) {
+        var html = '<a href="' + escapeHtml(url) + '" class="card-name-link"';
+        if (imgSrc) {
+            html += ' data-card-img="' + escapeHtml(imgSrc) + '"';
+        }
+        html += '>' + escapeHtml(name) + '</a>';
+        html += renderTags(tags);
+        return html;
+    }
+
+    /**
      * Render a price change badge.
      * @param {number} change - Price change amount
      * @returns {string} HTML string
@@ -948,6 +966,7 @@ var AjaxUtils = (function () {
         createDeleteForm: createDeleteForm,
         createTransactionRow: createTransactionRow,
         renderTags: renderTags,
+        renderCardLink: renderCardLink,
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,

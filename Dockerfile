@@ -10,6 +10,7 @@ RUN npm ci
 
 # Development stage
 FROM dependencies AS development
+RUN apk add --no-cache bash
 COPY . .
 CMD ["npm", "run", "start:dev"]
 
@@ -17,15 +18,12 @@ CMD ["npm", "run", "start:dev"]
 FROM dependencies AS build
 RUN apk add --no-cache bash perl
 COPY . .
-RUN npm run build:mana && npm run build && npm run build:css:min && npm run build:js
+RUN npm run build:prod
 
 # Production stage
 FROM base AS production
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/src/http/public ./dist/http/public
-COPY --from=build /app/dist/http/public/js ./dist/http/public/js
-COPY --from=build /app/dist/http/public/css ./dist/http/public/css
 EXPOSE 3000
 CMD ["npm", "run", "start:prod"]

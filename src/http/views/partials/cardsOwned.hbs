@@ -1,3 +1,9 @@
+{{~!--
+  Inline quantity +/- form for inventory rows.
+
+  Parameters:
+    card — { cardId, quantity, isFoil }
+--~}}
 <form class="quantity-form quantity-form-{{#if card.isFoil}}foil{{else}}normal{{/if}}"
     data-item-id="{{card.cardId}}" data-foil="{{card.isFoil}}">
 

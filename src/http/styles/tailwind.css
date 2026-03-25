@@ -40,11 +40,14 @@
 
 /* ===== Card Preview ===== */
 
-.card-img-link {
-    @apply fixed hidden z-50;
+.card-preview-container {
+    position: fixed;
+    display: none;
+    z-index: 50;
+    pointer-events: none;
 }
 
-.card-img-preview {
+.card-preview-img {
     @apply w-64 h-auto rounded-lg shadow-lg;
 }
 

@@ -49,27 +49,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Card name with hover preview and tags
         var imgSrc = item.imgSrc || '';
         var url = item.url || '#';
-        html +=
-            '<td class="table-cell" data-id="' +
-            AjaxUtils.escapeHtml(item.cardId) +
-            '" data-img-src="' +
-            AjaxUtils.escapeHtml(imgSrc) +
-            '">';
-        html +=
-            '<a href="' +
-            AjaxUtils.escapeHtml(url) +
-            '" class="card-name-link">' +
-            AjaxUtils.escapeHtml(item.cardName || '') +
-            '</a>';
-        html += AjaxUtils.renderTags(item.tags);
-        html += '<a href="' + AjaxUtils.escapeHtml(url) + '" class="card-img-link">';
-        html +=
-            '<img src="' +
-            AjaxUtils.escapeHtml(imgSrc) +
-            '" alt="' +
-            AjaxUtils.escapeHtml(item.cardName || '') +
-            '" class="card-img-preview" loading="lazy" width="256" height="357" />';
-        html += '</a></td>';
+        html += '<td class="table-cell">';
+        html += AjaxUtils.renderCardLink(url, item.cardName || '', imgSrc, item.tags);
+        html += '</td>';
 
         // Set column
         var keyruneCode = item.keyruneCode || item.setCode || '';

@@ -1,3 +1,12 @@
+{{~!--
+  Pagination controls with page navigation and per-page limit selector.
+
+  Parameters:
+    hasItems   — truthy to render pagination (hides when no items)
+    pagination — { previous, first, skipBack, current, skipForward, next, last, baseUrl, limit }
+                 Each nav item has { href, text }. current is the active page number.
+    filter     — { searchTerm, sort, ascend, baseOnly } for preserving state in page links
+--~}}
 {{#if hasItems}}
 <section class="pagination-container">
 

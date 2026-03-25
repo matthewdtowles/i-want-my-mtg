@@ -133,6 +133,7 @@ export class TransactionRepository implements TransactionRepositoryPort {
                 (core as any).cardName = orm.card.name;
                 (core as any).cardSetCode = orm.card.setCode;
                 (core as any).cardNumber = orm.card.number;
+                (core as any).cardImgSrc = orm.card.imgSrc;
             }
             return core;
         });

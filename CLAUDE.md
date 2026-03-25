@@ -6,9 +6,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 I Want My MTG is a Magic: The Gathering collection tracker — a NestJS web app with server-rendered Handlebars views and PostgreSQL via TypeORM. The ETL tool ([Scry](https://github.com/matthewdtowles/scry)) lives in a separate repository.
 
-## Common Commands
+## Development (Local)
 
-### NestJS (web app)
+```bash
+docker compose up -d              # Start dev environment (web, postgres, adminer, mailhog)
+docker compose build web          # Rebuild after code changes (add --no-cache if stale)
+docker compose up -d web          # Restart web container after rebuild
+docker compose exec web npm test  # Run tests in container
+docker compose run --rm migrate   # Execute database migrations
+./scripts/etl.sh ingest           # Run ETL (pulls scry image from ghcr.io)
+```
+
+After any code change, rebuild and restart:
+```bash
+docker compose build web && docker compose up -d web
+```
+
+### Testing
 
 ```bash
 npm test                          # Run unit tests (Jest, maxWorkers=50%)
@@ -18,19 +32,32 @@ npm run test:cov                  # Tests with coverage
 npm run lint                      # ESLint with --fix
 npm run format                    # Prettier formatting
 npm run format:check              # Check formatting without fixing
-npm run build                     # nest build (TypeScript compilation)
-npm run build:css                 # Build Tailwind CSS
-npm run start:dev                 # Watch mode for development
 ```
 
-### Docker
+### Build Scripts
 
+`build:prod` is the single build command used by Docker and CI. It runs all sub-steps in order: clean dist, build mana font, compile TypeScript, minify CSS, minify JS, inject service worker version. You should not need to run individual build scripts directly.
+
+Other scripts for local development outside Docker:
 ```bash
-docker compose up -d              # Start dev environment (web, postgres, adminer, mailhog)
-docker compose exec web npm test  # Run tests in container
-docker compose run --rm migrate   # Execute database migrations
-./scripts/etl.sh ingest           # Run ETL (pulls scry image from ghcr.io)
+npm run build:assets              # Rebuild CSS/JS/SW without recompiling TS
+npm run build:css                 # Rebuild Tailwind CSS only (after style changes)
+npm run start:dev                 # Watch mode (builds SW + nest watch)
 ```
+
+## Production
+
+CI/CD is handled by GitHub Actions (`.github/workflows/deploy.yml`). On push to main:
+1. **test** — Runs unit and integration tests
+2. **tag** — Creates a GitHub release from `package.json` version
+3. **build** — Builds Docker image using the `production` target and pushes to `ghcr.io`
+4. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`
+
+The production Docker build (`target: production`) runs `npm run build:prod` which produces the final `dist/` directory with compiled TS, minified assets, and versioned service worker. The production stage copies only `dist/` and production dependencies.
+
+### Service Worker & Cache Busting
+
+The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches. To bump the version: `npm run bump` (patch), `bump:minor`, or `bump:major`.
 
 ## Architecture
 
@@ -119,10 +146,7 @@ Server-side rendered using Handlebars (`src/http/views/`). Layouts in `views/lay
 
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to main:
-1. **test** — Runs `npm test` in Docker
-2. **build** — Builds and pushes web Docker image to `ghcr.io`
-3. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`. Copies files to server, runs migrations against managed DB, starts web container.
+See the Production section above for the full pipeline. The workflow is defined in `.github/workflows/deploy.yml`.
 
 ## Environment
 

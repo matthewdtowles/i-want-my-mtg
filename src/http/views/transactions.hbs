@@ -45,7 +45,7 @@
                     </td>
                     <td class="table-cell">
                         {{#if tx.cardUrl}}
-                        <a href="{{tx.cardUrl}}" class="card-name-link">{{tx.cardName}}</a>
+                        {{>cardLink url=tx.cardUrl name=tx.cardName imgSrc=tx.imgSrc}}
                         {{else}}
                         {{tx.cardName}}
                         {{/if}}

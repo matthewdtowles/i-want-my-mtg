@@ -191,9 +191,21 @@
   - [x] Fixed set-detail CLS (0.291 → 0 desktop) by matching placeholder styles to final font CSS
   - [x] Delayed eager prefetch (3s) to avoid competing with critical resources on slow 4G
   - [x] Optimized logo image (55KB → 4KB, resized to 160x160 for 80x80 display)
-  - [ ] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
+  - [x] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
 
-### 2.3 Card Image Interactivity & Resolution
+### 2.3 Standardize Card Links
+
+- [x] Create reusable card link partial/template with consistent markup (`cardLink.hbs`)
+- [x] Show card image preview on hover (desktop tooltip/popover)
+- [x] First tap on mobile shows image preview, second tap navigates
+- [x] Use card link partial across all pages (search, set, inventory, transactions, portfolio, card)
+- [x] Ensure consistent styling and behavior site-wide
+- [x] Add `renderCardLink()` JS utility for AJAX-rendered card links
+- [x] Load `cardPreview.js` globally from layout for site-wide coverage
+- [x] Single floating preview element (replaces per-link hidden images)
+- [x] Respect `prefers-reduced-motion`
+
+### 2.4 Card Image Interactivity & Resolution
 
 - [ ] Display higher-resolution card images (use Scryfall `normal` or `large` size)
 - [ ] Add smooth hover zoom/enlarge effect on card images (desktop)
@@ -201,14 +213,6 @@
 - [ ] Add subtle card image animations (fade-in on load, hover lift/shadow)
 - [ ] Polish card detail page layout — clean, modern feel (inspired by Perplexity aesthetic)
 - [ ] Ensure image interactions respect `prefers-reduced-motion`
-
-### 2.4 Standardize Card Links
-
-- [ ] Create reusable card link partial/template with consistent markup
-- [ ] Show card image preview on hover (desktop tooltip/popover)
-- [ ] First tap on mobile shows image preview, second tap navigates
-- [ ] Use card link partial across all pages (search, set, inventory, transactions)
-- [ ] Ensure consistent styling and behavior site-wide
 
 ### 2.5 Accessibility Optimization
 

@@ -50,7 +50,8 @@ export class TransactionOrchestrator {
                     t,
                     tx.cardName,
                     tx.cardSetCode,
-                    tx.cardNumber
+                    tx.cardNumber,
+                    tx.cardImgSrc
                 );
             });
 
@@ -172,7 +173,7 @@ export class TransactionOrchestrator {
             const cardMap = await this.buildCardMap([cardId]);
             const card = cardMap.get(cardId);
             return transactions.map((t) =>
-                TransactionPresenter.toResponseDto(t, card?.name, card?.setCode, card?.number)
+                TransactionPresenter.toResponseDto(t, card?.name, card?.setCode, card?.number, card?.imgSrc)
             );
         } catch (error) {
             this.LOGGER.debug(`Error getting card transactions: ${error?.message}`);
@@ -238,13 +239,13 @@ export class TransactionOrchestrator {
 
     private async buildCardMap(
         cardIds: string[]
-    ): Promise<Map<string, { name: string; setCode: string; number: string }>> {
-        const cardMap = new Map<string, { name: string; setCode: string; number: string }>();
+    ): Promise<Map<string, { name: string; setCode: string; number: string; imgSrc: string }>> {
+        const cardMap = new Map<string, { name: string; setCode: string; number: string; imgSrc: string }>();
         if (cardIds.length === 0) return cardMap;
 
         const cards = await this.cardService.findByIds(cardIds);
         for (const card of cards) {
-            cardMap.set(card.id, { name: card.name, setCode: card.setCode, number: card.number });
+            cardMap.set(card.id, { name: card.name, setCode: card.setCode, number: card.number, imgSrc: card.imgSrc });
         }
         return cardMap;
     }

@@ -110,18 +110,24 @@ Reports are saved to `lighthouse-reports/<timestamp>/` with separate `mobile/` a
 ./scripts/db-backup.sh my.sql  # Backup to custom filename
 ```
 
-## Manual Docker Commands
+## Docker Commands
 
-These are the underlying commands if you need more control.
+### Development
 
-### Services
+After any code change, rebuild and restart:
+```bash
+docker compose build web && docker compose up -d web
+```
 
+This runs `build:prod` inside Docker which handles everything: clean dist, build mana font, compile TypeScript, minify CSS, minify JS, inject service worker version. No need to run individual build scripts.
+
+Other commands:
 ```bash
 docker compose up -d               # Start all services
 docker compose down                # Stop all services
 docker compose down -v             # Stop and destroy volumes (nuclear option)
-docker compose restart web         # Restart web app
-docker compose build web           # Rebuild after dependency changes
+docker compose exec web npm test   # Run tests in container
+docker compose run --rm migrate    # Run database migrations
 ```
 
 ### Database Operations
@@ -132,15 +138,6 @@ docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 
 # Backup (or use ./scripts/db-backup.sh)
 docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
-
-# Run migrations
-docker compose run --rm migrate
-```
-
-### Tests (via Docker)
-
-```bash
-docker compose exec web npm test
 ```
 
 ### Email Testing
@@ -192,6 +189,27 @@ These commands update the `version` field in `package.json` without creating a g
 
 ## Build & Deploy
 
-### Production (Web)
+### Build Scripts
 
-Deploys automatically via GitHub Actions on push to `main`. See `.github/workflows/deploy.yml`.
+`build:prod` is the single build command used by Docker and CI. It runs all sub-steps in order: clean dist, build mana font, compile TypeScript, minify CSS, minify JS, inject service worker version. You should not need to run individual build scripts directly.
+
+For local development outside Docker:
+```bash
+npm run build:assets              # Rebuild CSS/JS/SW without recompiling TS
+npm run build:css                 # Rebuild Tailwind CSS only (after style changes)
+npm run start:dev                 # Watch mode (builds SW + nest watch)
+```
+
+### Service Worker & Cache Busting
+
+The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches.
+
+### Production
+
+Deploys automatically via GitHub Actions on push to `main`:
+1. **test** — Runs unit and integration tests
+2. **tag** — Creates a GitHub release from `package.json` version
+3. **build** — Builds Docker image using the `production` target and pushes to `ghcr.io`
+4. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`
+
+See `.github/workflows/deploy.yml` for full pipeline.

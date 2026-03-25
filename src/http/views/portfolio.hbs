@@ -97,7 +97,7 @@
                 <tr class="table-row">
                     <td class="table-cell">
                         {{#if p.cardUrl}}
-                        <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
+                        {{>cardLink url=p.cardUrl name=p.cardName}}
                         {{else}}
                         {{p.cardName}}
                         {{/if}}
@@ -139,7 +139,7 @@
                 {{#each setRoi as |s|}}
                 <tr class="table-row">
                     <td class="table-cell">
-                        <a href="{{s.setUrl}}" class="card-name-link">{{s.setName}}</a>
+                        {{>cardLink url=s.setUrl name=s.setName}}
                         <span class="text-gray-400 dark:text-gray-500 text-xs">({{s.setCode}})</span>
                     </td>
                     <td class="table-cell">{{s.cardsHeld}}</td>
@@ -189,7 +189,7 @@
                 <tr class="table-row">
                     <td class="table-cell">
                         {{#if p.cardUrl}}
-                        <a href="{{p.cardUrl}}" class="card-name-link">{{p.cardName}}</a>
+                        {{>cardLink url=p.cardUrl name=p.cardName}}
                         {{else}}
                         {{p.cardName}}
                         {{/if}}

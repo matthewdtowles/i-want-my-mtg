@@ -66,23 +66,29 @@
         }
     }
 
+    function closestCardLink(event) {
+        var el = event.target;
+        if (el && el.nodeType !== 1) el = el.parentElement;
+        return el ? el.closest('.card-name-link[data-card-img]') : null;
+    }
+
     function handleMouseOver(event) {
         if (isTouchDevice) return;
-        var link = event.target.closest('.card-name-link[data-card-img]');
+        var link = closestCardLink(event);
         if (!link) return;
         showPreview(link);
     }
 
     function handleMouseOut(event) {
         if (isTouchDevice) return;
-        var link = event.target.closest('.card-name-link[data-card-img]');
+        var link = closestCardLink(event);
         if (!link) return;
         hidePreview();
     }
 
     function handleTouchStart(event) {
         isTouchDevice = true;
-        var link = event.target.closest('.card-name-link[data-card-img]');
+        var link = closestCardLink(event);
         if (!link) {
             hidePreview();
             clearTapState();

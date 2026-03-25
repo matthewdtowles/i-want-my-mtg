@@ -5,7 +5,6 @@
     url      — card detail page URL (required)
     name     — card display name (required)
     imgSrc   — full image URL for hover preview (optional)
-    tags     — array of tag strings (optional, via tags partial)
     item     — object with .tags for the tags partial (optional)
 --~}}
 <a href="{{url}}" class="card-name-link"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>

@@ -7,7 +7,7 @@ export class BaseViewDto {
     indexable: boolean = false;
     title: string = 'I Want My MTG';
     metaDescription?: string;
-    lcpImageUrl?: string = '/public/images/logo.webp';
+    lcpImageUrl?: string;
     readonly toast?: Toast;
 
     constructor(init: Partial<BaseViewDto>) {
@@ -16,7 +16,7 @@ export class BaseViewDto {
         this.indexable = init.indexable || false;
         this.title = init.title || 'I Want My MTG';
         this.metaDescription = init.metaDescription;
-        this.lcpImageUrl = init.lcpImageUrl || '/public/images/logo.webp';
+        this.lcpImageUrl = init.lcpImageUrl;
         this.toast = init.toast;
     }
 }

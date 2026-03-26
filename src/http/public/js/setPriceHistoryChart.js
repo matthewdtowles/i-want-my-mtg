@@ -645,7 +645,7 @@
                 });
                 btn.classList.add('active');
                 hideTooltip();
-                fetchAndRender(setCode, days || undefined, true);
+                fetchAndRender(setCode, days || undefined);
             });
         });
     }

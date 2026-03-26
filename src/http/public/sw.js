@@ -14,13 +14,14 @@ var API_CACHE = 'api-' + CACHE_VERSION;
 var IMAGE_CACHE = 'images-' + CACHE_VERSION;
 
 var PRECACHE_URLS = [
-    '/public/css/tailwind.css',
-    '/public/css/app.css',
-    '/public/js/ajaxUtils.js',
-    '/public/js/toast.js',
-    '/public/js/searchSuggest.js',
-    '/public/js/prefetch.js',
-    '/public/images/logo.webp',
+    '/public/css/tailwind.css?v=' + APP_VERSION,
+    '/public/css/app.css?v=' + APP_VERSION,
+    '/public/css/mana.css?v=' + APP_VERSION,
+    '/public/js/ajaxUtils.js?v=' + APP_VERSION,
+    '/public/js/toast.js?v=' + APP_VERSION,
+    '/public/js/searchSuggest.js?v=' + APP_VERSION,
+    '/public/js/prefetch.js?v=' + APP_VERSION,
+    '/public/images/logo.webp?v=' + APP_VERSION,
 ];
 
 var OFFLINE_PAGE = '/offline';
@@ -109,17 +110,14 @@ self.addEventListener('fetch', function (event) {
 });
 
 function cacheFirst(cacheName, request) {
-    var url = new URL(request.url);
-    url.search = '';
-    var normalizedRequest = new Request(url.toString(), { headers: request.headers });
-    return caches.match(normalizedRequest).then(function (cached) {
+    return caches.match(request).then(function (cached) {
         if (cached) return cached;
         // Bypass browser HTTP cache on cache miss to avoid serving stale files
-        return fetch(request.url, { cache: 'reload' }).then(function (response) {
+        return fetch(request, { cache: 'reload' }).then(function (response) {
             if (response.ok) {
                 var clone = response.clone();
                 caches.open(cacheName).then(function (cache) {
-                    cache.put(normalizedRequest, clone);
+                    cache.put(request, clone);
                 });
             }
             return response;

@@ -34,10 +34,18 @@ self.addEventListener('install', function (event) {
         caches
             .open(STATIC_CACHE)
             .then(function (cache) {
-                var requests = PRECACHE_URLS.concat([OFFLINE_PAGE]).map(function (url) {
-                    return new Request(url, { cache: 'reload' });
+                // Cache offline page first — this is required for the SW to work
+                var offlineRequest = new Request(OFFLINE_PAGE, { cache: 'reload' });
+                return cache.add(offlineRequest).then(function () {
+                    // Precache static assets individually so one missing optional
+                    // asset (e.g., generated mana.css) does not break the install
+                    var promises = PRECACHE_URLS.map(function (url) {
+                        return cache.add(new Request(url, { cache: 'reload' })).catch(function (err) {
+                            console.warn('SW: failed to precache ' + url, err);
+                        });
+                    });
+                    return Promise.allSettled(promises);
                 });
-                return cache.addAll(requests);
             })
             .then(function () {
                 return self.skipWaiting();
@@ -114,7 +122,7 @@ function cacheFirst(cacheName, request) {
         if (cached) return cached;
         // Bypass browser HTTP cache on cache miss to avoid serving stale files
         return fetch(request, { cache: 'reload' }).then(function (response) {
-            if (response.ok) {
+            if (response.ok || response.type === 'opaque') {
                 var clone = response.clone();
                 caches.open(cacheName).then(function (cache) {
                     cache.put(request, clone);

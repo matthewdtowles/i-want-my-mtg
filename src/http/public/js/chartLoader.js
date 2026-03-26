@@ -17,10 +17,12 @@
                 if (entries[0].isIntersecting) {
                     observer.disconnect();
                     var src = el.getAttribute('data-chart-src');
+                    var initFn = el.getAttribute('data-chart-init');
+                    var entry = { src: src, initFn: initFn };
                     if (loaded) {
-                        injectScript(src);
+                        injectChartScript(entry);
                     } else {
-                        queue.push(src);
+                        queue.push(entry);
                         if (!loading) loadChartLibrary();
                     }
                 }
@@ -36,11 +38,19 @@
             injectScript(ADAPTER_URL, function () {
                 loaded = true;
                 loading = false;
-                queue.forEach(function (src) {
-                    injectScript(src);
+                queue.forEach(function (entry) {
+                    injectChartScript(entry);
                 });
                 queue = [];
             });
+        });
+    }
+
+    function injectChartScript(entry) {
+        injectScript(entry.src, function () {
+            if (entry.initFn && typeof window[entry.initFn] === 'function') {
+                window[entry.initFn]();
+            }
         });
     }
 

@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { DatabaseModule } from './database/database.module';
 import { HttpModule } from './http/http.module';
@@ -11,10 +9,6 @@ import { getLogger } from './logger/global-app-logger';
 @Module({
     imports: [
         ConfigModule.forRoot(),
-        ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'src', 'http', 'public'),
-            serveRoot: '/public',
-        }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],

@@ -116,7 +116,7 @@ export class CardOrchestrator {
 
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
-                .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.SMALL));
+                .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
 
             const hasAnyNormalPrice = otherPrintings.some((c) => c.normalPriceRaw > 0);
             const hasAnyFoilPrice = otherPrintings.some((c) => c.foilPriceRaw > 0);

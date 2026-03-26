@@ -1,13 +1,28 @@
+/**
+ * Card image preview — hover on desktop, long-press on mobile.
+ *
+ * Desktop: mouseover/mouseout on .card-name-link[data-card-img] shows a
+ *          floating preview image near the link.
+ *
+ * Mobile:  Touch-and-hold (500 ms) shows the preview while the finger is
+ *          down.  Lifting the finger dismisses the preview and suppresses
+ *          the synthetic click so the browser does not navigate.  A normal
+ *          (short) tap navigates immediately — no gestures are intercepted.
+ */
 (function () {
     var preview = null;
     var previewImg = null;
     var activeLink = null;
-    var tappedLink = null;
-    var tapTimer = null;
     var isTouchDevice = false;
     var initialized = false;
 
-    var TAP_TIMEOUT_MS = 3000;
+    // Long-press state
+    var LONG_PRESS_MS = 500;
+    var MOVE_THRESHOLD = 10;
+    var longPressTimer = null;
+    var isLongPress = false;
+    var touchStartX = 0;
+    var touchStartY = 0;
 
     function createPreview() {
         preview = document.createElement('div');
@@ -58,19 +73,13 @@
         preview.style.left = left + 'px';
     }
 
-    function clearTapState() {
-        tappedLink = null;
-        if (tapTimer) {
-            clearTimeout(tapTimer);
-            tapTimer = null;
-        }
-    }
-
     function closestCardLink(event) {
         var el = event.target;
         if (el && el.nodeType !== 1) el = el.parentElement;
         return el ? el.closest('.card-name-link[data-card-img]') : null;
     }
+
+    // ── Desktop: hover ──────────────────────────────────────────────
 
     function handleMouseOver(event) {
         if (isTouchDevice) return;
@@ -86,31 +95,65 @@
         hidePreview();
     }
 
+    // ── Mobile: long-press ──────────────────────────────────────────
+
+    function cancelLongPress() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
+
     function handleTouchStart(event) {
         isTouchDevice = true;
         var link = closestCardLink(event);
         if (!link) {
-            hidePreview();
-            clearTapState();
+            cancelLongPress();
             return;
         }
-        if (tappedLink === link) {
-            // Second tap — allow navigation
-            hidePreview();
-            clearTapState();
-            return;
-        }
-        // First tap — show preview, prevent navigation
-        event.preventDefault();
-        hidePreview();
-        tappedLink = link;
-        showPreview(link);
-        if (tapTimer) clearTimeout(tapTimer);
-        tapTimer = setTimeout(function () {
-            clearTapState();
-            hidePreview();
-        }, TAP_TIMEOUT_MS);
+        var touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        isLongPress = false;
+        cancelLongPress();
+        longPressTimer = setTimeout(function () {
+            isLongPress = true;
+            showPreview(link);
+        }, LONG_PRESS_MS);
     }
+
+    function handleTouchMove(event) {
+        if (!longPressTimer && !isLongPress) return;
+        var touch = event.touches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+        if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+            cancelLongPress();
+            if (isLongPress) {
+                hidePreview();
+                isLongPress = false;
+            }
+        }
+    }
+
+    function handleTouchEnd() {
+        cancelLongPress();
+        if (isLongPress) {
+            hidePreview();
+            // isLongPress stays true so the click handler can suppress navigation
+        }
+    }
+
+    function handleClick(event) {
+        if (!isLongPress) return;
+        var link = closestCardLink(event);
+        if (link) {
+            event.preventDefault();
+        }
+        isLongPress = false;
+    }
+
+    // ── Shared ──────────────────────────────────────────────────────
 
     function handleScroll() {
         if (activeLink) {
@@ -125,9 +168,15 @@
         if (prefersReducedMotion) {
             preview.style.transition = 'none';
         }
+        // Desktop
         document.body.addEventListener('mouseover', handleMouseOver);
         document.body.addEventListener('mouseout', handleMouseOut);
-        document.body.addEventListener('touchstart', handleTouchStart, { passive: false });
+        // Mobile — all touch listeners are passive (no preventDefault on touch)
+        document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
+        document.body.addEventListener('touchend', handleTouchEnd);
+        // Suppress navigation after long-press via the synthetic click
+        document.body.addEventListener('click', handleClick);
         window.addEventListener('scroll', handleScroll, { passive: true });
         initialized = true;
     }

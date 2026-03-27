@@ -3,7 +3,7 @@
     <section class="card-info flex flex-col md:flex-row section-container">
 
         <section class="md:w-1/3 mb-4 md:mb-6">
-            <div class="card-image-wrapper" id="card-image-wrapper">
+            <div class="card-image-wrapper" id="card-image-wrapper" role="button" tabindex="0" aria-label="View enlarged image of {{card.name}}">
                 <img class="card-image" src="{{card.imgSrc}}" alt="{{card.name}} - ({{card.setCode}})" width="244" height="340" fetchpriority="high" />
             </div>
         </section>

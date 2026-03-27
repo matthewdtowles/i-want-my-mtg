@@ -219,22 +219,22 @@
 - [x] Run Lighthouse accessibility audit and document baseline score (95-96 on most pages, 100 on spoilers)
 - [x] Add proper ARIA labels and roles to interactive elements (done in 2.2: icon-only buttons, quantity inputs, price-info toggle)
 - [x] Fix heading hierarchy (done in 2.2: h4→h2 on search, mismatched tags on card page)
-- [ ] Fix remaining color contrast failures (btn-secondary, header-subtitle, btn-primary on login — blocking 96→100)
-- [ ] Add keyboard navigation support for all interactive features
-- [ ] Add focus indicators and skip-to-content link
+- [x] Fix remaining color contrast failures (btn-primary teal-500→teal-700, btn-secondary purple-600→purple-700, header-subtitle dark gray-400→gray-300)
+- [x] Add keyboard navigation support for all interactive features (card preview focusin/focusout, card image modal focus trap + Enter/Space activation, mobile menu aria-expanded)
+- [x] Add focus indicators and skip-to-content link (global :focus-visible outline, .skip-link to #main-content)
 - [x] Ensure all images have meaningful alt text (done in 2.2: width/height and alt on all images)
-- [ ] Verify screen reader compatibility for AJAX-updated content
-- [ ] Verify improvements with follow-up Lighthouse audit
+- [x] Verify screen reader compatibility for AJAX-updated content (ARIA live region announcer in ajaxUtils + searchAjax)
+- [x] Verify improvements with follow-up Lighthouse audit
 
 ### 2.6 SEO
 
 - [x] Add meta tags (title, description) to all public pages (done in 2.2: dynamic `<title>`, `<meta description>`, robots directives)
-- [ ] Add Open Graph tags (og:image, og:title, og:description) to public pages
-- [ ] Add structured data (JSON-LD) for card pages
-- [ ] Generate sitemap.xml for public card and set pages
-- [ ] Add robots.txt
+- [x] Add Open Graph tags (og:title, og:description, og:type, og:image, og:url, og:site_name) to all public pages
+- [x] Add structured data (JSON-LD) for card pages (Product + BreadcrumbList schemas)
+- [x] Generate sitemap.xml for public card and set pages (sitemap index with per-set card sitemaps)
+- [x] Add robots.txt (existed; added Sitemap URL)
 - [x] Ensure server-rendered HTML is crawlable (already SSR; meta tags and indexable flags in place)
-- [ ] Add canonical URLs
+- [x] Add canonical URLs (on all public pages: home, sets, set detail, card detail, spoilers)
 - [ ] Submit sitemap to Google Search Console
 
 ### 2.7 Feature: Binder View

@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -34,6 +35,7 @@ describe('SetController', () => {
                         getSetPriceHistory: jest.fn(),
                     },
                 },
+                { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('http://localhost:3000') } },
             ],
         }).compile();
 

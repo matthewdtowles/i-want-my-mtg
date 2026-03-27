@@ -153,6 +153,20 @@
         isLongPress = false;
     }
 
+    // ── Keyboard: focus ─────────────────────────────────────────────
+
+    function handleFocusIn(event) {
+        var link = closestCardLink(event);
+        if (!link) return;
+        showPreview(link);
+    }
+
+    function handleFocusOut(event) {
+        var link = closestCardLink(event);
+        if (!link) return;
+        hidePreview();
+    }
+
     // ── Shared ──────────────────────────────────────────────────────
 
     function handleScroll() {
@@ -171,6 +185,9 @@
         // Desktop
         document.body.addEventListener('mouseover', handleMouseOver);
         document.body.addEventListener('mouseout', handleMouseOut);
+        // Keyboard
+        document.body.addEventListener('focusin', handleFocusIn);
+        document.body.addEventListener('focusout', handleFocusOut);
         // Mobile — all touch listeners are passive (no preventDefault on touch)
         document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
         document.body.addEventListener('touchmove', handleTouchMove, { passive: true });

@@ -1,4 +1,5 @@
 import { Controller, Get, Header, Inject, Render, Req, Res, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { join } from 'path';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -11,8 +12,14 @@ import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
 @Controller()
 export class HomeController {
     private readonly LOGGER = getLogger(HomeController.name);
+    private readonly appUrl: string;
 
-    constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) {}
+    constructor(
+        @Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator,
+        private readonly configService: ConfigService
+    ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+    }
 
     @UseGuards(OptionalAuthGuard)
     @Get('/')
@@ -25,6 +32,8 @@ export class HomeController {
         setListView.title = 'I Want My MTG — Magic: The Gathering Collection Tracker';
         setListView.metaDescription =
             'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';
+        setListView.canonicalUrl = this.appUrl;
+        setListView.ogImage = `${this.appUrl}/public/images/logo.webp`;
         this.LOGGER.log(
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
@@ -65,6 +74,8 @@ export class HomeController {
             'Disallow: /search/suggest',
             '',
             'Crawl-delay: 1',
+            '',
+            `Sitemap: ${this.appUrl}/sitemap.xml`,
         ].join('\n');
     }
 }

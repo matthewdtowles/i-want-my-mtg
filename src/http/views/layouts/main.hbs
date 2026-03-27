@@ -14,6 +14,26 @@
     {{else}}
     <meta name="robots" content="noindex">
     {{/if}}
+    {{#if canonicalUrl}}
+    <link rel="canonical" href="{{canonicalUrl}}">
+    {{/if}}
+    {{#if indexable}}
+    <meta property="og:title" content="{{title}}">
+    {{#if metaDescription}}
+    <meta property="og:description" content="{{metaDescription}}">
+    {{/if}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="I Want My MTG">
+    {{#if canonicalUrl}}
+    <meta property="og:url" content="{{canonicalUrl}}">
+    {{/if}}
+    {{#if ogImage}}
+    <meta property="og:image" content="{{ogImage}}">
+    {{/if}}
+    {{/if}}
+    {{#if jsonLd}}
+    <script type="application/ld+json">{{{jsonLd}}}</script>
+    {{/if}}
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
@@ -53,11 +73,12 @@
 </head>
 
 <body class="bg-gray-50 dark:bg-midnight-950 font-body text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header>
         {{>navbar}}
         {{>breadcrumbs}}
     </header>
-    <main class="text-sm sm:text-base md:text-lg lg:text-xl flex-1">
+    <main id="main-content" class="text-sm sm:text-base md:text-lg lg:text-xl flex-1">
         {{{body}}}
     </main>
     <footer>
@@ -124,6 +145,8 @@
             </td>
         </tr>
     </template>
+
+    <div id="aria-live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
     <script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
     <script src="/public/js/cardImageModal.js?v={{assetVersion}}" defer></script>

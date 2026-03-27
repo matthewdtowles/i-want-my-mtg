@@ -61,6 +61,11 @@
 .card-image-wrapper {
     @apply overflow-hidden rounded-lg max-w-xs mx-auto;
     cursor: zoom-in;
+    outline: none;
+}
+
+.card-image-wrapper:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2;
 }
 
 .card-image {
@@ -86,6 +91,15 @@
 
     .card-modal-overlay {
         transition: none;
+    }
+
+    .card-modal-img {
+        transition: none;
+        transform: none;
+    }
+
+    .card-modal-overlay.active .card-modal-img {
+        transform: none;
     }
 }
 

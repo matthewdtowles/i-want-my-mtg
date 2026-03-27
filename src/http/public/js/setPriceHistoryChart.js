@@ -581,8 +581,7 @@
         overlay.id = 'set-price-history-overlay';
         overlay.className =
             'absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-midnight-900/80 z-10';
-        overlay.innerHTML =
-            '<p class="text-gray-500 dark:text-gray-400 text-sm">' + msg + '</p>';
+        overlay.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">' + msg + '</p>';
         wrapper.appendChild(overlay);
     }
 

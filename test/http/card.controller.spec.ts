@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from 'src/http/hbs/card/card.controller';
 import { CardOrchestrator } from 'src/http/hbs/card/card.orchestrator';
@@ -11,10 +12,17 @@ describe('CardController', () => {
         getPrintingsLastPage: jest.fn(),
     };
 
+    const mockConfigService = {
+        get: jest.fn().mockReturnValue('http://localhost:3000'),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CardController],
-            providers: [{ provide: CardOrchestrator, useValue: mockOrchestrator }],
+            providers: [
+                { provide: CardOrchestrator, useValue: mockOrchestrator },
+                { provide: ConfigService, useValue: mockConfigService },
+            ],
         }).compile();
 
         controller = module.get<CardController>(CardController);

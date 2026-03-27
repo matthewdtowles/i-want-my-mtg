@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Accessibility ===== */
+
+@layer base {
+    *:focus-visible {
+        outline: 2px solid theme('colors.teal.500');
+        outline-offset: 2px;
+    }
+}
+
+.skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50
+           focus:px-4 focus:py-2 focus:rounded-lg focus:bg-teal-700 focus:text-white focus:font-medium focus:shadow-lg;
+}
+
 /* ===== Breadcrumbs ===== */
 
 .breadcrumb-item {
@@ -19,12 +33,12 @@
 }
 
 .btn-primary {
-    @apply bg-teal-500 text-white hover:bg-teal-600 hover:shadow-glow-teal focus:ring-4 focus:ring-teal-300
+    @apply bg-teal-700 text-white hover:bg-teal-800 hover:shadow-glow-teal focus:ring-4 focus:ring-teal-300
            dark:bg-teal-500 dark:hover:bg-teal-400 dark:hover:shadow-glow-teal dark:focus:ring-teal-400;
 }
 
 .btn-secondary {
-    @apply bg-purple-600 text-white hover:bg-purple-700 hover:shadow-glow-purple focus:ring-4 focus:ring-purple-300
+    @apply bg-purple-700 text-white hover:bg-purple-800 hover:shadow-glow-purple focus:ring-4 focus:ring-purple-300
            dark:bg-purple-500 dark:hover:bg-purple-400 dark:hover:shadow-glow-purple dark:focus:ring-purple-400;
 }
 
@@ -41,8 +55,14 @@
 /* ===== Card Image Animations ===== */
 
 @keyframes card-fade-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== Card Preview ===== */
@@ -71,7 +91,9 @@
 .card-image {
     @apply rounded-lg shadow-lg w-full object-contain;
     animation: card-fade-in 0.4s ease-out;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .card-image-wrapper:hover .card-image {
@@ -119,7 +141,9 @@
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s;
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s;
 }
 
 .card-modal-overlay.active {
@@ -582,7 +606,7 @@
 }
 
 .header-subtitle {
-    @apply text-[0.6rem] font-normal normal-case tracking-normal text-gray-600 dark:text-gray-400;
+    @apply text-[0.6rem] font-normal normal-case tracking-normal text-gray-600 dark:text-gray-300;
 }
 
 .table-header-row {

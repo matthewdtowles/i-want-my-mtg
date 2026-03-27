@@ -871,6 +871,13 @@ var AjaxUtils = (function () {
                     config.renderContent(resultsEl, json.data, json.meta);
                     doRenderPagination(json.meta);
 
+                    if (json.meta) {
+                        var total = json.meta.totalItems || json.meta.total || 0;
+                        var pg = json.meta.page || 1;
+                        var tp = json.meta.totalPages || 1;
+                        announce('Showing page ' + pg + ' of ' + tp + ', ' + total + ' results');
+                    }
+
                     if (hasBaseOnly) {
                         updateBaseOnlyToggle({
                             container: container,
@@ -940,7 +947,17 @@ var AjaxUtils = (function () {
         };
     }
 
+    function announce(message) {
+        var el = document.getElementById('aria-live-announcer');
+        if (!el) return;
+        el.textContent = '';
+        setTimeout(function () {
+            el.textContent = message;
+        }, 100);
+    }
+
     return {
+        announce: announce,
         smoothScroll: smoothScroll,
         escapeHtml: escapeHtml,
         toDollar: toDollar,

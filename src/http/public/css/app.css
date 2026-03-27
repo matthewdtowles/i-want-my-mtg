@@ -95,10 +95,14 @@ input[type='number'] {
     vertical-align: middle;
 }
 .ss::before {
-    content: "\00a0";
+    content: '\00a0';
 }
-.ss-2x { font-size: 2em; }
-.ss-3x { font-size: 3em; }
+.ss-2x {
+    font-size: 2em;
+}
+.ss-3x {
+    font-size: 3em;
+}
 
 /* Reserve space for mana icons before deferred CSS loads.
    Matches mana-font .ms computed styles to prevent CLS when font loads. */

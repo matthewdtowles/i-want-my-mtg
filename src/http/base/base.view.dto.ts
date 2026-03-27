@@ -8,6 +8,9 @@ export class BaseViewDto {
     title: string = 'I Want My MTG';
     metaDescription?: string;
     lcpImageUrl?: string;
+    ogImage?: string;
+    canonicalUrl?: string;
+    jsonLd?: string;
     readonly toast?: Toast;
 
     constructor(init: Partial<BaseViewDto>) {
@@ -17,6 +20,9 @@ export class BaseViewDto {
         this.title = init.title || 'I Want My MTG';
         this.metaDescription = init.metaDescription;
         this.lcpImageUrl = init.lcpImageUrl;
+        this.ogImage = init.ogImage;
+        this.canonicalUrl = init.canonicalUrl;
+        this.jsonLd = init.jsonLd;
         this.toast = init.toast;
     }
 }

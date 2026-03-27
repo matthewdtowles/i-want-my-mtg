@@ -14,6 +14,7 @@ import {
     Res,
     UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
@@ -29,7 +30,14 @@ const SAFE_SET_CODE_RE = /^[A-Za-z0-9_-]+$/;
 
 @Controller('sets')
 export class SetController {
-    constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) {}
+    private readonly appUrl: string;
+
+    constructor(
+        @Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator,
+        private readonly configService: ConfigService
+    ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+    }
 
     @UseGuards(OptionalAuthGuard)
     @Get()
@@ -51,6 +59,8 @@ export class SetController {
         view.metaDescription =
             'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
         view.indexable = true;
+        view.canonicalUrl = `${this.appUrl}/sets`;
+        view.ogImage = `${this.appUrl}/public/images/logo.webp`;
         return view;
     }
 
@@ -110,6 +120,8 @@ export class SetController {
         view.title = `${view.set?.name || code.toUpperCase()} — I Want My MTG`;
         view.metaDescription = `View cards, prices, and collection stats for ${view.set?.name || code.toUpperCase()}.`;
         view.indexable = true;
+        view.canonicalUrl = `${this.appUrl}/sets/${code}`;
+        view.ogImage = `${this.appUrl}/public/images/logo.webp`;
         return view;
     }
 }

@@ -42,7 +42,13 @@ describe('TransactionPresenter', () => {
                 source: 'lgs',
             });
 
-            const dto = TransactionPresenter.toResponseDto(tx, 'Lightning Bolt', 'lea', '161', 'abc123.jpg');
+            const dto = TransactionPresenter.toResponseDto(
+                tx,
+                'Lightning Bolt',
+                'lea',
+                '161',
+                'abc123.jpg'
+            );
 
             expect(dto.id).toBe(1);
             expect(dto.cardName).toBe('Lightning Bolt');

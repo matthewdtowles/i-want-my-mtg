@@ -127,6 +127,10 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '</div>';
         }
         container.innerHTML = html;
+
+        var cardCount = cardJson.meta ? cardJson.meta.total || cards.length : cards.length;
+        var setCount = setJson.meta ? setJson.meta.total || sets.length : sets.length;
+        AjaxUtils.announce('Found ' + cardCount + ' cards and ' + setCount + ' sets');
     }
 
     function renderSetSectionHtml(sets, meta) {

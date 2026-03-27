@@ -61,6 +61,12 @@ export class HomeController {
         res.sendFile(join(__dirname, '..', '..', 'public', 'favicon.ico'));
     }
 
+    @Get('google8ee9d366f7b1f432.html')
+    @Header('Content-Type', 'text/html')
+    getGoogleVerification(): string {
+        return 'google-site-verification: google8ee9d366f7b1f432.html';
+    }
+
     @Get('robots.txt')
     @Header('Content-Type', 'text/plain')
     getRobotsTxt(): string {

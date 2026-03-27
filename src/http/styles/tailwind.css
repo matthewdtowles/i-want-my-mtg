@@ -55,8 +55,14 @@
 /* ===== Card Image Animations ===== */
 
 @keyframes card-fade-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== Card Preview ===== */
@@ -85,7 +91,9 @@
 .card-image {
     @apply rounded-lg shadow-lg w-full object-contain;
     animation: card-fade-in 0.4s ease-out;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .card-image-wrapper:hover .card-image {
@@ -133,7 +141,9 @@
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s;
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s;
 }
 
 .card-modal-overlay.active {

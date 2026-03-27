@@ -22,7 +22,9 @@ export class SitemapController {
     async getSitemapIndex(): Promise<string> {
         const options = new SafeQueryOptions({ limit: '10000' });
         const sets = await this.setService.findSets(options);
-        const releasedSets = sets.filter((s) => s.releaseDate && new Date(s.releaseDate) <= new Date());
+        const releasedSets = sets.filter(
+            (s) => s.releaseDate && new Date(s.releaseDate) <= new Date()
+        );
 
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -40,7 +42,9 @@ export class SitemapController {
     async getStaticSitemap(): Promise<string> {
         const options = new SafeQueryOptions({ limit: '10000' });
         const sets = await this.setService.findSets(options);
-        const releasedSets = sets.filter((s) => s.releaseDate && new Date(s.releaseDate) <= new Date());
+        const releasedSets = sets.filter(
+            (s) => s.releaseDate && new Date(s.releaseDate) <= new Date()
+        );
 
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';

@@ -40,9 +40,11 @@ self.addEventListener('install', function (event) {
                     // Precache static assets individually so one missing optional
                     // asset (e.g., generated mana.css) does not break the install
                     var promises = PRECACHE_URLS.map(function (url) {
-                        return cache.add(new Request(url, { cache: 'reload' })).catch(function (err) {
-                            console.warn('SW: failed to precache ' + url, err);
-                        });
+                        return cache
+                            .add(new Request(url, { cache: 'reload' }))
+                            .catch(function (err) {
+                                console.warn('SW: failed to precache ' + url, err);
+                            });
                     });
                     return Promise.allSettled(promises);
                 });

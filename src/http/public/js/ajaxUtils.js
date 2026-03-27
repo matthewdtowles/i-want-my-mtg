@@ -951,7 +951,9 @@ var AjaxUtils = (function () {
         var el = document.getElementById('aria-live-announcer');
         if (!el) return;
         el.textContent = '';
-        setTimeout(function () { el.textContent = message; }, 100);
+        setTimeout(function () {
+            el.textContent = message;
+        }, 100);
     }
 
     return {

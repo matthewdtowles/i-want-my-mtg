@@ -35,7 +35,10 @@ describe('SetController', () => {
                         getSetPriceHistory: jest.fn(),
                     },
                 },
-                { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('http://localhost:3000') } },
+                {
+                    provide: ConfigService,
+                    useValue: { get: jest.fn().mockReturnValue('http://localhost:3000') },
+                },
             ],
         }).compile();
 

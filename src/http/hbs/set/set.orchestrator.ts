@@ -653,7 +653,7 @@ export class SetOrchestrator {
                       CardPresenter.toCardResponse(
                           card,
                           InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
-                          CardImgType.SMALL
+                          CardImgType.NORMAL
                       )
                   )
                 : [],

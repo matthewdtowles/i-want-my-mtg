@@ -197,7 +197,7 @@
 
 - [x] Create reusable card link partial/template with consistent markup (`cardLink.hbs`)
 - [x] Show card image preview on hover (desktop tooltip/popover)
-- [x] First tap on mobile shows image preview, second tap navigates
+- [x] Long-press on mobile shows image preview (replaced two-tap pattern)
 - [x] Use card link partial across all pages (search, set, inventory, transactions, portfolio, card)
 - [x] Ensure consistent styling and behavior site-wide
 - [x] Add `renderCardLink()` JS utility for AJAX-rendered card links
@@ -207,12 +207,12 @@
 
 ### 2.4 Card Image Interactivity & Resolution
 
-- [ ] Display higher-resolution card images (use Scryfall `normal` or `large` size)
-- [ ] Add smooth hover zoom/enlarge effect on card images (desktop)
-- [ ] Add tap-to-enlarge modal for card images (mobile)
-- [ ] Add subtle card image animations (fade-in on load, hover lift/shadow)
-- [ ] Polish card detail page layout — clean, modern feel (inspired by Perplexity aesthetic)
-- [ ] Ensure image interactions respect `prefers-reduced-motion`
+- [x] Display higher-resolution card images (use Scryfall `normal` or `large` size)
+- [x] Add smooth hover zoom/enlarge effect on card images (desktop)
+- [x] Add tap-to-enlarge modal for card images (mobile)
+- [x] Add subtle card image animations (fade-in on load, hover lift/shadow)
+- [x] Polish card detail page layout — clean, modern feel (inspired by Perplexity aesthetic)
+- [x] Ensure image interactions respect `prefers-reduced-motion`
 
 ### 2.5 Accessibility Optimization
 

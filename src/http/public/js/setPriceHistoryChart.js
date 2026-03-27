@@ -569,7 +569,29 @@
         });
     }
 
-    function fetchAndRender(setCode, days) {
+    function getCanvasWrapper() {
+        return document.getElementById('set-price-history-canvas-wrapper');
+    }
+
+    function showChartOverlay(msg) {
+        var wrapper = getCanvasWrapper();
+        if (!wrapper) return;
+        hideChartOverlay();
+        var overlay = document.createElement('div');
+        overlay.id = 'set-price-history-overlay';
+        overlay.className =
+            'absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-midnight-900/80 z-10';
+        overlay.innerHTML =
+            '<p class="text-gray-500 dark:text-gray-400 text-sm">' + msg + '</p>';
+        wrapper.appendChild(overlay);
+    }
+
+    function hideChartOverlay() {
+        var existing = document.getElementById('set-price-history-overlay');
+        if (existing) existing.remove();
+    }
+
+    function fetchAndRender(setCode, days, isRetry) {
         var url = '/sets/' + setCode + '/price-history';
         if (days) {
             url += '?days=' + days;
@@ -578,21 +600,26 @@
         var container = document.getElementById('set-price-history-chart');
         if (!container) return;
 
+        hideChartOverlay();
+
         fetch(url)
             .then(function (res) {
                 return res.json();
             })
             .then(function (data) {
                 if (!data.prices || data.prices.length === 0) {
-                    container.innerHTML =
-                        '<p class="text-gray-500 dark:text-gray-400 text-sm">No price history available.</p>';
+                    if (!isRetry && days) {
+                        // Retry with all-time data before showing empty state
+                        fetchAndRender(setCode, undefined, true);
+                        return;
+                    }
+                    showChartOverlay('No price history available.');
                     return;
                 }
                 renderChart(data);
             })
             .catch(function () {
-                container.innerHTML =
-                    '<p class="text-gray-500 dark:text-gray-400 text-sm">Failed to load price history.</p>';
+                showChartOverlay('Failed to load price history.');
             });
     }
 

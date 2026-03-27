@@ -38,6 +38,13 @@
            dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-700;
 }
 
+/* ===== Card Image Animations ===== */
+
+@keyframes card-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== Card Preview ===== */
 
 .card-preview-container {
@@ -51,8 +58,102 @@
     @apply w-64 h-auto rounded-lg shadow-lg;
 }
 
+.card-image-wrapper {
+    @apply overflow-hidden rounded-lg max-w-xs mx-auto;
+    cursor: zoom-in;
+    outline: none;
+}
+
+.card-image-wrapper:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
 .card-image {
-    @apply rounded-lg shadow-lg max-w-xs w-full mx-auto object-contain;
+    @apply rounded-lg shadow-lg w-full object-contain;
+    animation: card-fade-in 0.4s ease-out;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-image-wrapper:hover .card-image {
+    transform: scale(1.05) translateY(-2px);
+    @apply shadow-2xl;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-image {
+        animation: none;
+        transition: none;
+    }
+
+    .card-image-wrapper:hover .card-image {
+        transform: none;
+    }
+
+    .card-modal-overlay {
+        transition: none;
+    }
+
+    .card-modal-img {
+        transition: none;
+        transform: none;
+    }
+
+    .card-modal-overlay.active .card-modal-img {
+        transform: none;
+    }
+}
+
+/* ===== Card Image Modal ===== */
+
+.card-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s;
+}
+
+.card-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.card-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    @apply text-white text-3xl;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 61;
+    line-height: 1;
+}
+
+.card-modal-close:hover {
+    @apply text-gray-300;
+}
+
+.card-modal-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    @apply rounded-xl shadow-2xl;
+    object-fit: contain;
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+}
+
+.card-modal-overlay.active .card-modal-img {
+    transform: scale(1);
 }
 
 .card-name-link {

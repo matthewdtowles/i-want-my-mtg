@@ -7,6 +7,7 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SetService } from 'src/core/set/set.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryViewDto } from 'src/http/hbs/inventory/dto/inventory.view.dto';
@@ -54,6 +55,12 @@ describe('InventoryOrchestrator', () => {
                     provide: TransactionService,
                     useValue: {
                         getRemainingQuantity: jest.fn().mockResolvedValue(0),
+                    },
+                },
+                {
+                    provide: SetService,
+                    useValue: {
+                        findByCode: jest.fn(),
                     },
                 },
             ],

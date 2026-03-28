@@ -100,6 +100,9 @@
                                 <i class="ss ss-{{card.setCode}} ss-{{toLowerCase card.rarity}} ss-fw"></i>
                                 {{toUpperCase card.setCode}}
                             </a>
+                            <a href="/inventory/sets/{{card.setCode}}" class="binder-link" title="Open binder">
+                                <i class="fas fa-book-open"></i>
+                            </a>
                         </td>
                         <td class="table-cell">
                             <span class="price-{{#if card.isFoil}}foil{{else}}normal{{/if}}">

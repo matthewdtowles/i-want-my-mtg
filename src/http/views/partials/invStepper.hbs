@@ -1,0 +1,42 @@
+{{~!--
+  Inventory stepper controls for a card.
+  Renders segmented steppers for normal and/or foil variants.
+
+  Parameters:
+    card    — { cardId, hasNormal, hasFoil, normalQuantity, foilQuantity }
+    compact — (optional) if truthy, renders small variant
+--~}}
+<div class="inv-stepper-group">
+    {{#if card.hasNormal}}
+    <div>
+        <div class="inv-stepper-label inv-stepper-label--normal">Normal</div>
+        <div class="inv-stepper inv-stepper--normal{{#if compact}} inv-stepper--sm{{/if}}" data-card-id="{{card.cardId}}" data-foil="false">
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--dec"
+                    aria-label="Decrease normal quantity"{{#unless card.normalQuantity}} disabled{{/unless}}>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+            </button>
+            <span class="inv-stepper-qty{{#unless card.normalQuantity}} inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if card.normalQuantity}}{{card.normalQuantity}}{{else}}0{{/if}}</span>
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--inc"
+                    aria-label="Increase normal quantity">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </button>
+        </div>
+    </div>
+    {{/if}}
+    {{#if card.hasFoil}}
+    <div>
+        <div class="inv-stepper-label inv-stepper-label--foil">Foil</div>
+        <div class="inv-stepper inv-stepper--foil{{#if compact}} inv-stepper--sm{{/if}}" data-card-id="{{card.cardId}}" data-foil="true">
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--dec"
+                    aria-label="Decrease foil quantity"{{#unless card.foilQuantity}} disabled{{/unless}}>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+            </button>
+            <span class="inv-stepper-qty{{#unless card.foilQuantity}} inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if card.foilQuantity}}{{card.foilQuantity}}{{else}}0{{/if}}</span>
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--inc"
+                    aria-label="Increase foil quantity">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </button>
+        </div>
+    </div>
+    {{/if}}
+</div>

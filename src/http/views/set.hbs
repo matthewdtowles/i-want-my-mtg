@@ -29,6 +29,11 @@
                     <div class="mt-1">{{>completionRate set}}</div>
                 </div>
             </div>
+            <div class="mb-4">
+                <a href="/inventory/sets/{{set.code}}" class="btn btn-ghost text-sm">
+                    <i class="fas fa-book-open mr-1"></i> My Binder
+                </a>
+            </div>
             {{/if}}
 
             {{#if (gt set.prices.gridCols 1)}}
@@ -324,7 +329,7 @@
                 {{#each set.cards}}
                 <tr class="table-row">
                     <td class="table-cell">
-                        {{>inventoryCtrl card=this}}
+                        {{>invStepper card=this compact=true}}
                     </td>
                     <td class="table-cell">{{this.number}}</td>
                     <td class="table-cell">

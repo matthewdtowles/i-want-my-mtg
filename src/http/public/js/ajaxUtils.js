@@ -565,6 +565,75 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Render an inventory stepper for a single variant.
+     * @param {string} cardId
+     * @param {number} quantity
+     * @param {boolean} isFoil
+     * @param {object} [opts] - { compact: boolean }
+     * @returns {string} outerHTML string
+     */
+    function createStepper(cardId, quantity, isFoil, opts) {
+        var tpl = document.getElementById('tpl-inv-stepper');
+        var clone = tpl.content.cloneNode(true);
+        var el = clone.querySelector('.inv-stepper');
+        var variant = isFoil ? 'foil' : 'normal';
+
+        el.classList.add('inv-stepper--' + variant);
+        el.setAttribute('data-card-id', cardId);
+        el.setAttribute('data-foil', String(isFoil));
+        if (opts && opts.compact) {
+            el.classList.add('inv-stepper--sm');
+        }
+
+        var qtyEl = el.querySelector('.inv-stepper-qty');
+        qtyEl.textContent = quantity;
+        if (quantity === 0) {
+            qtyEl.classList.add('inv-stepper-qty--zero');
+        }
+
+        var decBtn = el.querySelector('.inv-stepper-btn--dec');
+        decBtn.setAttribute('aria-label', 'Decrease ' + variant + ' quantity');
+        if (quantity <= 0) {
+            decBtn.setAttribute('disabled', '');
+        }
+
+        var incBtn = el.querySelector('.inv-stepper-btn--inc');
+        incBtn.setAttribute('aria-label', 'Increase ' + variant + ' quantity');
+
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Render a stepper group (normal + foil) with labels.
+     * @param {string} cardId
+     * @param {number} normalQty
+     * @param {number} foilQty
+     * @param {boolean} hasNormal
+     * @param {boolean} hasFoil
+     * @param {object} [opts] - { compact: boolean }
+     * @returns {string} HTML string
+     */
+    function createStepperGroup(cardId, normalQty, foilQty, hasNormal, hasFoil, opts) {
+        var html = '<div class="inv-stepper-group">';
+        if (hasNormal) {
+            html += '<div>';
+            html += '<div class="inv-stepper-label inv-stepper-label--normal">Normal</div>';
+            html += createStepper(cardId, normalQty, false, opts);
+            html += '</div>';
+        }
+        if (hasFoil) {
+            html += '<div>';
+            html += '<div class="inv-stepper-label inv-stepper-label--foil">Foil</div>';
+            html += createStepper(cardId, foilQty, true, opts);
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    /**
      * Clone the delete inventory form template and populate it.
      * @param {string} cardId
      * @param {boolean} isFoil
@@ -1030,6 +1099,8 @@ var AjaxUtils = (function () {
         buildPaginationHref: buildPaginationHref,
         renderTableHeaderRow: renderTableHeaderRow,
         createQuantityForm: createQuantityForm,
+        createStepper: createStepper,
+        createStepperGroup: createStepperGroup,
         createDeleteForm: createDeleteForm,
         createTransactionRow: createTransactionRow,
         renderTags: renderTags,

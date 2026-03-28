@@ -3,7 +3,14 @@ import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-histor
 import { SetRoiAggregation } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { formatUtcDate, formatUtcTimestamp } from 'src/http/base/date.util';
-import { buildCardUrl, formatGain, formatRoi, gainSign, toDollar } from 'src/http/base/http.util';
+import {
+    BASE_IMAGE_URL,
+    buildCardUrl,
+    formatGain,
+    formatRoi,
+    gainSign,
+    toDollar,
+} from 'src/http/base/http.util';
 
 export interface PortfolioSummaryViewData {
     totalValue: string;
@@ -27,6 +34,7 @@ export interface CardPerformanceViewData {
     cardName: string;
     cardSetCode: string;
     cardUrl: string;
+    imgSrc: string;
     isFoil: boolean;
     quantity: number;
     totalCost: string;
@@ -105,7 +113,8 @@ export class PortfolioPresenter {
         perf: PortfolioCardPerformance,
         cardName: string,
         cardSetCode: string,
-        cardNumber: string
+        cardNumber: string,
+        cardImgSrc: string
     ): CardPerformanceViewData {
         const totalGain = perf.unrealizedGain + perf.realizedGain;
         return {
@@ -113,6 +122,7 @@ export class PortfolioPresenter {
             cardName,
             cardSetCode: cardSetCode.toUpperCase(),
             cardUrl: cardSetCode && cardNumber ? buildCardUrl(cardSetCode, cardNumber) : '',
+            imgSrc: cardImgSrc ? `${BASE_IMAGE_URL}/normal/front/${cardImgSrc}` : '',
             isFoil: perf.isFoil,
             quantity: perf.quantity,
             totalCost: toDollar(perf.totalCost),

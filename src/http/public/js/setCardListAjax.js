@@ -341,10 +341,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
         var escapedName = AjaxUtils.escapeHtml(card.name);
         var escapedNumber = AjaxUtils.escapeHtml(card.number);
+        var escapedId = AjaxUtils.escapeHtml(card.id);
 
         var html =
-            '<div class="binder-card binder-card-unowned owned-cell"' +
-            ' data-card-id="' + AjaxUtils.escapeHtml(card.id) + '"' +
+            '<div class="binder-card"' +
+            ' data-card-id="' + escapedId + '"' +
             ' data-has-foil="' + !!card.hasFoil + '"' +
             ' data-has-non-foil="' + !!card.hasNonFoil + '">';
 
@@ -356,16 +357,19 @@ document.addEventListener('DOMContentLoaded', function () {
             ' class="binder-card-img" />' +
             '</a>';
 
-        // Number overlay for unowned cards
-        html += '<span class="binder-card-number">#' + escapedNumber + '</span>';
-
-        // Info overlay for owned cards (visible on hover)
+        // Hover overlay: name, number, and stepper (if authenticated)
         html +=
             '<div class="binder-card-overlay">' +
             '<span class="binder-card-overlay-name">' + escapedName + '</span>' +
-            '<span class="binder-card-overlay-number">#' + escapedNumber + '</span>' +
-            '</div>';
+            '<span class="binder-card-overlay-number">#' + escapedNumber + '</span>';
 
+        if (authenticated) {
+            html += '<div class="binder-card-stepper">' +
+                AjaxUtils.createStepperGroup(card.id, 0, 0, !!card.hasNonFoil, !!card.hasFoil, { compact: true }) +
+                '</div>';
+        }
+
+        html += '</div>';
         html += '</div>';
         return html;
     }
@@ -421,22 +425,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 for (var i = 0; i < json.data.length; i++) {
                     quantityMap[json.data[i].cardId] = json.data[i];
                 }
-                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
-                for (var j = 0; j < cells.length; j++) {
-                    var cell = cells[j];
-                    var cardId = cell.getAttribute('data-card-id');
-                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
-                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
-                    var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
 
-                    if (page.state.view === 'binder') {
-                        // Binder: toggle owned/unowned class
-                        var isOwned = qty.normalQuantity > 0 || qty.foilQuantity > 0;
-                        cell.classList.toggle('binder-card-owned', isOwned);
-                        cell.classList.toggle('binder-card-unowned', !isOwned);
-                    } else {
-                        // Table: render quantity forms
-                        cell.innerHTML = renderOwnedForms(cardId, qty, hasFoil, hasNonFoil);
+                if (page.state.view === 'binder') {
+                    // Binder: update stepper quantities
+                    var binderCards = document.querySelectorAll('#set-card-list-ajax .binder-card');
+                    for (var j = 0; j < binderCards.length; j++) {
+                        var card = binderCards[j];
+                        var cardId = card.getAttribute('data-card-id');
+                        var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
+                        updateBinderSteppers(card, qty);
+                    }
+                } else {
+                    // Table: render quantity forms
+                    var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                    for (var k = 0; k < cells.length; k++) {
+                        var cell = cells[k];
+                        var cellCardId = cell.getAttribute('data-card-id');
+                        var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                        var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                        var cellQty = quantityMap[cellCardId] || { foilQuantity: 0, normalQuantity: 0 };
+                        cell.innerHTML = renderOwnedForms(cellCardId, cellQty, hasFoil, hasNonFoil);
                     }
                 }
             })
@@ -464,17 +472,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderOwnedForms(cardId, qty, hasFoil, hasNonFoil) {
-        var html = '';
-        if (hasNonFoil) {
-            html += renderOwnedForm(cardId, qty.normalQuantity, false);
-        }
-        if (hasFoil) {
-            html += renderOwnedForm(cardId, qty.foilQuantity, true);
-        }
-        return html;
+        return AjaxUtils.createStepperGroup(
+            cardId, qty.normalQuantity, qty.foilQuantity,
+            hasNonFoil, hasFoil, { compact: true }
+        );
     }
 
-    function renderOwnedForm(cardId, quantity, isFoil) {
-        return AjaxUtils.createQuantityForm(cardId, quantity, isFoil);
+    function updateBinderSteppers(binderCard, qty) {
+        var steppers = binderCard.querySelectorAll('.inv-stepper');
+        for (var i = 0; i < steppers.length; i++) {
+            var stepper = steppers[i];
+            var isFoil = stepper.getAttribute('data-foil') === 'true';
+            var q = isFoil ? qty.foilQuantity : qty.normalQuantity;
+            var qtyEl = stepper.querySelector('.inv-stepper-qty');
+            qtyEl.textContent = q;
+            qtyEl.classList.toggle('inv-stepper-qty--zero', q === 0);
+            var decBtn = stepper.querySelector('.inv-stepper-btn--dec');
+            if (q <= 0) {
+                decBtn.setAttribute('disabled', '');
+            } else {
+                decBtn.removeAttribute('disabled');
+            }
+        }
     }
 });

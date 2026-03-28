@@ -54,6 +54,40 @@
 
 /* ===== Binder View ===== */
 
+/* Binder wrapper: side arrows + grid */
+
+.binder-wrapper {
+    @apply relative flex items-stretch justify-center mx-auto;
+    max-width: 720px;
+}
+
+.binder-side-btn {
+    @apply flex-shrink-0 flex items-center justify-center w-10 sm:w-12
+           transition-colors duration-150 cursor-pointer
+           text-gray-400 dark:text-gray-500
+           hover:text-teal-600 dark:hover:text-teal-400
+           hover:bg-gray-100/60 dark:hover:bg-midnight-800/60
+           disabled:opacity-20 disabled:cursor-not-allowed
+           disabled:hover:bg-transparent disabled:hover:text-gray-400
+           dark:disabled:hover:text-gray-500;
+    border: 1px solid transparent;
+}
+
+.binder-side-btn--left {
+    @apply rounded-l-xl mr-1 sm:mr-2;
+    border-color: theme('colors.gray.200');
+}
+
+.binder-side-btn--right {
+    @apply rounded-r-xl ml-1 sm:ml-2;
+    border-color: theme('colors.gray.200');
+}
+
+:is(.dark) .binder-side-btn--left,
+:is(.dark) .binder-side-btn--right {
+    border-color: theme('colors.midnight.700');
+}
+
 .binder-grid {
     @apply grid gap-3 sm:gap-4 mx-auto;
     grid-template-columns: repeat(2, 1fr);
@@ -67,6 +101,26 @@
     }
 }
 
+/* Binder page transition animations */
+
+@keyframes binder-enter-right {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes binder-enter-left {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.binder-grid--enter-right {
+    animation: binder-enter-right 0.25s ease-out;
+}
+
+.binder-grid--enter-left {
+    animation: binder-enter-left 0.25s ease-out;
+}
+
 .binder-card {
     @apply relative rounded-lg overflow-hidden;
     aspect-ratio: 488 / 680;
@@ -77,38 +131,21 @@
 }
 
 .binder-card img {
-    @apply w-full h-full object-cover rounded-lg;
+    @apply w-full h-full object-cover rounded-lg shadow-md;
     transition: filter 0.2s ease, opacity 0.2s ease;
-}
-
-.binder-card-owned img {
-    @apply opacity-100 shadow-md;
-    filter: none;
-}
-
-.binder-card-unowned img {
-    @apply opacity-25;
-    filter: grayscale(100%);
-}
-
-.binder-card-unowned .binder-card-number {
-    @apply absolute inset-0 flex items-center justify-center
-           text-2xl font-bold text-gray-400 dark:text-gray-600 pointer-events-none;
-}
-
-.binder-card-owned .binder-card-number {
-    @apply hidden;
 }
 
 .binder-card-overlay {
     @apply absolute bottom-0 left-0 right-0
-           bg-gradient-to-t from-black/70 to-transparent
-           p-2 pt-6 opacity-0 transition-opacity duration-200 pointer-events-none;
+           bg-gradient-to-t from-black/80 via-black/40 to-transparent
+           p-2 pt-8 opacity-0 transition-opacity duration-200;
+    pointer-events: none;
 }
 
-.binder-card-owned:hover .binder-card-overlay,
-.binder-card-owned:focus-within .binder-card-overlay {
+.binder-card:hover .binder-card-overlay,
+.binder-card:focus-within .binder-card-overlay {
     @apply opacity-100;
+    pointer-events: auto;
 }
 
 .binder-card-overlay-name {
@@ -117,6 +154,54 @@
 
 .binder-card-overlay-number {
     @apply text-gray-300 text-[0.65rem];
+}
+
+.binder-card-stepper {
+    @apply mt-1.5;
+}
+
+.binder-card-stepper .inv-stepper-group {
+    @apply gap-1.5;
+}
+
+.binder-card-stepper .inv-stepper {
+    @apply border-white/30 bg-black/20;
+}
+
+.binder-card-stepper .inv-stepper-qty {
+    @apply bg-transparent text-white border-white/20;
+}
+
+.binder-card-stepper .inv-stepper-qty--zero {
+    @apply text-white/40;
+}
+
+.binder-card-stepper .inv-stepper-btn {
+    @apply text-white/70;
+}
+
+.binder-card-stepper .inv-stepper-btn--inc {
+    @apply hover:bg-white/20 hover:text-white focus:ring-white/40;
+}
+
+.binder-card-stepper .inv-stepper-btn--dec {
+    @apply hover:bg-red-500/30 hover:text-red-300 focus:ring-red-400/40;
+}
+
+.binder-card-stepper .inv-stepper-btn--dec[disabled] {
+    @apply text-white/20 hover:bg-transparent hover:text-white/20;
+}
+
+.binder-card-stepper .inv-stepper-label {
+    @apply text-[0.5rem] text-white/60;
+}
+
+.binder-card-stepper .inv-stepper-label--normal {
+    @apply text-teal-300/80;
+}
+
+.binder-card-stepper .inv-stepper-label--foil {
+    @apply text-purple-300/80;
 }
 
 .binder-page-nav {
@@ -134,7 +219,25 @@
 }
 
 .binder-page-indicator {
-    @apply text-sm font-medium text-gray-600 dark:text-gray-400 select-none;
+    @apply inline-flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-400 select-none;
+}
+
+.binder-page-input {
+    @apply w-12 text-center rounded border border-gray-300 dark:border-midnight-600
+           bg-white dark:bg-midnight-800 text-gray-700 dark:text-gray-300
+           text-sm font-medium py-1 px-1
+           focus:outline-none focus:ring-1 focus:ring-teal-400 focus:border-teal-400;
+    -moz-appearance: textfield;
+}
+
+.binder-page-input::-webkit-inner-spin-button,
+.binder-page-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.binder-page-total {
+    @apply text-gray-500 dark:text-gray-400;
 }
 
 .view-toggle-btn {
@@ -158,6 +261,32 @@
     .binder-card-overlay {
         transition: none;
     }
+
+    .binder-grid--enter-right,
+    .binder-grid--enter-left {
+        animation: none;
+    }
+}
+
+/* Binder: owned/unowned visual distinction (inventory binder only) */
+
+.binder-card-owned img {
+    @apply opacity-100;
+    filter: none;
+}
+
+.binder-card-unowned img {
+    @apply opacity-25;
+    filter: grayscale(100%);
+}
+
+.binder-card-unowned .binder-card-number {
+    @apply absolute inset-0 flex items-center justify-center
+           text-2xl font-bold text-gray-400 dark:text-gray-600 pointer-events-none;
+}
+
+.binder-card-owned .binder-card-number {
+    @apply hidden;
 }
 
 /* ===== Card Image Animations ===== */
@@ -544,7 +673,7 @@
     @apply text-gray-400 dark:text-gray-500;
 }
 
-/* ===== Quantity Forms ===== */
+/* ===== Quantity Forms (legacy) ===== */
 
 .quantity-form {
     @apply text-sm md:text-base lg:text-lg;
@@ -560,6 +689,120 @@
 
 .quantity-owned {
     @apply text-center border-none bg-transparent text-white px-0 text-sm sm:text-xs md:text-base lg:text-base w-12 sm:w-12 md:w-12 lg:w-12 xl:w-16 focus:outline-none focus:ring-0;
+}
+
+/* ===== Inventory Stepper ===== */
+
+.inv-stepper-group {
+    @apply inline-flex items-center gap-2 flex-wrap;
+    max-width: 100%;
+}
+
+.inv-stepper {
+    @apply inline-flex items-stretch rounded-lg overflow-hidden
+           border border-gray-200 dark:border-midnight-600
+           h-9 text-sm select-none;
+    max-width: 100%;
+}
+
+.inv-stepper--sm {
+    @apply h-7 text-xs;
+}
+
+.inv-stepper--normal {
+    @apply border-teal-300 dark:border-teal-700;
+}
+
+.inv-stepper--foil {
+    @apply border-purple-300 dark:border-purple-700;
+}
+
+.inv-stepper-label {
+    @apply text-[0.6rem] font-semibold uppercase tracking-wider mb-0.5 leading-none;
+}
+
+.inv-stepper-label--normal {
+    @apply text-teal-600 dark:text-teal-400;
+}
+
+.inv-stepper-label--foil {
+    @apply text-purple-500 dark:text-purple-400;
+}
+
+.inv-stepper-btn {
+    @apply flex items-center justify-center w-8 font-medium
+           transition-colors duration-100 cursor-pointer
+           focus:outline-none focus:ring-1 focus:ring-inset;
+}
+
+.inv-stepper--sm .inv-stepper-btn {
+    @apply w-6;
+}
+
+.inv-stepper-btn--inc {
+    @apply text-gray-500 dark:text-gray-400
+           hover:bg-teal-50 hover:text-teal-600
+           dark:hover:bg-teal-900/30 dark:hover:text-teal-400
+           focus:ring-teal-400;
+}
+
+.inv-stepper--foil .inv-stepper-btn--inc {
+    @apply hover:bg-purple-50 hover:text-purple-600
+           dark:hover:bg-purple-900/30 dark:hover:text-purple-400
+           focus:ring-purple-400;
+}
+
+.inv-stepper-btn--dec {
+    @apply text-gray-400 dark:text-gray-500
+           hover:bg-red-50 hover:text-red-500
+           dark:hover:bg-red-900/20 dark:hover:text-red-400
+           focus:ring-red-400;
+}
+
+.inv-stepper-btn--dec[disabled] {
+    @apply opacity-30 cursor-not-allowed
+           hover:bg-transparent hover:text-gray-400
+           dark:hover:bg-transparent dark:hover:text-gray-500;
+}
+
+.inv-stepper-qty {
+    @apply flex items-center justify-center min-w-[2rem]
+           font-mono font-semibold tabular-nums
+           bg-white dark:bg-midnight-900
+           text-gray-800 dark:text-gray-200
+           border-x border-gray-200 dark:border-midnight-600;
+}
+
+.inv-stepper--sm .inv-stepper-qty {
+    @apply min-w-[1.5rem];
+}
+
+.inv-stepper--normal .inv-stepper-qty {
+    @apply border-teal-200 dark:border-teal-800;
+}
+
+.inv-stepper--foil .inv-stepper-qty {
+    @apply border-purple-200 dark:border-purple-800;
+}
+
+.inv-stepper-qty--zero {
+    @apply text-gray-300 dark:text-gray-600;
+}
+
+@keyframes inv-stepper-pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.inv-stepper-qty--pop {
+    animation: inv-stepper-pop 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .inv-stepper-qty--pop {
+        animation: none;
+    }
 }
 
 /* ===== Response Messages ===== */
@@ -725,6 +968,12 @@
     @apply text-teal-700 dark:text-teal-400 hover:underline hover:text-teal-800 dark:hover:text-teal-300 transition-colors;
 }
 
+.binder-link {
+    @apply ml-1.5 text-gray-400 dark:text-gray-500
+           hover:text-teal-600 dark:hover:text-teal-400
+           transition-colors text-xs;
+}
+
 .table-row {
     @apply bg-white dark:bg-midnight-800 even:bg-gray-50 dark:even:bg-midnight-900
            border-b border-gray-200 dark:border-midnight-600
@@ -766,7 +1015,7 @@
 /* ===== Price Tiles ===== */
 
 .price-tile {
-    @apply border rounded-lg p-2 md:p-3 transition-all duration-200 cursor-pointer;
+    @apply border rounded-lg p-2 md:p-3 transition-all duration-200 cursor-pointer overflow-hidden min-w-0;
 }
 
 .price-tile-active {
@@ -774,7 +1023,8 @@
 }
 
 .price-tile-active .price-tile-value {
-    @apply text-2xl md:text-3xl;
+    font-size: clamp(1rem, 2.5vw, 1.875rem);
+    @apply font-bold truncate;
 }
 
 .price-tile-inactive {
@@ -782,7 +1032,8 @@
 }
 
 .price-tile-inactive .price-tile-value {
-    @apply text-base md:text-lg;
+    font-size: clamp(0.75rem, 1.5vw, 1.125rem);
+    @apply truncate;
 }
 
 /* ===== Stat Cards ===== */

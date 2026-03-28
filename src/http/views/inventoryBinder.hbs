@@ -1,0 +1,58 @@
+<section class="content-wrapper">
+    <section class="section-container">
+        <header class="mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <i class="ss ss-{{setCode}} ss-2x mr-1"></i>
+                        {{setName}} Binder
+                    </h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <a class="table-link" href="/sets/{{setCode}}">View set</a>
+                    </p>
+                </div>
+                <a href="/inventory" class="btn btn-ghost text-sm">
+                    <i class="fas fa-arrow-left mr-1"></i> Inventory
+                </a>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mt-4">
+                <div class="stat-card">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Owned</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100" id="owned-count">{{ownedTotal}} / {{cardTotal}}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Completion</div>
+                    <div class="text-lg font-bold text-teal-600 dark:text-teal-400">{{completionRate}}%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Value</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ownedValue}}</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex items-center gap-3 mb-4">
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="owned-only-toggle" class="sr-only peer" />
+                <span class="relative w-9 h-5 bg-gray-300 dark:bg-midnight-600 rounded-full
+                             peer-checked:bg-teal-500 dark:peer-checked:bg-teal-600
+                             after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4
+                             after:bg-white after:rounded-full after:transition-transform
+                             peer-checked:after:translate-x-4"
+                      aria-hidden="true"></span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Owned only</span>
+            </label>
+        </div>
+
+        <div id="inventory-binder"
+             data-set-code="{{setCode}}"
+             data-authenticated="true">
+        </div>
+    </section>
+</section>
+
+<link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/inventoryBinderAjax.js?v={{assetVersion}}" defer></script>

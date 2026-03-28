@@ -81,6 +81,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            // Update binder card owned/unowned state if inside a binder
+            var binderCard = stepper.closest('.binder-card');
+            if (binderCard) {
+                var totalOwned = 0;
+                var cardSteppers = binderCard.querySelectorAll('.inv-stepper-qty');
+                for (var j = 0; j < cardSteppers.length; j++) {
+                    totalOwned += parseInt(cardSteppers[j].textContent) || 0;
+                }
+                binderCard.classList.toggle('binder-card-owned', totalOwned > 0);
+                binderCard.classList.toggle('binder-card-unowned', totalOwned === 0);
+            }
+
             // Show transaction prompt AFTER DOM updates (guarded — AjaxUtils may not be loaded)
             showTransactionPrompt(incBtn ? 'BUY' : 'SELL', isFoil);
         } finally {

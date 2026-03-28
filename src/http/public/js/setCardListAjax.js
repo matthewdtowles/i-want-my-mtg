@@ -300,18 +300,71 @@ document.addEventListener('DOMContentLoaded', function () {
         var totalPages = (meta && meta.totalPages) || 1;
         var currentPage = (meta && meta.page) || 1;
 
-        var html = '<div class="binder-grid">';
+        var html = '<div class="binder-wrapper">';
+
+        // Left side arrow
+        if (totalPages > 1) {
+            html +=
+                '<button type="button" class="binder-side-btn binder-side-btn--left" data-dir="prev"' +
+                (currentPage <= 1 ? ' disabled' : '') + ' aria-label="Previous page">' +
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />' +
+                '</svg>' +
+                '</button>';
+        }
+
+        html += '<div class="binder-grid">';
         for (var i = 0; i < cards.length; i++) {
             html += renderBinderCard(cards[i]);
         }
         html += '</div>';
 
-        // Binder page navigation
+        // Right side arrow
+        if (totalPages > 1) {
+            html +=
+                '<button type="button" class="binder-side-btn binder-side-btn--right" data-dir="next"' +
+                (currentPage >= totalPages ? ' disabled' : '') + ' aria-label="Next page">' +
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />' +
+                '</svg>' +
+                '</button>';
+        }
+
+        html += '</div>'; // close binder-wrapper
+
+        // Bottom nav with page input
         html += renderBinderNav(currentPage, totalPages);
 
         resultsEl.innerHTML = html;
+        setupBinderNavHandlers(resultsEl, totalPages);
 
-        // Set up binder nav click handlers
+        // Hide standard pagination when in binder view
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
+        if (paginationEl) paginationEl.style.display = 'none';
+
+        AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);
+    }
+
+    function setupBinderNavHandlers(resultsEl, totalPages) {
+        // Side buttons
+        var sideBtns = resultsEl.querySelectorAll('.binder-side-btn');
+        for (var i = 0; i < sideBtns.length; i++) {
+            sideBtns[i].addEventListener('click', function (e) {
+                var btn = e.target.closest('.binder-side-btn');
+                if (!btn || btn.disabled) return;
+                e.preventDefault();
+                var dir = btn.getAttribute('data-dir');
+                if (dir === 'prev' && page.state.page > 1) {
+                    page.state.page--;
+                    page.fetchAndRender('pushState');
+                } else if (dir === 'next' && page.state.page < totalPages) {
+                    page.state.page++;
+                    page.fetchAndRender('pushState');
+                }
+            });
+        }
+
+        // Bottom nav buttons
         var nav = resultsEl.querySelector('.binder-page-nav');
         if (nav) {
             nav.addEventListener('click', function (e) {
@@ -327,13 +380,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     page.fetchAndRender('pushState');
                 }
             });
+
+            // Page input
+            var pageInput = nav.querySelector('.binder-page-input');
+            if (pageInput) {
+                pageInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        var val = parseInt(this.value, 10);
+                        if (val >= 1 && val <= totalPages && val !== page.state.page) {
+                            page.state.page = val;
+                            page.fetchAndRender('pushState');
+                        } else {
+                            this.value = page.state.page;
+                        }
+                    }
+                });
+                pageInput.addEventListener('blur', function () {
+                    this.value = page.state.page;
+                });
+            }
         }
-
-        // Hide standard pagination when in binder view
-        var paginationEl = container.parentElement.querySelector('.pagination-container');
-        if (paginationEl) paginationEl.style.display = 'none';
-
-        AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);
     }
 
     function renderBinderCard(card) {
@@ -387,7 +454,13 @@ document.addEventListener('DOMContentLoaded', function () {
             '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />' +
             '</svg>' +
             '</button>' +
-            '<span class="binder-page-indicator">Page ' + currentPage + ' of ' + totalPages + '</span>' +
+            '<span class="binder-page-indicator">' +
+            '<label class="sr-only" for="set-binder-page-input">Page</label>' +
+            '<input id="set-binder-page-input" type="number" class="binder-page-input"' +
+            ' value="' + currentPage + '" min="1" max="' + totalPages + '"' +
+            ' aria-label="Go to page" />' +
+            '<span class="binder-page-total"> / ' + totalPages + '</span>' +
+            '</span>' +
             '<button type="button" class="binder-page-btn" data-dir="next"' + nextDisabled + ' aria-label="Next page">' +
             '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
             '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />' +

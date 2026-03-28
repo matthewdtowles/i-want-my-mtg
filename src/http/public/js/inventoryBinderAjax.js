@@ -11,8 +11,11 @@ document.addEventListener('DOMContentLoaded', function () {
         ownedOnly: false,
     };
 
-    // Prefetch cache: { [page]: { cards, meta, quantityMap } }
+    // Page cache for normal mode: { [page]: { cards, meta, quantityMap } }
     var cache = {};
+
+    // Owned-only cache: full filtered list + quantityMap
+    var ownedCache = null; // { cards: [], quantityMap: {} }
 
     // Owned-only toggle
     var ownedOnlyToggle = document.getElementById('owned-only-toggle');
@@ -20,8 +23,11 @@ document.addEventListener('DOMContentLoaded', function () {
         ownedOnlyToggle.addEventListener('change', function () {
             state.ownedOnly = this.checked;
             state.page = 1;
-            cache = {};
-            fetchAndRender();
+            if (state.ownedOnly && !ownedCache) {
+                fetchAllOwned();
+            } else {
+                renderCurrentPage();
+            }
         });
     }
 
@@ -47,9 +53,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return nav ? parseInt(nav.getAttribute('data-total-pages'), 10) : 1;
     }
 
-    function navigateTo(page, direction) {
-        state.page = page;
-        var cached = cache[page];
+    function navigateTo(targetPage, direction) {
+        state.page = targetPage;
+        if (state.ownedOnly) {
+            renderCurrentPage(direction);
+            return;
+        }
+        var cached = cache[targetPage];
         if (cached) {
             renderBinder(cached.cards, cached.meta, cached.quantityMap, direction);
             prefetchAdjacent(cached.meta);
@@ -58,22 +68,84 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Render current page from appropriate source
+    function renderCurrentPage(direction) {
+        if (state.ownedOnly && ownedCache) {
+            var start = (state.page - 1) * state.limit;
+            var pageCards = ownedCache.cards.slice(start, start + state.limit);
+            var totalPages = Math.max(1, Math.ceil(ownedCache.cards.length / state.limit));
+            var meta = { page: state.page, totalPages: totalPages };
+            renderBinder(pageCards, meta, ownedCache.quantityMap, direction);
+        } else if (!state.ownedOnly) {
+            var cached = cache[state.page];
+            if (cached) {
+                renderBinder(cached.cards, cached.meta, cached.quantityMap, direction);
+            } else {
+                fetchAndRender(direction);
+            }
+        }
+    }
+
+    // Normal mode: fetch a single page
     function fetchAndRender(direction) {
         if (!direction) {
             AjaxUtils.showSpinner(container);
         }
 
-        fetchPage(state.page, function (cards, meta, quantityMap) {
+        fetchPage(state.page, state.limit, function (cards, meta, quantityMap) {
             cache[state.page] = { cards: cards, meta: meta, quantityMap: quantityMap };
             renderBinder(cards, meta, quantityMap, direction);
             prefetchAdjacent(meta);
         });
     }
 
-    function fetchPage(page, callback) {
+    // Owned-only mode: fetch all cards then filter
+    function fetchAllOwned() {
+        AjaxUtils.showSpinner(container);
+
+        // Fetch all cards (large limit to get everything in one request)
+        fetchPage(1, 1000, function (cards, meta, quantityMap) {
+            // If there are more pages, fetch them too
+            var allCards = cards.slice();
+            var allQtyMap = {};
+            for (var k in quantityMap) allQtyMap[k] = quantityMap[k];
+
+            var totalPages = meta.totalPages || 1;
+            if (totalPages <= 1) {
+                buildOwnedCache(allCards, allQtyMap);
+                return;
+            }
+
+            // Fetch remaining pages
+            var remaining = totalPages - 1;
+            var done = 0;
+            for (var p = 2; p <= totalPages; p++) {
+                fetchPage(p, 1000, function (moreCards, moreMeta, moreQtyMap) {
+                    allCards = allCards.concat(moreCards);
+                    for (var k in moreQtyMap) allQtyMap[k] = moreQtyMap[k];
+                    done++;
+                    if (done === remaining) {
+                        buildOwnedCache(allCards, allQtyMap);
+                    }
+                });
+            }
+        });
+    }
+
+    function buildOwnedCache(allCards, quantityMap) {
+        var owned = allCards.filter(function (card) {
+            var qty = quantityMap[card.id];
+            return qty && (qty.normalQuantity > 0 || qty.foilQuantity > 0);
+        });
+        ownedCache = { cards: owned, quantityMap: quantityMap };
+        state.page = 1;
+        renderCurrentPage();
+    }
+
+    function fetchPage(pageNum, limit, callback) {
         var params = new URLSearchParams();
-        params.set('page', page);
-        params.set('limit', state.limit);
+        params.set('page', pageNum);
+        params.set('limit', limit);
         params.set('sort', 'card.sortNumber');
         params.set('ascend', 'true');
 
@@ -103,39 +175,56 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/api/v1/inventory/quantities?cardIds=' + cardIds.join(','), {
-            credentials: 'same-origin',
-        })
-            .then(function (res) {
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return res.json();
+        // Batch into chunks of 200 (API limit)
+        var BATCH_SIZE = 200;
+        var chunks = [];
+        for (var i = 0; i < cardIds.length; i += BATCH_SIZE) {
+            chunks.push(cardIds.slice(i, i + BATCH_SIZE));
+        }
+
+        var quantityMap = {};
+        var done = 0;
+
+        chunks.forEach(function (chunk) {
+            fetch('/api/v1/inventory/quantities?cardIds=' + chunk.join(','), {
+                credentials: 'same-origin',
             })
-            .then(function (json) {
-                var quantityMap = {};
-                if (json.success && json.data) {
-                    for (var i = 0; i < json.data.length; i++) {
-                        quantityMap[json.data[i].cardId] = json.data[i];
+                .then(function (res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(function (json) {
+                    if (json.success && json.data) {
+                        for (var j = 0; j < json.data.length; j++) {
+                            quantityMap[json.data[j].cardId] = json.data[j];
+                        }
                     }
-                }
-                callback(cards, meta, quantityMap);
-            })
-            .catch(function () {
-                callback(cards, meta, {});
-            });
+                })
+                .catch(function () {
+                    // silently continue — partial data is better than none
+                })
+                .then(function () {
+                    done++;
+                    if (done === chunks.length) {
+                        callback(cards, meta, quantityMap);
+                    }
+                });
+        });
     }
 
     function prefetchAdjacent(meta) {
+        if (state.ownedOnly) return; // owned mode is fully client-side
         var totalPages = meta.totalPages || 1;
         var nextPage = state.page + 1;
         var prevPage = state.page - 1;
 
         if (nextPage <= totalPages && !cache[nextPage]) {
-            fetchPage(nextPage, function (cards, m, qm) {
+            fetchPage(nextPage, state.limit, function (cards, m, qm) {
                 cache[nextPage] = { cards: cards, meta: m, quantityMap: qm };
             });
         }
         if (prevPage >= 1 && !cache[prevPage]) {
-            fetchPage(prevPage, function (cards, m, qm) {
+            fetchPage(prevPage, state.limit, function (cards, m, qm) {
                 cache[prevPage] = { cards: cards, meta: m, quantityMap: qm };
             });
         }
@@ -145,21 +234,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var totalPages = meta.totalPages || 1;
         var currentPage = meta.page || 1;
 
-        var displayCards = cards;
-        if (state.ownedOnly) {
-            displayCards = cards.filter(function (card) {
-                var qty = quantityMap[card.id];
-                return qty && (qty.normalQuantity > 0 || qty.foilQuantity > 0);
-            });
-        }
-
-        if (displayCards.length === 0) {
-            var msg = state.ownedOnly ? 'No owned cards on this page' : 'No cards in this set';
+        if (!cards || cards.length === 0) {
+            var msg = state.ownedOnly ? 'No owned cards in this set' : 'No cards in this set';
             AjaxUtils.renderEmptyState(container, { message: msg });
-            if (totalPages > 1) {
-                container.innerHTML += renderBottomNav(currentPage, totalPages);
-                setupNavHandlers();
-            }
             return;
         }
 
@@ -184,8 +261,8 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (direction === 'left') animClass = ' binder-grid--enter-left';
 
         html += '<div class="binder-grid' + animClass + '">';
-        for (var i = 0; i < displayCards.length; i++) {
-            var card = displayCards[i];
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
             var qty = quantityMap[card.id] || { normalQuantity: 0, foilQuantity: 0 };
             html += renderCard(card, qty);
         }
@@ -212,6 +289,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         container.innerHTML = html;
         setupNavHandlers();
+
+        // Scroll to binder container on page navigation
+        if (direction) {
+            container.scrollIntoView({ behavior: 'instant', block: 'start' });
+        }
 
         AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);
     }

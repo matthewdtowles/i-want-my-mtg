@@ -974,7 +974,9 @@ var AjaxUtils = (function () {
 
         function fetchAndRender(historyMethod) {
             var resultsEl = document.getElementById('filter-results');
-            showSpinner(resultsEl);
+            if (state.view !== 'binder') {
+                showSpinner(resultsEl);
+            }
 
             fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
                 .then(function (res) {
@@ -988,7 +990,9 @@ var AjaxUtils = (function () {
                     }
 
                     config.renderContent(resultsEl, json.data, json.meta);
-                    doRenderPagination(json.meta);
+                    if (state.view !== 'binder') {
+                        doRenderPagination(json.meta);
+                    }
 
                     if (json.meta) {
                         var total = json.meta.totalItems || json.meta.total || 0;
@@ -1012,9 +1016,11 @@ var AjaxUtils = (function () {
                     if (config.onSuccess) {
                         config.onSuccess(json.data, json.meta, function () {
                             clearMinHeight(resultsEl);
+                            scrollToBinderContainer();
                         });
                     } else {
                         clearMinHeight(resultsEl);
+                        scrollToBinderContainer();
                     }
                 })
                 .catch(function (err) {
@@ -1022,6 +1028,15 @@ var AjaxUtils = (function () {
                     showError(resultsEl, errorMsg + '. Please try again.');
                     clearMinHeight(resultsEl);
                 });
+        }
+
+        function scrollToBinderContainer() {
+            if (state.view === 'binder') {
+                var target = document.getElementById('filter-results');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'instant', block: 'start' });
+                }
+            }
         }
 
         function doRenderPagination(meta) {

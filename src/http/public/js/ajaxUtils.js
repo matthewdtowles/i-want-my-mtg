@@ -937,6 +937,7 @@ var AjaxUtils = (function () {
         var errorMsg = config.errorMessage || 'Failed to load data';
 
         var state = parseStateFromUrl();
+        var binderMinHeight = 0;
 
         if (hasFilter) {
             setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
@@ -976,6 +977,9 @@ var AjaxUtils = (function () {
             var resultsEl = document.getElementById('filter-results');
             if (state.view !== 'binder') {
                 showSpinner(resultsEl);
+            } else {
+                // Hold container at established binder height (or current height on first load)
+                resultsEl.style.minHeight = (binderMinHeight || resultsEl.offsetHeight) + 'px';
             }
 
             fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
@@ -990,7 +994,17 @@ var AjaxUtils = (function () {
                     }
 
                     config.renderContent(resultsEl, json.data, json.meta);
-                    if (state.view !== 'binder') {
+
+                    if (state.view === 'binder') {
+                        // Establish permanent binder height — never shrinks while in binder view
+                        var contentHeight = resultsEl.scrollHeight;
+                        if (contentHeight > binderMinHeight) {
+                            binderMinHeight = contentHeight;
+                        }
+                        resultsEl.style.minHeight = binderMinHeight + 'px';
+                        // Scroll binder to top of viewport immediately (before async inventory fetch)
+                        resultsEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+                    } else {
                         doRenderPagination(json.meta);
                     }
 
@@ -1015,28 +1029,22 @@ var AjaxUtils = (function () {
 
                     if (config.onSuccess) {
                         config.onSuccess(json.data, json.meta, function () {
-                            clearMinHeight(resultsEl);
-                            scrollToBinderContainer();
+                            if (state.view !== 'binder') {
+                                clearMinHeight(resultsEl);
+                            }
                         });
                     } else {
-                        clearMinHeight(resultsEl);
-                        scrollToBinderContainer();
+                        if (state.view !== 'binder') {
+                            clearMinHeight(resultsEl);
+                        }
                     }
                 })
                 .catch(function (err) {
                     console.error('Fetch error (' + apiPath + '):', err);
                     showError(resultsEl, errorMsg + '. Please try again.');
                     clearMinHeight(resultsEl);
+                    binderMinHeight = 0;
                 });
-        }
-
-        function scrollToBinderContainer() {
-            if (state.view === 'binder') {
-                var target = document.getElementById('filter-results');
-                if (target) {
-                    target.scrollIntoView({ behavior: 'instant', block: 'start' });
-                }
-            }
         }
 
         function doRenderPagination(meta) {

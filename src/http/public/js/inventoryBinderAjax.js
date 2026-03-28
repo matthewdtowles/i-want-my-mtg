@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
         ownedOnly: false,
     };
 
+    var binderMinHeight = 0;
+
     // Page cache for normal mode: { [page]: { cards, meta, quantityMap } }
     var cache = {};
 
@@ -287,10 +289,19 @@ document.addEventListener('DOMContentLoaded', function () {
             html += renderBottomNav(currentPage, totalPages);
         }
 
+        // Hold container at established binder height during content swap
+        container.style.minHeight = (binderMinHeight || container.offsetHeight) + 'px';
         container.innerHTML = html;
         setupNavHandlers();
 
-        // Scroll to binder container on page navigation
+        // Establish permanent binder height — never shrinks
+        var contentHeight = container.scrollHeight;
+        if (contentHeight > binderMinHeight) {
+            binderMinHeight = contentHeight;
+        }
+        container.style.minHeight = binderMinHeight + 'px';
+
+        // Keep binder at top of viewport on page navigation
         if (direction) {
             container.scrollIntoView({ behavior: 'instant', block: 'start' });
         }

@@ -436,6 +436,44 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Setup view toggle (list/binder) interception.
+     * @param {object} opts
+     * @param {HTMLElement} opts.container - Element containing toggle buttons
+     * @param {object} opts.state - State object with .view, .page
+     * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
+     * @param {function} [opts.onToggle] - Called after state.view changes with new view value
+     */
+    function setupViewToggleInterceptor(opts) {
+        opts.container.addEventListener('click', function (e) {
+            var btn = e.target.closest('.view-toggle-btn');
+            if (!btn) return;
+            e.preventDefault();
+            var newView = btn.getAttribute('data-view');
+            if (!newView || newView === opts.state.view) return;
+            opts.state.view = newView;
+            opts.state.page = 1;
+            localStorage.setItem('setViewPreference', newView);
+            if (opts.onToggle) opts.onToggle(newView);
+            opts.fetchFn('pushState');
+        });
+    }
+
+    /**
+     * Update view toggle button active/inactive classes.
+     * @param {HTMLElement} container - Element containing toggle buttons
+     * @param {string} activeView - 'list' or 'binder'
+     */
+    function updateViewToggle(container, activeView) {
+        var buttons = container.querySelectorAll('.view-toggle-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var isActive = btn.getAttribute('data-view') === activeView;
+            btn.classList.toggle('view-toggle-active', isActive);
+            btn.classList.toggle('view-toggle-inactive', !isActive);
+        }
+    }
+
+    /**
      * Parse common state from URL parameters.
      * @param {string[]} [extraKeys] - Additional keys to parse (beyond page, limit, sort, ascend, filter, baseOnly)
      * @returns {object} Parsed state
@@ -449,6 +487,7 @@ var AjaxUtils = (function () {
             ascend: params.get('ascend') === 'true',
             filter: params.get('filter') || '',
             baseOnly: params.has('baseOnly') ? params.get('baseOnly') !== 'false' : true,
+            view: params.get('view') || 'list',
         };
         if (extraKeys) {
             for (var i = 0; i < extraKeys.length; i++) {
@@ -491,6 +530,7 @@ var AjaxUtils = (function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (state.baseOnly === false) params.set('baseOnly', 'false');
+        if (state.view && state.view !== 'list') params.set('view', state.view);
         var qs = params.toString();
         return basePath + (qs ? '?' + qs : '');
     }
@@ -703,17 +743,27 @@ var AjaxUtils = (function () {
      * @param {object} state - Current state object
      * @returns {string} URL string
      */
-    function buildApiUrl(apiPath, state) {
+    function buildApiUrl(apiPath, state, overrides) {
+        var s = overrides ? mergeState(state, overrides) : state;
         var params = new URLSearchParams();
-        params.set('page', state.page);
-        params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', state.ascend);
+        params.set('page', s.page);
+        params.set('limit', s.limit);
+        if (s.sort) {
+            params.set('sort', s.sort);
+            params.set('ascend', s.ascend);
         }
-        if (state.filter) params.set('filter', state.filter);
-        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        if (s.filter) params.set('filter', s.filter);
+        if (s.baseOnly === false) params.set('baseOnly', 'false');
         return apiPath + '?' + params.toString();
+    }
+
+    function mergeState(state, overrides) {
+        var merged = {};
+        var keys = Object.keys(state);
+        for (var i = 0; i < keys.length; i++) merged[keys[i]] = state[keys[i]];
+        var oKeys = Object.keys(overrides);
+        for (var j = 0; j < oKeys.length; j++) merged[oKeys[j]] = overrides[oKeys[j]];
+        return merged;
     }
 
     /**
@@ -987,6 +1037,9 @@ var AjaxUtils = (function () {
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,
+        setupViewToggleInterceptor: setupViewToggleInterceptor,
+        updateViewToggle: updateViewToggle,
+        mergeState: mergeState,
         initListPage: initListPage,
     };
 })();

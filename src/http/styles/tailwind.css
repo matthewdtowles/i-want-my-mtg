@@ -52,6 +52,114 @@
            dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-700;
 }
 
+/* ===== Binder View ===== */
+
+.binder-grid {
+    @apply grid gap-3 sm:gap-4 mx-auto;
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 360px;
+}
+
+@media (min-width: 640px) {
+    .binder-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 640px;
+    }
+}
+
+.binder-card {
+    @apply relative rounded-lg overflow-hidden;
+    aspect-ratio: 488 / 680;
+}
+
+.binder-card a {
+    @apply block w-full h-full;
+}
+
+.binder-card img {
+    @apply w-full h-full object-cover rounded-lg;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.binder-card-owned img {
+    @apply opacity-100 shadow-md;
+    filter: none;
+}
+
+.binder-card-unowned img {
+    @apply opacity-25;
+    filter: grayscale(100%);
+}
+
+.binder-card-unowned .binder-card-number {
+    @apply absolute inset-0 flex items-center justify-center
+           text-2xl font-bold text-gray-400 dark:text-gray-600 pointer-events-none;
+}
+
+.binder-card-owned .binder-card-number {
+    @apply hidden;
+}
+
+.binder-card-overlay {
+    @apply absolute bottom-0 left-0 right-0
+           bg-gradient-to-t from-black/70 to-transparent
+           p-2 pt-6 opacity-0 transition-opacity duration-200 pointer-events-none;
+}
+
+.binder-card-owned:hover .binder-card-overlay,
+.binder-card-owned:focus-within .binder-card-overlay {
+    @apply opacity-100;
+}
+
+.binder-card-overlay-name {
+    @apply text-white text-xs font-medium truncate block;
+}
+
+.binder-card-overlay-number {
+    @apply text-gray-300 text-[0.65rem];
+}
+
+.binder-page-nav {
+    @apply flex items-center justify-center gap-4 mt-6 mb-2;
+}
+
+.binder-page-btn {
+    @apply p-2 rounded-lg transition-colors duration-150
+           bg-white dark:bg-midnight-800
+           border border-gray-300 dark:border-midnight-600
+           text-gray-700 dark:text-gray-300
+           hover:bg-teal-50 dark:hover:bg-midnight-700
+           hover:border-teal-400 dark:hover:border-teal-500
+           disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-midnight-800;
+}
+
+.binder-page-indicator {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400 select-none;
+}
+
+.view-toggle-btn {
+    @apply p-2 rounded-lg transition-colors duration-150 border cursor-pointer;
+}
+
+.view-toggle-active {
+    @apply bg-teal-700 text-white border-teal-700
+           dark:bg-teal-500 dark:border-teal-500 dark:text-white;
+}
+
+.view-toggle-inactive {
+    @apply bg-white text-gray-500 border-gray-300
+           hover:bg-gray-50 hover:text-teal-600
+           dark:bg-midnight-800 dark:text-gray-400 dark:border-midnight-600
+           dark:hover:bg-midnight-700 dark:hover:text-teal-400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .binder-card img,
+    .binder-card-overlay {
+        transition: none;
+    }
+}
+
 /* ===== Card Image Animations ===== */
 
 @keyframes card-fade-in {

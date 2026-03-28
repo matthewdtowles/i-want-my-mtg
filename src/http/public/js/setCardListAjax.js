@@ -7,11 +7,24 @@ document.addEventListener('DOMContentLoaded', function () {
     var hasAnyNormal = true;
     var hasAnyFoil = true;
 
+    // Determine initial view: URL param > localStorage > default
+    var urlView = new URLSearchParams(window.location.search).get('view');
+    var initialView = urlView || localStorage.getItem('setViewPreference') || 'list';
+    if (initialView !== 'binder') initialView = 'list';
+
+    var BINDER_LIMIT = window.matchMedia('(min-width: 640px)').matches ? 9 : 6;
+
     var page = AjaxUtils.initListPage({
         container: container,
         apiPath: '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards',
         basePath: '/sets/' + encodeURIComponent(setCode),
-        renderContent: renderTable,
+        renderContent: function (resultsEl, cards, meta) {
+            if (page.state.view === 'binder') {
+                renderBinder(resultsEl, cards, meta);
+            } else {
+                renderTable(resultsEl, cards);
+            }
+        },
         errorMessage: 'Failed to load cards',
         onSuccess: function (data, meta, done) {
             if (authenticated && data && data.length > 0) {
@@ -22,6 +35,102 @@ document.addEventListener('DOMContentLoaded', function () {
         },
     });
     if (!page) return;
+
+    // Set initial view state and apply binder overrides
+    page.state.view = initialView;
+    if (initialView === 'binder') {
+        applyBinderOverrides();
+    }
+
+    // Set up view toggle
+    var toggleContainer = document.getElementById('view-toggle');
+    if (toggleContainer) {
+        AjaxUtils.setupViewToggleInterceptor({
+            container: toggleContainer,
+            state: page.state,
+            fetchFn: page.fetchAndRender,
+            onToggle: function (newView) {
+                if (newView === 'binder') {
+                    applyBinderOverrides();
+                } else {
+                    restoreListDefaults();
+                }
+                updateUIForView(newView);
+            },
+        });
+        AjaxUtils.updateViewToggle(toggleContainer, page.state.view);
+    }
+
+    // Apply initial UI state
+    updateUIForView(page.state.view);
+
+    // If starting in binder view, re-fetch with binder params
+    if (initialView === 'binder') {
+        page.fetchAndRender('replaceState');
+    }
+
+    // Sync UI when navigating back/forward
+    window.addEventListener('popstate', function () {
+        var urlView = new URLSearchParams(window.location.search).get('view') || 'list';
+        if (urlView === 'binder') {
+            applyBinderOverrides();
+        } else {
+            restoreListDefaults();
+        }
+        updateUIForView(urlView);
+    });
+
+    // Keyboard navigation for binder pages
+    document.addEventListener('keydown', function (e) {
+        if (page.state.view !== 'binder') return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        if (e.key === 'ArrowLeft' && page.state.page > 1) {
+            e.preventDefault();
+            page.state.page--;
+            page.fetchAndRender('pushState');
+        } else if (e.key === 'ArrowRight') {
+            var nav = container.querySelector('.binder-page-nav');
+            var totalPages = nav ? parseInt(nav.getAttribute('data-total-pages'), 10) : 1;
+            if (page.state.page < totalPages) {
+                e.preventDefault();
+                page.state.page++;
+                page.fetchAndRender('pushState');
+            }
+        }
+    });
+
+    function applyBinderOverrides() {
+        BINDER_LIMIT = window.matchMedia('(min-width: 640px)').matches ? 9 : 6;
+        page.state.limit = BINDER_LIMIT;
+        page.state.sort = 'card.sortNumber';
+        page.state.ascend = true;
+    }
+
+    function restoreListDefaults() {
+        page.state.limit = 25;
+    }
+
+    function updateUIForView(view) {
+        var filterWrapper = document.getElementById('filter-wrapper');
+        var baseOnlyWrapper = document.getElementById('base-only-wrapper');
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
+
+        if (view === 'binder') {
+            if (filterWrapper) filterWrapper.style.display = 'none';
+            if (baseOnlyWrapper) baseOnlyWrapper.style.display = 'none';
+            if (paginationEl) paginationEl.style.display = 'none';
+        } else {
+            if (filterWrapper) filterWrapper.style.display = '';
+            if (baseOnlyWrapper) baseOnlyWrapper.style.display = '';
+            if (paginationEl) paginationEl.style.display = '';
+        }
+
+        if (toggleContainer) {
+            AjaxUtils.updateViewToggle(toggleContainer, view);
+        }
+    }
+
+    // ===== List (Table) View =====
 
     function renderTable(resultsEl, cards) {
         if (!cards || cards.length === 0) {
@@ -178,6 +287,114 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ===== Binder View =====
+
+    function renderBinder(resultsEl, cards, meta) {
+        if (!cards || cards.length === 0) {
+            AjaxUtils.renderEmptyState(resultsEl, {
+                message: 'No cards in this set',
+            });
+            return;
+        }
+
+        var totalPages = (meta && meta.totalPages) || 1;
+        var currentPage = (meta && meta.page) || 1;
+
+        var html = '<div class="binder-grid">';
+        for (var i = 0; i < cards.length; i++) {
+            html += renderBinderCard(cards[i]);
+        }
+        html += '</div>';
+
+        // Binder page navigation
+        html += renderBinderNav(currentPage, totalPages);
+
+        resultsEl.innerHTML = html;
+
+        // Set up binder nav click handlers
+        var nav = resultsEl.querySelector('.binder-page-nav');
+        if (nav) {
+            nav.addEventListener('click', function (e) {
+                var btn = e.target.closest('.binder-page-btn');
+                if (!btn || btn.disabled) return;
+                e.preventDefault();
+                var dir = btn.getAttribute('data-dir');
+                if (dir === 'prev' && page.state.page > 1) {
+                    page.state.page--;
+                    page.fetchAndRender('pushState');
+                } else if (dir === 'next' && page.state.page < totalPages) {
+                    page.state.page++;
+                    page.fetchAndRender('pushState');
+                }
+            });
+        }
+
+        // Hide standard pagination when in binder view
+        var paginationEl = container.parentElement.querySelector('.pagination-container');
+        if (paginationEl) paginationEl.style.display = 'none';
+
+        AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);
+    }
+
+    function renderBinderCard(card) {
+        var url = '/card/' + encodeURIComponent(setCode) + '/' + encodeURIComponent(card.number);
+        var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
+        var escapedName = AjaxUtils.escapeHtml(card.name);
+        var escapedNumber = AjaxUtils.escapeHtml(card.number);
+
+        var html =
+            '<div class="binder-card binder-card-unowned owned-cell"' +
+            ' data-card-id="' + AjaxUtils.escapeHtml(card.id) + '"' +
+            ' data-has-foil="' + !!card.hasFoil + '"' +
+            ' data-has-non-foil="' + !!card.hasNonFoil + '">';
+
+        html +=
+            '<a href="' + AjaxUtils.escapeHtml(url) + '" title="' + escapedName + '">' +
+            '<img src="' + AjaxUtils.escapeHtml(imgSrc) + '"' +
+            ' alt="' + escapedName + '"' +
+            ' loading="lazy" width="488" height="680"' +
+            ' class="binder-card-img" />' +
+            '</a>';
+
+        // Number overlay for unowned cards
+        html += '<span class="binder-card-number">#' + escapedNumber + '</span>';
+
+        // Info overlay for owned cards (visible on hover)
+        html +=
+            '<div class="binder-card-overlay">' +
+            '<span class="binder-card-overlay-name">' + escapedName + '</span>' +
+            '<span class="binder-card-overlay-number">#' + escapedNumber + '</span>' +
+            '</div>';
+
+        html += '</div>';
+        return html;
+    }
+
+    function renderBinderNav(currentPage, totalPages) {
+        if (totalPages <= 1) return '';
+
+        var prevDisabled = currentPage <= 1 ? ' disabled' : '';
+        var nextDisabled = currentPage >= totalPages ? ' disabled' : '';
+
+        return (
+            '<nav class="binder-page-nav" data-total-pages="' + totalPages + '" aria-label="Binder page navigation">' +
+            '<button type="button" class="binder-page-btn" data-dir="prev"' + prevDisabled + ' aria-label="Previous page">' +
+            '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />' +
+            '</svg>' +
+            '</button>' +
+            '<span class="binder-page-indicator">Page ' + currentPage + ' of ' + totalPages + '</span>' +
+            '<button type="button" class="binder-page-btn" data-dir="next"' + nextDisabled + ' aria-label="Next page">' +
+            '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />' +
+            '</svg>' +
+            '</button>' +
+            '</nav>'
+        );
+    }
+
+    // ===== Inventory =====
+
     function fetchAndRenderInventory(cards, onComplete) {
         var cardIds = cards
             .map(function (c) {
@@ -211,23 +428,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     var hasFoil = cell.getAttribute('data-has-foil') === 'true';
                     var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
                     var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
-                    cell.innerHTML = renderOwnedForms(cardId, qty, hasFoil, hasNonFoil);
+
+                    if (page.state.view === 'binder') {
+                        // Binder: toggle owned/unowned class
+                        var isOwned = qty.normalQuantity > 0 || qty.foilQuantity > 0;
+                        cell.classList.toggle('binder-card-owned', isOwned);
+                        cell.classList.toggle('binder-card-unowned', !isOwned);
+                    } else {
+                        // Table: render quantity forms
+                        cell.innerHTML = renderOwnedForms(cardId, qty, hasFoil, hasNonFoil);
+                    }
                 }
             })
             .catch(function (err) {
                 console.error('Error fetching inventory quantities:', err);
-                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
-                for (var j = 0; j < cells.length; j++) {
-                    var cell = cells[j];
-                    var cardId = cell.getAttribute('data-card-id');
-                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
-                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
-                    cell.innerHTML = renderOwnedForms(
-                        cardId,
-                        { foilQuantity: 0, normalQuantity: 0 },
-                        hasFoil,
-                        hasNonFoil
-                    );
+                if (page.state.view !== 'binder') {
+                    var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                    for (var j = 0; j < cells.length; j++) {
+                        var cell = cells[j];
+                        var cardId = cell.getAttribute('data-card-id');
+                        var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                        var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                        cell.innerHTML = renderOwnedForms(
+                            cardId,
+                            { foilQuantity: 0, normalQuantity: 0 },
+                            hasFoil,
+                            hasNonFoil
+                        );
+                    }
                 }
             })
             .finally(function () {

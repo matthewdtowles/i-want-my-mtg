@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', function () {
         page.state.limit = BINDER_LIMIT;
         page.state.sort = 'card.sortNumber';
         page.state.ascend = true;
+        page.state.filter = '';
+        page.state.baseOnly = true;
+        page.state.page = 1;
     }
 
     function restoreListDefaults() {

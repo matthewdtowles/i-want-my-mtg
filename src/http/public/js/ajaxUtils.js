@@ -487,7 +487,7 @@ var AjaxUtils = (function () {
             ascend: params.get('ascend') === 'true',
             filter: params.get('filter') || '',
             baseOnly: params.has('baseOnly') ? params.get('baseOnly') !== 'false' : true,
-            view: params.get('view') || 'list',
+            view: params.get('view') === 'binder' ? 'binder' : 'list',
         };
         if (extraKeys) {
             for (var i = 0; i < extraKeys.length; i++) {
@@ -1003,7 +1003,7 @@ var AjaxUtils = (function () {
                         }
                         resultsEl.style.minHeight = binderMinHeight + 'px';
                         // Scroll binder to top of viewport immediately (before async inventory fetch)
-                        resultsEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+                        resultsEl.scrollIntoView({ behavior: 'auto', block: 'start' });
                     } else {
                         doRenderPagination(json.meta);
                     }

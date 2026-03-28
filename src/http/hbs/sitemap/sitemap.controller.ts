@@ -28,7 +28,7 @@ export class SitemapController {
 
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-        xml += `  <sitemap><loc>${this.appUrl}/sitemap-static.xml</loc></sitemap>\n`;
+        xml += `  <sitemap><loc>${this.escapeXml(this.appUrl)}/sitemap-static.xml</loc></sitemap>\n`;
         for (const set of releasedSets) {
             const code = encodeURIComponent(set.code);
             xml += `  <sitemap><loc>${this.escapeXml(this.appUrl)}/sitemap-sets-${this.escapeXml(code)}.xml</loc></sitemap>\n`;

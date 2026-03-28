@@ -92,6 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchAndRender(direction) {
         if (!direction) {
             AjaxUtils.showSpinner(container);
+        } else {
+            // Pin height before fetch to keep container stable during network request
+            container.style.minHeight = (binderMinHeight || container.offsetHeight) + 'px';
         }
 
         fetchPage(state.page, state.limit, function (cards, meta, quantityMap) {
@@ -166,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function (err) {
                 console.error('Error loading cards:', err);
                 AjaxUtils.showError(container, 'Failed to load cards');
+                callback([], { page: pageNum, totalPages: 0 }, {});
             });
     }
 
@@ -303,7 +307,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Keep binder at top of viewport on page navigation
         if (direction) {
-            container.scrollIntoView({ behavior: 'instant', block: 'start' });
+            requestAnimationFrame(function() {
+                var rect = container.getBoundingClientRect();
+                window.scrollTo({ top: window.scrollY + rect.top, left: 0, behavior: 'auto' });
+            });
         }
 
         AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);

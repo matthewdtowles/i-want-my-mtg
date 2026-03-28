@@ -60,7 +60,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const qty = parseInt(newQty) || 0;
 
             // Update ALL steppers for this card+variant across the page
-            var allSteppers = document.querySelectorAll('.inv-stepper[data-card-id="' + cardId + '"][data-foil="' + isFoil + '"]');
+            var allSteppers = document.querySelectorAll(
+                '.inv-stepper[data-card-id="' + cardId + '"][data-foil="' + isFoil + '"]'
+            );
             for (var i = 0; i < allSteppers.length; i++) {
                 var el = allSteppers[i].querySelector('.inv-stepper-qty');
                 if (el) {
@@ -95,6 +97,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Show transaction prompt AFTER DOM updates (guarded — AjaxUtils may not be loaded)
             showTransactionPrompt(incBtn ? 'BUY' : 'SELL', isFoil);
+
+            // Notify binder state machine to sync cache
+            if (typeof AppState !== 'undefined' && AppState.emit) {
+                AppState.emit('inventory:updated', {
+                    cardId: cardId,
+                    isFoil: isFoil,
+                    quantity: qty,
+                });
+            }
         } finally {
             busySteppers[busyKey] = false;
         }

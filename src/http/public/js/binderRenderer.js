@@ -1,11 +1,9 @@
 (function () {
     'use strict';
 
-    var escapeHtml = window.AppState
-        ? AppState.escapeHtml
-        : function (s) {
-              return s;
-          };
+    function escapeHtml(s) {
+        return AppState.escapeHtml(s);
+    }
 
     var SVG_LEFT =
         '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
@@ -187,7 +185,7 @@
 
         // Bottom nav
         if (totalPages > 1) {
-            html += renderNav(currentPage, totalPages, 'binder-page-input');
+            html += renderNav(currentPage, totalPages, options.navInputId || 'binder-page-input');
         }
 
         return html;

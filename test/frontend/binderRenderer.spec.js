@@ -221,5 +221,18 @@ describe('BinderRenderer', function () {
             var html = R.render(state, { authenticated: true, showOwnedState: true });
             expect(html).toContain('No owned cards');
         });
+
+        it('should use navInputId from options instead of default', function () {
+            var R = loadRenderer();
+            var html = R.render(baseState, { authenticated: false, navInputId: 'set-binder-page-input' });
+            expect(html).toContain('id="set-binder-page-input"');
+            expect(html).not.toContain('id="binder-page-input"');
+        });
+
+        it('should fall back to default binder-page-input when navInputId not provided', function () {
+            var R = loadRenderer();
+            var html = R.render(baseState, { authenticated: false });
+            expect(html).toContain('id="binder-page-input"');
+        });
     });
 });

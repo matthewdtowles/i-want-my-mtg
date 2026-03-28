@@ -83,13 +83,25 @@ document.addEventListener('DOMContentLoaded', function () {
         applyBinderOverrides();
     }
 
+    // Fetch wrapper: short-circuit for binder mode to avoid double fetch
+    function fetchForView(historyMode) {
+        if (page.state.view === 'binder') {
+            var machine = getOrCreateBinder();
+            machine.activate();
+            machine.navigate(page.state.page || 1, null);
+            updateUIForView('binder');
+            return;
+        }
+        page.fetchAndRender(historyMode);
+    }
+
     // Set up view toggle
     var toggleContainer = document.getElementById('view-toggle');
     if (toggleContainer) {
         AjaxUtils.setupViewToggleInterceptor({
             container: toggleContainer,
             state: page.state,
-            fetchFn: page.fetchAndRender,
+            fetchFn: fetchForView,
             onToggle: function (newView) {
                 if (newView === 'binder') {
                     applyBinderOverrides();
@@ -106,9 +118,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Apply initial UI state
     updateUIForView(page.state.view);
 
-    // If starting in binder view, re-fetch with binder params
+    // If starting in binder view, go directly to binder (no initListPage fetch)
     if (initialView === 'binder') {
-        page.fetchAndRender('replaceState');
+        var machine = getOrCreateBinder();
+        machine.navigate(1, null);
     }
 
     // Sync UI when navigating back/forward
@@ -116,6 +129,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var urlView = new URLSearchParams(window.location.search).get('view') || 'list';
         if (urlView === 'binder') {
             applyBinderOverrides();
+            var urlPage =
+                parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
+            page.state.page = urlPage;
+            var machine = getOrCreateBinder();
+            machine.activate();
+            machine.navigate(urlPage, null);
         } else {
             restoreListDefaults();
             if (binderMachine) binderMachine.deactivate();

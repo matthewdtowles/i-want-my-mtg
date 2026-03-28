@@ -95,6 +95,7 @@
             var options = {
                 authenticated: authenticated,
                 showOwnedState: showOwnedState,
+                navInputId: navInputId,
             };
 
             if (!state.cards || state.cards.length === 0) {

@@ -23,7 +23,7 @@
                         copy[k] = state[k];
                     }
                 }
-                return copy;
+                return Object.freeze(copy);
             },
 
             set: function (patch) {

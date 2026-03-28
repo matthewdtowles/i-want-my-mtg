@@ -156,7 +156,7 @@ export class InventoryRepository
         this.LOGGER.debug(`Counting total inventory items for user ${userId} in set ${setCode}.`);
         const queryResult = await this.repository.query(
             `
-            SELECT COUNT(*) AS total
+            SELECT COUNT(DISTINCT i.card_id) AS total
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             WHERE i.user_id = $1
@@ -183,7 +183,7 @@ export class InventoryRepository
         const placeholders = setCodes.map((_, i) => `$${i + 2}`).join(', ');
         const queryResult = await this.repository.query(
             `
-            SELECT c.set_code, COUNT(*) AS total
+            SELECT c.set_code, COUNT(DISTINCT i.card_id) AS total
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             WHERE i.user_id = $1

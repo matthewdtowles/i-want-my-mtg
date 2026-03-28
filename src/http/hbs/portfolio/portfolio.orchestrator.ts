@@ -84,7 +84,8 @@ export class PortfolioOrchestrator {
                             p,
                             card?.name || '',
                             card?.setCode || '',
-                            card?.number || ''
+                            card?.number || '',
+                            card?.imgSrc || ''
                         );
                     });
 
@@ -94,7 +95,8 @@ export class PortfolioOrchestrator {
                             p,
                             card?.name || '',
                             card?.setCode || '',
-                            card?.number || ''
+                            card?.number || '',
+                            card?.imgSrc || ''
                         );
                     });
                 }

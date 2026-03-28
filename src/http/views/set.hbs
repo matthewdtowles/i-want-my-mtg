@@ -29,6 +29,11 @@
                     <div class="mt-1">{{>completionRate set}}</div>
                 </div>
             </div>
+            <div class="mb-4">
+                <a href="/inventory/sets/{{set.code}}" class="btn btn-ghost text-sm">
+                    <i class="fas fa-book-open mr-1"></i> My Binder
+                </a>
+            </div>
             {{/if}}
 
             {{#if (gt set.prices.gridCols 1)}}
@@ -284,16 +289,36 @@
 
 <div id="set-card-list-ajax" data-set-code="{{set.code}}" data-authenticated="{{authenticated}}" class="content-wrapper">
     <div class="flex items-center gap-2">
-        <div class="flex-1">
+        <div class="flex-1" id="filter-wrapper">
             {{>filter}}
         </div>
         {{#if baseOnlyToggle.visible}}
-        <a href="{{baseOnlyToggle.url}}"
+        <a href="{{baseOnlyToggle.url}}" id="base-only-wrapper"
            class="btn {{#if baseOnlyToggle.isBaseOnly}} btn-secondary {{else}} btn-primary {{/if}}
                   whitespace-nowrap h-[42px] !inline-flex items-center justify-center flex-shrink-0 mb-4">
             {{baseOnlyToggle.text}}
         </a>
         {{/if}}
+        <div class="flex items-center gap-1 flex-shrink-0 mb-4" id="view-toggle">
+            <button type="button" class="view-toggle-btn view-toggle-active" data-view="list" aria-label="List view">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <button type="button" class="view-toggle-btn view-toggle-inactive" data-view="binder" aria-label="Binder view">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="5" height="5" rx="0.5" />
+                    <rect x="10" y="3" width="5" height="5" rx="0.5" />
+                    <rect x="17" y="3" width="5" height="5" rx="0.5" />
+                    <rect x="3" y="10" width="5" height="5" rx="0.5" />
+                    <rect x="10" y="10" width="5" height="5" rx="0.5" />
+                    <rect x="17" y="10" width="5" height="5" rx="0.5" />
+                    <rect x="3" y="17" width="5" height="5" rx="0.5" />
+                    <rect x="10" y="17" width="5" height="5" rx="0.5" />
+                    <rect x="17" y="17" width="5" height="5" rx="0.5" />
+                </svg>
+            </button>
+        </div>
     </div>
     <div id="filter-results">
         {{#if set.cards.length}}
@@ -304,7 +329,7 @@
                 {{#each set.cards}}
                 <tr class="table-row">
                     <td class="table-cell">
-                        {{>inventoryCtrl card=this}}
+                        {{>invStepper card=this compact=true}}
                     </td>
                     <td class="table-cell">{{this.number}}</td>
                     <td class="table-cell">

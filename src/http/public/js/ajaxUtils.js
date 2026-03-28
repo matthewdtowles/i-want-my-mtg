@@ -436,6 +436,44 @@ var AjaxUtils = (function () {
     }
 
     /**
+     * Setup view toggle (list/binder) interception.
+     * @param {object} opts
+     * @param {HTMLElement} opts.container - Element containing toggle buttons
+     * @param {object} opts.state - State object with .view, .page
+     * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
+     * @param {function} [opts.onToggle] - Called after state.view changes with new view value
+     */
+    function setupViewToggleInterceptor(opts) {
+        opts.container.addEventListener('click', function (e) {
+            var btn = e.target.closest('.view-toggle-btn');
+            if (!btn) return;
+            e.preventDefault();
+            var newView = btn.getAttribute('data-view');
+            if (!newView || newView === opts.state.view) return;
+            opts.state.view = newView;
+            opts.state.page = 1;
+            localStorage.setItem('setViewPreference', newView);
+            if (opts.onToggle) opts.onToggle(newView);
+            opts.fetchFn('pushState');
+        });
+    }
+
+    /**
+     * Update view toggle button active/inactive classes.
+     * @param {HTMLElement} container - Element containing toggle buttons
+     * @param {string} activeView - 'list' or 'binder'
+     */
+    function updateViewToggle(container, activeView) {
+        var buttons = container.querySelectorAll('.view-toggle-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var isActive = btn.getAttribute('data-view') === activeView;
+            btn.classList.toggle('view-toggle-active', isActive);
+            btn.classList.toggle('view-toggle-inactive', !isActive);
+        }
+    }
+
+    /**
      * Parse common state from URL parameters.
      * @param {string[]} [extraKeys] - Additional keys to parse (beyond page, limit, sort, ascend, filter, baseOnly)
      * @returns {object} Parsed state
@@ -449,6 +487,7 @@ var AjaxUtils = (function () {
             ascend: params.get('ascend') === 'true',
             filter: params.get('filter') || '',
             baseOnly: params.has('baseOnly') ? params.get('baseOnly') !== 'false' : true,
+            view: params.get('view') === 'binder' ? 'binder' : 'list',
         };
         if (extraKeys) {
             for (var i = 0; i < extraKeys.length; i++) {
@@ -491,6 +530,7 @@ var AjaxUtils = (function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (state.baseOnly === false) params.set('baseOnly', 'false');
+        if (state.view && state.view !== 'list') params.set('view', state.view);
         var qs = params.toString();
         return basePath + (qs ? '?' + qs : '');
     }
@@ -522,6 +562,75 @@ var AjaxUtils = (function () {
         var wrapper = document.createElement('div');
         wrapper.appendChild(clone);
         return wrapper.innerHTML;
+    }
+
+    /**
+     * Render an inventory stepper for a single variant.
+     * @param {string} cardId
+     * @param {number} quantity
+     * @param {boolean} isFoil
+     * @param {object} [opts] - { compact: boolean }
+     * @returns {string} outerHTML string
+     */
+    function createStepper(cardId, quantity, isFoil, opts) {
+        var tpl = document.getElementById('tpl-inv-stepper');
+        var clone = tpl.content.cloneNode(true);
+        var el = clone.querySelector('.inv-stepper');
+        var variant = isFoil ? 'foil' : 'normal';
+
+        el.classList.add('inv-stepper--' + variant);
+        el.setAttribute('data-card-id', cardId);
+        el.setAttribute('data-foil', String(isFoil));
+        if (opts && opts.compact) {
+            el.classList.add('inv-stepper--sm');
+        }
+
+        var qtyEl = el.querySelector('.inv-stepper-qty');
+        qtyEl.textContent = quantity;
+        if (quantity === 0) {
+            qtyEl.classList.add('inv-stepper-qty--zero');
+        }
+
+        var decBtn = el.querySelector('.inv-stepper-btn--dec');
+        decBtn.setAttribute('aria-label', 'Decrease ' + variant + ' quantity');
+        if (quantity <= 0) {
+            decBtn.setAttribute('disabled', '');
+        }
+
+        var incBtn = el.querySelector('.inv-stepper-btn--inc');
+        incBtn.setAttribute('aria-label', 'Increase ' + variant + ' quantity');
+
+        var wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Render a stepper group (normal + foil) with labels.
+     * @param {string} cardId
+     * @param {number} normalQty
+     * @param {number} foilQty
+     * @param {boolean} hasNormal
+     * @param {boolean} hasFoil
+     * @param {object} [opts] - { compact: boolean }
+     * @returns {string} HTML string
+     */
+    function createStepperGroup(cardId, normalQty, foilQty, hasNormal, hasFoil, opts) {
+        var html = '<div class="inv-stepper-group">';
+        if (hasNormal) {
+            html += '<div>';
+            html += '<div class="inv-stepper-label inv-stepper-label--normal">Normal</div>';
+            html += createStepper(cardId, normalQty, false, opts);
+            html += '</div>';
+        }
+        if (hasFoil) {
+            html += '<div>';
+            html += '<div class="inv-stepper-label inv-stepper-label--foil">Foil</div>';
+            html += createStepper(cardId, foilQty, true, opts);
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
     }
 
     /**
@@ -703,17 +812,27 @@ var AjaxUtils = (function () {
      * @param {object} state - Current state object
      * @returns {string} URL string
      */
-    function buildApiUrl(apiPath, state) {
+    function buildApiUrl(apiPath, state, overrides) {
+        var s = overrides ? mergeState(state, overrides) : state;
         var params = new URLSearchParams();
-        params.set('page', state.page);
-        params.set('limit', state.limit);
-        if (state.sort) {
-            params.set('sort', state.sort);
-            params.set('ascend', state.ascend);
+        params.set('page', s.page);
+        params.set('limit', s.limit);
+        if (s.sort) {
+            params.set('sort', s.sort);
+            params.set('ascend', s.ascend);
         }
-        if (state.filter) params.set('filter', state.filter);
-        if (state.baseOnly === false) params.set('baseOnly', 'false');
+        if (s.filter) params.set('filter', s.filter);
+        if (s.baseOnly === false) params.set('baseOnly', 'false');
         return apiPath + '?' + params.toString();
+    }
+
+    function mergeState(state, overrides) {
+        var merged = {};
+        var keys = Object.keys(state);
+        for (var i = 0; i < keys.length; i++) merged[keys[i]] = state[keys[i]];
+        var oKeys = Object.keys(overrides);
+        for (var j = 0; j < oKeys.length; j++) merged[oKeys[j]] = overrides[oKeys[j]];
+        return merged;
     }
 
     /**
@@ -818,6 +937,7 @@ var AjaxUtils = (function () {
         var errorMsg = config.errorMessage || 'Failed to load data';
 
         var state = parseStateFromUrl();
+        var binderMinHeight = 0;
 
         if (hasFilter) {
             setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
@@ -855,7 +975,12 @@ var AjaxUtils = (function () {
 
         function fetchAndRender(historyMethod) {
             var resultsEl = document.getElementById('filter-results');
-            showSpinner(resultsEl);
+            if (state.view !== 'binder') {
+                showSpinner(resultsEl);
+            } else {
+                // Hold container at established binder height (or current height on first load)
+                resultsEl.style.minHeight = (binderMinHeight || resultsEl.offsetHeight) + 'px';
+            }
 
             fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
                 .then(function (res) {
@@ -869,7 +994,19 @@ var AjaxUtils = (function () {
                     }
 
                     config.renderContent(resultsEl, json.data, json.meta);
-                    doRenderPagination(json.meta);
+
+                    if (state.view === 'binder') {
+                        // Establish permanent binder height — never shrinks while in binder view
+                        var contentHeight = resultsEl.scrollHeight;
+                        if (contentHeight > binderMinHeight) {
+                            binderMinHeight = contentHeight;
+                        }
+                        resultsEl.style.minHeight = binderMinHeight + 'px';
+                        // Scroll binder to top of viewport immediately (before async inventory fetch)
+                        resultsEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    } else {
+                        doRenderPagination(json.meta);
+                    }
 
                     if (json.meta) {
                         var total = json.meta.totalItems || json.meta.total || 0;
@@ -892,16 +1029,21 @@ var AjaxUtils = (function () {
 
                     if (config.onSuccess) {
                         config.onSuccess(json.data, json.meta, function () {
-                            clearMinHeight(resultsEl);
+                            if (state.view !== 'binder') {
+                                clearMinHeight(resultsEl);
+                            }
                         });
                     } else {
-                        clearMinHeight(resultsEl);
+                        if (state.view !== 'binder') {
+                            clearMinHeight(resultsEl);
+                        }
                     }
                 })
                 .catch(function (err) {
                     console.error('Fetch error (' + apiPath + '):', err);
                     showError(resultsEl, errorMsg + '. Please try again.');
                     clearMinHeight(resultsEl);
+                    binderMinHeight = 0;
                 });
         }
 
@@ -980,6 +1122,8 @@ var AjaxUtils = (function () {
         buildPaginationHref: buildPaginationHref,
         renderTableHeaderRow: renderTableHeaderRow,
         createQuantityForm: createQuantityForm,
+        createStepper: createStepper,
+        createStepperGroup: createStepperGroup,
         createDeleteForm: createDeleteForm,
         createTransactionRow: createTransactionRow,
         renderTags: renderTags,
@@ -987,6 +1131,9 @@ var AjaxUtils = (function () {
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,
+        setupViewToggleInterceptor: setupViewToggleInterceptor,
+        updateViewToggle: updateViewToggle,
+        mergeState: mergeState,
         initListPage: initListPage,
     };
 })();

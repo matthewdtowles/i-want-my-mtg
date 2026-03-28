@@ -28,9 +28,10 @@ export class SitemapController {
 
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-        xml += `  <sitemap><loc>${this.appUrl}/sitemap-static.xml</loc></sitemap>\n`;
+        xml += `  <sitemap><loc>${this.escapeXml(this.appUrl)}/sitemap-static.xml</loc></sitemap>\n`;
         for (const set of releasedSets) {
-            xml += `  <sitemap><loc>${this.appUrl}/sitemap-sets-${set.code}.xml</loc></sitemap>\n`;
+            const code = encodeURIComponent(set.code);
+            xml += `  <sitemap><loc>${this.escapeXml(this.appUrl)}/sitemap-sets-${this.escapeXml(code)}.xml</loc></sitemap>\n`;
         }
         xml += '</sitemapindex>';
         return xml;
@@ -80,12 +81,26 @@ export class SitemapController {
     }
 
     private urlEntry(path: string, changefreq: string, priority: string): string {
+        const encodedPath = path
+            .split('/')
+            .map((segment) => (segment ? encodeURIComponent(segment) : ''))
+            .join('/');
+        const loc = this.escapeXml(`${this.appUrl}${encodedPath}`);
         return (
             '  <url>\n' +
-            `    <loc>${this.appUrl}${path}</loc>\n` +
+            `    <loc>${loc}</loc>\n` +
             `    <changefreq>${changefreq}</changefreq>\n` +
             `    <priority>${priority}</priority>\n` +
             '  </url>\n'
         );
+    }
+
+    private escapeXml(str: string): string {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
     }
 }

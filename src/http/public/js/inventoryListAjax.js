@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 AjaxUtils.escapeHtml(rarity) +
                 ' ss-fw"></i> ' +
                 AjaxUtils.escapeHtml(item.setCode.toUpperCase()) +
+                '</a>' +
+                '<a href="/inventory/sets/' +
+                AjaxUtils.escapeHtml(item.setCode) +
+                '" class="binder-link" title="Open binder">' +
+                '<i class="fas fa-book-open"></i>' +
                 '</a>';
         }
         html += '</td>';
@@ -89,6 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderCardsOwnedForm(item) {
-        return AjaxUtils.createQuantityForm(item.cardId, item.quantity, item.isFoil);
+        return AjaxUtils.createStepper(item.cardId, item.quantity, item.isFoil, { compact: true });
     }
 });

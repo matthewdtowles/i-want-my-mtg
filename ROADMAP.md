@@ -235,16 +235,19 @@
 - [x] Add robots.txt (existed; added Sitemap URL)
 - [x] Ensure server-rendered HTML is crawlable (already SSR; meta tags and indexable flags in place)
 - [x] Add canonical URLs (on all public pages: home, sets, set detail, card detail, spoilers)
-- [ ] Submit sitemap to Google Search Console
+- [x] Submit sitemap to Google Search Console
 
 ### 2.7 Feature: Binder View
 
-- [ ] Design binder layout (grid of card images, page-like grouping)
-- [ ] Implement binder view component/template
-- [ ] Add toggle between list view and binder view
-- [ ] Support sorting within binder (by set, color, type, price)
-- [ ] Add binder view for inventory (user's collection)
-- [ ] Persist view preference per user
+- [x] Design binder layout (grid of card images, page-like grouping)
+- [x] Implement binder view component/template
+- [x] Add toggle between list view and binder view
+- [x] Add binder view for inventory (user's collection)
+- [x] Persist view preference (localStorage; per-user DB persistence deferred)
+- [x] Add keyboard navigation for binder pages (arrow keys)
+- [x] Add owned-only filtering toggle for inventory binder
+- [x] Add stepper controls for inventory quantity in binder view
+- [x] Maintain scroll position on binder page navigation
 
 ### 2.8 Feature: Price Notifications
 

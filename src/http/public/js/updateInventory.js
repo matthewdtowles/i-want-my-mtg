@@ -27,6 +27,79 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Event delegation for new stepper controls
+    var busySteppers = {};
+    document.body.addEventListener('click', async function (event) {
+        const incBtn = event.target.closest('.inv-stepper-btn--inc');
+        const decBtn = event.target.closest('.inv-stepper-btn--dec');
+        const btn = incBtn || decBtn;
+        if (!btn) return;
+        if (btn.hasAttribute('disabled')) return;
+
+        event.stopImmediatePropagation();
+        const stepper = btn.closest('.inv-stepper');
+        const cardId = stepper.getAttribute('data-card-id');
+        const isFoil = stepper.getAttribute('data-foil') === 'true';
+        const busyKey = cardId + ':' + isFoil;
+
+        // Prevent concurrent requests for the same card+variant
+        if (busySteppers[busyKey]) return;
+        busySteppers[busyKey] = true;
+
+        const qtyEl = stepper.querySelector('.inv-stepper-qty');
+        const currentQty = parseInt(qtyEl.textContent) || 0;
+
+        try {
+            let newQty;
+            if (incBtn) {
+                newQty = await addInventoryItem(currentQty.toString(), cardId, isFoil);
+            } else {
+                newQty = await removeInventoryItem(currentQty.toString(), cardId, isFoil);
+            }
+
+            const qty = parseInt(newQty) || 0;
+
+            // Update ALL steppers for this card+variant across the page
+            var allSteppers = document.querySelectorAll('.inv-stepper[data-card-id="' + cardId + '"][data-foil="' + isFoil + '"]');
+            for (var i = 0; i < allSteppers.length; i++) {
+                var el = allSteppers[i].querySelector('.inv-stepper-qty');
+                if (el) {
+                    el.textContent = qty;
+                    el.classList.toggle('inv-stepper-qty--zero', qty === 0);
+                    // Pop animation
+                    el.classList.remove('inv-stepper-qty--pop');
+                    void el.offsetWidth;
+                    el.classList.add('inv-stepper-qty--pop');
+                }
+                var dec = allSteppers[i].querySelector('.inv-stepper-btn--dec');
+                if (dec) {
+                    if (qty <= 0) {
+                        dec.setAttribute('disabled', '');
+                    } else {
+                        dec.removeAttribute('disabled');
+                    }
+                }
+            }
+
+            // Update binder card owned/unowned state if inside a binder
+            var binderCard = stepper.closest('.binder-card');
+            if (binderCard) {
+                var totalOwned = 0;
+                var cardSteppers = binderCard.querySelectorAll('.inv-stepper-qty');
+                for (var j = 0; j < cardSteppers.length; j++) {
+                    totalOwned += parseInt(cardSteppers[j].textContent) || 0;
+                }
+                binderCard.classList.toggle('binder-card-owned', totalOwned > 0);
+                binderCard.classList.toggle('binder-card-unowned', totalOwned === 0);
+            }
+
+            // Show transaction prompt AFTER DOM updates (guarded — AjaxUtils may not be loaded)
+            showTransactionPrompt(incBtn ? 'BUY' : 'SELL', isFoil);
+        } finally {
+            busySteppers[busyKey] = false;
+        }
+    });
+
     // Use event delegation for delete buttons
     document.body.addEventListener('click', async function (event) {
         const deleteButton = event.target.closest('.delete-inventory-button');
@@ -138,7 +211,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 'rounded-lg',
                 'p-2'
             );
-            AjaxUtils.smoothScroll(section, 'nearest');
+            if (typeof AjaxUtils !== 'undefined' && AjaxUtils.smoothScroll) {
+                AjaxUtils.smoothScroll(section, 'nearest');
+            } else {
+                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
             setTimeout(function () {
                 section.classList.remove(
                     'ring-2',

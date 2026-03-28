@@ -95,6 +95,18 @@
         </form>
     </template>
 
+    <template id="tpl-inv-stepper">
+        <div class="inv-stepper" data-card-id="" data-foil="">
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--dec" aria-label="Decrease quantity">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+            </button>
+            <span class="inv-stepper-qty" role="status" aria-live="polite">0</span>
+            <button type="button" class="inv-stepper-btn inv-stepper-btn--inc" aria-label="Increase quantity">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </button>
+        </div>
+    </template>
+
     <template id="tpl-delete-inventory">
         <form class="delete-inventory-form">
             <input type="hidden" name="card-id" />

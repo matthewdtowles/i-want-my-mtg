@@ -7,6 +7,7 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    Param,
     Patch,
     Post,
     Query,
@@ -29,6 +30,7 @@ import { SetCsvParser } from './parsers/set-csv.parser';
 import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { ImportExportGuideViewDto } from './dto/import-export-guide.view.dto';
+import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
@@ -69,6 +71,16 @@ export class InventoryController {
                 { label: 'Import & Export Guide', url: '/inventory/import-export-guide' },
             ],
         });
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('sets/:code')
+    @Render('inventoryBinder')
+    async binderBySet(
+        @Param('code') code: string,
+        @Req() req: AuthenticatedRequest
+    ): Promise<InventoryBinderViewDto> {
+        return await this.inventoryOrchestrator.findBinderBySet(req, code);
     }
 
     @UseGuards(JwtAuthGuard)

@@ -53,8 +53,9 @@ export function buildCardJsonLd(appUrl: string, card: CardJsonLdInput, url: stri
 }
 
 export function buildJsonLd(...schemas: object[]): string {
-    if (schemas.length === 1) {
-        return JSON.stringify(schemas[0]);
-    }
-    return JSON.stringify(schemas);
+    const json =
+        schemas.length === 1
+            ? JSON.stringify(schemas[0])
+            : JSON.stringify(schemas);
+    return json.replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/&/g, '\\u0026');
 }

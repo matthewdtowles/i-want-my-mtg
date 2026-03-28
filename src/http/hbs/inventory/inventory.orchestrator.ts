@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
@@ -11,6 +11,7 @@ import {
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SetService } from 'src/core/set/set.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -26,6 +27,7 @@ import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/hbs/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { ImportResultDto } from './dto/import-result.dto';
+import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryResponseDto } from './dto/inventory.response.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
@@ -39,7 +41,8 @@ export class InventoryOrchestrator {
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
         @Inject(InventoryImportService) private readonly importService: InventoryImportService,
         @Inject(InventoryExportService) private readonly exportService: InventoryExportService,
-        @Inject(TransactionService) private readonly transactionService: TransactionService
+        @Inject(TransactionService) private readonly transactionService: TransactionService,
+        @Inject(SetService) private readonly setService: SetService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -301,5 +304,41 @@ export class InventoryOrchestrator {
             if (error instanceof HttpException) throw error;
             return HttpErrorHandler.toHttpException(error, 'delete');
         }
+    }
+
+    async findBinderBySet(
+        req: AuthenticatedRequest,
+        code: string
+    ): Promise<InventoryBinderViewDto> {
+        HttpErrorHandler.validateAuthenticatedRequest(req);
+        const userId = req.user.id;
+
+        const set = await this.setService.findByCode(code);
+        if (!set) {
+            throw new NotFoundException(`Set not found: ${code}`);
+        }
+
+        const [ownedTotal, ownedValue] = await Promise.all([
+            this.inventoryService.totalInventoryItemsForSet(userId, code),
+            this.inventoryService.ownedValueForSet(userId, code),
+        ]);
+
+        const cardTotal = set.effectiveSize;
+
+        return new InventoryBinderViewDto({
+            authenticated: true,
+            setCode: set.code,
+            setName: set.name,
+            ownedTotal,
+            cardTotal,
+            completionRate: completionRate(ownedTotal, cardTotal),
+            ownedValue: toDollar(ownedValue),
+            title: `My ${set.name} Binder — I Want My MTG`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Inventory', url: '/inventory' },
+                { label: set.name, url: `/inventory/sets/${set.code}` },
+            ],
+        });
     }
 }

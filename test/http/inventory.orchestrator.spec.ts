@@ -7,8 +7,11 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { Set } from 'src/core/set/set.entity';
+import { SetService } from 'src/core/set/set.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { InventoryBinderViewDto } from 'src/http/hbs/inventory/dto/inventory-binder.view.dto';
 import { InventoryViewDto } from 'src/http/hbs/inventory/dto/inventory.view.dto';
 import { InventoryOrchestrator } from 'src/http/hbs/inventory/inventory.orchestrator';
 
@@ -16,6 +19,7 @@ describe('InventoryOrchestrator', () => {
     let orchestrator: InventoryOrchestrator;
     let inventoryService: jest.Mocked<InventoryService>;
     let transactionService: jest.Mocked<TransactionService>;
+    let setService: jest.Mocked<SetService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -40,6 +44,8 @@ describe('InventoryOrchestrator', () => {
                         delete: jest.fn(),
                         totalCards: jest.fn(),
                         totalOwnedValue: jest.fn(),
+                        totalInventoryItemsForSet: jest.fn(),
+                        ownedValueForSet: jest.fn(),
                     },
                 },
                 {
@@ -56,12 +62,19 @@ describe('InventoryOrchestrator', () => {
                         getRemainingQuantity: jest.fn().mockResolvedValue(0),
                     },
                 },
+                {
+                    provide: SetService,
+                    useValue: {
+                        findByCode: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
         orchestrator = module.get(InventoryOrchestrator);
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
+        setService = module.get(SetService) as jest.Mocked<SetService>;
     });
 
     beforeEach(() => {
@@ -459,6 +472,46 @@ describe('InventoryOrchestrator', () => {
             expect(result.baseOnlyToggle.url).toContain('filter=dragon');
             expect(result.baseOnlyToggle.url).toContain('sort=card.name');
             expect(result.baseOnlyToggle.url).toContain('baseOnly=false');
+        });
+    });
+
+    describe('findBinderBySet', () => {
+        const mockSet = new Set({
+            code: 'MH3',
+            name: 'Modern Horizons 3',
+            baseSize: 250,
+            totalSize: 350,
+            isMain: true,
+            keyruneCode: 'mh3',
+            releaseDate: '2024-06-14',
+            type: 'expansion',
+        });
+
+        it('should return binder view dto with correct data', async () => {
+            setService.findByCode.mockResolvedValue(mockSet);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(42);
+            inventoryService.ownedValueForSet.mockResolvedValue(123.45);
+
+            const result = await orchestrator.findBinderBySet(mockAuthenticatedRequest, 'MH3');
+
+            expect(result).toBeInstanceOf(InventoryBinderViewDto);
+            expect(result.setCode).toBe('MH3');
+            expect(result.setName).toBe('Modern Horizons 3');
+            expect(result.ownedTotal).toBe(42);
+            expect(result.cardTotal).toBe(250);
+            expect(result.completionRate).toBe(16.8);
+            expect(result.ownedValue).toBe('$123.45');
+            expect(setService.findByCode).toHaveBeenCalledWith('MH3');
+            expect(inventoryService.totalInventoryItemsForSet).toHaveBeenCalledWith(1, 'MH3');
+            expect(inventoryService.ownedValueForSet).toHaveBeenCalledWith(1, 'MH3');
+        });
+
+        it('should throw NotFoundException when set not found', async () => {
+            setService.findByCode.mockResolvedValue(null);
+
+            await expect(
+                orchestrator.findBinderBySet(mockAuthenticatedRequest, 'INVALID')
+            ).rejects.toThrow('Set not found: INVALID');
         });
     });
 });

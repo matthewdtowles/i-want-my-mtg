@@ -129,7 +129,8 @@ describe('PortfolioPresenter', () => {
                 perf,
                 'Lightning Bolt',
                 'lea',
-                '161'
+                '161',
+                'a/b/c.jpg'
             );
 
             expect(result.cardName).toBe('Lightning Bolt');
@@ -158,7 +159,7 @@ describe('PortfolioPresenter', () => {
                 computedAt: new Date(),
             });
 
-            const result = PortfolioPresenter.toPerformanceView(perf, 'Sol Ring', 'cmr', '472');
+            const result = PortfolioPresenter.toPerformanceView(perf, 'Sol Ring', 'cmr', '472', '');
 
             expect(result.isFoil).toBe(true);
             expect(result.totalGain).toBe('-$2.00');
@@ -180,7 +181,7 @@ describe('PortfolioPresenter', () => {
                 computedAt: new Date(),
             });
 
-            const result = PortfolioPresenter.toPerformanceView(perf, 'Card', 'set', '1');
+            const result = PortfolioPresenter.toPerformanceView(perf, 'Card', 'set', '1', '');
 
             expect(result.roi).toBe('-');
             expect(result.roiSign).toBe('neutral');

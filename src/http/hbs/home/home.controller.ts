@@ -6,6 +6,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { SetListViewDto } from 'src/http/hbs/set/dto/set-list.view.dto';
 import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
 
@@ -38,6 +39,21 @@ export class HomeController {
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
         return setListView;
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('guides/getting-started')
+    @Render('gettingStarted')
+    getGettingStartedGuide(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Getting Started — I Want My MTG',
+            metaDescription: 'Learn how to track your Magic: The Gathering collection, log transactions, and use the portfolio and binder features.',
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Getting Started', url: '/guides/getting-started' },
+            ],
+        });
     }
 
     @Get('offline')

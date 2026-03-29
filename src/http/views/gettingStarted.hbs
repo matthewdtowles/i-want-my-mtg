@@ -1,0 +1,115 @@
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h1 class="page-title">Getting Started</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Everything you need to start tracking your MTG collection</p>
+    </section>
+    <div class="content-wrapper py-6 px-4">
+        <div class="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-sm leading-relaxed space-y-8">
+
+            {{!-- Step 1: Overview --}}
+            <div>
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">1</span>
+                    What Is This App?
+                </h2>
+                <p class="mb-3 ml-8">
+                    I Want My MTG is a personal Magic: The Gathering collection tracker. It lets you record the cards you own, see what they're worth, log when you buy or sell, and watch your portfolio value over time.
+                </p>
+                <ul class="list-disc list-inside ml-8 space-y-1 text-gray-600 dark:text-gray-400">
+                    <li><strong class="text-gray-700 dark:text-gray-300">Inventory</strong> — the cards you currently own, with quantities and current market prices</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Transactions</strong> — a log of every buy or sell you've recorded, used to calculate your cost basis</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Portfolio</strong> — a live P&amp;L summary: what you've spent, what it's worth now, and your unrealized gains</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Sets</strong> — browse any Magic set, see card prices, and track your completion percentage</li>
+                </ul>
+            </div>
+
+            {{!-- Step 2: Add your first card --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">2</span>
+                    Adding Cards to Your Inventory
+                </h2>
+                <p class="mb-3 ml-8">There are two ways to add cards:</p>
+                <div class="ml-8 space-y-4">
+                    <div class="bg-gray-50 dark:bg-midnight-800 rounded-lg p-4 border border-gray-200 dark:border-midnight-600">
+                        <h3 class="font-semibold mb-1">Browse &amp; Add One at a Time</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Go to <a href="/sets" class="text-teal-600 dark:text-teal-400 hover:underline">Sets</a>, open a set, and use the <strong>+</strong> / <strong>−</strong> controls next to any card to set your quantity. Changes save automatically — no submit button needed.</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-midnight-800 rounded-lg p-4 border border-gray-200 dark:border-midnight-600">
+                        <h3 class="font-semibold mb-1">Import from CSV (Fastest for Large Collections)</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-2">If you already have a list in a spreadsheet, export it as a CSV and import it directly. You only need a <code class="bg-gray-200 dark:bg-midnight-700 px-1 rounded">name</code> column — everything else is optional for smarter matching.</p>
+                        <a href="/inventory/import-export-guide" class="text-teal-600 dark:text-teal-400 hover:underline font-medium">Read the Import &amp; Export Guide →</a>
+                    </div>
+                </div>
+            </div>
+
+            {{!-- Step 3: Search --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">3</span>
+                    Finding a Specific Card
+                </h2>
+                <p class="ml-8">Use the search bar at the top of any page to find a card by name. Results show all matching cards and sets. Click a card name to open its detail page, where you can see its price history, legality in each format, and add it to your inventory.</p>
+            </div>
+
+            {{!-- Step 4: Transactions --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">4</span>
+                    Logging Buys &amp; Sells
+                </h2>
+                <p class="mb-3 ml-8">On any card's detail page, use the <strong>Record Transaction</strong> form to log a buy or sell. Recording transactions unlocks the Portfolio page, which uses your purchase history (FIFO method) to calculate your actual cost basis and profit/loss.</p>
+                <p class="ml-8 text-gray-500 dark:text-gray-400 text-xs">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    You don't have to record every transaction — inventory quantities are tracked independently. Transactions are only needed if you want accurate cost basis and P&amp;L tracking.
+                </p>
+            </div>
+
+            {{!-- Step 5: Portfolio --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">5</span>
+                    Understanding Your Portfolio
+                </h2>
+                <p class="mb-3 ml-8">Once you have transactions recorded, the <a href="/portfolio" class="text-teal-600 dark:text-teal-400 hover:underline">Portfolio</a> page shows:</p>
+                <ul class="list-disc list-inside ml-8 space-y-1 text-gray-600 dark:text-gray-400">
+                    <li><strong class="text-gray-700 dark:text-gray-300">Current Value</strong> — total market value of cards you currently hold</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Total Invested</strong> — the sum of all your buy transactions (FIFO cost basis)</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Unrealized P&amp;L</strong> — gain or loss on cards you still own</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">Realized Gains</strong> — profit or loss locked in from cards you've sold</li>
+                    <li><strong class="text-gray-700 dark:text-gray-300">ROI</strong> — overall return as a percentage</li>
+                </ul>
+            </div>
+
+            {{!-- Step 6: Binder View --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold flex-shrink-0">6</span>
+                    Binder View
+                </h2>
+                <p class="ml-8">Any set in your inventory can be viewed as a <strong>binder</strong> — a page-by-page grid of card images, like flipping through a physical binder. Look for the <i class="fas fa-book-open text-teal-600 dark:text-teal-400"></i> icon next to any set name in your inventory to open it.</p>
+            </div>
+
+            {{!-- Tips --}}
+            <div class="border-t border-gray-200 dark:border-midnight-600 pt-6">
+                <h2 class="text-lg font-semibold mb-3">Tips &amp; Shortcuts</h2>
+                <ul class="ml-4 space-y-2 text-gray-600 dark:text-gray-400">
+                    <li><i class="fas fa-mouse-pointer text-teal-500 w-4 mr-1"></i> <strong class="text-gray-700 dark:text-gray-300">Hover over any card name</strong> for a quick image preview (desktop)</li>
+                    <li><i class="fas fa-hand-pointer text-teal-500 w-4 mr-1"></i> <strong class="text-gray-700 dark:text-gray-300">Long-press a card name</strong> on mobile to see its image</li>
+                    <li><i class="fas fa-toggle-on text-teal-500 w-4 mr-1"></i> <strong class="text-gray-700 dark:text-gray-300">Base cards only</strong> toggle on set and inventory pages hides variant/promo printings</li>
+                    <li><i class="fas fa-moon text-teal-500 w-4 mr-1"></i> <strong class="text-gray-700 dark:text-gray-300">Dark mode</strong> toggle is in the top-right corner of every page</li>
+                    <li><i class="fas fa-keyboard text-teal-500 w-4 mr-1"></i> <strong class="text-gray-700 dark:text-gray-300">Arrow keys</strong> navigate binder pages when the binder view is focused</li>
+                </ul>
+            </div>
+
+            <div class="text-center pt-6 border-t border-gray-200 dark:border-midnight-600">
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="/sets" class="btn btn-primary">Browse Sets</a>
+                    <a href="/inventory" class="btn btn-secondary">Go to My Inventory</a>
+                    <a href="/inventory/import-export-guide" class="btn btn-ghost">Import &amp; Export Guide</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>

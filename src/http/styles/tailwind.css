@@ -1030,7 +1030,6 @@
     font-size: clamp(1rem, 2.5vw, 1.875rem);
     @apply font-bold;
     overflow-wrap: break-word;
-    word-break: break-all;
 }
 
 .price-tile-inactive {
@@ -1040,7 +1039,6 @@
 .price-tile-inactive .price-tile-value {
     font-size: clamp(0.75rem, 1.5vw, 1.125rem);
     overflow-wrap: break-word;
-    word-break: break-all;
 }
 
 /* ===== Stat Cards ===== */

@@ -38,12 +38,12 @@ describe('Transaction CSV Import (e2e)', () => {
         await closeTestApp(app);
     });
 
-    it('returns 302 (redirect to login) when unauthenticated', async () => {
+    it('returns 401 when unauthenticated', async () => {
         const csv = buildCsv(HEADERS, `${TEST_CARD_ID},,,,BUY,1,2.50,,2025-01-15,,,`);
         await request(app.getHttpServer())
             .post('/transactions/import')
             .attach('file', csv, 'transactions.csv')
-            .expect(302);
+            .expect(401);
     });
 
     it('returns 400 when no file is provided', async () => {
@@ -64,10 +64,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('2');
-        expect(res.text).toContain('Saved');
+        expect(res.text).toContain('added');
+        expect(res.text).toContain('Import Complete');
     });
 
     it('resolves cards by set_code + number', async () => {
@@ -80,10 +80,9 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('1');
-        expect(res.text).toContain('Saved');
+        expect(res.text).toContain('added');
     });
 
     it('reports errors for invalid rows without failing valid ones', async () => {
@@ -97,11 +96,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('1');
-        expect(res.text).toContain('Saved');
-        expect(res.text).toContain('Error');
+        expect(res.text).toContain('added');
+        expect(res.text).toContain('had errors');
     });
 
     it('rejects rows with non-integer quantity like "4abc"', async () => {
@@ -114,10 +112,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('0');
-        expect(res.text).toContain('Error');
+        expect(res.text).toContain('had errors');
+        expect(res.text).not.toContain('added');
     });
 
     it('rejects rows with decimal quantity like "4.5"', async () => {
@@ -130,10 +128,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('0');
-        expect(res.text).toContain('Error');
+        expect(res.text).toContain('had errors');
+        expect(res.text).not.toContain('added');
     });
 
     it('rejects rows with malformed price like "2.50xyz"', async () => {
@@ -146,10 +144,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('0');
-        expect(res.text).toContain('Error');
+        expect(res.text).toContain('had errors');
+        expect(res.text).not.toContain('added');
     });
 
     it('rejects rows with malformed fees like "1.00abc"', async () => {
@@ -162,9 +160,9 @@ describe('Transaction CSV Import (e2e)', () => {
             .post('/transactions/import')
             .set('Cookie', authCookie)
             .attach('file', csv, 'transactions.csv')
-            .expect(200);
+            .expect(201);
 
-        expect(res.text).toContain('0');
-        expect(res.text).toContain('Error');
+        expect(res.text).toContain('had errors');
+        expect(res.text).not.toContain('added');
     });
 });

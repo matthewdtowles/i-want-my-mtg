@@ -276,6 +276,36 @@ describe('TransactionImportService', () => {
             expect(result.errors[0].error).toMatch(/quantity/i);
         });
 
+        it('errors on quantity with trailing text like "4abc"', async () => {
+            const card = makeCard();
+            mockResolver.resolveCard.mockResolvedValue({ card, error: null });
+            mockResolver.resolveFoil.mockReturnValue(false);
+
+            const result = await service.importTransactions(
+                [validRow({ quantity: '4abc' })],
+                1
+            );
+
+            expect(result.saved).toBe(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0].error).toMatch(/quantity/i);
+        });
+
+        it('errors on decimal quantity like "4.5"', async () => {
+            const card = makeCard();
+            mockResolver.resolveCard.mockResolvedValue({ card, error: null });
+            mockResolver.resolveFoil.mockReturnValue(false);
+
+            const result = await service.importTransactions(
+                [validRow({ quantity: '4.5' })],
+                1
+            );
+
+            expect(result.saved).toBe(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0].error).toMatch(/quantity/i);
+        });
+
         it('errors on missing price_per_unit', async () => {
             const card = makeCard();
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
@@ -479,6 +509,36 @@ describe('TransactionImportService', () => {
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
             expect(result.errors[0].error).toMatch(/fees/i);
+        });
+
+        it('errors on fees with trailing text like "2.50xyz"', async () => {
+            const card = makeCard();
+            mockResolver.resolveCard.mockResolvedValue({ card, error: null });
+            mockResolver.resolveFoil.mockReturnValue(false);
+
+            const result = await service.importTransactions(
+                [validRow({ fees: '2.50xyz' })],
+                1
+            );
+
+            expect(result.saved).toBe(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0].error).toMatch(/fees/i);
+        });
+
+        it('errors on price_per_unit with trailing text like "2.50xyz"', async () => {
+            const card = makeCard();
+            mockResolver.resolveCard.mockResolvedValue({ card, error: null });
+            mockResolver.resolveFoil.mockReturnValue(false);
+
+            const result = await service.importTransactions(
+                [validRow({ price_per_unit: '2.50xyz' })],
+                1
+            );
+
+            expect(result.saved).toBe(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0].error).toMatch(/price/i);
         });
 
         it('includes row fields in error for debugging', async () => {

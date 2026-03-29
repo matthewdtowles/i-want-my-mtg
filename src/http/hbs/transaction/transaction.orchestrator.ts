@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { CardService } from 'src/core/card/card.service';
-import { ImportError, ImportResult } from 'src/core/import/import.types';
+import { ImportError } from 'src/core/import/import.types';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TransactionImportService } from 'src/core/transaction/import/transaction-import.service';
@@ -14,7 +14,7 @@ import { PaginationView } from 'src/http/hbs/list/pagination.view';
 import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
-import { ImportResultDto } from 'src/http/hbs/inventory/dto/import-result.dto';
+import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';

@@ -78,11 +78,11 @@ export class TransactionImportService {
             }
 
             const type = row.type.trim().toUpperCase() as TransactionType;
-            const quantity = parseInt(row.quantity, 10);
-            const pricePerUnit = parseFloat(row.price_per_unit);
+            const quantity = Number(row.quantity.trim());
+            const pricePerUnit = Number(row.price_per_unit.trim());
             const date = new Date(row.date);
             const fees =
-                row.fees !== undefined && row.fees !== '' ? parseFloat(row.fees) : undefined;
+                row.fees !== undefined && row.fees !== '' ? Number(row.fees.trim()) : undefined;
             const source =
                 row.source !== undefined && row.source !== '' ? row.source.trim() : undefined;
             const notes =
@@ -144,19 +144,19 @@ export class TransactionImportService {
         if (row.quantity === undefined || row.quantity === '') {
             return { ...baseFields, error: 'Missing quantity' };
         }
-        const qty = parseInt(row.quantity, 10);
-        if (isNaN(qty)) {
-            return { ...baseFields, error: `Invalid quantity: "${row.quantity}"` };
+        if (!/^\d+$/.test(row.quantity.trim())) {
+            return { ...baseFields, error: `Invalid quantity (must be a whole number): "${row.quantity}"` };
         }
-        if (qty <= 0) {
-            return { ...baseFields, error: 'Quantity must be positive' };
+        const qty = Number(row.quantity.trim());
+        if (!Number.isInteger(qty) || qty <= 0) {
+            return { ...baseFields, error: 'Quantity must be a positive integer' };
         }
 
         if (row.price_per_unit === undefined || row.price_per_unit === '') {
             return { ...baseFields, error: 'Missing price_per_unit' };
         }
-        const price = parseFloat(row.price_per_unit);
-        if (isNaN(price)) {
+        const price = Number(row.price_per_unit.trim());
+        if (!Number.isFinite(price)) {
             return { ...baseFields, error: `Invalid price_per_unit: "${row.price_per_unit}"` };
         }
         if (price < 0) {
@@ -172,8 +172,8 @@ export class TransactionImportService {
         }
 
         if (row.fees !== undefined && row.fees !== '') {
-            const fees = parseFloat(row.fees);
-            if (isNaN(fees)) {
+            const fees = Number(row.fees.trim());
+            if (!Number.isFinite(fees)) {
                 return { ...baseFields, error: `Invalid fees: "${row.fees}"` };
             }
         }

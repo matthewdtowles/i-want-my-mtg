@@ -75,7 +75,7 @@ export class CardImportResolver {
 
     resolveFoil(foilValue: string | undefined, card: Card): boolean | null {
         if (foilValue !== undefined && foilValue !== '') {
-            const explicit = this.parseBool(foilValue, false);
+            const explicit = this.parseBool(foilValue);
             if (!explicit && !card.hasNonFoil) {
                 return null;
             }
@@ -86,8 +86,7 @@ export class CardImportResolver {
         return false;
     }
 
-    private parseBool(value: string | undefined, defaultValue: boolean): boolean {
-        if (value === undefined || value === '') return defaultValue;
+    private parseBool(value: string): boolean {
         const lower = value.toLowerCase().trim();
         return lower === 'true' || lower === '1' || lower === 'yes';
     }

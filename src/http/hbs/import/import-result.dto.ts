@@ -1,4 +1,4 @@
-import { ImportError } from 'src/core/inventory/import/inventory-import.types';
+import { ImportError } from 'src/core/import/import.types';
 
 export class ImportResultDto {
     readonly saved: number;

@@ -15,7 +15,7 @@ import { Breadcrumb } from 'src/http/base/breadcrumb';
 import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
-import { ImportResultDto } from 'src/http/hbs/inventory/dto/import-result.dto';
+import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { InventoryPresenter } from 'src/http/hbs/inventory/inventory.presenter';
 import { BaseOnlyToggleView } from 'src/http/hbs/list/base-only-toggle.view';
 import { FilterView } from 'src/http/hbs/list/filter.view';

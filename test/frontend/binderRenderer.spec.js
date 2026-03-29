@@ -158,6 +158,18 @@ describe('BinderRenderer', function () {
             expect(html).toContain('binder-page-nav');
         });
 
+        it('should include data-show-owned-state attribute when showOwnedState is true', function () {
+            var R = loadRenderer();
+            var html = R.render(baseState, { authenticated: true, showOwnedState: true });
+            expect(html).toContain('data-show-owned-state="true"');
+        });
+
+        it('should not include data-show-owned-state attribute when showOwnedState is false', function () {
+            var R = loadRenderer();
+            var html = R.render(baseState, { authenticated: true, showOwnedState: false });
+            expect(html).not.toContain('data-show-owned-state');
+        });
+
         it('should include side arrow buttons when multiple pages', function () {
             var R = loadRenderer();
             var html = R.render(baseState, { authenticated: true, showOwnedState: true });

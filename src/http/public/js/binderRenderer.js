@@ -144,7 +144,8 @@
 
         var quantityMap = state.quantityMap || {};
 
-        var html = '<div class="binder-wrapper">';
+        var showOwnedAttr = options.showOwnedState ? ' data-show-owned-state="true"' : '';
+        var html = '<div class="binder-wrapper"' + showOwnedAttr + '>';
 
         // Left side arrow
         if (totalPages > 1) {

@@ -11,7 +11,6 @@
         var apiPath = config.apiPath;
         var limit = config.limit;
         var fetchInventory = config.fetchInventory !== false;
-        var hasOwnedOnly = config.hasOwnedOnly || false;
         var showOwnedState = config.showOwnedState !== false && authenticated;
         var onIdle = config.onIdle || null;
         var historyConfig = config.history || null;
@@ -30,7 +29,6 @@
         var cache = {};
         var ownedCache = null;
         var pinnedHeight = 0;
-        var cleanups = [];
         var navInputId = config.navInputId || 'binder-page-input';
 
         function getPhase() {
@@ -56,6 +54,7 @@
                     totalPages: cached.meta.totalPages || 0,
                     quantityMap: cached.quantityMap,
                 });
+                store.setPhase('rendering');
                 renderAndSettle();
                 prefetchAdjacent();
                 return true;
@@ -63,6 +62,7 @@
 
             // Check owned-only client-side pagination
             if (store.get().ownedOnly && ownedCache) {
+                store.setPhase('rendering');
                 renderOwnedPage();
                 return true;
             }
@@ -75,7 +75,17 @@
                 resultsEl.style.minHeight = (pinnedHeight || resultsEl.offsetHeight) + 'px';
             }
 
-            fetchPage(targetPage, limit, function (cards, meta, quantityMap) {
+            fetchPage(targetPage, limit, function (err, cards, meta, quantityMap) {
+                if (err) {
+                    if (typeof AjaxUtils !== 'undefined' && AjaxUtils.showError) {
+                        AjaxUtils.showError(resultsEl, 'Failed to load cards');
+                    } else {
+                        resultsEl.innerHTML =
+                            '<div class="text-center py-16 text-red-500">Failed to load cards</div>';
+                    }
+                    store.setPhase('idle');
+                    return;
+                }
                 cache[targetPage] = { cards: cards, meta: meta, quantityMap: quantityMap };
                 store.set({
                     cards: cards,
@@ -134,7 +144,9 @@
             }
 
             store.setPhase('idle');
-            AppState.announce('Binder page ' + state.page + ' of ' + state.totalPages);
+            if (state.totalPages > 0) {
+                AppState.announce('Binder page ' + state.page + ' of ' + state.totalPages);
+            }
 
             if (historyConfig && state.direction) {
                 var url = buildHistoryUrl(state.page);
@@ -177,12 +189,12 @@
                     if (fetchInventory && authenticated && cards.length > 0) {
                         fetchInventoryQuantities(cards, meta, callback);
                     } else {
-                        callback(cards, meta, {});
+                        callback(null, cards, meta, {});
                     }
                 })
                 .catch(function (err) {
                     console.error('Error loading cards:', err);
-                    callback([], { page: pageNum, totalPages: 0 }, {});
+                    callback(err);
                 });
         }
 
@@ -193,7 +205,7 @@
                 })
                 .filter(Boolean);
             if (cardIds.length === 0) {
-                callback(cards, meta, {});
+                callback(null, cards, meta, {});
                 return;
             }
 
@@ -224,7 +236,7 @@
                     .then(function () {
                         done++;
                         if (done === chunks.length) {
-                            callback(cards, meta, quantityMap);
+                            callback(null, cards, meta, quantityMap);
                         }
                     });
             });
@@ -240,13 +252,13 @@
             var prevPage = state.page - 1;
 
             if (nextPage <= totalPages && !cache[nextPage]) {
-                fetchPage(nextPage, limit, function (cards, m, qm) {
-                    cache[nextPage] = { cards: cards, meta: m, quantityMap: qm };
+                fetchPage(nextPage, limit, function (err, cards, m, qm) {
+                    if (!err) cache[nextPage] = { cards: cards, meta: m, quantityMap: qm };
                 });
             }
             if (prevPage >= 1 && !cache[prevPage]) {
-                fetchPage(prevPage, limit, function (cards, m, qm) {
-                    cache[prevPage] = { cards: cards, meta: m, quantityMap: qm };
+                fetchPage(prevPage, limit, function (err, cards, m, qm) {
+                    if (!err) cache[prevPage] = { cards: cards, meta: m, quantityMap: qm };
                 });
             }
         }
@@ -280,7 +292,14 @@
             store.setPhase('loading');
             AjaxUtils.showSpinner(resultsEl);
 
-            fetchPage(1, 1000, function (cards, meta, quantityMap) {
+            fetchPage(1, 1000, function (err, cards, meta, quantityMap) {
+                if (err) {
+                    if (typeof AjaxUtils !== 'undefined' && AjaxUtils.showError) {
+                        AjaxUtils.showError(resultsEl, 'Failed to load cards');
+                    }
+                    store.setPhase('idle');
+                    return;
+                }
                 var allCards = cards.slice();
                 var allQtyMap = {};
                 for (var k in quantityMap) {
@@ -296,10 +315,12 @@
                 var remaining = totalPages - 1;
                 var done = 0;
                 for (var p = 2; p <= totalPages; p++) {
-                    fetchPage(p, 1000, function (moreCards, moreMeta, moreQtyMap) {
-                        allCards = allCards.concat(moreCards);
-                        for (var k in moreQtyMap) {
-                            if (moreQtyMap.hasOwnProperty(k)) allQtyMap[k] = moreQtyMap[k];
+                    fetchPage(p, 1000, function (pageErr, moreCards, moreMeta, moreQtyMap) {
+                        if (!pageErr) {
+                            allCards = allCards.concat(moreCards);
+                            for (var k in moreQtyMap) {
+                                if (moreQtyMap.hasOwnProperty(k)) allQtyMap[k] = moreQtyMap[k];
+                            }
                         }
                         done++;
                         if (done === remaining) {
@@ -339,36 +360,79 @@
         // --- Cache patching ---
 
         function patchQuantity(cardId, isFoil, quantity) {
-            // Update current state
+            // Build updated entry
             var state = store.get();
-            var qm = state.quantityMap;
-            if (!qm[cardId]) {
-                qm[cardId] = { cardId: cardId, normalQuantity: 0, foilQuantity: 0 };
+            var oldEntry = state.quantityMap[cardId] || {
+                cardId: cardId,
+                normalQuantity: 0,
+                foilQuantity: 0,
+            };
+            var newEntry = {
+                cardId: cardId,
+                normalQuantity: isFoil ? oldEntry.normalQuantity : quantity,
+                foilQuantity: isFoil ? quantity : oldEntry.foilQuantity,
+            };
+
+            // Update current state with new quantityMap
+            var newQm = {};
+            for (var k in state.quantityMap) {
+                if (state.quantityMap.hasOwnProperty(k)) {
+                    newQm[k] = state.quantityMap[k];
+                }
             }
-            if (isFoil) {
-                qm[cardId].foilQuantity = quantity;
-            } else {
-                qm[cardId].normalQuantity = quantity;
-            }
-            store.set({ quantityMap: qm });
+            newQm[cardId] = newEntry;
+            store.set({ quantityMap: newQm });
 
             // Update all cached pages
-            for (var page in cache) {
-                if (cache.hasOwnProperty(page) && cache[page].quantityMap[cardId]) {
-                    if (isFoil) {
-                        cache[page].quantityMap[cardId].foilQuantity = quantity;
-                    } else {
-                        cache[page].quantityMap[cardId].normalQuantity = quantity;
-                    }
+            for (var pg in cache) {
+                if (cache.hasOwnProperty(pg) && cache[pg].quantityMap[cardId]) {
+                    cache[pg].quantityMap[cardId] = {
+                        cardId: cardId,
+                        normalQuantity: newEntry.normalQuantity,
+                        foilQuantity: newEntry.foilQuantity,
+                    };
                 }
             }
 
             // Update owned cache
-            if (ownedCache && ownedCache.quantityMap[cardId]) {
-                if (isFoil) {
-                    ownedCache.quantityMap[cardId].foilQuantity = quantity;
-                } else {
-                    ownedCache.quantityMap[cardId].normalQuantity = quantity;
+            if (ownedCache) {
+                if (ownedCache.quantityMap[cardId]) {
+                    ownedCache.quantityMap[cardId] = {
+                        cardId: cardId,
+                        normalQuantity: newEntry.normalQuantity,
+                        foilQuantity: newEntry.foilQuantity,
+                    };
+                }
+
+                // Update owned card membership if ownedOnly is active
+                if (store.get().ownedOnly) {
+                    var isNowOwned = newEntry.normalQuantity > 0 || newEntry.foilQuantity > 0;
+                    var idx = -1;
+                    for (var i = 0; i < ownedCache.cards.length; i++) {
+                        if (ownedCache.cards[i].id === cardId) {
+                            idx = i;
+                            break;
+                        }
+                    }
+                    if (!isNowOwned && idx !== -1) {
+                        ownedCache.cards.splice(idx, 1);
+                        store.setPhase('rendering');
+                        renderOwnedPage();
+                    } else if (isNowOwned && idx === -1) {
+                        // Card not in owned list — find it in normal cache
+                        for (var cp in cache) {
+                            if (cache.hasOwnProperty(cp)) {
+                                for (var ci = 0; ci < cache[cp].cards.length; ci++) {
+                                    if (cache[cp].cards[ci].id === cardId) {
+                                        ownedCache.cards.push(cache[cp].cards[ci]);
+                                        store.setPhase('rendering');
+                                        renderOwnedPage();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -445,10 +509,6 @@
 
         function destroy() {
             active = false;
-            for (var i = 0; i < cleanups.length; i++) {
-                cleanups[i]();
-            }
-            cleanups = [];
         }
 
         return {

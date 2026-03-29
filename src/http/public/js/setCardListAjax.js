@@ -83,17 +83,35 @@ document.addEventListener('DOMContentLoaded', function () {
         applyBinderOverrides();
     }
 
-    // Fetch wrapper: short-circuit for binder mode to avoid double fetch
+    // Override fetchAndRender so all callers (including initListPage's popstate)
+    // short-circuit for binder mode, preventing double fetches.
+    var originalFetchAndRender = page.fetchAndRender;
+
     function fetchForView(historyMode) {
         if (page.state.view === 'binder') {
             var machine = getOrCreateBinder();
             machine.activate();
             machine.navigate(page.state.page || 1, null);
             updateUIForView('binder');
+            // Update browser history when toggling to binder
+            if (historyMode) {
+                var binderUrl =
+                    '/sets/' +
+                    encodeURIComponent(setCode) +
+                    '?view=binder&page=' +
+                    (page.state.page || 1);
+                if (historyMode === 'pushState') {
+                    window.history.pushState({}, '', binderUrl);
+                } else if (historyMode === 'replaceState') {
+                    window.history.replaceState({}, '', binderUrl);
+                }
+            }
             return;
         }
-        page.fetchAndRender(historyMode);
+        originalFetchAndRender(historyMode);
     }
+
+    page.fetchAndRender = fetchForView;
 
     // Set up view toggle
     var toggleContainer = document.getElementById('view-toggle');
@@ -120,21 +138,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // If starting in binder view, go directly to binder (no initListPage fetch)
     if (initialView === 'binder') {
+        var urlPage = parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
         var machine = getOrCreateBinder();
-        machine.navigate(1, null);
+        machine.navigate(urlPage, null);
     }
 
-    // Sync UI when navigating back/forward
+    // Sync view state on back/forward — fetch is handled by initListPage's
+    // popstate handler calling the overridden fetchAndRender (fetchForView).
     window.addEventListener('popstate', function () {
         var urlView = new URLSearchParams(window.location.search).get('view') || 'list';
+        page.state.view = urlView;
         if (urlView === 'binder') {
             applyBinderOverrides();
-            var urlPage =
-                parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
-            page.state.page = urlPage;
-            var machine = getOrCreateBinder();
-            machine.activate();
-            machine.navigate(urlPage, null);
         } else {
             restoreListDefaults();
             if (binderMachine) binderMachine.deactivate();

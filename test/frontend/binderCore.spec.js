@@ -260,6 +260,67 @@ describe('BinderCore', function () {
 
             machine.navigate(1, null);
         });
+
+        it('should set phase to rendering on cache hit to prevent interleaved navigations', function (done) {
+            var BC = loadBinderCore();
+            var container = createContainer();
+            var cards = makeCardData(3);
+            setupFetchResponses(cards, 3);
+
+            var idleCount = 0;
+            var machine = BC.create({
+                containerEl: container,
+                resultsEl: container,
+                setCode: 'mkm',
+                authenticated: false,
+                apiPath: '/api/v1/sets/mkm/cards',
+                limit: 9,
+                onIdle: function () {
+                    idleCount++;
+                    if (idleCount === 1) {
+                        // Navigate again (cache hit) — phase should be rendering
+                        machine.navigate(1, 'right');
+                        expect(machine.getPhase()).toBe('rendering');
+                        // Second navigate during rendering should be rejected
+                        var result = machine.navigate(1, 'right');
+                        expect(result).toBe(false);
+                        done();
+                    }
+                },
+            });
+
+            machine.navigate(1, null);
+        });
+    });
+
+    describe('error handling', function () {
+        it('should show error state and return to idle on fetch failure', function (done) {
+            var BC = loadBinderCore();
+            var container = createContainer();
+
+            // Make fetch fail
+            window.fetch = function (url) {
+                fetchCalls.push(url);
+                return Promise.reject(new Error('Network error'));
+            };
+
+            var machine = BC.create({
+                containerEl: container,
+                resultsEl: container,
+                setCode: 'mkm',
+                authenticated: false,
+                apiPath: '/api/v1/sets/mkm/cards',
+                limit: 9,
+            });
+
+            machine.navigate(1, null);
+
+            setTimeout(function () {
+                expect(machine.getPhase()).toBe('idle');
+                expect(container.innerHTML).toContain('Failed to load cards');
+                done();
+            }, 50);
+        });
     });
 
     describe('patchQuantity', function () {
@@ -309,6 +370,36 @@ describe('BinderCore', function () {
                     machine.patchQuantity('card-1', true, 2);
                     var state = machine.getState();
                     expect(state.quantityMap['card-1'].foilQuantity).toBe(2);
+                    done();
+                },
+            });
+
+            machine.navigate(1, null);
+        });
+
+        it('should create new quantityMap object instead of mutating existing state', function (done) {
+            var BC = loadBinderCore();
+            var container = createContainer();
+            var cards = makeCardData(2);
+            var inventoryData = makeQuantityData(cards, [1, 0]);
+            setupFetchResponses(cards, 1, inventoryData);
+
+            var machine = BC.create({
+                containerEl: container,
+                resultsEl: container,
+                setCode: 'mkm',
+                authenticated: true,
+                apiPath: '/api/v1/sets/mkm/cards',
+                limit: 9,
+                fetchInventory: true,
+                onIdle: function () {
+                    var stateBefore = machine.getState();
+                    var qmBefore = stateBefore.quantityMap;
+                    machine.patchQuantity('card-1', false, 5);
+                    var stateAfter = machine.getState();
+                    // The quantityMap reference should be a new object
+                    expect(stateAfter.quantityMap).not.toBe(qmBefore);
+                    expect(stateAfter.quantityMap['card-1'].normalQuantity).toBe(5);
                     done();
                 },
             });

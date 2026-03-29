@@ -249,17 +249,7 @@
 - [x] Add stepper controls for inventory quantity in binder view
 - [x] Maintain scroll position on binder page navigation
 
-### 2.8 Feature: Price Notifications
-
-- [ ] Design notification data model (user preferences, thresholds, history)
-- [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
-- [ ] Implement price change detection during ingestion
-- [ ] Implement email notification delivery
-- [ ] Add notification history/log view
-- [ ] Consider in-app notifications in addition to email
-- [ ] Add unsubscribe/manage preferences flow
-
-### 2.9 Feature: Bulk Upload Transactions
+### 2.8 Feature: Bulk Upload Transactions
 
 - [ ] Design bulk upload flow (CSV file format, UI for upload)
 - [ ] Create CSV template/documentation for expected format
@@ -268,7 +258,7 @@
 - [ ] Handle errors and partial failures (report which rows failed and why)
 - [ ] Add bulk upload UI to transactions page
 
-### 2.10 Improve Site Copy and UX Guidance
+### 2.9 Improve Site Copy and UX Guidance
 
 - [ ] Audit current site copy for clarity and completeness
 - [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
@@ -277,6 +267,14 @@
 - [ ] Review navigation flow and improve discoverability of features
 - [ ] Update page headings, labels, and descriptions for consistency
 
+### 2.10 Restructure Set Blocking UI for Set Lists
+
+- [ ] Audit current set list layout and identify UX pain points
+- [ ] Design improved set list UI with clearer visual hierarchy
+- [ ] Implement restructured set list layout
+- [ ] Ensure responsive behavior on mobile and desktop
+- [ ] Update AJAX rendering to match new layout
+
 ### 2.11 Support Flavor Name
 
 - [ ] Verify Scryfall API provides flavor_name data
@@ -284,6 +282,16 @@
 - [ ] Update Scry card ingestion to store flavor_name
 - [ ] Display flavor_name on card detail page where applicable
 - [ ] Add flavor_name to card search if relevant
+
+### 2.12 Feature: Price Notifications
+
+- [ ] Design notification data model (user preferences, thresholds, history)
+- [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
+- [ ] Implement price change detection during ingestion
+- [ ] Implement email notification delivery
+- [ ] Add notification history/log view
+- [ ] Consider in-app notifications in addition to email
+- [ ] Add unsubscribe/manage preferences flow
 
 ---
 

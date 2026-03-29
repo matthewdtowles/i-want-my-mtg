@@ -66,8 +66,8 @@
             {{/if}}
 
             <div class="flex gap-3 justify-center">
-                <a href="/inventory" class="btn btn-primary">View Inventory</a>
-                <a href="/inventory#import" class="btn btn-secondary">Import Another</a>
+                <a href="{{#if backUrl}}{{backUrl}}{{else}}/inventory{{/if}}" class="btn btn-primary">{{#if backLabel}}{{backLabel}}{{else}}View Inventory{{/if}}</a>
+                <a href="{{#if importUrl}}{{importUrl}}{{else}}/inventory#import{{/if}}" class="btn btn-secondary">Import Another</a>
             </div>
         </div>
     </div>

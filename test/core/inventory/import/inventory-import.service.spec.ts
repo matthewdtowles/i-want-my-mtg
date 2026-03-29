@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { CardImportResolver } from 'src/core/import/card-import-resolver';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { Set } from 'src/core/set/set.entity';
@@ -78,6 +79,7 @@ describe('InventoryImportService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryImportService,
+                CardImportResolver,
                 { provide: InventoryRepositoryPort, useValue: mockInventoryRepo },
                 { provide: CardRepositoryPort, useValue: mockCardRepo },
                 { provide: SetRepositoryPort, useValue: mockSetRepo },

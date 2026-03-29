@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Card } from 'src/core/card/card.entity';
-import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { CardImportResolver } from 'src/core/import/card-import-resolver';
+import { ImportError, ImportResult } from 'src/core/import/import.types';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
+import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { InventoryRepositoryPort } from '../ports/inventory.repository.port';
-import { CardImportRow, ImportError, ImportResult, SetImportRow } from './inventory-import.types';
+import { CardImportRow, SetImportRow } from './inventory-import.types';
 
 const MAX_ROWS = 2000;
 
@@ -20,7 +21,9 @@ export class InventoryImportService {
         @Inject(CardRepositoryPort)
         private readonly cardRepository: CardRepositoryPort,
         @Inject(SetRepositoryPort)
-        private readonly setRepository: SetRepositoryPort
+        private readonly setRepository: SetRepositoryPort,
+        @Inject(CardImportResolver)
+        private readonly cardResolver: CardImportResolver
     ) {}
 
     async importCards(rows: CardImportRow[], userId: number): Promise<ImportResult> {
@@ -34,8 +37,6 @@ export class InventoryImportService {
 
         const cappedRows = rows.slice(0, MAX_ROWS);
         if (rows.length > MAX_ROWS) {
-            // Row numbers are 1-indexed with the header occupying row 1, so data row i has
-            // number i + 2. The first unprocessed row is at index MAX_ROWS → row MAX_ROWS + 2.
             errors.push({
                 row: MAX_ROWS + 2,
                 error: `File exceeds ${MAX_ROWS} row limit; only first ${MAX_ROWS} rows processed`,
@@ -44,43 +45,16 @@ export class InventoryImportService {
 
         for (let i = 0; i < cappedRows.length; i++) {
             const row = cappedRows[i];
-            const rowNum = i + 2; // 1-indexed, skipping header
+            const rowNum = i + 2;
 
-            let card: Card | null = null;
-            let lookupError: string | null = null;
+            const { card, error: cardError } = await this.cardResolver.resolveCard({
+                id: row.id,
+                name: row.name,
+                set_code: row.set_code,
+                number: row.number,
+            });
 
-            try {
-                if (row.id) {
-                    card = await this.cardRepository.findById(row.id, []);
-                    if (!card) lookupError = `Card not found for id: ${row.id}`;
-                } else if (row.set_code && row.number) {
-                    card = await this.cardRepository.findBySetCodeAndNumber(
-                        row.set_code,
-                        row.number,
-                        []
-                    );
-                    if (!card)
-                        lookupError = `Card not found for set ${row.set_code} #${row.number}`;
-                } else if (row.name && row.set_code) {
-                    const matches = await this.cardRepository.findByNameAndSetCode(
-                        row.name,
-                        row.set_code
-                    );
-                    if (matches.length > 1) {
-                        lookupError = `Ambiguous: "${row.name}" in ${row.set_code} matches ${matches.length} cards; add collector number`;
-                    } else if (matches.length === 0) {
-                        lookupError = `Card not found: "${row.name}" in ${row.set_code}`;
-                    } else {
-                        card = matches[0];
-                    }
-                } else {
-                    lookupError = `Insufficient identifier: provide id, set_code+number, or name+set_code`;
-                }
-            } catch (e) {
-                lookupError = `Lookup error: ${e.message}`;
-            }
-
-            if (lookupError || !card) {
+            if (cardError || !card) {
                 errors.push({
                     row: rowNum,
                     name: row.name,
@@ -88,12 +62,12 @@ export class InventoryImportService {
                     number: row.number,
                     quantity: row.quantity,
                     foil: row.foil,
-                    error: lookupError ?? 'Card not found',
+                    error: cardError ?? 'Card not found',
                 });
                 continue;
             }
 
-            const isFoil = this.resolveFoil(row.foil, card);
+            const isFoil = this.cardResolver.resolveFoil(row.foil, card);
             if (isFoil === null) {
                 errors.push({
                     row: rowNum,
@@ -247,20 +221,6 @@ export class InventoryImportService {
         );
 
         return { saved: result.saved, skipped: result.skipped, deleted: 0, errors: [] };
-    }
-
-    private resolveFoil(foilValue: string | undefined, card: Card): boolean | null {
-        if (foilValue !== undefined && foilValue !== '') {
-            const explicit = this.parseBool(foilValue, false);
-            if (!explicit && !card.hasNonFoil) {
-                return null; // Error: forced non-foil but card has no non-foil
-            }
-            return explicit;
-        }
-        // No explicit value: prefer non-foil, fallback to foil
-        if (card.hasNonFoil) return false;
-        if (card.hasFoil) return true;
-        return false;
     }
 
     private parseBool(value: string | undefined, defaultValue: boolean): boolean {

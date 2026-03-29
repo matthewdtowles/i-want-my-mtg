@@ -3,6 +3,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { AuthModule } from './auth/auth.module';
 import { CardModule } from './card/card.module';
 import { EmailModule } from './email/email.module';
+import { ImportModule } from './import/import.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { SearchModule } from './search/search.module';
@@ -16,6 +17,7 @@ import { UserModule } from './user/user.module';
         AuthModule,
         CardModule,
         EmailModule,
+        ImportModule,
         InventoryModule,
         PasswordResetModule,
         PortfolioModule,
@@ -28,6 +30,7 @@ import { UserModule } from './user/user.module';
         AuthModule,
         CardModule,
         EmailModule,
+        ImportModule,
         InventoryModule,
         PasswordResetModule,
         PortfolioModule,

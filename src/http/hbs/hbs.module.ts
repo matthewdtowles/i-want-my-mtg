@@ -7,6 +7,7 @@ import { CardController } from './card/card.controller';
 import { CardOrchestrator } from './card/card.orchestrator';
 import { HomeController } from './home/home.controller';
 import { InventoryController } from './inventory/inventory.controller';
+import { UploadRateLimitGuard } from './inventory/guards/upload-rate-limit.guard';
 import { InventoryOrchestrator } from './inventory/inventory.orchestrator';
 import { PortfolioController } from './portfolio/portfolio.controller';
 import { PortfolioOrchestrator } from './portfolio/portfolio.orchestrator';
@@ -37,6 +38,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         UserController,
     ],
     providers: [
+        UploadRateLimitGuard,
         AuthOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,

@@ -111,7 +111,7 @@ describe('TransactionCsvParser', () => {
             expect(row.source).toBe('TCG');
         });
 
-        it('caps rows at 2000', () => {
+        it('returns all rows beyond 2000 (truncation is handled by the service)', () => {
             const header = ALL_HEADERS + '\n';
             const rows = Array.from(
                 { length: 2100 },
@@ -119,7 +119,7 @@ describe('TransactionCsvParser', () => {
             ).join('\n');
 
             const result = TransactionCsvParser.parse(toBuffer(header + rows));
-            expect(result.length).toBe(2000);
+            expect(result.length).toBe(2100);
         });
 
         it('throws for unknown column', () => {

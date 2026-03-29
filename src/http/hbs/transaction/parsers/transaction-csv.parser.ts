@@ -1,7 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import { TransactionImportRow } from 'src/core/transaction/import/transaction-import.types';
 
-const MAX_ROWS = 2000;
 const EXPECTED_HEADERS = new Set([
     'id',
     'name',
@@ -38,7 +37,7 @@ export class TransactionCsvParser {
             }
         }
 
-        return records.slice(0, MAX_ROWS).map((rec) => ({
+        return records.map((rec) => ({
             id: rec.id?.trim() || undefined,
             name: rec.name?.trim() || undefined,
             set_code: rec.set_code?.trim() || undefined,

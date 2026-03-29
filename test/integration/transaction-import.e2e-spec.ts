@@ -16,18 +16,24 @@ function buildCsv(headers: string, ...rows: string[]): Buffer {
 
 const HEADERS = 'id,name,set_code,number,type,quantity,price_per_unit,foil,date,source,fees,notes';
 
+async function txCount(ds: DataSource): Promise<number> {
+    const [{ cnt }] = await ds.query(`SELECT COUNT(*) as cnt FROM "transaction" WHERE user_id = 1`);
+    return Number(cnt);
+}
+
 describe('Transaction CSV Import (e2e)', () => {
     let app: INestApplication;
     let authCookie: string;
+    let ds: DataSource;
 
     beforeAll(async () => {
         app = await createTestApp();
         authCookie = await loginTestUser(app);
+        ds = app.get(DataSource);
     }, 30000);
 
     afterAll(async () => {
         try {
-            const ds = app.get(DataSource);
             if (ds?.isInitialized) {
                 await ds.query(`DELETE FROM inventory WHERE user_id = 1`);
                 await ds.query(`DELETE FROM "transaction" WHERE user_id = 1`);
@@ -53,7 +59,9 @@ describe('Transaction CSV Import (e2e)', () => {
             .expect(400);
     });
 
-    it('imports valid BUY transactions and renders result page', async () => {
+    it('imports valid BUY transactions and persists them to the database', async () => {
+        const before = await txCount(ds);
+
         const csv = buildCsv(
             HEADERS,
             `${TEST_CARD_ID},,,,BUY,2,3.50,false,2025-01-15,Test LGS,0.25,First buy`,
@@ -66,11 +74,36 @@ describe('Transaction CSV Import (e2e)', () => {
             .attach('file', csv, 'transactions.csv')
             .expect(201);
 
-        expect(res.text).toContain('added');
+        expect(res.text).toContain('saved');
         expect(res.text).toContain('Import Complete');
+
+        expect(await txCount(ds)).toBe(before + 2);
+
+        const newRows = await ds.query(
+            `SELECT * FROM "transaction" WHERE user_id = 1 ORDER BY id DESC LIMIT 2`
+        );
+
+        const row1 = newRows.find((r: any) => r.card_id === TEST_CARD_ID);
+        expect(row1).toBeDefined();
+        expect(Number(row1.quantity)).toBe(2);
+        expect(Number(row1.price_per_unit)).toBe(3.5);
+        expect(row1.source).toBe('Test LGS');
+        expect(Number(row1.fees)).toBe(0.25);
+        expect(row1.notes).toBe('First buy');
+        expect(row1.is_foil).toBe(false);
+        expect(row1.type).toBe('BUY');
+
+        const row2 = newRows.find((r: any) => r.card_id === TEST_CARD_ID_2);
+        expect(row2).toBeDefined();
+        expect(Number(row2.quantity)).toBe(1);
+        expect(Number(row2.price_per_unit)).toBe(1.0);
+        expect(row2.source).toBeNull();
+        expect(row2.fees).toBeNull();
     });
 
-    it('resolves cards by set_code + number', async () => {
+    it('resolves card by set_code + number and saves with correct card_id', async () => {
+        const before = await txCount(ds);
+
         const csv = buildCsv(
             HEADERS,
             `,Test Angel,${TEST_SET_CODE},1,BUY,1,5.00,,2025-03-01,,,`
@@ -82,10 +115,21 @@ describe('Transaction CSV Import (e2e)', () => {
             .attach('file', csv, 'transactions.csv')
             .expect(201);
 
-        expect(res.text).toContain('added');
+        expect(res.text).toContain('saved');
+
+        expect(await txCount(ds)).toBe(before + 1);
+
+        const [newRow] = await ds.query(
+            `SELECT * FROM "transaction" WHERE user_id = 1 ORDER BY id DESC LIMIT 1`
+        );
+        expect(newRow.card_id).toBe(TEST_CARD_ID);
+        expect(Number(newRow.quantity)).toBe(1);
+        expect(Number(newRow.price_per_unit)).toBe(5.0);
     });
 
-    it('reports errors for invalid rows without failing valid ones', async () => {
+    it('saves valid rows and skips invalid rows in the same file', async () => {
+        const before = await txCount(ds);
+
         const csv = buildCsv(
             HEADERS,
             `${TEST_CARD_ID},,,,BUY,1,2.00,,2025-04-01,,,`,
@@ -98,8 +142,10 @@ describe('Transaction CSV Import (e2e)', () => {
             .attach('file', csv, 'transactions.csv')
             .expect(201);
 
-        expect(res.text).toContain('added');
+        expect(res.text).toContain('saved');
         expect(res.text).toContain('had errors');
+
+        expect(await txCount(ds)).toBe(before + 1);
     });
 
     it('rejects rows with non-integer quantity like "4abc"', async () => {
@@ -115,7 +161,7 @@ describe('Transaction CSV Import (e2e)', () => {
             .expect(201);
 
         expect(res.text).toContain('had errors');
-        expect(res.text).not.toContain('added');
+        expect(res.text).not.toContain('saved');
     });
 
     it('rejects rows with decimal quantity like "4.5"', async () => {
@@ -131,7 +177,7 @@ describe('Transaction CSV Import (e2e)', () => {
             .expect(201);
 
         expect(res.text).toContain('had errors');
-        expect(res.text).not.toContain('added');
+        expect(res.text).not.toContain('saved');
     });
 
     it('rejects rows with malformed price like "2.50xyz"', async () => {
@@ -147,7 +193,7 @@ describe('Transaction CSV Import (e2e)', () => {
             .expect(201);
 
         expect(res.text).toContain('had errors');
-        expect(res.text).not.toContain('added');
+        expect(res.text).not.toContain('saved');
     });
 
     it('rejects rows with malformed fees like "1.00abc"', async () => {
@@ -163,6 +209,6 @@ describe('Transaction CSV Import (e2e)', () => {
             .expect(201);
 
         expect(res.text).toContain('had errors');
-        expect(res.text).not.toContain('added');
+        expect(res.text).not.toContain('saved');
     });
 });

@@ -75,6 +75,8 @@ export class TransactionController {
             backUrl: '/transactions',
             backLabel: 'View Transactions',
             importUrl: '/transactions#import',
+            entityLabel: 'transaction',
+            savedVerb: 'saved',
         };
     }
 

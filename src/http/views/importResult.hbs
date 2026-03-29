@@ -8,7 +8,7 @@
                 {{#if result.saved}}
                 <p class="text-gray-700 dark:text-gray-300 text-lg">
                     <span class="font-semibold text-teal-600 dark:text-teal-400">{{result.saved}}</span>
-                    card{{#if (gt result.saved 1)}}s{{/if}} added
+                    {{#if entityLabel}}{{entityLabel}}{{else}}card{{/if}}{{#if (gt result.saved 1)}}s{{/if}} {{#if savedVerb}}{{savedVerb}}{{else}}added{{/if}}
                 </p>
                 {{/if}}
                 {{#if result.deleted}}

@@ -489,8 +489,8 @@ describe('BinderCore', function () {
         });
     });
 
-    describe('inventory:updated event integration', function () {
-        it('should handle inventory:updated event via patchQuantity', function (done) {
+    describe('patchQuantity for previously-unowned card', function () {
+        it('should create a new quantityMap entry for a card not yet in the map', function (done) {
             var BC = loadBinderCore();
             var container = createContainer();
             var cards = makeCardData(2);

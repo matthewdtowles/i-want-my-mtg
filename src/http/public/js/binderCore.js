@@ -383,9 +383,17 @@
             newQm[cardId] = newEntry;
             store.set({ quantityMap: newQm });
 
-            // Update all cached pages
+            // Update all cached pages that contain this card
             for (var pg in cache) {
-                if (cache.hasOwnProperty(pg) && cache[pg].quantityMap[cardId]) {
+                if (!cache.hasOwnProperty(pg)) continue;
+                var pageHasCard = false;
+                for (var ci = 0; ci < cache[pg].cards.length; ci++) {
+                    if (cache[pg].cards[ci].id === cardId) {
+                        pageHasCard = true;
+                        break;
+                    }
+                }
+                if (pageHasCard) {
                     cache[pg].quantityMap[cardId] = {
                         cardId: cardId,
                         normalQuantity: newEntry.normalQuantity,
@@ -396,13 +404,11 @@
 
             // Update owned cache
             if (ownedCache) {
-                if (ownedCache.quantityMap[cardId]) {
-                    ownedCache.quantityMap[cardId] = {
-                        cardId: cardId,
-                        normalQuantity: newEntry.normalQuantity,
-                        foilQuantity: newEntry.foilQuantity,
-                    };
-                }
+                ownedCache.quantityMap[cardId] = {
+                    cardId: cardId,
+                    normalQuantity: newEntry.normalQuantity,
+                    foilQuantity: newEntry.foilQuantity,
+                };
 
                 // Update owned card membership if ownedOnly is active
                 if (store.get().ownedOnly) {

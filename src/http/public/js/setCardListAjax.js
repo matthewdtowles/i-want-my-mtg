@@ -14,19 +14,60 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var BINDER_LIMIT = window.matchMedia('(min-width: 640px)').matches ? 9 : 6;
 
+    // Lazy-created binder state machine
+    var binderMachine = null;
+
+    function getOrCreateBinder() {
+        if (!binderMachine) {
+            var resultsEl = document.getElementById('filter-results');
+            binderMachine = BinderCore.create({
+                containerEl: container,
+                resultsEl: resultsEl,
+                setCode: setCode,
+                authenticated: authenticated,
+                apiPath: '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards',
+                limit: BINDER_LIMIT,
+                fetchInventory: authenticated,
+                showOwnedState: false,
+                navInputId: 'set-binder-page-input',
+                history: {
+                    basePath: '/sets/' + encodeURIComponent(setCode),
+                },
+            });
+
+            // Listen for inventory updates
+            AppState.on('inventory:updated', function (e) {
+                var d = e.detail;
+                binderMachine.patchQuantity(d.cardId, d.isFoil, d.quantity);
+            });
+        }
+        return binderMachine;
+    }
+
     var page = AjaxUtils.initListPage({
         container: container,
         apiPath: '/api/v1/sets/' + encodeURIComponent(setCode) + '/cards',
         basePath: '/sets/' + encodeURIComponent(setCode),
         renderContent: function (resultsEl, cards, meta) {
             if (page.state.view === 'binder') {
-                renderBinder(resultsEl, cards, meta);
-            } else {
-                renderTable(resultsEl, cards);
+                // Delegate to binder state machine — it does its own fetch + render
+                var machine = getOrCreateBinder();
+                machine.activate();
+                var targetPage = page.state.page || 1;
+                machine.navigate(targetPage, null);
+                return;
             }
+            // List view — render table as before
+            if (binderMachine) binderMachine.deactivate();
+            renderTable(resultsEl, cards);
         },
         errorMessage: 'Failed to load cards',
         onSuccess: function (data, meta, done) {
+            if (page.state.view === 'binder') {
+                // Binder handles its own inventory fetch
+                done();
+                return;
+            }
             if (authenticated && data && data.length > 0) {
                 fetchAndRenderInventory(data, done);
             } else {
@@ -42,18 +83,49 @@ document.addEventListener('DOMContentLoaded', function () {
         applyBinderOverrides();
     }
 
+    // Override fetchAndRender so all callers (including initListPage's popstate)
+    // short-circuit for binder mode, preventing double fetches.
+    var originalFetchAndRender = page.fetchAndRender;
+
+    function fetchForView(historyMode) {
+        if (page.state.view === 'binder') {
+            var machine = getOrCreateBinder();
+            machine.activate();
+            machine.navigate(page.state.page || 1, null);
+            updateUIForView('binder');
+            // Update browser history when toggling to binder
+            if (historyMode) {
+                var binderUrl =
+                    '/sets/' +
+                    encodeURIComponent(setCode) +
+                    '?view=binder&page=' +
+                    (page.state.page || 1);
+                if (historyMode === 'pushState') {
+                    window.history.pushState({}, '', binderUrl);
+                } else if (historyMode === 'replaceState') {
+                    window.history.replaceState({}, '', binderUrl);
+                }
+            }
+            return;
+        }
+        originalFetchAndRender(historyMode);
+    }
+
+    page.fetchAndRender = fetchForView;
+
     // Set up view toggle
     var toggleContainer = document.getElementById('view-toggle');
     if (toggleContainer) {
         AjaxUtils.setupViewToggleInterceptor({
             container: toggleContainer,
             state: page.state,
-            fetchFn: page.fetchAndRender,
+            fetchFn: fetchForView,
             onToggle: function (newView) {
                 if (newView === 'binder') {
                     applyBinderOverrides();
                 } else {
                     restoreListDefaults();
+                    if (binderMachine) binderMachine.deactivate();
                 }
                 updateUIForView(newView);
             },
@@ -64,38 +136,43 @@ document.addEventListener('DOMContentLoaded', function () {
     // Apply initial UI state
     updateUIForView(page.state.view);
 
-    // If starting in binder view, re-fetch with binder params
+    // If starting in binder view, go directly to binder (no initListPage fetch)
     if (initialView === 'binder') {
-        page.fetchAndRender('replaceState');
+        var urlPage = parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
+        var machine = getOrCreateBinder();
+        machine.navigate(urlPage, null);
     }
 
-    // Sync UI when navigating back/forward
+    // Sync view state on back/forward — fetch is handled by initListPage's
+    // popstate handler calling the overridden fetchAndRender (fetchForView).
     window.addEventListener('popstate', function () {
         var urlView = new URLSearchParams(window.location.search).get('view') || 'list';
+        page.state.view = urlView;
         if (urlView === 'binder') {
             applyBinderOverrides();
         } else {
             restoreListDefaults();
+            if (binderMachine) binderMachine.deactivate();
         }
         updateUIForView(urlView);
     });
 
     // Keyboard navigation for binder pages
     document.addEventListener('keydown', function (e) {
-        if (page.state.view !== 'binder') return;
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.key === 'ArrowLeft' && page.state.page > 1) {
+        if (page.state.view !== 'binder' || !binderMachine) return;
+        if (
+            e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'TEXTAREA' ||
+            e.target.tagName === 'SELECT'
+        )
+            return;
+        var state = binderMachine.getState();
+        if (e.key === 'ArrowLeft' && state.page > 1) {
             e.preventDefault();
-            page.state.page--;
-            page.fetchAndRender('pushState');
-        } else if (e.key === 'ArrowRight') {
-            var nav = container.querySelector('.binder-page-nav');
-            var totalPages = nav ? parseInt(nav.getAttribute('data-total-pages'), 10) : 1;
-            if (page.state.page < totalPages) {
-                e.preventDefault();
-                page.state.page++;
-                page.fetchAndRender('pushState');
-            }
+            binderMachine.navigate(state.page - 1, 'left');
+        } else if (e.key === 'ArrowRight' && state.page < state.totalPages) {
+            e.preventDefault();
+            binderMachine.navigate(state.page + 1, 'right');
         }
     });
 
@@ -290,190 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== Binder View =====
-
-    function renderBinder(resultsEl, cards, meta) {
-        if (!cards || cards.length === 0) {
-            AjaxUtils.renderEmptyState(resultsEl, {
-                message: 'No cards in this set',
-            });
-            return;
-        }
-
-        var totalPages = (meta && meta.totalPages) || 1;
-        var currentPage = (meta && meta.page) || 1;
-
-        var html = '<div class="binder-wrapper">';
-
-        // Left side arrow
-        if (totalPages > 1) {
-            html +=
-                '<button type="button" class="binder-side-btn binder-side-btn--left" data-dir="prev"' +
-                (currentPage <= 1 ? ' disabled' : '') + ' aria-label="Previous page">' +
-                '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
-                '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />' +
-                '</svg>' +
-                '</button>';
-        }
-
-        html += '<div class="binder-grid">';
-        for (var i = 0; i < cards.length; i++) {
-            html += renderBinderCard(cards[i]);
-        }
-        html += '</div>';
-
-        // Right side arrow
-        if (totalPages > 1) {
-            html +=
-                '<button type="button" class="binder-side-btn binder-side-btn--right" data-dir="next"' +
-                (currentPage >= totalPages ? ' disabled' : '') + ' aria-label="Next page">' +
-                '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
-                '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />' +
-                '</svg>' +
-                '</button>';
-        }
-
-        html += '</div>'; // close binder-wrapper
-
-        // Bottom nav with page input
-        html += renderBinderNav(currentPage, totalPages);
-
-        resultsEl.innerHTML = html;
-        setupBinderNavHandlers(resultsEl, totalPages);
-
-        // Hide standard pagination when in binder view
-        var paginationEl = container.parentElement.querySelector('.pagination-container');
-        if (paginationEl) paginationEl.style.display = 'none';
-
-        AjaxUtils.announce('Binder page ' + currentPage + ' of ' + totalPages);
-    }
-
-    function setupBinderNavHandlers(resultsEl, totalPages) {
-        // Side buttons
-        var sideBtns = resultsEl.querySelectorAll('.binder-side-btn');
-        for (var i = 0; i < sideBtns.length; i++) {
-            sideBtns[i].addEventListener('click', function (e) {
-                var btn = e.target.closest('.binder-side-btn');
-                if (!btn || btn.disabled) return;
-                e.preventDefault();
-                var dir = btn.getAttribute('data-dir');
-                if (dir === 'prev' && page.state.page > 1) {
-                    page.state.page--;
-                    page.fetchAndRender('pushState');
-                } else if (dir === 'next' && page.state.page < totalPages) {
-                    page.state.page++;
-                    page.fetchAndRender('pushState');
-                }
-            });
-        }
-
-        // Bottom nav buttons
-        var nav = resultsEl.querySelector('.binder-page-nav');
-        if (nav) {
-            nav.addEventListener('click', function (e) {
-                var btn = e.target.closest('.binder-page-btn');
-                if (!btn || btn.disabled) return;
-                e.preventDefault();
-                var dir = btn.getAttribute('data-dir');
-                if (dir === 'prev' && page.state.page > 1) {
-                    page.state.page--;
-                    page.fetchAndRender('pushState');
-                } else if (dir === 'next' && page.state.page < totalPages) {
-                    page.state.page++;
-                    page.fetchAndRender('pushState');
-                }
-            });
-
-            // Page input
-            var pageInput = nav.querySelector('.binder-page-input');
-            if (pageInput) {
-                pageInput.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        var val = parseInt(this.value, 10);
-                        if (val >= 1 && val <= totalPages && val !== page.state.page) {
-                            page.state.page = val;
-                            page.fetchAndRender('pushState');
-                        } else {
-                            this.value = page.state.page;
-                        }
-                    }
-                });
-                pageInput.addEventListener('blur', function () {
-                    this.value = page.state.page;
-                });
-            }
-        }
-    }
-
-    function renderBinderCard(card) {
-        var url = '/card/' + encodeURIComponent(setCode) + '/' + encodeURIComponent(card.number);
-        var imgSrc = 'https://cards.scryfall.io/normal/front/' + card.imgSrc;
-        var escapedName = AjaxUtils.escapeHtml(card.name);
-        var escapedNumber = AjaxUtils.escapeHtml(card.number);
-        var escapedId = AjaxUtils.escapeHtml(card.id);
-
-        var html =
-            '<div class="binder-card"' +
-            ' data-card-id="' + escapedId + '"' +
-            ' data-has-foil="' + !!card.hasFoil + '"' +
-            ' data-has-non-foil="' + !!card.hasNonFoil + '">';
-
-        html +=
-            '<a href="' + AjaxUtils.escapeHtml(url) + '" title="' + escapedName + '">' +
-            '<img src="' + AjaxUtils.escapeHtml(imgSrc) + '"' +
-            ' alt="' + escapedName + '"' +
-            ' loading="lazy" width="488" height="680"' +
-            ' class="binder-card-img" />' +
-            '</a>';
-
-        // Hover overlay: name, number, and stepper (if authenticated)
-        html +=
-            '<div class="binder-card-overlay">' +
-            '<span class="binder-card-overlay-name">' + escapedName + '</span>' +
-            '<span class="binder-card-overlay-number">#' + escapedNumber + '</span>';
-
-        if (authenticated) {
-            html += '<div class="binder-card-stepper">' +
-                AjaxUtils.createStepperGroup(card.id, 0, 0, !!card.hasNonFoil, !!card.hasFoil, { compact: true }) +
-                '</div>';
-        }
-
-        html += '</div>';
-        html += '</div>';
-        return html;
-    }
-
-    function renderBinderNav(currentPage, totalPages) {
-        if (totalPages <= 1) return '';
-
-        var prevDisabled = currentPage <= 1 ? ' disabled' : '';
-        var nextDisabled = currentPage >= totalPages ? ' disabled' : '';
-
-        return (
-            '<nav class="binder-page-nav" data-total-pages="' + totalPages + '" aria-label="Binder page navigation">' +
-            '<button type="button" class="binder-page-btn" data-dir="prev"' + prevDisabled + ' aria-label="Previous page">' +
-            '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
-            '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />' +
-            '</svg>' +
-            '</button>' +
-            '<span class="binder-page-indicator">' +
-            '<label class="sr-only" for="set-binder-page-input">Page</label>' +
-            '<input id="set-binder-page-input" type="number" class="binder-page-input"' +
-            ' value="' + currentPage + '" min="1" max="' + totalPages + '"' +
-            ' aria-label="Go to page" />' +
-            '<span class="binder-page-total"> / ' + totalPages + '</span>' +
-            '</span>' +
-            '<button type="button" class="binder-page-btn" data-dir="next"' + nextDisabled + ' aria-label="Next page">' +
-            '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
-            '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />' +
-            '</svg>' +
-            '</button>' +
-            '</nav>'
-        );
-    }
-
-    // ===== Inventory =====
+    // ===== Inventory (Table View Only) =====
 
     function fetchAndRenderInventory(cards, onComplete) {
         var cardIds = cards
@@ -502,44 +396,31 @@ document.addEventListener('DOMContentLoaded', function () {
                     quantityMap[json.data[i].cardId] = json.data[i];
                 }
 
-                if (page.state.view === 'binder') {
-                    // Binder: update stepper quantities
-                    var binderCards = document.querySelectorAll('#set-card-list-ajax .binder-card');
-                    for (var j = 0; j < binderCards.length; j++) {
-                        var card = binderCards[j];
-                        var cardId = card.getAttribute('data-card-id');
-                        var qty = quantityMap[cardId] || { foilQuantity: 0, normalQuantity: 0 };
-                        updateBinderSteppers(card, qty);
-                    }
-                } else {
-                    // Table: render quantity forms
-                    var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
-                    for (var k = 0; k < cells.length; k++) {
-                        var cell = cells[k];
-                        var cellCardId = cell.getAttribute('data-card-id');
-                        var hasFoil = cell.getAttribute('data-has-foil') === 'true';
-                        var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
-                        var cellQty = quantityMap[cellCardId] || { foilQuantity: 0, normalQuantity: 0 };
-                        cell.innerHTML = renderOwnedForms(cellCardId, cellQty, hasFoil, hasNonFoil);
-                    }
+                // Table: render quantity forms
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var k = 0; k < cells.length; k++) {
+                    var cell = cells[k];
+                    var cellCardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    var cellQty = quantityMap[cellCardId] || { foilQuantity: 0, normalQuantity: 0 };
+                    cell.innerHTML = renderOwnedForms(cellCardId, cellQty, hasFoil, hasNonFoil);
                 }
             })
             .catch(function (err) {
                 console.error('Error fetching inventory quantities:', err);
-                if (page.state.view !== 'binder') {
-                    var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
-                    for (var j = 0; j < cells.length; j++) {
-                        var cell = cells[j];
-                        var cardId = cell.getAttribute('data-card-id');
-                        var hasFoil = cell.getAttribute('data-has-foil') === 'true';
-                        var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
-                        cell.innerHTML = renderOwnedForms(
-                            cardId,
-                            { foilQuantity: 0, normalQuantity: 0 },
-                            hasFoil,
-                            hasNonFoil
-                        );
-                    }
+                var cells = document.querySelectorAll('#set-card-list-ajax .owned-cell');
+                for (var j = 0; j < cells.length; j++) {
+                    var cell = cells[j];
+                    var cardId = cell.getAttribute('data-card-id');
+                    var hasFoil = cell.getAttribute('data-has-foil') === 'true';
+                    var hasNonFoil = cell.getAttribute('data-has-non-foil') === 'true';
+                    cell.innerHTML = renderOwnedForms(
+                        cardId,
+                        { foilQuantity: 0, normalQuantity: 0 },
+                        hasFoil,
+                        hasNonFoil
+                    );
                 }
             })
             .finally(function () {
@@ -549,26 +430,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderOwnedForms(cardId, qty, hasFoil, hasNonFoil) {
         return AjaxUtils.createStepperGroup(
-            cardId, qty.normalQuantity, qty.foilQuantity,
-            hasNonFoil, hasFoil, { compact: true }
+            cardId,
+            qty.normalQuantity,
+            qty.foilQuantity,
+            hasNonFoil,
+            hasFoil,
+            { compact: true }
         );
-    }
-
-    function updateBinderSteppers(binderCard, qty) {
-        var steppers = binderCard.querySelectorAll('.inv-stepper');
-        for (var i = 0; i < steppers.length; i++) {
-            var stepper = steppers[i];
-            var isFoil = stepper.getAttribute('data-foil') === 'true';
-            var q = isFoil ? qty.foilQuantity : qty.normalQuantity;
-            var qtyEl = stepper.querySelector('.inv-stepper-qty');
-            qtyEl.textContent = q;
-            qtyEl.classList.toggle('inv-stepper-qty--zero', q === 0);
-            var decBtn = stepper.querySelector('.inv-stepper-btn--dec');
-            if (q <= 0) {
-                decBtn.setAttribute('disabled', '');
-            } else {
-                decBtn.removeAttribute('disabled');
-            }
-        }
     }
 });

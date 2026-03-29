@@ -1,6 +1,6 @@
 {
     "name": "i-want-my-mtg",
-    "version": "1.15.0",
+    "version": "1.16.0",
     "description": "MTG Collection Tracker",
     "author": "Matthew Towles",
     "private": true,
@@ -27,6 +27,7 @@
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
+        "test:frontend": "jest --config ./test/jest-frontend.json",
         "test:integ": "./scripts/test-integ.sh",
         "etl": "./scripts/etl.sh",
         "typeorm": "NODE_OPTIONS='-r tsconfig-paths/register' typeorm-ts-node-commonjs",
@@ -90,6 +91,7 @@
         "@typescript-eslint/parser": "^8.0.0",
         "eslint": "^8.57.1",
         "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
         "prettier": "^3.8.1",
         "supertest": "^6.3.4",
         "tailwindcss": "^3.4.18",

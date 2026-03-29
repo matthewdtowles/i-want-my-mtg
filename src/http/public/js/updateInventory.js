@@ -60,7 +60,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const qty = parseInt(newQty) || 0;
 
             // Update ALL steppers for this card+variant across the page
-            var allSteppers = document.querySelectorAll('.inv-stepper[data-card-id="' + cardId + '"][data-foil="' + isFoil + '"]');
+            var allSteppers = document.querySelectorAll(
+                '.inv-stepper[data-card-id="' + cardId + '"][data-foil="' + isFoil + '"]'
+            );
             for (var i = 0; i < allSteppers.length; i++) {
                 var el = allSteppers[i].querySelector('.inv-stepper-qty');
                 if (el) {
@@ -81,20 +83,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Update binder card owned/unowned state if inside a binder
+            // Update binder card owned/unowned state if inside a binder with showOwnedState
             var binderCard = stepper.closest('.binder-card');
             if (binderCard) {
-                var totalOwned = 0;
-                var cardSteppers = binderCard.querySelectorAll('.inv-stepper-qty');
-                for (var j = 0; j < cardSteppers.length; j++) {
-                    totalOwned += parseInt(cardSteppers[j].textContent) || 0;
+                var binderWrapper = binderCard.closest('[data-show-owned-state]');
+                if (binderWrapper) {
+                    var totalOwned = 0;
+                    var cardSteppers = binderCard.querySelectorAll('.inv-stepper-qty');
+                    for (var j = 0; j < cardSteppers.length; j++) {
+                        totalOwned += parseInt(cardSteppers[j].textContent) || 0;
+                    }
+                    binderCard.classList.toggle('binder-card-owned', totalOwned > 0);
+                    binderCard.classList.toggle('binder-card-unowned', totalOwned === 0);
                 }
-                binderCard.classList.toggle('binder-card-owned', totalOwned > 0);
-                binderCard.classList.toggle('binder-card-unowned', totalOwned === 0);
             }
 
             // Show transaction prompt AFTER DOM updates (guarded — AjaxUtils may not be loaded)
             showTransactionPrompt(incBtn ? 'BUY' : 'SELL', isFoil);
+
+            // Notify binder state machine to sync cache
+            if (typeof AppState !== 'undefined' && AppState.emit) {
+                AppState.emit('inventory:updated', {
+                    cardId: cardId,
+                    isFoil: isFoil,
+                    quantity: qty,
+                });
+            }
         } finally {
             busySteppers[busyKey] = false;
         }

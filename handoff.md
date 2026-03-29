@@ -1,102 +1,72 @@
-# Performance Optimization Handoff
+# Session Handoff
 
-## What Was Done
+Branch: `bulk-import`
 
-### Session 1: Local Lighthouse Optimization (all scores to 95+ locally)
+## What was done
 
-- **Deferred font preloads** — Removed eager `<link rel="preload">` for keyrune and Font Awesome fonts that were competing with CSS on slow 4G. Fonts now load naturally when their deferred CSS activates.
-- **Lazy-loaded Chart.js** — Created `chartLoader.js` using IntersectionObserver to load Chart.js only when a chart scrolls into view (was 72KB blocking on every card/set page).
-- **Prefetch throttling** — Added slow-connection detection (`navigator.connection.effectiveType`) to skip eager nav-link prefetching on non-4G connections.
-- **LCP preloads** — Added `lcpImageUrl` to card-detail and home pages for `<link rel="preload">` of the largest contentful paint element.
-- **Image optimization** — Converted logo and background to WebP. Added `width`/`height`, `loading="lazy"`, `fetchpriority` attributes across all images.
-- **CSS reduction** — Fixed Tailwind content paths (200KB -> 122KB), removed unused plugin, added `--minify`.
-- **Build pipeline** — Created separate dev/prod asset pipelines: source stays readable, Terser + Tailwind `--minify` run only in Docker production build. JS minified to `dist/http/public/js/`, CSS to `dist/http/public/css/`.
-- **CLS fixes** — Added CSS placeholders for `.ss` (keyrune) and `.ms` (mana) icon classes to reserve space before deferred CSS loads.
-- **SEO** — Added dynamic `<title>`, `<meta description>`, and `robots` directives to all public pages.
-- **Accessibility** — Fixed heading hierarchy, added `aria-label` to icon-only buttons, fixed color contrast issues.
-- **Best Practices** — Fixed CORS errors from protocol-relative URLs, added favicon.
+### 1. Card preview context menu fix
+**File:** `src/http/public/js/cardPreview.js`
 
-### Session 2: Production Optimization (this session)
+Added `handleContextMenu` listener that calls `preventDefault()` when a long-press is active. Suppresses the browser's native context menu (right-click on desktop, press-and-hold menu on mobile) during card image previews without affecting normal context menu behavior elsewhere.
 
-After deploying to production, scores dropped significantly due to issues not visible locally.
+### 2. Roadmap reordering
+**File:** `roadmap.md`
 
-**Changes made:**
+Reordered incomplete 2.x items:
+- **2.8** Bulk Upload Transactions (done)
+- **2.9** Improve Site Copy and UX Guidance
+- **2.10** Restructure Set Blocking UI for Set Lists (new item)
+- **2.11** Support Flavor Name
+- **2.12** Price Notifications (moved to last)
 
-1. **Self-hosted mana-font with woff2** — The CDN CSS only declares `woff` (408KB). Downloaded `mana.woff2` (187KB, 54% smaller) and created local CSS with woff2 as primary format. Updated `card.hbs` and `set.hbs`.
-   - New files: `src/http/public/fonts/mana.woff2`, `src/http/public/css/mana.css`
+### 3. Bulk Upload Transactions (roadmap 2.8) - complete
 
-2. **CLS fix (set-detail)** — Updated `.ss` and `.ms` placeholders in `app.css` to match the full computed styles of keyrune/mana-font CSS, including `font` shorthand, `text-rendering`, `transform`, and `::before` pseudo-element. Desktop CLS: 0.291 -> 0, Mobile: 0.144 -> 0.001.
+#### Shared extraction (hexagonal architecture)
+Extracted card lookup and foil resolution logic that was inline in `InventoryImportService` into a shared injectable service. Both inventory and transaction import now use it.
 
-3. **Prefetch delay** — Added 3-second `setTimeout` before eager nav-link prefetching. Lighthouse uses simulated throttling (real connection stays fast), so `effectiveType === '4g'` and all 7 nav links (281KB) were prefetched during critical window.
+- `src/core/import/import.types.ts` — Shared `ImportError` and `ImportResult` interfaces
+- `src/core/import/card-import-resolver.ts` — Card resolution by id, set_code+number, or name+set_code; foil resolution with fallback logic
+- `src/core/import/import.module.ts` — NestJS module providing `CardImportResolver`
+- `src/core/inventory/import/inventory-import.types.ts` — Re-exports shared types; keeps inventory-specific `CardImportRow` and `SetImportRow`
 
-4. **Logo optimization** — Resized from 1072x992px (55KB) to 160x160px (4KB). Displayed at 80x80 with 2x retina coverage.
+#### Transaction import (core)
+- `src/core/transaction/import/transaction-import.types.ts` — `TransactionImportRow` with 12 CSV columns: id, name, set_code, number, type, quantity, price_per_unit, foil, date, source, fees, notes
+- `src/core/transaction/import/transaction-import.service.ts` — Processes rows sequentially, uses `CardImportResolver` for card lookup, calls `TransactionService.create()` for each valid row (reuses existing inventory-transaction consistency: BUY increments inventory, SELL validates remaining quantity). Best-effort: valid rows succeed even if others fail.
 
-5. **Removed solo jazz background image** — Eliminated 21KB background image load and its preload from the home page.
+#### CSV parser (HTTP layer)
+- `src/http/hbs/transaction/parsers/transaction-csv.parser.ts` — Parses CSV buffer, validates headers, trims values, caps at 2000 rows
 
-6. **Lighthouse prod script** — Added `npm run lighthouse:prod` to run audits against `https://iwantmymtg.net` without passing URLs.
+#### Controller & orchestrator wiring
+- `src/http/hbs/transaction/transaction.controller.ts` — `POST /transactions/import` with `FileInterceptor`, `UploadRateLimitGuard`, renders shared `importResult` template with dynamic back links
+- `src/http/hbs/transaction/transaction.orchestrator.ts` — `importTransactions()` delegates to service, builds error CSV for download
 
-7. **Updated card-detail test page** — Changed from `/card/fdn/176` to `/card/ecl/273` for more complete page feature coverage.
+#### Template updates
+- `src/http/views/importResult.hbs` — Made back links dynamic (`backUrl`, `backLabel`, `importUrl` with inventory fallbacks) so both inventory and transaction imports share the template
+- `src/http/views/transactions.hbs` — Added "Import CSV" button in header actions and in empty state, with hidden file input forms posting to `/transactions/import`
 
-## What Still Needs to Be Done
+#### Module registrations
+- `src/core/core.module.ts` — Added `ImportModule`
+- `src/core/inventory/inventory.module.ts` — Added `ImportModule` import
+- `src/core/transaction/transaction.module.ts` — Added `ImportModule` import, registered `TransactionImportService`
+- `src/http/hbs/hbs.module.ts` — Added `UploadRateLimitGuard` as shared provider
 
-### Critical: HTML Compression in Production (Infrastructure)
+#### Refactored
+- `src/core/inventory/import/inventory-import.service.ts` — Now injects `CardImportResolver` instead of doing inline card lookup. Removed private `resolveFoil` (delegated to resolver). `parseBool` kept for set-specific boolean fields.
 
-**This is the highest-impact remaining fix.** HTML responses from production are served uncompressed (42-140KB). Static files get brotli from CloudFront, but dynamic HTML does not. The Express `compression()` middleware works correctly (confirmed locally), but something in the CloudFront -> Lightsail path strips or bypasses it.
+### 4. Dev cache-busting version bump
+**File:** `package.json`
 
-**Action items:**
-- In CloudFront distribution: verify "Compress Objects Automatically" is enabled for HTML paths
-- Ensure the cache policy includes `Accept-Encoding` in the cache key
-- Verify the origin request policy forwards `Accept-Encoding` to the origin
+Added `npm run bump:dev` — runs `npm version prerelease --preid=rc --no-git-tag-version`. Produces `1.16.2-rc.0`, `1.16.2-rc.1`, etc. for local SW cache busting without real version bumps.
 
-**Estimated savings:**
+## Tests
+- 49 new tests added (19 CardImportResolver, 21 TransactionImportService, 9 TransactionCsvParser)
+- 788 total tests passing across 54 suites
+- Existing InventoryImportService and TransactionOrchestrator tests updated for new dependencies
 
-| Page | Uncompressed | ~Gzipped | Savings on 4G |
-|------|-------------|----------|---------------|
-| home | 42KB | ~9KB | ~165ms |
-| sets | 43KB | ~9KB | ~170ms |
-| set-detail | 140KB | ~25KB | ~575ms |
-| search | 46KB | ~10KB | ~180ms |
-| card-detail | 45KB | ~10KB | ~175ms |
+## Key design decision
+Transaction import reuses `TransactionService.create()` which already enforces inventory-transaction consistency. The shared `CardImportResolver` eliminates card lookup duplication. No consistency logic was duplicated.
 
-### Remaining Lighthouse Issues (non-performance)
-
-**SEO (66 on search + login):**
-- Both pages have `<meta name="robots" content="noindex">` — Lighthouse flags this as "blocked from indexing"
-- This is intentional for login. For search, consider whether search results pages should be indexable.
-
-**Accessibility (95-96 on most pages):**
-- Color contrast failures on `btn-secondary` and `header-subtitle` (most pages)
-- Color contrast failure on `btn-primary` (login page)
-
-**Best Practices (96 on search mobile):**
-- Minor issue, likely third-party related
-
-## Current Scores
-
-### Local (post-optimization, perf-only run)
-
-| Page | Mobile | Desktop |
-|------|--------|---------|
-| home | 100 | 100 |
-| sets | 100 | 100 |
-| set-detail | 100 | 100 |
-| search | 97 | 99 |
-| card-detail | 91 | 99 |
-| spoilers | 100 | 100 |
-| login | 100 | 100 |
-
-### Production (pre-optimization baseline)
-
-| Page | Mobile Perf | Desktop Perf | A11y | BP | SEO |
-|------|------------|-------------|------|-----|-----|
-| home | 81 | 100 | 96 | 100 | 100 |
-| sets | 91 | 100 | 96 | 100 | 100 |
-| set-detail | 74 | 85 | 96 | 100 | 100 |
-| search | 81 | 98 | 96 | 96 | 66 |
-| card-detail | 65 | 99 | 96 | 100 | 100 |
-| spoilers | 100 | 100 | 100 | 100 | 100 |
-| login | 100 | 100 | 95 | 100 | 66 |
-
-### Expected Production (after deploy + CloudFront fix)
-
-All performance scores 95+ mobile and desktop. Card-detail may land 90-95 due to external Scryfall card image (LCP element) latency.
+## Not done / next steps
+- Integration tests for the transaction import endpoint
+- The import-export guide page (`/inventory/import-export-guide`) doesn't document the transaction CSV format yet — natural fit for 2.9 (site copy)
+- Visual testing of the import flow in Docker (build, upload a CSV, verify result page)

@@ -251,12 +251,16 @@
 
 ### 2.8 Feature: Bulk Upload Transactions
 
-- [ ] Design bulk upload flow (CSV file format, UI for upload)
-- [ ] Create CSV template/documentation for expected format
-- [ ] Implement file upload endpoint and CSV parsing
-- [ ] Validate and preview parsed transactions before committing
-- [ ] Handle errors and partial failures (report which rows failed and why)
-- [ ] Add bulk upload UI to transactions page
+- [x] Design bulk upload flow (CSV file format, UI for upload)
+- [x] Create CSV template/documentation for expected format
+- [x] Extract shared CardImportResolver and import types (reused by inventory and transaction import)
+- [x] Implement file upload endpoint and CSV parsing (TransactionCsvParser, POST /transactions/import)
+- [x] Validate and report errors per row (card resolution, type, quantity, price, date, fees)
+- [x] Handle errors and partial failures (best-effort processing, error CSV download)
+- [x] Reuse TransactionService.create() for inventory-transaction consistency (no duplicated logic)
+- [x] Refactor InventoryImportService to use shared CardImportResolver
+- [x] Reuse importResult template with dynamic back links
+- [x] Add bulk upload UI to transactions page (Import CSV button in header + empty state)
 
 ### 2.9 Improve Site Copy and UX Guidance
 

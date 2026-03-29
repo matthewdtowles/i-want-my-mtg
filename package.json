@@ -35,7 +35,8 @@
         "lighthouse:prod": "./scripts/lighthouse.sh --base-url=https://iwantmymtg.net",
         "bump": "npm version patch --no-git-tag-version",
         "bump:minor": "npm version minor --no-git-tag-version",
-        "bump:major": "npm version major --no-git-tag-version"
+        "bump:major": "npm version major --no-git-tag-version",
+        "bump:dev": "npm version prerelease --preid=rc --no-git-tag-version"
     },
     "dependencies": {
         "@nestjs/common": "^10.0.0",

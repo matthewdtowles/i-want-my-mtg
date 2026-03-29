@@ -1,3 +1,5 @@
+export { ImportError, ImportResult } from 'src/core/import/import.types';
+
 export interface CardImportRow {
     id?: string;
     name?: string;
@@ -12,21 +14,4 @@ export interface SetImportRow {
     set_name?: string;
     foil?: string;
     include_variants?: string;
-}
-
-export interface ImportError {
-    row: number;
-    name?: string;
-    set_code?: string;
-    number?: string;
-    quantity?: string;
-    foil?: string;
-    error: string;
-}
-
-export interface ImportResult {
-    saved: number;
-    skipped: number;
-    deleted: number;
-    errors: ImportError[];
 }

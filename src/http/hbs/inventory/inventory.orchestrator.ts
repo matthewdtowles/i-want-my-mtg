@@ -26,7 +26,7 @@ import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/hbs/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
-import { ImportResultDto } from './dto/import-result.dto';
+import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryResponseDto } from './dto/inventory.response.dto';

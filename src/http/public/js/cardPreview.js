@@ -153,6 +153,12 @@
         isLongPress = false;
     }
 
+    function handleContextMenu(event) {
+        if (isLongPress || longPressTimer) {
+            event.preventDefault();
+        }
+    }
+
     // ── Keyboard: focus ─────────────────────────────────────────────
 
     function handleFocusIn(event) {
@@ -192,8 +198,9 @@
         document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
         document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
         document.body.addEventListener('touchend', handleTouchEnd);
-        // Suppress navigation after long-press via the synthetic click
+        // Suppress navigation and context menu after long-press
         document.body.addEventListener('click', handleClick);
+        document.body.addEventListener('contextmenu', handleContextMenu);
         window.addEventListener('scroll', handleScroll, { passive: true });
         initialized = true;
     }

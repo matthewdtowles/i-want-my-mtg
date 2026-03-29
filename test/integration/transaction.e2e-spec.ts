@@ -76,14 +76,35 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
             expect(res.body.data.quantity).toBe(6);
         });
 
-        it('GET /transactions/export returns CSV', async () => {
+        it('GET /transactions/export returns 401 when unauthenticated', async () => {
+            await request(app.getHttpServer())
+                .get('/transactions/export')
+                .expect(401);
+        });
+
+        it('GET /transactions/export returns CSV with correct headers and row data', async () => {
             const res = await request(app.getHttpServer())
                 .get('/transactions/export')
                 .set('Cookie', authCookie)
                 .expect(200);
+
             expect(res.headers['content-type']).toContain('text/csv');
-            expect(res.text).toContain('Date');
-            expect(res.text).toContain('Test Angel');
+            expect(res.headers['content-disposition']).toContain('transactions.csv');
+
+            const lines = res.text.trim().split('\n');
+            expect(lines[0]).toBe('Date,Type,Card Name,Set,Collector #,Foil,Quantity,Price Per Unit,Total,Fees,Source,Notes');
+
+            // The BUY transaction was created with qty=4 then updated to qty=6, price=3.5, source='Test LGS'
+            const dataRow = lines[1];
+            expect(dataRow).toContain('BUY');
+            expect(dataRow).toContain('Test Angel');
+            expect(dataRow).toContain('TST');
+            expect(dataRow).toContain('1');         // Collector #
+            expect(dataRow).toContain('No');        // Foil
+            expect(dataRow).toContain('6');         // Quantity after update
+            expect(dataRow).toContain('3.50');      // Price Per Unit
+            expect(dataRow).toContain('21.00');     // Total (6 * 3.5)
+            expect(dataRow).toContain('Test LGS'); // Source
         });
 
         it('DELETE /transactions/:id deletes the transaction', async () => {

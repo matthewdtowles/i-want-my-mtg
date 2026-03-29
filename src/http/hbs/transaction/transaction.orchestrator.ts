@@ -1,8 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { CardService } from 'src/core/card/card.service';
+import { ImportError } from 'src/core/import/import.types';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { TransactionImportService } from 'src/core/transaction/import/transaction-import.service';
+import { TransactionImportRow } from 'src/core/transaction/import/transaction-import.types';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -11,6 +14,7 @@ import { PaginationView } from 'src/http/hbs/list/pagination.view';
 import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
+import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CostBasisResponseDto } from './dto/cost-basis.response.dto';
@@ -26,6 +30,7 @@ export class TransactionOrchestrator {
 
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,
+        @Inject(TransactionImportService) private readonly importService: TransactionImportService,
         @Inject(CardService) private readonly cardService: CardService
     ) {
         this.LOGGER.debug(`Initialized`);
@@ -145,6 +150,27 @@ export class TransactionOrchestrator {
         }
     }
 
+    async importTransactions(
+        rows: TransactionImportRow[],
+        req: AuthenticatedRequest
+    ): Promise<ImportResultDto> {
+        this.LOGGER.debug(`importTransactions for user ${req.user?.id}: ${rows.length} rows.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const result = await this.importService.importTransactions(rows, req.user.id);
+            const errorCsv =
+                result.errors.length > 0
+                    ? await this.buildImportErrorCsv(result.errors)
+                    : undefined;
+            return new ImportResultDto({ ...result, errorCsv });
+        } catch (error) {
+            this.LOGGER.debug(
+                `Error importing transactions for user ${req.user?.id}: ${error?.message}`
+            );
+            return HttpErrorHandler.toHttpException(error, 'importTransactions');
+        }
+    }
+
     async getCostBasis(
         userId: number,
         cardId: string,
@@ -241,6 +267,25 @@ export class TransactionOrchestrator {
             this.LOGGER.debug(`Error exporting CSV for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'exportCsv');
         }
+    }
+
+    private buildImportErrorCsv(errors: ImportError[]): Promise<string> {
+        return new Promise((resolve, reject) => {
+            stringify(
+                errors.map((e) => ({
+                    row: e.row,
+                    name: e.name ?? '',
+                    set_code: e.set_code ?? '',
+                    number: e.number ?? '',
+                    error: e.error,
+                })),
+                {
+                    header: true,
+                    columns: ['row', 'name', 'set_code', 'number', 'error'],
+                },
+                (err, out) => (err ? reject(err) : resolve(out))
+            );
+        });
     }
 
     private async buildCardMap(

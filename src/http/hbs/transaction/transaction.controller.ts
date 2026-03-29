@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -14,17 +15,40 @@ import {
     Render,
     Req,
     Res,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { memoryStorage } from 'multer';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { UploadRateLimitGuard } from 'src/http/hbs/inventory/guards/upload-rate-limit.guard';
+import { TransactionCsvParser } from './parsers/transaction-csv.parser';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionUpdateRequestDto } from './dto/transaction.update-request.dto';
 import { TransactionViewDto } from './dto/transaction.view.dto';
 import { TransactionOrchestrator } from './transaction.orchestrator';
+
+const CSV_MIME_TYPES = new Set([
+    'text/csv',
+    'text/plain',
+    'application/csv',
+    'application/octet-stream',
+]);
+
+const csvUploadInterceptor = FileInterceptor('file', {
+    storage: memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+    fileFilter: (_req, file, cb) => {
+        const validExtension = file.originalname.toLowerCase().endsWith('.csv');
+        const validMime = CSV_MIME_TYPES.has(file.mimetype);
+        cb(null, validExtension && validMime);
+    },
+});
 
 @Controller('transactions')
 export class TransactionController {
@@ -32,6 +56,29 @@ export class TransactionController {
         @Inject(TransactionOrchestrator)
         private readonly orchestrator: TransactionOrchestrator
     ) {}
+
+    @UseGuards(JwtAuthGuard, UploadRateLimitGuard)
+    @Post('import')
+    @UseInterceptors(csvUploadInterceptor)
+    @Render('importResult')
+    async importTransactions(
+        @UploadedFile() file: Express.Multer.File,
+        @Req() req: AuthenticatedRequest
+    ) {
+        if (!file) {
+            throw new BadRequestException('No CSV file provided or file type not accepted');
+        }
+        const rows = TransactionCsvParser.parse(file.buffer);
+        const result = await this.orchestrator.importTransactions(rows, req);
+        return {
+            result,
+            backUrl: '/transactions',
+            backLabel: 'View Transactions',
+            importUrl: '/transactions#import',
+            entityLabel: 'transaction',
+            savedVerb: 'saved',
+        };
+    }
 
     @UseGuards(JwtAuthGuard)
     @Get()

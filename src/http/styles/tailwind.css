@@ -620,6 +620,7 @@
            dark:from-purple-400 dark:via-teal-400 dark:to-purple-400
            bg-clip-text text-transparent;
     font-size: clamp(1.25rem, 3vw, 1.5rem);
+    line-height: 1.3;
     overflow-wrap: break-word;
 }
 
@@ -1032,6 +1033,9 @@
 
 .price-tile-value {
     font-size: clamp(1rem, 2.5vw, 1.875rem);
+    line-height: 1.3;
+    overflow-wrap: break-word;
+    word-break: break-word;
     @apply font-bold;
 }
 

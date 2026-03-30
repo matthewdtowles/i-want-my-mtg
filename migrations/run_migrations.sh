@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Supports two modes:
-# 1. DATABASE_URL set — connect directly (managed DB / prod)
-# 2. POSTGRES_* vars set — connect via libpq env vars (Docker / dev)
+# 1. DATABASE_URL set - connect directly (managed DB / prod)
+# 2. POSTGRES_* vars set - connect via libpq env vars (Docker / dev)
 
 if [ -n "${DATABASE_URL:-}" ]; then
   USE_URL=true

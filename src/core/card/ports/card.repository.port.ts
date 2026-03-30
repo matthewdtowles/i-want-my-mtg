@@ -112,7 +112,7 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
 
     /**
      * Finds all Card entities with a given name in a specific set (case-insensitive exact match).
-     * Returns array — caller errors if length > 1 (ambiguous, e.g. basic lands).
+     * Returns array - caller errors if length > 1 (ambiguous, e.g. basic lands).
      * @param name Exact card name (case-insensitive).
      * @param setCode Set code.
      * @returns Promise resolving to an array of matching Card entities.

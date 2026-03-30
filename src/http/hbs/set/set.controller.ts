@@ -55,7 +55,7 @@ export class SetController {
             ],
             options
         );
-        view.title = 'Sets — I Want My MTG';
+        view.title = 'Sets - I Want My MTG';
         view.metaDescription =
             'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
         view.indexable = true;
@@ -117,7 +117,7 @@ export class SetController {
     ): Promise<SetViewDto> {
         const options = new SafeQueryOptions(query);
         const view = await this.setOrchestrator.findBySetCode(req, code, options);
-        view.title = `${view.set?.name || code.toUpperCase()} — I Want My MTG`;
+        view.title = `${view.set?.name || code.toUpperCase()} - I Want My MTG`;
         view.metaDescription = `View cards, prices, and collection stats for ${view.set?.name || code.toUpperCase()}.`;
         view.indexable = true;
         view.canonicalUrl = `${this.appUrl}/sets/${code}`;

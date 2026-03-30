@@ -425,7 +425,7 @@
                         store.setPhase('rendering');
                         renderOwnedPage();
                     } else if (isNowOwned && idx === -1) {
-                        // Card not in owned list — find it in normal cache
+                        // Card not in owned list - find it in normal cache
                         for (var cp in cache) {
                             if (cache.hasOwnProperty(cp)) {
                                 for (var ci = 0; ci < cache[cp].cards.length; ci++) {

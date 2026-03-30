@@ -27,16 +27,16 @@ After setup, the app is available at:
 
 All scripts are in the `scripts/` directory and designed to be run from the project root.
 
-| Script | Description |
-| ------ | ----------- |
-| `./scripts/setup.sh` | Full dev environment setup |
-| `./scripts/etl.sh` | Run Scry ETL commands |
-| `./scripts/logs.sh` | View Docker service logs |
-| `./scripts/migrate.sh` | Run database migrations |
-| `./scripts/reset-db.sh` | Destroy and recreate the database |
-| `./scripts/db-backup.sh` | Back up database to a SQL file |
-| `./scripts/test-integ.sh` | Run integration tests (requires Docker) |
-| `./scripts/lint.sh` | Run linting and format checks |
+| Script                    | Description                              |
+| ------------------------- | ---------------------------------------- |
+| `./scripts/setup.sh`      | Full dev environment setup               |
+| `./scripts/etl.sh`        | Run Scry ETL commands                    |
+| `./scripts/logs.sh`       | View Docker service logs                 |
+| `./scripts/migrate.sh`    | Run database migrations                  |
+| `./scripts/reset-db.sh`   | Destroy and recreate the database        |
+| `./scripts/db-backup.sh`  | Back up database to a SQL file           |
+| `./scripts/test-integ.sh` | Run integration tests (requires Docker)  |
+| `./scripts/lint.sh`       | Run linting and format checks            |
 | `./scripts/lighthouse.sh` | Run Lighthouse audits (mobile + desktop) |
 
 ### Testing
@@ -97,6 +97,7 @@ npm run lighthouse -- --category=performance    # Only run performance audits
 Requires Chrome/Chromium and `lighthouse` (`npm install -g lighthouse` or it uses `npx`).
 
 Reports are saved to `lighthouse-reports/<timestamp>/` with separate `mobile/` and `desktop/` directories, each containing:
+
 - HTML reports (open in browser for full details)
 - JSON reports (for programmatic comparison)
 - `summary.csv` and `summary.txt` (score overview)
@@ -115,6 +116,7 @@ Reports are saved to `lighthouse-reports/<timestamp>/` with separate `mobile/` a
 ### Development
 
 After any code change, rebuild and restart:
+
 ```bash
 docker compose build web && docker compose up -d web
 ```
@@ -122,6 +124,7 @@ docker compose build web && docker compose up -d web
 This runs `build:prod` inside Docker which handles everything: clean dist, build mana font, compile TypeScript, minify CSS, minify JS, inject service worker version. No need to run individual build scripts.
 
 Other commands:
+
 ```bash
 docker compose up -d               # Start all services
 docker compose down                # Stop all services
@@ -156,9 +159,9 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 ### Bumping the Version
 
 ```bash
-npm run bump          # Patch bump (1.0.0 → 1.0.1) — bug fixes, minor changes
-npm run bump:minor    # Minor bump (1.0.0 → 1.1.0) — new features
-npm run bump:major    # Major bump (1.0.0 → 2.0.0) — breaking changes
+npm run bump          # Patch bump (1.0.0 → 1.0.1) - bug fixes, minor changes
+npm run bump:minor    # Minor bump (1.0.0 → 1.1.0) - new features
+npm run bump:major    # Major bump (1.0.0 → 2.0.0) - breaking changes
 ```
 
 These commands update the `version` field in `package.json` without creating a git tag. Include the version bump in your PR commit.
@@ -173,16 +176,16 @@ These commands update the `version` field in `package.json` without creating a g
 [optional footer(s)]
 ```
 
-| Type | Use For | Version Bump |
-| ---- | ------- | ------------ |
-| `fix:` | Bug fixes | Patch |
-| `feat:` | New features | Minor |
-| `feat!:` or `BREAKING CHANGE` footer | Breaking changes | Major |
-| `docs:`, `chore:`, `refactor:`, `test:`, `style:`, `ci:` | Non-functional changes | Patch |
+| Type                                                     | Use For                | Version Bump |
+| -------------------------------------------------------- | ---------------------- | ------------ |
+| `fix:`                                                   | Bug fixes              | Patch        |
+| `feat:`                                                  | New features           | Minor        |
+| `feat!:` or `BREAKING CHANGE` footer                     | Breaking changes       | Major        |
+| `docs:`, `chore:`, `refactor:`, `test:`, `style:`, `ci:` | Non-functional changes | Patch        |
 
 ### Tips
 
-- Use the type that best describes the change — `feat` for new functionality, `fix` for bug fixes
+- Use the type that best describes the change - `feat` for new functionality, `fix` for bug fixes
 - Scope is optional but useful: `feat(transactions): add FIFO cost basis`
 - Run the appropriate bump command before opening your PR
 - If a PR includes multiple types of changes, bump to the highest level (e.g., any `feat:` = minor bump)
@@ -194,6 +197,7 @@ These commands update the `version` field in `package.json` without creating a g
 `build:prod` is the single build command used by Docker and CI. It runs all sub-steps in order: clean dist, build mana font, compile TypeScript, minify CSS, minify JS, inject service worker version. You should not need to run individual build scripts directly.
 
 For local development outside Docker:
+
 ```bash
 npm run build:assets              # Rebuild CSS/JS/SW without recompiling TS
 npm run build:css                 # Rebuild Tailwind CSS only (after style changes)
@@ -207,9 +211,10 @@ The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholde
 ### Production
 
 Deploys automatically via GitHub Actions on push to `main`:
-1. **test** — Runs unit and integration tests
-2. **tag** — Creates a GitHub release from `package.json` version
-3. **build** — Builds Docker image using the `production` target and pushes to `ghcr.io`
-4. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`
+
+1. **test** - Runs unit and integration tests
+2. **tag** - Creates a GitHub release from `package.json` version
+3. **build** - Builds Docker image using the `production` target and pushes to `ghcr.io`
+4. **deploy** - SSH deploy to Lightsail via `.github/scripts/deploy.sh`
 
 See `.github/workflows/deploy.yml` for full pipeline.

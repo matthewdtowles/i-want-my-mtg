@@ -1,4 +1,10 @@
-import { BadRequestException, HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
@@ -333,7 +339,7 @@ export class InventoryOrchestrator {
             cardTotal,
             completionRate: completionRate(ownedTotal, cardTotal),
             ownedValue: toDollar(ownedValue),
-            title: `My ${set.name} Binder — I Want My MTG`,
+            title: `My ${set.name} Binder - I Want My MTG`,
             breadcrumbs: [
                 { label: 'Home', url: '/' },
                 { label: 'Inventory', url: '/inventory' },

@@ -1,42 +1,64 @@
-{{~!--
+{{~!
   Normal + foil quantity controls for a card in a set list.
   Renders one or two +/- forms depending on card variants.
 
   Parameters:
-    card — { cardId, hasNormal, hasFoil, normalQuantity, foilQuantity }
---~}}
+    card - { cardId, hasNormal, hasFoil, normalQuantity, foilQuantity }
+~}}
 {{#if card.hasNormal}}
-<form class="quantity-form quantity-form-normal"
-    data-item-id="{{card.cardId}}" data-foil="false">
+    <form
+        class='quantity-form quantity-form-normal'
+        data-item-id='{{card.cardId}}'
+        data-foil='false'
+    >
 
-    <input type="hidden" name="cardId" value="{{card.cardId}}" />
+        <input type='hidden' name='cardId' value='{{card.cardId}}' />
 
-    <button type="button"
-        class="increment-quantity inventory-controller-button-normal hover:text-purple-400 active:text-purple-600">+</button>
+        <button
+            type='button'
+            class='increment-quantity inventory-controller-button-normal hover:text-purple-400 active:text-purple-600'
+        >+</button>
 
-    <input type="number" name="quantity-owned" class="quantity-owned"
-        value="{{card.normalQuantity}}" data-id="{{card.cardId}}" aria-label="Normal quantity owned" />
+        <input
+            type='number'
+            name='quantity-owned'
+            class='quantity-owned'
+            value='{{card.normalQuantity}}'
+            data-id='{{card.cardId}}'
+            aria-label='Normal quantity owned'
+        />
 
-    <input type="hidden" name="isFoil" value="false" />
-    <button type="button"
-        class="decrement-quantity inventory-controller-button-normal hover:text-red-400 active:text-red-600">-</button>
-</form>
+        <input type='hidden' name='isFoil' value='false' />
+        <button
+            type='button'
+            class='decrement-quantity inventory-controller-button-normal hover:text-red-400 active:text-red-600'
+        >-</button>
+    </form>
 {{/if}}
 
 {{#if card.hasFoil}}
-<form class="quantity-form quantity-form-foil"
-    data-item-id="{{card.cardId}}" data-foil="true">
+    <form class='quantity-form quantity-form-foil' data-item-id='{{card.cardId}}' data-foil='true'>
 
-    <input type="hidden" name="cardId" value="{{card.cardId}}" />
+        <input type='hidden' name='cardId' value='{{card.cardId}}' />
 
-    <button type="button"
-        class="increment-quantity inventory-controller-button-foil hover:text-purple-400 active:text-purple-600">+</button>
+        <button
+            type='button'
+            class='increment-quantity inventory-controller-button-foil hover:text-purple-400 active:text-purple-600'
+        >+</button>
 
-    <input type="number" name="quantity-owned" class="quantity-owned"
-        value="{{card.foilQuantity}}" data-id="{{card.cardId}}" aria-label="Foil quantity owned" />
+        <input
+            type='number'
+            name='quantity-owned'
+            class='quantity-owned'
+            value='{{card.foilQuantity}}'
+            data-id='{{card.cardId}}'
+            aria-label='Foil quantity owned'
+        />
 
-    <input type="hidden" name="isFoil" value="true" />
-    <button type="button"
-        class="decrement-quantity inventory-controller-button-foil hover:text-red-400 active:text-red-600">-</button>
-</form>
+        <input type='hidden' name='isFoil' value='true' />
+        <button
+            type='button'
+            class='decrement-quantity inventory-controller-button-foil hover:text-red-400 active:text-red-600'
+        >-</button>
+    </form>
 {{/if}}

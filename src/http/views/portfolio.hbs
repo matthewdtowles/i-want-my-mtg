@@ -9,7 +9,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                 {{>statCard label="Current Value" value=this.summary.totalValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) — the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first — the standard method for tracking real gains."}}{{/if}}</span>
+                    <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) - the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first - the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
                 </div>
                 <div class="stat-card stat-card-highlight">

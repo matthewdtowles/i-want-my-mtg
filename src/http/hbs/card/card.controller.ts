@@ -45,8 +45,8 @@ export class CardController {
         const cardName = view.card?.name || 'Card';
         const setName = view.card?.setName || setCode.toUpperCase();
         const cardUrl = buildCardUrl(setCode, setNumber);
-        view.title = `${cardName} (${setName}) — I Want My MTG`;
-        view.metaDescription = `${cardName} from ${setName} — prices, legalities, and other printings.`;
+        view.title = `${cardName} (${setName}) - I Want My MTG`;
+        view.metaDescription = `${cardName} from ${setName} - prices, legalities, and other printings.`;
         view.indexable = true;
         view.lcpImageUrl = view.card?.imgSrc;
         view.canonicalUrl = `${this.appUrl}${cardUrl}`;

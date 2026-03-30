@@ -33,7 +33,7 @@ describe('formatUtcDate', () => {
     });
 
     it('should use UTC to avoid timezone issues', () => {
-        // Date at midnight UTC on Jan 1 — local timezone could shift to Dec 31
+        // Date at midnight UTC on Jan 1 - local timezone could shift to Dec 31
         const date = new Date(Date.UTC(2024, 0, 1, 0, 0, 0));
         expect(formatUtcDate(date)).toBe('2024-01-01');
     });

@@ -30,7 +30,7 @@ export class HomeController {
         const options: SafeQueryOptions = new SafeQueryOptions(req.query);
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
         setListView.indexable = true;
-        setListView.title = 'I Want My MTG — Magic: The Gathering Collection Tracker';
+        setListView.title = 'I Want My MTG - Magic: The Gathering Collection Tracker';
         setListView.metaDescription =
             'Track your Magic: The Gathering collection, discover set values, and manage your inventory with I Want My MTG.';
         setListView.canonicalUrl = this.appUrl;
@@ -48,8 +48,9 @@ export class HomeController {
         return new BaseViewDto({
             authenticated: !!req.user,
             indexable: true,
-            title: 'Getting Started — I Want My MTG',
-            metaDescription: 'Learn how to track your Magic: The Gathering collection, log transactions, and use the portfolio and binder features.',
+            title: 'Getting Started - I Want My MTG',
+            metaDescription:
+                'Learn how to track your Magic: The Gathering collection, log transactions, and use the portfolio and binder features.',
             canonicalUrl: `${this.appUrl}/guides/getting-started`,
             breadcrumbs: [
                 { label: 'Home', url: '/' },

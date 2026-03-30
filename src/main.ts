@@ -26,7 +26,7 @@ async function bootstrap() {
     const viewsDir = join(__dirname, '.', 'http/views');
     configureApp(app, viewsDir);
 
-    // Swagger / OpenAPI docs — scoped to API controllers only, disabled in production
+    // Swagger / OpenAPI docs - scoped to API controllers only, disabled in production
     if (process.env.NODE_ENV !== 'production') {
         const swaggerConfig = new DocumentBuilder()
             .setTitle('I Want My MTG API')

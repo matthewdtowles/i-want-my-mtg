@@ -1,5 +1,5 @@
 /**
- * Card image modal — fullscreen overlay showing a large card image.
+ * Card image modal - fullscreen overlay showing a large card image.
  *
  * Triggered by clicking/tapping any `.card-image-wrapper` element.
  * Derives the Scryfall LARGE URL from the existing NORMAL/SMALL URL.

@@ -16,7 +16,7 @@ import { getLogger } from './logger/global-app-logger';
                 const databaseUrl = configService.get<string>('DATABASE_URL');
 
                 if (databaseUrl) {
-                    // Remove sslmode from URL — pg treats 'require' as 'verify-full'
+                    // Remove sslmode from URL - pg treats 'require' as 'verify-full'
                     // which rejects AWS managed DB certs. We handle SSL via TypeORM config instead.
                     const url = new URL(databaseUrl);
                     url.searchParams.delete('sslmode');

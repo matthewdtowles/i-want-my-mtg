@@ -1,5 +1,5 @@
 /**
- * Card image preview — hover on desktop, long-press on mobile.
+ * Card image preview - hover on desktop, long-press on mobile.
  *
  * Desktop: mouseover/mouseout on .card-name-link[data-card-img] shows a
  *          floating preview image near the link.
@@ -7,7 +7,7 @@
  * Mobile:  Touch-and-hold (500 ms) shows the preview while the finger is
  *          down.  Lifting the finger dismisses the preview and suppresses
  *          the synthetic click so the browser does not navigate.  A normal
- *          (short) tap navigates immediately — no gestures are intercepted.
+ *          (short) tap navigates immediately - no gestures are intercepted.
  */
 (function () {
     var preview = null;
@@ -194,7 +194,7 @@
         // Keyboard
         document.body.addEventListener('focusin', handleFocusIn);
         document.body.addEventListener('focusout', handleFocusOut);
-        // Mobile — all touch listeners are passive (no preventDefault on touch)
+        // Mobile - all touch listeners are passive (no preventDefault on touch)
         document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
         document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
         document.body.addEventListener('touchend', handleTouchEnd);

@@ -264,7 +264,7 @@ describe('PortfolioSummaryService', () => {
         });
 
         it('should include fully sold cards in realized gain', async () => {
-            // Card was bought and fully sold — no inventory remains
+            // Card was bought and fully sold - no inventory remains
             const sellTx = makeTransaction('card1', 'SELL', 2, 10.0);
             const buyTx = makeTransaction('card1', 'BUY', 2, 5.0);
 

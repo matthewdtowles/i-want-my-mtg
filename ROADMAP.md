@@ -264,12 +264,18 @@
 
 ### 2.9 Improve Site Copy and UX Guidance
 
-- [ ] Audit current site copy for clarity and completeness
-- [ ] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
-- [ ] Add contextual help text and tooltips to key pages
-- [ ] Improve empty states with helpful prompts (e.g., "No cards in inventory — search for cards to add")
-- [ ] Review navigation flow and improve discoverability of features
-- [ ] Update page headings, labels, and descriptions for consistency
+- [x] Audit current site copy for clarity and completeness
+- [x] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
+- [x] Add contextual help text and tooltips to key pages
+- [x] Improve empty states with helpful prompts (e.g., "No cards in inventory — search for cards to add")
+- [x] Review navigation flow and improve discoverability of features
+- [x] Update page headings, labels, and descriptions for consistency
+- [x] Create Getting Started guide page (`/guides/getting-started`) with step-by-step feature overview
+- [x] Fix text overflow site-wide — fluid clamp() font sizes on page-title, card-title, stat-value, price tiles
+- [x] Improve welcome banner with action CTAs (Browse Sets, Import from CSV, Getting Started Guide)
+- [x] Improve home hero copy with descriptive tagline and feature callouts
+- [x] Fix import/export guide heading hierarchy (h4→h2, h5→h3)
+- [x] Add Help (?) icon link in navbar to Getting Started guide
 
 ### 2.10 Restructure Set Blocking UI for Set Lists
 

@@ -20,6 +20,10 @@
                 <a class="navbar-link" href="/">Home</a>
                 <a class="navbar-link" href="/sets">Sets</a>
                 <a class="navbar-link" href="/spoilers">Spoilers</a>
+                <a class="navbar-link" href="/guides/getting-started" title="Getting Started Guide">
+                    <i class="fas fa-circle-question text-sm" aria-hidden="true"></i>
+                    <span class="sr-only">Getting Started Guide</span>
+                </a>
                 {{#if authenticated}}
                 <a class="navbar-link" href="/inventory">My Inventory</a>
                 <a class="navbar-link" href="/transactions">Transactions</a>
@@ -83,6 +87,9 @@
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
         <a class="navbar-link-mobile" href="/spoilers">Spoilers</a>
+        <a class="navbar-link-mobile" href="/guides/getting-started">
+            <i class="fas fa-circle-question text-sm mr-1" aria-hidden="true"></i>Getting Started
+        </a>
         {{#if authenticated}}
         <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
         <a class="navbar-link-mobile" href="/transactions">Transactions</a>
@@ -115,9 +122,14 @@
     <div class="toast-progress"><div class="toast-progress-bar" id="toast-progress-bar"></div></div>
 </div>
 {{#if welcome}}
-<div class="welcome-banner" role="alert">
-    <h2>Welcome to I Want My MTG: Collection Tracker</h2>
-    <p>Your account has been created successfully. You're now logged in and ready to start tracking your cards.</p>
+<div class="welcome-banner" role="status">
+    <h2>Welcome to I Want My MTG!</h2>
+    <p>Your account is ready. Start by browsing sets to find cards you own, or import your whole collection at once if you already have a list.</p>
+    <div class="flex flex-wrap gap-2 mt-3">
+        <a href="/sets" class="btn btn-primary text-sm px-3 py-1.5">Browse Sets</a>
+        <a href="/inventory/import-export-guide" class="btn btn-secondary text-sm px-3 py-1.5">Import from CSV</a>
+        <a href="/guides/getting-started" class="btn btn-ghost text-sm px-3 py-1.5">Getting Started Guide</a>
+    </div>
 </div>
 {{/if}}
 

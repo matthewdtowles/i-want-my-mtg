@@ -7,7 +7,7 @@
 
             {{!-- Export Section --}}
             <div class="pb-6 mb-6 border-b border-gray-200 dark:border-midnight-600">
-                <h4 class="text-lg font-semibold mb-3">Export CSV</h4>
+                <h2 class="text-lg font-semibold mb-3">Export CSV</h2>
                 <p class="mb-3">Exports your entire inventory as a CSV file. Use the exported file as a template for card imports.</p>
                 <table class="table-container w-full text-sm mb-2">
                     <thead>
@@ -47,10 +47,10 @@
 
             {{!-- Card Import Section --}}
             <div class="pb-6 mb-6 border-b border-gray-200 dark:border-midnight-600">
-                <h4 class="text-lg font-semibold mb-3">Import Cards</h4>
+                <h2 class="text-lg font-semibold mb-3">Import Cards</h2>
                 <p class="mb-3">Import individual cards into your inventory from a CSV file.</p>
 
-                <h5 class="font-semibold mb-2">CSV Columns</h5>
+                <h3 class="font-semibold mb-2">CSV Columns</h3>
                 <table class="table-container w-full text-sm mb-4">
                     <thead>
                         <tr>
@@ -93,7 +93,7 @@
                     </tbody>
                 </table>
 
-                <h5 class="font-semibold mb-2">How Cards Are Matched</h5>
+                <h3 class="font-semibold mb-2">How Cards Are Matched</h3>
                 <p class="mb-3">Cards are matched in this priority order:</p>
                 <ol class="list-decimal list-inside mb-4 space-y-1">
                     <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">id</code> (exact Scryfall ID)</li>
@@ -102,14 +102,14 @@
                     <li>By <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">name</code> alone (uses the most recent printing)</li>
                 </ol>
 
-                <h5 class="font-semibold mb-2">Quantity Behavior</h5>
+                <h3 class="font-semibold mb-2">Quantity Behavior</h3>
                 <ul class="list-disc list-inside mb-4 space-y-1">
                     <li>A number (e.g. <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">4</code>) &mdash; sets the quantity to that value</li>
                     <li><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">0</code> &mdash; removes the card from your inventory</li>
                     <li>Empty or omitted &mdash; ensures at least 1 copy (won't reduce existing quantity)</li>
                 </ul>
 
-                <h5 class="font-semibold mb-2">Limits</h5>
+                <h3 class="font-semibold mb-2">Limits</h3>
                 <ul class="list-disc list-inside space-y-1">
                     <li>2,000 rows per file</li>
                     <li>2 MB maximum file size</li>
@@ -119,10 +119,10 @@
 
             {{!-- Set Import Section --}}
             <div class="mb-6">
-                <h4 class="text-lg font-semibold mb-3">Import Sets</h4>
+                <h2 class="text-lg font-semibold mb-3">Import Sets</h2>
                 <p class="mb-3">Import entire sets into your inventory at once. Each row adds all cards from the specified set.</p>
 
-                <h5 class="font-semibold mb-2">CSV Columns</h5>
+                <h3 class="font-semibold mb-2">CSV Columns</h3>
                 <table class="table-container w-full text-sm mb-4">
                     <thead>
                         <tr>
@@ -155,7 +155,7 @@
                     </tbody>
                 </table>
 
-                <h5 class="font-semibold mb-2">Limits</h5>
+                <h3 class="font-semibold mb-2">Limits</h3>
                 <ul class="list-disc list-inside space-y-1">
                     <li>2,000 rows per file</li>
                     <li>2 MB maximum file size</li>
@@ -164,7 +164,7 @@
             </div>
 
             <div class="text-center pt-4 border-t border-gray-200 dark:border-midnight-600">
-                <a href="/inventory" class="btn btn-secondary">Back to Inventory</a>
+                <a href="/inventory" class="btn btn-secondary">Return to My Inventory</a>
             </div>
         </div>
     </div>

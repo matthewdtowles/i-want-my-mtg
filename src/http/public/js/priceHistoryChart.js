@@ -2,16 +2,6 @@
     var chart = null;
     var activeDatasetIndex = 0;
 
-    var PRICE_TYPE_TO_LABEL = {
-        normal: 'Normal',
-        foil: 'Foil',
-    };
-
-    var LABEL_TO_PRICE_TYPE = {
-        Normal: 'normal',
-        Foil: 'foil',
-    };
-
     function isDarkMode() {
         return document.documentElement.classList.contains('dark');
     }
@@ -24,20 +14,6 @@
             grid: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
             text: dark ? '#d1d5db' : '#374151',
         };
-    }
-
-    function updateTileStates(activePriceType) {
-        var tiles = document.querySelectorAll('.price-info [data-price-type]');
-        tiles.forEach(function (tile) {
-            var type = tile.getAttribute('data-price-type');
-            if (type === activePriceType) {
-                tile.classList.remove('price-tile-inactive');
-                tile.classList.add('price-tile-active');
-            } else {
-                tile.classList.remove('price-tile-active');
-                tile.classList.add('price-tile-inactive');
-            }
-        });
     }
 
     function applyActiveDatasetStyles() {
@@ -75,50 +51,6 @@
         }
         return 0;
     }
-
-    function setActiveCardPriceType(priceTypeOrIndex) {
-        if (!chart) return;
-
-        var targetIndex = -1;
-
-        if (typeof priceTypeOrIndex === 'number') {
-            targetIndex = priceTypeOrIndex;
-        } else {
-            var targetLabel = PRICE_TYPE_TO_LABEL[priceTypeOrIndex];
-            if (!targetLabel) return;
-            chart.data.datasets.forEach(function (ds, i) {
-                if (ds.label === targetLabel) targetIndex = i;
-            });
-        }
-
-        if (targetIndex < 0 || targetIndex >= chart.data.datasets.length) return;
-
-        // Make sure the dataset is visible
-        var meta = chart.getDatasetMeta(targetIndex);
-        if (meta.hidden) {
-            meta.hidden = null;
-            var legendEl = document.getElementById('card-price-legend');
-            if (legendEl) {
-                var item = legendEl.querySelector('[data-dataset-index="' + targetIndex + '"]');
-                if (item) item.style.opacity = '1';
-            }
-        }
-
-        activeDatasetIndex = targetIndex;
-        applyActiveDatasetStyles();
-        chart.update('none');
-        updateLegendActiveState();
-
-        // Sync tile states
-        var activeLabel = chart.data.datasets[targetIndex].label;
-        var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
-        if (activePriceType) {
-            updateTileStates(activePriceType);
-        }
-    }
-
-    // Expose globally for tile onclick
-    window.setActiveCardPriceType = setActiveCardPriceType;
 
     function buildHtmlLegend(datasets) {
         var legendEl = document.getElementById('card-price-legend');
@@ -168,13 +100,6 @@
                 applyActiveDatasetStyles();
                 chart.update('none');
                 updateLegendActiveState();
-
-                // Sync tile states
-                var activeLabel = chart.data.datasets[activeDatasetIndex].label;
-                var activePriceType = LABEL_TO_PRICE_TYPE[activeLabel];
-                if (activePriceType) {
-                    updateTileStates(activePriceType);
-                }
             });
 
             // Legend hover to highlight dataset
@@ -339,14 +264,7 @@
             });
         }
 
-        // Determine active dataset index based on current tile selection
-        var activeTile = document.querySelector('.price-info .price-tile-active[data-price-type]');
-        var activePriceType = activeTile ? activeTile.getAttribute('data-price-type') : 'normal';
-        var activeLabel = PRICE_TYPE_TO_LABEL[activePriceType] || 'Normal';
         activeDatasetIndex = 0;
-        datasets.forEach(function (ds, i) {
-            if (ds.label === activeLabel) activeDatasetIndex = i;
-        });
 
         // Apply initial active styles
         datasets.forEach(function (ds, i) {

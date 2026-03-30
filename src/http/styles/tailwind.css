@@ -1019,26 +1019,20 @@
 /* ===== Price Tiles ===== */
 
 .price-tile {
-    @apply border rounded-lg p-2 md:p-3 transition-all duration-200 cursor-pointer overflow-hidden min-w-0;
+    @apply border rounded-lg p-2 md:p-3 overflow-hidden min-w-0;
 }
 
 .price-tile-active {
-    @apply ring-2 ring-offset-1 scale-[1.02] shadow-md;
-}
-
-.price-tile-active .price-tile-value {
-    font-size: clamp(1rem, 2.5vw, 1.875rem);
-    @apply font-bold;
-    overflow-wrap: break-word;
+    @apply ring-2 ring-offset-1 scale-[1.02] shadow-md cursor-pointer;
 }
 
 .price-tile-inactive {
-    @apply opacity-75 hover:opacity-100;
+    @apply opacity-75 hover:opacity-100 cursor-pointer;
 }
 
-.price-tile-inactive .price-tile-value {
-    font-size: clamp(0.75rem, 1.5vw, 1.125rem);
-    overflow-wrap: break-word;
+.price-tile-value {
+    font-size: clamp(1rem, 2.5vw, 1.875rem);
+    @apply font-bold;
 }
 
 /* ===== Stat Cards ===== */
@@ -1061,7 +1055,6 @@
     @apply block font-bold text-gray-800 dark:text-gray-100;
     font-size: clamp(0.875rem, 1.75vw, 1.125rem);
     overflow-wrap: break-word;
-    word-break: break-word;
     min-width: 0;
 }
 

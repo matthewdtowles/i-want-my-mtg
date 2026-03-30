@@ -59,8 +59,7 @@
                 <h2 class="section-title">Pricing</h2>
                 <div class="grid {{#if card.hasNormal}}{{#if card.hasFoil}}grid-cols-2{{else}}grid-cols-1{{/if}}{{else}}grid-cols-1{{/if}} gap-2 mb-3">
                     {{#if card.hasNormal}}
-                    <div data-price-type="normal"
-                        class="price-tile price-tile-active border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800 ring-teal-400 dark:ring-teal-500">
+                    <div class="price-tile border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800">
                         <h3 class="font-semibold text-teal-700 dark:text-teal-300 text-xs uppercase tracking-wide mb-1">Normal</h3>
                         <div class="price-tile-value font-bold text-gray-900 dark:text-gray-100 font-mono">
                             {{card.normalPrice}}
@@ -71,8 +70,7 @@
                     </div>
                     {{/if}}
                     {{#if card.hasFoil}}
-                    <div data-price-type="foil"
-                        class="price-tile {{#if card.hasNormal}}price-tile-inactive{{else}}price-tile-active{{/if}} border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30 ring-purple-400 dark:ring-purple-500">
+                    <div class="price-tile border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30">
                         <h3 class="font-semibold text-purple-700 dark:text-purple-300 text-xs uppercase tracking-wide mb-1">Foil</h3>
                         <div class="price-tile-value font-bold text-purple-900 dark:text-purple-200 font-mono">
                             {{card.foilPrice}}
@@ -205,24 +203,6 @@ document.addEventListener('DOMContentLoaded', function () {
         tooltipSelector: '.cost-basis-tooltip',
     });
 
-    // Price tile click — toggle visual state immediately, sync chart if loaded
-    var tiles = document.querySelectorAll('.price-info [data-price-type]');
-    tiles.forEach(function (tile) {
-        tile.addEventListener('click', function () {
-            var priceType = tile.getAttribute('data-price-type');
-            tiles.forEach(function (t) {
-                if (t.getAttribute('data-price-type') === priceType) {
-                    t.classList.remove('price-tile-inactive');
-                    t.classList.add('price-tile-active');
-                } else {
-                    t.classList.remove('price-tile-active');
-                    t.classList.add('price-tile-inactive');
-                }
-            });
-            if (window.setActiveCardPriceType) {
-                window.setActiveCardPriceType(priceType);
-            }
-        });
-    });
+
 });
 </script>

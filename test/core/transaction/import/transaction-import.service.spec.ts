@@ -191,10 +191,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(null);
 
-            const result = await service.importTransactions(
-                [validRow({ foil: 'false' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ foil: 'false' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -206,10 +203,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ type: undefined })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ type: undefined })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -221,10 +215,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ type: 'TRADE' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ type: 'TRADE' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -236,10 +227,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ quantity: undefined })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ quantity: undefined })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -251,10 +239,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ quantity: '0' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ quantity: '0' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -266,10 +251,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ quantity: 'abc' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ quantity: 'abc' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -281,10 +263,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ quantity: '4abc' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ quantity: '4abc' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -296,10 +275,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ quantity: '4.5' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ quantity: '4.5' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -353,10 +329,7 @@ describe('TransactionImportService', () => {
                 })
             );
 
-            const result = await service.importTransactions(
-                [validRow({ price_per_unit: '0' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ price_per_unit: '0' })], 1);
 
             expect(result.saved).toBe(1);
             expect(result.errors).toHaveLength(0);
@@ -367,10 +340,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ date: undefined })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ date: undefined })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -382,10 +352,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ date: 'not-a-date' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ date: 'not-a-date' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -400,10 +367,7 @@ describe('TransactionImportService', () => {
                 new Error('Cannot sell 4 units. Only 0 remaining.')
             );
 
-            const result = await service.importTransactions(
-                [validRow({ type: 'SELL' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ type: 'SELL' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -484,10 +448,7 @@ describe('TransactionImportService', () => {
                 })
             );
 
-            const result = await service.importTransactions(
-                [validRow({ type: 'buy' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ type: 'buy' })], 1);
 
             expect(result.saved).toBe(1);
             expect(mockTransactionService.create).toHaveBeenCalledWith(
@@ -501,10 +462,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ fees: 'abc' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ fees: 'abc' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);
@@ -516,10 +474,7 @@ describe('TransactionImportService', () => {
             mockResolver.resolveCard.mockResolvedValue({ card, error: null });
             mockResolver.resolveFoil.mockReturnValue(false);
 
-            const result = await service.importTransactions(
-                [validRow({ fees: '2.50xyz' })],
-                1
-            );
+            const result = await service.importTransactions([validRow({ fees: '2.50xyz' })], 1);
 
             expect(result.saved).toBe(0);
             expect(result.errors).toHaveLength(1);

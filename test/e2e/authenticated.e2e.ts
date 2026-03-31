@@ -32,7 +32,9 @@ test.describe('Inventory page (authenticated)', () => {
         await page.goto('/inventory');
         // Import guide link is always present (in empty state and in header when populated)
         await expect(
-            page.locator('a[href="/inventory/import-export-guide"], a[href="/inventory/export"]').first()
+            page
+                .locator('a[href="/inventory/import-export-guide"], a[href="/inventory/export"]')
+                .first()
         ).toBeVisible();
     });
 

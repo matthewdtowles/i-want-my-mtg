@@ -7,7 +7,7 @@
 
         <div class="max-w-3xl mx-auto px-4">
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                {{>statCard label="Current Value" value=this.summary.totalValue highlight=true}}
+                {{>statCard label="Current Value" value=this.summary.totalValue highlight=true metricHint="The current market value of all cards in your inventory, based on the latest price data."}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) - the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first - the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
@@ -16,9 +16,9 @@
                     <span class="stat-label">Unrealized P&L{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Unrealized P&L calculated using FIFO (first-in, first-out) lot matching for accurate per-unit cost tracking."}}{{else}}{{>costBasisTooltip title="Based on Average Cost" description="Unrealized P&L uses average cost basis. Click Recalculate below for precise FIFO-based P&L, which is the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
                 </div>
-                {{>statCard label="ROI" value=this.summary.roi highlight=true valueClass=(concat "gain-" this.summary.roiSign)}}
-                {{>statCard label="Realized Gains" value=this.summary.realizedGain highlight=true valueClass=(concat "gain-" this.summary.realizedGainSign)}}
-                {{>statCard label="Cards / Units" value=(concat this.summary.totalCards " / " this.summary.totalQuantity) highlight=true}}
+                {{>statCard label="ROI" value=this.summary.roi highlight=true valueClass=(concat "gain-" this.summary.roiSign) metricHint="Return on investment - your total gain as a percentage of what you have invested."}}
+                {{>statCard label="Realized Gains" value=this.summary.realizedGain highlight=true valueClass=(concat "gain-" this.summary.realizedGainSign) metricHint="Profit or loss from cards you have already sold, calculated using FIFO lot matching."}}
+                {{>statCard label="Cards / Units" value=(concat this.summary.totalCards " / " this.summary.totalQuantity) highlight=true metricHint="Total unique cards in your inventory, and total number of individual copies held."}}
             </div>
 
             <div class="flex justify-center gap-2 mb-4">
@@ -40,10 +40,11 @@
                 <div class="flex items-center gap-2">
                     <span>Updated: {{this.summary.computedAt}}</span>
                     <span class="px-1.5 py-0.5 rounded {{#if this.summary.isFifo}}bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300{{else}}bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400{{/if}}">{{#if this.summary.isFifo}}FIFO{{else}}Average{{/if}}</span>
+                    {{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="All metrics use FIFO (first-in, first-out) lot matching - the standard method for tracking real investment gains. Each sale is matched against your oldest purchases first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="Metrics use average cost basis (total spent divided by units held). Click Recalculate P&L below for precise FIFO-based figures, which match sales against your oldest purchases first."}}{{/if}}
                 </div>
                 {{#if this.summary.canRefresh}}
                 <button id="refresh-portfolio-btn" class="btn btn-secondary text-xs px-3 py-1.5">
-                    <i class="fas fa-calculator mr-1"></i>Recalculate (FIFO) · {{this.summary.refreshesRemaining}} left
+                    <i class="fas fa-calculator mr-1"></i>Recalculate P&L (FIFO) · {{this.summary.refreshesRemaining}} left
                 </button>
                 {{else}}
                 <span class="text-gray-300 dark:text-gray-600">

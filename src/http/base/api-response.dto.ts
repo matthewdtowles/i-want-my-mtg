@@ -21,6 +21,16 @@ export class PaginationMeta {
     }
 }
 
+export class BlockPaginationMeta extends PaginationMeta {
+    @ApiPropertyOptional({ type: [String] })
+    readonly multiSetBlockKeys: string[];
+
+    constructor(page: number, limit: number, total: number, multiSetBlockKeys: string[]) {
+        super(page, limit, total);
+        this.multiSetBlockKeys = multiSetBlockKeys;
+    }
+}
+
 export class ApiResponseDto<T> {
     @ApiProperty()
     readonly success: boolean;

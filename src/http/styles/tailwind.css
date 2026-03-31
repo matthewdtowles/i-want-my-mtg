@@ -1014,20 +1014,65 @@
     @apply px-1.5 py-2 sm:px-3 sm:py-3 first:pl-2 last:pr-2;
 }
 
-/* ===== Set Block Headers ===== */
+/* ===== Set Block Grouping ===== */
 
-.block-header-row {
-    @apply bg-purple-50 dark:bg-midnight-700 border-b border-gray-200 dark:border-midnight-600;
+.block-label-row {
+    @apply border-b-0;
 }
 
-.block-header {
-    @apply px-1.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold uppercase tracking-wider
-           text-purple-700 dark:text-purple-300
-           border-l-4 border-l-purple-500 dark:border-l-purple-400;
+.block-label-row td {
+    @apply pt-3 pb-0 leading-none;
+    border-top: 1px solid rgba(168, 85, 247, 0.45);
 }
 
-.block-set-row > td:first-child {
-    @apply border-l-4 border-l-purple-500 dark:border-l-purple-400;
+.dark .block-label-row td {
+    border-top: 1px solid rgba(192, 132, 252, 0.5);
+}
+
+.block-label {
+    @apply px-1.5 py-px sm:px-3 text-[0.6rem] font-semibold uppercase tracking-widest
+           text-purple-500 dark:text-purple-300
+           bg-transparent;
+    text-shadow: 0 0 6px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.25);
+}
+
+.dark .block-label {
+    text-shadow: 0 0 8px rgba(192, 132, 252, 0.6), 0 0 20px rgba(168, 85, 247, 0.35), 0 0 30px rgba(168, 85, 247, 0.15);
+}
+
+/* No connector on the main/first set row */
+
+.block-child-row > td:first-child {
+    @apply pl-6 sm:pl-8;
+    position: relative;
+}
+
+.block-child-row > td:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0.85rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    @apply bg-purple-400 dark:bg-purple-500;
+}
+
+/* Round the bottom of the connector on the last child in a block */
+.block-child-row:has(+ :not(.block-child-row)) > td:first-child::before,
+.block-child-row:last-child > td:first-child::before {
+    border-radius: 0 0 2px 2px;
+    bottom: 40%;
+}
+
+/* Bottom border on last row in a block */
+.block-child-row:has(+ :not(.block-child-row)) > td,
+.block-child-row:last-child > td {
+    border-bottom: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+.dark .block-child-row:has(+ :not(.block-child-row)) > td,
+.dark .block-child-row:last-child > td {
+    border-bottom: 1px solid rgba(192, 132, 252, 0.5);
 }
 
 /* ===== Tags ===== */

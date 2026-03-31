@@ -982,7 +982,13 @@ var AjaxUtils = (function () {
                 resultsEl.style.minHeight = (binderMinHeight || resultsEl.offsetHeight) + 'px';
             }
 
-            fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
+            var fetchUrl = buildApiUrl(apiPath, state);
+            if (config.extraApiParams) {
+                var extra = config.extraApiParams(state);
+                if (extra) fetchUrl += '&' + extra;
+            }
+
+            fetch(fetchUrl, { credentials: 'same-origin' })
                 .then(function (res) {
                     return res.json();
                 })

@@ -501,6 +501,13 @@ export class SetOrchestrator {
                 return a.releaseDate.localeCompare(b.releaseDate);
             });
 
+            const isMultiSet = blockSets.length > 1 || multiSetKeys.has(groupKey);
+            if (isMultiSet) {
+                for (let i = 1; i < blockSets.length; i++) {
+                    (blockSets[i] as { isBlockChild: boolean }).isBlockChild = true;
+                }
+            }
+
             const blockName = codeToName.get(groupKey) || blockSets[0].name;
             const earliestDate = blockSets[0].releaseDate;
             const totalPrice = blockSets.reduce((sum, s) => {
@@ -512,7 +519,7 @@ export class SetOrchestrator {
                 new SetBlockGroup({
                     blockName,
                     sets: blockSets,
-                    isMultiSet: blockSets.length > 1 || multiSetKeys.has(groupKey),
+                    isMultiSet,
                     releaseDate: earliestDate,
                     defaultPrice: totalPrice.toFixed(2),
                 })

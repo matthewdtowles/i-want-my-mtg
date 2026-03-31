@@ -278,7 +278,7 @@ describe('BinderCore', function () {
                 onIdle: function () {
                     idleCount++;
                     if (idleCount === 1) {
-                        // Navigate again (cache hit) — phase should be rendering
+                        // Navigate again (cache hit) - phase should be rendering
                         machine.navigate(1, 'right');
                         expect(machine.getPhase()).toBe('rendering');
                         // Second navigate during rendering should be rejected

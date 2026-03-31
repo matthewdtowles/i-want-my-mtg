@@ -14,7 +14,7 @@ function createTransaction(overrides: Partial<Transaction> = {}): Transaction {
         source: 'TCGPlayer',
         fees: 1.25,
         notes: 'NM condition',
-        createdAt: new Date(Date.now() - 1000), // 1 second ago — within edit window
+        createdAt: new Date(Date.now() - 1000), // 1 second ago - within edit window
         ...overrides,
     } as Transaction;
 }

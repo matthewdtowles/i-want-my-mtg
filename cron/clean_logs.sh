@@ -9,7 +9,7 @@ for CONTAINER_ID in $(docker ps -q); do
   fi
 done
 
-# Rotate app cron logs — keep last 1000 lines of each
+# Rotate app cron logs - keep last 1000 lines of each
 LOG_DIR="/var/log/i-want-my-mtg"
 if [ -d "$LOG_DIR" ]; then
   for LOG_FILE in "$LOG_DIR"/*.log; do

@@ -20,10 +20,7 @@ export class TransactionImportService {
         private readonly transactionService: TransactionService
     ) {}
 
-    async importTransactions(
-        rows: TransactionImportRow[],
-        userId: number
-    ): Promise<ImportResult> {
+    async importTransactions(rows: TransactionImportRow[], userId: number): Promise<ImportResult> {
         this.LOGGER.debug(`importTransactions: ${rows.length} rows for user ${userId}.`);
 
         const errors: ImportError[] = [];
@@ -116,9 +113,7 @@ export class TransactionImportService {
             }
         }
 
-        this.LOGGER.debug(
-            `importTransactions complete: saved=${saved}, errors=${errors.length}.`
-        );
+        this.LOGGER.debug(`importTransactions complete: saved=${saved}, errors=${errors.length}.`);
 
         return { saved, skipped: 0, deleted: 0, errors };
     }
@@ -145,7 +140,10 @@ export class TransactionImportService {
             return { ...baseFields, error: 'Missing quantity' };
         }
         if (!/^\d+$/.test(row.quantity.trim())) {
-            return { ...baseFields, error: `Invalid quantity (must be a whole number): "${row.quantity}"` };
+            return {
+                ...baseFields,
+                error: `Invalid quantity (must be a whole number): "${row.quantity}"`,
+            };
         }
         const qty = Number(row.quantity.trim());
         if (!Number.isInteger(qty) || qty <= 0) {

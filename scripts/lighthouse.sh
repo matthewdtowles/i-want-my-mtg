@@ -118,7 +118,7 @@ for cat in "${CATS[@]}"; do
 done
 
 echo ""
-echo "Lighthouse Audit — $(date)"
+echo "Lighthouse Audit - $(date)"
 echo "Base URL: ${BASE_URL}"
 echo "Categories: ${CATEGORIES}"
 echo "Presets: mobile, desktop"

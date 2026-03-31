@@ -2,10 +2,10 @@
   Site navigation bar with logo, nav links, auth controls, and toast notifications.
 
   Parameters:
-    authenticated — boolean, toggles login vs. user menu
-    welcome       — display name for logged-in user
-    toast         — optional { status, message } for flash notifications
-    assetVersion  — cache-busting version for toast.js script
+    authenticated - boolean, toggles login vs. user menu
+    welcome       - display name for logged-in user
+    toast         - optional { status, message } for flash notifications
+    assetVersion  - cache-busting version for toast.js script
 --~}}
 <nav class="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-800 dark:from-midnight-950 dark:via-purple-950 dark:to-midnight-950 shadow-lg py-4 border-b-2 border-teal-400 dark:shadow-glow-teal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,10 +20,6 @@
                 <a class="navbar-link" href="/">Home</a>
                 <a class="navbar-link" href="/sets">Sets</a>
                 <a class="navbar-link" href="/spoilers">Spoilers</a>
-                <a class="navbar-link" href="/guides/getting-started" title="Getting Started Guide">
-                    <i class="fas fa-circle-question text-sm" aria-hidden="true"></i>
-                    <span class="sr-only">Getting Started Guide</span>
-                </a>
                 {{#if authenticated}}
                 <a class="navbar-link" href="/inventory">My Inventory</a>
                 <a class="navbar-link" href="/transactions">Transactions</a>
@@ -40,6 +36,10 @@
                                text-white placeholder-purple-300 dark:placeholder-gray-400
                                focus:ring-2 focus:ring-teal-400 focus:outline-none focus:border-teal-400" />
                 </form>
+                <a class="navbar-link" href="/guides/getting-started" title="Getting Started Guide">
+                    <i class="fas fa-circle-question text-sm" aria-hidden="true"></i>
+                    <span class="sr-only">Getting Started Guide</span>
+                </a>
                 <button id="theme-toggle" type="button"
                     class="text-teal-300 hover:text-white p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
                     aria-label="Toggle theme">
@@ -87,9 +87,6 @@
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
         <a class="navbar-link-mobile" href="/spoilers">Spoilers</a>
-        <a class="navbar-link-mobile" href="/guides/getting-started">
-            <i class="fas fa-circle-question text-sm mr-1" aria-hidden="true"></i>Getting Started
-        </a>
         {{#if authenticated}}
         <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
         <a class="navbar-link-mobile" href="/transactions">Transactions</a>
@@ -99,6 +96,9 @@
         <a class="navbar-link-mobile navbar-login-link" href="/auth/login">Login</a>
         <a class="navbar-link-mobile" href="/user/create">Create Account</a>
         {{/if}}
+        <a class="navbar-link-mobile" href="/guides/getting-started">
+            <i class="fas fa-circle-question text-sm mr-1" aria-hidden="true"></i>Getting Started
+        </a>
     </div>
 </nav>
 <div id="response-message" class="response-message bg-{{#if toast }}{{ toast.status }}{{else}}info{{/if}} hidden" role="alert">

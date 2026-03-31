@@ -46,6 +46,11 @@ yarn.lock
 .notes/
 lighthouse-reports/
 
+# Playwright
+playwright-report/
+test-results/
+test/e2e/.auth/
+
 # Generated mana-font assets (built from npm package via build:mana)
 src/http/public/css/mana.css
 src/http/public/fonts/mana.woff2

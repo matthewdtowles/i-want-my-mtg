@@ -106,7 +106,7 @@ export class InventoryImportService {
             }
         }
 
-        // Execute deletions — track successes and failures separately
+        // Execute deletions - track successes and failures separately
         let deleted = 0;
         for (const item of toDelete) {
             try {

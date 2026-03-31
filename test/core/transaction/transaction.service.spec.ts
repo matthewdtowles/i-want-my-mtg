@@ -332,7 +332,7 @@ describe('TransactionService', () => {
             const updatedTx = new Transaction({ ...bigBuyLot, quantity: 3 });
             repository.update.mockResolvedValue(updatedTx);
 
-            // Reducing from 5 to 3 is a reduction of 2, and 2 unsold — exactly fits
+            // Reducing from 5 to 3 is a reduction of 2, and 2 unsold - exactly fits
             const result = await service.update(1, 1, { quantity: 3 });
 
             expect(result.updated.quantity).toBe(3);
@@ -375,7 +375,7 @@ describe('TransactionService', () => {
             repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // total bought=6
             repository.findSells.mockResolvedValue([bigSell]); // total sold=5, remaining=1
 
-            // buyLot1 has qty 2, but only 1 unsold — can't delete
+            // buyLot1 has qty 2, but only 1 unsold - can't delete
             await expect(service.delete(1, 1)).rejects.toThrow(
                 'Cannot delete buy of 2 units. Only 1 unsold units remaining'
             );

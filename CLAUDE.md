@@ -27,8 +27,14 @@ docker compose build web && docker compose up -d web
 ```bash
 npm test                          # Run unit tests (Jest, maxWorkers=50%)
 npm test -- --testPathPattern='card.service'  # Run a single test file
-npm run test:e2e                  # E2E tests (separate jest config: test/jest-e2e.json)
 npm run test:cov                  # Tests with coverage
+npm run test:frontend             # Frontend JS unit tests (jsdom)
+npm run test:integ                # Integration tests with Docker lifecycle
+npm run test:integ:jest           # Integration tests (Jest only, assumes DB on port 5433)
+npm run test:pw:full              # Playwright E2E tests (starts app + DB, runs tests)
+npm run test:pw                   # Playwright tests (app must already be running)
+npm run test:pw:ui                # Playwright interactive UI mode
+npm run test:pw:headed            # Playwright headed mode
 npm run lint                      # ESLint with --fix
 npm run format                    # Prettier formatting
 npm run format:check              # Check formatting without fixing

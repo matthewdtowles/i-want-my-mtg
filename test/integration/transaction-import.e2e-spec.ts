@@ -104,10 +104,7 @@ describe('Transaction CSV Import (e2e)', () => {
     it('resolves card by set_code + number and saves with correct card_id', async () => {
         const before = await txCount(ds);
 
-        const csv = buildCsv(
-            HEADERS,
-            `,Test Angel,${TEST_SET_CODE},1,BUY,1,5.00,,2025-03-01,,,`
-        );
+        const csv = buildCsv(HEADERS, `,Test Angel,${TEST_SET_CODE},1,BUY,1,5.00,,2025-03-01,,,`);
 
         const res = await request(app.getHttpServer())
             .post('/transactions/import')
@@ -133,7 +130,7 @@ describe('Transaction CSV Import (e2e)', () => {
         const csv = buildCsv(
             HEADERS,
             `${TEST_CARD_ID},,,,BUY,1,2.00,,2025-04-01,,,`,
-            `bad-id,,,,BUY,1,2.00,,2025-04-01,,,`,
+            `bad-id,,,,BUY,1,2.00,,2025-04-01,,,`
         );
 
         const res = await request(app.getHttpServer())
@@ -149,10 +146,7 @@ describe('Transaction CSV Import (e2e)', () => {
     });
 
     it('rejects rows with non-integer quantity like "4abc"', async () => {
-        const csv = buildCsv(
-            HEADERS,
-            `${TEST_CARD_ID},,,,BUY,4abc,2.00,,2025-04-01,,,`
-        );
+        const csv = buildCsv(HEADERS, `${TEST_CARD_ID},,,,BUY,4abc,2.00,,2025-04-01,,,`);
 
         const res = await request(app.getHttpServer())
             .post('/transactions/import')
@@ -165,10 +159,7 @@ describe('Transaction CSV Import (e2e)', () => {
     });
 
     it('rejects rows with decimal quantity like "4.5"', async () => {
-        const csv = buildCsv(
-            HEADERS,
-            `${TEST_CARD_ID},,,,BUY,4.5,2.00,,2025-04-01,,,`
-        );
+        const csv = buildCsv(HEADERS, `${TEST_CARD_ID},,,,BUY,4.5,2.00,,2025-04-01,,,`);
 
         const res = await request(app.getHttpServer())
             .post('/transactions/import')
@@ -181,10 +172,7 @@ describe('Transaction CSV Import (e2e)', () => {
     });
 
     it('rejects rows with malformed price like "2.50xyz"', async () => {
-        const csv = buildCsv(
-            HEADERS,
-            `${TEST_CARD_ID},,,,BUY,1,2.50xyz,,2025-04-01,,,`
-        );
+        const csv = buildCsv(HEADERS, `${TEST_CARD_ID},,,,BUY,1,2.50xyz,,2025-04-01,,,`);
 
         const res = await request(app.getHttpServer())
             .post('/transactions/import')
@@ -197,10 +185,7 @@ describe('Transaction CSV Import (e2e)', () => {
     });
 
     it('rejects rows with malformed fees like "1.00abc"', async () => {
-        const csv = buildCsv(
-            HEADERS,
-            `${TEST_CARD_ID},,,,BUY,1,2.00,,2025-04-01,,1.00abc,`
-        );
+        const csv = buildCsv(HEADERS, `${TEST_CARD_ID},,,,BUY,1,2.00,,2025-04-01,,1.00abc,`);
 
         const res = await request(app.getHttpServer())
             .post('/transactions/import')

@@ -4,7 +4,7 @@ import { createTestApp, closeTestApp, TEST_SET_CODE } from './setup';
 
 /**
  * Validates that API success and error responses share the same
- * ApiResponseDto envelope shape — whether returned by a controller
+ * ApiResponseDto envelope shape - whether returned by a controller
  * or produced by HttpExceptionFilter.
  */
 describe('API response envelope (e2e)', () => {

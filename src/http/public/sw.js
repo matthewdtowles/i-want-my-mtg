@@ -34,7 +34,7 @@ self.addEventListener('install', function (event) {
         caches
             .open(STATIC_CACHE)
             .then(function (cache) {
-                // Cache offline page first — this is required for the SW to work
+                // Cache offline page first - this is required for the SW to work
                 var offlineRequest = new Request(OFFLINE_PAGE, { cache: 'reload' });
                 return cache.add(offlineRequest).then(function () {
                     // Precache static assets individually so one missing optional

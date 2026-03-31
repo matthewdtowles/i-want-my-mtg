@@ -25,7 +25,7 @@ export class SpoilersController {
             { label: 'Sets', url: '/sets' },
             { label: 'Spoilers', url: '/spoilers' },
         ]);
-        view.title = 'Upcoming Sets — I Want My MTG';
+        view.title = 'Upcoming Sets - I Want My MTG';
         view.metaDescription = 'Preview upcoming Magic: The Gathering sets before they release.';
         view.indexable = true;
         view.canonicalUrl = `${this.appUrl}/spoilers`;

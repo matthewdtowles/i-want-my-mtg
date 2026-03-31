@@ -996,7 +996,7 @@ var AjaxUtils = (function () {
                     config.renderContent(resultsEl, json.data, json.meta);
 
                     if (state.view === 'binder') {
-                        // Establish permanent binder height — never shrinks while in binder view
+                        // Establish permanent binder height - never shrinks while in binder view
                         var contentHeight = resultsEl.scrollHeight;
                         if (contentHeight > binderMinHeight) {
                             binderMinHeight = contentHeight;

@@ -1,11 +1,11 @@
 {{~!--
-  Card link partial — consistent card name link with optional image preview.
+  Card link partial - consistent card name link with optional image preview.
 
   Parameters:
-    url      — card detail page URL (required)
-    name     — card display name (required)
-    imgSrc   — full image URL for hover preview (optional)
-    item     — object with .tags for the tags partial (optional)
+    url      - card detail page URL (required)
+    name     - card display name (required)
+    imgSrc   - full image URL for hover preview (optional)
+    item     - object with .tags for the tags partial (optional)
 --~}}
 <a href="{{url}}" class="card-name-link"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
 {{~#if item}}{{>tags item=item}}{{/if~}}

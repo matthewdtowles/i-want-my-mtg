@@ -50,20 +50,24 @@ describe('TransactionCsvParser', () => {
         });
 
         it('parses a complete row with all fields', () => {
-            const csv = ALL_HEADERS + '\n' + csvRow({
-                id: 'uuid-1',
-                name: 'Teferi',
-                set_code: 'dmu',
-                number: '1',
-                type: 'BUY',
-                quantity: '4',
-                price_per_unit: '2.50',
-                foil: 'true',
-                date: '2025-01-15',
-                source: 'TCGPlayer',
-                fees: '0.50',
-                notes: 'Good deal',
-            }) + '\n';
+            const csv =
+                ALL_HEADERS +
+                '\n' +
+                csvRow({
+                    id: 'uuid-1',
+                    name: 'Teferi',
+                    set_code: 'dmu',
+                    number: '1',
+                    type: 'BUY',
+                    quantity: '4',
+                    price_per_unit: '2.50',
+                    foil: 'true',
+                    date: '2025-01-15',
+                    source: 'TCGPlayer',
+                    fees: '0.50',
+                    notes: 'Good deal',
+                }) +
+                '\n';
 
             const [row] = TransactionCsvParser.parse(toBuffer(csv));
 
@@ -84,12 +88,16 @@ describe('TransactionCsvParser', () => {
         });
 
         it('treats empty optional fields as undefined', () => {
-            const csv = ALL_HEADERS + '\n' + csvRow({
-                source: '',
-                fees: '',
-                notes: '',
-                foil: '',
-            }) + '\n';
+            const csv =
+                ALL_HEADERS +
+                '\n' +
+                csvRow({
+                    source: '',
+                    fees: '',
+                    notes: '',
+                    foil: '',
+                }) +
+                '\n';
 
             const [row] = TransactionCsvParser.parse(toBuffer(csv));
 
@@ -100,7 +108,9 @@ describe('TransactionCsvParser', () => {
         });
 
         it('trims whitespace from all values', () => {
-            const csv = ALL_HEADERS + '\n' +
+            const csv =
+                ALL_HEADERS +
+                '\n' +
                 '  uuid-1  , Card Name , dmu , 1 , BUY , 4 , 2.50 , true , 2025-01-15 , TCG , 0.5 , note \n';
 
             const [row] = TransactionCsvParser.parse(toBuffer(csv));
@@ -113,10 +123,9 @@ describe('TransactionCsvParser', () => {
 
         it('returns all rows beyond 2000 (truncation is handled by the service)', () => {
             const header = ALL_HEADERS + '\n';
-            const rows = Array.from(
-                { length: 2100 },
-                (_, i) => csvRow({ id: `id${i}` })
-            ).join('\n');
+            const rows = Array.from({ length: 2100 }, (_, i) => csvRow({ id: `id${i}` })).join(
+                '\n'
+            );
 
             const result = TransactionCsvParser.parse(toBuffer(header + rows));
             expect(result.length).toBe(2100);
@@ -128,7 +137,8 @@ describe('TransactionCsvParser', () => {
         });
 
         it('works with subset of columns', () => {
-            const csv = 'set_code,number,type,quantity,price_per_unit,date\n' +
+            const csv =
+                'set_code,number,type,quantity,price_per_unit,date\n' +
                 'dmu,1,BUY,4,2.50,2025-01-15\n';
 
             const [row] = TransactionCsvParser.parse(toBuffer(csv));

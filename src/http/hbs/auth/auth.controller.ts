@@ -39,7 +39,7 @@ export class AuthController {
         this.LOGGER.log(`Fetch login form.`);
         return new LoginFormViewDto({
             returnUrl: this.sanitizeReturnUrl(returnUrl),
-            title: 'Sign In — I Want My MTG',
+            title: 'Sign In - I Want My MTG',
             metaDescription: 'Sign in to your I Want My MTG account to manage your collection.',
         });
     }

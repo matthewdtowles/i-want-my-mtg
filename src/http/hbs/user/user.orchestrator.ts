@@ -112,7 +112,7 @@ export class UserOrchestrator {
             // Check if a user with this email already exists (race condition guard)
             const existingUser = await this.userService.findByEmail(pendingUser.email);
             if (existingUser) {
-                // Another request already verified this token — clean up and log the user in
+                // Another request already verified this token - clean up and log the user in
                 await this.pendingUserService.deleteByToken(token);
                 this.LOGGER.warn(
                     `User ${pendingUser.email} already exists. Likely duplicate verification request.`
@@ -207,7 +207,7 @@ export class UserOrchestrator {
                 authenticated: req.isAuthenticated(),
                 breadcrumbs: this.breadCrumbs,
                 indexable: false,
-                title: 'My Account — I Want My MTG',
+                title: 'My Account - I Want My MTG',
                 user,
             };
         } catch (error) {

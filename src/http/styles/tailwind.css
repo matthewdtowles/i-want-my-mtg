@@ -104,13 +104,25 @@
 /* Binder page transition animations */
 
 @keyframes binder-enter-right {
-    from { opacity: 0; transform: translateX(30px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @keyframes binder-enter-left {
-    from { opacity: 0; transform: translateX(-30px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .binder-grid--enter-right {
@@ -132,7 +144,9 @@
 
 .binder-card img {
     @apply w-full h-full object-cover rounded-lg shadow-md;
-    transition: filter 0.2s ease, opacity 0.2s ease;
+    transition:
+        filter 0.2s ease,
+        opacity 0.2s ease;
 }
 
 .binder-card-overlay {
@@ -620,6 +634,7 @@
            dark:from-purple-400 dark:via-teal-400 dark:to-purple-400
            bg-clip-text text-transparent;
     font-size: clamp(1.25rem, 3vw, 1.5rem);
+    line-height: 1.3;
     overflow-wrap: break-word;
 }
 
@@ -794,9 +809,15 @@
 }
 
 @keyframes inv-stepper-pop {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.3); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .inv-stepper-qty--pop {
@@ -1032,6 +1053,9 @@
 
 .price-tile-value {
     font-size: clamp(1rem, 2.5vw, 1.875rem);
+    line-height: 1.3;
+    overflow-wrap: break-word;
+    word-break: break-word;
     @apply font-bold;
 }
 

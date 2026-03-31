@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Show transaction prompt AFTER DOM updates (guarded — AjaxUtils may not be loaded)
+            // Show transaction prompt AFTER DOM updates (guarded - AjaxUtils may not be loaded)
             showTransactionPrompt(incBtn ? 'BUY' : 'SELL', isFoil);
 
             // Notify binder state machine to sync cache

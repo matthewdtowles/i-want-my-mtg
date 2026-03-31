@@ -50,14 +50,14 @@ document.addEventListener('DOMContentLoaded', function () {
         basePath: '/sets/' + encodeURIComponent(setCode),
         renderContent: function (resultsEl, cards, meta) {
             if (page.state.view === 'binder') {
-                // Delegate to binder state machine — it does its own fetch + render
+                // Delegate to binder state machine - it does its own fetch + render
                 var machine = getOrCreateBinder();
                 machine.activate();
                 var targetPage = page.state.page || 1;
                 machine.navigate(targetPage, null);
                 return;
             }
-            // List view — render table as before
+            // List view - render table as before
             if (binderMachine) binderMachine.deactivate();
             renderTable(resultsEl, cards);
         },
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
         machine.navigate(urlPage, null);
     }
 
-    // Sync view state on back/forward — fetch is handled by initListPage's
+    // Sync view state on back/forward - fetch is handled by initListPage's
     // popstate handler calling the overridden fetchAndRender (fetchForView).
     window.addEventListener('popstate', function () {
         var urlView = new URLSearchParams(window.location.search).get('view') || 'list';
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var html = '<tr class="table-row">';
 
-        // Owned column — placeholder, replaced by fetchAndRenderInventory if authenticated
+        // Owned column - placeholder, replaced by fetchAndRenderInventory if authenticated
         html +=
             '<td class="table-cell owned-cell" data-card-id="' +
             AjaxUtils.escapeHtml(card.id) +
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '</td>';
         }
 
-        // Combined price (xs-show, mobile) — Normal first, then Foil
+        // Combined price (xs-show, mobile) - Normal first, then Foil
         if (hasAnyNormal || hasAnyFoil) {
             html += '<td class="table-cell xs-show">';
             if (card.hasNonFoil && card.prices && card.prices.normal != null) {

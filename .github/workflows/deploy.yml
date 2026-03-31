@@ -149,7 +149,6 @@ jobs:
                   provenance: false
                   tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
 
-
     deploy:
         needs: build
         runs-on: ubuntu-latest

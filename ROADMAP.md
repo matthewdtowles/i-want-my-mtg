@@ -280,12 +280,12 @@
   - [x] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder - flip through your cards page by page"), dismissed to `localStorage`
   - [x] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
   - [x] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
-- [ ] Surface cost basis tooltip on Portfolio page header (simplified version of existing `costBasisTooltip.hbs`, for first-time visitors)
-- [ ] Copy audit for remaining pages
-  - [ ] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")
-  - [ ] `transactions.hbs` — add subtitle explaining what transactions are for
-  - [ ] Error pages (401, 404, 500) — more helpful and brand-consistent
-  - [ ] `spoilers.hbs` — add brief description of what "spoilers" means in context
+- [x] Surface cost basis tooltip on Portfolio page header (simplified version of existing `costBasisTooltip.hbs`, for first-time visitors)
+- [x] Copy audit for remaining pages
+  - [x] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")
+  - [x] `transactions.hbs` — add subtitle explaining what transactions are for
+  - [x] Error pages (401, 404, 500) — more helpful and brand-consistent
+  - [x] `spoilers.hbs` — add brief description of what "spoilers" means in context
 
 ### 2.10 Restructure Set Blocking UI for Set Lists
 

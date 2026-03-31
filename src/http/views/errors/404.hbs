@@ -1,15 +1,16 @@
 <div class="text-center py-16 px-4 max-w-xl mx-auto">
     <div class="font-display text-8xl font-bold text-hotpink-500 dark:text-hotpink-400 mb-4">404</div>
-    <div class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Page Not Found</div>
-    <div class="text-lg text-gray-500 dark:text-gray-400 mb-8">
+    <div class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Page Not Found</div>
+    <div class="text-base text-gray-500 dark:text-gray-400 mb-8">
         {{#if toast}}
             {{toast.message}}
         {{else}}
-            Oops! This is not the page you are looking for.
+            That page doesn't exist, or the link may have changed. Try searching for a card or set, or head back home.
         {{/if}}
     </div>
     <div class="flex gap-4 justify-center flex-wrap">
         <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="/search" class="btn btn-secondary">Search Cards</a>
         <a href="/sets" class="btn btn-secondary">Browse Sets</a>
     </div>
 </div>

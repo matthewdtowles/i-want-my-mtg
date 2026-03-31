@@ -42,12 +42,18 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 ### Testing
 
 ```bash
-npm test                                           # All unit tests
-npm test -- --testPathPattern='card.service'       # Single test file
-npm run test:e2e                                   # E2E tests
-npm run test:cov                                   # Unit tests with coverage
-npm run test:integ                                 # Integration tests (Docker)
-npm run test:integ -- --testPathPattern=transaction   # Single integration suite
+npm test                                                  # All unit tests
+npm test -- --testPathPattern='card.service'              # Single test file
+npm run test:cov                                          # Unit tests with coverage
+npm run test:frontend                                     # Frontend JS unit tests (jsdom)
+npm run test:integ                                        # Integration tests (Docker)
+npm run test:integ -- --testPathPattern=transaction       # Single integration suite
+npm run test:integ:jest                                   # Integration tests (Jest only, DB must be on port 5433)
+npm run test:pw:full                                      # Playwright E2E (starts app + DB, runs tests)
+npm run test:pw                                           # Playwright tests (app must already be running)
+npm run test:pw:ui                                        # Playwright interactive UI mode
+npm run test:pw:headed                                    # Playwright headed mode
+npm run test:pw:report                                    # Open last Playwright report
 ```
 
 ### ETL (Scry)

@@ -276,10 +276,10 @@
 - [x] Improve home hero copy with descriptive tagline and feature callouts
 - [x] Fix import/export guide heading hierarchy (h4→h2, h5→h3)
 - [x] Add Help (?) icon link in navbar to Getting Started guide
-- [ ] Contextual first-visit hints (localStorage-gated, one-time tooltips)
-  - [ ] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder — flip through your cards page by page"), dismissed to `localStorage`
-  - [ ] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
-  - [ ] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
+- [x] Contextual first-visit hints (localStorage-gated, one-time tooltips)
+  - [x] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder - flip through your cards page by page"), dismissed to `localStorage`
+  - [x] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
+  - [x] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
 - [ ] Surface cost basis tooltip on Portfolio page header (simplified version of existing `costBasisTooltip.hbs`, for first-time visitors)
 - [ ] Copy audit for remaining pages
   - [ ] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")

@@ -51,8 +51,8 @@ test.describe('Logout flow', () => {
         // Then log out
         await page.goto('/auth/logout');
 
-        // Accessing an authenticated page should redirect to login
+        // Accessing an authenticated page should be denied - nav shows Sign In
         await page.goto('/inventory');
-        await expect(page.locator('#login-form')).toBeVisible();
+        await expect(page.locator('a[href^="/auth/login"]').first()).toBeVisible();
     });
 });

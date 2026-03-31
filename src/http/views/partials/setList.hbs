@@ -30,12 +30,12 @@
             <tbody>
                 {{#each blockGroups}}
                 {{#if this.isMultiSet}}
-                <tr class="block-header-row">
-                    <td colspan="{{#if ../authenticated}}4{{else}}3{{/if}}" class="block-header">{{this.blockName}}</td>
+                <tr class="block-label-row">
+                    <td colspan="{{#if ../authenticated}}4{{else}}3{{/if}}" class="block-label">{{this.blockName}}</td>
                 </tr>
                 {{/if}}
                 {{#each this.sets}}
-                <tr class="table-row{{#if ../isMultiSet}} block-set-row{{/if}}">
+                <tr class="table-row{{#if this.isBlockChild}} block-child-row{{/if}}">
                     <td class="table-cell">
                         <i class="ss ss-{{this.keyruneCode}} ss-fw"></i>
                         <a href="{{this.url}}" class="table-link">{{this.name}}</a>

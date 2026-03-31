@@ -14,7 +14,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetService } from 'src/core/set/set.service';
 import { Set } from 'src/core/set/set.entity';
-import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
+import { ApiResponseDto, BlockPaginationMeta, PaginationMeta } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { completionRate } from 'src/http/base/http.util';
 import { SetApiResponseDto, SetPriceHistoryPointDto } from './dto/set-response.dto';
@@ -46,6 +46,11 @@ export class SetApiController {
     @ApiQuery({ name: 'filter', required: false, description: 'Filter sets by name' })
     @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base/main sets' })
     @ApiQuery({ name: 'q', required: false, description: 'Search query' })
+    @ApiQuery({
+        name: 'group',
+        required: false,
+        description: 'Grouping mode: "block" for block-level pagination',
+    })
     @ApiResponse({ status: 200, description: 'List of sets' })
     async findAll(
         @Req() req: AuthenticatedRequest,
@@ -53,20 +58,41 @@ export class SetApiController {
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
         const options = new SafeQueryOptions(query);
         const searchTerm = query.q;
+        const useBlockGrouping = query.group === 'block' && !searchTerm && !options.sort;
 
         let sets: Set[];
-        let total: number;
+        let meta: PaginationMeta;
 
         if (searchTerm) {
+            let total: number;
             [sets, total] = await Promise.all([
                 this.setService.searchSets(searchTerm, options),
                 this.setService.totalSearchSets(searchTerm),
             ]);
+            meta = new PaginationMeta(options.page, options.limit, total);
+        } else if (useBlockGrouping) {
+            const [totalGroups, blockKeys] = await Promise.all([
+                this.setService.totalBlockGroups(options),
+                this.setService.findBlockGroupKeys(options),
+            ]);
+            const [blockSets, multiSetKeys] = await Promise.all([
+                this.setService.findSetsByBlockKeys(blockKeys, options),
+                this.setService.findMultiSetBlockKeys(blockKeys),
+            ]);
+            sets = blockSets;
+            meta = new BlockPaginationMeta(
+                options.page,
+                options.limit,
+                totalGroups,
+                multiSetKeys
+            );
         } else {
+            let total: number;
             [sets, total] = await Promise.all([
                 this.setService.findSets(options),
                 this.setService.totalSetsCount(options),
             ]);
+            meta = new PaginationMeta(options.page, options.limit, total);
         }
 
         const userId = req.user?.id;
@@ -96,7 +122,7 @@ export class SetApiController {
             };
         });
 
-        return ApiResponseDto.ok(data, new PaginationMeta(options.page, options.limit, total));
+        return ApiResponseDto.ok(data, meta);
     }
 
     @Get(':code')

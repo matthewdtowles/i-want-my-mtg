@@ -289,11 +289,18 @@
 
 ### 2.10 Restructure Set Blocking UI for Set Lists
 
-- [ ] Audit current set list layout and identify UX pain points
-- [ ] Design improved set list UI with clearer visual hierarchy
-- [ ] Implement restructured set list layout
-- [ ] Ensure responsive behavior on mobile and desktop
-- [ ] Update AJAX rendering to match new layout
+- [x] Audit current set list layout and identify UX pain points
+- [x] Design improved set list UI with clearer visual hierarchy
+- [x] Implement restructured set list layout
+  - [x] Block-level pagination via `SetService.findBlockGroupKeys` and `findSetsByBlockKeys`
+  - [x] `SetBlockGroup` DTO for grouped rendering with block name, multi-set flag, aggregate price
+  - [x] `BlockPaginationMeta` extends `PaginationMeta` with `multiSetBlockKeys` for client-side grouping
+  - [x] `SetListUtils.groupByBlock` mirrors server-side grouping logic in the browser
+  - [x] Block label rows and `block-child-row` indentation for multi-set blocks
+- [x] Ensure responsive behavior on mobile and desktop
+- [x] Update AJAX rendering to match new layout
+  - [x] `setListAjax.js` renders block groups when `meta.multiSetBlockKeys` is present
+  - [x] Frontend tests for `SetListUtils.groupByBlock` and `setListAjax` rendering
 
 ### 2.11 Support Flavor Name
 

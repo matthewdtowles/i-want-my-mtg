@@ -10,10 +10,13 @@ document.addEventListener('DOMContentLoaded', function () {
         basePath: '/sets',
         renderContent: renderTable,
         errorMessage: 'Failed to load sets',
+        extraApiParams: function (state) {
+            return state.sort ? '' : 'group=block';
+        },
     });
     if (!page) return;
 
-    function renderTable(resultsEl, sets) {
+    function renderTable(resultsEl, sets, meta) {
         if (!sets || sets.length === 0) {
             AjaxUtils.renderEmptyState(resultsEl, {
                 message: 'No sets match your search',
@@ -34,14 +37,37 @@ document.addEventListener('DOMContentLoaded', function () {
         var html = '<div class="table-wrapper"><table class="min-w-full table-container">';
         html += '<thead>' + AjaxUtils.renderTableHeaderRow(headers, page.state) + '</thead>';
         html += '<tbody>';
-        for (var i = 0; i < sets.length; i++) {
-            html += renderSetRow(sets[i]);
+
+        if (meta && meta.multiSetBlockKeys) {
+            var multiSetKeys = {};
+            for (var m = 0; m < meta.multiSetBlockKeys.length; m++) {
+                multiSetKeys[meta.multiSetBlockKeys[m]] = true;
+            }
+            var groups = SetListUtils.groupByBlock(sets, multiSetKeys);
+            for (var g = 0; g < groups.length; g++) {
+                var group = groups[g];
+                if (group.isMultiSet) {
+                    var colSpan = authenticated ? 4 : 3;
+                    html += '<tr class="block-label-row">';
+                    html += '<td colspan="' + colSpan + '" class="block-label">';
+                    html += AjaxUtils.escapeHtml(group.blockName);
+                    html += '</td></tr>';
+                }
+                for (var s = 0; s < group.sets.length; s++) {
+                    html += renderSetRow(group.sets[s], group.isMultiSet && s > 0);
+                }
+            }
+        } else {
+            for (var i = 0; i < sets.length; i++) {
+                html += renderSetRow(sets[i], false);
+            }
         }
+
         html += '</tbody></table></div>';
         resultsEl.innerHTML = html;
     }
 
-    function renderSetRow(set) {
+    function renderSetRow(set, indented) {
         var keyruneCode = AjaxUtils.escapeHtml(set.keyruneCode || set.code);
         var name = AjaxUtils.escapeHtml(set.name);
         var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
@@ -51,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var priceHtml = formatPrice(set.prices);
         var changeHtml = formatWeeklyChange(set.prices);
 
-        var html = '<tr class="table-row">';
+        var rowClass = indented ? 'table-row block-child-row' : 'table-row';
+        var html = '<tr class="' + rowClass + '">';
         html += '<td class="table-cell"><i class="ss ss-' + keyruneCode + ' ss-fw"></i> ';
         html += '<a href="' + url + '" class="table-link">' + name + '</a> ' + tagsHtml + '</td>';
         html += '<td class="table-cell">' + priceHtml + ' ' + changeHtml + '</td>';

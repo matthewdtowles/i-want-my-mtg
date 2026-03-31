@@ -982,7 +982,20 @@ var AjaxUtils = (function () {
                 resultsEl.style.minHeight = (binderMinHeight || resultsEl.offsetHeight) + 'px';
             }
 
-            fetch(buildApiUrl(apiPath, state), { credentials: 'same-origin' })
+            var fetchUrl = buildApiUrl(apiPath, state);
+            if (config.extraApiParams) {
+                var extra = config.extraApiParams(state);
+                if (extra) {
+                    var url = new URL(fetchUrl, window.location.origin);
+                    var extraParams = new URLSearchParams(extra);
+                    extraParams.forEach(function (value, key) {
+                        url.searchParams.set(key, value);
+                    });
+                    fetchUrl = url.pathname + '?' + url.searchParams.toString();
+                }
+            }
+
+            fetch(fetchUrl, { credentials: 'same-origin' })
                 .then(function (res) {
                     return res.json();
                 })

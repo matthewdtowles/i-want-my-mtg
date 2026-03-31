@@ -504,7 +504,10 @@ export class SetOrchestrator {
             const isMultiSet = blockSets.length > 1 || multiSetKeys.has(groupKey);
             if (isMultiSet) {
                 for (let i = 1; i < blockSets.length; i++) {
-                    (blockSets[i] as { isBlockChild: boolean }).isBlockChild = true;
+                    blockSets[i] = new SetMetaResponseDto({
+                        ...blockSets[i],
+                        isBlockChild: true,
+                    });
                 }
             }
 

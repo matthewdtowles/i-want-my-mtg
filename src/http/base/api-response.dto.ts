@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 
 export class PaginationMeta {
     @ApiProperty()
@@ -31,6 +31,7 @@ export class BlockPaginationMeta extends PaginationMeta {
     }
 }
 
+@ApiExtraModels(PaginationMeta, BlockPaginationMeta)
 export class ApiResponseDto<T> {
     @ApiProperty()
     readonly success: boolean;
@@ -44,7 +45,12 @@ export class ApiResponseDto<T> {
     @ApiPropertyOptional()
     readonly message?: string;
 
-    @ApiPropertyOptional({ type: PaginationMeta })
+    @ApiPropertyOptional({
+        oneOf: [
+            { $ref: getSchemaPath(PaginationMeta) },
+            { $ref: getSchemaPath(BlockPaginationMeta) },
+        ],
+    })
     readonly meta?: PaginationMeta;
 
     constructor(init: {

@@ -8,122 +8,161 @@ if (!window.matchMedia) {
     };
 }
 
+// Captured renderContent callback from initListPage
+var capturedConfig = null;
+
+// Minimal AjaxUtils mock
+window.AjaxUtils = {
+    initListPage: function (config) {
+        capturedConfig = config;
+        return { container: config.container, state: { page: 1, limit: 25 }, fetchAndRender: function () {} };
+    },
+    renderEmptyState: function (el, opts) {
+        el.innerHTML = '<div class="empty-state">' + opts.message + '</div>';
+    },
+    renderTableHeaderRow: function () {
+        return '<tr><th>Set</th><th>Set Value</th><th>Release Date</th></tr>';
+    },
+    escapeHtml: function (str) {
+        if (str == null) return '';
+        return String(str);
+    },
+    renderTags: function (tags) {
+        if (!tags || tags.length === 0) return '';
+        return '<span class="tag">' + tags.join('</span><span class="tag">') + '</span>';
+    },
+    toDollar: function (amount) {
+        if (amount == null || amount === 0) return '-';
+        return '$' + Number(amount).toFixed(2);
+    },
+    renderCompletionBar: function (rate) {
+        return '<div class="completion-bar">' + rate + '%</div>';
+    },
+    renderPriceChange: function (change) {
+        var sign = change > 0 ? '+' : '';
+        return '<span class="price-change">' + sign + '$' + Math.abs(change).toFixed(2) + '</span>';
+    },
+};
+
+// Load SetListUtils dependency
+require('../../src/http/public/js/setListUtils.js');
+
 beforeEach(function () {
-    delete window.SetListUtils;
-    jest.resetModules();
+    capturedConfig = null;
+    document.body.innerHTML = '<div id="set-list-ajax" data-authenticated="false"><div id="filter-results"></div></div>';
 });
 
-function loadSetListUtils() {
-    require('../../src/http/public/js/setListUtils.js');
-    return window.SetListUtils;
+function loadSetListAjax() {
+    jest.resetModules();
+    // Re-trigger DOMContentLoaded to run the script's init
+    require('../../src/http/public/js/setListAjax.js');
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    return capturedConfig;
 }
 
-describe('SetListUtils.groupByBlock', function () {
-    it('should group sets by parentCode', function () {
-        var utils = loadSetListUtils();
-        var sets = [
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, releaseDate: '2021-09-24' },
-            { code: 'mic', name: 'Midnight Hunt Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, releaseDate: '2021-09-24' },
-        ];
-        var multiSetKeys = { mid: true };
+function getResultsEl() {
+    return document.getElementById('filter-results');
+}
 
-        var groups = utils.groupByBlock(sets, multiSetKeys);
+describe('setListAjax renderTable', function () {
+    it('should render empty state when sets array is empty', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
+        config.renderContent(resultsEl, [], null);
 
-        expect(groups).toHaveLength(1);
-        expect(groups[0].blockName).toBe('Innistrad');
-        expect(groups[0].sets).toHaveLength(2);
-        expect(groups[0].isMultiSet).toBe(true);
+        expect(resultsEl.innerHTML).toContain('empty-state');
+        expect(resultsEl.innerHTML).toContain('No sets match your search');
     });
 
-    it('should keep standalone sets as single-set groups', function () {
-        var utils = loadSetListUtils();
+    it('should render flat rows when meta has no multiSetBlockKeys', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
         var sets = [
-            { code: 'neo', name: 'Kamigawa: Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, releaseDate: '2022-02-18' },
+            { code: 'mid', name: 'Midnight Hunt', keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
+            { code: 'neo', name: 'Neon Dynasty', keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
         ];
 
-        var groups = utils.groupByBlock(sets, {});
+        config.renderContent(resultsEl, sets, { page: 1, limit: 25, total: 2, totalPages: 1 });
 
-        expect(groups).toHaveLength(1);
-        expect(groups[0].blockName).toBe('Kamigawa');
-        expect(groups[0].sets).toHaveLength(1);
-        expect(groups[0].isMultiSet).toBe(false);
+        var rows = resultsEl.querySelectorAll('tbody tr');
+        expect(rows.length).toBe(2);
+        expect(rows[0].classList.contains('block-label-row')).toBe(false);
+        expect(rows[0].classList.contains('block-child-row')).toBe(false);
     });
 
-    it('should mark single-set groups as multi-set when in multiSetKeys', function () {
-        var utils = loadSetListUtils();
+    it('should render block label rows and child indentation with multiSetBlockKeys', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mic', name: 'Midnight Hunt Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, releaseDate: '2021-09-24' },
+            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
+            { code: 'mic', name: 'MH Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, keyruneCode: 'mic', tags: [], prices: { basePrice: 10 }, releaseDate: '2021-09-24' },
         ];
-        var multiSetKeys = { mid: true };
+        var meta = { page: 1, limit: 25, total: 1, totalPages: 1, multiSetBlockKeys: ['mid'] };
 
-        var groups = utils.groupByBlock(sets, multiSetKeys);
+        config.renderContent(resultsEl, sets, meta);
 
-        expect(groups).toHaveLength(1);
-        expect(groups[0].isMultiSet).toBe(true);
+        var labelRows = resultsEl.querySelectorAll('tr.block-label-row');
+        expect(labelRows.length).toBe(1);
+        expect(labelRows[0].textContent).toContain('Innistrad');
+
+        var childRows = resultsEl.querySelectorAll('tr.block-child-row');
+        expect(childRows.length).toBe(1);
+        expect(childRows[0].innerHTML).toContain('MH Commander');
+
+        // First set row should not be indented
+        var allDataRows = resultsEl.querySelectorAll('tbody tr.table-row');
+        expect(allDataRows[0].classList.contains('block-child-row')).toBe(false);
+        expect(allDataRows[0].innerHTML).toContain('Midnight Hunt');
     });
 
-    it('should sort sets within a group: main first, then by releaseDate ASC', function () {
-        var utils = loadSetListUtils();
+    it('should not render block label for single-set groups not in multiSetBlockKeys', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mic', name: 'Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, releaseDate: '2021-09-24' },
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, releaseDate: '2021-09-24' },
-            { code: 'mia', name: 'Midnight Alchemy', block: 'Innistrad', parentCode: 'mid', isMain: false, releaseDate: '2021-12-09' },
+            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
         ];
-        var multiSetKeys = { mid: true };
+        var meta = { page: 1, limit: 25, total: 1, totalPages: 1, multiSetBlockKeys: [] };
 
-        var groups = utils.groupByBlock(sets, multiSetKeys);
+        config.renderContent(resultsEl, sets, meta);
 
-        expect(groups[0].sets[0].code).toBe('mid');
-        expect(groups[0].sets[1].code).toBe('mic');
-        expect(groups[0].sets[2].code).toBe('mia');
+        var labelRows = resultsEl.querySelectorAll('tr.block-label-row');
+        expect(labelRows.length).toBe(0);
+
+        var dataRows = resultsEl.querySelectorAll('tbody tr.table-row');
+        expect(dataRows.length).toBe(1);
     });
 
-    it('should sort groups by earliest release date DESC', function () {
-        var utils = loadSetListUtils();
+    it('should render multiple block groups with labels', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, releaseDate: '2021-09-24' },
-            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, releaseDate: '2022-02-18' },
+            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
+            { code: 'mic', name: 'MH Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, keyruneCode: 'mic', tags: [], prices: { basePrice: 10 }, releaseDate: '2021-09-24' },
+            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
+            { code: 'nec', name: 'ND Commander', block: 'Kamigawa', parentCode: 'neo', isMain: false, keyruneCode: 'nec', tags: [], prices: { basePrice: 8 }, releaseDate: '2022-02-18' },
         ];
+        var meta = { page: 1, limit: 25, total: 2, totalPages: 1, multiSetBlockKeys: ['mid', 'neo'] };
 
-        var groups = utils.groupByBlock(sets, {});
+        config.renderContent(resultsEl, sets, meta);
 
-        expect(groups[0].blockName).toBe('Kamigawa');
-        expect(groups[1].blockName).toBe('Innistrad');
+        var labelRows = resultsEl.querySelectorAll('tr.block-label-row');
+        expect(labelRows.length).toBe(2);
+
+        var childRows = resultsEl.querySelectorAll('tr.block-child-row');
+        expect(childRows.length).toBe(2);
     });
 
-    it('should use set name as blockName when block field is missing', function () {
-        var utils = loadSetListUtils();
+    it('should include owned value column when authenticated', function () {
+        document.body.innerHTML = '<div id="set-list-ajax" data-authenticated="true"><div id="filter-results"></div></div>';
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
         var sets = [
-            { code: 'abc', name: 'Mystery Set', block: null, parentCode: null, isMain: true, releaseDate: '2023-01-01' },
+            { code: 'mid', name: 'Midnight Hunt', keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24', ownedValue: 25.5, completionRate: 40 },
         ];
 
-        var groups = utils.groupByBlock(sets, {});
+        config.renderContent(resultsEl, sets, { page: 1, limit: 25, total: 1, totalPages: 1 });
 
-        expect(groups[0].blockName).toBe('Mystery Set');
-    });
-
-    it('should handle empty sets array', function () {
-        var utils = loadSetListUtils();
-        var groups = utils.groupByBlock([], {});
-        expect(groups).toEqual([]);
-    });
-
-    it('should group multiple blocks correctly', function () {
-        var utils = loadSetListUtils();
-        var sets = [
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, releaseDate: '2021-09-24' },
-            { code: 'mic', name: 'MH Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, releaseDate: '2021-09-24' },
-            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, releaseDate: '2022-02-18' },
-            { code: 'nec', name: 'ND Commander', block: 'Kamigawa', parentCode: 'neo', isMain: false, releaseDate: '2022-02-18' },
-        ];
-        var multiSetKeys = { mid: true, neo: true };
-
-        var groups = utils.groupByBlock(sets, multiSetKeys);
-
-        expect(groups).toHaveLength(2);
-        expect(groups[0].blockName).toBe('Kamigawa');
-        expect(groups[0].sets).toHaveLength(2);
-        expect(groups[1].blockName).toBe('Innistrad');
-        expect(groups[1].sets).toHaveLength(2);
+        expect(resultsEl.innerHTML).toContain('$25.50');
+        expect(resultsEl.innerHTML).toContain('completion-bar');
     });
 });

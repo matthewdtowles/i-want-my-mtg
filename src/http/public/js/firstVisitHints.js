@@ -7,12 +7,35 @@
         txImport: 'iwmm_txImportHintDismissed',
     };
 
+    function storageAvailable() {
+        try {
+            var k = '__storage_test__';
+            localStorage.setItem(k, '1');
+            localStorage.removeItem(k);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    var hasStorage = storageAvailable();
+
     function isDismissed(key) {
-        return localStorage.getItem(key) === '1';
+        if (!hasStorage) return false;
+        try {
+            return localStorage.getItem(key) === '1';
+        } catch (e) {
+            return false;
+        }
     }
 
     function dismiss(key) {
-        localStorage.setItem(key, '1');
+        if (!hasStorage) return;
+        try {
+            localStorage.setItem(key, '1');
+        } catch (e) {
+            /* storage full or blocked */
+        }
     }
 
     // --- Binder View Discovery ---
@@ -21,31 +44,69 @@
         var binderLink = document.querySelector('.binder-link');
         if (!binderLink) return;
 
+        var hintId = 'fv-binder-hint';
+
         var bubble = document.createElement('div');
+        bubble.id = hintId;
         bubble.className = 'fv-hint-bubble fv-hint-bubble--binder';
-        bubble.setAttribute('role', 'tooltip');
-        bubble.innerHTML =
-            '<p class="fv-hint-text"><i class="fas fa-book-open" aria-hidden="true"></i> View as a binder - flip through your cards page by page</p>' +
-            '<button type="button" class="fv-hint-dismiss">Got it</button>';
+        bubble.setAttribute('role', 'status');
+
+        var text = document.createElement('p');
+        text.className = 'fv-hint-text';
+        var icon = document.createElement('i');
+        icon.className = 'fas fa-book-open';
+        icon.setAttribute('aria-hidden', 'true');
+        text.appendChild(icon);
+        text.appendChild(
+            document.createTextNode(' View as a binder \u2013 flip through your cards page by page')
+        );
+        bubble.appendChild(text);
+
+        var dismissBtn = document.createElement('button');
+        dismissBtn.type = 'button';
+        dismissBtn.className = 'fv-hint-dismiss';
+        dismissBtn.textContent = 'Got it';
+        bubble.appendChild(dismissBtn);
+
         document.body.appendChild(bubble);
+        binderLink.setAttribute('aria-describedby', hintId);
 
         function positionBubble() {
             var rect = binderLink.getBoundingClientRect();
-            bubble.style.top = (rect.bottom + 8) + 'px';
+            if (rect.bottom === 0 && rect.top === 0) {
+                // Anchor is off-screen or hidden — hide bubble
+                bubble.style.display = 'none';
+                return;
+            }
+            bubble.style.display = '';
+            bubble.style.top = rect.bottom + 8 + 'px';
             var left = rect.left - 80;
             bubble.style.left = Math.max(8, left) + 'px';
         }
         positionBubble();
 
-        bubble.querySelector('.fv-hint-dismiss').addEventListener('click', function () {
-            dismiss(KEYS.binder);
-            bubble.remove();
-        });
+        var repositionTimer = null;
+        function throttledReposition() {
+            if (repositionTimer) return;
+            repositionTimer = setTimeout(function () {
+                repositionTimer = null;
+                positionBubble();
+            }, 100);
+        }
+        window.addEventListener('scroll', throttledReposition, { passive: true });
+        window.addEventListener('resize', throttledReposition, { passive: true });
 
-        binderLink.addEventListener('click', function () {
+        function removeBubble() {
             dismiss(KEYS.binder);
+            binderLink.removeAttribute('aria-describedby');
+            window.removeEventListener('scroll', throttledReposition);
+            window.removeEventListener('resize', throttledReposition);
             bubble.remove();
-        }, { once: true });
+        }
+
+        dismissBtn.addEventListener('click', removeBubble);
+
+        binderLink.addEventListener('click', removeBubble, { once: true });
     }
 
     // --- Portfolio Metric Hints ---
@@ -68,9 +129,18 @@
 
             var bubble = document.createElement('div');
             bubble.className = 'fv-hint-bubble fv-hint-bubble--metric hidden';
-            bubble.innerHTML =
-                '<p class="fv-hint-text">' + hintText + '</p>' +
-                '<button type="button" class="fv-hint-dismiss">Got it</button>';
+            bubble.setAttribute('role', 'status');
+
+            var hintP = document.createElement('p');
+            hintP.className = 'fv-hint-text';
+            hintP.textContent = hintText;
+            bubble.appendChild(hintP);
+
+            var dismissBtn = document.createElement('button');
+            dismissBtn.type = 'button';
+            dismissBtn.className = 'fv-hint-dismiss';
+            dismissBtn.textContent = 'Got it';
+            bubble.appendChild(dismissBtn);
 
             card.appendChild(btn);
             card.appendChild(bubble);
@@ -83,14 +153,17 @@
                 bubble.classList.toggle('hidden');
             });
 
-            bubble.querySelector('.fv-hint-dismiss').addEventListener('click', function (e) {
+            dismissBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 dismissAllMetricHints();
             });
         });
 
         document.addEventListener('click', function (e) {
-            if (!e.target.closest('.fv-metric-hint-btn') && !e.target.closest('.fv-hint-bubble--metric')) {
+            if (
+                !e.target.closest('.fv-metric-hint-btn') &&
+                !e.target.closest('.fv-hint-bubble--metric')
+            ) {
                 document.querySelectorAll('.fv-hint-bubble--metric').forEach(function (b) {
                     b.classList.add('hidden');
                 });
@@ -103,9 +176,11 @@
         document.querySelectorAll('[data-metric-hint]').forEach(function (card) {
             card.classList.remove('stat-card-hint-active');
         });
-        document.querySelectorAll('.fv-metric-hint-btn, .fv-hint-bubble--metric').forEach(function (el) {
-            el.remove();
-        });
+        document
+            .querySelectorAll('.fv-metric-hint-btn, .fv-hint-bubble--metric')
+            .forEach(function (el) {
+                el.remove();
+            });
     }
 
     // --- Transaction Import Hint ---

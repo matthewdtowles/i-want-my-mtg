@@ -44,6 +44,7 @@ All scripts are in the `scripts/` directory and designed to be run from the proj
 ```bash
 npm test                                                  # All unit tests
 npm test -- --testPathPattern='card.service'              # Single test file
+npm run test:watch                                        # Unit tests in watch mode
 npm run test:cov                                          # Unit tests with coverage
 npm run test:frontend                                     # Frontend JS unit tests (jsdom)
 npm run test:integ                                        # Integration tests (Docker)
@@ -98,6 +99,7 @@ npm run lighthouse                              # Audit localhost:3000 (public p
 npm run lighthouse -- --auth                    # Include authenticated pages (prompts for credentials)
 npm run lighthouse -- --base-url=https://...    # Audit a remote URL
 npm run lighthouse -- --category=performance    # Only run performance audits
+npm run lighthouse:prod                         # Audit iwantmymtg.net (production)
 ```
 
 Requires Chrome/Chromium and `lighthouse` (`npm install -g lighthouse` or it uses `npx`).
@@ -168,6 +170,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 npm run bump          # Patch bump (1.0.0 → 1.0.1) - bug fixes, minor changes
 npm run bump:minor    # Minor bump (1.0.0 → 1.1.0) - new features
 npm run bump:major    # Major bump (1.0.0 → 2.0.0) - breaking changes
+npm run bump:dev      # Pre-release bump (1.0.0 → 1.0.1-rc.0) - RC/dev builds
 ```
 
 These commands update the `version` field in `package.json` without creating a git tag. Include the version bump in your PR commit.

@@ -14,13 +14,13 @@ test.describe('Login flow', () => {
         await expect(page.locator('#login-btn')).toBeVisible();
     });
 
-    test('successful login redirects to home', async ({ page }) => {
+    test('successful login redirects to user page', async ({ page }) => {
         await page.goto('/auth/login');
         await page.locator('#user-email').fill(TEST_USER.email);
         await page.locator('#user-password').fill(TEST_USER.password);
         await page.locator('#login-btn').click();
-        await page.waitForURL('/');
-        expect(page.url()).toMatch(/\/$/);
+        await page.waitForURL('/user');
+        expect(page.url()).toMatch(/\/user$/);
     });
 
     test('failed login shows error', async ({ page }) => {
@@ -46,7 +46,7 @@ test.describe('Logout flow', () => {
         await page.locator('#user-email').fill(TEST_USER.email);
         await page.locator('#user-password').fill(TEST_USER.password);
         await page.locator('#login-btn').click();
-        await page.waitForURL('/');
+        await page.waitForURL('/user');
 
         // Then log out
         await page.goto('/auth/logout');

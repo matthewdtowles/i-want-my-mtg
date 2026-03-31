@@ -1,3 +1,5 @@
+import { mkdirSync } from 'fs';
+import { dirname } from 'path';
 import { test as base, expect, Page } from '@playwright/test';
 
 const TEST_USER = {
@@ -16,7 +18,8 @@ export async function authenticateAndSave(page: Page): Promise<void> {
     await page.locator('#user-email').fill(TEST_USER.email);
     await page.locator('#user-password').fill(TEST_USER.password);
     await page.locator('#login-btn').click();
-    await page.waitForURL('/');
+    await page.waitForURL('/user');
+    mkdirSync(dirname(AUTH_STATE_PATH), { recursive: true });
     await page.context().storageState({ path: AUTH_STATE_PATH });
 }
 

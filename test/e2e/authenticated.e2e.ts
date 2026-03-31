@@ -5,18 +5,13 @@ test.describe('Set detail (authenticated)', () => {
         await page.goto('/sets/TST');
         await expect(page.locator('h1')).toContainText('Test Set');
         // Authenticated users see the "Add All Cards" form
-        const addAllBtn = page.locator('button:has-text("Add All")');
-        if (await addAllBtn.isVisible()) {
-            await expect(addAllBtn).toBeEnabled();
-        }
+        await expect(page.locator('button:has-text("Add All")')).toBeVisible();
+        await expect(page.locator('button:has-text("Add All")')).toBeEnabled();
     });
 
     test('shows My Binder link', async ({ authedPage: page }) => {
         await page.goto('/sets/TST');
-        const binderLink = page.locator('a[href="/inventory/sets/TST"]');
-        if (await binderLink.isVisible()) {
-            await expect(binderLink).toBeVisible();
-        }
+        await expect(page.locator('a[href="/inventory/sets/TST"]')).toBeVisible();
     });
 });
 

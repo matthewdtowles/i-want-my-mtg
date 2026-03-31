@@ -39,11 +39,9 @@ test.describe('Set detail page', () => {
 
     test('shows price info popover on button click', async ({ page }) => {
         await page.goto('/sets/TST');
-        const toggle = page.locator('#price-info-toggle');
-        if (await toggle.isVisible()) {
-            await toggle.click();
-            await expect(page.locator('#price-info-popover')).toBeVisible();
-        }
+        await expect(page.locator('#price-info-toggle')).toBeVisible();
+        await page.locator('#price-info-toggle').click();
+        await expect(page.locator('#price-info-popover')).toBeVisible();
     });
 
     test('renders card list', async ({ page }) => {
@@ -56,7 +54,7 @@ test.describe('Card detail page', () => {
     test('renders card name and price', async ({ page }) => {
         await page.goto('/card/TST/1');
         await expect(page.locator('h1')).toContainText('Test Angel');
-        await expect(page.locator('text=$')).toBeTruthy();
+        await expect(page.locator('.price-tile-value').first()).toContainText('$');
     });
 });
 

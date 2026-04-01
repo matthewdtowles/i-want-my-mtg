@@ -302,6 +302,11 @@ input[type='number'] {
         display: none !important;
     }
 
+    .tag {
+        font-size: 0.55rem !important;
+        padding: 0.05rem 0.35rem !important;
+    }
+
     .xs-show {
         display: block !important;
     }
@@ -318,6 +323,12 @@ input[type='number'] {
 
 @media (min-width: 451px) {
     .xs-show {
+        display: none !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .xxs-hide {
         display: none !important;
     }
 }

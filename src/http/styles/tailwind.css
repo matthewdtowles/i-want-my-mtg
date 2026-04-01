@@ -163,7 +163,7 @@
 }
 
 .binder-card-overlay-name {
-    @apply text-white text-xs font-medium truncate block;
+    @apply text-white text-xs font-medium truncate block no-underline hover:underline;
 }
 
 .binder-card-overlay-number {

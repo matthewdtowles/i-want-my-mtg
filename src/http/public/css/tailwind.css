@@ -2614,6 +2614,11 @@ input:where([type='file']):focus {
   font-weight: 500;
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  text-decoration-line: none;
+}
+
+.binder-card-overlay-name:hover {
+  text-decoration-line: underline;
 }
 
 .binder-card-overlay-number {

@@ -1078,8 +1078,8 @@
 /* ===== Tags ===== */
 
 .tag {
-    @apply inline-flex items-center text-xs font-medium text-white bg-purple-500 dark:bg-purple-600
-           px-2 py-0.5 mx-0.5 rounded-full;
+    @apply inline-flex items-center text-[0.65rem] font-medium text-white bg-purple-500 dark:bg-purple-600
+           px-1.5 py-px mx-0.5 rounded-full;
 }
 
 /* ===== Price Tiles ===== */

@@ -5109,12 +5109,11 @@ input:where([type='file']):focus {
   border-radius: 9999px;
   --tw-bg-opacity: 1;
   background-color: rgb(169 93 224 / var(--tw-bg-opacity, 1));
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  padding-top: 0.125rem;
-  padding-bottom: 0.125rem;
-  font-size: 0.75rem;
-  line-height: 1rem;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  font-size: 0.65rem;
   font-weight: 500;
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));

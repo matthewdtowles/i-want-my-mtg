@@ -63,9 +63,11 @@
 
         html +=
             '<div class="binder-card-overlay">' +
-            '<span class="binder-card-overlay-name">' +
+            '<a href="' +
+            escapeHtml(url) +
+            '" class="binder-card-overlay-name">' +
             escapedName +
-            '</span>' +
+            '</a>' +
             '<span class="binder-card-overlay-number">#' +
             escapedNumber +
             '</span>';

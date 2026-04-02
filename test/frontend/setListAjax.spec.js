@@ -109,10 +109,15 @@ describe('setListAjax renderTable', function () {
         expect(childRows.length).toBe(1);
         expect(childRows[0].innerHTML).toContain('MH Commander');
 
-        // First set row should not be indented
+        // First set row should not be indented but should be a block group member
         var allDataRows = resultsEl.querySelectorAll('tbody tr.table-row');
         expect(allDataRows[0].classList.contains('block-child-row')).toBe(false);
+        expect(allDataRows[0].classList.contains('block-group-member')).toBe(true);
         expect(allDataRows[0].innerHTML).toContain('Midnight Hunt');
+
+        // All data rows in multi-set blocks should have block-group-member
+        var memberRows = resultsEl.querySelectorAll('tr.block-group-member');
+        expect(memberRows.length).toBe(2);
     });
 
     it('should not render block label for single-set groups not in multiSetBlockKeys', function () {
@@ -130,6 +135,7 @@ describe('setListAjax renderTable', function () {
 
         var dataRows = resultsEl.querySelectorAll('tbody tr.table-row');
         expect(dataRows.length).toBe(1);
+        expect(dataRows[0].classList.contains('block-group-member')).toBe(false);
     });
 
     it('should render multiple block groups with labels', function () {

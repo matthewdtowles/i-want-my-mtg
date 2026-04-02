@@ -549,7 +549,7 @@ export class SetOrchestrator {
     ): TableHeadersRowView {
         const headers = new TableHeadersRowView([
             new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2'], '7d'),
+            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2', 'xxs-hide'], '7d'),
         ]);
         if (authenticated) {
             headers.headers.push(new TableHeaderView('Owned Value'));

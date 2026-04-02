@@ -34,3 +34,6 @@ fi
 
 echo "Running: scry $*"
 docker compose run --rm etl /app/scry "$@"
+
+# Clean up dangling images left by pulled etl/postgres images
+docker image prune -f --filter "until=168h" > /dev/null 2>&1 || true

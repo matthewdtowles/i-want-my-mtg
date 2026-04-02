@@ -163,7 +163,7 @@
 }
 
 .binder-card-overlay-name {
-    @apply text-white text-xs font-medium truncate block;
+    @apply text-white text-xs font-medium truncate block no-underline hover:underline;
 }
 
 .binder-card-overlay-number {
@@ -1065,21 +1065,21 @@
 }
 
 /* Bottom border on last row in a block */
-.block-child-row:has(+ :not(.block-child-row)) > td,
-.block-child-row:last-child > td {
+.block-group-member:has(+ :not(.block-group-member)) > td,
+.block-group-member:last-child > td {
     border-bottom: 1px solid rgba(168, 85, 247, 0.45);
 }
 
-.dark .block-child-row:has(+ :not(.block-child-row)) > td,
-.dark .block-child-row:last-child > td {
+.dark .block-group-member:has(+ :not(.block-group-member)) > td,
+.dark .block-group-member:last-child > td {
     border-bottom: 1px solid rgba(192, 132, 252, 0.5);
 }
 
 /* ===== Tags ===== */
 
 .tag {
-    @apply inline-flex items-center text-xs font-medium text-white bg-purple-500 dark:bg-purple-600
-           px-2 py-0.5 mx-0.5 rounded-full;
+    @apply inline text-[0.65rem] font-medium text-white bg-purple-500 dark:bg-purple-600
+           px-1 py-px mx-0.5 rounded;
 }
 
 /* ===== Price Tiles ===== */

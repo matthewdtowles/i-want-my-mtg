@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     html += '</td></tr>';
                 }
                 for (var s = 0; s < group.sets.length; s++) {
+                    group.sets[s]._blockGroupMember = group.isMultiSet;
                     html += renderSetRow(group.sets[s], group.isMultiSet && s > 0);
                 }
             }
@@ -77,7 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var priceHtml = formatPrice(set.prices);
         var changeHtml = formatWeeklyChange(set.prices);
 
-        var rowClass = indented ? 'table-row block-child-row' : 'table-row';
+        var rowClass = 'table-row';
+        if (set._blockGroupMember) rowClass += ' block-group-member';
+        if (indented) rowClass += ' block-child-row';
         var html = '<tr class="' + rowClass + '">';
         html += '<td class="table-cell"><i class="ss ss-' + keyruneCode + ' ss-fw"></i> ';
         html += '<a href="' + url + '" class="table-link">' + name + '</a> ' + tagsHtml + '</td>';

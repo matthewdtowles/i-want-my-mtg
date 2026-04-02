@@ -304,7 +304,7 @@ input[type='number'] {
 
     .tag {
         font-size: 0.55rem !important;
-        padding: 0.05rem 0.3rem !important;
+        padding: 0.05rem 0.25rem !important;
     }
 
     .block-child-row > td:first-child {

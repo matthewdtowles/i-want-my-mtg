@@ -9,6 +9,7 @@ export class CardMapper {
         return new Card({
             id: ormCard.id,
             artist: ormCard.artist,
+            flavorName: ormCard.flavorName,
             hasFoil: ormCard.hasFoil,
             hasNonFoil: ormCard.hasNonFoil,
             imgSrc: ormCard.imgSrc,
@@ -36,6 +37,7 @@ export class CardMapper {
         const ormEntity = new CardOrmEntity();
         ormEntity.id = coreCard.id;
         ormEntity.artist = coreCard.artist;
+        ormEntity.flavorName = coreCard.flavorName;
         ormEntity.hasFoil = coreCard.hasFoil;
         ormEntity.hasNonFoil = coreCard.hasNonFoil;
         ormEntity.imgSrc = coreCard.imgSrc;

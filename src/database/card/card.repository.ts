@@ -241,9 +241,10 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .split(' ')
             .filter((f) => f.length > 0)
             .forEach((fragment, i) =>
-                qb.andWhere(`${this.TABLE}.name ILIKE :search${i}`, {
-                    [`search${i}`]: `%${fragment}%`,
-                })
+                qb.andWhere(
+                    `(${this.TABLE}.name ILIKE :search${i} OR ${this.TABLE}.flavorName ILIKE :search${i})`,
+                    { [`search${i}`]: `%${fragment}%` }
+                )
             );
     }
 

@@ -42,6 +42,9 @@ export class CardApiResponseDto {
     @ApiPropertyOptional()
     readonly artist?: string;
 
+    @ApiPropertyOptional()
+    readonly flavorName?: string;
+
     @ApiProperty()
     readonly imgSrc: string;
 

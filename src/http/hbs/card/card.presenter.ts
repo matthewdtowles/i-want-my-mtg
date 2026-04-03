@@ -67,6 +67,7 @@ export class CardPresenter {
             ...this.toCardResponse(card, inventory, imageType),
             legalities: this.fillMissingFormats(card),
             artist: card.artist,
+            flavorName: card.flavorName,
             oracleText: card.oracleText || '',
             setName: card.set?.name || '',
         });

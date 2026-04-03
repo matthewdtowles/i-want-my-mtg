@@ -14,6 +14,7 @@ export class CardApiPresenter {
             manaCost: card.manaCost,
             oracleText: card.oracleText,
             artist: card.artist,
+            flavorName: card.flavorName,
             imgSrc: card.imgSrc,
             hasFoil: card.hasFoil,
             hasNonFoil: card.hasNonFoil,

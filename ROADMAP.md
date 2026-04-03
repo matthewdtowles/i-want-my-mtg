@@ -304,11 +304,12 @@
 
 ### 2.11 Support Flavor Name
 
-- [ ] Verify Scryfall API provides flavor_name data
-- [ ] Add flavor_name column to card table (migration)
-- [ ] Update Scry card ingestion to store flavor_name
-- [ ] Display flavor_name on card detail page where applicable
-- [ ] Add flavor_name to card search if relevant
+- [x] Verify MTGJSON API provides flavorName data
+- [x] Add flavor_name column to card table (migration 023)
+- [x] Update Scry card ingestion to store flavor_name (struct, mapper, repository UPSERT)
+- [x] Add flavorName to NestJS ORM entity, domain entity, mapper, presenters, and API DTOs
+- [x] Display flavor_name on card detail page where applicable (italic subtitle below card name)
+- [x] Add flavor_name to card search (OR condition alongside name in applySearchFilter)
 
 ### 2.12 Feature: Price Notifications
 

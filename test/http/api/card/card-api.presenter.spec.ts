@@ -126,12 +126,21 @@ describe('CardApiPresenter', () => {
                 manaCost: '{R}',
                 oracleText: 'Deal 3 damage to any target.',
                 artist: 'Christopher Rush',
+                flavorName: 'Pew Pew McGee',
             });
             const result = CardApiPresenter.toCardApiResponse(card);
 
             expect(result.manaCost).toBe('{R}');
             expect(result.oracleText).toBe('Deal 3 damage to any target.');
             expect(result.artist).toBe('Christopher Rush');
+            expect(result.flavorName).toBe('Pew Pew McGee');
+        });
+
+        it('should have undefined flavorName when not present', () => {
+            const card = createCard({ flavorName: undefined });
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            expect(result.flavorName).toBeUndefined();
         });
 
         it('should always include weekly change fields (even when null)', () => {

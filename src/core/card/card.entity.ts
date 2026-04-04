@@ -7,6 +7,7 @@ import { Price } from './price.entity';
 export class Card {
     readonly id: string;
     readonly artist?: string;
+    readonly flavorName?: string;
     readonly hasFoil: boolean;
     readonly hasNonFoil: boolean;
     readonly imgSrc: string;
@@ -55,6 +56,7 @@ export class Card {
         this.type = init.type;
         // Optional fields
         this.artist = init.artist;
+        this.flavorName = init.flavorName;
         this.manaCost = init.manaCost;
         this.oracleText = init.oracleText;
         this.prices = init.prices;

@@ -94,6 +94,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.card (
     id character varying NOT NULL,
     artist character varying,
+    flavor_name character varying,
     has_foil boolean NOT NULL,
     has_non_foil boolean NOT NULL,
     img_src character varying NOT NULL,

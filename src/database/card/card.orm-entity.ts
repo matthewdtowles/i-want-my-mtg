@@ -12,6 +12,9 @@ export class CardOrmEntity {
     @Column({ nullable: true })
     artist?: string;
 
+    @Column({ name: 'flavor_name', nullable: true })
+    flavorName?: string;
+
     @Column({ name: 'has_foil' })
     hasFoil: boolean;
 

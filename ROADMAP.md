@@ -313,13 +313,20 @@
 
 ### 2.12 Feature: Price Notifications
 
-- [ ] Design notification data model (user preferences, thresholds, history)
+- [x] Design notification data model (user preferences, thresholds, history)
+- [x] Create database migration for price_alert and price_notification tables (migration 025)
+- [x] Implement domain entities, repository ports, ORM entities, mappers, and repositories
+- [x] Implement PriceAlertService with CRUD and processAlerts() price change detection
+- [x] Implement PriceNotificationService with CRUD and mark-as-read operations
+- [x] Create REST API endpoints for price alerts (CRUD) and notifications (list, read, read-all)
+- [x] Implement price change detection (percentage threshold, comparing current vs previous day)
+- [x] Implement email notification delivery (batched per user, HTML template with price table)
+- [x] Add process endpoint with API key auth for cron-triggered processing
+- [x] Add cron job (daily at 2:15 AM) to trigger price alert processing after ingestion
+- [x] Integration tests with 4-card scenario (increase trigger, increase no-trigger, decrease trigger, decrease no-trigger)
 - [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
-- [ ] Implement price change detection during ingestion
-- [ ] Implement email notification delivery
-- [ ] Add notification history/log view
-- [ ] Consider in-app notifications in addition to email
-- [ ] Add unsubscribe/manage preferences flow
+- [ ] Add notification history/log view in UI
+- [ ] Add unsubscribe/manage preferences flow in UI
 
 ---
 

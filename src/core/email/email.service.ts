@@ -157,6 +157,93 @@ export class EmailService {
         }
     }
 
+    async sendPriceAlertEmail(
+        email: string,
+        name: string,
+        alerts: Array<{
+            cardName: string;
+            setCode: string;
+            direction: string;
+            oldPrice: number;
+            newPrice: number;
+            changePct: number;
+        }>
+    ): Promise<boolean> {
+        const from = this.configService.get<string>('SMTP_FROM', 'noreply@iwantmymtg.net');
+        const redacted = this.redactEmail(email);
+        this.LOGGER.log(
+            `Attempting to send price alert email to: ${redacted}, alerts: ${alerts.length}`
+        );
+        if (!this.isConfigured || !this.transporter) {
+            this.LOGGER.warn(`Email not configured. Skipping send to: ${redacted}`);
+            return this.configService.get<string>('NODE_ENV') === 'dev';
+        }
+        const baseUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+        const rows = alerts
+            .map((a) => {
+                const arrow = a.direction === 'increase' ? '&#9650;' : '&#9660;';
+                const color = a.direction === 'increase' ? '#22c55e' : '#ef4444';
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">
+                            <a href="${baseUrl}/card/${a.setCode}/${a.cardName}" style="color: #333; text-decoration: none; font-weight: 500;">${a.cardName}</a>
+                            <span style="color: #999; font-size: 12px;">(${a.setCode.toUpperCase()})</span>
+                        </td>
+                        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${a.oldPrice.toFixed(2)}</td>
+                        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${a.newPrice.toFixed(2)}</td>
+                        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; color: ${color};">
+                            ${arrow} ${Math.abs(a.changePct).toFixed(1)}%
+                        </td>
+                    </tr>`;
+            })
+            .join('');
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #333;">Price Alert${alerts.length > 1 ? 's' : ''}</h1>
+                <p>Hi ${name}, ${alerts.length} of your watched cards had significant price changes:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 8px 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Card</th>
+                            <th style="padding: 8px 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Old</th>
+                            <th style="padding: 8px 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">New</th>
+                            <th style="padding: 8px 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <p style="text-align: center; margin: 20px 0;">
+                    <a href="${baseUrl}/notifications"
+                       style="background-color: #4CAF50; color: white; padding: 12px 24px;
+                              text-decoration: none; border-radius: 4px; display: inline-block;">
+                        View All Notifications
+                    </a>
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">
+                    You can manage your price alerts at <a href="${baseUrl}/price-alerts" style="color: #666;">${baseUrl}/price-alerts</a>
+                </p>
+            </div>
+        `;
+        try {
+            const info = await this.transporter.sendMail({
+                from,
+                to: email,
+                subject: `Price Alert: ${alerts.length} card${alerts.length > 1 ? 's' : ''} changed - I Want My MTG`,
+                html,
+            });
+            this.LOGGER.log(
+                `Price alert email sent to ${redacted}. MessageId: ${info.messageId}`
+            );
+            return true;
+        } catch (error) {
+            this.LOGGER.error(
+                `Failed to send price alert email to ${redacted}: ${error.message}`
+            );
+            return false;
+        }
+    }
+
     private async verifyConnection(): Promise<void> {
         try {
             await this.transporter?.verify();

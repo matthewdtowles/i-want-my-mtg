@@ -11,6 +11,8 @@ import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/ports/portfol
 import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/ports/portfolio-value-history.repository.port';
 import { TransactionRepositoryPort } from 'src/core/transaction/ports/transaction.repository.port';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
+import { PriceAlertRepositoryPort } from 'src/core/price-alert/ports/price-alert.repository.port';
+import { PriceNotificationRepositoryPort } from 'src/core/price-alert/ports/price-notification.repository.port';
 import { PendingUserRepositoryPort } from 'src/core/user/ports/pending-user.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardOrmEntity } from './card/card.orm-entity';
@@ -38,6 +40,10 @@ import { TransactionOrmEntity } from './transaction/transaction.orm-entity';
 import { TransactionRepository } from './transaction/transaction.repository';
 import { UserOrmEntity } from './user/user.orm-entity';
 import { UserRepository } from './user/user.repository';
+import { PriceAlertOrmEntity } from './price-alert/price-alert.orm-entity';
+import { PriceAlertRepository } from './price-alert/price-alert.repository';
+import { PriceNotificationOrmEntity } from './price-alert/price-notification.orm-entity';
+import { PriceNotificationRepository } from './price-alert/price-notification.repository';
 import { PendingUserOrmEntity } from './user/pending-user.orm-entity';
 import { PendingUserRepository } from './user/pending-user.repository';
 
@@ -56,6 +62,8 @@ import { PendingUserRepository } from './user/pending-user.repository';
             PortfolioCardPerformanceOrmEntity,
             PortfolioSummaryOrmEntity,
             PortfolioValueHistoryOrmEntity,
+            PriceAlertOrmEntity,
+            PriceNotificationOrmEntity,
             TransactionOrmEntity,
             UserOrmEntity,
             PendingUserOrmEntity,
@@ -74,6 +82,8 @@ import { PendingUserRepository } from './user/pending-user.repository';
         },
         { provide: PortfolioSummaryRepositoryPort, useClass: PortfolioSummaryRepository },
         { provide: PortfolioValueHistoryRepositoryPort, useClass: PortfolioValueHistoryRepository },
+        { provide: PriceAlertRepositoryPort, useClass: PriceAlertRepository },
+        { provide: PriceNotificationRepositoryPort, useClass: PriceNotificationRepository },
         { provide: TransactionRepositoryPort, useClass: TransactionRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
@@ -88,6 +98,8 @@ import { PendingUserRepository } from './user/pending-user.repository';
         PortfolioCardPerformanceRepositoryPort,
         PortfolioSummaryRepositoryPort,
         PortfolioValueHistoryRepositoryPort,
+        PriceAlertRepositoryPort,
+        PriceNotificationRepositoryPort,
         TransactionRepositoryPort,
         UserRepositoryPort,
         PendingUserRepositoryPort,

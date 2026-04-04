@@ -3,7 +3,7 @@
 
 -- Test set
 INSERT INTO "set" (code, base_size, total_size, block, keyrune_code, name, parent_code, release_date, type, is_main)
-VALUES ('TST', 3, 3, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
+VALUES ('TST', 4, 4, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Test cards in the set
@@ -11,7 +11,8 @@ INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana
 VALUES
     ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'TST', 'Creature - Angel', 'normal', false, '001', true),
     ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'TST', 'Creature - Sphinx', 'normal', false, '002', true),
-    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'TST', 'Creature - Zombie', 'normal', false, '003', true)
+    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'TST', 'Creature - Zombie', 'normal', false, '003', true),
+    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, 'https://example.com/card4.jpg', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'TST', 'Creature - Dragon', 'normal', false, '004', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards
@@ -19,7 +20,8 @@ INSERT INTO price (card_id, normal, foil, date)
 VALUES
     ('00000000-0000-4000-a000-000000000001', 5.00, 10.00, CURRENT_DATE),
     ('00000000-0000-4000-a000-000000000002', 1.50, 3.00, CURRENT_DATE),
-    ('00000000-0000-4000-a000-000000000003', 0.25, NULL, CURRENT_DATE)
+    ('00000000-0000-4000-a000-000000000003', 0.25, NULL, CURRENT_DATE),
+    ('00000000-0000-4000-a000-000000000004', 20.00, 40.00, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Price history for test card
@@ -59,5 +61,6 @@ INSERT INTO legality (card_id, format, status)
 VALUES
     ('00000000-0000-4000-a000-000000000001', 'standard', 'legal'),
     ('00000000-0000-4000-a000-000000000002', 'standard', 'legal'),
-    ('00000000-0000-4000-a000-000000000003', 'standard', 'legal')
+    ('00000000-0000-4000-a000-000000000003', 'standard', 'legal'),
+    ('00000000-0000-4000-a000-000000000004', 'standard', 'legal')
 ON CONFLICT (card_id, format) DO NOTHING;

@@ -6,6 +6,7 @@ import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
+import { PriceAlertModule } from './price-alert/price-alert.module';
 import { SearchModule } from './search/search.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { SetModule } from './set/set.module';
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
         ImportModule,
         InventoryModule,
         PasswordResetModule,
+        PriceAlertModule,
         PortfolioModule,
         SearchModule,
         SetModule,
@@ -33,6 +35,7 @@ import { UserModule } from './user/user.module';
         ImportModule,
         InventoryModule,
         PasswordResetModule,
+        PriceAlertModule,
         PortfolioModule,
         SearchModule,
         SetModule,

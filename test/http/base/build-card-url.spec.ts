@@ -18,6 +18,6 @@ describe('buildCardUrl', () => {
     });
 
     it('should handle collector numbers with special characters', () => {
-        expect(buildCardUrl('TST', '★123')).toBe('/card/tst/★123');
+        expect(buildCardUrl('TST', '★123')).toBe('/card/tst/%E2%98%85123');
     });
 });

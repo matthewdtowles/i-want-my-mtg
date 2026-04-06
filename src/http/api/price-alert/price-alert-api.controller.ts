@@ -162,7 +162,7 @@ export class PriceAlertApiController {
     async process(
         @Headers('x-api-key') apiKey: string
     ): Promise<ApiResponseDto<{ notificationsSent: number; usersNotified: number }>> {
-        const expectedKey = this.configService.get<string>('PRICE_ALERT_API_KEY');
+        const expectedKey = this.configService.get<string>('INTERNAL_API_KEY');
         if (!expectedKey || apiKey !== expectedKey) {
             throw new UnauthorizedException('Invalid API key');
         }

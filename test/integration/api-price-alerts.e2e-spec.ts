@@ -15,7 +15,7 @@ describe('Price Alerts API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
     let ds: DataSource;
-    const savedApiKey = process.env.PRICE_ALERT_API_KEY;
+    const savedApiKey = process.env.INTERNAL_API_KEY;
 
     beforeAll(async () => {
         app = await createTestApp();
@@ -25,9 +25,9 @@ describe('Price Alerts API (e2e)', () => {
 
     afterAll(async () => {
         if (savedApiKey !== undefined) {
-            process.env.PRICE_ALERT_API_KEY = savedApiKey;
+            process.env.INTERNAL_API_KEY = savedApiKey;
         } else {
-            delete process.env.PRICE_ALERT_API_KEY;
+            delete process.env.INTERNAL_API_KEY;
         }
         try {
             if (ds?.isInitialized) {
@@ -238,7 +238,7 @@ describe('Price Alerts API (e2e)', () => {
 
         it('POST /api/v1/price-alerts/process triggers correct alerts', async () => {
             // Set the API key env var for this test
-            process.env.PRICE_ALERT_API_KEY = 'test-api-key-12345';
+            process.env.INTERNAL_API_KEY = 'test-api-key-12345';
 
             const res = await request(app.getHttpServer())
                 .post('/api/v1/price-alerts/process')
@@ -397,8 +397,8 @@ describe('Price Alerts API (e2e)', () => {
     });
 
     describe('Process endpoint auth', () => {
-        it('POST /api/v1/price-alerts/process rejects when no PRICE_ALERT_API_KEY configured', async () => {
-            delete process.env.PRICE_ALERT_API_KEY;
+        it('POST /api/v1/price-alerts/process rejects when no INTERNAL_API_KEY configured', async () => {
+            delete process.env.INTERNAL_API_KEY;
 
             await request(app.getHttpServer())
                 .post('/api/v1/price-alerts/process')

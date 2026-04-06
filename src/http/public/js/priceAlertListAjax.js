@@ -110,13 +110,13 @@ document.addEventListener('DOMContentLoaded', function () {
         // Increase %
         html += '<td class="table-cell">';
         html += '<span class="alert-display">' + formatPct(alert.increasePct) + '</span>';
-        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="increasePct" value="' + (alert.increasePct != null ? alert.increasePct : '') + '" min="0" step="1" />';
+        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="increasePct" value="' + (alert.increasePct != null ? alert.increasePct : '') + '" min="0.01" step="0.01" />';
         html += '</td>';
 
         // Decrease %
         html += '<td class="table-cell">';
         html += '<span class="alert-display">' + formatPct(alert.decreasePct) + '</span>';
-        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="decreasePct" value="' + (alert.decreasePct != null ? alert.decreasePct : '') + '" min="0" step="1" />';
+        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="decreasePct" value="' + (alert.decreasePct != null ? alert.decreasePct : '') + '" min="0.01" step="0.01" />';
         html += '</td>';
 
         // Active toggle

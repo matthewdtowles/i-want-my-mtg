@@ -73,10 +73,10 @@ export class PriceNotificationApiController {
     async markAsRead(
         @Param('id', ParseIntPipe) id: number,
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResponseDto<{ success: boolean }>> {
+    ): Promise<ApiResponseDto<{ markedRead: boolean }>> {
         try {
             await this.notificationService.markAsRead(id, req.user.id);
-            return ApiResponseDto.ok({ success: true });
+            return ApiResponseDto.ok({ markedRead: true });
         } catch (error) {
             if (error instanceof DomainNotFoundError) {
                 throw new NotFoundException('Notification not found');
@@ -91,8 +91,8 @@ export class PriceNotificationApiController {
     @ApiResponse({ status: 200, description: 'All marked as read' })
     async markAllAsRead(
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResponseDto<{ success: boolean }>> {
+    ): Promise<ApiResponseDto<{ markedAllRead: boolean }>> {
         await this.notificationService.markAllAsRead(req.user.id);
-        return ApiResponseDto.ok({ success: true });
+        return ApiResponseDto.ok({ markedAllRead: true });
     }
 }

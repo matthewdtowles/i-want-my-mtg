@@ -10,7 +10,7 @@ RUN npm ci
 
 # Development stage
 FROM dependencies AS development
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash perl
 COPY . .
 CMD ["npm", "run", "start:dev"]
 

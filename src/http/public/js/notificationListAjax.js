@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event delegation for row click to mark as read
     document.addEventListener('click', function (e) {
         var row = e.target.closest('.notification-row');
-        if (row && container.contains(row) && row.dataset.isRead === 'false') {
+        if (!row || !container.contains(row) || row.dataset.isRead !== 'false') return;
+        if (e.target.closest('a') || e.target.closest('button')) {
+            // Navigation may cancel in-flight fetch, so use keepalive
+            markAsReadBeacon(row);
+        } else {
             handleMarkAsRead(row);
         }
     });
@@ -116,6 +120,17 @@ document.addEventListener('DOMContentLoaded', function () {
     function formatDate(dateStr) {
         var d = new Date(dateStr);
         return d.toLocaleDateString();
+    }
+
+    function markAsReadBeacon(row) {
+        var notificationId = row.dataset.notificationId;
+        fetch('/api/v1/notifications/' + notificationId + '/read', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            keepalive: true,
+        });
+        row.dataset.isRead = 'true';
+        row.classList.remove('border-l-2', 'border-teal-400');
     }
 
     async function handleMarkAsRead(row) {

@@ -56,7 +56,14 @@ export class PriceAlertService {
         if (existing) {
             throw new DomainValidationError('Price alert already exists for this card');
         }
-        return this.alertRepo.create(alert);
+        try {
+            return await this.alertRepo.create(alert);
+        } catch (error) {
+            if (error?.code === '23505') {
+                throw new DomainValidationError('Price alert already exists for this card');
+            }
+            throw error;
+        }
     }
 
     async findByUser(userId: number, page: number, limit: number): Promise<PriceAlert[]> {

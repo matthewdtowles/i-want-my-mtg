@@ -328,9 +328,11 @@
             <tbody>
                 {{#each set.cards}}
                 <tr class="table-row">
+                    {{#if ../authenticated}}
                     <td class="table-cell">
                         {{>invStepper card=this compact=true}}
                     </td>
+                    {{/if}}
                     <td class="table-cell">{{this.number}}</td>
                     <td class="table-cell">
                         {{>cardLink url=this.url name=this.name imgSrc=this.imgSrc item=this}}

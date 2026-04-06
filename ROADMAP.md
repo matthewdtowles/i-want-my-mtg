@@ -336,9 +336,12 @@
 - [x] DB CHECK constraint ensuring at least one threshold is set (migration 026)
 - [x] Harden cron job: anchored grep, full-value cut, `curl -sSf` for visible errors
 - [x] Fix e2e test env var leak (`PRICE_ALERT_API_KEY` saved/restored in afterAll)
-- [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
-- [ ] Add notification history/log view in UI
-- [ ] Add unsubscribe/manage preferences flow in UI
+- [x] Enrich API responses with card name, number, and set code (JOIN queries in repositories)
+- [x] Price Alerts management page (`/price-alerts`) with AJAX table, inline edit/toggle/delete
+- [x] Price Alert form on card detail page (create alerts with increase/decrease % thresholds)
+- [x] Notifications history page (`/notifications`) with unread highlighting and mark-as-read
+- [x] Navbar links for Alerts (desktop and mobile)
+- [x] Hide Owned column on set card list when not authenticated
 
 ---
 

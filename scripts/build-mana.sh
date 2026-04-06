@@ -18,9 +18,13 @@ fi
 mkdir -p "$FONT_DIR"
 mkdir -p "$(dirname "$CSS_OUT")"
 
-# Copy woff2 font (skip if target is up-to-date or not writable by us)
+# Copy woff2 font (skip if target is up-to-date)
 if [ ! -f "$FONT_DIR/mana.woff2" ] || [ "$MANA_DIR/fonts/mana.woff2" -nt "$FONT_DIR/mana.woff2" ]; then
-    cp "$MANA_DIR/fonts/mana.woff2" "$FONT_DIR/mana.woff2"
+    if [ -f "$FONT_DIR/mana.woff2" ] && [ ! -w "$FONT_DIR/mana.woff2" ]; then
+        echo "Warning: $FONT_DIR/mana.woff2 is not writable, skipping font copy." >&2
+    else
+        cp "$MANA_DIR/fonts/mana.woff2" "$FONT_DIR/mana.woff2"
+    fi
 fi
 
 # Build CSS to a temp file first, then move into place.

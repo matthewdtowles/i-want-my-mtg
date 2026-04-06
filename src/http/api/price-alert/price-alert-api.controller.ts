@@ -102,7 +102,7 @@ export class PriceAlertApiController {
             if (error instanceof DomainValidationError) {
                 throw new BadRequestException(error.message);
             }
-            this.LOGGER.error(`Unexpected error creating price alert: ${error.message}`);
+            this.LOGGER.error(`Unexpected error creating price alert: ${error?.message ?? error}`);
             throw new InternalServerErrorException('Failed to create price alert');
         }
     }
@@ -128,7 +128,7 @@ export class PriceAlertApiController {
             if (error instanceof DomainValidationError) {
                 throw new BadRequestException(error.message);
             }
-            this.LOGGER.error(`Unexpected error updating price alert ${id}: ${error.message}`);
+            this.LOGGER.error(`Unexpected error updating price alert ${id}: ${error?.message ?? error}`);
             throw new InternalServerErrorException('Failed to update price alert');
         }
     }
@@ -150,7 +150,7 @@ export class PriceAlertApiController {
             if (error instanceof DomainNotFoundError || error instanceof DomainNotAuthorizedError) {
                 throw new NotFoundException('Price alert not found');
             }
-            this.LOGGER.error(`Unexpected error deleting price alert ${id}: ${error.message}`);
+            this.LOGGER.error(`Unexpected error deleting price alert ${id}: ${error?.message ?? error}`);
             throw new InternalServerErrorException('Failed to delete price alert');
         }
     }

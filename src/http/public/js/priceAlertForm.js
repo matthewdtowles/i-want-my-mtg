@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var data = await response.json().catch(function () { return null; });
 
             if (response.ok && data && data.success) {
-                showMessage('Price alert created! <a href="/price-alerts" class="underline">View alerts</a>', 'success');
+                showSuccessWithLink('Price alert created! ', '/price-alerts', 'View alerts');
                 form.reset();
             } else {
                 var msg = (data && data.error) || 'Failed to create price alert.';
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function showMessage(html, type) {
+    function showMessage(text, type) {
         if (!messageEl) return;
         messageEl.classList.remove('hidden', 'text-teal-600', 'dark:text-teal-400', 'text-red-500', 'dark:text-red-400');
         if (type === 'success') {
@@ -52,7 +52,18 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             messageEl.classList.add('text-red-500', 'dark:text-red-400');
         }
-        messageEl.innerHTML = html;
+        messageEl.textContent = text;
+    }
+
+    function showSuccessWithLink(text, href, linkText) {
+        showMessage('', 'success');
+        messageEl.textContent = '';
+        messageEl.appendChild(document.createTextNode(text));
+        var a = document.createElement('a');
+        a.href = href;
+        a.className = 'underline';
+        a.textContent = linkText;
+        messageEl.appendChild(a);
     }
 
     function hideMessage() {

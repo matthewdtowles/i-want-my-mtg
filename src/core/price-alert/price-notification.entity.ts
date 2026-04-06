@@ -15,6 +15,7 @@ export class PriceNotification {
     readonly createdAt: Date;
     // For read operations only
     readonly cardName?: string;
+    readonly cardNumber?: string;
     readonly setCode?: string;
 
     constructor(init: Partial<PriceNotification>) {
@@ -30,6 +31,7 @@ export class PriceNotification {
         this.isRead = init.isRead ?? false;
         this.createdAt = init.createdAt ?? new Date();
         this.cardName = init.cardName;
+        this.cardNumber = init.cardNumber;
         this.setCode = init.setCode;
     }
 }

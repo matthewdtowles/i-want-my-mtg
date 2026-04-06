@@ -14,6 +14,14 @@ export class PriceNotificationService {
         return this.repository.findByUser(userId, page, limit);
     }
 
+    async findByUserWithCardData(
+        userId: number,
+        page: number,
+        limit: number
+    ): Promise<PriceNotification[]> {
+        return this.repository.findByUserWithCardData(userId, page, limit);
+    }
+
     async countByUser(userId: number): Promise<number> {
         return this.repository.countByUser(userId);
     }

@@ -46,7 +46,7 @@ export class PriceNotificationApiController {
         const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
 
         const [notifications, total] = await Promise.all([
-            this.notificationService.findByUser(req.user.id, p, l),
+            this.notificationService.findByUserWithCardData(req.user.id, p, l),
             this.notificationService.countByUser(req.user.id),
         ]);
 

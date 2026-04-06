@@ -10,6 +10,7 @@ describe('PriceNotificationService', () => {
     const mockRepo = {
         createMany: jest.fn(),
         findByUser: jest.fn(),
+        findByUserWithCardData: jest.fn(),
         countByUser: jest.fn(),
         countUnreadByUser: jest.fn(),
         markAsRead: jest.fn(),

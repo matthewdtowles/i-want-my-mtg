@@ -241,7 +241,8 @@ export class SetOrchestrator {
                 tableHeadersRow: this.buildSetDetailTableHeaders(
                     effectiveOptions,
                     hasAnyNormalPrice,
-                    hasAnyFoilPrice
+                    hasAnyFoilPrice,
+                    isAuthenticated(req)
                 ),
             });
         } catch (error) {
@@ -563,15 +564,19 @@ export class SetOrchestrator {
     private buildSetDetailTableHeaders(
         options: SafeQueryOptions,
         hasAnyNormalPrice = true,
-        hasAnyFoilPrice = true
+        hasAnyFoilPrice = true,
+        authenticated = false
     ): TableHeadersRowView {
-        const headers = [
-            new TableHeaderView('Owned'),
+        const headers: TableHeaderView[] = [];
+        if (authenticated) {
+            headers.push(new TableHeaderView('Owned'));
+        }
+        headers.push(
             new SortableHeaderView(options, SortOptions.NUMBER),
             new SortableHeaderView(options, SortOptions.CARD),
             new TableHeaderView('Mana Cost', ['xs-hide']),
-            new TableHeaderView('Rarity', ['xs-hide']),
-        ];
+            new TableHeaderView('Rarity', ['xs-hide'])
+        );
         if (hasAnyNormalPrice) {
             headers.push(new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'));
         }

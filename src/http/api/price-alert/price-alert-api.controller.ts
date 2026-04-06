@@ -63,12 +63,12 @@ export class PriceAlertApiController {
         const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
 
         const [alerts, total] = await Promise.all([
-            this.priceAlertService.findByUser(req.user.id, p, l),
+            this.priceAlertService.findByUserWithCardData(req.user.id, p, l),
             this.priceAlertService.countByUser(req.user.id),
         ]);
 
         return ApiResponseDto.ok(
-            alerts.map(PriceAlertApiPresenter.toAlertDto),
+            alerts.map(PriceAlertApiPresenter.toAlertWithCardDto),
             new PaginationMeta(p, l, total)
         );
     }

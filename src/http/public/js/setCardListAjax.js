@@ -230,13 +230,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var hasAnyNormalPrice = hasAnyNormal;
         var hasAnyFoilPrice = hasAnyFoil;
 
-        var headers = [
-            { key: '', label: 'Owned' },
+        var headers = [];
+        if (authenticated) {
+            headers.push({ key: '', label: 'Owned' });
+        }
+        headers.push(
             { key: 'card.sortNumber', label: 'Card No.' },
             { key: 'card.name', label: 'Card' },
             { key: '', label: 'Mana Cost', classes: 'xs-hide' },
-            { key: '', label: 'Rarity', classes: 'xs-hide' },
-        ];
+            { key: '', label: 'Rarity', classes: 'xs-hide' }
+        );
         if (hasAnyNormalPrice) {
             headers.push({
                 key: 'prices.normal',
@@ -269,16 +272,18 @@ document.addEventListener('DOMContentLoaded', function () {
         var html = '<tr class="table-row">';
 
         // Owned column - placeholder, replaced by fetchAndRenderInventory if authenticated
-        html +=
-            '<td class="table-cell owned-cell" data-card-id="' +
-            AjaxUtils.escapeHtml(card.id) +
-            '"' +
-            ' data-has-foil="' +
-            !!card.hasFoil +
-            '"' +
-            ' data-has-non-foil="' +
-            !!card.hasNonFoil +
-            '">&mdash;</td>';
+        if (authenticated) {
+            html +=
+                '<td class="table-cell owned-cell" data-card-id="' +
+                AjaxUtils.escapeHtml(card.id) +
+                '"' +
+                ' data-has-foil="' +
+                !!card.hasFoil +
+                '"' +
+                ' data-has-non-foil="' +
+                !!card.hasNonFoil +
+                '">&mdash;</td>';
+        }
 
         // Card No.
         html += '<td class="table-cell">' + AjaxUtils.escapeHtml(card.number) + '</td>';

@@ -9,7 +9,11 @@ import { EmailService } from 'src/core/email/email.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { PriceAlert } from './price-alert.entity';
 import { PriceNotification, PriceChangeDirection } from './price-notification.entity';
-import { AlertWithPriceData, PriceAlertRepositoryPort } from './ports/price-alert.repository.port';
+import {
+    AlertWithCardData,
+    AlertWithPriceData,
+    PriceAlertRepositoryPort,
+} from './ports/price-alert.repository.port';
 import { PriceNotificationRepositoryPort } from './ports/price-notification.repository.port';
 
 export interface ProcessAlertsResult {
@@ -57,6 +61,14 @@ export class PriceAlertService {
 
     async findByUser(userId: number, page: number, limit: number): Promise<PriceAlert[]> {
         return this.alertRepo.findByUser(userId, page, limit);
+    }
+
+    async findByUserWithCardData(
+        userId: number,
+        page: number,
+        limit: number
+    ): Promise<AlertWithCardData[]> {
+        return this.alertRepo.findByUserWithCardData(userId, page, limit);
     }
 
     async countByUser(userId: number): Promise<number> {

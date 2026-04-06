@@ -23,6 +23,7 @@ describe('PriceAlertService', () => {
         findById: jest.fn(),
         findByUserAndCard: jest.fn(),
         findByUser: jest.fn(),
+        findByUserWithCardData: jest.fn(),
         countByUser: jest.fn(),
         findActiveWithPriceData: jest.fn(),
         update: jest.fn(),
@@ -33,6 +34,7 @@ describe('PriceAlertService', () => {
     const mockNotificationRepo = {
         createMany: jest.fn(),
         findByUser: jest.fn(),
+        findByUserWithCardData: jest.fn(),
         countByUser: jest.fn(),
         countUnreadByUser: jest.fn(),
         markAsRead: jest.fn(),

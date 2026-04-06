@@ -8,6 +8,15 @@ export class PriceAlertApiDto {
     readonly cardId: string;
 
     @ApiPropertyOptional()
+    readonly cardName?: string;
+
+    @ApiPropertyOptional()
+    readonly cardNumber?: string;
+
+    @ApiPropertyOptional()
+    readonly setCode?: string;
+
+    @ApiPropertyOptional()
     readonly increasePct: number | null;
 
     @ApiPropertyOptional()

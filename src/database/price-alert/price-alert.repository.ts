@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PriceAlert } from 'src/core/price-alert/price-alert.entity';
 import {
+    AlertWithCardData,
     AlertWithPriceData,
     PriceAlertRepositoryPort,
 } from 'src/core/price-alert/ports/price-alert.repository.port';
@@ -46,6 +47,57 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
             take: limit,
         });
         return orms.map(PriceAlertMapper.toCore);
+    }
+
+    async findByUserWithCardData(
+        userId: number,
+        page: number,
+        limit: number
+    ): Promise<AlertWithCardData[]> {
+        const rows = await this.dataSource.query(
+            `SELECT
+                a.id, a.user_id, a.card_id, a.increase_pct, a.decrease_pct,
+                a.is_active, a.last_notified_at, a.created_at, a.updated_at,
+                c.name AS card_name, c.number AS card_number, c.set_code
+            FROM price_alert a
+            JOIN card c ON c.id = a.card_id
+            WHERE a.user_id = $1
+            ORDER BY a.created_at DESC
+            LIMIT $2 OFFSET $3`,
+            [userId, limit, (page - 1) * limit]
+        );
+
+        return rows.map(
+            (row: {
+                id: number;
+                user_id: number;
+                card_id: string;
+                increase_pct: string | null;
+                decrease_pct: string | null;
+                is_active: boolean;
+                last_notified_at: Date | null;
+                created_at: Date;
+                updated_at: Date;
+                card_name: string;
+                card_number: string;
+                set_code: string;
+            }) => ({
+                alert: new PriceAlert({
+                    id: row.id,
+                    userId: row.user_id,
+                    cardId: row.card_id,
+                    increasePct: row.increase_pct != null ? Number(row.increase_pct) : null,
+                    decreasePct: row.decrease_pct != null ? Number(row.decrease_pct) : null,
+                    isActive: row.is_active,
+                    lastNotifiedAt: row.last_notified_at,
+                    createdAt: row.created_at,
+                    updatedAt: row.updated_at,
+                }),
+                cardName: row.card_name,
+                cardNumber: row.card_number,
+                setCode: row.set_code,
+            })
+        );
     }
 
     async countByUser(userId: number): Promise<number> {

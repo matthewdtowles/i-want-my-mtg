@@ -5,6 +5,7 @@ export const PriceAlertRepositoryPort = 'PriceAlertRepositoryPort';
 export interface AlertWithPriceData {
     alert: PriceAlert;
     cardName: string;
+    cardNumber: string;
     setCode: string;
     currentPrice: number | null;
     previousPrice: number | null;

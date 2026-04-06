@@ -4,6 +4,7 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    NotFoundException,
     Param,
     ParseIntPipe,
     Patch,
@@ -72,8 +73,12 @@ export class PriceNotificationApiController {
         @Param('id', ParseIntPipe) id: number,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<{ success: boolean }>> {
-        await this.notificationService.markAsRead(id, req.user.id);
-        return ApiResponseDto.ok({ success: true });
+        try {
+            await this.notificationService.markAsRead(id, req.user.id);
+            return ApiResponseDto.ok({ success: true });
+        } catch (_error) {
+            throw new NotFoundException('Notification not found');
+        }
     }
 
     @Patch('read-all')

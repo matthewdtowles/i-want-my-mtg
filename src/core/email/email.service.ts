@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { getLogger } from 'src/logger/global-app-logger';
+import { buildCardUrl } from 'src/shared/utils/card-url.util';
+import { escapeHtml } from 'src/shared/utils/html.util';
 import { redactEmail } from 'src/shared/utils/redact-email.util';
 
 export interface EmailOptions {
@@ -64,7 +66,7 @@ export class EmailService {
         }
         const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #333;">Welcome to I Want My MTG, ${name}!</h1>
+                <h1 style="color: #333;">Welcome to I Want My MTG, ${escapeHtml(name)}!</h1>
                 <p>Please verify your email address by clicking the button below:</p>
                 <p style="text-align: center; margin: 30px 0;">
                     <a href="${verificationUrl}" 
@@ -162,6 +164,7 @@ export class EmailService {
         name: string,
         alerts: Array<{
             cardName: string;
+            cardNumber: string;
             setCode: string;
             direction: string;
             oldPrice: number;
@@ -183,11 +186,14 @@ export class EmailService {
             .map((a) => {
                 const arrow = a.direction === 'increase' ? '&#9650;' : '&#9660;';
                 const color = a.direction === 'increase' ? '#22c55e' : '#ef4444';
+                const cardUrl = `${baseUrl}${buildCardUrl(a.setCode, a.cardNumber)}`;
+                const safeName = escapeHtml(a.cardName);
+                const safeSetCode = escapeHtml(a.setCode.toUpperCase());
                 return `
                     <tr>
                         <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">
-                            <a href="${baseUrl}/card/${a.setCode}/${a.cardName}" style="color: #333; text-decoration: none; font-weight: 500;">${a.cardName}</a>
-                            <span style="color: #999; font-size: 12px;">(${a.setCode.toUpperCase()})</span>
+                            <a href="${cardUrl}" style="color: #333; text-decoration: none; font-weight: 500;">${safeName}</a>
+                            <span style="color: #999; font-size: 12px;">(${safeSetCode})</span>
                         </td>
                         <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${a.oldPrice.toFixed(2)}</td>
                         <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${a.newPrice.toFixed(2)}</td>
@@ -200,7 +206,7 @@ export class EmailService {
         const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h1 style="color: #333;">Price Alert${alerts.length > 1 ? 's' : ''}</h1>
-                <p>Hi ${name}, ${alerts.length} of your watched cards had significant price changes:</p>
+                <p>Hi ${escapeHtml(name)}, ${alerts.length} of your watched cards had significant price changes:</p>
                 <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                     <thead>
                         <tr style="background: #f9fafb;">

@@ -140,6 +140,15 @@ describe('PriceAlertService', () => {
             alertRepo.findById.mockResolvedValue(existing);
             await expect(service.update(1, 1, { increasePct: 15 })).rejects.toThrow();
         });
+
+        it('should throw if update would null out both thresholds', async () => {
+            const existing = new PriceAlert({ id: 1, userId: 1, cardId: 'card-1', increasePct: 10 });
+            alertRepo.findById.mockResolvedValue(existing);
+
+            await expect(
+                service.update(1, 1, { increasePct: null })
+            ).rejects.toThrow('At least one threshold');
+        });
     });
 
     describe('delete', () => {
@@ -178,6 +187,7 @@ describe('PriceAlertService', () => {
                         increasePct: 10,
                     }),
                     cardName: 'Test Angel',
+                    cardNumber: '1',
                     setCode: 'TST',
                     currentPrice: 6.0,
                     previousPrice: 5.0,
@@ -215,6 +225,7 @@ describe('PriceAlertService', () => {
                         increasePct: 10,
                     }),
                     cardName: 'Test Sphinx',
+                    cardNumber: '2',
                     setCode: 'TST',
                     currentPrice: 1.6,
                     previousPrice: 1.5,
@@ -238,6 +249,7 @@ describe('PriceAlertService', () => {
                         decreasePct: 10,
                     }),
                     cardName: 'Test Zombie',
+                    cardNumber: '3',
                     setCode: 'TST',
                     currentPrice: 0.2,
                     previousPrice: 0.25,
@@ -274,6 +286,7 @@ describe('PriceAlertService', () => {
                         decreasePct: 10,
                     }),
                     cardName: 'Test Dragon',
+                    cardNumber: '4',
                     setCode: 'TST',
                     currentPrice: 19.0,
                     previousPrice: 20.0,
@@ -297,6 +310,7 @@ describe('PriceAlertService', () => {
                         increasePct: 10,
                     }),
                     cardName: 'No Price Card',
+                    cardNumber: '5',
                     setCode: 'TST',
                     currentPrice: null,
                     previousPrice: 5.0,
@@ -320,6 +334,7 @@ describe('PriceAlertService', () => {
                         increasePct: 10,
                     }),
                     cardName: 'Zero Price Card',
+                    cardNumber: '6',
                     setCode: 'TST',
                     currentPrice: 5.0,
                     previousPrice: 0,
@@ -343,6 +358,7 @@ describe('PriceAlertService', () => {
                         increasePct: 10,
                     }),
                     cardName: 'Test Angel',
+                    cardNumber: '1',
                     setCode: 'TST',
                     currentPrice: 6.0,
                     previousPrice: 5.0,
@@ -355,6 +371,7 @@ describe('PriceAlertService', () => {
                         decreasePct: 10,
                     }),
                     cardName: 'Test Zombie',
+                    cardNumber: '3',
                     setCode: 'TST',
                     currentPrice: 0.2,
                     previousPrice: 0.25,

@@ -58,6 +58,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
                 a.id, a.user_id, a.card_id, a.increase_pct, a.decrease_pct,
                 a.is_active, a.last_notified_at, a.created_at, a.updated_at,
                 c.name AS card_name,
+                c.number AS card_number,
                 c.set_code,
                 p.normal AS current_price,
                 ph.normal AS previous_price
@@ -73,6 +74,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
                 LIMIT 1
             ) ph ON true
             WHERE a.is_active = true
+              AND (a.last_notified_at IS NULL OR a.last_notified_at < CURRENT_DATE)
         `);
 
         interface AlertPriceRow {
@@ -86,6 +88,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
             created_at: Date;
             updated_at: Date;
             card_name: string;
+            card_number: string;
             set_code: string;
             current_price: string | null;
             previous_price: string | null;
@@ -104,6 +107,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
                 updatedAt: row.updated_at,
             }),
             cardName: row.card_name,
+            cardNumber: row.card_number,
             setCode: row.set_code,
             currentPrice: row.current_price != null ? Number(row.current_price) : null,
             previousPrice: row.previous_price != null ? Number(row.previous_price) : null,

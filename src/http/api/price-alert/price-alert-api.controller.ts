@@ -110,7 +110,10 @@ export class PriceAlertApiController {
             return ApiResponseDto.ok(PriceAlertApiPresenter.toAlertDto(alert));
         } catch (error) {
             if (error.message.includes('not found')) {
-                throw new NotFoundException(error.message);
+                throw new NotFoundException('Price alert not found');
+            }
+            if (error.message.includes('Not authorized')) {
+                throw new NotFoundException('Price alert not found');
             }
             throw new BadRequestException(error.message);
         }
@@ -131,7 +134,10 @@ export class PriceAlertApiController {
             return ApiResponseDto.ok({ deleted: true });
         } catch (error) {
             if (error.message.includes('not found')) {
-                throw new NotFoundException(error.message);
+                throw new NotFoundException('Price alert not found');
+            }
+            if (error.message.includes('Not authorized')) {
+                throw new NotFoundException('Price alert not found');
             }
             throw new BadRequestException(error.message);
         }

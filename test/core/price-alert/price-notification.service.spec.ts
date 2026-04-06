@@ -74,8 +74,14 @@ describe('PriceNotificationService', () => {
 
     describe('markAsRead', () => {
         it('should mark a notification as read', async () => {
+            repo.markAsRead.mockResolvedValue(1);
             await service.markAsRead(1, 1);
             expect(repo.markAsRead).toHaveBeenCalledWith(1, 1);
+        });
+
+        it('should throw when notification not found or not owned by user', async () => {
+            repo.markAsRead.mockResolvedValue(0);
+            await expect(service.markAsRead(999, 1)).rejects.toThrow('Notification not found');
         });
     });
 

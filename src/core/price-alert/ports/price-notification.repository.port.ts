@@ -7,6 +7,6 @@ export interface PriceNotificationRepositoryPort {
     findByUser(userId: number, page: number, limit: number): Promise<PriceNotification[]>;
     countByUser(userId: number): Promise<number>;
     countUnreadByUser(userId: number): Promise<number>;
-    markAsRead(id: number, userId: number): Promise<void>;
+    markAsRead(id: number, userId: number): Promise<number>;
     markAllAsRead(userId: number): Promise<void>;
 }

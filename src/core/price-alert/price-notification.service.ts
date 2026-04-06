@@ -22,7 +22,10 @@ export class PriceNotificationService {
     }
 
     async markAsRead(id: number, userId: number): Promise<void> {
-        return this.repository.markAsRead(id, userId);
+        const affected = await this.repository.markAsRead(id, userId);
+        if (affected === 0) {
+            throw new Error('Notification not found');
+        }
     }
 
     async markAllAsRead(userId: number): Promise<void> {

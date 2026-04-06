@@ -17,6 +17,7 @@ interface TriggeredAlert {
     userId: number;
     cardId: string;
     cardName: string;
+    cardNumber: string;
     setCode: string;
     direction: PriceChangeDirection;
     oldPrice: number;
@@ -67,12 +68,17 @@ export class PriceAlertService {
         if (existing.userId !== userId) {
             throw new Error('Not authorized to update this alert');
         }
+        const newIncreasePct =
+            updates.increasePct !== undefined ? updates.increasePct : existing.increasePct;
+        const newDecreasePct =
+            updates.decreasePct !== undefined ? updates.decreasePct : existing.decreasePct;
+        if (newIncreasePct == null && newDecreasePct == null) {
+            throw new Error('At least one threshold (increasePct or decreasePct) is required');
+        }
         const updated = new PriceAlert({
             ...existing,
-            increasePct:
-                updates.increasePct !== undefined ? updates.increasePct : existing.increasePct,
-            decreasePct:
-                updates.decreasePct !== undefined ? updates.decreasePct : existing.decreasePct,
+            increasePct: newIncreasePct,
+            decreasePct: newDecreasePct,
             isActive: updates.isActive !== undefined ? updates.isActive : existing.isActive,
         });
         return this.alertRepo.update(updated);
@@ -141,7 +147,7 @@ export class PriceAlertService {
     private evaluateAlerts(alertsWithPrices: AlertWithPriceData[]): TriggeredAlert[] {
         const triggered: TriggeredAlert[] = [];
 
-        for (const { alert, cardName, setCode, currentPrice, previousPrice } of alertsWithPrices) {
+        for (const { alert, cardName, cardNumber, setCode, currentPrice, previousPrice } of alertsWithPrices) {
             if (currentPrice == null || previousPrice == null || previousPrice === 0) {
                 continue;
             }
@@ -154,6 +160,7 @@ export class PriceAlertService {
                     userId: alert.userId,
                     cardId: alert.cardId,
                     cardName,
+                    cardNumber,
                     setCode,
                     direction: 'increase',
                     oldPrice: previousPrice,
@@ -172,6 +179,7 @@ export class PriceAlertService {
                     userId: alert.userId,
                     cardId: alert.cardId,
                     cardName,
+                    cardNumber,
                     setCode,
                     direction: 'decrease',
                     oldPrice: previousPrice,

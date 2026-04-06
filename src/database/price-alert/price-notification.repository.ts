@@ -43,8 +43,9 @@ export class PriceNotificationRepository implements PriceNotificationRepositoryP
         return this.repo.countBy({ userId, isRead: false });
     }
 
-    async markAsRead(id: number, userId: number): Promise<void> {
-        await this.repo.update({ id, userId }, { isRead: true });
+    async markAsRead(id: number, userId: number): Promise<number> {
+        const result = await this.repo.update({ id, userId }, { isRead: true });
+        return result.affected ?? 0;
     }
 
     async markAllAsRead(userId: number): Promise<void> {

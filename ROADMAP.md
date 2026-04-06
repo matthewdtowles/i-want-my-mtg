@@ -324,6 +324,18 @@
 - [x] Add process endpoint with API key auth for cron-triggered processing
 - [x] Add cron job (daily at 2:15 AM) to trigger price alert processing after ingestion
 - [x] Integration tests with 4-card scenario (increase trigger, increase no-trigger, decrease trigger, decrease no-trigger)
+- [x] Typed domain errors (`DomainNotFoundError`, `DomainNotAuthorizedError`, `DomainValidationError`) for clean service-to-controller error mapping
+- [x] HTML-escape all interpolated values in email templates (XSS/injection prevention)
+- [x] Shared `buildCardUrl` utility with URL encoding (moved to `src/shared/utils/card-url.util.ts`)
+- [x] Shared `escapeHtml` utility (`src/shared/utils/html.util.ts`)
+- [x] Fix card links in alert emails to use card number (not name) matching app route pattern
+- [x] Map authorization errors to 404 (not 400) to prevent resource existence leakage
+- [x] Validate updates preserve at least one threshold (prevent active alerts with no triggers)
+- [x] Idempotent alert processing (skip alerts where `lastNotifiedAt >= CURRENT_DATE`)
+- [x] `markAsRead` returns 404 when notification not found or not owned by user
+- [x] DB CHECK constraint ensuring at least one threshold is set (migration 026)
+- [x] Harden cron job: anchored grep, full-value cut, `curl -sSf` for visible errors
+- [x] Fix e2e test env var leak (`PRICE_ALERT_API_KEY` saved/restored in afterAll)
 - [ ] Create notification preferences UI (per-card price alerts, portfolio alerts)
 - [ ] Add notification history/log view in UI
 - [ ] Add unsubscribe/manage preferences flow in UI

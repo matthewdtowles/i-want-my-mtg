@@ -15,6 +15,7 @@ describe('Price Alerts API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
     let ds: DataSource;
+    const savedApiKey = process.env.PRICE_ALERT_API_KEY;
 
     beforeAll(async () => {
         app = await createTestApp();
@@ -23,6 +24,11 @@ describe('Price Alerts API (e2e)', () => {
     }, 30000);
 
     afterAll(async () => {
+        if (savedApiKey !== undefined) {
+            process.env.PRICE_ALERT_API_KEY = savedApiKey;
+        } else {
+            delete process.env.PRICE_ALERT_API_KEY;
+        }
         try {
             if (ds?.isInitialized) {
                 await ds.query('DELETE FROM price_notification');

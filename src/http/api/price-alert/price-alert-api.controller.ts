@@ -8,6 +8,7 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    InternalServerErrorException,
     NotFoundException,
     Param,
     ParseIntPipe,
@@ -20,8 +21,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    DomainNotAuthorizedError,
+    DomainNotFoundError,
+    DomainValidationError,
+} from 'src/core/errors/domain.errors';
 import { PriceAlert } from 'src/core/price-alert/price-alert.entity';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
+import { getLogger } from 'src/logger/global-app-logger';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -33,6 +40,8 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @ApiTags('Price Alerts')
 @Controller('api/v1/price-alerts')
 export class PriceAlertApiController {
+    private readonly LOGGER = getLogger(PriceAlertApiController.name);
+
     constructor(
         @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService,
         private readonly configService: ConfigService
@@ -90,7 +99,11 @@ export class PriceAlertApiController {
             );
             return ApiResponseDto.ok(PriceAlertApiPresenter.toAlertDto(alert));
         } catch (error) {
-            throw new BadRequestException(error.message);
+            if (error instanceof DomainValidationError) {
+                throw new BadRequestException(error.message);
+            }
+            this.LOGGER.error(`Unexpected error creating price alert: ${error.message}`);
+            throw new InternalServerErrorException('Failed to create price alert');
         }
     }
 
@@ -109,13 +122,14 @@ export class PriceAlertApiController {
             const alert = await this.priceAlertService.update(id, req.user.id, dto);
             return ApiResponseDto.ok(PriceAlertApiPresenter.toAlertDto(alert));
         } catch (error) {
-            if (error.message.includes('not found')) {
+            if (error instanceof DomainNotFoundError || error instanceof DomainNotAuthorizedError) {
                 throw new NotFoundException('Price alert not found');
             }
-            if (error.message.includes('Not authorized')) {
-                throw new NotFoundException('Price alert not found');
+            if (error instanceof DomainValidationError) {
+                throw new BadRequestException(error.message);
             }
-            throw new BadRequestException(error.message);
+            this.LOGGER.error(`Unexpected error updating price alert ${id}: ${error.message}`);
+            throw new InternalServerErrorException('Failed to update price alert');
         }
     }
 
@@ -133,13 +147,11 @@ export class PriceAlertApiController {
             await this.priceAlertService.delete(id, req.user.id);
             return ApiResponseDto.ok({ deleted: true });
         } catch (error) {
-            if (error.message.includes('not found')) {
+            if (error instanceof DomainNotFoundError || error instanceof DomainNotAuthorizedError) {
                 throw new NotFoundException('Price alert not found');
             }
-            if (error.message.includes('Not authorized')) {
-                throw new NotFoundException('Price alert not found');
-            }
-            throw new BadRequestException(error.message);
+            this.LOGGER.error(`Unexpected error deleting price alert ${id}: ${error.message}`);
+            throw new InternalServerErrorException('Failed to delete price alert');
         }
     }
 

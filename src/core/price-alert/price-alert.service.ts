@@ -1,4 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+    DomainNotAuthorizedError,
+    DomainNotFoundError,
+    DomainValidationError,
+} from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EmailService } from 'src/core/email/email.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
@@ -39,11 +44,13 @@ export class PriceAlertService {
 
     async create(alert: PriceAlert): Promise<PriceAlert> {
         if (alert.increasePct == null && alert.decreasePct == null) {
-            throw new Error('At least one threshold (increasePct or decreasePct) is required');
+            throw new DomainValidationError(
+                'At least one threshold (increasePct or decreasePct) is required'
+            );
         }
         const existing = await this.alertRepo.findByUserAndCard(alert.userId, alert.cardId);
         if (existing) {
-            throw new Error('Price alert already exists for this card');
+            throw new DomainValidationError('Price alert already exists for this card');
         }
         return this.alertRepo.create(alert);
     }
@@ -63,17 +70,19 @@ export class PriceAlertService {
     ): Promise<PriceAlert> {
         const existing = await this.alertRepo.findById(alertId);
         if (!existing) {
-            throw new Error('Price alert not found');
+            throw new DomainNotFoundError('Price alert not found');
         }
         if (existing.userId !== userId) {
-            throw new Error('Not authorized to update this alert');
+            throw new DomainNotAuthorizedError('Not authorized to update this alert');
         }
         const newIncreasePct =
             updates.increasePct !== undefined ? updates.increasePct : existing.increasePct;
         const newDecreasePct =
             updates.decreasePct !== undefined ? updates.decreasePct : existing.decreasePct;
         if (newIncreasePct == null && newDecreasePct == null) {
-            throw new Error('At least one threshold (increasePct or decreasePct) is required');
+            throw new DomainValidationError(
+                'At least one threshold (increasePct or decreasePct) is required'
+            );
         }
         const updated = new PriceAlert({
             ...existing,
@@ -87,10 +96,10 @@ export class PriceAlertService {
     async delete(alertId: number, userId: number): Promise<void> {
         const existing = await this.alertRepo.findById(alertId);
         if (!existing) {
-            throw new Error('Price alert not found');
+            throw new DomainNotFoundError('Price alert not found');
         }
         if (existing.userId !== userId) {
-            throw new Error('Not authorized to delete this alert');
+            throw new DomainNotAuthorizedError('Not authorized to delete this alert');
         }
         await this.alertRepo.delete(alertId);
     }

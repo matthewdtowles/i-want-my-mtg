@@ -741,7 +741,8 @@ CREATE TABLE public.price_alert (
     CONSTRAINT fk_price_alert_user FOREIGN KEY (user_id)
         REFERENCES public.users(id) ON DELETE CASCADE,
     CONSTRAINT fk_price_alert_card FOREIGN KEY (card_id)
-        REFERENCES public.card(id) ON DELETE CASCADE
+        REFERENCES public.card(id) ON DELETE CASCADE,
+    CONSTRAINT chk_price_alert_threshold CHECK (increase_pct IS NOT NULL OR decrease_pct IS NOT NULL)
 );
 
 CREATE INDEX idx_price_alert_user_id ON public.price_alert (user_id);

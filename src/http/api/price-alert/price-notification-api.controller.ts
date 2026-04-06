@@ -13,6 +13,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { PriceNotificationService } from 'src/core/price-alert/price-notification.service';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -76,8 +77,11 @@ export class PriceNotificationApiController {
         try {
             await this.notificationService.markAsRead(id, req.user.id);
             return ApiResponseDto.ok({ success: true });
-        } catch (_error) {
-            throw new NotFoundException('Notification not found');
+        } catch (error) {
+            if (error instanceof DomainNotFoundError) {
+                throw new NotFoundException('Notification not found');
+            }
+            throw error;
         }
     }
 

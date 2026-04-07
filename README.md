@@ -226,10 +226,12 @@ In production, Scry runs as a native binary extracted from its Docker image — 
 | Schedule              | Command                           | Description                          |
 | --------------------- | --------------------------------- | ------------------------------------ |
 | Daily at 2:00 AM      | `scry ingest`                     | Full data ingestion from Scryfall    |
-| Daily at 2:15 AM      | `curl .../price-alerts/process`   | Process price alert notifications    |
+| Daily at 2:15 AM      | `curl -H "x-api-key: $INTERNAL_API_KEY" .../price-alerts/process` | Process price alert notifications |
 | Daily at 2:30 AM      | `scry portfolio-summary`          | Refresh portfolio value snapshots    |
 | Weekly Sunday 3:00 AM | `scry retention`                  | Apply price history retention policy |
 | Weekly Sunday 4:00 AM | `clean_logs.sh`                   | Rotate app and Docker logs           |
+
+The price alert endpoint requires the `x-api-key` header set to `INTERNAL_API_KEY` from `.env`. Generate with `./scripts/gen-api-key.sh`.
 
 **Manual run** (SSH into the server):
 

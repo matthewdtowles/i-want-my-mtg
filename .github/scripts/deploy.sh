@@ -73,6 +73,10 @@ echo "SMTP_PASS=\"${SMTP_PASS:-}\"" >> .env
 echo "SMTP_FROM=\"$SMTP_FROM\"" >> .env
 echo "APP_URL=\"$APP_URL\"" >> .env
 
+# Generate internal API key for cron-triggered endpoints
+log_info "Generating INTERNAL_API_KEY..."
+echo "INTERNAL_API_KEY=\"$(openssl rand -base64 32)\"" >> .env
+
 # Copy files to server
 log_info "Copying files to server..."
 scp -o StrictHostKeyChecking=no -i private_key docker-compose.prod.yml ubuntu@$LIGHTSAIL_IP:~/

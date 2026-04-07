@@ -116,7 +116,13 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
                 ph.normal AS previous_price
             FROM price_alert a
             JOIN card c ON c.id = a.card_id
-            LEFT JOIN price p ON p.card_id = a.card_id
+            LEFT JOIN LATERAL (
+                SELECT p2.normal
+                FROM price p2
+                WHERE p2.card_id = a.card_id
+                ORDER BY p2.date DESC
+                LIMIT 1
+            ) p ON true
             LEFT JOIN LATERAL (
                 SELECT ph2.normal
                 FROM price_history ph2

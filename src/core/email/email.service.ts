@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { getLogger } from 'src/logger/global-app-logger';
+import { PriceChangeDirection } from 'src/core/price-alert/price-notification.entity';
 import { buildCardUrl } from 'src/shared/utils/card-url.util';
 import { escapeHtml } from 'src/shared/utils/html.util';
 import { redactEmail } from 'src/shared/utils/redact-email.util';
@@ -166,7 +167,7 @@ export class EmailService {
             cardName: string;
             cardNumber: string;
             setCode: string;
-            direction: string;
+            direction: PriceChangeDirection;
             oldPrice: number;
             newPrice: number;
             changePct: number;

@@ -72,6 +72,21 @@
             escapedNumber +
             '</span>';
 
+        var prices = card.prices;
+        if (prices && (prices.normal != null || prices.foil != null)) {
+            html += '<span class="binder-card-overlay-price">';
+            if (prices.normal != null) {
+                html += AjaxUtils.toDollar(prices.normal);
+            }
+            if (prices.normal != null && prices.foil != null) {
+                html += ' <span class="binder-card-overlay-price-sep">/</span> ';
+            }
+            if (prices.foil != null) {
+                html += '<span class="binder-card-overlay-price-foil">Foil ' + AjaxUtils.toDollar(prices.foil) + '</span>';
+            }
+            html += '</span>';
+        }
+
         if (options.authenticated) {
             html +=
                 '<div class="binder-card-stepper">' +

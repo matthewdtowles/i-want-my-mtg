@@ -8,10 +8,14 @@ if (!window.matchMedia) {
     };
 }
 
-// Mock AjaxUtils.createStepperGroup since it requires DOM template cloning
+// Mock AjaxUtils since it requires DOM template cloning
 window.AjaxUtils = {
     createStepperGroup: function (cardId, normalQty, foilQty, hasNormal, hasFoil, opts) {
         return '<div class="inv-stepper-group" data-mock="true"></div>';
+    },
+    toDollar: function (amount) {
+        if (amount == null || amount === 0) return '-';
+        return '$' + (Math.round(amount * 100) / 100).toFixed(2);
     },
 };
 
@@ -99,6 +103,49 @@ describe('BinderRenderer', function () {
             expect(html).toContain('loading="lazy"');
             expect(html).toContain('width="488"');
             expect(html).toContain('height="680"');
+        });
+
+        it('should display normal price in overlay when available', function () {
+            var R = loadRenderer();
+            var cardWithPrices = Object.assign({}, card, { prices: { normal: 1.50, foil: null } });
+            var qty = { normalQuantity: 0, foilQuantity: 0 };
+            var html = R.renderCard(cardWithPrices, qty, 'lea', { authenticated: false });
+            expect(html).toContain('binder-card-overlay-price');
+            expect(html).toContain('$1.50');
+        });
+
+        it('should display foil price in overlay when available', function () {
+            var R = loadRenderer();
+            var cardWithPrices = Object.assign({}, card, { prices: { normal: null, foil: 5.99 } });
+            var qty = { normalQuantity: 0, foilQuantity: 0 };
+            var html = R.renderCard(cardWithPrices, qty, 'lea', { authenticated: false });
+            expect(html).toContain('binder-card-overlay-price');
+            expect(html).toContain('$5.99');
+            expect(html).toContain('Foil');
+        });
+
+        it('should display both normal and foil prices when both available', function () {
+            var R = loadRenderer();
+            var cardWithPrices = Object.assign({}, card, { prices: { normal: 1.50, foil: 5.99 } });
+            var qty = { normalQuantity: 0, foilQuantity: 0 };
+            var html = R.renderCard(cardWithPrices, qty, 'lea', { authenticated: false });
+            expect(html).toContain('$1.50');
+            expect(html).toContain('$5.99');
+        });
+
+        it('should not display price section when no prices available', function () {
+            var R = loadRenderer();
+            var cardNoPrices = Object.assign({}, card, { prices: { normal: null, foil: null } });
+            var qty = { normalQuantity: 0, foilQuantity: 0 };
+            var html = R.renderCard(cardNoPrices, qty, 'lea', { authenticated: false });
+            expect(html).not.toContain('binder-card-overlay-price');
+        });
+
+        it('should not display price section when prices object is missing', function () {
+            var R = loadRenderer();
+            var qty = { normalQuantity: 0, foilQuantity: 0 };
+            var html = R.renderCard(card, qty, 'lea', { authenticated: false });
+            expect(html).not.toContain('binder-card-overlay-price');
         });
     });
 

@@ -343,11 +343,48 @@
 - [x] Navbar links for Alerts (desktop and mobile)
 - [x] Hide Owned column on set card list when not authenticated
 
+### 2.13 UI Polish
+
+- [ ] Show active price alert indicator on card detail page (badge or icon when user has an alert set for the card)
+- [ ] Add price info to card overlay in binder view (normal/foil prices in the hover/tap preview)
+
 ---
 
-## Phase 3: Data Expansion
+## Phase 3: Monetization Foundation & New Features
 
-### 3.1 Add Support for Sealed Product
+### 3.1 Affiliate Integration
+
+- [ ] Sign up for TCGPlayer affiliate program
+- [ ] Sign up for Card Kingdom affiliate program
+- [ ] Add price display with affiliate links to card detail views (current market prices from both sources)
+- [ ] Track affiliate click-through rates (event log for which cards drive purchases)
+
+### 3.2 Freemium Structure & Subscription Billing
+
+- [ ] Define free tier limits (collection tracking, basic transaction logging, card search)
+- [ ] Define premium tier features (new features only — do not gate existing shipped features)
+  - Advanced analytics (collection value breakdown by set, format, color, rarity)
+  - Priority access to new features
+  - Extended price history retention
+  - Deck building and management
+- [ ] Integrate Stripe for subscription billing (monthly $3.99–4.99, annual $35–40)
+- [ ] Build subscription management UI (upgrade prompts, plan selection, billing history, cancellation)
+- [ ] Implement feature gating in API layer (backend tier checks, not frontend)
+
+### 3.3 Feature: Deck Building
+
+- [ ] Design deck data model (deck table with user FK, deck_card join table with quantity, sideboard flag)
+- [ ] Create database migration for deck tables
+- [ ] Implement domain entities, repository ports, ORM entities, mappers, and repositories
+- [ ] Implement DeckService with CRUD operations (create, update, delete, add/remove cards)
+- [ ] Create REST API endpoints for decks (CRUD, add/remove cards, list user decks)
+- [ ] Build deck list view page (user's saved decks with name, format, card count, estimated value)
+- [ ] Build deck detail view page (card list grouped by type, mana curve visualization, price breakdown)
+- [ ] Add "Add to Deck" action from card detail and search results
+- [ ] Deck import/export (paste decklist text format, CSV)
+- [ ] Format legality validation (check deck against format rules — Standard, Modern, Commander, etc.)
+
+### 3.4 Add Support for Sealed Product
 
 - [ ] Research Scryfall or other data sources for sealed product data
 - [ ] Design sealed product data model (tables, relationships to sets)
@@ -357,11 +394,145 @@
 - [ ] Add sealed product to inventory tracking
 - [ ] Add sealed product pricing and price history
 
+### 3.5 Legal & Compliance
+
+- [ ] Review Wizards of the Coast's Fan Content Policy and verify compliance
+- [ ] Implement data privacy practices (GDPR/CCPA compliance, privacy policy, data export/deletion)
+- [ ] Draft Terms of Service (acceptable use, data attribution, termination conditions)
+- [ ] Add cookie consent and privacy controls to UI
+
 ---
 
-## Phase 4: Architecture
+## Phase 4: API & Developer Ecosystem
 
-### 4.1 Evaluate Removing NestJS Dependency
+### 4.1 API Monetization & Tiering
+
+- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–49.99/mo: 50,000 req/day + bulk endpoints)
+- [ ] Implement API key management (generate, revoke, view usage)
+- [ ] Extend rate limiting to enforce per-tier limits with clear error messages and upgrade prompts
+- [ ] Integrate Stripe for API subscriptions (separate from consumer subscription, or bundled)
+- [ ] Build usage dashboard (request counts, rate limit headroom, historical usage)
+
+### 4.2 Developer Portal
+
+- [ ] Build or host interactive API docs page (Redoc or Stoplight — more polished than raw Swagger UI)
+- [ ] Create developer portal section with API key management and usage stats
+- [ ] Write "Getting Started" guide and 2–3 integration tutorials (e.g., "Build an MTG Discord price bot")
+- [ ] List API on RapidAPI and similar marketplaces as a discovery channel
+
+### 4.3 MCP Server & Agentic AI Integration
+
+- [ ] Publish OpenAPI spec at well-known URL (`/.well-known/openapi.json`)
+- [ ] Build and publish MCP server for the API (card data, collection management, transaction endpoints)
+- [ ] Create GitHub repository for MCP server with README, examples, and installation instructions
+- [ ] Submit MCP server to community directories and awesome-lists
+- [ ] Write tutorial: "Building an AI-powered MTG collection assistant with the IWMM API"
+
+---
+
+## Phase 5: Growth & Community
+
+### 5.1 External Import Tools
+
+- [ ] Build Moxfield import integration (collection import — powerful acquisition hook)
+- [ ] Build Archidekt import integration
+- [ ] Build Deckbox import integration (longest-running tool, most legacy data)
+- [ ] Parse common CSV formats (TCGPlayer export, Deckbox export, generic)
+- [ ] Highlight import capability in all marketing — eliminating data entry friction is the #1 acquisition driver
+
+### 5.2 Content & SEO Marketing
+
+- [ ] Set up blog section (markdown-rendered or external platform like Dev.to)
+- [ ] Write 3–5 cornerstone articles targeting high-intent search queries:
+  - "How to track your MTG collection value"
+  - "Best way to log MTG card transactions"
+  - "MTG collection management for serious collectors"
+  - "How to know when to sell your Magic cards"
+- [ ] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL)
+
+### 5.3 Community Engagement
+
+- [ ] Engage authentically in key communities before promoting (r/mtgfinance, r/magicTCG, r/EDH, MTG finance Discord servers)
+- [ ] Create dedicated Discord server for app feedback and community
+- [ ] Post "Show Reddit" style post on r/mtgfinance when product is polished
+- [ ] Reach out to 3–5 MTG content creators (MTG Goldfish, Tolarian Community College, finance-focused YouTubers)
+
+### 5.4 Launch Events
+
+- [ ] Submit to Product Hunt (Tuesday/Wednesday launch with screenshots, demo video, value proposition)
+- [ ] Post on Hacker News (Show HN — developer-hobbyist crossover audience)
+- [ ] Offer content creators early access + free premium + referral codes
+
+### 5.5 Analytics
+
+- [ ] Set up privacy-respecting analytics (PostHog or Plausible)
+- [ ] Track key metrics: DAU/MAU, free-to-premium conversion, affiliate CTR, API adoption, churn
+- [ ] Run monthly feedback cycle from Discord community and support requests
+
+---
+
+## Phase 6: Platform Expansion
+
+### 6.1 Mobile App (Cross-Platform)
+
+- [ ] Choose framework (React Native recommended given JS background; Flutter if Dart is appealing)
+- [ ] Scaffold mobile app project in new repo
+- [ ] Integrate with API layer
+- [ ] Implement core views: collection browsing, card search, transaction logging
+- [ ] Add camera-based card scanning (Google ML Kit or similar — potential premium-only feature)
+- [ ] Market cross-platform sync as core differentiator ("scan on phone, manage on web")
+- [ ] TestFlight / internal testing distribution
+- [ ] App Store and Play Store submission
+
+### 6.2 Desktop App (Optional)
+
+- [ ] Evaluate whether desktop app adds value beyond existing PWA capabilities (service worker, offline support)
+- [ ] If proceeding: choose framework (Tauri recommended — lighter than Electron, wraps existing web frontend)
+- [ ] Add desktop-specific features (bulk local file import, keyboard shortcuts, system tray for price alerts)
+- [ ] Distribute via direct download and platform stores
+
+### 6.3 Import Inventory by Picture
+
+- [ ] Research card recognition APIs/libraries (Scryfall image matching, ML models)
+- [ ] Design image upload and processing flow
+- [ ] Implement image capture UI (web + mobile)
+- [ ] Implement card identification from image
+- [ ] Add review/confirm step before adding to inventory
+- [ ] Handle multiple cards in single image
+- [ ] Test accuracy and iterate on recognition
+
+---
+
+## Phase 7: Advanced Monetization & Ecosystem
+
+### 7.1 Peer-to-Peer Transaction Facilitation
+
+- [ ] Research legal and compliance requirements (money transmitter regulations — consult a lawyer)
+- [ ] Build trade/sale matching system (users list cards to sell/trade, system matches buyers, 3–5% fee)
+- [ ] Implement reputation and trust systems (ratings, verified history, dispute resolution)
+- [ ] Start small — limit to verified users in same region or LGS, expand geographically as trust matures
+
+### 7.2 LGS (Local Game Store) Tools
+
+- [ ] Build store-facing dashboard for inventory management (track inventory, set prices vs. market data, buylist pricing)
+- [ ] Offer "Store" subscription tier ($49–99/month) with POS integration, customer want-lists, event inventory
+- [ ] Partner with 5–10 LGS owners as beta testers
+
+### 7.3 Data & Analytics Products
+
+- [ ] Build aggregated market trend reports (weekly/monthly price movements, format staples, set value trends)
+- [ ] Explore anonymized data licensing for content creators, store chains, and market analysts (only viable at scale)
+
+### 7.4 Premium Bundling for Multi-Platform
+
+- [ ] Revisit subscription tiers to reflect multi-platform value (one account, everywhere)
+- [ ] Consider "Collector Pro" tier ($7.99–9.99/month) bundling premium app + Developer-tier API access
+
+---
+
+## Phase 8: Architecture
+
+### 8.1 Evaluate Removing NestJS Dependency
 
 - [ ] Audit current NestJS features used (DI, guards, pipes, interceptors, etc.)
 - [ ] Evaluate lightweight alternatives (Fastify standalone, Express + tsyringe, etc.)
@@ -371,54 +542,10 @@
 - [ ] If migrating: execute migration module by module
 - [ ] If keeping: document decision and rationale
 
-### 4.2 Scry: Interactive Mode
+### 8.2 Scry: Interactive Mode
 
 - [ ] Design interactive CLI menu (select commands, configure options)
 - [ ] Add interactive mode entry point (`cargo run -- interactive` or default)
 - [ ] Add interactive selection for ingestion targets (sets, cards, prices)
 - [ ] Add progress display and confirmation prompts
 - [ ] Add dry-run option for destructive operations
-
----
-
-## Phase 5: Platform Expansion
-
-### 5.1 Desktop App
-
-- [ ] Choose framework (Electron vs Tauri)
-- [ ] Scaffold desktop app project in new repo
-- [ ] Integrate with API layer for data
-- [ ] Implement core views: collection, card search, portfolio
-- [ ] Add desktop-specific features (system tray, notifications)
-- [ ] Set up CI/CD for desktop builds (Windows, macOS, Linux)
-- [ ] Distribution strategy (GitHub releases, auto-update)
-
-### 5.2 Apple Mobile App
-
-- [ ] Choose framework (Swift native vs React Native vs Flutter)
-- [ ] Scaffold iOS app project in new repo
-- [ ] Integrate with API layer
-- [ ] Implement core views: collection, card search, portfolio
-- [ ] Add mobile-specific features (camera for card scanning, push notifications)
-- [ ] TestFlight beta distribution
-- [ ] App Store submission
-
-### 5.3 Android Mobile App
-
-- [ ] Choose framework (Kotlin native vs React Native vs Flutter)
-- [ ] Scaffold Android app project in new repo
-- [ ] Integrate with API layer
-- [ ] Implement core views: collection, card search, portfolio
-- [ ] Add mobile-specific features (camera for card scanning, push notifications)
-- [ ] Internal testing distribution
-- [ ] Play Store submission
-
-### 5.4 Import Inventory by Picture
-
-- [ ] Research card recognition APIs/libraries (Scryfall image matching, ML models)
-- [ ] Design image upload and processing flow
-- [ ] Implement image capture UI (web + mobile)
-- [ ] Implement card identification from image
-- [ ] Add review/confirm step before adding to inventory
-- [ ] Handle multiple cards in single image
-- [ ] Test accuracy and iterate on recognition

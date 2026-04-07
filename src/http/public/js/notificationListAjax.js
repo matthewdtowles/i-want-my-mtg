@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     if (!page) return;
 
+    page.fetchAndRender(null);
+
     // Mark All Read button
     var markAllBtn = document.getElementById('mark-all-read-btn');
     if (markAllBtn) {

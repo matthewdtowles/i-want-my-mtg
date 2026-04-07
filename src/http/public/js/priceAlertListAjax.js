@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     if (!page) return;
 
+    page.fetchAndRender(null);
+
     // Event delegation for inline actions
     document.addEventListener('click', function (e) {
         var toggleBtn = e.target.closest('.toggle-active-button');

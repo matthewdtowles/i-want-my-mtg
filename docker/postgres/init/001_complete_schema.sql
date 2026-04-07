@@ -723,6 +723,63 @@ CREATE INDEX idx_portfolio_card_performance_gain
 
 
 --
+-- Name: price_alert; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.price_alert (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    card_id character varying NOT NULL,
+    increase_pct numeric(5,2),
+    decrease_pct numeric(5,2),
+    is_active boolean NOT NULL DEFAULT true,
+    last_notified_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    CONSTRAINT price_alert_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_price_alert_user_card UNIQUE (user_id, card_id),
+    CONSTRAINT fk_price_alert_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_price_alert_card FOREIGN KEY (card_id)
+        REFERENCES public.card(id) ON DELETE CASCADE,
+    CONSTRAINT chk_price_alert_threshold CHECK (increase_pct IS NOT NULL OR decrease_pct IS NOT NULL)
+);
+
+CREATE INDEX idx_price_alert_user_id ON public.price_alert (user_id);
+CREATE INDEX idx_price_alert_card_id ON public.price_alert (card_id);
+CREATE INDEX idx_price_alert_active ON public.price_alert (is_active) WHERE is_active = true;
+
+
+--
+-- Name: price_notification; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.price_notification (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    card_id character varying NOT NULL,
+    alert_id integer,
+    direction character varying(8) NOT NULL CHECK (direction IN ('increase', 'decrease')),
+    old_price numeric(10,2) NOT NULL,
+    new_price numeric(10,2) NOT NULL,
+    change_pct numeric(5,2) NOT NULL,
+    is_read boolean NOT NULL DEFAULT false,
+    created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    CONSTRAINT price_notification_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_price_notification_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_price_notification_card FOREIGN KEY (card_id)
+        REFERENCES public.card(id) ON DELETE CASCADE,
+    CONSTRAINT fk_price_notification_alert FOREIGN KEY (alert_id)
+        REFERENCES public.price_alert(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_price_notification_user_id ON public.price_notification (user_id);
+CREATE INDEX idx_price_notification_created_at ON public.price_notification (user_id, created_at DESC);
+CREATE INDEX idx_price_notification_unread ON public.price_notification (user_id, is_read) WHERE is_read = false;
+
+
+--
 -- PostgreSQL database dump complete
 --
 

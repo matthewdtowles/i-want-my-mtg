@@ -217,7 +217,35 @@ npm run start:dev                 # Watch mode (builds SW + nest watch)
 
 The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches.
 
-### Production
+### Production ETL (Scry)
+
+In production, Scry runs as a native binary extracted from its Docker image — not via Docker Compose. During deploy, `setup-cron.sh` pulls the latest Scry image, copies the binary to `/opt/scripts/scry`, and installs cron jobs.
+
+**Scheduled jobs** (defined in `cron/i-want-my-mtg`):
+
+| Schedule              | Command                           | Description                          |
+| --------------------- | --------------------------------- | ------------------------------------ |
+| Daily at 2:00 AM      | `scry ingest`                     | Full data ingestion from Scryfall    |
+| Daily at 2:15 AM      | `curl -H "x-api-key: $INTERNAL_API_KEY" .../price-alerts/process` | Process price alert notifications |
+| Daily at 2:30 AM      | `scry portfolio-summary`          | Refresh portfolio value snapshots    |
+| Weekly Sunday 3:00 AM | `scry retention`                  | Apply price history retention policy |
+| Weekly Sunday 4:00 AM | `clean_logs.sh`                   | Rotate app and Docker logs           |
+
+The price alert endpoint requires the `x-api-key` header set to `INTERNAL_API_KEY` from `.env`. Generate with `./scripts/gen-api-key.sh`.
+
+**Manual run** (SSH into the server):
+
+```bash
+/opt/scripts/scry.sh ingest              # Full ingest
+/opt/scripts/scry.sh retention           # Run retention manually
+/opt/scripts/scry.sh <command> [flags]   # Any scry command
+```
+
+The wrapper script (`cron/scry.sh`) sources `~/.env` for `DATABASE_URL` and runs the binary at `/opt/scripts/scry`. Logs are written to `/var/log/i-want-my-mtg/`.
+
+To update the Scry binary to the latest version, re-run the deploy pipeline or manually run `setup-cron.sh`.
+
+### Production Deploy
 
 Deploys automatically via GitHub Actions on push to `main`:
 

@@ -1,0 +1,37 @@
+{{#if hasAlerts}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h1 class="page-title">Price Alerts</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-md mx-auto">
+            Get notified when card prices change by your configured thresholds.
+        </p>
+    </section>
+    <div id="price-alert-list-ajax" class="content-wrapper">
+        <div id="filter-results">
+            <div class="text-center py-16">
+                <i class="fas fa-spinner fa-spin text-4xl text-teal-500"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{else}}
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <div class="bg-teal-50 dark:bg-midnight-900 rounded-lg pb-5">
+        <div class="text-center pt-8 pb-2 px-4">
+            <i class="fas fa-bell text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
+            <h3 class="page-title mt-4">No price alerts yet</h3>
+            <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
+                Set up price alerts on card pages to get notified when prices change by your configured thresholds.
+            </p>
+            <div class="flex justify-center gap-2 mt-6">
+                <a href="/sets" class="btn btn-primary">Browse Sets</a>
+                <a href="/notifications" class="btn btn-secondary">View Notifications</a>
+            </div>
+        </div>
+    </div>
+</section>
+{{/if}}
+
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/priceAlertListAjax.js?v={{assetVersion}}" defer></script>

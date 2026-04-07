@@ -108,10 +108,11 @@ export class CardPresenter {
             const part = faceParts[i].trim();
             const matches = Array.from(part.matchAll(/\{([^}]+)\}/g)).map((m) => m[1]);
             for (const sym of matches) {
-                if (sym.startsWith('h')) {
-                    tokens.push({ symbol: sym.substring(1), isHalf: true });
+                const lower = sym.toLowerCase().replace('/', '');
+                if (lower.startsWith('h')) {
+                    tokens.push({ symbol: lower.substring(1), isHalf: true });
                 } else {
-                    tokens.push({ symbol: sym });
+                    tokens.push({ symbol: lower });
                 }
             }
             if (i + 1 < faceParts.length) {

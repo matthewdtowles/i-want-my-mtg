@@ -92,6 +92,4 @@ export function gainSign(amount: number): string {
     return 'neutral';
 }
 
-export function buildCardUrl(setCode: string, number: string): string {
-    return `/card/${setCode.toLowerCase()}/${number}`;
-}
+export { buildCardUrl } from 'src/shared/utils/card-url.util';

@@ -3,6 +3,13 @@ import { CostBasisResponseDto } from 'src/http/hbs/transaction/dto/cost-basis.re
 import { CardResponseDto } from './card.response.dto';
 import { SingleCardResponseDto } from './single-card.response.dto';
 
+export interface PriceAlertViewDto {
+    id: number;
+    increasePct: number | null;
+    decreasePct: number | null;
+    isActive: boolean;
+}
+
 export class CardViewDto extends ListView {
     readonly card: SingleCardResponseDto;
     readonly otherPrintings: CardResponseDto[];
@@ -11,6 +18,7 @@ export class CardViewDto extends ListView {
     readonly untrackedFoil?: number;
     readonly hasAnyNormalPrice?: boolean;
     readonly hasAnyFoilPrice?: boolean;
+    readonly priceAlert?: PriceAlertViewDto;
 
     constructor(init: Partial<CardViewDto>) {
         super(init);
@@ -21,5 +29,6 @@ export class CardViewDto extends ListView {
         this.untrackedFoil = init.untrackedFoil || 0;
         this.hasAnyNormalPrice = init.hasAnyNormalPrice ?? true;
         this.hasAnyFoilPrice = init.hasAnyFoilPrice ?? true;
+        this.priceAlert = init.priceAlert;
     }
 }

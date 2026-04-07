@@ -66,6 +66,10 @@ export class PriceAlertService {
         }
     }
 
+    async findByUserAndCard(userId: number, cardId: string): Promise<PriceAlert | null> {
+        return this.alertRepo.findByUserAndCard(userId, cardId);
+    }
+
     async findByUser(userId: number, page: number, limit: number): Promise<PriceAlert[]> {
         return this.alertRepo.findByUser(userId, page, limit);
     }

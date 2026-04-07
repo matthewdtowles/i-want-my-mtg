@@ -3,6 +3,7 @@ import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -16,6 +17,7 @@ describe('CardOrchestrator', () => {
     let orchestrator: CardOrchestrator;
     let cardService: CardService;
     let inventoryService: InventoryService;
+    let priceAlertService: jest.Mocked<PriceAlertService>;
     let transactionService: jest.Mocked<TransactionService>;
 
     const mockCardService = {
@@ -27,6 +29,10 @@ describe('CardOrchestrator', () => {
 
     const mockInventoryService = {
         findForUser: jest.fn(),
+    };
+
+    const mockPriceAlertService = {
+        findByUserAndCard: jest.fn(),
     };
 
     const mockHttpErrorHandler = {
@@ -98,6 +104,10 @@ describe('CardOrchestrator', () => {
                     useValue: mockInventoryService,
                 },
                 {
+                    provide: PriceAlertService,
+                    useValue: mockPriceAlertService,
+                },
+                {
                     provide: TransactionService,
                     useValue: {
                         getCostBasis: jest.fn().mockResolvedValue({
@@ -116,6 +126,7 @@ describe('CardOrchestrator', () => {
         orchestrator = module.get<CardOrchestrator>(CardOrchestrator);
         cardService = module.get<CardService>(CardService);
         inventoryService = module.get<InventoryService>(InventoryService);
+        priceAlertService = module.get(PriceAlertService) as jest.Mocked<PriceAlertService>;
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
 
         (HttpErrorHandler.toHttpException as unknown as jest.Mock) =
@@ -467,6 +478,76 @@ describe('CardOrchestrator', () => {
             expect(result.untrackedNormal).toBe(0);
             expect(result.untrackedFoil).toBe(0);
             expect(transactionService.getRemainingQuantity).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('price alert lookup', () => {
+        const setupBaseMocks = () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+            mockInventoryService.findForUser.mockResolvedValue(mockInventory);
+        };
+
+        it('should include existing price alert for authenticated user', async () => {
+            setupBaseMocks();
+            mockPriceAlertService.findByUserAndCard.mockResolvedValue({
+                id: 42,
+                userId: 1,
+                cardId: 'card1',
+                increasePct: 10,
+                decreasePct: 5,
+                isActive: true,
+                lastNotifiedAt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.priceAlert).toEqual({
+                id: 42,
+                increasePct: 10,
+                decreasePct: 5,
+                isActive: true,
+            });
+            expect(priceAlertService.findByUserAndCard).toHaveBeenCalledWith(1, 'card1');
+        });
+
+        it('should not include price alert when none exists', async () => {
+            setupBaseMocks();
+            mockPriceAlertService.findByUserAndCard.mockResolvedValue(null);
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.priceAlert).toBeUndefined();
+        });
+
+        it('should not query price alerts for unauthenticated users', async () => {
+            const unauthenticatedReq = {
+                user: null,
+                query: { page: '1', limit: '10' },
+                isAuthenticated: () => false,
+            } as unknown as AuthenticatedRequest;
+
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(1);
+
+            const result = await orchestrator.findSetCard(unauthenticatedReq, 'TST', '1');
+
+            expect(result.priceAlert).toBeUndefined();
+            expect(priceAlertService.findByUserAndCard).not.toHaveBeenCalled();
+        });
+
+        it('should handle price alert service errors gracefully', async () => {
+            setupBaseMocks();
+            mockPriceAlertService.findByUserAndCard.mockRejectedValue(new Error('DB error'));
+
+            const result = await orchestrator.findSetCard(mockAuthenticatedRequest, 'TST', '1');
+
+            expect(result.priceAlert).toBeUndefined();
+            expect(result.card).toBeDefined();
         });
     });
 

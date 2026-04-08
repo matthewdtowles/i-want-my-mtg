@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var mode = form.getAttribute('data-mode');
     var alertId = form.getAttribute('data-alert-id');
 
+    bindToggle();
+    bindDelete();
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
         hideMessage();
@@ -31,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (toggleBtn) {
+    function bindToggle() {
+        if (!toggleBtn) return;
         toggleBtn.addEventListener('click', async function () {
             hideMessage();
             try {
@@ -58,11 +62,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (deleteBtn) {
+    function bindDelete() {
+        if (!deleteBtn) return;
         deleteBtn.addEventListener('click', async function () {
             hideMessage();
             if (!confirm('Delete this price alert?')) return;
-
             try {
                 var response = await fetch('/api/v1/price-alerts/' + alertId, {
                     method: 'DELETE',
@@ -147,89 +151,40 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.parentNode.insertBefore(btnContainer, submitBtn);
         btnContainer.appendChild(submitBtn);
 
-        var newToggleBtn = document.createElement('button');
-        newToggleBtn.type = 'button';
-        newToggleBtn.id = 'price-alert-toggle-btn';
-        newToggleBtn.className = 'btn btn-secondary text-sm py-1.5 px-3';
-        newToggleBtn.title = 'Pause alert';
-        newToggleBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        btnContainer.appendChild(newToggleBtn);
+        toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.id = 'price-alert-toggle-btn';
+        toggleBtn.className = 'btn btn-secondary text-sm py-1.5 px-3';
+        toggleBtn.title = 'Pause alert';
+        toggleBtn.setAttribute('aria-label', 'Pause alert');
+        toggleBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        btnContainer.appendChild(toggleBtn);
 
-        var newDeleteBtn = document.createElement('button');
-        newDeleteBtn.type = 'button';
-        newDeleteBtn.id = 'price-alert-delete-btn';
-        newDeleteBtn.className = 'btn text-sm py-1.5 px-3 text-red-500 hover:text-red-600 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded';
-        newDeleteBtn.title = 'Delete alert';
-        newDeleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-        btnContainer.appendChild(newDeleteBtn);
+        deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.id = 'price-alert-delete-btn';
+        deleteBtn.className = 'btn text-sm py-1.5 px-3 text-red-500 hover:text-red-600 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded';
+        deleteBtn.title = 'Delete alert';
+        deleteBtn.setAttribute('aria-label', 'Delete alert');
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        btnContainer.appendChild(deleteBtn);
 
-        toggleBtn = newToggleBtn;
-        deleteBtn = newDeleteBtn;
         bindToggle();
         bindDelete();
-    }
-
-    function bindToggle() {
-        if (!toggleBtn) return;
-        toggleBtn.addEventListener('click', async function () {
-            hideMessage();
-            try {
-                var icon = toggleBtn.querySelector('i');
-                var isPaused = icon && icon.classList.contains('fa-play');
-                var response = await fetch('/api/v1/price-alerts/' + alertId, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ isActive: isPaused }),
-                });
-                var data = await response.json().catch(function () { return null; });
-
-                if (response.ok && data && data.success) {
-                    var newState = isPaused ? 'active' : 'paused';
-                    showMessage('Alert ' + newState + '.', 'success');
-                    updateToggleButton(isPaused);
-                    updateStatusBadge(isPaused);
-                } else {
-                    showMessage((data && data.error) || 'Failed to update alert.', 'error');
-                }
-            } catch (error) {
-                showMessage(error.message || 'Error updating alert.', 'error');
-            }
-        });
-    }
-
-    function bindDelete() {
-        if (!deleteBtn) return;
-        deleteBtn.addEventListener('click', async function () {
-            hideMessage();
-            if (!confirm('Delete this price alert?')) return;
-            try {
-                var response = await fetch('/api/v1/price-alerts/' + alertId, {
-                    method: 'DELETE',
-                });
-                var data = await response.json().catch(function () { return null; });
-
-                if (response.ok && data && data.success) {
-                    showDeletedState();
-                } else {
-                    showMessage((data && data.error) || 'Failed to delete alert.', 'error');
-                }
-            } catch (error) {
-                showMessage(error.message || 'Error deleting alert.', 'error');
-            }
-        });
     }
 
     function updateToggleButton(isActive) {
         if (!toggleBtn) return;
         var icon = toggleBtn.querySelector('i');
+        var label = isActive ? 'Pause alert' : 'Resume alert';
+        toggleBtn.title = label;
+        toggleBtn.setAttribute('aria-label', label);
         if (isActive) {
             icon.classList.remove('fa-play');
             icon.classList.add('fa-pause');
-            toggleBtn.title = 'Pause alert';
         } else {
             icon.classList.remove('fa-pause');
             icon.classList.add('fa-play');
-            toggleBtn.title = 'Resume alert';
         }
     }
 

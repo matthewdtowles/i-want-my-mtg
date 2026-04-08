@@ -170,6 +170,18 @@
     @apply text-gray-300 text-[0.65rem];
 }
 
+.binder-card-overlay-price {
+    @apply block mt-1 text-[0.7rem] font-semibold text-emerald-300;
+}
+
+.binder-card-overlay-price-sep {
+    @apply text-gray-400 font-normal;
+}
+
+.binder-card-overlay-price-foil {
+    @apply text-yellow-300;
+}
+
 .binder-card-stepper {
     @apply mt-1.5;
 }

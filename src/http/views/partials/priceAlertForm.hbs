@@ -71,6 +71,7 @@
                     <button type='button' id='price-alert-toggle-btn'
                         class='btn btn-secondary text-sm py-1.5 px-3'
                         title='{{#if priceAlert.isActive}}Pause{{else}}Resume{{/if}} alert'
+                        aria-label='{{#if priceAlert.isActive}}Pause{{else}}Resume{{/if}} alert'
                     >
                         {{#if priceAlert.isActive}}
                             <i class='fa-solid fa-pause'></i>
@@ -81,6 +82,7 @@
                     <button type='button' id='price-alert-delete-btn'
                         class='btn text-sm py-1.5 px-3 text-red-500 hover:text-red-600 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded'
                         title='Delete alert'
+                        aria-label='Delete alert'
                     >
                         <i class='fa-solid fa-trash'></i>
                     </button>

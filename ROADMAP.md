@@ -345,8 +345,8 @@
 
 ### 2.13 UI Polish
 
-- [ ] Show active price alert indicator on card detail page (badge or icon when user has an alert set for the card)
-- [ ] Add price info to card overlay in binder view (normal/foil prices in the hover/tap preview)
+- [x] Show active price alert indicator on card detail page (badge or icon when user has an alert set for the card)
+- [x] Add price info to card overlay in binder view (normal/foil prices in the hover/tap preview)
 
 ---
 

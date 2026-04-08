@@ -4,6 +4,7 @@ import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -19,7 +20,7 @@ import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
-import { CardViewDto } from './dto/card.view.dto';
+import { CardViewDto, PriceAlertViewDto } from './dto/card.view.dto';
 import { PriceHistoryPointDto, PriceHistoryResponseDto } from './dto/price-history-response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
 
@@ -30,6 +31,7 @@ export class CardOrchestrator {
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
+        @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService,
         @Inject(TransactionService) private readonly transactionService: TransactionService
     ) {
         this.LOGGER.debug(`Initialized`);
@@ -114,6 +116,27 @@ export class CardOrchestrator {
                 }
             }
 
+            // Fetch existing price alert for this card
+            let priceAlert: PriceAlertViewDto | undefined;
+            if (userId > 0) {
+                try {
+                    const alert = await this.priceAlertService.findByUserAndCard(
+                        userId,
+                        coreCard.id
+                    );
+                    if (alert) {
+                        priceAlert = {
+                            id: alert.id,
+                            increasePct: alert.increasePct,
+                            decreasePct: alert.decreasePct,
+                            isActive: alert.isActive,
+                        };
+                    }
+                } catch (err) {
+                    this.LOGGER.debug(`Price alert lookup unavailable: ${err?.message}`);
+                }
+            }
+
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
@@ -146,6 +169,7 @@ export class CardOrchestrator {
                 costBasis,
                 untrackedNormal,
                 untrackedFoil,
+                priceAlert,
                 otherPrintings,
                 hasAnyNormalPrice,
                 hasAnyFoilPrice,

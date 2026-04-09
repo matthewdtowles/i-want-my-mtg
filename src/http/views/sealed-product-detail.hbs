@@ -1,0 +1,70 @@
+<section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
+    <div class="text-center pt-4 pb-2">
+        <h1 class="page-title">
+            {{#if setKeyruneCode}}
+            <i class="ss ss-{{setKeyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
+            {{/if}}
+            <span class="align-middle">{{product.name}}</span>
+        </h1>
+        {{#if setName}}
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <a href="/sets/{{product.setCode}}" class="hover:underline">{{setName}}</a>
+        </p>
+        {{/if}}
+    </div>
+
+    <div class="max-w-2xl mx-auto px-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            {{#if product.category}}
+            {{>statCard label="Category" value=product.category valueClass="text-sm"}}
+            {{/if}}
+            {{#if product.subtype}}
+            {{>statCard label="Subtype" value=product.subtype valueClass="text-sm"}}
+            {{/if}}
+            {{#if product.releaseDate}}
+            {{>statCard label="Released" value=product.releaseDate valueClass="text-sm"}}
+            {{/if}}
+            {{#if product.price}}
+            {{>statCard label="Price" value=product.price}}
+            {{/if}}
+        </div>
+
+        {{#if product.priceChangeWeekly}}
+        <div class="grid grid-cols-1 gap-3 mb-4">
+            {{>statCard label="7d Change" value=product.priceChangeWeekly}}
+        </div>
+        {{/if}}
+
+        {{#if product.contentsSummary}}
+        <div class="bg-white dark:bg-midnight-800 rounded-lg p-4 mb-4 shadow-sm">
+            <h2 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Contents</h2>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{product.contentsSummary}}</p>
+        </div>
+        {{/if}}
+
+        {{#if product.productSize}}
+        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            Items per product: {{product.productSize}}
+        </div>
+        {{/if}}
+
+        {{#if product.cardCount}}
+        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            Card count: {{product.cardCount}}
+        </div>
+        {{/if}}
+
+        {{#if product.purchaseUrlTcgplayer}}
+        <div class="mt-4">
+            <a href="{{product.purchaseUrlTcgplayer}}" target="_blank" rel="noopener noreferrer"
+                class="btn btn-primary text-sm">
+                Buy on TCGPlayer
+                <svg class="w-3.5 h-3.5 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+        </div>
+        {{/if}}
+    </div>
+</section>

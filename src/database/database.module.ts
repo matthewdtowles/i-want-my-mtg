@@ -13,6 +13,7 @@ import { TransactionRepositoryPort } from 'src/core/transaction/ports/transactio
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { PriceAlertRepositoryPort } from 'src/core/price-alert/ports/price-alert.repository.port';
 import { PriceNotificationRepositoryPort } from 'src/core/price-alert/ports/price-notification.repository.port';
+import { SealedProductRepositoryPort } from 'src/core/sealed-product/ports/sealed-product.repository.port';
 import { PendingUserRepositoryPort } from 'src/core/user/ports/pending-user.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardOrmEntity } from './card/card.orm-entity';
@@ -44,6 +45,11 @@ import { PriceAlertOrmEntity } from './price-alert/price-alert.orm-entity';
 import { PriceAlertRepository } from './price-alert/price-alert.repository';
 import { PriceNotificationOrmEntity } from './price-alert/price-notification.orm-entity';
 import { PriceNotificationRepository } from './price-alert/price-notification.repository';
+import { SealedProductInventoryOrmEntity } from './sealed-product/sealed-product-inventory.orm-entity';
+import { SealedProductPriceHistoryOrmEntity } from './sealed-product/sealed-product-price-history.orm-entity';
+import { SealedProductPriceOrmEntity } from './sealed-product/sealed-product-price.orm-entity';
+import { SealedProductOrmEntity } from './sealed-product/sealed-product.orm-entity';
+import { SealedProductRepository } from './sealed-product/sealed-product.repository';
 import { PendingUserOrmEntity } from './user/pending-user.orm-entity';
 import { PendingUserRepository } from './user/pending-user.repository';
 
@@ -64,6 +70,10 @@ import { PendingUserRepository } from './user/pending-user.repository';
             PortfolioValueHistoryOrmEntity,
             PriceAlertOrmEntity,
             PriceNotificationOrmEntity,
+            SealedProductOrmEntity,
+            SealedProductPriceOrmEntity,
+            SealedProductPriceHistoryOrmEntity,
+            SealedProductInventoryOrmEntity,
             TransactionOrmEntity,
             UserOrmEntity,
             PendingUserOrmEntity,
@@ -84,6 +94,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         { provide: PortfolioValueHistoryRepositoryPort, useClass: PortfolioValueHistoryRepository },
         { provide: PriceAlertRepositoryPort, useClass: PriceAlertRepository },
         { provide: PriceNotificationRepositoryPort, useClass: PriceNotificationRepository },
+        { provide: SealedProductRepositoryPort, useClass: SealedProductRepository },
         { provide: TransactionRepositoryPort, useClass: TransactionRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
@@ -100,6 +111,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         PortfolioValueHistoryRepositoryPort,
         PriceAlertRepositoryPort,
         PriceNotificationRepositoryPort,
+        SealedProductRepositoryPort,
         TransactionRepositoryPort,
         UserRepositoryPort,
         PendingUserRepositoryPort,

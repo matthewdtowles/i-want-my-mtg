@@ -74,16 +74,7 @@ export class SealedProductOrchestrator {
                 setKeyruneCode: set?.keyruneCode,
             });
         } catch (error) {
-            return HttpErrorHandler.handleViewError(
-                this.LOGGER,
-                error,
-                `Error finding sealed product ${uuid}`,
-                new SealedProductDetailViewDto({
-                    authenticated: isAuthenticated(req),
-                    breadcrumbs: [{ label: 'Home', url: '/' }],
-                    product: null,
-                })
-            );
+            return HttpErrorHandler.toHttpException(error, 'findSealedProduct');
         }
     }
 }

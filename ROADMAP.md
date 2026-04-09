@@ -395,18 +395,17 @@
 - [x] Register in HbsModule
 
 #### Scry ETL (separate repo)
-- [ ] Create SealedProduct domain struct
-- [ ] Create mapper: MTGJSON JSON -> SealedProduct (flatten contents, extract TCGPlayer URL, filter online-only)
-- [ ] Create repository with UPSERT for sealed_product table
-- [ ] Create service to orchestrate fetch/map/save
-- [ ] Hook into set ingestion pipeline
-- [ ] Add sealed product price ingestion
-- [ ] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
-- [ ] Add --sealed flag to ingest CLI command
+- [x] Create SealedProduct domain struct
+- [x] Create mapper: MTGJSON JSON -> SealedProduct (flatten contents, extract TCGPlayer URL, filter online-only)
+- [x] Create repository with UPSERT for sealed_product table
+- [x] Create service to orchestrate fetch/map/save (streams AllPrintings.json)
+- [x] Hook into default ingestion pipeline (runs with `ingest` or `ingest --sealed`)
+- [x] Add sealed product price ingestion
+- [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
 
 #### AJAX & Frontend
-- [ ] Add sealed product AJAX loading on set detail page
-- [ ] Add sealed product inventory management UI (add/remove from collection)
+- [x] Add sealed product AJAX loading on set detail page
+- [x] Add sealed product inventory management UI (add/remove from collection)
 
 ### 3.2 Legal & Compliance
 

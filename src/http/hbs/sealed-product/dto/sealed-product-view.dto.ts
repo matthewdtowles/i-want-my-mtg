@@ -19,11 +19,13 @@ export class SealedProductDetailViewDto extends BaseViewDto {
     readonly product: SealedProductResponseDto;
     readonly setName?: string;
     readonly setKeyruneCode?: string;
+    readonly inventoryQuantity?: number;
 
     constructor(init: Partial<SealedProductDetailViewDto>) {
         super(init);
         this.product = init.product;
         this.setName = init.setName;
         this.setKeyruneCode = init.setKeyruneCode;
+        this.inventoryQuantity = init.inventoryQuantity ?? 0;
     }
 }

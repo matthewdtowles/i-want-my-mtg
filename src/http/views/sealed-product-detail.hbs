@@ -54,6 +54,26 @@
         </div>
         {{/if}}
 
+        {{#if authenticated}}
+        <div class="bg-white dark:bg-midnight-800 rounded-lg p-4 mb-4 shadow-sm">
+            <h2 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Collection</h2>
+            <div class="sealed-inv-stepper" data-sealed-uuid="{{product.uuid}}">
+                <div class="flex items-center gap-3">
+                    <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
+                            aria-label="Decrease quantity"{{#unless inventoryQuantity}} disabled{{/unless}}>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+                    </button>
+                    <span class="sealed-inv-qty inv-stepper-qty{{#unless inventoryQuantity}} sealed-inv-qty--zero inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if inventoryQuantity}}{{inventoryQuantity}}{{else}}0{{/if}}</span>
+                    <button type="button" class="sealed-inv-btn sealed-inv-btn--inc inv-stepper-btn inv-stepper-btn--inc"
+                            aria-label="Increase quantity">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">owned</span>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
         {{#if product.purchaseUrlTcgplayer}}
         <div class="mt-4">
             <a href="{{product.purchaseUrlTcgplayer}}" target="_blank" rel="noopener noreferrer"
@@ -68,3 +88,7 @@
         {{/if}}
     </div>
 </section>
+
+{{#if authenticated}}
+<script src="/public/js/updateSealedInventory.js?v={{assetVersion}}" defer></script>
+{{/if}}

@@ -41,6 +41,15 @@ export class SealedProductOrchestrator {
 
             const set = await this.setService.findByCode(product.setCode);
 
+            let inventoryQuantity = 0;
+            if (isAuthenticated(req) && req.user?.id) {
+                const inventoryItem = await this.sealedProductService.findInventoryItem(
+                    uuid,
+                    req.user.id
+                );
+                inventoryQuantity = inventoryItem?.quantity ?? 0;
+            }
+
             const dto: SealedProductResponseDto = {
                 uuid: product.uuid,
                 name: product.name,
@@ -72,6 +81,7 @@ export class SealedProductOrchestrator {
                 product: dto,
                 setName: set?.name,
                 setKeyruneCode: set?.keyruneCode,
+                inventoryQuantity,
             });
         } catch (error) {
             return HttpErrorHandler.toHttpException(error, 'findSealedProduct');

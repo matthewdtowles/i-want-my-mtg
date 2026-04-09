@@ -387,6 +387,8 @@
 </div>
 {{>pagination hasItems=set.cards.length}}
 
+{{>sealed-products setCode=set.code authenticated=authenticated}}
+
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/binderRenderer.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/binderCore.js?v={{assetVersion}}" defer></script>
@@ -403,3 +405,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script src="/public/js/chartLoader.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/sealedProductsLoader.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/updateSealedInventory.js?v={{assetVersion}}" defer></script>

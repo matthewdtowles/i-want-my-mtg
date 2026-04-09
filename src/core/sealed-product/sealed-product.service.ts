@@ -50,6 +50,14 @@ export class SealedProductService {
         return await this.repository.totalInventoryForUser(userId);
     }
 
+    async findInventoryItem(
+        uuid: string,
+        userId: number
+    ): Promise<SealedProductInventory | null> {
+        this.LOGGER.debug(`findInventoryItem(${uuid}, user=${userId})`);
+        return await this.repository.findInventoryItem(uuid, userId);
+    }
+
     async saveInventory(item: SealedProductInventory): Promise<SealedProductInventory | null> {
         this.LOGGER.debug(
             `saveInventory(${item.sealedProductUuid}, user=${item.userId}, qty=${item.quantity})`

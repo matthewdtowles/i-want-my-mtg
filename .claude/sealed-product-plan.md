@@ -1,4 +1,4 @@
-# Sealed Product Support — Plan
+# Sealed Product Support  - Plan
 
 ## Context
 
@@ -9,18 +9,43 @@ This plan covers: ROADMAP reordering, data model design (DB tables, domain entit
 ## MTGJSON Sealed Product Data Model (Source)
 
 From MTGJSON, each set's `sealedProduct` array contains objects with:
-- `uuid` (string, required) — MTGJSON v5 UUID, our PK
-- `name` (string, required) — e.g. "Bloomburrow Draft Booster Box"
-- `category` (string, optional) — e.g. "BOOSTER_BOX", "BUNDLE", "DECK"
-- `subtype` (string|null, required) — e.g. "draft", "collector", "set"
-- `cardCount` (number, optional) — number of cards in product
-- `productSize` (number, optional) — number of packs/items in product
-- `releaseDate` (string, optional) — ISO 8601 date
-- `identifiers` (object, required) — contains `tcgplayerProductId`, `cardKingdomId`, `mcmId`, etc.
-- `purchaseUrls` (object, required) — contains `tcgplayer`, `cardKingdom`, `cardmarket` URLs
-- `contents` (object, optional) — deeply nested structure describing what's inside; **we are NOT storing this** — irrelevant for collection tracking
+- `uuid` (string, required) - MTGJSON v5 UUID, our PK
+- `name` (string, required) - e.g. "Bloomburrow Draft Booster Box"
+- `setCode` (string, required) - set code, present on every product
+- `category` (string, optional) - e.g. "booster_box", "bundle", "deck", "booster_pack", "box_set", etc.
+- `subtype` (string|null, required) - e.g. "draft", "collector", "set", "default"
+- `cardCount` (number, optional) - number of cards in product
+- `productSize` (number, optional) - number of packs/items in product
+- `releaseDate` (string, optional) - ISO 8601 date
+- `identifiers` (object, required) - contains `tcgplayerProductId`, `cardKingdomId`, `mcmId`, etc. **We do not store any of these** - no concrete use case; TCGPlayer price is already our price source via MTGJSON
+- `purchaseUrls` (object, required) - only ever contains `tcgplayer` for sealed products (Card Kingdom and Cardmarket URLs are not provided by MTGJSON for sealed products)
+- `contents` (object, optional) - nested structure describing what's inside (packs, cards, decks, accessories). **Flattened to a display string by Scry at ETL time** (see contents section below)
 
-Each sealed product variant (draft booster box, collector booster box, bundle, commander deck, etc.) is a separate entry with its own UUID. No need for normal/foil price distinction.
+Each sealed product variant (draft booster box, collector booster box, bundle, commander deck, etc.) is a separate entry with its own UUID. No need for normal/foil price distinction. Each sealed product belongs to exactly one set.
+
+### Contents Structure (SealedProductContents)
+
+The `contents` object has these child types, all optional:
+- `sealed` - inner sealed products with `count`, `name`, `set`, `uuid` (e.g. "12x Collector Booster Pack")
+- `pack` - booster pack configs with `code`, `set` (e.g. prerelease config)
+- `card` - specific promo/bonus cards with `name`, `number`, `set`, `uuid`, `foil` 
+- `deck` - pre-constructed decks with `name`, `set`
+- `other` - non-card items with `name` (spindowns, storage boxes, reference cards)
+- `variable` - when contents can vary; contains `configs: SealedProductContents[]` (rare, not seen in practice)
+
+Scry flattens this to a human-readable string at ETL time. Examples:
+- Booster Box: "12x Collector Booster Pack"
+- Bundle: "9x Play Booster Pack, Thundertrap Trainer (Foil), Bloomburrow Bundle Land Pack, Bloomburrow Spindown, Card-storage box, 2 Reference cards"
+- Commander Deck: "Eldrazi Unbound, 1x Commander Masters Collector Booster Sample Pack"
+- Prerelease Pack: "6x Play Booster Pack, Bloomburrow Spindown"
+- Starter Kit: "Otter Limits, Hare Raising"
+- Subset: "1x Bloomburrow Tin Mouse, 1x Bloomburrow Tin Otter, 1x Bloomburrow Tin Skunk"
+
+### Online-Only Filtering
+
+Scry must filter out online-only products at two levels:
+1. **Set level** - skip sets with `isOnlineOnly: true` (e.g. MTGO/Arena-only sets)
+2. **Product level** - within paper sets, filter out products with "MTGO" or "Arena" in the name (e.g. "Bloomburrow MTGO Redemption")
 
 ## Database Design
 
@@ -36,21 +61,15 @@ CREATE TABLE public.sealed_product (
     card_count INTEGER,
     product_size INTEGER,
     release_date DATE,
-    -- Marketplace identifiers (for future affiliate links & pricing)
-    tcgplayer_product_id CHARACTER VARYING,
-    cardkingdom_id CHARACTER VARYING,
-    cardmarket_id CHARACTER VARYING,
-    -- Purchase URLs
-    purchase_url_tcgplayer CHARACTER VARYING,
-    purchase_url_cardkingdom CHARACTER VARYING,
-    purchase_url_cardmarket CHARACTER VARYING
+    contents_summary TEXT,
+    purchase_url_tcgplayer CHARACTER VARYING
 );
 
 CREATE INDEX idx_sealed_product_set_code ON sealed_product (set_code);
 CREATE INDEX idx_sealed_product_category ON sealed_product (category);
 ```
 
-**No contents column**: The MTGJSON `contents` field describes what's inside a product (packs, cards, decks, accessories). This is irrelevant for collection tracking — we care about the sealed product itself as an ownable item, not its theoretical contents.
+**Contents as display string**: The MTGJSON `contents` field is a deeply nested structure. Rather than storing it as JSONB or normalizing into tables, Scry flattens it to a human-readable summary string at ETL time. This avoids JSONB in PostgreSQL while still giving users useful "what's in the box" info.
 
 ### Table: `sealed_product_inventory` (migration 027, same file)
 
@@ -67,7 +86,7 @@ CREATE TABLE public.sealed_product_inventory (
 CREATE INDEX idx_sealed_product_inventory_user ON sealed_product_inventory (user_id);
 ```
 
-Simpler than card inventory — no foil variant dimension.
+Simpler than card inventory  - no foil variant dimension.
 
 ### Table: `sealed_product_price` (migration 027, same file)
 
@@ -81,7 +100,7 @@ CREATE TABLE public.sealed_product_price (
 );
 ```
 
-Single `price` column — no normal/foil distinction. Each sealed product variant (draft box, collector box, bundle, etc.) is already a separate row with its own UUID and price.
+Single `price` column  - no normal/foil distinction. Each sealed product variant (draft box, collector box, bundle, etc.) is already a separate row with its own UUID and price.
 
 ### Table: `sealed_product_price_history` (migration 027, same file)
 
@@ -96,7 +115,18 @@ CREATE TABLE public.sealed_product_price_history (
 );
 ```
 
-## NestJS Architecture — Files to Create
+### Card Purchase URLs (migration 028, separate file)
+
+Cards currently have no purchase URL storage. Add TCGPlayer URLs to enable affiliate links on card pages.
+
+```sql
+ALTER TABLE public.card ADD COLUMN purchase_url_tcgplayer CHARACTER VARYING;
+ALTER TABLE public.card ADD COLUMN purchase_url_tcgplayer_etched CHARACTER VARYING;
+```
+
+`purchase_url_tcgplayer` covers the normal/foil product page (TCGPlayer uses the same URL for both). `purchase_url_tcgplayer_etched` is for etched finish variants (rare, NULL for ~99% of cards). No separate price columns needed - our existing `price.normal`/`price.foil` values already come from TCGPlayer via MTGJSON.
+
+## NestJS Architecture - Files to Create
 
 Following existing patterns (Set/Card as reference):
 
@@ -141,7 +171,7 @@ Following existing patterns (Set/Card as reference):
 
 | File | Purpose |
 |------|---------|
-| `sealed-product.hbs` | Set detail — sealed products section |
+| `sealed-product.hbs` | Set detail  - sealed products section |
 | `sealed-product-detail.hbs` | Individual sealed product page |
 
 ### Registration
@@ -159,17 +189,13 @@ export class SealedProduct {
     readonly uuid: string;
     readonly name: string;
     readonly setCode: string;
-    readonly category?: string;        // "BOOSTER_BOX", "BUNDLE", "DECK", etc.
-    readonly subtype?: string;         // "draft", "collector", "set", etc.
+    readonly category?: string;        // "booster_box", "bundle", "deck", etc.
+    readonly subtype?: string;         // "draft", "collector", "set", "default", etc.
     readonly cardCount?: number;
     readonly productSize?: number;
     readonly releaseDate?: string;
-    readonly tcgplayerProductId?: string;
-    readonly cardkingdomId?: string;
-    readonly cardmarketId?: string;
+    readonly contentsSummary?: string;  // Flattened display string from Scry ETL
     readonly purchaseUrlTcgplayer?: string;
-    readonly purchaseUrlCardkingdom?: string;
-    readonly purchaseUrlCardmarket?: string;
     readonly price?: SealedProductPrice;
 }
 ```
@@ -178,33 +204,37 @@ export class SealedProduct {
 
 Scry (separate repo) will need:
 1. New struct for sealed product data from MTGJSON
-2. Mapper from MTGJSON JSON -> sealed product struct
+2. Mapper from MTGJSON JSON -> sealed product struct, including:
+   - Flatten `contents` to a display string (e.g. "12x Collector Booster Pack, Thundertrap Trainer (Foil)")
+   - Extract `purchaseUrls.tcgplayer` as the single purchase URL
+   - Skip online-only products: filter out products with "MTGO" or "Arena" in the name
 3. Repository with UPSERT for `sealed_product` table
-4. Hook into set ingestion pipeline (sealed products come as part of set data)
+4. Hook into set ingestion pipeline (sealed products come as part of set data). Skip sets with `isOnlineOnly: true`
 5. Price ingestion for sealed products (MTGJSON prices are keyed by UUID and include sealed products)
+6. Card purchase URL ingestion: populate `purchase_url_tcgplayer` and `purchase_url_tcgplayer_etched` on the `card` table from MTGJSON's `purchaseUrls` field during card ingestion
 
 This is out of scope for this repo but the DB migration and domain model must be designed to support it.
 
 ## API Endpoints
 
 ```
-GET  /api/v1/sets/:code/sealed-products     — List sealed products for a set
-GET  /api/v1/sealed-products/:uuid           — Get sealed product detail
-GET  /api/v1/sealed-products/:uuid/price-history — Price history
-POST /api/v1/inventory/sealed/:uuid          — Add to inventory (auth required)
-PUT  /api/v1/inventory/sealed/:uuid          — Update quantity (auth required)
-DELETE /api/v1/inventory/sealed/:uuid        — Remove from inventory (auth required)
-GET  /api/v1/inventory/sealed                — List user's sealed inventory (auth required)
+GET  /api/v1/sets/:code/sealed-products      - List sealed products for a set
+GET  /api/v1/sealed-products/:uuid            - Get sealed product detail
+GET  /api/v1/sealed-products/:uuid/price-history  - Price history
+POST /api/v1/inventory/sealed/:uuid           - Add to inventory (auth required)
+PUT  /api/v1/inventory/sealed/:uuid           - Update quantity (auth required)
+DELETE /api/v1/inventory/sealed/:uuid         - Remove from inventory (auth required)
+GET  /api/v1/inventory/sealed                 - List user's sealed inventory (auth required)
 ```
 
 ## ROADMAP.md Changes
 
 Reorder Phase 3:
-1. **3.1 Sealed Product Support** (was 3.4) — promoted, unblocked, high user value
-2. **3.2 Legal & Compliance** (was 3.5) — should precede monetization
-3. **3.3 Affiliate Integration** (was 3.1) — blocked on TCGPlayer approval
-4. **3.4 Freemium & Stripe** (was 3.2) — needs more feature surface
-5. **3.5 Deck Building** (was 3.3) — unchanged priority relative to monetization
+1. **3.1 Sealed Product Support** (was 3.4)  - promoted, unblocked, high user value
+2. **3.2 Legal & Compliance** (was 3.5)  - should precede monetization
+3. **3.3 Affiliate Integration** (was 3.1)  - blocked on TCGPlayer approval
+4. **3.4 Freemium & Stripe** (was 3.2)  - needs more feature surface
+5. **3.5 Deck Building** (was 3.3)  - unchanged priority relative to monetization
 
 Expand 3.1 with detailed sub-tasks covering:
 - Database migration (both schema SQL and migration file)

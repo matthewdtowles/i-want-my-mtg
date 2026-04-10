@@ -11,6 +11,8 @@ export class SealedProductResponseDto {
     releaseDate?: string;
     contentsSummary?: string;
     purchaseUrlTcgplayer?: string;
+    tcgplayerProductId?: string;
+    imageUrl?: string;
     price?: string;
     priceChangeWeekly?: string;
 }

@@ -34,6 +34,9 @@ export class SealedProductOrmEntity {
     @Column({ name: 'purchase_url_tcgplayer', nullable: true })
     purchaseUrlTcgplayer?: string;
 
+    @Column({ name: 'tcgplayer_product_id', nullable: true })
+    tcgplayerProductId?: string;
+
     @ManyToOne(() => SetOrmEntity, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'set_code', referencedColumnName: 'code' })
     set: SetOrmEntity;

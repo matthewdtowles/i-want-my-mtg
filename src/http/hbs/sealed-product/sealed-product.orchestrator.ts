@@ -61,6 +61,10 @@ export class SealedProductOrchestrator {
                 releaseDate: product.releaseDate,
                 contentsSummary: product.contentsSummary,
                 purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
+                tcgplayerProductId: product.tcgplayerProductId,
+                imageUrl: product.tcgplayerProductId
+                    ? `https://product-images.tcgplayer.com/fit-in/437x437/${product.tcgplayerProductId}.jpg`
+                    : undefined,
                 price: product.price?.price != null ? toDollar(product.price.price) : undefined,
                 priceChangeWeekly:
                     product.price?.priceChangeWeekly != null

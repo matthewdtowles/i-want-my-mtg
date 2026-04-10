@@ -12,6 +12,7 @@ export class SealedProduct {
     readonly releaseDate?: string;
     readonly contentsSummary?: string;
     readonly purchaseUrlTcgplayer?: string;
+    readonly tcgplayerProductId?: string;
     readonly price?: SealedProductPrice;
 
     constructor(init: Partial<SealedProduct>) {
@@ -26,6 +27,7 @@ export class SealedProduct {
         this.releaseDate = init.releaseDate;
         this.contentsSummary = init.contentsSummary;
         this.purchaseUrlTcgplayer = init.purchaseUrlTcgplayer;
+        this.tcgplayerProductId = init.tcgplayerProductId;
         this.price = init.price;
     }
 }

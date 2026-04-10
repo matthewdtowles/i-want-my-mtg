@@ -400,7 +400,7 @@
 - [x] Create repository with UPSERT for sealed_product table
 - [x] Create service to orchestrate fetch/map/save (streams AllPrintings.json)
 - [x] Hook into default ingestion pipeline (runs with `ingest` or `ingest --sealed`)
-- [x] Add sealed product price ingestion
+- [ ] Add sealed product price ingestion (MTGJSON has no sealed pricing — requires TCGPlayer API)
 - [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
 
 #### AJAX & Frontend

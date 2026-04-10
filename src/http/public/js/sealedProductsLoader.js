@@ -71,6 +71,12 @@
             'bg-white dark:bg-midnight-800 p-4 hover:shadow-md transition-shadow">';
 
         html += '<a href="' + link + '" class="block">';
+        if (p.tcgplayerProductId) {
+            html += '<div class="flex justify-center mb-3">';
+            html += '<img src="https://product-images.tcgplayer.com/fit-in/200x200/' + escapeHtml(p.tcgplayerProductId) + '.jpg"';
+            html += ' alt="' + name + '" class="max-h-32 rounded object-contain" loading="lazy" />';
+            html += '</div>';
+        }
         html += '<div class="flex items-start justify-between gap-2">';
         html += '<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">' + name + '</h3>';
         if (price) {

@@ -42,6 +42,9 @@ export class SealedProductApiResponseDto {
     @ApiPropertyOptional()
     purchaseUrlTcgplayer?: string;
 
+    @ApiPropertyOptional()
+    tcgplayerProductId?: string;
+
     @ApiPropertyOptional({ type: SealedProductPriceDto })
     price?: SealedProductPriceDto;
 }

@@ -18,6 +18,7 @@ export class SealedProductApiPresenter {
             releaseDate: product.releaseDate,
             contentsSummary: product.contentsSummary,
             purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
+            tcgplayerProductId: product.tcgplayerProductId,
             price: product.price
                 ? {
                       price: product.price.price,

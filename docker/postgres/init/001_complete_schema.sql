@@ -796,6 +796,7 @@ CREATE TABLE public.sealed_product (
     release_date date,
     contents_summary text,
     purchase_url_tcgplayer character varying,
+    tcgplayer_product_id character varying,
     CONSTRAINT sealed_product_pkey PRIMARY KEY (uuid),
     CONSTRAINT fk_sealed_product_set FOREIGN KEY (set_code)
         REFERENCES public.set(code) ON DELETE CASCADE

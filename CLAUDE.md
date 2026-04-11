@@ -65,6 +65,25 @@ The production Docker build (`target: production`) runs `npm run build:prod` whi
 
 The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches. To bump the version: `npm run bump` (patch), `bump:minor`, or `bump:major`.
 
+### Scry ETL on the Production Server
+
+Scry is **not** run as a container in production. During deploy, `.github/scripts/setup-cron.sh` pulls `ghcr.io/matthewdtowles/scry:latest`, `docker cp`s the `/app/scry` binary out to `/opt/scripts/scry`, and then deletes the image. The cron jobs in `cron/i-want-my-mtg` invoke that binary directly via `cron/scry.sh` — they do not go through `docker compose`.
+
+Consequence: **scry updates are coupled to web deploys.** A new scry release published to `ghcr.io` does not reach the server on its own. The binary only refreshes when `remote-deploy.sh` runs `setup-cron.sh` again, which happens on every push to `main` in this repo. If web hasn't been deployed since a scry release, the server is running the old scry.
+
+To refresh scry on the server without a full web deploy, SSH in and re-run the extraction steps from `setup-cron.sh`:
+
+```bash
+docker pull ghcr.io/matthewdtowles/scry:latest
+cid=$(docker create ghcr.io/matthewdtowles/scry:latest)
+sudo docker cp "$cid:/app/scry" /opt/scripts/scry
+sudo chmod 755 /opt/scripts/scry
+docker rm "$cid"
+docker rmi ghcr.io/matthewdtowles/scry:latest
+```
+
+Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `profiles: ['etl']` and is not what cron uses — it's only there for ad-hoc `docker compose run --rm etl ...` invocations, and `remote-deploy.sh` does not pull it (`docker compose pull web` only).
+
 ## Architecture
 
 ### Layered Structure (NestJS)

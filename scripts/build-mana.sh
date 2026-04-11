@@ -6,7 +6,6 @@
 set -euo pipefail
 
 MANA_DIR="node_modules/mana-font"
-MANA_VERSION="1.18.0"
 CSS_OUT="src/http/public/css/mana.css"
 FONT_DIR="src/http/public/fonts"
 
@@ -14,6 +13,11 @@ if [ ! -d "$MANA_DIR" ]; then
     echo "Error: mana-font not found in node_modules. Run npm install first." >&2
     exit 1
 fi
+
+# Read the installed mana-font version from node_modules so the CDN fallback
+# URL always matches the package we actually built against. Avoids drift
+# between package.json's floating `^1.18.0` constraint and a hardcoded literal.
+MANA_VERSION=$(node -p "require('mana-font/package.json').version")
 
 mkdir -p "$FONT_DIR"
 mkdir -p "$(dirname "$CSS_OUT")"

@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SealedProductPriceDto {
-    @ApiPropertyOptional()
-    price?: number;
+    @ApiPropertyOptional({ type: Number, nullable: true })
+    price?: number | null;
 
-    @ApiPropertyOptional()
-    priceChangeWeekly?: number;
+    @ApiPropertyOptional({ type: Number, nullable: true })
+    priceChangeWeekly?: number | null;
 
     @ApiProperty()
     date: string;
@@ -50,8 +50,8 @@ export class SealedProductApiResponseDto {
 }
 
 export class SealedProductPriceHistoryPointDto {
-    @ApiPropertyOptional()
-    price?: number;
+    @ApiPropertyOptional({ type: Number, nullable: true })
+    price: number | null;
 
     @ApiProperty()
     date: string;

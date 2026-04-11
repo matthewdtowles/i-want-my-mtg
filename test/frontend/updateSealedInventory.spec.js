@@ -148,6 +148,27 @@ describe('updateSealedInventory', function () {
         });
     });
 
+    test('updates UI to 0 even when delete response reports deleted=false (idempotent)', function () {
+        setupDom('test-uuid', 1);
+        mockApiResponse({ deleted: false });
+        var warnSpy = jest.spyOn(console, 'warn').mockImplementation(function () {});
+        loadScript();
+
+        clickButton('.sealed-inv-btn--dec');
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var qtyEl = document.querySelector('.sealed-inv-qty');
+                expect(qtyEl.textContent).toBe('0');
+                expect(qtyEl.classList.contains('sealed-inv-qty--zero')).toBe(true);
+                var decBtn = document.querySelector('.sealed-inv-btn--dec');
+                expect(decBtn.hasAttribute('disabled')).toBe(true);
+                warnSpy.mockRestore();
+                resolve();
+            }, 10);
+        });
+    });
+
     test('does not decrement below 0', function () {
         setupDom('test-uuid', 0);
         loadScript();

@@ -55,7 +55,7 @@ export class SealedProductRepository implements SealedProductRepositoryPort {
     async findPriceHistory(
         uuid: string,
         days?: number
-    ): Promise<{ price: number; date: string }[]> {
+    ): Promise<{ price: number | null; date: string }[]> {
         this.LOGGER.debug(`findPriceHistory(${uuid}, days=${days})`);
         const qb = this.priceHistoryRepo
             .createQueryBuilder('sph')

@@ -32,7 +32,7 @@ export class SealedProductService {
     async findPriceHistory(
         uuid: string,
         days?: number
-    ): Promise<{ price: number; date: string }[]> {
+    ): Promise<{ price: number | null; date: string }[]> {
         this.LOGGER.debug(`findPriceHistory(${uuid}, days=${days})`);
         return await this.repository.findPriceHistory(uuid, days);
     }

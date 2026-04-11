@@ -90,8 +90,11 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (json) {
                 if (!json.success) throw new Error(json.error || 'Unknown error');
+                // `deleted: false` is a valid idempotent response (item already gone).
+                // Either way the server state is "not in inventory", so the UI should
+                // reflect 0 — the caller handles that unconditionally.
                 if (json.data && json.data.deleted === false) {
-                    throw new Error('Failed to delete sealed inventory');
+                    console.warn('Sealed inventory delete returned deleted=false for', uuid);
                 }
                 return json;
             });

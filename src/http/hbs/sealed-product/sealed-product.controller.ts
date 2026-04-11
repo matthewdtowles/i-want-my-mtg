@@ -25,11 +25,9 @@ export class SealedProductController {
         @Req() req: AuthenticatedRequest
     ): Promise<SealedProductDetailViewDto> {
         const view = await this.orchestrator.findByUuid(req, uuid);
-        if (view.product) {
-            view.title = `${view.product.name} - I Want My MTG`;
-            view.metaDescription = `${view.product.name} sealed product details and pricing.`;
-            view.canonicalUrl = `${this.appUrl}/sealed-products/${uuid}`;
-        }
+        view.title = `${view.product.name} - I Want My MTG`;
+        view.metaDescription = `${view.product.name} sealed product details and pricing.`;
+        view.canonicalUrl = `${this.appUrl}/sealed-products/${uuid}`;
         return view;
     }
 }

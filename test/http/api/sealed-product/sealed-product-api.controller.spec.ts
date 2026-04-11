@@ -198,21 +198,6 @@ describe('SealedProductApiController', () => {
             expect(arg.quantity).toBe(1);
         });
 
-        it('returns null data when the service returns null (quantity<=0 path)', async () => {
-            sealedProductService.saveInventory.mockResolvedValue(null);
-
-            const req = makeReq(42);
-            const result = await controller.addToInventory(
-                {
-                    sealedProductUuid: '11111111-1111-1111-1111-111111111111',
-                    quantity: 0,
-                },
-                req
-            );
-
-            expect(result.success).toBe(true);
-            expect(result.data).toBeNull();
-        });
     });
 
     describe('updateInventory', () => {

@@ -352,14 +352,76 @@
 
 ## Phase 3: Monetization Foundation & New Features
 
-### 3.1 Affiliate Integration
+### 3.1 Sealed Product Support
+
+#### Database & Schema
+- [x] Design sealed product data model (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
+- [x] Create migration 027: sealed product tables
+- [x] Create migration 028: card purchase URL columns (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
+- [x] Update complete schema file (001_complete_schema.sql)
+
+#### Domain Layer
+- [x] Create SealedProduct domain entity with validateInit
+- [x] Create SealedProductPrice domain entity
+- [x] Create SealedProductInventory domain entity
+- [x] Create SealedProductRepositoryPort interface
+- [x] Create SealedProductService
+- [x] Create SealedProductModule, register in CoreModule
+
+#### Database Layer
+- [x] Create ORM entities (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
+- [x] Create mappers (SealedProductMapper, SealedProductPriceMapper)
+- [x] Create SealedProductRepository implementing port
+- [x] Register ORM entities and port binding in DatabaseModule
+
+#### API Layer
+- [x] Create SealedProductApiResponseDto, SealedProductInventoryApiDto, request DTOs
+- [x] Create SealedProductApiPresenter (TDD)
+- [x] Create SealedProductApiController with endpoints:
+  - GET /api/v1/sets/:code/sealed-products
+  - GET /api/v1/sealed-products/:uuid
+  - GET /api/v1/sealed-products/:uuid/price-history
+  - GET /api/v1/inventory/sealed (auth)
+  - POST /api/v1/inventory/sealed (auth)
+  - PATCH /api/v1/inventory/sealed (auth)
+  - DELETE /api/v1/inventory/sealed (auth)
+- [x] Register in ApiModule
+
+#### View Layer
+- [x] Create SealedProductOrchestrator
+- [x] Create SealedProductController (/sealed-products/:uuid)
+- [x] Create sealed-product-detail.hbs template
+- [x] Create sealed-products.hbs partial for set page
+- [x] Register in HbsModule
+
+#### Scry ETL (separate repo)
+- [x] Create SealedProduct domain struct
+- [x] Create mapper: MTGJSON JSON -> SealedProduct (flatten contents, extract TCGPlayer URL, filter online-only)
+- [x] Create repository with UPSERT for sealed_product table
+- [x] Create service to orchestrate fetch/map/save (streams AllPrintings.json)
+- [x] Hook into default ingestion pipeline (runs with `ingest` or `ingest --sealed`)
+- [ ] Add sealed product price ingestion (MTGJSON has no sealed pricing — requires TCGPlayer API)
+- [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
+
+#### AJAX & Frontend
+- [x] Add sealed product AJAX loading on set detail page
+- [x] Add sealed product inventory management UI (add/remove from collection)
+
+### 3.2 Legal & Compliance
+
+- [ ] Review Wizards of the Coast's Fan Content Policy and verify compliance
+- [ ] Implement data privacy practices (GDPR/CCPA compliance, privacy policy, data export/deletion)
+- [ ] Draft Terms of Service (acceptable use, data attribution, termination conditions)
+- [ ] Add cookie consent and privacy controls to UI
+
+### 3.3 Affiliate Integration
 
 - [ ] Sign up for TCGPlayer affiliate program
 - [ ] Sign up for Card Kingdom affiliate program
 - [ ] Add price display with affiliate links to card detail views (current market prices from both sources)
 - [ ] Track affiliate click-through rates (event log for which cards drive purchases)
 
-### 3.2 Freemium Structure & Subscription Billing
+### 3.4 Freemium Structure & Subscription Billing
 
 - [ ] Define free tier limits (collection tracking, basic transaction logging, card search)
 - [ ] Define premium tier features (new features only — do not gate existing shipped features)
@@ -371,7 +433,7 @@
 - [ ] Build subscription management UI (upgrade prompts, plan selection, billing history, cancellation)
 - [ ] Implement feature gating in API layer (backend tier checks, not frontend)
 
-### 3.3 Feature: Deck Building
+### 3.5 Feature: Deck Building
 
 - [ ] Design deck data model (deck table with user FK, deck_card join table with quantity, sideboard flag)
 - [ ] Create database migration for deck tables
@@ -383,23 +445,6 @@
 - [ ] Add "Add to Deck" action from card detail and search results
 - [ ] Deck import/export (paste decklist text format, CSV)
 - [ ] Format legality validation (check deck against format rules — Standard, Modern, Commander, etc.)
-
-### 3.4 Add Support for Sealed Product
-
-- [ ] Research Scryfall or other data sources for sealed product data
-- [ ] Design sealed product data model (tables, relationships to sets)
-- [ ] Create database migration for sealed product tables
-- [ ] Add sealed product ingestion to Scry
-- [ ] Create sealed product views (list, detail)
-- [ ] Add sealed product to inventory tracking
-- [ ] Add sealed product pricing and price history
-
-### 3.5 Legal & Compliance
-
-- [ ] Review Wizards of the Coast's Fan Content Policy and verify compliance
-- [ ] Implement data privacy practices (GDPR/CCPA compliance, privacy policy, data export/deletion)
-- [ ] Draft Terms of Service (acceptable use, data attribution, termination conditions)
-- [ ] Add cookie consent and privacy controls to UI
 
 ---
 

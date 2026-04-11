@@ -9,6 +9,7 @@ import { PasswordResetModule } from './password-reset/password-reset.module';
 import { PriceAlertModule } from './price-alert/price-alert.module';
 import { SearchModule } from './search/search.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
+import { SealedProductModule } from './sealed-product/sealed-product.module';
 import { SetModule } from './set/set.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
@@ -23,6 +24,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,
+        SealedProductModule,
         SearchModule,
         SetModule,
         TransactionModule,
@@ -37,6 +39,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,
+        SealedProductModule,
         SearchModule,
         SetModule,
         TransactionModule,

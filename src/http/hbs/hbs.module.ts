@@ -15,6 +15,8 @@ import { PortfolioController } from './portfolio/portfolio.controller';
 import { PortfolioOrchestrator } from './portfolio/portfolio.orchestrator';
 import { PriceAlertPageController } from './price-alert/price-alert-page.controller';
 import { PriceAlertPageOrchestrator } from './price-alert/price-alert-page.orchestrator';
+import { SealedProductController } from './sealed-product/sealed-product.controller';
+import { SealedProductOrchestrator } from './sealed-product/sealed-product.orchestrator';
 import { SearchController } from './search/search.controller';
 import { SearchOrchestrator } from './search/search.orchestrator';
 import { SetController } from './set/set.controller';
@@ -36,6 +38,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         NotificationPageController,
         PortfolioController,
         PriceAlertPageController,
+        SealedProductController,
         SearchController,
         SetController,
         SitemapController,
@@ -51,6 +54,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         NotificationPageOrchestrator,
         PortfolioOrchestrator,
         PriceAlertPageOrchestrator,
+        SealedProductOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
         TransactionOrchestrator,
@@ -63,6 +67,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         NotificationPageOrchestrator,
         PortfolioOrchestrator,
         PriceAlertPageOrchestrator,
+        SealedProductOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,
         TransactionOrchestrator,

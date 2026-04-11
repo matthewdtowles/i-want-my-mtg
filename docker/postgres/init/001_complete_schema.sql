@@ -106,7 +106,9 @@ CREATE TABLE public.card (
     "order" integer NOT NULL,
     rarity public.card_rarity_enum NOT NULL,
     set_code character varying NOT NULL,
-    type character varying NOT NULL
+    type character varying NOT NULL,
+    purchase_url_tcgplayer character varying,
+    purchase_url_tcgplayer_etched character varying
 );
 
 
@@ -777,6 +779,80 @@ CREATE TABLE public.price_notification (
 CREATE INDEX idx_price_notification_user_id ON public.price_notification (user_id);
 CREATE INDEX idx_price_notification_created_at ON public.price_notification (user_id, created_at DESC);
 CREATE INDEX idx_price_notification_unread ON public.price_notification (user_id, is_read) WHERE is_read = false;
+
+
+--
+-- Name: sealed_product; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.sealed_product (
+    uuid character varying NOT NULL,
+    name character varying NOT NULL,
+    set_code character varying NOT NULL,
+    category character varying,
+    subtype character varying,
+    card_count integer,
+    product_size integer,
+    release_date date,
+    contents_summary text,
+    purchase_url_tcgplayer character varying,
+    tcgplayer_product_id character varying,
+    CONSTRAINT sealed_product_pkey PRIMARY KEY (uuid),
+    CONSTRAINT fk_sealed_product_set FOREIGN KEY (set_code)
+        REFERENCES public.set(code) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_sealed_product_set_code ON public.sealed_product (set_code);
+CREATE INDEX idx_sealed_product_category ON public.sealed_product (category);
+
+
+--
+-- Name: sealed_product_price; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.sealed_product_price (
+    sealed_product_uuid character varying NOT NULL,
+    price numeric,
+    price_change_weekly numeric,
+    date date NOT NULL,
+    CONSTRAINT sealed_product_price_pkey PRIMARY KEY (sealed_product_uuid),
+    CONSTRAINT fk_sealed_product_price FOREIGN KEY (sealed_product_uuid)
+        REFERENCES public.sealed_product(uuid) ON DELETE CASCADE
+);
+
+
+--
+-- Name: sealed_product_price_history; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.sealed_product_price_history (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    sealed_product_uuid character varying NOT NULL,
+    price numeric,
+    date date NOT NULL,
+    CONSTRAINT sealed_product_price_history_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_sealed_product_price_history UNIQUE (sealed_product_uuid, date),
+    CONSTRAINT fk_sealed_product_price_history FOREIGN KEY (sealed_product_uuid)
+        REFERENCES public.sealed_product(uuid) ON DELETE CASCADE
+);
+
+
+--
+-- Name: sealed_product_inventory; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.sealed_product_inventory (
+    sealed_product_uuid character varying NOT NULL,
+    user_id integer NOT NULL,
+    quantity integer NOT NULL DEFAULT 1,
+    CONSTRAINT sealed_product_inventory_pkey PRIMARY KEY (sealed_product_uuid, user_id),
+    CONSTRAINT fk_sealed_product_inventory_product FOREIGN KEY (sealed_product_uuid)
+        REFERENCES public.sealed_product(uuid) ON DELETE CASCADE,
+    CONSTRAINT fk_sealed_product_inventory_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_sealed_product_inventory_user ON public.sealed_product_inventory (user_id);
 
 
 --

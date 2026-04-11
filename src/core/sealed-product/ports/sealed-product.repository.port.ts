@@ -25,6 +25,11 @@ export interface SealedProductRepositoryPort {
 
     findInventoryItem(uuid: string, userId: number): Promise<SealedProductInventory | null>;
 
+    findInventoryQuantitiesForUser(
+        userId: number,
+        uuids: string[]
+    ): Promise<Map<string, number>>;
+
     saveInventory(item: SealedProductInventory): Promise<SealedProductInventory>;
 
     deleteInventory(uuid: string, userId: number): Promise<boolean>;

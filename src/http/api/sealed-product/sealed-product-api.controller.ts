@@ -19,6 +19,7 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { parseDaysParam } from 'src/http/base/query.util';
@@ -43,21 +44,39 @@ export class SealedProductApiController {
     ) {}
 
     @Get('sets/:code/sealed-products')
+    @UseGuards(OptionalAuthGuard)
     @ApiOperation({ summary: 'List sealed products for a set' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiResponse({ status: 200, description: 'Sealed products for the set' })
     async findBySet(
         @Param('code') code: string,
-        @Query() query: Record<string, string>
+        @Query() query: Record<string, string>,
+        @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<SealedProductApiResponseDto[]>> {
         const options = new SafeQueryOptions(query);
         const [products, total] = await Promise.all([
             this.sealedProductService.findBySetCode(code, options),
             this.sealedProductService.totalBySetCode(code),
         ]);
+
+        const userId = req.user?.id;
+        let quantities = new Map<string, number>();
+        if (userId && products.length > 0) {
+            quantities = await this.sealedProductService.findInventoryQuantitiesForUser(
+                userId,
+                products.map((p) => p.uuid)
+            );
+        }
+
         return ApiResponseDto.ok(
-            products.map(SealedProductApiPresenter.toResponse),
+            products.map((p) => {
+                const dto = SealedProductApiPresenter.toResponse(p);
+                if (userId) {
+                    dto.ownedQuantity = quantities.get(p.uuid) ?? 0;
+                }
+                return dto;
+            }),
             new PaginationMeta(options.page, options.limit, total)
         );
     }

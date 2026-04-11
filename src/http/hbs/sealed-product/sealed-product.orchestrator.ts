@@ -3,7 +3,7 @@ import { SealedProductService } from 'src/core/sealed-product/sealed-product.ser
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Breadcrumb } from 'src/http/base/breadcrumb';
-import { isAuthenticated, toDollar } from 'src/http/base/http.util';
+import { formatGain, isAuthenticated, toDollar } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import {
@@ -61,7 +61,7 @@ export class SealedProductOrchestrator {
                 price: product.price?.price != null ? toDollar(product.price.price) : undefined,
                 priceChangeWeekly:
                     product.price?.priceChangeWeekly != null
-                        ? toDollar(product.price.priceChangeWeekly)
+                        ? formatGain(product.price.priceChangeWeekly)
                         : undefined,
             };
 

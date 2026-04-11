@@ -50,6 +50,16 @@ export class SealedProductService {
         return await this.repository.totalInventoryForUser(userId);
     }
 
+    async findInventoryQuantitiesForUser(
+        userId: number,
+        uuids: string[]
+    ): Promise<Map<string, number>> {
+        this.LOGGER.debug(
+            `findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`
+        );
+        return await this.repository.findInventoryQuantitiesForUser(userId, uuids);
+    }
+
     async findInventoryItem(
         uuid: string,
         userId: number

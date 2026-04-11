@@ -265,6 +265,78 @@ describe('sealedProductsLoader', function () {
         });
     });
 
+    test('initializes stepper qty from ownedQuantity when > 0', function () {
+        setupDom('blb', true);
+        mockFetchResponse([
+            { uuid: 'abc-123', name: 'Draft Booster Box', setCode: 'blb', ownedQuantity: 5 },
+        ]);
+        loadScript();
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var qtyEl = document.querySelector(
+                    '.sealed-inv-stepper[data-sealed-uuid="abc-123"] .sealed-inv-qty'
+                );
+                expect(qtyEl.textContent).toBe('5');
+                expect(qtyEl.classList.contains('sealed-inv-qty--zero')).toBe(false);
+
+                var decBtn = document.querySelector(
+                    '.sealed-inv-stepper[data-sealed-uuid="abc-123"] .sealed-inv-btn--dec'
+                );
+                expect(decBtn.hasAttribute('disabled')).toBe(false);
+                resolve();
+            }, 10);
+        });
+    });
+
+    test('initializes stepper qty to 0 with disabled decrement when ownedQuantity is 0', function () {
+        setupDom('blb', true);
+        mockFetchResponse([
+            { uuid: 'abc-123', name: 'Draft Booster Box', setCode: 'blb', ownedQuantity: 0 },
+        ]);
+        loadScript();
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var qtyEl = document.querySelector(
+                    '.sealed-inv-stepper[data-sealed-uuid="abc-123"] .sealed-inv-qty'
+                );
+                expect(qtyEl.textContent).toBe('0');
+                expect(qtyEl.classList.contains('sealed-inv-qty--zero')).toBe(true);
+
+                var decBtn = document.querySelector(
+                    '.sealed-inv-stepper[data-sealed-uuid="abc-123"] .sealed-inv-btn--dec'
+                );
+                expect(decBtn.hasAttribute('disabled')).toBe(true);
+                resolve();
+            }, 10);
+        });
+    });
+
+    test('URL-encodes tcgplayerProductId in the image src', function () {
+        setupDom('blb');
+        mockFetchResponse([
+            {
+                uuid: 'img-1',
+                name: 'Image Product',
+                setCode: 'blb',
+                tcgplayerProductId: '500001',
+            },
+        ]);
+        loadScript();
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var img = document.querySelector('img[src*="product-images.tcgplayer.com"]');
+                expect(img).not.toBeNull();
+                expect(img.getAttribute('src')).toBe(
+                    'https://product-images.tcgplayer.com/fit-in/200x200/500001.jpg'
+                );
+                resolve();
+            }, 10);
+        });
+    });
+
     test('does not render stepper when not authenticated', function () {
         setupDom('blb', false);
         mockFetchResponse([

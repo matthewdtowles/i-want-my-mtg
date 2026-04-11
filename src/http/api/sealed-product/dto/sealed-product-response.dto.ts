@@ -47,6 +47,11 @@ export class SealedProductApiResponseDto {
 
     @ApiPropertyOptional({ type: SealedProductPriceDto })
     price?: SealedProductPriceDto;
+
+    @ApiPropertyOptional({
+        description: 'Authenticated user\'s owned quantity; omitted when not logged in',
+    })
+    ownedQuantity?: number;
 }
 
 export class SealedProductPriceHistoryPointDto {

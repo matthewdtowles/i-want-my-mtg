@@ -77,8 +77,10 @@
 
         html += '<a href="' + link + '" class="block">';
         if (p.tcgplayerProductId) {
+            // URL path segment → encodeURIComponent is the correct encoding.
+            var imgId = encodeURIComponent(p.tcgplayerProductId);
             html += '<div class="flex justify-center mb-3">';
-            html += '<img src="https://product-images.tcgplayer.com/fit-in/200x200/' + AjaxUtils.escapeHtml(p.tcgplayerProductId) + '.jpg"';
+            html += '<img src="https://product-images.tcgplayer.com/fit-in/200x200/' + imgId + '.jpg"';
             html += ' alt="' + name + '" class="max-h-32 rounded object-contain" loading="lazy" />';
             html += '</div>';
         }
@@ -106,20 +108,26 @@
         html += '</a>';
 
         if (authenticated) {
-            html += renderStepper(p.uuid);
+            var ownedQty = typeof p.ownedQuantity === 'number' && p.ownedQuantity > 0
+                ? p.ownedQuantity
+                : 0;
+            html += renderStepper(p.uuid, ownedQty);
         }
 
         html += '</div>';
         return html;
     }
 
-    function renderStepper(uuid) {
+    function renderStepper(uuid, qty) {
+        var isZero = qty <= 0;
+        var decDisabled = isZero ? ' disabled' : '';
+        var zeroClass = isZero ? ' sealed-inv-qty--zero inv-stepper-qty--zero' : '';
         var html = '<div class="sealed-inv-stepper mt-2 pt-2 border-t border-gray-100 dark:border-gray-700" data-sealed-uuid="' + AjaxUtils.escapeHtml(uuid) + '">';
         html += '<div class="flex items-center gap-2">';
-        html += '<button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec" aria-label="Decrease quantity" disabled>';
+        html += '<button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec" aria-label="Decrease quantity"' + decDisabled + '>';
         html += '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>';
         html += '</button>';
-        html += '<span class="sealed-inv-qty inv-stepper-qty sealed-inv-qty--zero inv-stepper-qty--zero" role="status" aria-live="polite">0</span>';
+        html += '<span class="sealed-inv-qty inv-stepper-qty' + zeroClass + '" role="status" aria-live="polite">' + qty + '</span>';
         html += '<button type="button" class="sealed-inv-btn sealed-inv-btn--inc inv-stepper-btn inv-stepper-btn--inc" aria-label="Increase quantity">';
         html += '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>';
         html += '</button>';

@@ -57,6 +57,7 @@ describe('SealedProductApiController', () => {
                         findInventoryForUser: jest.fn(),
                         totalInventoryForUser: jest.fn(),
                         findInventoryItem: jest.fn(),
+                        findInventoryQuantitiesForUser: jest.fn(),
                         saveInventory: jest.fn(),
                         deleteInventory: jest.fn(),
                     },
@@ -83,12 +84,17 @@ describe('SealedProductApiController', () => {
             sealedProductService.findBySetCode.mockResolvedValue([createProduct()]);
             sealedProductService.totalBySetCode.mockResolvedValue(7);
 
-            const result = await controller.findBySet('mkm', { page: '2', limit: '25' });
+            const result = await controller.findBySet(
+                'mkm',
+                { page: '2', limit: '25' },
+                makeReq()
+            );
 
             expect(result.success).toBe(true);
             expect(result.data).toHaveLength(1);
             expect(result.data[0].uuid).toBe('11111111-1111-1111-1111-111111111111');
             expect(result.data[0].setCode).toBe('mkm');
+            expect(result.data[0].ownedQuantity).toBeUndefined();
             expect(result.meta.page).toBe(2);
             expect(result.meta.limit).toBe(25);
             expect(result.meta.total).toBe(7);
@@ -97,17 +103,50 @@ describe('SealedProductApiController', () => {
                 expect.any(Object)
             );
             expect(sealedProductService.totalBySetCode).toHaveBeenCalledWith('mkm');
+            expect(sealedProductService.findInventoryQuantitiesForUser).not.toHaveBeenCalled();
         });
 
         it('returns an empty array when the set has no sealed products', async () => {
             sealedProductService.findBySetCode.mockResolvedValue([]);
             sealedProductService.totalBySetCode.mockResolvedValue(0);
 
-            const result = await controller.findBySet('mkm', {});
+            const result = await controller.findBySet('mkm', {}, makeReq());
 
             expect(result.success).toBe(true);
             expect(result.data).toEqual([]);
             expect(result.meta.total).toBe(0);
+            expect(sealedProductService.findInventoryQuantitiesForUser).not.toHaveBeenCalled();
+        });
+
+        it('populates ownedQuantity for authenticated users', async () => {
+            const p1 = createProduct({ uuid: 'uuid-1' });
+            const p2 = createProduct({ uuid: 'uuid-2', name: 'Other Product' });
+            sealedProductService.findBySetCode.mockResolvedValue([p1, p2]);
+            sealedProductService.totalBySetCode.mockResolvedValue(2);
+            sealedProductService.findInventoryQuantitiesForUser.mockResolvedValue(
+                new Map([['uuid-1', 5]])
+            );
+
+            const result = await controller.findBySet('mkm', {}, makeReq(42));
+
+            expect(result.success).toBe(true);
+            expect(result.data[0].ownedQuantity).toBe(5);
+            // Products not in the map default to 0.
+            expect(result.data[1].ownedQuantity).toBe(0);
+            expect(sealedProductService.findInventoryQuantitiesForUser).toHaveBeenCalledWith(
+                42,
+                ['uuid-1', 'uuid-2']
+            );
+        });
+
+        it('skips the inventory lookup when authenticated but no products returned', async () => {
+            sealedProductService.findBySetCode.mockResolvedValue([]);
+            sealedProductService.totalBySetCode.mockResolvedValue(0);
+
+            const result = await controller.findBySet('mkm', {}, makeReq(42));
+
+            expect(result.data).toEqual([]);
+            expect(sealedProductService.findInventoryQuantitiesForUser).not.toHaveBeenCalled();
         });
     });
 

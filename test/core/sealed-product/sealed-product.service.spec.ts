@@ -24,6 +24,7 @@ describe('SealedProductService', () => {
         findInventoryForUser: jest.fn(),
         totalInventoryForUser: jest.fn(),
         findInventoryItem: jest.fn(),
+        findInventoryQuantitiesForUser: jest.fn(),
         saveInventory: jest.fn(),
         deleteInventory: jest.fn(),
     };
@@ -132,6 +133,27 @@ describe('SealedProductService', () => {
             const result = await service.deleteInventory('uuid-1', 1);
             expect(result).toBe(true);
             expect(repository.deleteInventory).toHaveBeenCalledWith('uuid-1', 1);
+        });
+    });
+
+    describe('findInventoryQuantitiesForUser', () => {
+        it('should delegate to the repository and return the quantity map', async () => {
+            const map = new Map<string, number>([
+                ['uuid-1', 3],
+                ['uuid-2', 1],
+            ]);
+            repository.findInventoryQuantitiesForUser.mockResolvedValue(map);
+
+            const result = await service.findInventoryQuantitiesForUser(42, [
+                'uuid-1',
+                'uuid-2',
+            ]);
+
+            expect(result).toBe(map);
+            expect(repository.findInventoryQuantitiesForUser).toHaveBeenCalledWith(42, [
+                'uuid-1',
+                'uuid-2',
+            ]);
         });
     });
 });

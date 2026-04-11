@@ -5,7 +5,7 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
 import { SealedProductRepositoryPort } from 'src/core/sealed-product/ports/sealed-product.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { SealedProductInventoryOrmEntity } from './sealed-product-inventory.orm-entity';
 import { SealedProductPriceHistoryOrmEntity } from './sealed-product-price-history.orm-entity';
 import { SealedProductMapper } from './sealed-product.mapper';
@@ -90,6 +90,25 @@ export class SealedProductRepository implements SealedProductRepositoryPort {
     async totalInventoryForUser(userId: number): Promise<number> {
         this.LOGGER.debug(`totalInventoryForUser(${userId})`);
         return await this.inventoryRepo.count({ where: { userId } });
+    }
+
+    async findInventoryQuantitiesForUser(
+        userId: number,
+        uuids: string[]
+    ): Promise<Map<string, number>> {
+        this.LOGGER.debug(
+            `findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`
+        );
+        const result = new Map<string, number>();
+        if (uuids.length === 0) return result;
+        const rows = await this.inventoryRepo.find({
+            where: { userId, sealedProductUuid: In(uuids) },
+            select: ['sealedProductUuid', 'quantity'],
+        });
+        for (const row of rows) {
+            result.set(row.sealedProductUuid, row.quantity);
+        }
+        return result;
     }
 
     async findInventoryItem(

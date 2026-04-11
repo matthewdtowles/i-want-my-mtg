@@ -11,6 +11,24 @@ beforeEach(function () {
     global.fetch = fetchMock;
     observeCallbacks = [];
 
+    // Minimal AjaxUtils stub — the loader now delegates escape/format to it.
+    global.AjaxUtils = {
+        escapeHtml: function (str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        },
+        toDollar: function (amount) {
+            if (amount == null || amount === 0) return '-';
+            var rounded = Math.round(amount * 100) / 100;
+            return '$' + rounded.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        },
+    };
+
     // Mock IntersectionObserver to trigger immediately
     global.IntersectionObserver = jest.fn(function (callback) {
         observeCallbacks.push(callback);
@@ -27,6 +45,7 @@ beforeEach(function () {
 afterEach(function () {
     delete global.fetch;
     delete global.IntersectionObserver;
+    delete global.AjaxUtils;
 });
 
 function setupDom(setCode, authenticated) {
@@ -43,11 +62,22 @@ function loadScript() {
 
 function mockFetchResponse(data, success) {
     fetchMock.mockResolvedValueOnce({
+        ok: true,
         json: function () {
             return Promise.resolve({
                 success: success !== false,
                 data: data,
             });
+        },
+    });
+}
+
+function mockFetchHttpError(status) {
+    fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: status || 500,
+        json: function () {
+            return Promise.resolve({ success: false });
         },
     });
 }
@@ -134,6 +164,43 @@ describe('sealedProductsLoader', function () {
         return new Promise(function (resolve) {
             setTimeout(function () {
                 var list = document.getElementById('sealed-products-list');
+                expect(list.innerHTML).toContain('Failed to load sealed products');
+                resolve();
+            }, 10);
+        });
+    });
+
+    test('shows error message on non-ok HTTP response', function () {
+        setupDom('blb');
+        mockFetchHttpError(500);
+        loadScript();
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var section = document.getElementById('sealed-products-section');
+                var list = document.getElementById('sealed-products-list');
+                expect(section.style.display).not.toBe('none');
+                expect(list.innerHTML).toContain('Failed to load sealed products');
+                resolve();
+            }, 10);
+        });
+    });
+
+    test('shows error message when API returns success=false', function () {
+        setupDom('blb');
+        fetchMock.mockResolvedValueOnce({
+            ok: true,
+            json: function () {
+                return Promise.resolve({ success: false, error: 'Server error' });
+            },
+        });
+        loadScript();
+
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                var section = document.getElementById('sealed-products-section');
+                var list = document.getElementById('sealed-products-list');
+                expect(section.style.display).not.toBe('none');
                 expect(list.innerHTML).toContain('Failed to load sealed products');
                 resolve();
             }, 10);

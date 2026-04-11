@@ -31,10 +31,14 @@
             credentials: 'same-origin',
         })
             .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
             })
             .then(function (json) {
-                if (!json.success || !json.data || json.data.length === 0) {
+                if (!json.success) {
+                    throw new Error(json.error || 'Failed to load sealed products');
+                }
+                if (!json.data || json.data.length === 0) {
                     container.style.display = 'none';
                     return;
                 }
@@ -60,11 +64,12 @@
     }
 
     function renderProductCard(p) {
-        var name = escapeHtml(p.name);
-        var category = p.category ? escapeHtml(formatCategory(p.category)) : '';
-        var subtype = p.subtype ? escapeHtml(formatCategory(p.subtype)) : '';
-        var price = p.price && p.price.price != null ? toDollar(p.price.price) : '';
-        var contents = p.contentsSummary ? escapeHtml(p.contentsSummary) : '';
+        var name = AjaxUtils.escapeHtml(p.name);
+        var category = p.category ? AjaxUtils.escapeHtml(formatCategory(p.category)) : '';
+        var subtype = p.subtype ? AjaxUtils.escapeHtml(formatCategory(p.subtype)) : '';
+        var hasPrice = p.price && p.price.price != null && p.price.price > 0;
+        var price = hasPrice ? AjaxUtils.toDollar(p.price.price) : '';
+        var contents = p.contentsSummary ? AjaxUtils.escapeHtml(p.contentsSummary) : '';
         var link = '/sealed-products/' + encodeURIComponent(p.uuid);
 
         var html = '<div class="rounded-lg border border-gray-200 dark:border-gray-700 ' +
@@ -73,13 +78,13 @@
         html += '<a href="' + link + '" class="block">';
         if (p.tcgplayerProductId) {
             html += '<div class="flex justify-center mb-3">';
-            html += '<img src="https://product-images.tcgplayer.com/fit-in/200x200/' + escapeHtml(p.tcgplayerProductId) + '.jpg"';
+            html += '<img src="https://product-images.tcgplayer.com/fit-in/200x200/' + AjaxUtils.escapeHtml(p.tcgplayerProductId) + '.jpg"';
             html += ' alt="' + name + '" class="max-h-32 rounded object-contain" loading="lazy" />';
             html += '</div>';
         }
         html += '<div class="flex items-start justify-between gap-2">';
         html += '<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">' + name + '</h3>';
-        if (price) {
+        if (hasPrice) {
             html += '<span class="text-sm font-medium text-teal-600 dark:text-teal-400 whitespace-nowrap">' + price + '</span>';
         }
         html += '</div>';
@@ -109,7 +114,7 @@
     }
 
     function renderStepper(uuid) {
-        var html = '<div class="sealed-inv-stepper mt-2 pt-2 border-t border-gray-100 dark:border-gray-700" data-sealed-uuid="' + escapeHtml(uuid) + '">';
+        var html = '<div class="sealed-inv-stepper mt-2 pt-2 border-t border-gray-100 dark:border-gray-700" data-sealed-uuid="' + AjaxUtils.escapeHtml(uuid) + '">';
         html += '<div class="flex items-center gap-2">';
         html += '<button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec" aria-label="Decrease quantity" disabled>';
         html += '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>';
@@ -128,21 +133,5 @@
         return str.replace(/_/g, ' ').replace(/\b\w/g, function (c) {
             return c.toUpperCase();
         });
-    }
-
-    function escapeHtml(str) {
-        if (str == null) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    function toDollar(amount) {
-        if (amount == null || amount === 0) return '';
-        var rounded = Math.round(amount * 100) / 100;
-        return '$' + rounded.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 })();

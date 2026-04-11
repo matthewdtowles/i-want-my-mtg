@@ -17,14 +17,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         event.stopImmediatePropagation();
         var stepper = btn.closest('.sealed-inv-stepper');
+        if (!stepper) return;
         var uuid = stepper.getAttribute('data-sealed-uuid');
         if (!uuid) return;
+
+        var qtyEl = stepper.querySelector('.sealed-inv-qty');
+        if (!qtyEl) return;
 
         if (busySteppers[uuid]) return;
         busySteppers[uuid] = true;
 
-        var qtyEl = stepper.querySelector('.sealed-inv-qty');
-        var currentQty = parseInt(qtyEl.textContent) || 0;
+        var currentQty = parseInt(qtyEl.textContent, 10);
+        if (isNaN(currentQty) || currentQty < 0) currentQty = 0;
         var newQty = incBtn ? currentQty + 1 : currentQty - 1;
 
         if (newQty <= 0) {
@@ -79,10 +83,18 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
             body: JSON.stringify({ sealedProductUuid: uuid }),
-        }).then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        });
+        })
+            .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function (json) {
+                if (!json.success) throw new Error(json.error || 'Unknown error');
+                if (json.data && json.data.deleted === false) {
+                    throw new Error('Failed to delete sealed inventory');
+                }
+                return json;
+            });
     }
 
     function updateStepperUi(uuid, qty) {

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -29,14 +29,7 @@ export class SealedProductOrchestrator {
         try {
             const product = await this.sealedProductService.findByUuid(uuid);
             if (!product) {
-                return new SealedProductDetailViewDto({
-                    authenticated: isAuthenticated(req),
-                    breadcrumbs: [
-                        { label: 'Home', url: '/' },
-                        { label: 'Sealed Product', url: '#' },
-                    ],
-                    product: null,
-                });
+                throw new NotFoundException('Sealed product not found');
             }
 
             const set = await this.setService.findByCode(product.setCode);
@@ -88,6 +81,7 @@ export class SealedProductOrchestrator {
                 inventoryQuantity,
             });
         } catch (error) {
+            if (error instanceof HttpException) throw error;
             return HttpErrorHandler.toHttpException(error, 'findSealedProduct');
         }
     }

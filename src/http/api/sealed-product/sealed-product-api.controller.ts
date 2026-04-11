@@ -23,7 +23,10 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
-import { SealedInventoryRequestDto } from './dto/sealed-inventory-request.dto';
+import {
+    SealedInventoryDeleteRequestDto,
+    SealedInventoryRequestDto,
+} from './dto/sealed-inventory-request.dto';
 import {
     SealedProductApiResponseDto,
     SealedProductInventoryApiDto,
@@ -155,7 +158,7 @@ export class SealedProductApiController {
     @ApiOperation({ summary: 'Remove sealed product from inventory' })
     @ApiResponse({ status: 200, description: 'Item removed' })
     async removeFromInventory(
-        @Body() body: { sealedProductUuid: string },
+        @Body() body: SealedInventoryDeleteRequestDto,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<{ deleted: boolean }>> {
         const deleted = await this.sealedProductService.deleteInventory(

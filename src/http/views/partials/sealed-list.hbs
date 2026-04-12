@@ -1,0 +1,70 @@
+{{~!--
+  Sealed product list partial - renders the sealed tab body on the set page.
+
+  Parameters:
+    products        - SealedProductRowDto[] (required)
+    authenticated   - boolean; when true, the owned stepper column is rendered
+--~}}
+<div class="content-wrapper">
+    <div class="table-wrapper">
+        <table class="table-container w-full">
+            <thead>
+                <tr>
+                    {{#if authenticated}}
+                    <th class="table-cell">Owned</th>
+                    {{/if}}
+                    <th class="table-cell">Product</th>
+                    <th class="table-cell xs-hide">Category</th>
+                    <th class="table-cell xs-hide">Subtype</th>
+                    <th class="table-cell xs-hide">Contents</th>
+                    <th class="table-cell">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each products}}
+                <tr class="table-row">
+                    {{#if ../authenticated}}
+                    <td class="table-cell">
+                        <div class="sealed-inv-stepper" data-sealed-uuid="{{this.uuid}}">
+                            <div class="inv-stepper inv-stepper--sm">
+                                <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
+                                        aria-label="Decrease quantity"{{#unless this.ownedQuantity}} disabled{{/unless}}>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+                                </button>
+                                <span class="sealed-inv-qty inv-stepper-qty{{#unless this.ownedQuantity}} sealed-inv-qty--zero inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if this.ownedQuantity}}{{this.ownedQuantity}}{{else}}0{{/if}}</span>
+                                <button type="button" class="sealed-inv-btn sealed-inv-btn--inc inv-stepper-btn inv-stepper-btn--inc"
+                                        aria-label="Increase quantity">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                    {{/if}}
+                    <td class="table-cell">
+                        {{>cardLink url=this.detailUrl name=this.name imgSrc=this.imageUrl}}
+                    </td>
+                    <td class="table-cell xs-hide">
+                        {{#if this.categoryLabel}}{{this.categoryLabel}}{{/if}}
+                    </td>
+                    <td class="table-cell xs-hide">
+                        {{#if this.subtypeLabel}}{{this.subtypeLabel}}{{/if}}
+                    </td>
+                    <td class="table-cell xs-hide text-xs text-gray-500 dark:text-gray-400">
+                        {{#if this.contentsSummary}}{{this.contentsSummary}}{{/if}}
+                    </td>
+                    <td class="table-cell">
+                        {{#if this.hasPrice}}
+                        <span class="price-normal">{{this.price}}</span>
+                        {{#if this.priceChangeWeekly}}
+                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
+                        {{/if}}
+                        {{else}}
+                        <span class="text-gray-400 dark:text-gray-600">-</span>
+                        {{/if}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -6,6 +6,8 @@ import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
+import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { Set } from 'src/core/set/set.entity';
@@ -17,6 +19,8 @@ import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { InventoryPresenter } from 'src/http/hbs/inventory/inventory.presenter';
+import { SealedProductRowDto } from 'src/http/hbs/sealed-product/dto/sealed-product-row.dto';
+import { SealedProductHbsPresenter } from 'src/http/hbs/sealed-product/sealed-product.presenter';
 import { BaseOnlyToggleView } from 'src/http/hbs/list/base-only-toggle.view';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
@@ -47,7 +51,9 @@ export class SetOrchestrator {
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryImportService)
         private readonly importService: InventoryImportService,
-        @Inject(SetChecklistService) private readonly checklistService: SetChecklistService
+        @Inject(SetChecklistService) private readonly checklistService: SetChecklistService,
+        @Inject(SealedProductService)
+        private readonly sealedProductService: SealedProductService
     ) {}
 
     async findSetList(
@@ -190,7 +196,8 @@ export class SetOrchestrator {
             const effectiveOptions = forceShowAll ? options.withBaseOnly(false) : options;
             const hasFilter = !!effectiveOptions.filter;
 
-            const [cards, currentCount, targetCount] = await Promise.all([
+            const userId = req.user?.id ?? 0;
+            const [cards, currentCount, targetCount, sealedProducts] = await Promise.all([
                 this.cardService.findBySet(setCode, effectiveOptions),
                 hasFilter
                     ? this.cardService.totalInSet(setCode, effectiveOptions)
@@ -201,6 +208,7 @@ export class SetOrchestrator {
                           effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
                       )
                     : Promise.resolve(effectiveOptions.baseOnly ? set.totalSize : set.baseSize),
+                this.findSealedProductsForSet(setCode, userId, effectiveOptions),
             ]);
 
             const toggleConfig = buildToggleConfig(
@@ -211,8 +219,12 @@ export class SetOrchestrator {
             );
             set.cards.push(...cards);
 
-            const userId = req.user?.id ?? 0;
-            const setResponse = await this.createSetResponseDto(userId, set, effectiveOptions);
+            const setResponse = await this.createSetResponseDto(
+                userId,
+                set,
+                effectiveOptions,
+                sealedProducts
+            );
             const baseUrl = `/sets/${set.code}`;
 
             const hasAnyNormalPrice = setResponse.cards?.some((c) => c.normalPriceRaw > 0) ?? false;
@@ -632,10 +644,45 @@ export class SetOrchestrator {
         });
     }
 
+    /**
+     * Fetches sealed products for a set and resolves their owned quantities.
+     * Failures are logged and swallowed — sealed is a secondary UI concern
+     * and should never take down the rest of the set page.
+     */
+    private async findSealedProductsForSet(
+        setCode: string,
+        userId: number,
+        options: SafeQueryOptions
+    ): Promise<SealedProductRowDto[]> {
+        try {
+            const products = await this.sealedProductService.findBySetCode(setCode, options);
+            if (!products || products.length === 0) {
+                return [];
+            }
+
+            let ownedQuantities = new Map<string, number>();
+            if (userId) {
+                ownedQuantities =
+                    await this.sealedProductService.findInventoryQuantitiesForUser(
+                        userId,
+                        products.map((p: SealedProduct) => p.uuid)
+                    );
+            }
+
+            return SealedProductHbsPresenter.toRows(products, ownedQuantities);
+        } catch (error) {
+            this.LOGGER.debug(
+                `Failed to load sealed products for set ${setCode}: ${error?.message}`
+            );
+            return [];
+        }
+    }
+
     private async createSetResponseDto(
         userId: number,
         set: Set,
-        _options: SafeQueryOptions
+        _options: SafeQueryOptions,
+        sealedProducts: SealedProductRowDto[] = []
     ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
         const inventory =
@@ -672,6 +719,7 @@ export class SetOrchestrator {
                       )
                   )
                 : [],
+            sealedProducts,
         });
     }
 }

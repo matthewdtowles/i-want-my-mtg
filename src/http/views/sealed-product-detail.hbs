@@ -1,102 +1,128 @@
-<section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
-    <div class="text-center pt-4 pb-2">
-        <h1 class="page-title">
-            {{#if setKeyruneCode}}
-            <i class="ss ss-{{setKeyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
-            {{/if}}
-            <span class="align-middle">{{product.name}}</span>
-        </h1>
-        {{#if setName}}
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <a href="/sets/{{product.setCode}}" class="hover:underline">{{setName}}</a>
-        </p>
-        {{/if}}
-    </div>
+<section class="content-wrapper">
+    <section class="card-info flex flex-col md:flex-row section-container">
 
-    <div class="max-w-2xl mx-auto px-4">
-        {{#if product.imageUrl}}
-        <div class="flex justify-center mb-4">
-            <img src="{{product.imageUrl}}" alt="{{product.name}}"
-                class="max-h-64 rounded-lg shadow-md object-contain"
-                loading="lazy" />
-        </div>
-        {{/if}}
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            {{#if product.category}}
-            {{>statCard label="Category" value=product.category valueClass="text-sm"}}
-            {{/if}}
-            {{#if product.subtype}}
-            {{>statCard label="Subtype" value=product.subtype valueClass="text-sm"}}
-            {{/if}}
-            {{#if product.releaseDate}}
-            {{>statCard label="Released" value=product.releaseDate valueClass="text-sm"}}
-            {{/if}}
-            {{#if product.price}}
-            {{>statCard label="Price" value=product.price}}
-            {{/if}}
-        </div>
-
-        {{#if product.priceChangeWeekly}}
-        <div class="grid grid-cols-1 gap-3 mb-4">
-            {{>statCard label="7d Change" value=product.priceChangeWeekly}}
-        </div>
-        {{/if}}
-
-        {{#if product.contentsSummary}}
-        <div class="bg-white dark:bg-midnight-800 rounded-lg p-4 mb-4 shadow-sm">
-            <h2 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Contents</h2>
-            <p class="text-sm text-gray-700 dark:text-gray-300">{{product.contentsSummary}}</p>
-        </div>
-        {{/if}}
-
-        {{#if product.productSize}}
-        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Items per product: {{product.productSize}}
-        </div>
-        {{/if}}
-
-        {{#if product.cardCount}}
-        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Card count: {{product.cardCount}}
-        </div>
-        {{/if}}
-
-        {{#if authenticated}}
-        <div class="bg-white dark:bg-midnight-800 rounded-lg p-4 mb-4 shadow-sm">
-            <h2 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Collection</h2>
-            <div class="sealed-inv-stepper" data-sealed-uuid="{{product.uuid}}">
-                <div class="flex items-center gap-3">
-                    <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
-                            aria-label="Decrease quantity"{{#unless inventoryQuantity}} disabled{{/unless}}>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
-                    </button>
-                    <span class="sealed-inv-qty inv-stepper-qty{{#unless inventoryQuantity}} sealed-inv-qty--zero inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if inventoryQuantity}}{{inventoryQuantity}}{{else}}0{{/if}}</span>
-                    <button type="button" class="sealed-inv-btn sealed-inv-btn--inc inv-stepper-btn inv-stepper-btn--inc"
-                            aria-label="Increase quantity">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">owned</span>
-                </div>
+        <section class="md:w-1/4 flex-shrink-0 mb-4 md:mb-6">
+            {{#if product.imageUrl}}
+            <div class="card-image-wrapper">
+                <img class="card-image" src="{{product.imageUrl}}" alt="{{product.name}}" loading="lazy" />
             </div>
-        </div>
-        {{/if}}
+            {{else}}
+            <div class="card-image-wrapper flex items-center justify-center bg-gray-100 dark:bg-midnight-800 text-gray-400 dark:text-gray-600 text-sm" style="min-height: 340px;">
+                No image available
+            </div>
+            {{/if}}
+        </section>
 
-        {{#if product.purchaseUrlTcgplayer}}
-        <div class="mt-4">
-            <a href="{{product.purchaseUrlTcgplayer}}" target="_blank" rel="noopener noreferrer"
-                class="btn btn-primary text-sm">
-                Buy on TCGPlayer
-                <svg class="w-3.5 h-3.5 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-            </a>
-        </div>
-        {{/if}}
-    </div>
+        <section class="play-info flex-1 min-w-0 md:pl-6">
+            <header class="mb-6">
+                <h1 class="card-title">
+                    <span>{{product.name}}</span>
+                </h1>
+                <div class="flex items-center flex-wrap gap-2 mt-1">
+                    {{#if setKeyruneCode}}
+                    <i class="ss ss-{{setKeyruneCode}} ss-2x"></i>
+                    {{/if}}
+                    <a class="table-link text-base" href="/sets/{{product.setCode}}">{{toUpperCase product.setCode}}{{#if setName}} {{setName}}{{/if}}</a>
+                    {{#if product.categoryLabel}}
+                    <span class="tag">{{product.categoryLabel}}</span>
+                    {{/if}}
+                    {{#if product.subtypeLabel}}
+                    <span class="tag">{{product.subtypeLabel}}</span>
+                    {{/if}}
+                </div>
+            </header>
+
+            {{#if product.contentsSummary}}
+            <section class="mb-5 pb-5 border-b border-gray-100 dark:border-midnight-700">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Contents</p>
+                <p class="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{product.contentsSummary}}</p>
+            </section>
+            {{/if}}
+
+            <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500 dark:text-gray-400 mb-5 pb-5 border-b border-gray-100 dark:border-midnight-700">
+                {{#if product.releaseDate}}
+                <span>Released {{product.releaseDate}}</span>
+                {{/if}}
+                {{#if product.productSize}}
+                <span>{{product.productSize}} per product</span>
+                {{/if}}
+                {{#if product.cardCount}}
+                <span>{{product.cardCount}} cards</span>
+                {{/if}}
+            </div>
+
+            {{#if product.purchaseUrlTcgplayer}}
+            <div class="mb-4">
+                <a href="{{product.purchaseUrlTcgplayer}}" target="_blank" rel="noopener noreferrer"
+                    class="btn btn-primary text-sm">
+                    Buy on TCGPlayer
+                    <svg class="w-3.5 h-3.5 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+            </div>
+            {{/if}}
+        </section>
+
+        <section class="price-info md:w-1/4 flex-shrink-0 md:pl-6 mb-4 md:mb-0 border-none min-w-0">
+            <section class="subsection-container">
+                <h2 class="section-title">Pricing</h2>
+                <div class="grid grid-cols-1 gap-2 mb-3">
+                    <div class="price-tile border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800">
+                        <h3 class="font-semibold text-teal-700 dark:text-teal-300 text-xs uppercase tracking-wide mb-1">Market</h3>
+                        <div class="price-tile-value font-bold text-gray-900 dark:text-gray-100 font-mono">
+                            {{#if product.hasPrice}}{{product.price}}{{else}}-{{/if}}
+                        </div>
+                        {{#if product.priceChangeWeekly}}
+                        <span class="price-change price-change-{{product.priceChangeWeeklySign}} text-xs">{{product.priceChangeWeekly}}</span>
+                        {{/if}}
+                    </div>
+                </div>
+
+                {{#if authenticated}}
+                <section class="inventory-info">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Collection</h3>
+                    <div class="sealed-inv-stepper" data-sealed-uuid="{{product.uuid}}">
+                        <div class="inv-stepper">
+                            <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
+                                    aria-label="Decrease quantity"{{#unless product.ownedQuantity}} disabled{{/unless}}>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14"/></svg>
+                            </button>
+                            <span class="sealed-inv-qty inv-stepper-qty{{#unless product.ownedQuantity}} sealed-inv-qty--zero inv-stepper-qty--zero{{/unless}}" role="status" aria-live="polite">{{#if product.ownedQuantity}}{{product.ownedQuantity}}{{else}}0{{/if}}</span>
+                            <button type="button" class="sealed-inv-btn sealed-inv-btn--inc inv-stepper-btn inv-stepper-btn--inc"
+                                    aria-label="Increase quantity">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                {{/if}}
+
+                <div class="mt-4" id="sealed-price-history-chart"
+                    data-sealed-uuid="{{product.uuid}}"
+                    data-chart-src="/public/js/sealedPriceHistoryChart.js?v={{assetVersion}}"
+                    data-chart-init="initSealedPriceHistory">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h3>
+                        <div class="flex gap-1">
+                            <button class="history-range-btn sealed-price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
+                            <button class="history-range-btn sealed-price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
+                            <button class="history-range-btn sealed-price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
+                            <button class="history-range-btn sealed-price-history-range px-2 py-1 text-xs rounded" data-days="">All</button>
+                        </div>
+                    </div>
+                    <div id="sealed-price-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="sealed-price-history-canvas"></canvas>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </section>
 </section>
 
+<script src="/public/js/chartLoader.js?v={{assetVersion}}" defer></script>
 {{#if authenticated}}
 <script src="/public/js/updateSealedInventory.js?v={{assetVersion}}" defer></script>
 {{/if}}

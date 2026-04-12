@@ -5,6 +5,9 @@ import { CardService } from 'src/core/card/card.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SealedProductPrice } from 'src/core/sealed-product/sealed-product-price.entity';
+import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
+import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SetChecklistService } from 'src/core/set/checklist/set-checklist.service';
 import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
 import { Set } from 'src/core/set/set.entity';
@@ -22,6 +25,7 @@ describe('SetOrchestrator', () => {
     let setService: jest.Mocked<SetService>;
     let inventoryService: jest.Mocked<InventoryService>;
     let cardService: jest.Mocked<CardService>;
+    let sealedProductService: jest.Mocked<SealedProductService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User' },
@@ -108,6 +112,13 @@ describe('SetOrchestrator', () => {
                     provide: SetChecklistService,
                     useValue: { generateChecklist: jest.fn() },
                 },
+                {
+                    provide: SealedProductService,
+                    useValue: {
+                        findBySetCode: jest.fn(),
+                        findInventoryQuantitiesForUser: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
@@ -115,10 +126,16 @@ describe('SetOrchestrator', () => {
         setService = module.get(SetService) as jest.Mocked<SetService>;
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
         cardService = module.get(CardService) as jest.Mocked<CardService>;
+        sealedProductService = module.get(
+            SealedProductService
+        ) as jest.Mocked<SealedProductService>;
     });
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Default: sealed product service returns nothing so existing tests are unaffected
+        sealedProductService.findBySetCode.mockResolvedValue([]);
+        sealedProductService.findInventoryQuantitiesForUser.mockResolvedValue(new Map());
     });
 
     describe('findSetList', () => {
@@ -371,6 +388,151 @@ describe('SetOrchestrator', () => {
             expect(cardService.totalInSet).not.toHaveBeenCalled();
             // baseOnly defaults to true, so currentCount = baseSize = 100
             expect(result.pagination.totalPages).toBe(10);
+        });
+
+        describe('sealed products', () => {
+            const mockSealedProduct = (overrides: Partial<SealedProduct> = {}): SealedProduct =>
+                new SealedProduct({
+                    uuid: 'sp-1',
+                    name: 'Draft Booster Box',
+                    setCode: 'TST',
+                    category: 'booster_box',
+                    subtype: 'draft',
+                    cardCount: 36,
+                    productSize: 36,
+                    releaseDate: '2024-08-02',
+                    contentsSummary: '36x Draft Booster Pack',
+                    purchaseUrlTcgplayer: 'https://tcgplayer.com/x',
+                    tcgplayerProductId: '500001',
+                    price: new SealedProductPrice({
+                        price: 99.99,
+                        priceChangeWeekly: 1.5,
+                        date: '2024-08-02',
+                    }),
+                    ...overrides,
+                });
+
+            beforeEach(() => {
+                setService.findByCode.mockResolvedValue(mockSet);
+                cardService.findBySet.mockResolvedValue([mockCard]);
+                cardService.totalInSet.mockResolvedValue(1);
+                inventoryService.findByCards.mockResolvedValue([]);
+                inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+                inventoryService.ownedValueForSet.mockResolvedValue(0);
+            });
+
+            it('populates set.sealedProducts on the view DTO', async () => {
+                sealedProductService.findBySetCode.mockResolvedValue([
+                    mockSealedProduct({ uuid: 'sp-1', name: 'Draft Booster Box' }),
+                    mockSealedProduct({ uuid: 'sp-2', name: 'Collector Booster Box' }),
+                ]);
+
+                const result = await orchestrator.findBySetCode(
+                    mockAuthenticatedRequest,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(sealedProductService.findBySetCode).toHaveBeenCalledWith(
+                    'TST',
+                    expect.anything()
+                );
+                expect(result.set.sealedProducts).toHaveLength(2);
+                expect(result.set.sealedProducts[0].uuid).toBe('sp-1');
+                expect(result.set.sealedProducts[0].name).toBe('Draft Booster Box');
+                expect(result.set.sealedProducts[0].detailUrl).toBe('/sealed-products/sp-1');
+                expect(result.set.sealedProducts[1].uuid).toBe('sp-2');
+            });
+
+            it('returns an empty sealedProducts array when no sealed products exist', async () => {
+                sealedProductService.findBySetCode.mockResolvedValue([]);
+
+                const result = await orchestrator.findBySetCode(
+                    mockAuthenticatedRequest,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(result.set.sealedProducts).toEqual([]);
+            });
+
+            it('pulls owned sealed quantities for authenticated users', async () => {
+                sealedProductService.findBySetCode.mockResolvedValue([
+                    mockSealedProduct({ uuid: 'sp-1' }),
+                    mockSealedProduct({ uuid: 'sp-2' }),
+                ]);
+                sealedProductService.findInventoryQuantitiesForUser.mockResolvedValue(
+                    new Map<string, number>([
+                        ['sp-1', 3],
+                        ['sp-2', 0],
+                    ])
+                );
+
+                const result = await orchestrator.findBySetCode(
+                    mockAuthenticatedRequest,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(sealedProductService.findInventoryQuantitiesForUser).toHaveBeenCalledWith(
+                    mockAuthenticatedRequest.user.id,
+                    ['sp-1', 'sp-2']
+                );
+                expect(result.set.sealedProducts[0].ownedQuantity).toBe(3);
+                expect(result.set.sealedProducts[1].ownedQuantity).toBe(0);
+            });
+
+            it('skips owned-quantity lookup when unauthenticated', async () => {
+                const unauthReq = {
+                    user: null,
+                    isAuthenticated: () => false,
+                } as AuthenticatedRequest;
+                sealedProductService.findBySetCode.mockResolvedValue([
+                    mockSealedProduct({ uuid: 'sp-1' }),
+                ]);
+
+                const result = await orchestrator.findBySetCode(
+                    unauthReq,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(
+                    sealedProductService.findInventoryQuantitiesForUser
+                ).not.toHaveBeenCalled();
+                expect(result.set.sealedProducts).toHaveLength(1);
+                expect(result.set.sealedProducts[0].ownedQuantity).toBe(0);
+            });
+
+            it('does not fail the whole page when sealed fetch errors', async () => {
+                sealedProductService.findBySetCode.mockRejectedValue(
+                    new Error('sealed DB error')
+                );
+
+                const result = await orchestrator.findBySetCode(
+                    mockAuthenticatedRequest,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(result).toBeInstanceOf(SetViewDto);
+                expect(result.set.sealedProducts).toEqual([]);
+                expect(result.set).toBeDefined();
+            });
+
+            it('skips owned-quantity lookup when sealed list is empty', async () => {
+                sealedProductService.findBySetCode.mockResolvedValue([]);
+
+                await orchestrator.findBySetCode(
+                    mockAuthenticatedRequest,
+                    'TST',
+                    mockQueryOptions
+                );
+
+                expect(
+                    sealedProductService.findInventoryQuantitiesForUser
+                ).not.toHaveBeenCalled();
+            });
         });
 
         it('forces baseOnly false when set is not a main set', async () => {

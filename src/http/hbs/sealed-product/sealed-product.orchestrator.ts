@@ -3,13 +3,11 @@ import { SealedProductService } from 'src/core/sealed-product/sealed-product.ser
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Breadcrumb } from 'src/http/base/breadcrumb';
-import { formatGain, isAuthenticated, toDollar } from 'src/http/base/http.util';
+import { isAuthenticated } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
-import {
-    SealedProductDetailViewDto,
-    SealedProductResponseDto,
-} from './dto/sealed-product-view.dto';
+import { SealedProductDetailViewDto } from './dto/sealed-product-view.dto';
+import { SealedProductHbsPresenter } from './sealed-product.presenter';
 
 @Injectable()
 export class SealedProductOrchestrator {
@@ -34,36 +32,16 @@ export class SealedProductOrchestrator {
 
             const set = await this.setService.findByCode(product.setCode);
 
-            let inventoryQuantity = 0;
+            let ownedQuantity = 0;
             if (isAuthenticated(req) && req.user?.id) {
                 const inventoryItem = await this.sealedProductService.findInventoryItem(
                     uuid,
                     req.user.id
                 );
-                inventoryQuantity = inventoryItem?.quantity ?? 0;
+                ownedQuantity = inventoryItem?.quantity ?? 0;
             }
 
-            const dto: SealedProductResponseDto = {
-                uuid: product.uuid,
-                name: product.name,
-                setCode: product.setCode,
-                category: product.category,
-                subtype: product.subtype,
-                cardCount: product.cardCount,
-                productSize: product.productSize,
-                releaseDate: product.releaseDate,
-                contentsSummary: product.contentsSummary,
-                purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
-                tcgplayerProductId: product.tcgplayerProductId,
-                imageUrl: product.tcgplayerProductId
-                    ? `https://product-images.tcgplayer.com/fit-in/437x437/${product.tcgplayerProductId}.jpg`
-                    : undefined,
-                price: product.price?.price != null ? toDollar(product.price.price) : undefined,
-                priceChangeWeekly:
-                    product.price?.priceChangeWeekly != null
-                        ? formatGain(product.price.priceChangeWeekly)
-                        : undefined,
-            };
+            const row = SealedProductHbsPresenter.toRow(product, ownedQuantity);
 
             const breadcrumbs: Breadcrumb[] = [
                 { label: 'Home', url: '/' },
@@ -75,10 +53,9 @@ export class SealedProductOrchestrator {
             return new SealedProductDetailViewDto({
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
-                product: dto,
+                product: row,
                 setName: set?.name,
                 setKeyruneCode: set?.keyruneCode,
-                inventoryQuantity,
             });
         } catch (error) {
             if (error instanceof HttpException) throw error;

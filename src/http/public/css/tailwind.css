@@ -2412,6 +2412,53 @@ input:where([type='file']):focus {
   color: rgb(114 236 229 / var(--tw-text-opacity, 1));
 }
 
+/* ===== Set Product Tabs ===== */
+
+.set-tab {
+  margin-bottom: -1px;
+  border-bottom-width: 2px;
+  border-color: transparent;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.set-tab:hover {
+  --tw-text-opacity: 1;
+  color: rgb(26 122 120 / var(--tw-text-opacity, 1));
+}
+
+.set-tab:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.set-tab:hover:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(114 236 229 / var(--tw-text-opacity, 1));
+}
+
+.set-tab--active {
+  --tw-border-opacity: 1;
+  border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
+  --tw-text-opacity: 1;
+  color: rgb(26 122 120 / var(--tw-text-opacity, 1));
+}
+
+.set-tab--active:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(114 236 229 / var(--tw-text-opacity, 1));
+}
+
 /* ===== Binder View ===== */
 
 /* Binder wrapper: side arrows + grid */

@@ -121,9 +121,7 @@
                 pinnedHeight: pinnedHeight,
                 onSettled: function () {
                     var contentHeight = resultsEl.scrollHeight;
-                    if (contentHeight > pinnedHeight) {
-                        pinnedHeight = contentHeight;
-                    }
+                    pinnedHeight = contentHeight;
                     resultsEl.style.minHeight = pinnedHeight + 'px';
                     settleAndIdle(!!state.direction);
                 },

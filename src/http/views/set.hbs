@@ -287,6 +287,32 @@
     </section>
 </div>
 
+{{#if set.sealedProducts.length}}
+<div id="set-product-tabs" class="content-wrapper mb-3" role="tablist" aria-label="Set products">
+    <div class="flex border-b border-gray-200 dark:border-midnight-700">
+        <button type="button"
+            id="set-tab-cards"
+            class="set-tab set-tab--active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="set-cards-panel"
+            data-tab="cards">
+            Cards <span class="text-xs text-gray-500 dark:text-gray-400">({{set.totalSize}})</span>
+        </button>
+        <button type="button"
+            id="set-tab-sealed"
+            class="set-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="set-sealed-panel"
+            data-tab="sealed">
+            Sealed <span class="text-xs text-gray-500 dark:text-gray-400">({{set.sealedProducts.length}})</span>
+        </button>
+    </div>
+</div>
+{{/if}}
+
+<div id="set-cards-panel" {{#if set.sealedProducts.length}}role="tabpanel" aria-labelledby="set-tab-cards"{{/if}}>
 <div id="set-card-list-ajax" data-set-code="{{set.code}}" data-authenticated="{{authenticated}}" class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1" id="filter-wrapper">
@@ -386,8 +412,13 @@
     </div>
 </div>
 {{>pagination hasItems=set.cards.length}}
+</div>
 
-{{>sealed-products setCode=set.code authenticated=authenticated}}
+{{#if set.sealedProducts.length}}
+<div id="set-sealed-panel" role="tabpanel" aria-labelledby="set-tab-sealed" hidden>
+    {{>sealed-list products=set.sealedProducts authenticated=authenticated}}
+</div>
+{{/if}}
 
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/binderRenderer.js?v={{assetVersion}}" defer></script>
@@ -405,5 +436,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script src="/public/js/chartLoader.js?v={{assetVersion}}" defer></script>
-<script src="/public/js/sealedProductsLoader.js?v={{assetVersion}}" defer></script>
+{{#if set.sealedProducts.length}}
+<script src="/public/js/setTabController.js?v={{assetVersion}}" defer></script>
+{{#if authenticated}}
 <script src="/public/js/updateSealedInventory.js?v={{assetVersion}}" defer></script>
+{{/if}}
+{{/if}}

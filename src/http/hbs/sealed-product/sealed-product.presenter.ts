@@ -33,10 +33,10 @@ export class SealedProductHbsPresenter {
             purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
             tcgplayerProductId: product.tcgplayerProductId,
             imageUrl: product.tcgplayerProductId
-                ? `${TCGPLAYER_IMAGE_BASE}/${DETAIL_IMAGE_SIZE}/${product.tcgplayerProductId}.jpg`
+                ? `${TCGPLAYER_IMAGE_BASE}/${DETAIL_IMAGE_SIZE}/${encodeURIComponent(product.tcgplayerProductId)}.jpg`
                 : undefined,
             thumbnailUrl: product.tcgplayerProductId
-                ? `${TCGPLAYER_IMAGE_BASE}/${THUMBNAIL_SIZE}/${product.tcgplayerProductId}.jpg`
+                ? `${TCGPLAYER_IMAGE_BASE}/${THUMBNAIL_SIZE}/${encodeURIComponent(product.tcgplayerProductId)}.jpg`
                 : undefined,
             price: hasPrice ? toDollar(priceRaw) : undefined,
             priceRaw: hasPrice ? priceRaw : undefined,

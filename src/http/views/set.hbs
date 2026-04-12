@@ -312,7 +312,7 @@
 </div>
 {{/if}}
 
-<div id="set-cards-panel" role="tabpanel" aria-labelledby="set-tab-cards">
+<div id="set-cards-panel" {{#if set.sealedProducts.length}}role="tabpanel" aria-labelledby="set-tab-cards"{{/if}}>
 <div id="set-card-list-ajax" data-set-code="{{set.code}}" data-authenticated="{{authenticated}}" class="content-wrapper">
     <div class="flex items-center gap-2">
         <div class="flex-1" id="filter-wrapper">

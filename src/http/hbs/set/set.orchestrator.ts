@@ -208,7 +208,7 @@ export class SetOrchestrator {
                           effectiveOptions.withBaseOnly(!effectiveOptions.baseOnly)
                       )
                     : Promise.resolve(effectiveOptions.baseOnly ? set.totalSize : set.baseSize),
-                this.findSealedProductsForSet(setCode, userId, effectiveOptions),
+                this.findSealedProductsForSet(setCode, userId),
             ]);
 
             const toggleConfig = buildToggleConfig(
@@ -651,11 +651,11 @@ export class SetOrchestrator {
      */
     private async findSealedProductsForSet(
         setCode: string,
-        userId: number,
-        options: SafeQueryOptions
+        userId: number
     ): Promise<SealedProductRowDto[]> {
         try {
-            const products = await this.sealedProductService.findBySetCode(setCode, options);
+            const sealedOptions = new SafeQueryOptions({ page: '1', limit: '200' });
+            const products = await this.sealedProductService.findBySetCode(setCode, sealedOptions);
             if (!products || products.length === 0) {
                 return [];
             }

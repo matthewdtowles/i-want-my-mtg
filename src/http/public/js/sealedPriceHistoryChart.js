@@ -207,10 +207,20 @@
 
         fetch(url, { credentials: 'same-origin' })
             .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
                 return res.json();
             })
             .then(function (json) {
-                var points = json && json.success && Array.isArray(json.data) ? json.data : [];
+                if (!json || !json.success) {
+                    container.innerHTML =
+                        '<p class="text-gray-500 dark:text-gray-400 text-sm">' +
+                        (json && json.error ? json.error : 'Failed to load price history.') +
+                        '</p>';
+                    return;
+                }
+                var points = Array.isArray(json.data) ? json.data : [];
                 if (points.length === 0) {
                     container.innerHTML =
                         '<p class="text-gray-500 dark:text-gray-400 text-sm">No price history available.</p>';

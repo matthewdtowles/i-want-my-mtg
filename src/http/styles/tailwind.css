@@ -52,6 +52,19 @@
            dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-700;
 }
 
+/* ===== Set Product Tabs ===== */
+
+.set-tab {
+    @apply px-4 py-2 text-sm font-medium border-b-2 border-transparent
+           text-gray-500 dark:text-gray-400
+           hover:text-teal-700 dark:hover:text-teal-300
+           -mb-px transition-colors duration-150;
+}
+
+.set-tab--active {
+    @apply border-teal-500 text-teal-700 dark:text-teal-300;
+}
+
 /* ===== Binder View ===== */
 
 /* Binder wrapper: side arrows + grid */

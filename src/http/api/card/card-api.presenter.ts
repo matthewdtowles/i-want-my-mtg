@@ -1,3 +1,4 @@
+import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { CardApiResponseDto } from './dto/card-response.dto';
 
@@ -34,6 +35,10 @@ export class CardApiPresenter {
                 : undefined,
             setName: card.set?.name,
             keyruneCode: card.set?.keyruneCode ?? card.setCode,
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(card.purchaseUrlTcgplayer),
+            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.wrapTcgplayer(
+                card.purchaseUrlTcgplayerEtched
+            ),
         };
     }
 }

@@ -48,6 +48,12 @@ export class CardOrmEntity {
     @Column({ name: 'oracle_text', nullable: true, type: 'text' })
     oracleText?: string;
 
+    @Column({ name: 'purchase_url_tcgplayer', nullable: true })
+    purchaseUrlTcgplayer?: string;
+
+    @Column({ name: 'purchase_url_tcgplayer_etched', nullable: true })
+    purchaseUrlTcgplayerEtched?: string;
+
     @OneToMany(() => PriceOrmEntity, (price) => price.card, { cascade: true })
     prices: PriceOrmEntity[];
 

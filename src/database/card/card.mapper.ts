@@ -23,6 +23,8 @@ export class CardMapper {
             name: ormCard.name,
             number: ormCard.number,
             oracleText: ormCard.oracleText,
+            purchaseUrlTcgplayer: ormCard.purchaseUrlTcgplayer,
+            purchaseUrlTcgplayerEtched: ormCard.purchaseUrlTcgplayerEtched,
             rarity: ormCard.rarity,
             setCode: ormCard.setCode,
             sortNumber: ormCard.sortNumber,

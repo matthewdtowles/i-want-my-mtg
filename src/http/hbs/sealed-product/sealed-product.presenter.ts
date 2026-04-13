@@ -1,3 +1,4 @@
+import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
 import { formatGain, gainSign, toDollar } from 'src/http/base/http.util';
 import { SealedProductRowDto } from './dto/sealed-product-row.dto';
@@ -30,7 +31,7 @@ export class SealedProductHbsPresenter {
             productSize: product.productSize,
             releaseDate: product.releaseDate,
             contentsSummary: product.contentsSummary,
-            purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(product.purchaseUrlTcgplayer),
             tcgplayerProductId: product.tcgplayerProductId,
             imageUrl: product.tcgplayerProductId
                 ? `${TCGPLAYER_IMAGE_BASE}/${DETAIL_IMAGE_SIZE}/${encodeURIComponent(product.tcgplayerProductId)}.jpg`

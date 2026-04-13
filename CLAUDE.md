@@ -124,6 +124,7 @@ The orchestrator layer sits between controllers and services. It handles present
 ### Key Domain Policies
 
 - **`PriceCalculationPolicy`** (`src/core/pricing/`) — All pricing logic: card value calculation (normal price with foil fallback), inventory valuation, set price tiers (base_price, total_price, base_price_all, total_price_all)
+- **`AffiliateLinkPolicy`** (`src/core/affiliate/`) — Wraps raw TCGPlayer URLs in Impact affiliate URLs. Config: single `TCGPLAYER_AFFILIATE_URL` env var, set to whichever partner link Impact generated (shortlink like `https://partner.tcgplayer.com/PzKzOM` or full `https://partner.tcgplayer.com/c/{pid}/{cid}/{crid}` deep link — both accept `?u={encoded destination}`). Returns the raw URL when the env var is unset (safe for dev/preview). Called from card + sealed-product presenters. Raw URLs come from Scry (MTGJSON `purchaseUrls.tcgplayer` / `tcgplayerEtched`) and are never stored in affiliate-wrapped form.
 
 ### Authentication
 
@@ -174,6 +175,6 @@ See the Production section above for the full pipeline. The workflow is defined 
 
 ## Environment
 
-**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (passed to ETL container), `SMTP_*` (email config), `APP_URL`.
+**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (passed to ETL container), `SMTP_*` (email config), `APP_URL`, `TCGPLAYER_AFFILIATE_URL` (Impact partner link — when unset, buy buttons link to raw TCGPlayer URLs without attribution).
 
 **Local dev**: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (for Docker postgres), or individual `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` vars. See `.env.example`.

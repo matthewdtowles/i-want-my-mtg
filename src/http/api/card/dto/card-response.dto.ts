@@ -62,6 +62,12 @@ export class CardApiResponseDto {
 
     @ApiPropertyOptional()
     readonly keyruneCode?: string;
+
+    @ApiPropertyOptional({ description: 'Affiliate-wrapped TCGPlayer purchase URL (normal/foil)' })
+    readonly purchaseUrlTcgplayer?: string;
+
+    @ApiPropertyOptional({ description: 'Affiliate-wrapped TCGPlayer purchase URL for etched finish' })
+    readonly purchaseUrlTcgplayerEtched?: string;
 }
 
 export class PriceHistoryPointDto {

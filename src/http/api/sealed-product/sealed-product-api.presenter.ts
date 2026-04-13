@@ -1,3 +1,4 @@
+import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
 import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-inventory.entity';
 import {
@@ -17,7 +18,7 @@ export class SealedProductApiPresenter {
             productSize: product.productSize,
             releaseDate: product.releaseDate,
             contentsSummary: product.contentsSummary,
-            purchaseUrlTcgplayer: product.purchaseUrlTcgplayer,
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(product.purchaseUrlTcgplayer),
             tcgplayerProductId: product.tcgplayerProductId,
             price: product.price
                 ? {

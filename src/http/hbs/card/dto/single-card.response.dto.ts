@@ -7,6 +7,8 @@ export class SingleCardResponseDto extends CardResponseDto {
     readonly legalities: LegalityResponseDto[];
     readonly oracleText?: string;
     readonly setName: string;
+    readonly purchaseUrlTcgplayer?: string;
+    readonly purchaseUrlTcgplayerEtched?: string;
 
     constructor(init: Partial<SingleCardResponseDto>) {
         super(init);
@@ -16,5 +18,7 @@ export class SingleCardResponseDto extends CardResponseDto {
             init.legalities?.map((legality) => new LegalityResponseDto(legality)) || [];
         this.oracleText = init.oracleText;
         this.setName = init.setName || '';
+        this.purchaseUrlTcgplayer = init.purchaseUrlTcgplayer;
+        this.purchaseUrlTcgplayerEtched = init.purchaseUrlTcgplayerEtched;
     }
 }

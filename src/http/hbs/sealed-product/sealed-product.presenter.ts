@@ -31,7 +31,9 @@ export class SealedProductHbsPresenter {
             productSize: product.productSize,
             releaseDate: product.releaseDate,
             contentsSummary: product.contentsSummary,
-            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(product.purchaseUrlTcgplayer),
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.buildTcgplayerLink(
+                product.tcgplayerProductId
+            ),
             tcgplayerProductId: product.tcgplayerProductId,
             imageUrl: product.tcgplayerProductId
                 ? `${TCGPLAYER_IMAGE_BASE}/${DETAIL_IMAGE_SIZE}/${encodeURIComponent(product.tcgplayerProductId)}.jpg`

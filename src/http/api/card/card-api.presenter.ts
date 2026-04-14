@@ -35,9 +35,9 @@ export class CardApiPresenter {
                 : undefined,
             setName: card.set?.name,
             keyruneCode: card.set?.keyruneCode ?? card.setCode,
-            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(card.purchaseUrlTcgplayer),
-            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.wrapTcgplayer(
-                card.purchaseUrlTcgplayerEtched
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.buildTcgplayerLink(card.tcgplayerProductId),
+            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.buildTcgplayerLink(
+                card.tcgplayerEtchedProductId
             ),
         };
     }

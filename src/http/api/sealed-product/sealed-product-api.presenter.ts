@@ -18,7 +18,9 @@ export class SealedProductApiPresenter {
             productSize: product.productSize,
             releaseDate: product.releaseDate,
             contentsSummary: product.contentsSummary,
-            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(product.purchaseUrlTcgplayer),
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.buildTcgplayerLink(
+                product.tcgplayerProductId
+            ),
             tcgplayerProductId: product.tcgplayerProductId,
             price: product.price
                 ? {

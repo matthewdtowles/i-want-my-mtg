@@ -71,9 +71,9 @@ export class CardPresenter {
             flavorName: card.flavorName,
             oracleText: card.oracleText || '',
             setName: card.set?.name || '',
-            purchaseUrlTcgplayer: AffiliateLinkPolicy.wrapTcgplayer(card.purchaseUrlTcgplayer),
-            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.wrapTcgplayer(
-                card.purchaseUrlTcgplayerEtched
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.buildTcgplayerLink(card.tcgplayerProductId),
+            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.buildTcgplayerLink(
+                card.tcgplayerEtchedProductId
             ),
         });
     }

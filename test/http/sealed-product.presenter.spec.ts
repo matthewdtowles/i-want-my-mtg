@@ -14,7 +14,6 @@ describe('SealedProductHbsPresenter', () => {
             productSize: 36,
             releaseDate: '2024-08-02',
             contentsSummary: '36x Draft Booster Pack',
-            purchaseUrlTcgplayer: 'https://tcgplayer.com/x',
             tcgplayerProductId: '500001',
             price: new SealedProductPrice({ price: 99.99, priceChangeWeekly: 1.5, date: '2024-08-02' }),
             ...overrides,

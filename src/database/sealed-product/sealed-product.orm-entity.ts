@@ -31,9 +31,6 @@ export class SealedProductOrmEntity {
     @Column({ name: 'contents_summary', type: 'text', nullable: true })
     contentsSummary?: string;
 
-    @Column({ name: 'purchase_url_tcgplayer', nullable: true })
-    purchaseUrlTcgplayer?: string;
-
     @Column({ name: 'tcgplayer_product_id', nullable: true })
     tcgplayerProductId?: string;
 

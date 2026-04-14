@@ -59,6 +59,42 @@ export class HomeController {
         });
     }
 
+    @UseGuards(OptionalAuthGuard)
+    @Get('privacy')
+    @Render('privacy')
+    getPrivacyPolicy(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            indexable: true,
+            title: 'Privacy Policy - I Want My MTG',
+            metaDescription:
+                'Privacy policy for I Want My MTG: what data we collect, how it is used, and your choices.',
+            canonicalUrl: `${this.appUrl}/privacy`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Privacy Policy', url: '/privacy' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('terms')
+    @Render('terms')
+    getTermsOfService(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            indexable: true,
+            title: 'Terms of Service - I Want My MTG',
+            metaDescription:
+                'Terms of service for I Want My MTG, a Magic: The Gathering collection tracker.',
+            canonicalUrl: `${this.appUrl}/terms`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Terms of Service', url: '/terms' },
+            ],
+        });
+    }
+
     @Get('offline')
     @Render('offline')
     getOfflinePage(): { title: string } {

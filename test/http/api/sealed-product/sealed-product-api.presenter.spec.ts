@@ -4,6 +4,17 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 
 describe('SealedProductApiPresenter', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV };
+        delete process.env.TCGPLAYER_AFFILIATE_URL;
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     describe('toResponse', () => {
         it('should map domain entity to API response DTO', () => {
             const product = new SealedProduct({

@@ -1,7 +1,98 @@
+import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-link.policy';
+import { Card } from 'src/core/card/card.entity';
+import { CardImgType } from 'src/core/card/card.img.type.enum';
+import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Price } from 'src/core/card/price.entity';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
+import { InventoryQuantities } from 'src/http/hbs/inventory/inventory.quantities';
+
+function createCard(overrides: Partial<Card> = {}): Card {
+    return new Card({
+        id: 'card-1',
+        name: 'Lightning Bolt',
+        setCode: 'lea',
+        number: '161',
+        type: 'Instant',
+        rarity: CardRarity.Common,
+        imgSrc: 'abc123.jpg',
+        hasFoil: false,
+        hasNonFoil: true,
+        sortNumber: '161',
+        legalities: [],
+        ...overrides,
+    });
+}
 
 describe('CardPresenter', () => {
+    describe('toSingleCardResponse', () => {
+        const ORIGINAL_ENV = process.env;
+        const inventory = new InventoryQuantities(0, 0);
+
+        beforeEach(() => {
+            process.env = { ...ORIGINAL_ENV };
+            delete process.env.TCGPLAYER_AFFILIATE_URL;
+        });
+
+        afterAll(() => {
+            process.env = ORIGINAL_ENV;
+        });
+
+        it('leaves both purchase URLs undefined when product IDs are missing', () => {
+            const card = createCard();
+
+            const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
+
+            expect(result.purchaseUrlTcgplayer).toBeUndefined();
+            expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
+        });
+
+        it('builds bare TCGPlayer URLs from product IDs when env var is unset', () => {
+            const card = createCard({
+                tcgplayerProductId: '672033',
+                tcgplayerEtchedProductId: '672034',
+            });
+
+            const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
+
+            expect(result.purchaseUrlTcgplayer).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
+            );
+            expect(result.purchaseUrlTcgplayerEtched).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034')
+            );
+        });
+
+        it('wraps URLs in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
+            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+            const card = createCard({
+                tcgplayerProductId: '672033',
+                tcgplayerEtchedProductId: '672034',
+            });
+
+            const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
+
+            const normalDest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033');
+            const etchedDest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034');
+            expect(result.purchaseUrlTcgplayer).toBe(
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(normalDest)
+            );
+            expect(result.purchaseUrlTcgplayerEtched).toBe(
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(etchedDest)
+            );
+        });
+
+        it('leaves etched URL undefined when only the normal product ID is set', () => {
+            const card = createCard({ tcgplayerProductId: '672033' });
+
+            const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
+
+            expect(result.purchaseUrlTcgplayer).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
+            );
+            expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
+        });
+    });
+
     describe('formatPriceChange', () => {
         it('returns empty strings when price is undefined', () => {
             const result = CardPresenter.formatPriceChange(undefined);

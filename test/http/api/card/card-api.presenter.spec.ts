@@ -1,3 +1,4 @@
+import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Price } from 'src/core/card/price.entity';
@@ -34,6 +35,17 @@ function createPrice(overrides: Partial<Price> = {}): Price {
 }
 
 describe('CardApiPresenter', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV };
+        delete process.env.TCGPLAYER_AFFILIATE_URL;
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     describe('toCardApiResponse', () => {
         it('should map a card with prices to CardApiResponseDto', () => {
             const price = createPrice();
@@ -141,6 +153,47 @@ describe('CardApiPresenter', () => {
             const result = CardApiPresenter.toCardApiResponse(card);
 
             expect(result.flavorName).toBeUndefined();
+        });
+
+        it('should leave purchaseUrlTcgplayer fields undefined when product IDs are absent', () => {
+            const card = createCard();
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            expect(result.purchaseUrlTcgplayer).toBeUndefined();
+            expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
+        });
+
+        it('should build bare TCGPlayer URLs from product IDs when env var is unset', () => {
+            const card = createCard({
+                tcgplayerProductId: '672033',
+                tcgplayerEtchedProductId: '672034',
+            });
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            expect(result.purchaseUrlTcgplayer).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
+            );
+            expect(result.purchaseUrlTcgplayerEtched).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034')
+            );
+        });
+
+        it('should wrap purchase URLs in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
+            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+            const card = createCard({
+                tcgplayerProductId: '672033',
+                tcgplayerEtchedProductId: '672034',
+            });
+            const result = CardApiPresenter.toCardApiResponse(card);
+
+            const normalDest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033');
+            const etchedDest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034');
+            expect(result.purchaseUrlTcgplayer).toBe(
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(normalDest)
+            );
+            expect(result.purchaseUrlTcgplayerEtched).toBe(
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(etchedDest)
+            );
         });
 
         it('should always include weekly change fields (even when null)', () => {

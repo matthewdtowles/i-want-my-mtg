@@ -1,8 +1,20 @@
+import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-link.policy';
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
 import { SealedProductPrice } from 'src/core/sealed-product/sealed-product-price.entity';
 import { SealedProductHbsPresenter } from 'src/http/hbs/sealed-product/sealed-product.presenter';
 
 describe('SealedProductHbsPresenter', () => {
+    const ORIGINAL_ENV = process.env;
+
+    beforeEach(() => {
+        process.env = { ...ORIGINAL_ENV };
+        delete process.env.TCGPLAYER_AFFILIATE_URL;
+    });
+
+    afterAll(() => {
+        process.env = ORIGINAL_ENV;
+    });
+
     const baseProduct = (overrides: Partial<SealedProduct> = {}): SealedProduct =>
         new SealedProduct({
             uuid: 'abc-123',
@@ -117,6 +129,29 @@ describe('SealedProductHbsPresenter', () => {
             );
             expect(row.priceChangeWeekly).toBeUndefined();
             expect(row.priceChangeWeeklySign).toBeUndefined();
+        });
+
+        it('builds bare TCGPlayer purchase URL from product id when env var is unset', () => {
+            const row = SealedProductHbsPresenter.toRow(baseProduct());
+            expect(row.purchaseUrlTcgplayer).toBe(
+                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '500001')
+            );
+        });
+
+        it('wraps purchase URL in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
+            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+            const row = SealedProductHbsPresenter.toRow(baseProduct());
+            const dest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '500001');
+            expect(row.purchaseUrlTcgplayer).toBe(
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(dest)
+            );
+        });
+
+        it('leaves purchase URL undefined when product id is missing', () => {
+            const row = SealedProductHbsPresenter.toRow(
+                baseProduct({ tcgplayerProductId: undefined })
+            );
+            expect(row.purchaseUrlTcgplayer).toBeUndefined();
         });
 
         it('defaults ownedQuantity to 0 when not provided', () => {

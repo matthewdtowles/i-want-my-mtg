@@ -53,8 +53,11 @@ export class CardMapper {
         ormEntity.name = coreCard.name;
         ormEntity.number = coreCard.number;
         ormEntity.oracleText = coreCard.oracleText;
+        ormEntity.tcgplayerProductId = coreCard.tcgplayerProductId;
+        ormEntity.tcgplayerEtchedProductId = coreCard.tcgplayerEtchedProductId;
         ormEntity.rarity = coreCard.rarity;
         ormEntity.setCode = coreCard.setCode;
+        ormEntity.sortNumber = coreCard.sortNumber;
         ormEntity.type = coreCard.type;
         return ormEntity;
     }

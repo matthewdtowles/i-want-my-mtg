@@ -402,7 +402,6 @@ describe('SetOrchestrator', () => {
                     productSize: 36,
                     releaseDate: '2024-08-02',
                     contentsSummary: '36x Draft Booster Pack',
-                    purchaseUrlTcgplayer: 'https://tcgplayer.com/x',
                     tcgplayerProductId: '500001',
                     price: new SealedProductPrice({
                         price: 99.99,

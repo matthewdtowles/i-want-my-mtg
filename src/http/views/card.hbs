@@ -88,6 +88,12 @@
                     </div>
                     {{/if}}
                 </div>
+                {{#if card.purchaseUrlTcgplayer}}
+                {{>buyOnTcgplayer url=card.purchaseUrlTcgplayer label="Buy on TCGPlayer"}}
+                {{/if}}
+                {{#if card.purchaseUrlTcgplayerEtched}}
+                {{>buyOnTcgplayer url=card.purchaseUrlTcgplayerEtched label="Buy Etched on TCGPlayer"}}
+                {{/if}}
                 <section class="inventory-info">
                     {{>invStepper card=card}}
                 </section>

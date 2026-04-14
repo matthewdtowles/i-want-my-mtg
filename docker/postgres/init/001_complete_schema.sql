@@ -107,8 +107,8 @@ CREATE TABLE public.card (
     rarity public.card_rarity_enum NOT NULL,
     set_code character varying NOT NULL,
     type character varying NOT NULL,
-    purchase_url_tcgplayer character varying,
-    purchase_url_tcgplayer_etched character varying
+    tcgplayer_product_id character varying,
+    tcgplayer_etched_product_id character varying
 );
 
 
@@ -795,7 +795,6 @@ CREATE TABLE public.sealed_product (
     product_size integer,
     release_date date,
     contents_summary text,
-    purchase_url_tcgplayer character varying,
     tcgplayer_product_id character varying,
     CONSTRAINT sealed_product_pkey PRIMARY KEY (uuid),
     CONSTRAINT fk_sealed_product_set FOREIGN KEY (set_code)

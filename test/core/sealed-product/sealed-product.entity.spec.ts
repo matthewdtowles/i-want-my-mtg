@@ -28,7 +28,7 @@ describe('SealedProduct', () => {
             productSize: 36,
             releaseDate: '2024-08-02',
             contentsSummary: '36x Draft Booster Pack',
-            purchaseUrlTcgplayer: 'https://tcgplayer.com/product/123',
+            tcgplayerProductId: '672033',
             price,
         });
         expect(product.category).toBe('booster_box');
@@ -37,7 +37,7 @@ describe('SealedProduct', () => {
         expect(product.productSize).toBe(36);
         expect(product.releaseDate).toBe('2024-08-02');
         expect(product.contentsSummary).toBe('36x Draft Booster Pack');
-        expect(product.purchaseUrlTcgplayer).toBe('https://tcgplayer.com/product/123');
+        expect(product.tcgplayerProductId).toBe('672033');
         expect(product.price).toBe(price);
     });
 

@@ -16,7 +16,6 @@ export class SealedProductMapper {
             productSize: orm.productSize,
             releaseDate: orm.releaseDate,
             contentsSummary: orm.contentsSummary,
-            purchaseUrlTcgplayer: orm.purchaseUrlTcgplayer,
             tcgplayerProductId: orm.tcgplayerProductId,
             price: orm.price ? SealedProductPriceMapper.toCore(orm.price) : undefined,
         });
@@ -33,7 +32,6 @@ export class SealedProductMapper {
         orm.productSize = core.productSize;
         orm.releaseDate = core.releaseDate;
         orm.contentsSummary = core.contentsSummary;
-        orm.purchaseUrlTcgplayer = core.purchaseUrlTcgplayer;
         orm.tcgplayerProductId = core.tcgplayerProductId;
         return orm;
     }

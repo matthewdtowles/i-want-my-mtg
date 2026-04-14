@@ -15,6 +15,7 @@ services:
             - SMTP_SECURE=false
             - SMTP_FROM=noreply@iwantmymtg.local
             - APP_URL=http://localhost:3000
+            - TCGPLAYER_AFFILIATE_URL=${TCGPLAYER_AFFILIATE_URL:-}
         volumes:
             - .:/app
             - /app/node_modules

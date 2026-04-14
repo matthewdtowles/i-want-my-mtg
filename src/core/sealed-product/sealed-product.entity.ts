@@ -11,7 +11,6 @@ export class SealedProduct {
     readonly productSize?: number;
     readonly releaseDate?: string;
     readonly contentsSummary?: string;
-    readonly purchaseUrlTcgplayer?: string;
     readonly tcgplayerProductId?: string;
     readonly price?: SealedProductPrice;
 
@@ -26,7 +25,6 @@ export class SealedProduct {
         this.productSize = init.productSize;
         this.releaseDate = init.releaseDate;
         this.contentsSummary = init.contentsSummary;
-        this.purchaseUrlTcgplayer = init.purchaseUrlTcgplayer;
         this.tcgplayerProductId = init.tcgplayerProductId;
         this.price = init.price;
     }

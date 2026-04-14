@@ -18,7 +18,6 @@ function createProduct(overrides: Partial<SealedProduct> = {}): SealedProduct {
         productSize: 12,
         releaseDate: '2024-02-09',
         contentsSummary: '12 collector boosters',
-        purchaseUrlTcgplayer: 'https://tcgplayer.com/example',
         tcgplayerProductId: '500001',
         ...overrides,
     });

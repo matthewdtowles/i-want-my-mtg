@@ -23,6 +23,8 @@ export class Card {
     readonly setCode: string;
     readonly sortNumber: string;
     readonly type: string;
+    readonly tcgplayerProductId?: string;
+    readonly tcgplayerEtchedProductId?: string;
     // For read operations
     readonly prices?: Price[];
     readonly set?: Set;
@@ -59,6 +61,8 @@ export class Card {
         this.flavorName = init.flavorName;
         this.manaCost = init.manaCost;
         this.oracleText = init.oracleText;
+        this.tcgplayerProductId = init.tcgplayerProductId;
+        this.tcgplayerEtchedProductId = init.tcgplayerEtchedProductId;
         this.prices = init.prices;
         this.set = init.set;
     }

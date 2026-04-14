@@ -1,3 +1,4 @@
+import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
@@ -70,6 +71,10 @@ export class CardPresenter {
             flavorName: card.flavorName,
             oracleText: card.oracleText || '',
             setName: card.set?.name || '',
+            purchaseUrlTcgplayer: AffiliateLinkPolicy.buildTcgplayerLink(card.tcgplayerProductId),
+            purchaseUrlTcgplayerEtched: AffiliateLinkPolicy.buildTcgplayerLink(
+                card.tcgplayerEtchedProductId
+            ),
         });
     }
 

@@ -92,6 +92,35 @@ describe('User API (e2e)', () => {
         });
     });
 
+    describe('GET /api/v1/user/export', () => {
+        it('requires authentication', async () => {
+            await request(app.getHttpServer()).get('/api/v1/user/export').expect(401);
+        });
+
+        it('returns a JSON attachment with user data sections', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/user/export')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.headers['content-type']).toMatch(/application\/json/);
+            expect(res.headers['content-disposition']).toMatch(
+                /attachment; filename="iwantmymtg-export-\d{4}-\d{2}-\d{2}\.json"/
+            );
+
+            const body = JSON.parse(res.text);
+            expect(body).toHaveProperty('exportedAt');
+            expect(body).toHaveProperty('user.email', TEST_USER.email);
+            expect(body.user).not.toHaveProperty('password');
+            expect(body.user).not.toHaveProperty('passwordHash');
+            expect(Array.isArray(body.inventory)).toBe(true);
+            expect(Array.isArray(body.transactions)).toBe(true);
+            expect(Array.isArray(body.priceAlerts)).toBe(true);
+            expect(Array.isArray(body.priceNotifications)).toBe(true);
+            expect(Array.isArray(body.sealedInventory)).toBe(true);
+        });
+    });
+
     // Note: DELETE /api/v1/user is not tested because it would
     // delete the test user and break subsequent test suites.
     // It could be tested in isolation with a dedicated test user.

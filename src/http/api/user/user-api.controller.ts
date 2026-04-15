@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get,
-    Header,
     HttpCode,
     HttpStatus,
     Inject,
@@ -60,7 +59,6 @@ export class UserApiController {
     }
 
     @Get('export')
-    @Header('Cache-Control', 'no-store')
     @ApiOperation({ summary: 'Export all personal data as JSON' })
     @ApiResponse({ status: 200, description: 'User data export' })
     async exportData(
@@ -76,7 +74,7 @@ export class UserApiController {
             await Promise.all([
                 this.userService.findById(userId),
                 this.inventoryService.findAllForUser(userId, fullOptions),
-                this.transactionService.findByUser(userId),
+                this.transactionService.findByUserPaginated(userId, fullOptions),
                 this.priceAlertService.findByUser(userId, 1, UserApiController.EXPORT_LIMIT),
                 this.priceNotificationService.findByUser(
                     userId,
@@ -145,6 +143,7 @@ export class UserApiController {
         };
 
         const filename = `iwantmymtg-export-${new Date().toISOString().slice(0, 10)}.json`;
+        res.setHeader('Cache-Control', 'no-store');
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.status(HttpStatus.OK).send(JSON.stringify(payload, null, 2));

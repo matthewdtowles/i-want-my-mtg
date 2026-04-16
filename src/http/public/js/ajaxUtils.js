@@ -157,8 +157,6 @@ var AjaxUtils = (function () {
                 '</option>';
         });
         html += '</select>';
-        html +=
-            '<label for="limit" class="text-sm font-medium text-teal-700 dark:text-teal-300">per page</label>';
         html += '</form>';
 
         return html;

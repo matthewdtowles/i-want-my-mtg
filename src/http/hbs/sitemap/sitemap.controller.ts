@@ -52,6 +52,9 @@ export class SitemapController {
         xml += this.urlEntry('/', 'daily', '1.0');
         xml += this.urlEntry('/sets', 'daily', '0.9');
         xml += this.urlEntry('/spoilers', 'daily', '0.8');
+        xml += this.urlEntry('/guides/getting-started', 'monthly', '0.5');
+        xml += this.urlEntry('/privacy', 'yearly', '0.3');
+        xml += this.urlEntry('/terms', 'yearly', '0.3');
         for (const set of releasedSets) {
             xml += this.urlEntry(`/sets/${set.code}`, 'weekly', '0.7');
         }

@@ -400,7 +400,7 @@
 - [x] Create repository with UPSERT for sealed_product table
 - [x] Create service to orchestrate fetch/map/save (streams AllPrintings.json)
 - [x] Hook into default ingestion pipeline (runs with `ingest` or `ingest --sealed`)
-- [ ] Add sealed product price ingestion (MTGJSON has no sealed pricing — requires TCGPlayer API)
+- [x] Add sealed product price ingestion (MTGJSON has no sealed pricing — requires TCGPlayer API)
 - [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
 
 #### AJAX & Frontend
@@ -409,17 +409,18 @@
 
 ### 3.2 Legal & Compliance
 
-- [ ] Review Wizards of the Coast's Fan Content Policy and verify compliance
-- [ ] Implement data privacy practices (GDPR/CCPA compliance, privacy policy, data export/deletion)
-- [ ] Draft Terms of Service (acceptable use, data attribution, termination conditions)
-- [ ] Add cookie consent and privacy controls to UI
+- [x] Review Wizards of the Coast's Fan Content Policy and verify compliance (required disclaimer added to footer + Terms; logo/trademark audit clean; public browsing available without login)
+- [x] Draft Privacy Policy (`/privacy`) — US-focused, CCPA notice, no cookie consent banner
+- [x] Draft Terms of Service (`/terms`) — Maryland governing law, acceptable use, WotC fan-content disclaimer
+- [x] Link Privacy and Terms from footer and include in sitemap
+- [ ] Set up `legal@iwantmymtg.net` email alias (AWS SES / registrar)
+- [x] Build user data export endpoint (`GET /api/v1/user/export` → JSON attachment, download button on user settings)
+- [x] Verify account deletion fully scrubs related records (all FKs confirmed `ON DELETE CASCADE` in schema)
 
 ### 3.3 Affiliate Integration
 
-- [ ] Sign up for TCGPlayer affiliate program
-- [ ] Sign up for Card Kingdom affiliate program
-- [ ] Add price display with affiliate links to card detail views (current market prices from both sources)
-- [ ] Track affiliate click-through rates (event log for which cards drive purchases)
+- [x] Sign up for TCGPlayer affiliate program (via Impact partner link)
+- [x] Add TCGPlayer affiliate links to card detail and sealed product views (`AffiliateLinkPolicy`, `TCGPLAYER_AFFILIATE_URL` env)
 
 ### 3.4 Freemium Structure & Subscription Billing
 

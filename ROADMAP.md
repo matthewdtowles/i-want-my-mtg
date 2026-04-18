@@ -590,8 +590,6 @@
 
 ### 8.2 Scry: Interactive Mode
 
-- [ ] Design interactive CLI menu (select commands, configure options)
-- [ ] Add interactive mode entry point (`cargo run -- interactive` or default)
-- [ ] Add interactive selection for ingestion targets (sets, cards, prices)
-- [ ] Add progress display and confirmation prompts
-- [ ] Add dry-run option for destructive operations
+- [x] Design interactive CLI menu (select commands, configure options)
+- [x] Add interactive mode entry point (`cargo run -- interactive` or default)
+- [x] Add interactive selection for ingestion targets (sets, cards, prices)

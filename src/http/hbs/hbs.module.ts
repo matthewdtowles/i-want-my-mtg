@@ -5,6 +5,8 @@ import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { CardController } from './card/card.controller';
 import { CardOrchestrator } from './card/card.orchestrator';
+import { DeckController } from './deck/deck.controller';
+import { DeckOrchestrator } from './deck/deck.orchestrator';
 import { HomeController } from './home/home.controller';
 import { InventoryController } from './inventory/inventory.controller';
 import { NotificationPageController } from './notification/notification-page.controller';
@@ -33,6 +35,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     controllers: [
         AuthController,
         CardController,
+        DeckController,
         HomeController,
         InventoryController,
         NotificationPageController,
@@ -50,6 +53,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         UploadRateLimitGuard,
         AuthOrchestrator,
         CardOrchestrator,
+        DeckOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,
         PortfolioOrchestrator,
@@ -63,6 +67,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     exports: [
         AuthOrchestrator,
         CardOrchestrator,
+        DeckOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,
         PortfolioOrchestrator,

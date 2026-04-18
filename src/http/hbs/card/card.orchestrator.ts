@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
+import { Format } from 'src/core/card/format.enum';
+import { DeckService } from 'src/core/deck/deck.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
@@ -20,9 +22,27 @@ import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
-import { CardViewDto, PriceAlertViewDto } from './dto/card.view.dto';
+import { CardViewDto, DeckOptionView, PriceAlertViewDto } from './dto/card.view.dto';
 import { PriceHistoryPointDto, PriceHistoryResponseDto } from './dto/price-history-response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
+
+const FORMAT_LABELS: Record<string, string> = {
+    [Format.Standard]: 'Standard',
+    [Format.Commander]: 'Commander',
+    [Format.Modern]: 'Modern',
+    [Format.Legacy]: 'Legacy',
+    [Format.Vintage]: 'Vintage',
+    [Format.Brawl]: 'Brawl',
+    [Format.Explorer]: 'Explorer',
+    [Format.Historic]: 'Historic',
+    [Format.Oathbreaker]: 'Oathbreaker',
+    [Format.Pauper]: 'Pauper',
+    [Format.Pioneer]: 'Pioneer',
+};
+
+function formatLabel(format: Format | null): string {
+    return format ? FORMAT_LABELS[format] ?? format : 'Freestyle';
+}
 
 @Injectable()
 export class CardOrchestrator {
@@ -32,7 +52,8 @@ export class CardOrchestrator {
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
         @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService,
-        @Inject(TransactionService) private readonly transactionService: TransactionService
+        @Inject(TransactionService) private readonly transactionService: TransactionService,
+        @Inject(DeckService) private readonly deckService: DeckService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -137,6 +158,20 @@ export class CardOrchestrator {
                 }
             }
 
+            let userDecks: DeckOptionView[] | undefined;
+            if (userId > 0) {
+                try {
+                    const summaries = await this.deckService.findDecksForUser(userId);
+                    userDecks = summaries.map((s) => ({
+                        id: s.deck.id!,
+                        name: s.deck.name,
+                        formatLabel: formatLabel(s.deck.format),
+                    }));
+                } catch (err) {
+                    this.LOGGER.debug(`User decks unavailable: ${err?.message}`);
+                }
+            }
+
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
@@ -170,6 +205,7 @@ export class CardOrchestrator {
                 untrackedNormal,
                 untrackedFoil,
                 priceAlert,
+                userDecks,
                 otherPrintings,
                 hasAnyNormalPrice,
                 hasAnyFoilPrice,

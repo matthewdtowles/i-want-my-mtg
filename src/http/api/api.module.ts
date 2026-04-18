@@ -4,6 +4,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CoreModule } from 'src/core/core.module';
 import { AuthApiController } from './auth/auth-api.controller';
 import { CardApiController } from './card/card-api.controller';
+import { DeckApiController } from './deck/deck-api.controller';
 import { InventoryApiController } from './inventory/inventory-api.controller';
 import { PortfolioApiController } from './portfolio/portfolio-api.controller';
 import { SetApiController } from './set/set-api.controller';
@@ -20,6 +21,7 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
     controllers: [
         AuthApiController,
         CardApiController,
+        DeckApiController,
         InventoryApiController,
         PortfolioApiController,
         PriceAlertApiController,

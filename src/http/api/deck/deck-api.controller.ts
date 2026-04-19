@@ -112,14 +112,9 @@ export class DeckApiController {
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<DeckApiDto>> {
         try {
-            const deck = await this.deckService.updateDeck(id, req.user.id, dto);
-            return ApiResponseDto.ok(
-                DeckApiPresenter.toSummaryDto({
-                    deck,
-                    cardCount: 0,
-                    sideboardCount: 0,
-                })
-            );
+            await this.deckService.updateDeck(id, req.user.id, dto);
+            const deckWithCards = await this.deckService.findDeckWithCards(id, req.user.id);
+            return ApiResponseDto.ok(DeckApiPresenter.toDetailDto(deckWithCards));
         } catch (error) {
             this.mapError(error, id, 'update');
         }
@@ -174,6 +169,9 @@ export class DeckApiController {
         }
         if (error instanceof DomainValidationError) {
             throw new BadRequestException(error.message);
+        }
+        if ((error as { message?: string })?.message?.includes('Invalid initialization')) {
+            throw new BadRequestException((error as Error).message);
         }
         this.LOGGER.error(`${op} deck ${id} failed: ${(error as any)?.message ?? error}`);
         throw new InternalServerErrorException(`Failed to ${op} deck`);

@@ -225,7 +225,7 @@ export class DeckOrchestrator {
             if (mainCount !== targetMain) {
                 warnings.push({
                     kind: 'size',
-                    message: `${deck.format} decks must have exactly ${targetMain} cards (currently ${mainCount}).`,
+                    message: `${labelFormat(format)} decks must have exactly ${targetMain} cards (currently ${mainCount}).`,
                 });
             }
         } else if (mainCount < MIN_MAIN) {

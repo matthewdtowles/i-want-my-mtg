@@ -161,11 +161,11 @@ export class CardOrchestrator {
             let userDecks: DeckOptionView[] | undefined;
             if (userId > 0) {
                 try {
-                    const summaries = await this.deckService.findDecksForUser(userId);
-                    userDecks = summaries.map((s) => ({
-                        id: s.deck.id!,
-                        name: s.deck.name,
-                        formatLabel: formatLabel(s.deck.format),
+                    const decks = await this.deckService.findDecksForPicker(userId);
+                    userDecks = decks.map((d) => ({
+                        id: d.id!,
+                        name: d.name,
+                        formatLabel: formatLabel(d.format),
                     }));
                 } catch (err) {
                     this.LOGGER.debug(`User decks unavailable: ${err?.message}`);

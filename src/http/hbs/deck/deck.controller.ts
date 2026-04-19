@@ -140,7 +140,8 @@ export class DeckController {
                 quantity,
                 isSideboard
             );
-            res.redirect(body.returnUrl || `/decks/${id}`);
+            const safeReturn = this.sanitizeReturnUrl(body.returnUrl);
+            res.redirect(safeReturn || `/decks/${id}`);
         } catch (error) {
             this.handleMutationError(error);
         }
@@ -156,6 +157,16 @@ export class DeckController {
         if (error instanceof DomainValidationError) {
             throw new BadRequestException(error.message);
         }
+        if ((error as { message?: string })?.message?.includes('Invalid initialization')) {
+            throw new BadRequestException((error as Error).message);
+        }
         throw error as Error;
+    }
+
+    private sanitizeReturnUrl(url?: string): string {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+        return '';
     }
 }

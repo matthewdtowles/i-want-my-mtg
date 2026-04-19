@@ -40,12 +40,21 @@ export interface DeckRepositoryPort {
     findByUser(userId: number): Promise<DeckSummary[]>;
 
     /**
+     * Lightweight list of the user's decks (no counts / no cards). Intended for
+     * UI pickers (e.g. the "Add to deck" dropdown) where aggregate counts aren't needed.
+     * @returns decks for the user ordered by updated_at desc
+     */
+    findByUserBasic(userId: number): Promise<Deck[]>;
+
+    /**
      * Delete a deck and all its cards (ON DELETE CASCADE).
      */
     deleteDeck(deckId: number): Promise<void>;
 
     /**
-     * Insert or update a deck_card row. If quantity <= 0, removes the row.
+     * Insert or update a deck_card row with the given quantity. Callers must
+     * invoke {@link removeCard} explicitly for removal — this method does not
+     * delete rows when quantity is zero.
      */
     upsertCard(entry: DeckCard): Promise<void>;
 

@@ -1,3 +1,4 @@
+import { Format } from 'src/core/card/format.enum';
 import { UserOrmEntity } from 'src/database/user/user.orm-entity';
 import {
     Column,
@@ -22,8 +23,14 @@ export class DeckOrmEntity {
     @Column({ name: 'name', type: 'varchar' })
     name: string;
 
-    @Column({ name: 'format', type: 'varchar', nullable: true })
-    format: string | null;
+    @Column({
+        name: 'format',
+        type: 'enum',
+        enum: Format,
+        enumName: 'format_enum',
+        nullable: true,
+    })
+    format: Format | null;
 
     @Column({ name: 'description', type: 'text', nullable: true })
     description: string | null;

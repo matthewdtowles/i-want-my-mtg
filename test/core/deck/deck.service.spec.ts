@@ -23,6 +23,7 @@ describe('DeckService', () => {
         findById: jest.fn(),
         findByIdWithCards: jest.fn(),
         findByUser: jest.fn(),
+        findByUserBasic: jest.fn(),
         deleteDeck: jest.fn(),
         upsertCard: jest.fn(),
         removeCard: jest.fn(),

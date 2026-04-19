@@ -42,6 +42,9 @@ export class DeckRepository implements DeckRepositoryPort {
             }
         );
         const reloaded = await this.deckRepo.findOne({ where: { id: deck.id } });
+        if (!reloaded) {
+            throw new Error(`Deck ${deck.id} missing after update`);
+        }
         return DeckMapper.toCore(reloaded);
     }
 
@@ -95,6 +98,14 @@ export class DeckRepository implements DeckRepositoryPort {
                 sideboardCount: c.side,
             };
         });
+    }
+
+    async findByUserBasic(userId: number): Promise<Deck[]> {
+        const decks = await this.deckRepo.find({
+            where: { userId },
+            order: { updatedAt: 'DESC' },
+        });
+        return decks.map((orm) => DeckMapper.toCore(orm));
     }
 
     async deleteDeck(deckId: number): Promise<void> {

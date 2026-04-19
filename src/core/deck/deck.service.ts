@@ -36,6 +36,10 @@ export class DeckService {
         return this.deckRepo.findByUser(userId);
     }
 
+    async findDecksForPicker(userId: number): Promise<Deck[]> {
+        return this.deckRepo.findByUserBasic(userId);
+    }
+
     async findDeckWithCards(deckId: number, userId: number): Promise<Deck> {
         const deck = await this.deckRepo.findByIdWithCards(deckId);
         if (!deck) throw new DomainNotFoundError('Deck not found');

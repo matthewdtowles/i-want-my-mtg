@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
+import { DeckService } from 'src/core/deck/deck.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -118,6 +119,12 @@ describe('CardOrchestrator', () => {
                             realizedGain: 0,
                         }),
                         getRemainingQuantity: jest.fn().mockResolvedValue(0),
+                    },
+                },
+                {
+                    provide: DeckService,
+                    useValue: {
+                        findDecksForPicker: jest.fn().mockResolvedValue([]),
                     },
                 },
             ],

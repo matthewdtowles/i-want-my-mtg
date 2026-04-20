@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { Format } from 'src/core/card/format.enum';
+import { labelFormat } from 'src/core/card/format.labels';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
 import {
     DomainNotAuthorizedError,
@@ -90,7 +91,7 @@ export class DeckService {
             const legality = card.legalities?.find((l) => l.format === deck.format);
             if (legality?.status === LegalityStatus.Banned) {
                 throw new DomainValidationError(
-                    `${card.name} is banned in ${deck.format}`
+                    `${card.name} is banned in ${labelFormat(deck.format)}`
                 );
             }
         }

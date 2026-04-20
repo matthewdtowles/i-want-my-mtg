@@ -13,6 +13,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { sanitizeReturnUrl } from 'src/http/base/http.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { getAuthCookieOptions } from './auth.cookie.util';
 import { AuthOrchestrator } from './auth.orchestrator';
@@ -38,7 +39,7 @@ export class AuthController {
     async loginForm(@Query('returnUrl') returnUrl?: string): Promise<LoginFormViewDto> {
         this.LOGGER.log(`Fetch login form.`);
         return new LoginFormViewDto({
-            returnUrl: this.sanitizeReturnUrl(returnUrl),
+            returnUrl: sanitizeReturnUrl(returnUrl),
             title: 'Sign In - I Want My MTG',
             metaDescription: 'Sign in to your I Want My MTG account to manage your collection.',
         });
@@ -52,7 +53,7 @@ export class AuthController {
         const result: AuthResult = await this.authOrchestrator.login(req?.user);
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, getAuthCookieOptions(this.configService));
-            const returnUrl = this.sanitizeReturnUrl(req.body?.returnUrl);
+            const returnUrl = sanitizeReturnUrl(req.body?.returnUrl);
             res.redirect(returnUrl || '/user');
             this.LOGGER.log(`Login successful for user ${userId}.`);
         } else {
@@ -69,13 +70,6 @@ export class AuthController {
         res.clearCookie(AUTH_TOKEN_NAME);
         res.redirect(result.redirectTo);
         this.LOGGER.log(`Logged out user ${userId ?? '""'}.`);
-    }
-
-    private sanitizeReturnUrl(url?: string): string {
-        if (!url || typeof url !== 'string') return '';
-        const trimmed = url.trim();
-        if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
-        return '';
     }
 
     @Get('forgot-password')

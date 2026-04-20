@@ -77,7 +77,7 @@
                         <tr>
                             <td class="w-16 text-right pr-2">{{this.quantity}}x</td>
                             <td>
-                                <a class="table-link" href="/cards/{{this.setCode}}/{{this.number}}">{{this.name}}</a>
+                                <a class="table-link" href="{{this.cardUrl}}">{{this.name}}</a>
                                 {{#if this.isBanned}}
                                 <span class="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">banned</span>
                                 {{/if}}
@@ -111,7 +111,7 @@
                     <tr>
                         <td class="w-16 text-right pr-2">{{this.quantity}}x</td>
                         <td>
-                            <a class="table-link" href="/cards/{{this.setCode}}/{{this.number}}">{{this.name}}</a>
+                            <a class="table-link" href="{{this.cardUrl}}">{{this.name}}</a>
                             {{#if this.isBanned}}
                             <span class="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">banned</span>
                             {{/if}}

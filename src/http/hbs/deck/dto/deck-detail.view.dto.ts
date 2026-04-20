@@ -8,6 +8,7 @@ export interface DeckDetailCard {
     name: string;
     number: string;
     setCode: string;
+    cardUrl: string;
     imgSrc: string;
     type: string;
     manaCost?: string;
@@ -35,7 +36,7 @@ export class DeckDetailViewDto extends BaseViewDto {
         format: Format | null;
         formatLabel: string;
         description: string | null;
-        updatedAt: Date;
+        updatedAt: string;
     };
     readonly mainGroups: DeckTypeGroup[];
     readonly sideboard: DeckDetailCard[];

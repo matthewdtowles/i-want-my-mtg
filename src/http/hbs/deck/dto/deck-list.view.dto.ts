@@ -8,7 +8,7 @@ export interface DeckListItem {
     formatLabel: string;
     cardCount: number;
     sideboardCount: number;
-    updatedAt: Date;
+    updatedAt: string;
 }
 
 export class DeckListViewDto extends BaseViewDto {

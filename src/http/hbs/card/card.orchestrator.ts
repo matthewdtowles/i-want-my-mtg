@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
-import { Format } from 'src/core/card/format.enum';
+import { labelFormat } from 'src/core/card/format.labels';
 import { DeckService } from 'src/core/deck/deck.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
@@ -25,24 +25,6 @@ import { CardPresenter } from './card.presenter';
 import { CardViewDto, DeckOptionView, PriceAlertViewDto } from './dto/card.view.dto';
 import { PriceHistoryPointDto, PriceHistoryResponseDto } from './dto/price-history-response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
-
-const FORMAT_LABELS: Record<string, string> = {
-    [Format.Standard]: 'Standard',
-    [Format.Commander]: 'Commander',
-    [Format.Modern]: 'Modern',
-    [Format.Legacy]: 'Legacy',
-    [Format.Vintage]: 'Vintage',
-    [Format.Brawl]: 'Brawl',
-    [Format.Explorer]: 'Explorer',
-    [Format.Historic]: 'Historic',
-    [Format.Oathbreaker]: 'Oathbreaker',
-    [Format.Pauper]: 'Pauper',
-    [Format.Pioneer]: 'Pioneer',
-};
-
-function formatLabel(format: Format | null): string {
-    return format ? FORMAT_LABELS[format] ?? format : 'Freestyle';
-}
 
 @Injectable()
 export class CardOrchestrator {
@@ -165,7 +147,7 @@ export class CardOrchestrator {
                     userDecks = decks.map((d) => ({
                         id: d.id!,
                         name: d.name,
-                        formatLabel: formatLabel(d.format),
+                        formatLabel: labelFormat(d.format),
                     }));
                 } catch (err) {
                     this.LOGGER.debug(`User decks unavailable: ${err?.message}`);

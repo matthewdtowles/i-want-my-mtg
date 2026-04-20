@@ -39,6 +39,7 @@ export class DeckRepository implements DeckRepositoryPort {
                 name: deck.name,
                 format: deck.format,
                 description: deck.description,
+                updatedAt: new Date(),
             }
         );
         const reloaded = await this.deckRepo.findOne({ where: { id: deck.id } });
@@ -132,6 +133,7 @@ export class DeckRepository implements DeckRepositoryPort {
             .createQueryBuilder('dc')
             .leftJoinAndSelect('dc.card', 'card')
             .leftJoinAndSelect('card.set', 'set')
+            .leftJoinAndSelect('card.legalities', 'legalities')
             .leftJoinAndSelect(
                 'card.prices',
                 'prices',

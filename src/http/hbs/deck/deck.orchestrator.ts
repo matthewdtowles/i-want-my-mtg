@@ -1,34 +1,37 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
+import { FORMAT_LABELS, labelFormat } from 'src/core/card/format.labels';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
 import { Deck } from 'src/core/deck/deck.entity';
 import { DeckService } from 'src/core/deck/deck.service';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { formatUtcTimestamp } from 'src/http/base/date.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
+import { buildCardUrl } from 'src/shared/utils/card-url.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { DeckDetailViewDto, DeckDetailCard, DeckTypeGroup, DeckWarning } from './dto/deck-detail.view.dto';
 import { DeckListViewDto } from './dto/deck-list.view.dto';
-
-const FORMAT_LABELS: Record<string, string> = {
-    [Format.Standard]: 'Standard',
-    [Format.Commander]: 'Commander',
-    [Format.Modern]: 'Modern',
-    [Format.Legacy]: 'Legacy',
-    [Format.Vintage]: 'Vintage',
-    [Format.Brawl]: 'Brawl',
-    [Format.Explorer]: 'Explorer',
-    [Format.Historic]: 'Historic',
-    [Format.Oathbreaker]: 'Oathbreaker',
-    [Format.Pauper]: 'Pauper',
-    [Format.Pioneer]: 'Pioneer',
-};
 
 const FORMAT_OPTIONS = [
     { value: '', label: 'Freestyle (no format)' },
     ...Object.entries(FORMAT_LABELS).map(([value, label]) => ({ value, label })),
 ];
+
+const BASIC_LANDS = new Set([
+    'Plains',
+    'Island',
+    'Swamp',
+    'Mountain',
+    'Forest',
+    'Wastes',
+    'Snow-Covered Plains',
+    'Snow-Covered Island',
+    'Snow-Covered Swamp',
+    'Snow-Covered Mountain',
+    'Snow-Covered Forest',
+]);
 
 // Singleton formats: exactly 1 copy of any non-basic card
 const SINGLETON_FORMATS = new Set<Format>([Format.Commander, Format.Oathbreaker, Format.Brawl]);
@@ -40,10 +43,6 @@ const HUNDRED_CARD_FORMATS = new Set<Format>([
 ]);
 const MIN_MAIN = 60;
 const MAX_SIDEBOARD = 15;
-
-function labelFormat(format: Format | null): string {
-    return format ? FORMAT_LABELS[format] ?? format : 'Freestyle';
-}
 
 function typeCategory(type: string): string {
     const t = (type ?? '').toLowerCase();
@@ -94,7 +93,7 @@ export class DeckOrchestrator {
                     formatLabel: labelFormat(s.deck.format),
                     cardCount: s.cardCount,
                     sideboardCount: s.sideboardCount,
-                    updatedAt: s.deck.updatedAt,
+                    updatedAt: formatUtcTimestamp(s.deck.updatedAt),
                 })),
                 formats: FORMAT_OPTIONS,
             });
@@ -149,7 +148,7 @@ export class DeckOrchestrator {
                 format: deck.format,
                 formatLabel: labelFormat(deck.format),
                 description: deck.description,
-                updatedAt: deck.updatedAt,
+                updatedAt: formatUtcTimestamp(deck.updatedAt),
             },
             mainGroups: groups,
             sideboard: sideboardCards,
@@ -176,13 +175,16 @@ export class DeckOrchestrator {
             !!card?.legalities?.find(
                 (l) => l.format === deckFormat && l.status === LegalityStatus.Banned
             );
+        const setCode = card?.setCode ?? '';
+        const number = card?.number ?? '';
         return {
             cardId: dc.cardId,
             quantity: dc.quantity,
             isSideboard: dc.isSideboard,
             name: card?.name ?? dc.cardId,
-            number: card?.number ?? '',
-            setCode: card?.setCode ?? '',
+            number,
+            setCode,
+            cardUrl: setCode && number ? buildCardUrl(setCode, number) : '',
             imgSrc: card?.imgSrc ?? '',
             type: card?.type ?? '',
             manaCost: card?.manaCost,
@@ -276,19 +278,6 @@ export class DeckOrchestrator {
     }
 
     private isBasicLand(name: string): boolean {
-        const basics = new Set([
-            'Plains',
-            'Island',
-            'Swamp',
-            'Mountain',
-            'Forest',
-            'Wastes',
-            'Snow-Covered Plains',
-            'Snow-Covered Island',
-            'Snow-Covered Swamp',
-            'Snow-Covered Mountain',
-            'Snow-Covered Forest',
-        ]);
-        return basics.has(name);
+        return BASIC_LANDS.has(name);
     }
 }

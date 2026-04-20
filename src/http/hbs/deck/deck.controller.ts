@@ -25,6 +25,7 @@ import {
 } from 'src/core/errors/domain.errors';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { sanitizeReturnUrl } from 'src/http/base/http.util';
 import { DeckDetailViewDto } from './dto/deck-detail.view.dto';
 import { DeckListViewDto } from './dto/deck-list.view.dto';
 import { DeckOrchestrator } from './deck.orchestrator';
@@ -127,10 +128,14 @@ export class DeckController {
     ): Promise<void> {
         try {
             const cardId = (body.cardId ?? '').trim();
-            const quantity = parseInt(body.quantity ?? '0', 10);
+            const rawQuantity = (body.quantity ?? '0').trim();
             const isSideboard = body.isSideboard === 'true' || body.isSideboard === 'on';
             if (!cardId) throw new BadRequestException('cardId required');
-            if (Number.isNaN(quantity) || quantity < 0) {
+            if (!/^\d+$/.test(rawQuantity)) {
+                throw new BadRequestException('Invalid quantity');
+            }
+            const quantity = Number(rawQuantity);
+            if (!Number.isInteger(quantity) || quantity < 0) {
                 throw new BadRequestException('Invalid quantity');
             }
             await this.deckService.setCardQuantity(
@@ -140,7 +145,7 @@ export class DeckController {
                 quantity,
                 isSideboard
             );
-            const safeReturn = this.sanitizeReturnUrl(body.returnUrl);
+            const safeReturn = sanitizeReturnUrl(body.returnUrl);
             res.redirect(safeReturn || `/decks/${id}`);
         } catch (error) {
             this.handleMutationError(error);
@@ -161,12 +166,5 @@ export class DeckController {
             throw new BadRequestException((error as Error).message);
         }
         throw error as Error;
-    }
-
-    private sanitizeReturnUrl(url?: string): string {
-        if (!url || typeof url !== 'string') return '';
-        const trimmed = url.trim();
-        if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
-        return '';
     }
 }

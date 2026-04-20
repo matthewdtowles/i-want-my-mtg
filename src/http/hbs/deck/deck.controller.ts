@@ -122,6 +122,7 @@ export class DeckController {
             quantity?: string;
             isSideboard?: string;
             returnUrl?: string;
+            mode?: string;
         },
         @Req() req: AuthenticatedRequest,
         @Res() res: Response
@@ -138,13 +139,29 @@ export class DeckController {
             if (!Number.isInteger(quantity) || quantity < 0) {
                 throw new BadRequestException('Invalid quantity');
             }
+            const wantsJson =
+                body.mode === 'add' ||
+                (req.headers.accept ?? '').includes('application/json');
+            let newQuantity = quantity;
+            if (wantsJson && body.mode === 'add') {
+                // Additive mode: increment existing quantity
+                const deck = await this.deckService.findDeckWithCards(id, req.user.id);
+                const existing = (deck.cards ?? []).find(
+                    (dc) => dc.cardId === cardId && dc.isSideboard === isSideboard
+                );
+                newQuantity = (existing?.quantity ?? 0) + quantity;
+            }
             await this.deckService.setCardQuantity(
                 id,
                 req.user.id,
                 cardId,
-                quantity,
+                newQuantity,
                 isSideboard
             );
+            if (wantsJson) {
+                res.json({ success: true, cardId, quantity: newQuantity, isSideboard });
+                return;
+            }
             const safeReturn = sanitizeReturnUrl(body.returnUrl);
             res.redirect(safeReturn || `/decks/${id}`);
         } catch (error) {

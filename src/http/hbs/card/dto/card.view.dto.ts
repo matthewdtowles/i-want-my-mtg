@@ -10,6 +10,12 @@ export interface PriceAlertViewDto {
     isActive: boolean;
 }
 
+export interface DeckOptionView {
+    id: number;
+    name: string;
+    formatLabel: string;
+}
+
 export class CardViewDto extends ListView {
     readonly card: SingleCardResponseDto;
     readonly otherPrintings: CardResponseDto[];
@@ -19,6 +25,7 @@ export class CardViewDto extends ListView {
     readonly hasAnyNormalPrice?: boolean;
     readonly hasAnyFoilPrice?: boolean;
     readonly priceAlert?: PriceAlertViewDto;
+    readonly userDecks?: DeckOptionView[];
 
     constructor(init: Partial<CardViewDto>) {
         super(init);
@@ -30,5 +37,6 @@ export class CardViewDto extends ListView {
         this.hasAnyNormalPrice = init.hasAnyNormalPrice ?? true;
         this.hasAnyFoilPrice = init.hasAnyFoilPrice ?? true;
         this.priceAlert = init.priceAlert;
+        this.userDecks = init.userDecks;
     }
 }

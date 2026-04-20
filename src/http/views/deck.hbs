@@ -1,0 +1,161 @@
+<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
+    <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4 px-4">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+                <h1 class="page-title">{{deck.name}}</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Format: <span class="font-medium">{{deck.formatLabel}}</span>
+                    &middot; Main: {{mainCount}}
+                    &middot; Sideboard: {{sideboardCount}}
+                    &middot; Value: ${{totalValue}}
+                </p>
+                {{#if deck.description}}
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-wrap">{{deck.description}}</p>
+                {{/if}}
+            </div>
+            <div class="flex gap-2">
+                <a href="/decks" class="btn btn-secondary text-sm py-1 px-3">Back to decks</a>
+                <form method="POST" action="/decks/{{deck.id}}/delete"
+                    onsubmit="return confirm('Delete this deck?');" class="inline">
+                    <button type="submit" class="btn btn-danger text-sm py-1 px-3">Delete deck</button>
+                </form>
+            </div>
+        </div>
+
+        {{#if warnings.length}}
+        <div class="mt-3 border border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800 rounded p-3">
+            <h3 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
+                <i class="fas fa-triangle-exclamation"></i> Warnings
+            </h3>
+            <ul class="list-disc pl-5 text-sm text-yellow-800 dark:text-yellow-200">
+                {{#each warnings}}
+                <li>{{this.message}}</li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+    </section>
+
+    <div class="content-wrapper">
+        <section id="deck-card-adder" data-deck-id="{{deck.id}}"
+            class="mb-4 border border-gray-200 dark:border-midnight-600 rounded-lg p-3">
+            <h2 class="text-sm font-semibold mb-2">Add cards</h2>
+            <div class="flex flex-col sm:flex-row gap-2 items-stretch">
+                <div class="relative flex-1">
+                    <input type="text" id="deck-add-search" placeholder="Search for a card..."
+                        autocomplete="off"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100 text-sm" />
+                    <div id="deck-add-results"
+                        class="absolute z-20 left-0 right-0 mt-1 hidden bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600 rounded shadow-lg max-h-80 overflow-y-auto">
+                    </div>
+                </div>
+                <input type="number" id="deck-add-qty" value="1" min="1" max="99" aria-label="Quantity"
+                    class="w-20 px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100 text-sm" />
+                <label class="flex items-center gap-1 text-sm px-2">
+                    <input type="checkbox" id="deck-add-sideboard" />
+                    Sideboard
+                </label>
+            </div>
+            <p id="deck-add-status" class="text-xs text-gray-500 dark:text-gray-400 mt-2 min-h-[1rem]"
+                role="status" aria-live="polite"></p>
+        </section>
+
+        <details class="mb-4 border border-gray-200 dark:border-midnight-600 rounded-lg p-3">
+            <summary class="cursor-pointer font-semibold">Edit deck</summary>
+            <form method="POST" action="/decks/{{deck.id}}/update" class="mt-3 flex flex-col gap-3">
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm">Name</span>
+                    <input type="text" name="name" value="{{deck.name}}" required maxlength="120"
+                        class="px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100" />
+                </label>
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm">Format</span>
+                    <select name="format"
+                        class="px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100">
+                        {{#each formats}}
+                        <option value="{{this.value}}" {{#if (eq this.value ../deck.format)}}selected{{/if}}>{{this.label}}</option>
+                        {{/each}}
+                    </select>
+                </label>
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm">Description</span>
+                    <textarea name="description" maxlength="2000" rows="3"
+                        class="px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100">{{deck.description}}</textarea>
+                </label>
+                <button type="submit" class="btn btn-primary self-start">Save</button>
+            </form>
+        </details>
+
+        <section class="mb-8">
+            <h2 class="text-lg font-semibold mb-3">Main deck ({{mainCount}})</h2>
+            {{#if mainGroups.length}}
+            {{#each mainGroups}}
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                    {{this.label}} ({{this.count}})
+                </h3>
+                <table class="table-container w-full">
+                    <tbody>
+                        {{#each this.cards}}
+                        <tr>
+                            <td class="w-16 text-right pr-2">{{this.quantity}}x</td>
+                            <td>
+                                <a class="table-link" href="{{this.cardUrl}}">{{this.name}}</a>
+                                {{#if this.isBanned}}
+                                <span class="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">banned</span>
+                                {{/if}}
+                            </td>
+                            <td class="text-right text-sm text-gray-500">{{#if this.price}}${{this.price}}{{else}}—{{/if}}</td>
+                            <td class="text-right">
+                                <form method="POST" action="/decks/{{../../deck.id}}/cards" class="inline">
+                                    <input type="hidden" name="cardId" value="{{this.cardId}}" />
+                                    <input type="hidden" name="quantity" value="0" />
+                                    <input type="hidden" name="isSideboard" value="false" />
+                                    <button type="submit" class="text-red-600 hover:underline text-xs">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{/each}}
+            {{else}}
+            <p class="text-sm text-gray-500 py-4">No cards in the main deck yet. Search for cards and use the "Add to Deck" button.</p>
+            {{/if}}
+        </section>
+
+        <section>
+            <h2 class="text-lg font-semibold mb-3">Sideboard ({{sideboardCount}})</h2>
+            {{#if sideboard.length}}
+            <table class="table-container w-full">
+                <tbody>
+                    {{#each sideboard}}
+                    <tr>
+                        <td class="w-16 text-right pr-2">{{this.quantity}}x</td>
+                        <td>
+                            <a class="table-link" href="{{this.cardUrl}}">{{this.name}}</a>
+                            {{#if this.isBanned}}
+                            <span class="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">banned</span>
+                            {{/if}}
+                        </td>
+                        <td class="text-right text-sm text-gray-500">{{#if this.price}}${{this.price}}{{else}}—{{/if}}</td>
+                        <td class="text-right">
+                            <form method="POST" action="/decks/{{../deck.id}}/cards" class="inline">
+                                <input type="hidden" name="cardId" value="{{this.cardId}}" />
+                                <input type="hidden" name="quantity" value="0" />
+                                <input type="hidden" name="isSideboard" value="true" />
+                                <button type="submit" class="text-red-600 hover:underline text-xs">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="text-sm text-gray-500 py-4">No sideboard cards.</p>
+            {{/if}}
+        </section>
+    </div>
+</section>
+<script src="/public/js/deckCardAdder.js?v={{assetVersion}}" defer></script>

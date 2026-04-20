@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
 import { AuthModule } from './auth/auth.module';
 import { CardModule } from './card/card.module';
+import { DeckModule } from './deck/deck.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
 import { InventoryModule } from './inventory/inventory.module';
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
     imports: [
         AuthModule,
         CardModule,
+        DeckModule,
         EmailModule,
         ImportModule,
         InventoryModule,
@@ -33,6 +35,7 @@ import { UserModule } from './user/user.module';
     exports: [
         AuthModule,
         CardModule,
+        DeckModule,
         EmailModule,
         ImportModule,
         InventoryModule,

@@ -1,0 +1,29 @@
+{{#if authenticated}}
+<div class="mt-4 border border-gray-200 dark:border-midnight-600 rounded-lg p-3">
+    <h3 class="text-sm font-semibold mb-2">Add to Deck</h3>
+    {{#if userDecks.length}}
+    <form method="POST" class="flex flex-col sm:flex-row gap-2 items-stretch"
+        onsubmit="this.action='/decks/'+this.deckId.value+'/cards';">
+        <select name="deckId" required
+            class="flex-1 px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100 text-sm">
+            {{#each userDecks}}
+            <option value="{{this.id}}">{{this.name}} ({{this.formatLabel}})</option>
+            {{/each}}
+        </select>
+        <input type="hidden" name="cardId" value="{{card.cardId}}" />
+        <input type="hidden" name="returnUrl" value="/card/{{toLowerCase card.setCode}}/{{card.number}}" />
+        <input type="number" name="quantity" value="1" min="1" max="99"
+            class="w-20 px-3 py-2 border border-gray-300 dark:border-midnight-600 rounded bg-white dark:bg-midnight-800 text-gray-900 dark:text-gray-100 text-sm" />
+        <label class="flex items-center gap-1 text-sm px-2">
+            <input type="checkbox" name="isSideboard" value="true" />
+            Sideboard
+        </label>
+        <button type="submit" class="btn btn-primary text-sm">Add</button>
+    </form>
+    {{else}}
+    <p class="text-sm text-gray-500">
+        You have no decks yet. <a href="/decks" class="table-link">Create one</a> to start adding cards.
+    </p>
+    {{/if}}
+</div>
+{{/if}}

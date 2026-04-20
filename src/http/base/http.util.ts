@@ -93,3 +93,14 @@ export function gainSign(amount: number): string {
 }
 
 export { buildCardUrl } from 'src/shared/utils/card-url.util';
+
+/**
+ * Allow only same-origin, absolute-path redirects (e.g. `/decks/42`).
+ * Protocol-relative (`//evil.com`) and external URLs are rejected.
+ */
+export function sanitizeReturnUrl(url?: string): string {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+    return '';
+}

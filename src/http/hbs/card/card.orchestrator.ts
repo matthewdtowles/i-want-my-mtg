@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
+import { labelFormat } from 'src/core/card/format.labels';
+import { DeckService } from 'src/core/deck/deck.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
@@ -20,7 +22,7 @@ import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CardPresenter } from './card.presenter';
-import { CardViewDto, PriceAlertViewDto } from './dto/card.view.dto';
+import { CardViewDto, DeckOptionView, PriceAlertViewDto } from './dto/card.view.dto';
 import { PriceHistoryPointDto, PriceHistoryResponseDto } from './dto/price-history-response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
 
@@ -32,7 +34,8 @@ export class CardOrchestrator {
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
         @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService,
-        @Inject(TransactionService) private readonly transactionService: TransactionService
+        @Inject(TransactionService) private readonly transactionService: TransactionService,
+        @Inject(DeckService) private readonly deckService: DeckService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -137,6 +140,20 @@ export class CardOrchestrator {
                 }
             }
 
+            let userDecks: DeckOptionView[] | undefined;
+            if (userId > 0) {
+                try {
+                    const decks = await this.deckService.findDecksForPicker(userId);
+                    userDecks = decks.map((d) => ({
+                        id: d.id!,
+                        name: d.name,
+                        formatLabel: labelFormat(d.format),
+                    }));
+                } catch (err) {
+                    this.LOGGER.debug(`User decks unavailable: ${err?.message}`);
+                }
+            }
+
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
@@ -170,6 +187,7 @@ export class CardOrchestrator {
                 untrackedNormal,
                 untrackedFoil,
                 priceAlert,
+                userDecks,
                 otherPrintings,
                 hasAnyNormalPrice,
                 hasAnyFoilPrice,

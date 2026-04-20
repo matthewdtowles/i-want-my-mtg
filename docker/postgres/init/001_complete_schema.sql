@@ -855,6 +855,46 @@ CREATE INDEX idx_sealed_product_inventory_user ON public.sealed_product_inventor
 
 
 --
+-- Name: deck; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.deck (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    name CHARACTER VARYING NOT NULL,
+    format public.format_enum,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_deck_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_deck_user_id ON public.deck (user_id);
+
+
+--
+-- Name: deck_card; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.deck_card (
+    deck_id INTEGER NOT NULL,
+    card_id CHARACTER VARYING NOT NULL,
+    is_sideboard BOOLEAN NOT NULL DEFAULT false,
+    quantity INTEGER NOT NULL,
+    CONSTRAINT deck_card_pkey PRIMARY KEY (deck_id, card_id, is_sideboard),
+    CONSTRAINT chk_deck_card_quantity CHECK (quantity > 0),
+    CONSTRAINT fk_deck_card_deck FOREIGN KEY (deck_id)
+        REFERENCES public.deck(id) ON DELETE CASCADE,
+    CONSTRAINT fk_deck_card_card FOREIGN KEY (card_id)
+        REFERENCES public.card(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_deck_card_deck_id ON public.deck_card (deck_id);
+CREATE INDEX idx_deck_card_card_id ON public.deck_card (card_id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 

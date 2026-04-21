@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
 import { AuthModule } from './auth/auth.module';
+import { BillingModule } from './billing/billing.module';
 import { CardModule } from './card/card.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
@@ -17,6 +18,7 @@ import { UserModule } from './user/user.module';
 @Module({
     imports: [
         AuthModule,
+        BillingModule,
         CardModule,
         EmailModule,
         ImportModule,
@@ -32,6 +34,7 @@ import { UserModule } from './user/user.module';
     ],
     exports: [
         AuthModule,
+        BillingModule,
         CardModule,
         EmailModule,
         ImportModule,

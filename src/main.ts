@@ -18,7 +18,8 @@ async function bootstrap() {
     server.use(compression());
     const app = await NestFactory.create<NestExpressApplication>(
         AppModule,
-        new ExpressAdapter(server)
+        new ExpressAdapter(server),
+        { rawBody: true }
     );
 
     app.useLogger(GlobalAppLogger);

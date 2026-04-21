@@ -175,6 +175,6 @@ See the Production section above for the full pipeline. The workflow is defined 
 
 ## Environment
 
-**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (passed to ETL container), `SMTP_*` (email config), `APP_URL`, `TCGPLAYER_AFFILIATE_URL` (Impact partner link — when unset, buy buttons link to raw TCGPlayer URLs without attribution).
+**Production**: `DATABASE_URL` (Lightsail managed DB connection string with `?sslmode=require`), `JWT_SECRET`, `NODE_ENV`, `SCRY_LOG` (passed to ETL container), `SMTP_*` (email config), `APP_URL`, `TCGPLAYER_AFFILIATE_URL` (Impact partner link — when unset, buy buttons link to raw TCGPlayer URLs without attribution), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL` (Stripe billing — when unset, `/billing` routes error until configured; webhook endpoint is `POST /api/v1/billing/webhooks/stripe`).
 
 **Local dev**: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (for Docker postgres), or individual `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` vars. See `.env.example`.

@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CoreModule } from 'src/core/core.module';
 import { AuthApiController } from './auth/auth-api.controller';
+import { BillingApiController } from './billing/billing-api.controller';
+import { StripeWebhookController } from './billing/stripe-webhook.controller';
 import { CardApiController } from './card/card-api.controller';
 import { InventoryApiController } from './inventory/inventory-api.controller';
 import { PortfolioApiController } from './portfolio/portfolio-api.controller';
@@ -19,6 +21,8 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
     imports: [ConfigModule, CoreModule],
     controllers: [
         AuthApiController,
+        BillingApiController,
+        StripeWebhookController,
         CardApiController,
         InventoryApiController,
         PortfolioApiController,

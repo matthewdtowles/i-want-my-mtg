@@ -1,0 +1,58 @@
+<div class='settings-container'>
+    <h1 class='page-title'>Subscription</h1>
+
+    {{#if subscription.isActive}}
+        <div class='section-container'>
+            <h3 class='page-subtitle'>Current Plan</h3>
+            <p class='mb-2'>
+                Status: <strong>{{capitalize subscription.status}}</strong>
+            </p>
+            {{#if subscription.plan}}
+                <p class='mb-2'>Plan: <strong>{{capitalize subscription.plan}}</strong></p>
+            {{/if}}
+            {{#if subscription.currentPeriodEnd}}
+                <p class='mb-2 text-sm text-gray-600 dark:text-gray-400'>
+                    {{#if subscription.cancelAtPeriodEnd}}
+                        Cancels on {{subscription.currentPeriodEnd}}
+                    {{else}}
+                        Renews on {{subscription.currentPeriodEnd}}
+                    {{/if}}
+                </p>
+            {{/if}}
+            <form method='POST' action='/billing/portal' class='mt-4'>
+                <button class='btn btn-primary' type='submit'>Manage Billing</button>
+            </form>
+        </div>
+    {{else}}
+        <div class='section-container'>
+            <h3 class='page-subtitle'>Choose a Plan</h3>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mb-4'>
+                Support continued development and unlock upcoming premium features.
+            </p>
+            <div class='grid gap-4 md:grid-cols-2'>
+                <div class='border rounded p-4'>
+                    <h4 class='text-lg font-semibold'>Monthly</h4>
+                    <p class='text-2xl my-2'>{{pricing.monthly.amount}}</p>
+                    <p class='text-sm text-gray-600 dark:text-gray-400 mb-4'>{{pricing.monthly.label}}</p>
+                    <form method='POST' action='/billing/checkout'>
+                        <input type='hidden' name='plan' value='monthly' />
+                        <button class='btn btn-primary w-full' type='submit'>Subscribe Monthly</button>
+                    </form>
+                </div>
+                <div class='border rounded p-4'>
+                    <h4 class='text-lg font-semibold'>Annual</h4>
+                    <p class='text-2xl my-2'>{{pricing.annual.amount}}</p>
+                    <p class='text-sm text-gray-600 dark:text-gray-400 mb-4'>{{pricing.annual.label}} &middot; save ~35%</p>
+                    <form method='POST' action='/billing/checkout'>
+                        <input type='hidden' name='plan' value='annual' />
+                        <button class='btn btn-primary w-full' type='submit'>Subscribe Annually</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+
+    <div class='section-container'>
+        <a class='btn btn-secondary' href='/user'>Back to User Settings</a>
+    </div>
+</div>

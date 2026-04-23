@@ -48,13 +48,11 @@ export class StripeWebhookController {
 
         this.LOGGER.log(`Stripe event ${event.type} (${event.id}) received.`);
 
-        try {
-            await this.dispatch(event);
-        } catch (error) {
-            this.LOGGER.error(`Error handling Stripe event ${event.type}: ${error?.message}`);
-            // Return 200 anyway to prevent retry storms on non-retryable domain errors.
-            // Stripe retries on 5xx; 2xx means "got it, will process".
-        }
+        // Let unexpected errors (DB outage, network, bugs) propagate so Nest returns
+        // 5xx and Stripe retries delivery. Known non-retryable cases (unknown customer,
+        // unknown subscription) are handled inside SubscriptionService by logging and
+        // returning normally, so they do not throw.
+        await this.dispatch(event);
 
         return { received: true };
     }

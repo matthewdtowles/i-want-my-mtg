@@ -23,7 +23,7 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         this.annualPriceId = this.configService.get<string>('STRIPE_PRICE_ANNUAL') || '';
         if (!secretKey) {
             this.LOGGER.warn(
-                'STRIPE_SECRET_KEY not set — billing endpoints will error until configured.'
+                'STRIPE_SECRET_KEY not set — billing actions will return error notices / redirects until configured.'
             );
             return;
         }

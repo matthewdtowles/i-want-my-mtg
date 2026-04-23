@@ -1,3 +1,4 @@
+import { RawBodyRequest } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -13,14 +14,30 @@ import { CorrelationIdMiddleware } from './logger/correlation-id.middleware';
 import { GlobalAppLogger } from './logger/global-app-logger';
 import { UserContextInterceptor } from './logger/user-context.interceptor';
 
+const STRIPE_WEBHOOK_PATH = '/api/v1/billing/webhooks/stripe';
+
 async function bootstrap() {
     const server = express();
     server.use(compression());
     const app = await NestFactory.create<NestExpressApplication>(
         AppModule,
         new ExpressAdapter(server),
-        { rawBody: true }
+        { bodyParser: false }
     );
+
+    // Stripe signature verification needs the unparsed request body. Scope raw-body
+    // capture to the webhook route only — every other endpoint uses normal JSON/urlencoded
+    // parsing so we don't carry a duplicate Buffer around for every request.
+    server.use(
+        STRIPE_WEBHOOK_PATH,
+        express.raw({ type: 'application/json', limit: '1mb' }),
+        (req: express.Request, _res: express.Response, next: express.NextFunction) => {
+            (req as RawBodyRequest<express.Request>).rawBody = req.body as Buffer;
+            next();
+        }
+    );
+    server.use(express.json());
+    server.use(express.urlencoded({ extended: true }));
 
     app.useLogger(GlobalAppLogger);
 

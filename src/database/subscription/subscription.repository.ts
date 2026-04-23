@@ -36,7 +36,15 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
     async upsert(subscription: Subscription): Promise<Subscription> {
         const orm = SubscriptionMapper.toOrmEntity(subscription);
         orm.updatedAt = new Date();
-        const saved = await this.repository.save(orm);
+        // Real INSERT ... ON CONFLICT (user_id) DO UPDATE so concurrent writers
+        // (e.g. two checkout requests racing) don't both see "no row" and then
+        // collide on the user_id unique constraint during save().
+        const values: Partial<SubscriptionOrmEntity> = { ...orm };
+        if (values.id === undefined || values.id === null) delete values.id;
+        await this.repository.upsert(values as SubscriptionOrmEntity, {
+            conflictPaths: ['userId'],
+        });
+        const saved = await this.repository.findOneByOrFail({ userId: orm.userId });
         this.LOGGER.debug(
             `Upserted subscription for user ${saved.userId}, status=${saved.status}.`
         );

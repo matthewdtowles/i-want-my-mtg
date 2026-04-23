@@ -5,13 +5,10 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { getLogger } from 'src/logger/global-app-logger';
 import { BillingViewDto, SubscriptionSummary } from './dto/billing.view.dto';
 
 @Injectable()
 export class BillingOrchestrator {
-    private readonly LOGGER = getLogger(BillingOrchestrator.name);
-
     private readonly breadCrumbs = [
         { label: 'Home', url: '/' },
         { label: 'User', url: '/user' },

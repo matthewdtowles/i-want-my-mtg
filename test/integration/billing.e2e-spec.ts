@@ -5,7 +5,10 @@ import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from 'src/app.module';
 import { configureApp } from 'src/app.config';
-import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
+import {
+    CheckoutSessionParams,
+    StripeGatewayPort,
+} from 'src/core/billing/ports/stripe-gateway.port';
 import { SubscriptionPlan } from 'src/core/billing/subscription-plan.enum';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { loginTestUser, TEST_USER } from './setup';
@@ -15,11 +18,11 @@ const VIEWS_DIR = join(process.cwd(), 'src', 'http', 'views');
 const MONTHLY_PRICE_ID = 'price_monthly';
 const ANNUAL_PRICE_ID = 'price_annual';
 
-class FakeStripeGateway {
+class FakeStripeGateway implements StripeGatewayPort {
     events: Stripe.Event[] = [];
     createCustomerCalls: Array<{ email: string; name?: string; userId: number }> = [];
-    checkoutCalls: Array<{ customerId: string; plan: SubscriptionPlan }> = [];
-    portalCalls: Array<{ customerId: string }> = [];
+    checkoutCalls: CheckoutSessionParams[] = [];
+    portalCalls: Array<{ customerId: string; returnUrl: string }> = [];
 
     async createCustomer(params: {
         email: string;
@@ -30,16 +33,16 @@ class FakeStripeGateway {
         return `cus_fake_${params.userId}`;
     }
 
-    async createCheckoutSession(params: {
-        customerId: string;
-        plan: SubscriptionPlan;
-    }): Promise<{ url: string }> {
-        this.checkoutCalls.push({ customerId: params.customerId, plan: params.plan });
+    async createCheckoutSession(params: CheckoutSessionParams): Promise<{ url: string }> {
+        this.checkoutCalls.push(params);
         return { url: `https://checkout.stripe.test/${params.plan}` };
     }
 
-    async createBillingPortalSession(params: { customerId: string }): Promise<{ url: string }> {
-        this.portalCalls.push({ customerId: params.customerId });
+    async createBillingPortalSession(params: {
+        customerId: string;
+        returnUrl: string;
+    }): Promise<{ url: string }> {
+        this.portalCalls.push(params);
         return { url: 'https://billing.stripe.test/portal' };
     }
 
@@ -54,7 +57,7 @@ class FakeStripeGateway {
         } as unknown as Stripe.Subscription;
     }
 
-    constructEvent(rawBody: Buffer | string): Stripe.Event {
+    constructEvent(rawBody: Buffer | string, _signature: string): Stripe.Event {
         const body = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf8');
         return JSON.parse(body) as Stripe.Event;
     }

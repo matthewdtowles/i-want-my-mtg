@@ -101,13 +101,12 @@ describe('StripeWebhookController', () => {
         expect(service.syncFromStripeSubscription).not.toHaveBeenCalled();
     });
 
-    it('swallows domain errors but still returns 200', async () => {
+    it('propagates unexpected dispatch errors so Stripe retries', async () => {
         gateway.constructEvent.mockReturnValue({
             type: 'customer.subscription.updated',
             data: { object: {} },
         } as unknown as Stripe.Event);
         service.syncFromStripeSubscription.mockRejectedValue(new Error('boom'));
-        const result = await controller.handle(rawReq, 'sig');
-        expect(result).toEqual({ received: true });
+        await expect(controller.handle(rawReq, 'sig')).rejects.toThrow('boom');
     });
 });

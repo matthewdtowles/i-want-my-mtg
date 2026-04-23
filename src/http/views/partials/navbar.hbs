@@ -29,7 +29,9 @@
                     href="/billing">
                     <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Upgrade
                 </a>
-                <a class="navbar-link" href="/auth/logout">Logout</a>
+                <form method="post" action="/auth/logout" class="inline">
+                    <button type="submit" class="navbar-link bg-transparent border-0 cursor-pointer p-0">Logout</button>
+                </form>
                 {{else}}
                 <a class="navbar-link navbar-login-link" href="/auth/login">Sign In</a>
                 <a class="navbar-link" href="/user/create">Create Account</a>
@@ -100,7 +102,9 @@
         <a class="navbar-link-mobile text-amber-300 font-semibold" href="/billing">
             <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Upgrade
         </a>
-        <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
+        <form method="post" action="/auth/logout" class="block">
+            <button type="submit" class="navbar-link-mobile bg-transparent border-0 cursor-pointer p-0 w-full text-left">Logout</button>
+        </form>
         {{else}}
         <a class="navbar-link-mobile navbar-login-link" href="/auth/login">Login</a>
         <a class="navbar-link-mobile" href="/user/create">Create Account</a>

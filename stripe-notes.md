@@ -1,3 +1,18 @@
+To get your Stripe webhook secret (STRIPE_WEBHOOK_SECRET):
+
+  Production (live webhook endpoint):
+  1. Go to https://dashboard.stripe.com/webhooks
+  2. Click Add endpoint (or select your existing one)
+  3. Endpoint URL: https://yourdomain.com/api/v1/billing/webhooks/stripe
+  4. Select events (typically checkout.session.completed, customer.subscription.*, invoice.*)
+  5. After creating, click the endpoint → Signing secret → Reveal — it starts with whsec_...
+
+  Local dev (Stripe CLI):
+  stripe login
+  stripe listen --forward-to localhost:3000/api/v1/billing/webhooks/stripe
+  The CLI prints a whsec_... secret on startup — use that as STRIPE_WEBHOOK_SECRET in your local .env. It's different from the production one and only valid while stripe listen is running.
+
+
 Turn ON
 
   - Branding (Settings → Branding) — upload logo + icon, set brand color. This styles the Checkout page, Customer Portal, and emails. Worth 5 minutes; makes the whole flow feel like your app instead of

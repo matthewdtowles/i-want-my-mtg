@@ -60,9 +60,18 @@ export class BillingOrchestrator {
         return {
             status: sub.status,
             plan: sub.plan,
-            currentPeriodEnd: sub.currentPeriodEnd ? sub.currentPeriodEnd.toISOString() : null,
+            currentPeriodEnd: this.formatDate(sub.currentPeriodEnd),
             cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
             isActive: sub.isActive(),
         };
+    }
+
+    private formatDate(date: Date | null): string | null {
+        if (!date) return null;
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
     }
 }

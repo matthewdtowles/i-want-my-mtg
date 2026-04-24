@@ -4,17 +4,6 @@ import { SealedProductPrice } from 'src/core/sealed-product/sealed-product-price
 import { SealedProductHbsPresenter } from 'src/http/hbs/sealed-product/sealed-product.presenter';
 
 describe('SealedProductHbsPresenter', () => {
-    const ORIGINAL_ENV = process.env;
-
-    beforeEach(() => {
-        process.env = { ...ORIGINAL_ENV };
-        delete process.env.TCGPLAYER_AFFILIATE_URL;
-    });
-
-    afterAll(() => {
-        process.env = ORIGINAL_ENV;
-    });
-
     const baseProduct = (overrides: Partial<SealedProduct> = {}): SealedProduct =>
         new SealedProduct({
             uuid: 'abc-123',
@@ -131,15 +120,7 @@ describe('SealedProductHbsPresenter', () => {
             expect(row.priceChangeWeeklySign).toBeUndefined();
         });
 
-        it('builds bare TCGPlayer purchase URL from product id when env var is unset', () => {
-            const row = SealedProductHbsPresenter.toRow(baseProduct());
-            expect(row.purchaseUrlTcgplayer).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '500001')
-            );
-        });
-
-        it('wraps purchase URL in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
-            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+        it('wraps purchase URL in the affiliate shortlink', () => {
             const row = SealedProductHbsPresenter.toRow(baseProduct());
             const dest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '500001');
             expect(row.purchaseUrlTcgplayer).toBe(

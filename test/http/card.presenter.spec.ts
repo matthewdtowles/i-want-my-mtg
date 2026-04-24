@@ -25,17 +25,7 @@ function createCard(overrides: Partial<Card> = {}): Card {
 
 describe('CardPresenter', () => {
     describe('toSingleCardResponse', () => {
-        const ORIGINAL_ENV = process.env;
         const inventory = new InventoryQuantities(0, 0);
-
-        beforeEach(() => {
-            process.env = { ...ORIGINAL_ENV };
-            delete process.env.TCGPLAYER_AFFILIATE_URL;
-        });
-
-        afterAll(() => {
-            process.env = ORIGINAL_ENV;
-        });
 
         it('leaves both purchase URLs undefined when product IDs are missing', () => {
             const card = createCard();
@@ -46,24 +36,7 @@ describe('CardPresenter', () => {
             expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
         });
 
-        it('builds bare TCGPlayer URLs from product IDs when env var is unset', () => {
-            const card = createCard({
-                tcgplayerProductId: '672033',
-                tcgplayerEtchedProductId: '672034',
-            });
-
-            const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
-
-            expect(result.purchaseUrlTcgplayer).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
-            );
-            expect(result.purchaseUrlTcgplayerEtched).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034')
-            );
-        });
-
-        it('wraps URLs in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
-            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+        it('wraps purchase URLs in the affiliate shortlink', () => {
             const card = createCard({
                 tcgplayerProductId: '672033',
                 tcgplayerEtchedProductId: '672034',
@@ -86,8 +59,9 @@ describe('CardPresenter', () => {
 
             const result = CardPresenter.toSingleCardResponse(card, inventory, CardImgType.SMALL);
 
+            const normalDest = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033');
             expect(result.purchaseUrlTcgplayer).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
+                'https://partner.tcgplayer.com/PzKzOM?u=' + encodeURIComponent(normalDest)
             );
             expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
         });

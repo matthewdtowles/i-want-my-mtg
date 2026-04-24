@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Post, Query, Render, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { AlreadySubscribedError } from 'src/core/billing/already-subscribed.error';
 import { SubscriptionPlan } from 'src/core/billing/subscription-plan.enum';
 import { isEnumValue } from 'src/core/validation.util';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
@@ -44,15 +45,22 @@ export class BillingController {
             return;
         }
         try {
-            const existing = await this.orchestrator.getBillingView(req);
-            if (existing.subscription?.isActive) {
-                const { url } = await this.orchestrator.startBillingPortal(req);
-                res.redirect(303, url);
-                return;
-            }
             const { url } = await this.orchestrator.startCheckout(req, planInput);
             res.redirect(303, url);
         } catch (error) {
+            if (error instanceof AlreadySubscribedError) {
+                try {
+                    const { url } = await this.orchestrator.startBillingPortal(req);
+                    res.redirect(303, url);
+                    return;
+                } catch (portalError) {
+                    this.LOGGER.error(
+                        `Portal redirect failed for already-subscribed user ${req.user?.id}: ${portalError?.message}`
+                    );
+                    res.redirect('/billing?error=portal_failed');
+                    return;
+                }
+            }
             this.LOGGER.error(`Checkout failed for user ${req.user?.id}: ${error?.message}`);
             res.redirect('/billing?error=checkout_failed');
         }

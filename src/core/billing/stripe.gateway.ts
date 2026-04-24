@@ -42,11 +42,14 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         name?: string;
         userId: number;
     }): Promise<string> {
-        const customer = await this.requireClient().customers.create({
-            email: params.email,
-            name: params.name,
-            metadata: { userId: String(params.userId) },
-        });
+        const customer = await this.requireClient().customers.create(
+            {
+                email: params.email,
+                name: params.name,
+                metadata: { userId: String(params.userId) },
+            },
+            { idempotencyKey: `customer:user:${params.userId}` }
+        );
         return customer.id;
     }
 

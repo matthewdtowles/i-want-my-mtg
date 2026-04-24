@@ -13,3 +13,10 @@ export const ACTIVE_SUBSCRIPTION_STATUSES: ReadonlySet<SubscriptionStatus> = new
     SubscriptionStatus.Active,
     SubscriptionStatus.Trialing,
 ]);
+
+export const BLOCKS_NEW_CHECKOUT_STATUSES: ReadonlySet<SubscriptionStatus> = new Set([
+    SubscriptionStatus.Active,
+    SubscriptionStatus.Trialing,
+    SubscriptionStatus.PastDue,
+    SubscriptionStatus.Unpaid,
+]);

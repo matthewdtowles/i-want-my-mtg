@@ -16,6 +16,8 @@
             <p class='text-sm text-gray-600 dark:text-gray-400 mb-4'>
                 {{#if subscription.cancelAtPeriodEnd}}
                     Your subscription will end on <strong>{{subscription.currentPeriodEnd}}</strong>. You can resume any time through Manage Billing.
+                {{else if subscription.currentPeriodEnd}}
+                    Thanks for supporting I Want My MTG! Your plan renews on <strong>{{subscription.currentPeriodEnd}}</strong>.
                 {{else}}
                     Thanks for supporting I Want My MTG! Switch plans or manage payment below.
                 {{/if}}

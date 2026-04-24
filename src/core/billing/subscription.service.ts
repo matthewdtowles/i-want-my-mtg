@@ -3,10 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import type { Stripe } from './stripe.types';
 import { getLogger } from 'src/logger/global-app-logger';
 import { User } from 'src/core/user/user.entity';
+import { AlreadySubscribedError } from './already-subscribed.error';
 import { StripeGatewayPort } from './ports/stripe-gateway.port';
 import { SubscriptionRepositoryPort } from './ports/subscription.repository.port';
 import { SubscriptionPlan } from './subscription-plan.enum';
-import { SubscriptionStatus } from './subscription-status.enum';
+import { BLOCKS_NEW_CHECKOUT_STATUSES, SubscriptionStatus } from './subscription-status.enum';
 import { Subscription } from './subscription.entity';
 
 @Injectable()
@@ -40,6 +41,10 @@ export class SubscriptionService {
     }
 
     async startCheckout(user: User, plan: SubscriptionPlan): Promise<{ url: string }> {
+        const existing = await this.repository.findByUserId(user.id);
+        if (existing && BLOCKS_NEW_CHECKOUT_STATUSES.has(existing.status)) {
+            throw new AlreadySubscribedError(user.id);
+        }
         const customerId = await this.getOrCreateCustomer(user);
         const appUrl = this.configService.get<string>('APP_URL') || 'http://localhost:3000';
         const successUrl =

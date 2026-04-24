@@ -69,6 +69,7 @@ export class BillingOrchestrator {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
+            timeZone: 'UTC',
         });
     }
 }

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import { AlreadySubscribedError } from 'src/core/billing/already-subscribed.error';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { SubscriptionRepositoryPort } from 'src/core/billing/ports/subscription.repository.port';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
@@ -113,6 +114,42 @@ describe('SubscriptionService', () => {
                     plan: SubscriptionPlan.Monthly,
                 })
             );
+        });
+
+        it.each([
+            SubscriptionStatus.Active,
+            SubscriptionStatus.Trialing,
+            SubscriptionStatus.PastDue,
+            SubscriptionStatus.Unpaid,
+        ])('throws AlreadySubscribedError when status is %s', async (status) => {
+            repo.findByUserId.mockResolvedValue(
+                new Subscription({
+                    userId: user.id,
+                    stripeCustomerId: 'cus_existing',
+                    status,
+                })
+            );
+            await expect(service.startCheckout(user, SubscriptionPlan.Monthly)).rejects.toBeInstanceOf(
+                AlreadySubscribedError
+            );
+            expect(gateway.createCheckoutSession).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            SubscriptionStatus.Canceled,
+            SubscriptionStatus.Incomplete,
+            SubscriptionStatus.IncompleteExpired,
+        ])('allows new checkout when prior status is %s', async (status) => {
+            repo.findByUserId.mockResolvedValue(
+                new Subscription({
+                    userId: user.id,
+                    stripeCustomerId: 'cus_existing',
+                    status,
+                })
+            );
+            gateway.createCheckoutSession.mockResolvedValue({ url: 'https://checkout.stripe/resubscribe' });
+            const result = await service.startCheckout(user, SubscriptionPlan.Monthly);
+            expect(result.url).toBe('https://checkout.stripe/resubscribe');
         });
     });
 

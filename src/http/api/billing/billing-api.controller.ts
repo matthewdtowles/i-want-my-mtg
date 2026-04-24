@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AlreadySubscribedError } from 'src/core/billing/already-subscribed.error';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { UserService } from 'src/core/user/user.service';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
@@ -49,6 +50,11 @@ export class BillingApiController {
             const result = await this.subscriptionService.startCheckout(user, dto.plan);
             return ApiResponseDto.ok(result);
         } catch (error) {
+            if (error instanceof AlreadySubscribedError) {
+                return ApiResponseDto.error(
+                    'You already have an active subscription. Use the billing portal to change plans or cancel.'
+                );
+            }
             this.LOGGER.error(`Checkout failed for user ${req.user?.id}: ${error?.message}`);
             return ApiResponseDto.error('Checkout session could not be created.');
         }

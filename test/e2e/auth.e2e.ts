@@ -48,8 +48,9 @@ test.describe('Logout flow', () => {
         await page.locator('#login-btn').click();
         await page.waitForURL('/user');
 
-        // Then log out
-        await page.goto('/auth/logout');
+        // Then log out (POST, matches the form in the navbar)
+        const logoutResponse = await page.request.post('/auth/logout');
+        expect(logoutResponse.ok() || logoutResponse.status() === 302).toBeTruthy();
 
         // Accessing an authenticated page should be denied - nav shows Sign In
         await page.goto('/inventory');

@@ -1,3 +1,4 @@
+import { RawBodyRequest } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -13,13 +14,49 @@ import { CorrelationIdMiddleware } from './logger/correlation-id.middleware';
 import { GlobalAppLogger } from './logger/global-app-logger';
 import { UserContextInterceptor } from './logger/user-context.interceptor';
 
+const STRIPE_WEBHOOK_PATH = '/api/v1/billing/webhooks/stripe';
+
+const REQUIRED_PROD_ENV = [
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_PRICE_MONTHLY',
+    'STRIPE_PRICE_ANNUAL',
+] as const;
+
+function assertProdEnv(): void {
+    if (process.env.NODE_ENV !== 'production') return;
+    const missing = REQUIRED_PROD_ENV.filter((k) => !process.env[k]?.trim());
+    if (missing.length > 0) {
+        throw new Error(
+            `Missing required production env vars: ${missing.join(', ')}. ` +
+                `Check the deploy pipeline's GitHub secrets and deploy.sh.`
+        );
+    }
+}
+
 async function bootstrap() {
+    assertProdEnv();
     const server = express();
     server.use(compression());
     const app = await NestFactory.create<NestExpressApplication>(
         AppModule,
-        new ExpressAdapter(server)
+        new ExpressAdapter(server),
+        { bodyParser: false }
     );
+
+    // Stripe signature verification needs the unparsed request body. Scope raw-body
+    // capture to the webhook route only — every other endpoint uses normal JSON/urlencoded
+    // parsing so we don't carry a duplicate Buffer around for every request.
+    server.use(
+        STRIPE_WEBHOOK_PATH,
+        express.raw({ type: 'application/json', limit: '1mb' }),
+        (req: express.Request, _res: express.Response, next: express.NextFunction) => {
+            (req as RawBodyRequest<express.Request>).rawBody = req.body as Buffer;
+            next();
+        }
+    );
+    server.use(express.json());
+    server.use(express.urlencoded({ extended: true }));
 
     app.useLogger(GlobalAppLogger);
 

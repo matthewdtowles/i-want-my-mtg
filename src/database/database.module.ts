@@ -52,6 +52,9 @@ import { SealedProductOrmEntity } from './sealed-product/sealed-product.orm-enti
 import { SealedProductRepository } from './sealed-product/sealed-product.repository';
 import { PendingUserOrmEntity } from './user/pending-user.orm-entity';
 import { PendingUserRepository } from './user/pending-user.repository';
+import { SubscriptionRepositoryPort } from 'src/core/billing/ports/subscription.repository.port';
+import { SubscriptionOrmEntity } from './subscription/subscription.orm-entity';
+import { SubscriptionRepository } from './subscription/subscription.repository';
 
 @Module({
     imports: [
@@ -77,6 +80,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
             TransactionOrmEntity,
             UserOrmEntity,
             PendingUserOrmEntity,
+            SubscriptionOrmEntity,
         ]),
     ],
     providers: [
@@ -98,6 +102,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         { provide: TransactionRepositoryPort, useClass: TransactionRepository },
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
+        { provide: SubscriptionRepositoryPort, useClass: SubscriptionRepository },
     ],
     exports: [
         CardRepositoryPort,
@@ -115,6 +120,7 @@ import { PendingUserRepository } from './user/pending-user.repository';
         TransactionRepositoryPort,
         UserRepositoryPort,
         PendingUserRepositoryPort,
+        SubscriptionRepositoryPort,
     ],
 })
 export class DatabaseModule {

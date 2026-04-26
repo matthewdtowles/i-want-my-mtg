@@ -5,7 +5,7 @@ export function getAuthCookieOptions(configService: ConfigService): CookieOption
     const isProduction = configService.get<string>('NODE_ENV') === 'production';
     return {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         secure: isProduction,
         maxAge: 3600000,
         path: '/',

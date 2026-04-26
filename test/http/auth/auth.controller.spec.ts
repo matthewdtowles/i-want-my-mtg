@@ -75,7 +75,7 @@ describe('AuthController', () => {
                 'mock-jwt-token',
                 expect.objectContaining({
                     httpOnly: true,
-                    sameSite: 'strict',
+                    sameSite: 'lax',
                     secure: false,
                     maxAge: 3600000,
                     path: '/',

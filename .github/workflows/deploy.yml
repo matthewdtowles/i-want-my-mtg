@@ -180,4 +180,8 @@ jobs:
                   SMTP_PASS: ${{ secrets.SMTP_PASS }}
                   SMTP_FROM: noreply@iwantmymtg.net
                   APP_URL: https://iwantmymtg.net
+                  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+                  STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+                  STRIPE_PRICE_MONTHLY: ${{ secrets.STRIPE_PRICE_MONTHLY }}
+                  STRIPE_PRICE_ANNUAL: ${{ secrets.STRIPE_PRICE_ANNUAL }}
               run: ./.github/scripts/deploy.sh

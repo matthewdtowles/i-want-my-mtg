@@ -25,7 +25,13 @@
                 <a class="navbar-link" href="/transactions">Transactions</a>
                 <a class="navbar-link" href="/price-alerts">Alerts</a>
                 <a class="navbar-link" href="/user">My Account</a>
-                <a class="navbar-link" href="/auth/logout">Logout</a>
+                <a class="navbar-link bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold px-3 py-1 rounded shadow-sm"
+                    href="/billing">
+                    <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Upgrade
+                </a>
+                <form method="post" action="/auth/logout" class="inline">
+                    <button type="submit" class="navbar-link bg-transparent border-0 cursor-pointer p-0">Logout</button>
+                </form>
                 {{else}}
                 <a class="navbar-link navbar-login-link" href="/auth/login">Sign In</a>
                 <a class="navbar-link" href="/user/create">Create Account</a>
@@ -93,7 +99,12 @@
         <a class="navbar-link-mobile" href="/transactions">Transactions</a>
         <a class="navbar-link-mobile" href="/price-alerts">Alerts</a>
         <a class="navbar-link-mobile" href="/user">My Account</a>
-        <a class="navbar-link-mobile" href="/auth/logout">Logout</a>
+        <a class="navbar-link-mobile text-amber-300 font-semibold" href="/billing">
+            <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Upgrade
+        </a>
+        <form method="post" action="/auth/logout" class="block">
+            <button type="submit" class="navbar-link-mobile bg-transparent border-0 cursor-pointer p-0 w-full text-left">Logout</button>
+        </form>
         {{else}}
         <a class="navbar-link-mobile navbar-login-link" href="/auth/login">Login</a>
         <a class="navbar-link-mobile" href="/user/create">Create Account</a>
@@ -131,6 +142,9 @@
         <a href="/sets" class="btn btn-primary text-sm px-3 py-1.5">Browse Sets</a>
         <a href="/inventory/import-export-guide" class="btn btn-secondary text-sm px-3 py-1.5">Import from CSV</a>
         <a href="/guides/getting-started" class="btn btn-ghost text-sm px-3 py-1.5">Getting Started Guide</a>
+        <a href="/billing" class="btn text-sm px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold">
+            <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Subscribe
+        </a>
     </div>
 </div>
 {{/if}}

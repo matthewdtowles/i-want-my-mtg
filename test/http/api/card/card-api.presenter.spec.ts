@@ -35,17 +35,6 @@ function createPrice(overrides: Partial<Price> = {}): Price {
 }
 
 describe('CardApiPresenter', () => {
-    const ORIGINAL_ENV = process.env;
-
-    beforeEach(() => {
-        process.env = { ...ORIGINAL_ENV };
-        delete process.env.TCGPLAYER_AFFILIATE_URL;
-    });
-
-    afterAll(() => {
-        process.env = ORIGINAL_ENV;
-    });
-
     describe('toCardApiResponse', () => {
         it('should map a card with prices to CardApiResponseDto', () => {
             const price = createPrice();
@@ -163,23 +152,7 @@ describe('CardApiPresenter', () => {
             expect(result.purchaseUrlTcgplayerEtched).toBeUndefined();
         });
 
-        it('should build bare TCGPlayer URLs from product IDs when env var is unset', () => {
-            const card = createCard({
-                tcgplayerProductId: '672033',
-                tcgplayerEtchedProductId: '672034',
-            });
-            const result = CardApiPresenter.toCardApiResponse(card);
-
-            expect(result.purchaseUrlTcgplayer).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672033')
-            );
-            expect(result.purchaseUrlTcgplayerEtched).toBe(
-                TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', '672034')
-            );
-        });
-
-        it('should wrap purchase URLs in affiliate base when TCGPLAYER_AFFILIATE_URL is set', () => {
-            process.env.TCGPLAYER_AFFILIATE_URL = 'https://partner.tcgplayer.com/PzKzOM';
+        it('should wrap purchase URLs in the affiliate shortlink', () => {
             const card = createCard({
                 tcgplayerProductId: '672033',
                 tcgplayerEtchedProductId: '672034',

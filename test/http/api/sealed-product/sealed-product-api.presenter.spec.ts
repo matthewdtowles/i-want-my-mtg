@@ -4,17 +4,6 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 
 describe('SealedProductApiPresenter', () => {
-    const ORIGINAL_ENV = process.env;
-
-    beforeEach(() => {
-        process.env = { ...ORIGINAL_ENV };
-        delete process.env.TCGPLAYER_AFFILIATE_URL;
-    });
-
-    afterAll(() => {
-        process.env = ORIGINAL_ENV;
-    });
-
     describe('toResponse', () => {
         it('should map domain entity to API response DTO', () => {
             const product = new SealedProduct({
@@ -42,7 +31,10 @@ describe('SealedProductApiPresenter', () => {
             expect(dto.releaseDate).toBe('2024-08-02');
             expect(dto.contentsSummary).toBe('36x Draft Booster Pack');
             expect(dto.tcgplayerProductId).toBe('672033');
-            expect(dto.purchaseUrlTcgplayer).toContain('tcgplayer.com/product/672033');
+            expect(dto.purchaseUrlTcgplayer).toContain('partner.tcgplayer.com/PzKzOM?u=');
+            expect(dto.purchaseUrlTcgplayer).toContain(
+                encodeURIComponent('tcgplayer.com/product/672033')
+            );
         });
 
         it('should include price when present', () => {

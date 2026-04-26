@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
+import { BillingController } from './billing/billing.controller';
+import { BillingOrchestrator } from './billing/billing.orchestrator';
 import { CardController } from './card/card.controller';
 import { CardOrchestrator } from './card/card.orchestrator';
 import { HomeController } from './home/home.controller';
@@ -32,6 +34,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     imports: [ConfigModule, CoreModule],
     controllers: [
         AuthController,
+        BillingController,
         CardController,
         HomeController,
         InventoryController,
@@ -49,6 +52,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     providers: [
         UploadRateLimitGuard,
         AuthOrchestrator,
+        BillingOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,
@@ -62,6 +66,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     ],
     exports: [
         AuthOrchestrator,
+        BillingOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,

@@ -35,6 +35,10 @@ required_vars=(
     "SMTP_PORT"
     "SMTP_FROM"
     "APP_URL"
+    "STRIPE_SECRET_KEY"
+    "STRIPE_WEBHOOK_SECRET"
+    "STRIPE_PRICE_MONTHLY"
+    "STRIPE_PRICE_ANNUAL"
 )
 
 log_info "Validating environment variables..."
@@ -72,6 +76,12 @@ echo "SMTP_USER=\"${SMTP_USER:-}\"" >> .env
 echo "SMTP_PASS=\"${SMTP_PASS:-}\"" >> .env
 echo "SMTP_FROM=\"$SMTP_FROM\"" >> .env
 echo "APP_URL=\"$APP_URL\"" >> .env
+
+# Stripe billing
+echo "STRIPE_SECRET_KEY=\"$STRIPE_SECRET_KEY\"" >> .env
+echo "STRIPE_WEBHOOK_SECRET=\"$STRIPE_WEBHOOK_SECRET\"" >> .env
+echo "STRIPE_PRICE_MONTHLY=\"$STRIPE_PRICE_MONTHLY\"" >> .env
+echo "STRIPE_PRICE_ANNUAL=\"$STRIPE_PRICE_ANNUAL\"" >> .env
 
 # Generate internal API key for cron-triggered endpoints
 log_info "Generating INTERNAL_API_KEY..."

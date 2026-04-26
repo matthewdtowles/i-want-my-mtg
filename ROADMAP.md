@@ -430,9 +430,9 @@
   - Priority access to new features
   - Extended price history retention
   - Deck building and management
-- [ ] Integrate Stripe for subscription billing (monthly $3.99–4.99, annual $35–40)
-- [ ] Build subscription management UI (upgrade prompts, plan selection, billing history, cancellation)
-- [ ] Implement feature gating in API layer (backend tier checks, not frontend)
+- [x] Integrate Stripe for subscription billing ($4.99/month, $49/year — customer creation, Checkout, Billing Portal, webhooks, subscription sync)
+- [ ] Build subscription management UI (upgrade prompts across app, billing history view) — plan selection + cancellation done via `/billing` + Stripe portal
+- [ ] Implement feature gating in API layer — `SubscriptionGuard` + `@RequiresSubscription()` scaffolded but not applied to any route yet
 
 ### 3.5 Feature: Deck Building
 

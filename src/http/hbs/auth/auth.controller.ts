@@ -61,7 +61,7 @@ export class AuthController {
         }
     }
 
-    @Get('logout')
+    @Post('logout')
     async logout(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         const userId = req?.user?.id;
         this.LOGGER.log(`Logging out user ${userId ?? '""'}...`);

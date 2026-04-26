@@ -49,8 +49,8 @@ describe('Auth and Inventory (e2e)', () => {
             expect(authCookie).toBeDefined();
         });
 
-        it('GET /auth/logout clears the auth cookie', async () => {
-            const res = await request(app.getHttpServer()).get('/auth/logout').expect(302);
+        it('POST /auth/logout clears the auth cookie', async () => {
+            const res = await request(app.getHttpServer()).post('/auth/logout').expect(302);
             const cookies = res.headers['set-cookie'] || [];
             const clearCookie = (Array.isArray(cookies) ? cookies : [cookies]).find(
                 (c: string) =>

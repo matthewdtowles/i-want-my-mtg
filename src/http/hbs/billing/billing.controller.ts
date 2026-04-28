@@ -78,15 +78,11 @@ export class BillingController {
     }
 
     @Get('success')
-    @Render('billing')
+    @Render('billingSuccess')
     async success(@Req() req: AuthenticatedRequest): Promise<BillingViewDto> {
         this.LOGGER.log(`Billing success landing for user ${req.user?.id}.`);
         const view = await this.orchestrator.getBillingView(req);
-        const message = view.subscription?.isActive
-            ? 'Your subscription is active. Thanks for supporting I Want My MTG!'
-            : 'Payment received. Your subscription is being activated — this usually takes a few seconds. Refresh if it does not appear shortly.';
-        const notice: BillingNotice = { type: 'success', message };
-        return new BillingViewDto({ ...view, title: 'Subscription Active - I Want My MTG', notice });
+        return new BillingViewDto({ ...view, title: 'Welcome to Premium - I Want My MTG' });
     }
 
     @Get('canceled')

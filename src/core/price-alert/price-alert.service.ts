@@ -6,6 +6,7 @@ import {
 } from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EmailService } from 'src/core/email/email.service';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { PriceAlert } from './price-alert.entity';
 import { PriceNotification, PriceChangeDirection } from './price-notification.entity';
@@ -34,6 +35,8 @@ interface TriggeredAlert {
     changePct: number;
 }
 
+export const FREE_ALERT_LIMIT = 5;
+
 @Injectable()
 export class PriceAlertService {
     private readonly LOGGER = getLogger(PriceAlertService.name);
@@ -43,7 +46,8 @@ export class PriceAlertService {
         @Inject(PriceNotificationRepositoryPort)
         private readonly notificationRepo: PriceNotificationRepositoryPort,
         @Inject(EmailService) private readonly emailService: EmailService,
-        @Inject(UserRepositoryPort) private readonly userRepo: UserRepositoryPort
+        @Inject(UserRepositoryPort) private readonly userRepo: UserRepositoryPort,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {}
 
     async create(alert: PriceAlert): Promise<PriceAlert> {
@@ -51,6 +55,20 @@ export class PriceAlertService {
             throw new DomainValidationError(
                 'At least one threshold (increasePct or decreasePct) is required'
             );
+        }
+        const subscribed = await this.subscriptionService.isUserSubscribed(alert.userId);
+        if (!subscribed) {
+            if (alert.increasePct != null && alert.decreasePct != null) {
+                throw new DomainValidationError(
+                    'Multi-threshold alerts (increase AND decrease on the same card) are a Premium feature. Upgrade at /pricing to enable.'
+                );
+            }
+            const existingCount = await this.alertRepo.countByUser(alert.userId);
+            if (existingCount >= FREE_ALERT_LIMIT) {
+                throw new DomainValidationError(
+                    `Free plan is limited to ${FREE_ALERT_LIMIT} active price alerts. Upgrade at /pricing for unlimited alerts.`
+                );
+            }
         }
         const existing = await this.alertRepo.findByUserAndCard(alert.userId, alert.cardId);
         if (existing) {
@@ -106,6 +124,14 @@ export class PriceAlertService {
             throw new DomainValidationError(
                 'At least one threshold (increasePct or decreasePct) is required'
             );
+        }
+        if (newIncreasePct != null && newDecreasePct != null) {
+            const subscribed = await this.subscriptionService.isUserSubscribed(userId);
+            if (!subscribed) {
+                throw new DomainValidationError(
+                    'Multi-threshold alerts (increase AND decrease on the same card) are a Premium feature. Upgrade at /pricing to enable.'
+                );
+            }
         }
         const updated = new PriceAlert({
             ...existing,

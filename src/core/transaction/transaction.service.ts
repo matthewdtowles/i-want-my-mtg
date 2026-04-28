@@ -99,14 +99,18 @@ export class TransactionService {
         return this.repository.findByUser(userId);
     }
 
-    async findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]> {
+    async findByUserPaginated(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date
+    ): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
-        return this.repository.findByUserPaginated(userId, options);
+        return this.repository.findByUserPaginated(userId, options, sinceDate);
     }
 
-    async countByUser(userId: number, options: SafeQueryOptions): Promise<number> {
+    async countByUser(userId: number, options: SafeQueryOptions, sinceDate?: Date): Promise<number> {
         this.LOGGER.debug(`Counting transactions for user ${userId}.`);
-        return this.repository.countByUser(userId, options);
+        return this.repository.countByUser(userId, options, sinceDate);
     }
 
     async update(

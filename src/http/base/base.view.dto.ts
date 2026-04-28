@@ -3,7 +3,11 @@ import { Toast } from './toast';
 
 export class BaseViewDto {
     readonly authenticated: boolean = false;
-    readonly subscribed?: boolean = false;
+    /**
+     * Left undefined when the orchestrator does not set it explicitly so the
+     * SubscriptionViewInterceptor can populate it from SubscriptionService.
+     */
+    subscribed?: boolean;
     readonly breadcrumbs: Breadcrumb[] = [];
     indexable: boolean = false;
     title: string = 'I Want My MTG';
@@ -16,7 +20,7 @@ export class BaseViewDto {
 
     constructor(init: Partial<BaseViewDto>) {
         this.authenticated = init.authenticated || false;
-        this.subscribed = init.subscribed || false;
+        this.subscribed = typeof init.subscribed === 'boolean' ? init.subscribed : undefined;
         this.breadcrumbs = init.breadcrumbs || [];
         this.indexable = init.indexable || false;
         this.title = init.title || 'I Want My MTG';

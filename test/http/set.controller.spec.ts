@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { SetController } from 'src/http/hbs/set/set.controller';
 import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
@@ -40,7 +41,10 @@ describe('SetController', () => {
                     useValue: { get: jest.fn().mockReturnValue('http://localhost:3000') },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(SubscriptionGuard)
+            .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+            .compile();
 
         controller = module.get(SetController);
         orchestrator = module.get(SetOrchestrator) as jest.Mocked<SetOrchestrator>;

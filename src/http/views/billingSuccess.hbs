@@ -1,0 +1,46 @@
+<div class="settings-container">
+    <section class="rounded-lg border border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50 via-teal-50 to-purple-50 dark:from-midnight-900 dark:via-purple-950 dark:to-midnight-900 p-8 text-center">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-500 text-midnight-950 mb-4 shadow-glow-teal">
+            <i class="fas fa-star text-2xl" aria-hidden="true"></i>
+        </div>
+        <h1 class="page-title">Welcome to Premium!</h1>
+
+        {{#if subscription.isActive}}
+        <p class="text-gray-700 dark:text-gray-300 max-w-xl mx-auto mt-2">
+            Your subscription is active{{#if subscription.currentPeriodEnd}} and renews on <strong>{{subscription.currentPeriodEnd}}</strong>{{/if}}. Thanks for supporting I Want My MTG &mdash; here's what just unlocked:
+        </p>
+        {{else}}
+        <p class="text-gray-700 dark:text-gray-300 max-w-xl mx-auto mt-2">
+            Payment received. Your subscription is activating &mdash; this usually takes a few seconds. Refresh if anything doesn't appear shortly.
+        </p>
+        {{/if}}
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 max-w-3xl mx-auto text-left">
+            <a href="/portfolio/breakdown" class="block p-4 rounded border border-teal-300 dark:border-teal-700 bg-white/60 dark:bg-midnight-900/40 hover:shadow-glow-teal transition-shadow">
+                <div class="text-sm font-semibold text-teal-700 dark:text-teal-300 mb-1">
+                    <i class="fas fa-chart-pie mr-1" aria-hidden="true"></i>Advanced Analytics
+                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Break down your collection by set, rarity, and type.</div>
+            </a>
+            <a href="/portfolio" class="block p-4 rounded border border-teal-300 dark:border-teal-700 bg-white/60 dark:bg-midnight-900/40 hover:shadow-glow-teal transition-shadow">
+                <div class="text-sm font-semibold text-teal-700 dark:text-teal-300 mb-1">
+                    <i class="fas fa-chart-line mr-1" aria-hidden="true"></i>P&amp;L &amp; History
+                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Unrealized gains, realized profit, and full value history.</div>
+            </a>
+            <a href="/price-alerts" class="block p-4 rounded border border-teal-300 dark:border-teal-700 bg-white/60 dark:bg-midnight-900/40 hover:shadow-glow-teal transition-shadow">
+                <div class="text-sm font-semibold text-teal-700 dark:text-teal-300 mb-1">
+                    <i class="fas fa-bell mr-1" aria-hidden="true"></i>Unlimited Alerts
+                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">No 5-alert cap and multi-threshold triggers per card.</div>
+            </a>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-2 mt-6">
+            <a href="/portfolio/breakdown" class="btn btn-primary text-sm px-4 py-2">
+                <i class="fas fa-chart-pie text-xs mr-1" aria-hidden="true"></i>Try Advanced Analytics
+            </a>
+            <a href="/billing" class="btn btn-secondary text-sm px-4 py-2">Manage Subscription</a>
+        </div>
+    </section>
+</div>

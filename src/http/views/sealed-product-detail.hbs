@@ -74,6 +74,7 @@
                 {{#if authenticated}}
                 <section class="inventory-info">
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Collection</h3>
+                    {{#if subscribed}}
                     <div class="sealed-inv-stepper" data-sealed-uuid="{{product.uuid}}">
                         <div class="inv-stepper">
                             <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
@@ -87,6 +88,12 @@
                             </button>
                         </div>
                     </div>
+                    {{else}}
+                    <a href="/pricing" class="inline-flex items-center gap-2 text-sm bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold px-3 py-1.5 rounded shadow-sm">
+                        <i class="fas fa-star text-xs" aria-hidden="true"></i>Add to inventory (Premium)
+                    </a>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sealed product tracking is a Premium feature.</p>
+                    {{/if}}
                 </section>
                 {{/if}}
 

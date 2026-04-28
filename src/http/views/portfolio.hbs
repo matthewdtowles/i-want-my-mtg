@@ -12,12 +12,30 @@
                     <span class="stat-label">Total Invested{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Cost basis calculated using FIFO (first-in, first-out) - the standard method for tracking real gains. Sells are matched against your oldest buys first."}}{{else}}{{>costBasisTooltip title="Average Cost Basis" description="By default, the portfolio snapshot uses average cost basis (total spent ÷ units held). Click Recalculate below for precise FIFO cost basis, which matches sells against your oldest buys first - the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value">{{this.summary.totalCost}}</span>
                 </div>
+                {{#if subscribed}}
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Unrealized P&L{{#if this.summary.isFifo}}{{>costBasisTooltip title="FIFO Cost Basis" description="Unrealized P&L calculated using FIFO (first-in, first-out) lot matching for accurate per-unit cost tracking."}}{{else}}{{>costBasisTooltip title="Based on Average Cost" description="Unrealized P&L uses average cost basis. Click Recalculate below for precise FIFO-based P&L, which is the standard method for tracking real gains."}}{{/if}}</span>
                     <span class="stat-value gain-{{this.summary.totalGainSign}}">{{this.summary.totalGain}}</span>
                 </div>
                 {{>statCard label="ROI" value=this.summary.roi highlight=true valueClass=(concat "gain-" this.summary.roiSign) metricHint="Return on investment - your total gain as a percentage of what you have invested."}}
                 {{>statCard label="Realized Gains" value=this.summary.realizedGain highlight=true valueClass=(concat "gain-" this.summary.realizedGainSign) metricHint="Profit or loss from cards you have already sold, calculated using FIFO lot matching."}}
+                {{else}}
+                <a href="/pricing" class="stat-card stat-card-highlight stat-card--locked group" title="Premium feature - upgrade to view P&L">
+                    <span class="stat-label">Unrealized P&L <i class="fas fa-lock text-amber-500 text-xs ml-1" aria-hidden="true"></i></span>
+                    <span class="stat-value text-gray-400 dark:text-gray-500 select-none">$•••</span>
+                    <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Premium</span>
+                </a>
+                <a href="/pricing" class="stat-card stat-card-highlight stat-card--locked group" title="Premium feature - upgrade to view ROI">
+                    <span class="stat-label">ROI <i class="fas fa-lock text-amber-500 text-xs ml-1" aria-hidden="true"></i></span>
+                    <span class="stat-value text-gray-400 dark:text-gray-500 select-none">•••%</span>
+                    <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Premium</span>
+                </a>
+                <a href="/pricing" class="stat-card stat-card-highlight stat-card--locked group" title="Premium feature - upgrade to view realized gains">
+                    <span class="stat-label">Realized Gains <i class="fas fa-lock text-amber-500 text-xs ml-1" aria-hidden="true"></i></span>
+                    <span class="stat-value text-gray-400 dark:text-gray-500 select-none">$•••</span>
+                    <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Premium</span>
+                </a>
+                {{/if}}
                 {{>statCard label="Cards / Units" value=(concat this.summary.totalCards " / " this.summary.totalQuantity) highlight=true metricHint="Total unique cards in your inventory, and total number of individual copies held."}}
             </div>
 
@@ -64,6 +82,7 @@
 
     {{#if hasHistory}}
     <div class="content-wrapper px-4 pb-6">
+        {{#if subscribed}}
         <div id="portfolio-chart-container">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Value History</h4>
@@ -79,6 +98,9 @@
                 <canvas id="portfolio-canvas"></canvas>
             </div>
         </div>
+        {{else}}
+        {{>upgradeTile heading="Value History Chart" description="Track how your collection's value changes over time. Premium unlocks the full history chart with weekly, monthly, and yearly views." cta="Upgrade to Premium"}}
+        {{/if}}
     </div>
     {{/if}}
 
@@ -163,6 +185,7 @@
     </div>
     {{/if}}
 
+    {{#if subscribed}}
     <div class="content-wrapper px-4 pb-6">
         <div id="cashflow-chart-container">
             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
@@ -173,6 +196,7 @@
             </div>
         </div>
     </div>
+    {{/if}}
 
     {{#if worstPerformers.length}}
     <div class="content-wrapper px-4 pb-6">
@@ -218,11 +242,13 @@
     {{/if}}
 </section>
 
+<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
+{{#if subscribed}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-<script src="/public/js/tooltipManager.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/portfolioChart.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/cashFlowChart.js?v={{assetVersion}}" defer></script>
+{{/if}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new TooltipManager({
@@ -265,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Portfolio value over time</p>
     </section>
     <div class="content-wrapper px-4 pb-6">
+        {{#if subscribed}}
         <div id="portfolio-chart-container">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Value History</h4>
@@ -280,12 +307,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <canvas id="portfolio-canvas"></canvas>
             </div>
         </div>
+        {{else}}
+        {{>upgradeTile heading="Value History Chart" description="Track how your collection's value changes over time. Premium unlocks the full history chart with weekly, monthly, and yearly views." cta="Upgrade to Premium"}}
+        {{/if}}
     </div>
 </section>
 
+{{#if subscribed}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
 <script src="/public/js/portfolioChart.js?v={{assetVersion}}" defer></script>
+{{/if}}
 {{else}}
 <section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
     {{>emptyState icon="chart-line" iconSize="text-5xl" iconColor="text-teal-300 dark:text-teal-600" padX=true heading="No portfolio history yet" hint="Portfolio value snapshots are taken daily. Add cards to your inventory and check back after the next data refresh." hintWide=true buttonHref="/inventory" buttonText="Go to Inventory" buttonClass="btn-primary"}}

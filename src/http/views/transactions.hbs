@@ -32,6 +32,13 @@
         </form>
     </section>
     <div id="transaction-list-ajax" class="content-wrapper">
+        {{#if freeHistoryCutoff}}
+        <div class="mx-2 my-2 rounded border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20 px-3 py-2 text-sm text-amber-900 dark:text-amber-200 flex items-center gap-2 flex-wrap">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            <span>Showing the last {{freeHistoryCutoff}} days. Older transactions are saved on your account.</span>
+            <a href="/pricing" class="font-semibold underline ml-auto">Upgrade for full history</a>
+        </div>
+        {{/if}}
         <div class="flex items-center gap-2">
             <div class="flex-1">{{>filter}}</div>
         </div>

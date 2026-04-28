@@ -444,7 +444,7 @@
 
 Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card cap (widely criticized), ManaBox $2.49/mo gating decks not inventory, Deckbox $3.99/mo with QoL-only premium, Moxfield/Archidekt mostly free. Hard caps convert poorly and damage word-of-mouth. IWMM positions closer to Moxfield/Deckbox: free tier is fully usable forever; premium unlocks depth (analytics, history, external integrations, scanning) - the things serious collectors care about.
 
-**Pricing change:** drop from $4.99/mo, $49/yr to **$3.99/mo, $39.99/yr** (matches Deckbox annual; annual saves ~2 months vs monthly). No existing paid subs as of the change, so no Stripe migration needed - update Stripe Prices and `STRIPE_PRICE_*` env vars.
+**Pricing change:** drop from $3.99/mo, $49/yr to **$3.99/mo, $39.99/yr** (matches Deckbox annual; annual saves ~2 months vs monthly). No existing paid subs as of the change, so no Stripe migration needed - update Stripe Prices and `STRIPE_PRICE_*` env vars.
 
 **Free tier (no creation limits, fully usable forever):**
 - Browse all sets and cards
@@ -484,27 +484,28 @@ API rate limits remain 100/day for free and premium alike - all API monetization
 
 The advanced analytics page is gated end-to-end as the architectural pattern. Each item below applies the same pattern (inject `SubscriptionService`, branch on `isUserSubscribed`, show preserved-data + upgrade CTA for free users) to existing routes. Each is a small but careful UX change to a feature free users currently use unrestricted - tackle one at a time, not as a batch.
 
-- [ ] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $4.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
-- [ ] Transaction list view: cap query to last 30 days for free users, show "Upgrade for full history" inline tip on the transactions page
-- [ ] Portfolio history chart: replace with upgrade tile for free users (current snapshot still shown)
-- [ ] Portfolio P&L stat cards (`Unrealized P&L`, `Realized Gains`, `ROI`): blur or hide values for free users with "Premium" badge + tooltip
-- [ ] Cash flow chart endpoint: 403 for free users; portfolio page hides the section
-- [ ] Sealed product inventory routes (`/api/v1/inventory/sealed` POST/PATCH/DELETE; `/sealed-products/:uuid` add-to-inventory): 403 for free users; sealed product detail page shows "Add to inventory (Premium)" CTA instead of stepper
-- [ ] Set completion tracking: hide completion-rate badges and the per-set "X/Y owned" indicator for free users (or show only `?/Y` with upgrade tooltip)
-- [ ] Price history charts: truncate to 30 days for free users in the API response; UI shows "Last 30 days - upgrade for full history"
-- [ ] Set price history page/widget: 403 for free users
-- [ ] Alert creation: enforce 5-alert max in `PriceAlertService.create()`; reject with `DomainValidationError` linking to `/pricing`
-- [ ] Multi-threshold alert creation: reject second-direction threshold for free users
-- [ ] AJAX module 402/403 handler in `ajaxUtils.js` that catches premium-required errors and shows upgrade modal pointing to `/pricing`
-- [ ] Premium badge in `navbar.hbs` for paying users (read `subscribed` from view DTO)
-- [ ] Post-checkout success state on `/billing/success`: replace generic message with celebratory state + "Try advanced analytics" deep link
+- [ ] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $3.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
+- [x] Transaction list view: cap query to last 30 days for free users, show "Upgrade for full history" inline tip on the transactions page (HBS + API both apply `freeTierHistoryCutoff()`; tip shown via `freeHistoryCutoff` flag on `TransactionViewDto`)
+- [x] Portfolio history chart: replace with upgrade tile for free users (current snapshot still shown); `GET /portfolio/history` 403s via `SubscriptionGuard`
+- [x] Portfolio P&L stat cards (`Unrealized P&L`, `Realized Gains`, `ROI`): replaced with locked Premium tiles linking to `/pricing` for free users; Current Value, Total Invested, Cards/Units stay visible
+- [x] Cash flow chart endpoint: 403 via `SubscriptionGuard`; portfolio page hides the section for free users
+- [x] Reusable `upgradeTile.hbs` partial introduced for premium-gated UI tiles
+- [x] Sealed product inventory routes (`/api/v1/inventory/sealed` POST/PATCH/DELETE; `/sealed-products/:uuid` add-to-inventory): 403 for free users via `SubscriptionGuard` + `@RequiresSubscription()`; sealed product detail page and set sealed-list show "Premium" CTA → `/pricing` instead of stepper for non-subscribers
+- [x] Set completion tracking: completion-rate badges replaced with "Premium" lock for free users (HBS partial via `@root.subscribed`; AJAX-rendered set list via `data-subscribed` body attr); per-set "?/Y owned" tooltip on set + binder pages links to `/pricing`
+- [x] Price history charts: API truncates to 30 days for free users (clamped via `OptionalAuthGuard` + `SubscriptionService` in `CardApiController`); card detail page hides 1y / All buttons and shows "Last 30 days" hint with upgrade link
+- [x] Set price history page/widget: `GET /sets/:code/price-history` 403s via `SubscriptionGuard`; set page replaces the chart with `upgradeTile` for free users
+- [x] Alert creation: enforce 5-alert max in `PriceAlertService.create()`; reject with `DomainValidationError` linking to `/pricing`
+- [x] Multi-threshold alert creation: reject second-direction threshold for free users (enforced in both `create()` and `update()`)
+- [x] AJAX module 402/403 handler in `ajaxUtils.js` (`handleGatedResponse` / `fetchWithGate`) that catches premium-required errors and toasts an upgrade prompt linking to `/pricing` (wired into sealed inventory; opt-in for other modules as they are gated)
+- [x] Premium badge in `navbar.hbs` for paying users (read `subscribed` from view DTO; non-subscribers see Upgrade CTA → `/pricing`)
+- [x] Post-checkout success state on `/billing/success`: dedicated `billingSuccess.hbs` view with celebratory hero, three feature cards, and "Try Advanced Analytics" deep link to `/portfolio/breakdown`
 - [ ] Billing history view (invoices/payments) - currently delegated entirely to Stripe Billing Portal
-- [ ] On signup, show a one-time "Here's what Premium unlocks" interstitial linking to `/pricing` (skippable)
+- [x] On signup, show a "Here's what Premium unlocks" section in the welcome banner linking to `/pricing` (auto-shown via `?welcome=true`; banner is one-time per landing on `/user`)
 - [ ] Onboarding email at ~7 days: highlight one Premium feature relevant to user's actual usage
 
 #### Advanced analytics - shipped, follow-up backlog
 
-- [ ] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users) - currently HBS-only
+- [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
 - [ ] Add `by=color` dimension once we ingest card colors (requires Scry schema change to populate `card.colors` from MTGJSON `colorIdentity`)
 - [ ] Add `by=format` dimension - join through `legality` table, count cards legal in each format
 - [ ] Add cost-basis dimension: which slices have unrealized gain vs loss (requires joining `portfolio_card_performance`)
@@ -531,7 +532,7 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 
 ### 4.1 API Monetization & Tiering
 
-- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–49.99/mo: 50,000 req/day + bulk endpoints)
+- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–39.99/mo: 50,000 req/day + bulk endpoints)
 - [ ] Implement API key management (generate, revoke, view usage)
 - [ ] Extend rate limiting to enforce per-tier limits with clear error messages and upgrade prompts
 - [ ] Integrate Stripe for API subscriptions (separate from consumer subscription, or bundled)

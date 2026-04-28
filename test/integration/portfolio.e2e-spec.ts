@@ -11,6 +11,17 @@ describe('Portfolio (e2e)', () => {
         app = await createTestApp();
         authCookie = await loginTestUser(app);
 
+        // history/cash-flow are Premium-only after 3.4 freemium gating; seed an active sub for the
+        // integ user. The free-403 case is covered in freemium-gates.e2e-spec.ts.
+        const ds = app.get(DataSource);
+        await ds.query('DELETE FROM subscription WHERE user_id = 1');
+        await ds.query(
+            `INSERT INTO subscription (user_id, stripe_customer_id, stripe_subscription_id,
+                stripe_price_id, status, plan, current_period_end, cancel_at_period_end)
+             VALUES (1, 'cus_test_p_1', 'sub_test_p_1', 'price_test_monthly', 'active', 'monthly',
+                NOW() + INTERVAL '30 days', false)`
+        );
+
         // Seed transactions for portfolio computation (skip inventory sync to avoid cleanup issues)
         const today = new Date();
         const lots = [

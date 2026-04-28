@@ -15,6 +15,8 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RequiresSubscription } from 'src/core/billing/requires-subscription.decorator';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-inventory.entity';
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -131,11 +133,13 @@ export class SealedProductApiController {
     }
 
     @Post('inventory/sealed')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Add sealed product to inventory' })
+    @ApiOperation({ summary: 'Add sealed product to inventory (Premium)' })
     @ApiResponse({ status: 201, description: 'Item added' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async addToInventory(
         @Body() dto: SealedInventoryRequestDto,
         @Req() req: AuthenticatedRequest
@@ -152,10 +156,12 @@ export class SealedProductApiController {
     }
 
     @Patch('inventory/sealed')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Update sealed product inventory quantity' })
+    @ApiOperation({ summary: 'Update sealed product inventory quantity (Premium)' })
     @ApiResponse({ status: 200, description: 'Item updated' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async updateInventory(
         @Body() dto: SealedInventoryRequestDto,
         @Req() req: AuthenticatedRequest
@@ -172,10 +178,12 @@ export class SealedProductApiController {
     }
 
     @Delete('inventory/sealed')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Remove sealed product from inventory' })
+    @ApiOperation({ summary: 'Remove sealed product from inventory (Premium)' })
     @ApiResponse({ status: 200, description: 'Item removed' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async removeFromInventory(
         @Body() body: SealedInventoryDeleteRequestDto,
         @Req() req: AuthenticatedRequest

@@ -791,7 +791,21 @@ var AjaxUtils = (function () {
      * @param {number} rate - Completion percentage
      * @returns {string} HTML string
      */
+    function isSubscribed() {
+        var body = document.body;
+        return !!(body && body.getAttribute && body.getAttribute('data-subscribed') === 'true');
+    }
+
     function renderCompletionBar(rate) {
+        if (!isSubscribed()) {
+            return (
+                '<a href="/pricing" class="completion-bar-container flex items-center relative opacity-70 hover:opacity-100 transition-opacity" title="Set completion tracking is a Premium feature">' +
+                '<span class="w-full text-center z-10 font-bold relative text-amber-600 dark:text-amber-400">' +
+                '<i class="fas fa-lock text-xs mr-1" aria-hidden="true"></i>Premium' +
+                '</span>' +
+                '</a>'
+            );
+        }
         return (
             '<div class="completion-bar-container flex items-center relative">' +
             '<div class="completion-bar absolute top-0 left-0 h-full" style="width: ' +
@@ -1109,6 +1123,42 @@ var AjaxUtils = (function () {
         }, 100);
     }
 
+    /**
+     * Returns true if the response is a premium-gated 402/403 and a toast
+     * pointing to /pricing was shown. Callers should treat this as a handled
+     * error and short-circuit their own error UI.
+     */
+    function handleGatedResponse(response, body) {
+        if (!response || (response.status !== 402 && response.status !== 403)) {
+            return false;
+        }
+        var message = '';
+        if (body && (body.error || body.message)) {
+            message = String(body.error || body.message);
+        }
+        var looksPremium = /premium|subscription|upgrade/i.test(message);
+        if (response.status !== 402 && !looksPremium) return false;
+        var toastMsg = message || 'This feature requires a Premium subscription.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(toastMsg + ' Visit /pricing to upgrade.', 'warning');
+        }
+        return true;
+    }
+
+    /**
+     * Convenience wrapper around fetch that detects premium-gated responses
+     * and returns { ok, gated, status, body }. `body` is the parsed JSON when
+     * the response had a JSON content-type.
+     */
+    function fetchWithGate(url, options) {
+        return fetch(url, options).then(function (res) {
+            return res.json().catch(function () { return null; }).then(function (body) {
+                var gated = handleGatedResponse(res, body);
+                return { ok: res.ok, gated: gated, status: res.status, body: body };
+            });
+        });
+    }
+
     return {
         announce: announce,
         smoothScroll: smoothScroll,
@@ -1142,9 +1192,12 @@ var AjaxUtils = (function () {
         renderEmptyState: renderEmptyState,
         renderPriceChange: renderPriceChange,
         renderCompletionBar: renderCompletionBar,
+        isSubscribed: isSubscribed,
         setupViewToggleInterceptor: setupViewToggleInterceptor,
         updateViewToggle: updateViewToggle,
         mergeState: mergeState,
         initListPage: initListPage,
+        handleGatedResponse: handleGatedResponse,
+        fetchWithGate: fetchWithGate,
     };
 })();

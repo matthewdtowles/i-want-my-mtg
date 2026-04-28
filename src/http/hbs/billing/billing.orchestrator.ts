@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SubscriptionPlan } from 'src/core/billing/subscription-plan.enum';
 import { Subscription } from 'src/core/billing/subscription.entity';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
@@ -18,30 +17,19 @@ export class BillingOrchestrator {
 
     constructor(
         @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService,
-        @Inject(UserService) private readonly userService: UserService,
-        private readonly configService: ConfigService
+        @Inject(UserService) private readonly userService: UserService
     ) {}
 
     async getBillingView(req: AuthenticatedRequest): Promise<BillingViewDto> {
         const subscription = await this.subscriptionService.getSubscriptionForUser(req.user.id);
+        const summary = this.toSummary(subscription);
         return new BillingViewDto({
             authenticated: req.isAuthenticated(),
+            subscribed: !!summary?.isActive,
             breadcrumbs: this.breadCrumbs,
             indexable: false,
             title: 'Subscription - I Want My MTG',
-            subscription: this.toSummary(subscription),
-            pricing: {
-                monthly: {
-                    amount:
-                        this.configService.get<string>('STRIPE_DISPLAY_PRICE_MONTHLY') || '$4.99',
-                    label: 'per month',
-                },
-                annual: {
-                    amount:
-                        this.configService.get<string>('STRIPE_DISPLAY_PRICE_ANNUAL') || '$49.99',
-                    label: 'per year',
-                },
-            },
+            subscription: summary,
         });
     }
 

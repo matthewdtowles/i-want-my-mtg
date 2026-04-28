@@ -55,6 +55,7 @@ export class PortfolioOrchestrator {
         this.LOGGER.debug(`Get portfolio view for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
             const history = await this.portfolioService.getHistory(req.user.id);
 
             let summaryViewData: PortfolioSummaryViewData | undefined;
@@ -114,6 +115,7 @@ export class PortfolioOrchestrator {
 
             return new PortfolioViewDto({
                 authenticated: req.isAuthenticated(),
+                subscribed,
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Portfolio', url: '/portfolio' },

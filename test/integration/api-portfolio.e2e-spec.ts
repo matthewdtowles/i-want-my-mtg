@@ -17,6 +17,17 @@ describe('Portfolio API (e2e)', () => {
         app = await createTestApp();
         bearerToken = await loginTestUserApi(app);
 
+        // Premium-only endpoints (history, cash-flow, breakdown) require an active
+        // subscription. Seed one for the integ user; cleaned up in afterAll.
+        const ds = app.get(DataSource);
+        await ds.query('DELETE FROM subscription WHERE user_id = 1');
+        await ds.query(
+            `INSERT INTO subscription (user_id, stripe_customer_id, stripe_subscription_id,
+                stripe_price_id, status, plan, current_period_end, cancel_at_period_end)
+             VALUES (1, 'cus_test_1', 'sub_test_1', 'price_test_monthly', 'active', 'monthly',
+                NOW() + INTERVAL '30 days', false)`
+        );
+
         // Seed transactions and inventory for portfolio computation
         const today = new Date();
         const lots = [
@@ -62,6 +73,7 @@ describe('Portfolio API (e2e)', () => {
                 await ds.query(`DELETE FROM portfolio_card_performance WHERE user_id = 1`);
                 await ds.query(`DELETE FROM portfolio_summary WHERE user_id = 1`);
                 await ds.query(`DELETE FROM portfolio_value_history WHERE user_id = 1`);
+                await ds.query(`DELETE FROM subscription WHERE user_id = 1`);
             }
         } catch {
             // best-effort cleanup

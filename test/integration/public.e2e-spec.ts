@@ -42,13 +42,14 @@ describe('Public endpoints (e2e)', () => {
             return request(app.getHttpServer()).get(`/sets/${TEST_SET_CODE}`).expect(200);
         });
 
-        it('GET /sets/:code/price-history returns JSON', async () => {
-            const res = await request(app.getHttpServer())
-                .get(`/sets/${TEST_SET_CODE}/price-history`)
-                .expect(200);
-            expect(res.body).toHaveProperty('setCode', TEST_SET_CODE);
-            expect(res.body).toHaveProperty('prices');
-            expect(res.body.prices.length).toBeGreaterThan(0);
+        it('GET /sets/:code/price-history rejects unauthenticated requests (Premium-only)', async () => {
+            // Endpoint moved behind JwtAuthGuard + SubscriptionGuard for the freemium gating in 3.4.
+            // Unauthed requests are redirected to login (302) or rejected (401) by JwtAuthGuard;
+            // the subscribed-success and free-403 paths are covered in freemium-gates.e2e-spec.ts.
+            const res = await request(app.getHttpServer()).get(
+                `/sets/${TEST_SET_CODE}/price-history`
+            );
+            expect([302, 401]).toContain(res.status);
         });
 
         it('GET /sets/:code/checklist returns CSV', async () => {

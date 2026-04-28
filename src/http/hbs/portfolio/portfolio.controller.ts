@@ -1,4 +1,6 @@
 import { Controller, Get, Inject, Post, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { RequiresSubscription } from 'src/core/billing/requires-subscription.decorator';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
 import { BreakdownDimension } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { CashFlowPeriod } from 'src/core/transaction/ports/transaction.repository.port';
@@ -28,7 +30,8 @@ export class PortfolioController {
         return this.orchestrator.getPortfolioView(req);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @Get('history')
     async getHistory(
         @Req() req: AuthenticatedRequest,
@@ -59,7 +62,8 @@ export class PortfolioController {
         return this.orchestrator.getBreakdownView(req, dimension);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @Get('cash-flow')
     async getCashFlow(@Req() req: AuthenticatedRequest): Promise<{ cashFlow: CashFlowPeriod[] }> {
         this.LOGGER.log(`Get cash flow for user ${req.user?.id}.`);

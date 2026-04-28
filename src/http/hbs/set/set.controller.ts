@@ -15,6 +15,8 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RequiresSubscription } from 'src/core/billing/requires-subscription.decorator';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
@@ -78,6 +80,8 @@ export class SetController {
         return { url: `/sets/${code}`, statusCode: HttpStatus.FOUND };
     }
 
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @Get(':code/price-history')
     async getPriceHistory(
         @Param('code') code: string,

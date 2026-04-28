@@ -77,7 +77,12 @@
                 <li class='card-feature'>{{>pricingCheck}}Card image scanning</li>
                 <li class='card-feature'>{{>pricingCheck}}Priority support &amp; early access</li>
             </ul>
-            {{#if authenticated}}
+            {{#if subscribed}}
+                <a href='/billing' class='pricing-btn pricing-btn-cta'>
+                    <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                    Manage subscription
+                </a>
+            {{else if authenticated}}
                 <form method='POST' action='/billing/checkout' class='pricing-form'>
                     <input type='hidden' name='plan' value='monthly' data-period-input />
                     <button type='submit' class='pricing-btn pricing-btn-cta'>
@@ -195,7 +200,13 @@
         <h2>Ready to level up?</h2>
         <p>Join collectors who use I Want My MTG to track every card, every trade, every dollar.</p>
         <div class='pricing-bottom-cta-btns'>
-            {{#if authenticated}}
+            {{#if subscribed}}
+                <a href='/inventory' class='pricing-btn pricing-btn-ghost'>Back to my collection</a>
+                <a href='/billing' class='pricing-btn pricing-btn-cta'>
+                    <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                    Manage subscription
+                </a>
+            {{else if authenticated}}
                 <a href='/inventory' class='pricing-btn pricing-btn-ghost'>Back to my collection</a>
                 <form method='POST' action='/billing/checkout' class='pricing-form'>
                     <input type='hidden' name='plan' value='monthly' data-period-input />

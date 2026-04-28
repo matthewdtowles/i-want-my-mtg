@@ -5,7 +5,8 @@ import {
     PriceAlertRepositoryPort,
 } from 'src/core/price-alert/ports/price-alert.repository.port';
 import { PriceNotificationRepositoryPort } from 'src/core/price-alert/ports/price-notification.repository.port';
-import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
+import { FREE_ALERT_LIMIT, PriceAlertService } from 'src/core/price-alert/price-alert.service';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { EmailService } from 'src/core/email/email.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { User } from 'src/core/user/user.entity';
@@ -53,6 +54,10 @@ describe('PriceAlertService', () => {
         delete: jest.fn(),
     };
 
+    const mockSubscriptionService = {
+        isUserSubscribed: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -61,6 +66,7 @@ describe('PriceAlertService', () => {
                 { provide: PriceNotificationRepositoryPort, useValue: mockNotificationRepo },
                 { provide: EmailService, useValue: mockEmailService },
                 { provide: UserRepositoryPort, useValue: mockUserRepo },
+                { provide: SubscriptionService, useValue: mockSubscriptionService },
             ],
         }).compile();
 
@@ -75,6 +81,8 @@ describe('PriceAlertService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // default to subscribed so existing tests aren't gated; gate-specific tests override
+        mockSubscriptionService.isUserSubscribed.mockResolvedValue(true);
     });
 
     describe('create', () => {
@@ -102,6 +110,47 @@ describe('PriceAlertService', () => {
             alertRepo.findByUserAndCard.mockResolvedValue(null);
             const alert = new PriceAlert({ userId: 1, cardId: 'card-1' });
             await expect(service.create(alert)).rejects.toThrow();
+        });
+
+        it('should reject multi-threshold alert for free user', async () => {
+            mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
+            const alert = new PriceAlert({
+                userId: 1,
+                cardId: 'card-1',
+                increasePct: 10,
+                decreasePct: 10,
+            });
+            await expect(service.create(alert)).rejects.toThrow(/Premium/);
+        });
+
+        it('should allow multi-threshold alert for subscribed user', async () => {
+            mockSubscriptionService.isUserSubscribed.mockResolvedValue(true);
+            alertRepo.findByUserAndCard.mockResolvedValue(null);
+            alertRepo.create.mockImplementation(async (a) => new PriceAlert({ ...a, id: 1 }));
+            const alert = new PriceAlert({
+                userId: 1,
+                cardId: 'card-1',
+                increasePct: 10,
+                decreasePct: 10,
+            });
+            await expect(service.create(alert)).resolves.toBeDefined();
+        });
+
+        it(`should reject creation when free user is at the ${FREE_ALERT_LIMIT}-alert limit`, async () => {
+            mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
+            alertRepo.countByUser.mockResolvedValue(FREE_ALERT_LIMIT);
+            const alert = new PriceAlert({ userId: 1, cardId: 'card-1', increasePct: 10 });
+            await expect(service.create(alert)).rejects.toThrow(/Free plan is limited/);
+            expect(alertRepo.create).not.toHaveBeenCalled();
+        });
+
+        it('should not enforce alert limit for subscribed user', async () => {
+            mockSubscriptionService.isUserSubscribed.mockResolvedValue(true);
+            alertRepo.countByUser.mockResolvedValue(999);
+            alertRepo.findByUserAndCard.mockResolvedValue(null);
+            alertRepo.create.mockImplementation(async (a) => new PriceAlert({ ...a, id: 1 }));
+            const alert = new PriceAlert({ userId: 1, cardId: 'card-1', increasePct: 10 });
+            await expect(service.create(alert)).resolves.toBeDefined();
         });
     });
 
@@ -150,6 +199,15 @@ describe('PriceAlertService', () => {
             await expect(
                 service.update(1, 1, { increasePct: null })
             ).rejects.toThrow('At least one threshold');
+        });
+
+        it('should reject adding a second threshold direction for free user', async () => {
+            mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
+            const existing = new PriceAlert({ id: 1, userId: 1, cardId: 'card-1', increasePct: 10 });
+            alertRepo.findById.mockResolvedValue(existing);
+            await expect(
+                service.update(1, 1, { decreasePct: 10 })
+            ).rejects.toThrow(/Premium/);
         });
     });
 

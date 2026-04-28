@@ -119,12 +119,19 @@ export class TransactionRepository implements TransactionRepositoryPort {
         this.LOGGER.debug(`Deleted transaction ${id}.`);
     }
 
-    async findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]> {
+    async findByUserPaginated(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date
+    ): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
         const qb = this.repository
             .createQueryBuilder('transaction')
             .leftJoinAndSelect('transaction.card', 'transaction_card')
             .where('transaction.userId = :userId', { userId });
+        if (sinceDate) {
+            qb.andWhere('transaction.date >= :sinceDate', { sinceDate });
+        }
         this.queryHelper.applyOptions(qb, options);
         const results = await qb.getMany();
         return results.map((orm) => {
@@ -139,12 +146,19 @@ export class TransactionRepository implements TransactionRepositoryPort {
         });
     }
 
-    async countByUser(userId: number, options: SafeQueryOptions): Promise<number> {
+    async countByUser(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date
+    ): Promise<number> {
         this.LOGGER.debug(`Counting transactions for user ${userId}.`);
         const qb = this.repository
             .createQueryBuilder('transaction')
             .leftJoin('transaction.card', 'transaction_card')
             .where('transaction.userId = :userId', { userId });
+        if (sinceDate) {
+            qb.andWhere('transaction.date >= :sinceDate', { sinceDate });
+        }
         this.queryHelper.applyFilters(qb, options.filter);
         return qb.getCount();
     }

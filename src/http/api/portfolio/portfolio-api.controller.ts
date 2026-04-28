@@ -12,7 +12,14 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RequiresSubscription } from 'src/core/billing/requires-subscription.decorator';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { CardService } from 'src/core/card/card.service';
+import {
+    BreakdownDimension,
+    PortfolioBreakdown,
+} from 'src/core/portfolio/portfolio-breakdown.entity';
+import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -37,6 +44,8 @@ export class PortfolioApiController {
     constructor(
         @Inject(PortfolioService) private readonly portfolioService: PortfolioService,
         @Inject(PortfolioSummaryService) private readonly summaryService: PortfolioSummaryService,
+        @Inject(PortfolioBreakdownService)
+        private readonly breakdownService: PortfolioBreakdownService,
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(TransactionService) private readonly transactionService: TransactionService
     ) {}
@@ -62,7 +71,10 @@ export class PortfolioApiController {
     }
 
     @Get('history')
-    @ApiOperation({ summary: 'Get portfolio value history' })
+    @UseGuards(SubscriptionGuard)
+    @RequiresSubscription()
+    @ApiOperation({ summary: 'Get portfolio value history (Premium)' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Value history data' })
     async getHistory(
@@ -137,8 +149,11 @@ export class PortfolioApiController {
     }
 
     @Get('cash-flow')
-    @ApiOperation({ summary: 'Get cash flow periods' })
+    @UseGuards(SubscriptionGuard)
+    @RequiresSubscription()
+    @ApiOperation({ summary: 'Get cash flow periods (Premium)' })
     @ApiResponse({ status: 200, description: 'Cash flow data' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async getCashFlow(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<CashFlowPeriodApiDto[]>> {
@@ -155,5 +170,27 @@ export class PortfolioApiController {
         const summary = await this.summaryService.getSummary(req.user.id);
         const totalRealizedGain = summary?.totalRealizedGain ?? 0;
         return ApiResponseDto.ok({ totalRealizedGain });
+    }
+
+    @Get('breakdown')
+    @UseGuards(SubscriptionGuard)
+    @RequiresSubscription()
+    @ApiOperation({ summary: 'Get portfolio value breakdown by dimension (Premium)' })
+    @ApiQuery({
+        name: 'by',
+        required: false,
+        description: 'Dimension to group by (set, rarity, type)',
+    })
+    @ApiResponse({ status: 200, description: 'Breakdown slices and totals' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
+    async getBreakdown(
+        @Req() req: AuthenticatedRequest,
+        @Query('by') by?: string
+    ): Promise<ApiResponseDto<PortfolioBreakdown>> {
+        const dimension: BreakdownDimension = PortfolioBreakdownService.isDimension(by)
+            ? by
+            : 'set';
+        const breakdown = await this.breakdownService.getBreakdown(req.user.id, dimension);
+        return ApiResponseDto.ok(breakdown);
     }
 }

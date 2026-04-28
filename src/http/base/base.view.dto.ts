@@ -3,6 +3,7 @@ import { Toast } from './toast';
 
 export class BaseViewDto {
     readonly authenticated: boolean = false;
+    readonly subscribed?: boolean = false;
     readonly breadcrumbs: Breadcrumb[] = [];
     indexable: boolean = false;
     title: string = 'I Want My MTG';
@@ -15,6 +16,7 @@ export class BaseViewDto {
 
     constructor(init: Partial<BaseViewDto>) {
         this.authenticated = init.authenticated || false;
+        this.subscribed = init.subscribed || false;
         this.breadcrumbs = init.breadcrumbs || [];
         this.indexable = init.indexable || false;
         this.title = init.title || 'I Want My MTG';

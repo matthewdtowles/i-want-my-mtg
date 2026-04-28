@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
+import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
+import {
+    BreakdownDimension,
+    PortfolioBreakdown,
+} from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -11,6 +17,7 @@ import {
     PortfolioValueHistoryPointDto,
     PortfolioValueHistoryResponseDto,
 } from './dto/portfolio-value-history-response.dto';
+import { PortfolioBreakdownViewDto, BreakdownSliceView } from './dto/portfolio-breakdown.view.dto';
 import { PortfolioViewDto } from './dto/portfolio.view.dto';
 import { formatGain, gainSign } from 'src/http/base/http.util';
 import {
@@ -29,6 +36,9 @@ export class PortfolioOrchestrator {
         @Inject(PortfolioService) private readonly portfolioService: PortfolioService,
         @Inject(PortfolioSummaryService)
         private readonly summaryService: PortfolioSummaryService,
+        @Inject(PortfolioBreakdownService)
+        private readonly breakdownService: PortfolioBreakdownService,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService,
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(TransactionService) private readonly transactionService: TransactionService,
         private readonly configService: ConfigService
@@ -164,6 +174,74 @@ export class PortfolioOrchestrator {
             this.LOGGER.debug(`Error getting cash flow: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'getCashFlow');
         }
+    }
+
+    async getBreakdownView(
+        req: AuthenticatedRequest,
+        dimension: BreakdownDimension
+    ): Promise<PortfolioBreakdownViewDto> {
+        this.LOGGER.debug(`Get ${dimension} breakdown view for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+
+            const baseInit = {
+                authenticated: true,
+                subscribed,
+                breadcrumbs: [
+                    { label: 'Home', url: '/' },
+                    { label: 'Portfolio', url: '/portfolio' },
+                    { label: 'Analytics', url: '/portfolio/breakdown' },
+                ],
+                title: 'Portfolio Analytics - I Want My MTG',
+                dimension,
+            };
+
+            if (!subscribed) {
+                return new PortfolioBreakdownViewDto({
+                    ...baseInit,
+                    locked: true,
+                    slices: [],
+                    totalValue: 0,
+                    totalItems: 0,
+                });
+            }
+
+            const breakdown: PortfolioBreakdown = await this.breakdownService.getBreakdown(
+                req.user.id,
+                dimension
+            );
+
+            const slices: BreakdownSliceView[] = breakdown.slices.map((s) => ({
+                key: s.key,
+                label: s.label,
+                cardCount: s.cardCount,
+                itemCount: s.itemCount,
+                value: s.value,
+                valueFormatted: this.formatCurrency(s.value),
+                percent: breakdown.totalValue > 0 ? (s.value / breakdown.totalValue) * 100 : 0,
+                percentFormatted:
+                    breakdown.totalValue > 0
+                        ? `${((s.value / breakdown.totalValue) * 100).toFixed(1)}%`
+                        : '0%',
+            }));
+
+            return new PortfolioBreakdownViewDto({
+                ...baseInit,
+                locked: false,
+                slices,
+                totalValue: breakdown.totalValue,
+                totalValueFormatted: this.formatCurrency(breakdown.totalValue),
+                totalItems: breakdown.totalItems,
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error getting breakdown view: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'getBreakdownView');
+        }
+    }
+
+    private formatCurrency(value: number): string {
+        return `$${value.toFixed(2)}`;
     }
 
     async getRealizedGains(

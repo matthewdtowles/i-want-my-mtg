@@ -1,9 +1,12 @@
 import { Controller, Get, Inject, Post, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
+import { BreakdownDimension } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { CashFlowPeriod } from 'src/core/transaction/ports/transaction.repository.port';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { getLogger } from 'src/logger/global-app-logger';
+import { PortfolioBreakdownViewDto } from './dto/portfolio-breakdown.view.dto';
 import { PortfolioValueHistoryResponseDto } from './dto/portfolio-value-history-response.dto';
 import { PortfolioViewDto } from './dto/portfolio.view.dto';
 import { PortfolioOrchestrator } from './portfolio.orchestrator';
@@ -40,6 +43,20 @@ export class PortfolioController {
     async refresh(@Req() req: AuthenticatedRequest): Promise<{ success: boolean; error?: string }> {
         this.LOGGER.log(`Refresh portfolio summary for user ${req.user?.id}.`);
         return this.orchestrator.refresh(req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('breakdown')
+    @Render('portfolioBreakdown')
+    async getBreakdown(
+        @Req() req: AuthenticatedRequest,
+        @Query('by') by?: string
+    ): Promise<PortfolioBreakdownViewDto> {
+        const dimension: BreakdownDimension = PortfolioBreakdownService.isDimension(by)
+            ? by
+            : 'set';
+        this.LOGGER.log(`Get portfolio breakdown by ${dimension} for user ${req.user?.id}.`);
+        return this.orchestrator.getBreakdownView(req, dimension);
     }
 
     @UseGuards(JwtAuthGuard)

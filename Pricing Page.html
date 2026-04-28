@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pricing — I Want My MTG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --midnight-950: #0d0b1a;
+    --midnight-900: #131025;
+    --midnight-800: #1a1533;
+    --midnight-700: #241e45;
+    --midnight-600: #2e2758;
+    --teal-500: #2cc8ca;
+    --teal-400: #45ddd6;
+    --teal-300: #72ece5;
+    --teal-200: #a8f4ef;
+    --purple-800: #5c2883;
+    --purple-700: #7233a4;
+    --purple-600: #8b42c6;
+    --purple-500: #a95de0;
+    --purple-400: #c48aed;
+    --purple-300: #dbb5f5;
+    --hotpink-500: #f43f82;
+    --amber-500: #f59e0b;
+  }
+
+  *, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    background: var(--midnight-950);
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAVBAR ── */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(to right, #3b1a6b, var(--purple-700), #3b1a6b);
+    border-bottom: 2px solid var(--teal-400);
+    box-shadow: 0 0 24px 0 rgba(44,200,202,0.18);
+  }
+  .navbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .logo-gem {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--teal-400), var(--purple-500));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--teal-300);
+    padding: 0.5rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background 0.15s;
+    line-height: 1;
+  }
+  .icon-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+
+  /* ── DRAWER MENU ── */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,11,26,0.72);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(2px);
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 88vw);
+    background: var(--midnight-900);
+    border-left: 1px solid var(--midnight-700);
+    z-index: 210;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--midnight-700);
+  }
+  .drawer-logo { font-weight: 700; font-size: 0.95rem; color: #fff; }
+  .drawer-section {
+    padding: 1rem 1.25rem 0.25rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-500);
+  }
+  .drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.925rem;
+    font-weight: 500;
+    border-radius: 0;
+    transition: background 0.12s, color 0.12s;
+  }
+  .drawer-link:hover { background: var(--midnight-800); color: #fff; }
+  .drawer-link.active { color: var(--teal-400); }
+  .drawer-link svg { opacity: 0.55; flex-shrink: 0; }
+  .drawer-link:hover svg { opacity: 0.8; }
+  .drawer-divider { height: 1px; background: var(--midnight-700); margin: 0.75rem 1.25rem; }
+  .drawer-upgrade {
+    margin: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    background: var(--amber-500);
+    color: var(--midnight-950);
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .drawer-upgrade:hover { background: #fbbf24; }
+  .drawer-search {
+    margin: 0 1.25rem 0.25rem;
+    padding: 0.55rem 0.9rem;
+    background: var(--midnight-800);
+    border: 1px solid var(--midnight-600);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-family: inherit;
+    width: calc(100% - 2.5rem);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .drawer-search:focus { border-color: var(--teal-400); }
+  .drawer-search::placeholder { color: #64748b; }
+  .drawer-footer {
+    margin-top: auto;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--midnight-700);
+    display: flex;
+    gap: 0.75rem;
+  }
+  .drawer-footer a {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.12s;
+  }
+  .drawer-footer a:hover { color: var(--teal-400); }
+
+  /* ── PAGE HERO ── */
+  .hero {
+    padding: 5rem 1.25rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 55% at 50% -10%, rgba(114,51,164,0.28) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44,200,202,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid rgba(44,200,202,0.3);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--teal-300);
+    background: rgba(44,200,202,0.08);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.01em;
+  }
+  .hero-title {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: #f8fafc;
+    margin-bottom: 1rem;
+    text-wrap: balance;
+  }
+  .hero-title span {
+    background: linear-gradient(90deg, var(--teal-400), var(--purple-400));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.6;
+  }
+
+  /* ── BILLING TOGGLE ── */
+  .billing-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--midnight-800);
+    border: 1px solid var(--midnight-600);
+    border-radius: 999px;
+    padding: 0.35rem;
+  }
+  .toggle-option {
+    padding: 0.4rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-family: inherit;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .toggle-option.active {
+    background: var(--midnight-700);
+    color: #f8fafc;
+  }
+  .toggle-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--teal-500), var(--purple-500));
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── PRICING CARDS ── */
+  .cards-grid {
+    max-width: 880px;
+    margin: 4rem auto 0;
+    padding: 0 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  @media (max-width: 620px) { .cards-grid { grid-template-columns: 1fr; } }
+
+  .pricing-card {
+    border-radius: 16px;
+    border: 1px solid var(--midnight-700);
+    background: var(--midnight-900);
+    padding: 2rem;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .pricing-card.featured {
+    border-color: var(--teal-500);
+    background: linear-gradient(160deg, rgba(44,200,202,0.05) 0%, var(--midnight-900) 60%);
+    box-shadow: 0 0 40px rgba(44,200,202,0.1), inset 0 1px 0 rgba(44,200,202,0.15);
+  }
+  .card-badge {
+    position: absolute;
+    top: -1px;
+    right: 1.5rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0 0 8px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .card-badge.teal { background: var(--teal-500); color: var(--midnight-950); }
+  .card-badge.amber { background: var(--amber-500); color: var(--midnight-950); }
+
+  .card-tier {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+  }
+  .card-tier.teal { color: var(--teal-400); }
+
+  .card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    margin-bottom: 0.3rem;
+  }
+  .price-amount {
+    font-size: 2.75rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: #f8fafc;
+    line-height: 1;
+  }
+  .price-currency {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #94a3b8;
+    align-self: flex-start;
+    margin-top: 0.3rem;
+  }
+  .price-period {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .price-note {
+    font-size: 0.8rem;
+    color: var(--teal-400);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    min-height: 1.2em;
+  }
+  .card-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--midnight-700);
+  }
+
+  .card-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 1.75rem;
+  }
+  .card-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+  .feat-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+  }
+  .feat-icon.check { color: var(--teal-400); }
+  .feat-icon.x { color: #475569; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.925rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    letter-spacing: -0.01em;
+  }
+  .btn-cta {
+    background: linear-gradient(90deg, var(--teal-500), #3ab5e0);
+    color: var(--midnight-950);
+    box-shadow: 0 0 20px rgba(44,200,202,0.25);
+  }
+  .btn-cta:hover { filter: brightness(1.1); box-shadow: 0 0 28px rgba(44,200,202,0.4); }
+  .btn-ghost {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid var(--midnight-600);
+  }
+  .btn-ghost:hover { background: var(--midnight-800); color: #e2e8f0; }
+  .btn-amber {
+    background: var(--amber-500);
+    color: var(--midnight-950);
+  }
+  .btn-amber:hover { background: #fbbf24; }
+
+  /* ── FEATURE TABLE ── */
+  .table-section {
+    max-width: 880px;
+    margin: 5rem auto 0;
+    padding: 0 1.25rem;
+  }
+  .section-heading {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+  }
+  .section-sub {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 2rem;
+  }
+  .feat-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--midnight-700);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--midnight-900);
+  }
+  .feat-table thead th {
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+    background: var(--midnight-800);
+    border-bottom: 1px solid var(--midnight-700);
+    text-align: left;
+  }
+  .feat-table thead th:nth-child(2),
+  .feat-table thead th:nth-child(3) {
+    text-align: center;
+    width: 120px;
+  }
+  .feat-table thead th:nth-child(3) { color: var(--teal-400); }
+  .feat-table tbody tr { border-top: 1px solid var(--midnight-800); }
+  .feat-table tbody tr:first-child { border-top: none; }
+  .feat-table tbody td {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+  }
+  .feat-table tbody td:nth-child(2),
+  .feat-table tbody td:nth-child(3) { text-align: center; }
+  .feat-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .feat-table .category-row td {
+    padding: 0.6rem 1.25rem 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple-400);
+    background: rgba(114,51,164,0.06);
+    border-top: 1px solid var(--midnight-700);
+  }
+  .feat-table .category-row:first-child td { border-top: none; }
+  .feat-note {
+    font-size: 0.75rem;
+    color: #475569;
+    display: block;
+    margin-top: 0.1rem;
+  }
+  .check-icon { color: var(--teal-400); }
+  .x-icon { color: #334155; }
+  .partial { font-size: 0.78rem; color: #94a3b8; font-weight: 500; }
+
+  /* ── FAQ ── */
+  .faq-section {
+    max-width: 680px;
+    margin: 5rem auto 0;
+    padding: 0 1.25rem;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--midnight-700);
+  }
+  .faq-question {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    transition: color 0.15s;
+  }
+  .faq-question:hover { color: var(--teal-300); }
+  .faq-chevron {
+    flex-shrink: 0;
+    color: #475569;
+    transition: transform 0.2s;
+  }
+  .faq-chevron.open { transform: rotate(180deg); color: var(--teal-400); }
+  .faq-answer {
+    overflow: hidden;
+    transition: max-height 0.28s ease, padding 0.2s;
+    max-height: 0;
+  }
+  .faq-answer.open { max-height: 500px; }
+  .faq-answer-inner {
+    padding-bottom: 1.1rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .faq-answer-inner a { color: var(--teal-400); text-decoration: underline; }
+
+  /* ── BOTTOM CTA ── */
+  .bottom-cta {
+    max-width: 640px;
+    margin: 5rem auto 0;
+    padding: 0 1.25rem 6rem;
+    text-align: center;
+  }
+  .bottom-cta h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #f8fafc;
+    margin-bottom: 0.75rem;
+  }
+  .bottom-cta p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 1.75rem;
+    line-height: 1.6;
+  }
+  .bottom-cta-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .bottom-cta-btns .btn-primary { width: auto; padding: 0.7rem 1.75rem; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: auto;
+    border-top: 1px solid var(--midnight-800);
+    background: var(--midnight-950);
+  }
+  .footer-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal-400), var(--purple-500), var(--hotpink-500));
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: #475569;
+  }
+  .footer-links { display: flex; gap: 1.25rem; }
+  .footer-links a { color: #475569; text-decoration: none; transition: color 0.12s; }
+  .footer-links a:hover { color: var(--teal-400); }
+
+  /* ── TWEAKS PANEL ── */
+  .tweaks-panel {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 280px;
+    background: var(--midnight-900);
+    border: 1px solid var(--midnight-600);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    z-index: 300;
+    font-size: 0.82rem;
+    display: none;
+  }
+  .tweaks-panel.visible { display: block; }
+  .tweaks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--midnight-700);
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--teal-300);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tweaks-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  .tweaks-close:hover { color: #e2e8f0; }
+  .tweaks-body { padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .tweak-row { display: flex; flex-direction: column; gap: 0.35rem; }
+  .tweak-label { color: #64748b; font-size: 0.75rem; font-weight: 500; }
+  .tweak-options { display: flex; gap: 0.4rem; }
+  .tweak-opt {
+    flex: 1;
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--midnight-600);
+    background: var(--midnight-800);
+    color: #94a3b8;
+    font-size: 0.775rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tweak-opt.active {
+    background: var(--midnight-700);
+    border-color: var(--teal-500);
+    color: var(--teal-300);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "cardStyle": "gradient",
+  "heroSize": "large"
+}/*EDITMODE-END*/;
+
+// ── SVG Icons ──────────────────────────────────────────────
+const CheckIcon = ({ cls = "check-icon feat-icon" }) => (
+  <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l3.5 3.5L13 4.5"/>
+  </svg>
+);
+const XIcon = ({ cls = "x-icon feat-icon" }) => (
+  <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4l8 8M12 4l-8 8"/>
+  </svg>
+);
+const HamburgerIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M4 6h16M4 12h16M4 18h16"/>
+  </svg>
+);
+const CloseIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M18 6L6 18M6 6l12 12"/>
+  </svg>
+);
+const ChevronDown = ({ open }) => (
+  <svg className={`faq-chevron${open ? ' open' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <path d="M6 9l6 6 6-6"/>
+  </svg>
+);
+const StarIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+  </svg>
+);
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+  </svg>
+);
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+    <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const SearchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+  </svg>
+);
+
+// ── NAV LINKS ──────────────────────────────────────────────
+const NAV_PUBLIC = [
+  { href: '/', label: 'Home', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 6l7-5 7 5v8H10V9H6v5H1z" strokeLinejoin="round"/></svg> },
+  { href: '/sets', label: 'Sets', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg> },
+  { href: '/spoilers', label: 'Spoilers', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v.5" strokeLinecap="round"/></svg> },
+  { href: '/pricing', label: 'Pricing', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 8a6 6 0 1112 0A6 6 0 012 8zm6-3v1.5m0 3H8m0 1.5v-1.5m2.5-3h-5" strokeLinecap="round"/></svg>, active: true },
+];
+const NAV_AUTH = [
+  { href: '/inventory', label: 'My Inventory', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg> },
+  { href: '/transactions', label: 'Transactions', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 5h12M2 8h8M2 11h5" strokeLinecap="round"/></svg> },
+  { href: '/price-alerts', label: 'Price Alerts', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 2a5 5 0 00-5 5c0 2-1 3-1 3h12s-1-1-1-3a5 5 0 00-5-5zM7 13h2"/></svg> },
+  { href: '/user', label: 'My Account', icon: <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> },
+];
+
+// ── NAVBAR ──────────────────────────────────────────────────
+function Navbar({ isDark, onToggleTheme }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const drawerRef = useRef(null);
+  const [authed] = useState(false); // demo: not logged in
+
+  useEffect(() => {
+    if (menuOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  return (
+    <>
+      <nav className="navbar">
+        <div className="navbar-inner">
+          <a href="/" className="navbar-logo">
+            <div className="logo-gem">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d0b1a" strokeWidth="2.5">
+                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+                <polygon points="12 7 17 10.5 17 13.5 12 17 7 13.5 7 10.5"/>
+              </svg>
+            </div>
+            I Want My MTG
+          </a>
+          <div className="navbar-right">
+            <button className="icon-btn" onClick={onToggleTheme} aria-label="Toggle theme">
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button
+              className="icon-btn"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={menuOpen}
+            >
+              <HamburgerIcon />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Overlay */}
+      <div
+        className={`drawer-overlay${menuOpen ? ' open' : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Drawer */}
+      <div ref={drawerRef} className={`drawer${menuOpen ? ' open' : ''}`} role="dialog" aria-modal="true" aria-label="Navigation menu">
+        <div className="drawer-header">
+          <span className="drawer-logo">I Want My MTG</span>
+          <button className="icon-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+            <CloseIcon size={18} />
+          </button>
+        </div>
+
+        <div style={{padding: '0.75rem 0 0'}}>
+          <div style={{padding: '0 1.25rem 0.5rem'}}>
+            <input className="drawer-search" type="text" placeholder="Search cards and sets…" />
+          </div>
+
+          <div className="drawer-section">Explore</div>
+          {NAV_PUBLIC.map(l => (
+            <a key={l.href} href={l.href} className={`drawer-link${l.active ? ' active' : ''}`} onClick={() => setMenuOpen(false)}>
+              {l.icon} {l.label}
+            </a>
+          ))}
+
+          {authed ? (
+            <>
+              <div className="drawer-divider" />
+              <div className="drawer-section">My Collection</div>
+              {NAV_AUTH.map(l => (
+                <a key={l.href} href={l.href} className="drawer-link" onClick={() => setMenuOpen(false)}>{l.icon} {l.label}</a>
+              ))}
+              <div className="drawer-divider" />
+              <a href="/billing" className="drawer-upgrade" onClick={() => setMenuOpen(false)}>
+                <StarIcon /> Upgrade to Premium
+              </a>
+              <div className="drawer-divider" />
+              <form method="post" action="/auth/logout">
+                <button type="submit" className="drawer-link" style={{width:'100%', background:'transparent', border:'none', cursor:'pointer', fontFamily:'inherit'}}>
+                  <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 11l4-3-4-3m4 3H5m5-7H3a1 1 0 00-1 1v10a1 1 0 001 1h7" strokeLinecap="round"/></svg>
+                  Logout
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="drawer-divider" />
+              <a href="/auth/login" className="drawer-link" onClick={() => setMenuOpen(false)}>
+                <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 11l-4-3 4-3m-4 3h11m-4-7h3a1 1 0 011 1v10a1 1 0 01-1 1h-3" strokeLinecap="round"/></svg>
+                Sign In
+              </a>
+              <a href="/user/create" className="drawer-link" onClick={() => setMenuOpen(false)}>
+                <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="7" cy="5" r="3"/><path d="M1 14c0-3 2.7-5 6-5"/><path d="M13 11v4M11 13h4" strokeLinecap="round"/></svg>
+                Create Account
+              </a>
+            </>
+          )}
+
+          <div className="drawer-divider" />
+          <a href="/guides/getting-started" className="drawer-link" onClick={() => setMenuOpen(false)}>
+            <svg className="feat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 7v5M8 5.5v.5" strokeLinecap="round"/></svg>
+            Getting Started
+          </a>
+        </div>
+
+        <div className="drawer-footer">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/guides/getting-started">Guide</a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── PRICING ──────────────────────────────────────────────────
+const FREE_FEATURES = [
+  "Browse all MTG sets & cards",
+  "Track your collection (unlimited cards)",
+  "Set price alerts (up to 5)",
+  "Basic portfolio view",
+  "Transaction history (last 30 days)",
+  "CSV import & export",
+];
+const PREMIUM_FEATURES = [
+  "Everything in Free",
+  "Unlimited price alerts",
+  "Full transaction history",
+  "Portfolio value history & charts",
+  "Set completion tracking",
+  "Sealed product tracking",
+  "Priority support",
+];
+
+const TABLE_ROWS = [
+  { category: "Collection" },
+  { label: "Browse sets & cards", free: true, premium: true },
+  { label: "Track card inventory", free: true, premium: true },
+  { label: "CSV import & export", free: true, premium: true },
+  { label: "Sealed product tracking", note: "Boosters, bundles, etc.", free: false, premium: true },
+  { label: "Binder view", free: true, premium: true },
+  { label: "Set completion tracking", free: false, premium: true },
+
+  { category: "Prices & Alerts" },
+  { label: "Live market prices", free: true, premium: true },
+  { label: "Price history charts", free: "30 days", premium: true },
+  { label: "Price alerts", note: "Email when price moves", free: "Up to 5", premium: true },
+  { label: "Set price history", free: false, premium: true },
+
+  { category: "Portfolio & Analytics" },
+  { label: "Portfolio value overview", free: true, premium: true },
+  { label: "Portfolio value history", free: false, premium: true },
+  { label: "P&L tracking", free: false, premium: true },
+  { label: "Transaction history", free: "Last 30 days", premium: true },
+  { label: "Cash flow charts", free: false, premium: true },
+
+  { category: "Account" },
+  { label: "Standard support", free: true, premium: true },
+  { label: "Priority support", free: false, premium: true },
+  { label: "Early access to new features", free: false, premium: true },
+];
+
+const FAQS = [
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes — cancel at any moment from the billing portal. You keep Premium access until the end of your current billing period. No questions asked."
+  },
+  {
+    q: "What happens to my data if I cancel?",
+    a: "Your entire collection, transaction history, and alerts are always yours. Cancelling moves you to the Free plan; premium-only data (e.g. full history charts) is hidden but not deleted. Resubscribe and it's all back."
+  },
+  {
+    q: "Is there a free trial?",
+    a: "The Free plan has no time limit — use it forever. We don't offer a dedicated Premium trial right now, but at $3.99/mo there's very little risk."
+  },
+  {
+    q: "How does the annual plan save me money?",
+    a: "Annual is $39.99/year vs $3.99 × 12 = $47.88/year on monthly — that's roughly 2 months free. Switch between plans any time from the billing portal."
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We use Stripe for payments. All major credit and debit cards are accepted. No PayPal at this time."
+  },
+  {
+    q: "Do prices include tax?",
+    a: "Stripe automatically calculates and applies applicable sales tax based on your location at checkout."
+  },
+];
+
+function FaqItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="faq-item">
+      <button className="faq-question" onClick={() => setOpen(o => !o)} aria-expanded={open}>
+        <span>{q}</span>
+        <ChevronDown open={open} />
+      </button>
+      <div className={`faq-answer${open ? ' open' : ''}`}>
+        <p className="faq-answer-inner">{a}</p>
+      </div>
+    </div>
+  );
+}
+
+function CellValue({ value }) {
+  if (value === true) return <CheckIcon cls="check-icon feat-icon" />;
+  if (value === false) return <XIcon cls="x-icon feat-icon" />;
+  return <span className="partial">{value}</span>;
+}
+
+function App() {
+  const [billing, setBilling] = useState('monthly');
+  const [tweaksVisible, setTweaksVisible] = useState(false);
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.className = isDark ? 'dark' : '';
+    document.body.style.background = isDark ? 'var(--midnight-950)' : '#f8fafc';
+    document.body.style.color = isDark ? '#e2e8f0' : '#1e293b';
+  }, [isDark]);
+
+  useEffect(() => {
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksVisible(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksVisible(false);
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  }, []);
+
+  const setTweak = (key, val) => {
+    setTweaks(t => {
+      const next = { ...t, [key]: val };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+      return next;
+    });
+  };
+
+  const monthlyPrice = 3.99;
+  const annualMonthly = (39.99 / 12).toFixed(2);
+  const displayPrice = billing === 'monthly' ? monthlyPrice.toFixed(2) : annualMonthly;
+  const billedNote = billing === 'annual' ? 'Billed $39.99/year — save ~2 months' : '';
+
+  return (
+    <>
+      <Navbar isDark={isDark} onToggleTheme={() => setIsDark(d => !d)} />
+
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-badge">
+          <StarIcon />
+          Simple, transparent pricing
+        </div>
+        <h1 className="hero-title">
+          Track your collection.<br />
+          <span>Own your investment.</span>
+        </h1>
+        <p className="hero-sub">
+          Free forever for the essentials. Upgrade for unlimited alerts, full history, and portfolio analytics.
+        </p>
+
+        {/* Billing Toggle */}
+        <div className="billing-toggle">
+          <button
+            className={`toggle-option${billing === 'monthly' ? ' active' : ''}`}
+            onClick={() => setBilling('monthly')}
+          >Monthly</button>
+          <button
+            className={`toggle-option${billing === 'annual' ? ' active' : ''}`}
+            onClick={() => setBilling('annual')}
+          >
+            Annual
+            <span className="toggle-badge">Save 17%</span>
+          </button>
+        </div>
+      </section>
+
+      {/* PRICING CARDS */}
+      <div className="cards-grid">
+        {/* Free */}
+        <div className="pricing-card">
+          <p className="card-tier">Free</p>
+          <div className="card-price">
+            <span className="price-currency">$</span>
+            <span className="price-amount">0</span>
+          </div>
+          <p className="price-note">&nbsp;</p>
+          <p className="card-desc">Everything you need to get started tracking your Magic collection. No credit card required.</p>
+          <ul className="card-features">
+            {FREE_FEATURES.map(f => (
+              <li key={f} className="card-feature">
+                <CheckIcon cls="feat-icon check-icon" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <a href="/user/create">
+            <button className="btn-primary btn-ghost">Get started free</button>
+          </a>
+        </div>
+
+        {/* Premium */}
+        <div className="pricing-card featured">
+          <div className="card-badge teal">Most Popular</div>
+          <p className="card-tier teal">Premium</p>
+          <div className="card-price">
+            <span className="price-currency">$</span>
+            <span className="price-amount" style={{transition:'all 0.2s'}}>{displayPrice}</span>
+            <span className="price-period">/mo</span>
+          </div>
+          <p className="price-note" style={{minHeight:'1.4em'}}>
+            {billedNote || <span style={{color:'transparent'}}>—</span>}
+          </p>
+          <p className="card-desc">The full toolkit for serious collectors and investors. Unlimited everything.</p>
+          <ul className="card-features">
+            {PREMIUM_FEATURES.map(f => (
+              <li key={f} className="card-feature">
+                <CheckIcon cls="feat-icon check-icon" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <a href="/billing">
+            <button className="btn-primary btn-cta">
+              {billing === 'annual' ? 'Subscribe annually' : 'Subscribe monthly'}
+            </button>
+          </a>
+        </div>
+      </div>
+
+      {/* FEATURE TABLE */}
+      <div className="table-section" style={{marginTop:'5rem'}}>
+        <h2 className="section-heading">Compare plans</h2>
+        <p className="section-sub">Everything side by side</p>
+        <table className="feat-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Free</th>
+              <th>Premium</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TABLE_ROWS.map((row, i) =>
+              row.category ? (
+                <tr key={i} className="category-row">
+                  <td colSpan={3}>{row.category}</td>
+                </tr>
+              ) : (
+                <tr key={i}>
+                  <td>
+                    {row.label}
+                    {row.note && <span className="feat-note">{row.note}</span>}
+                  </td>
+                  <td><CellValue value={row.free} /></td>
+                  <td><CellValue value={row.premium} /></td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* FAQ */}
+      <div className="faq-section">
+        <h2 className="section-heading" style={{marginBottom:'0.5rem'}}>Frequently asked</h2>
+        <p className="section-sub">Common questions answered</p>
+        {FAQS.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
+      </div>
+
+      {/* BOTTOM CTA */}
+      <div className="bottom-cta">
+        <h2>Ready to level up?</h2>
+        <p>Join collectors who use I Want My MTG to track every card, every trade, every dollar.</p>
+        <div className="bottom-cta-btns">
+          <a href="/user/create">
+            <button className="btn-primary btn-ghost">Start for free</button>
+          </a>
+          <a href="/billing">
+            <button className="btn-primary btn-cta">
+              <span style={{display:'flex',alignItems:'center',gap:'0.4rem'}}>
+                <StarIcon /> Go Premium
+              </span>
+            </button>
+          </a>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-bar" />
+        <div className="footer-inner">
+          <span>I Want My MTG · mdt</span>
+          <div className="footer-links">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/guides/getting-started">Getting Started</a>
+          </div>
+          <span style={{fontSize:'0.72rem',color:'#334155'}}>Magic: the Gathering™ is property of Wizards of the Coast.</span>
+        </div>
+      </footer>
+
+      {/* TWEAKS */}
+      <div className={`tweaks-panel${tweaksVisible ? ' visible' : ''}`}>
+        <div className="tweaks-header">
+          Tweaks
+          <button className="tweaks-close" onClick={() => {
+            setTweaksVisible(false);
+            window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+          }}><CloseIcon size={16} /></button>
+        </div>
+        <div className="tweaks-body">
+          <div className="tweak-row">
+            <span className="tweak-label">Billing toggle default</span>
+            <div className="tweak-options">
+              {['monthly','annual'].map(v => (
+                <button key={v} className={`tweak-opt${billing === v ? ' active' : ''}`} onClick={() => setBilling(v)}>
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="tweak-row">
+            <span className="tweak-label">Color mode</span>
+            <div className="tweak-options">
+              {['dark','light'].map(v => (
+                <button key={v} className={`tweak-opt${(isDark ? 'dark' : 'light') === v ? ' active' : ''}`} onClick={() => setIsDark(v === 'dark')}>
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="tweak-row">
+            <span className="tweak-label">Nav auth state</span>
+            <div className="tweak-options">
+              <button className="tweak-opt">Logged out</button>
+              <button className="tweak-opt">Logged in</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

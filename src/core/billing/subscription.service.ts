@@ -128,4 +128,10 @@ export class SubscriptionService {
     async getSubscriptionForUser(userId: number): Promise<Subscription | null> {
         return this.repository.findByUserId(userId);
     }
+
+    async isUserSubscribed(userId: number | undefined | null): Promise<boolean> {
+        if (!userId) return false;
+        const subscription = await this.repository.findByUserId(userId);
+        return !!subscription && subscription.isActive();
+    }
 }

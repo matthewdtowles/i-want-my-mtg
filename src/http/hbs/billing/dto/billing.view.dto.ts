@@ -28,8 +28,8 @@ export class BillingViewDto extends BaseViewDto {
         this.subscription = init.subscription ?? null;
         this.notice = init.notice ?? null;
         this.pricing = init.pricing ?? {
-            monthly: { amount: '$4.99', label: 'per month' },
-            annual: { amount: '$49.99', label: 'per year' },
+            monthly: { amount: '$3.99', label: 'per month' },
+            annual: { amount: '$39.99', label: 'per year' },
         };
     }
 }

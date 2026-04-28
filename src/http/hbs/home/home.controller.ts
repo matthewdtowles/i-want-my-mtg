@@ -60,6 +60,24 @@ export class HomeController {
     }
 
     @UseGuards(OptionalAuthGuard)
+    @Get('pricing')
+    @Render('pricing')
+    getPricingPage(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            indexable: true,
+            title: 'Pricing - I Want My MTG',
+            metaDescription:
+                'Free forever for the essentials. Upgrade to Premium for unlimited alerts, full transaction history, and advanced portfolio analytics.',
+            canonicalUrl: `${this.appUrl}/pricing`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Pricing', url: '/pricing' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
     @Get('privacy')
     @Render('privacy')
     getPrivacyPolicy(@Req() req: AuthenticatedRequest): BaseViewDto {

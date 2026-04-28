@@ -3,7 +3,7 @@ import { SubscriptionPlan } from './subscription-plan.enum';
 import { ACTIVE_SUBSCRIPTION_STATUSES, SubscriptionStatus } from './subscription-status.enum';
 
 export class Subscription {
-    readonly id: number;
+    readonly id: number | null;
     readonly userId: number;
     readonly stripeCustomerId: string;
     readonly stripeSubscriptionId: string | null;
@@ -15,7 +15,7 @@ export class Subscription {
 
     constructor(init: Partial<Subscription>) {
         validateInit(init, ['userId', 'stripeCustomerId', 'status']);
-        this.id = init.id;
+        this.id = init.id ?? null;
         this.userId = init.userId;
         this.stripeCustomerId = init.stripeCustomerId;
         this.stripeSubscriptionId = init.stripeSubscriptionId ?? null;

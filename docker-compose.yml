@@ -105,7 +105,7 @@ services:
                 '--skip-verify',
             ]
         volumes:
-            - ${HOME}/.config/stripe:/root/.config/stripe:ro
+            - ${HOME}/.config/stripe:/root/.config/stripe
         depends_on:
             - web
         profiles: ['stripe']

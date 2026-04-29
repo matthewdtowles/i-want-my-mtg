@@ -18,6 +18,7 @@ describe('StripeWebhookController', () => {
             createCheckoutSession: jest.fn(),
             createBillingPortalSession: jest.fn(),
             retrieveSubscription: jest.fn(),
+            retrieveCheckoutSession: jest.fn(),
             constructEvent: jest.fn(),
             priceIdForPlan: jest.fn(),
             planForPriceId: jest.fn(),

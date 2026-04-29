@@ -79,8 +79,14 @@ export class BillingController {
 
     @Get('success')
     @Render('billingSuccess')
-    async success(@Req() req: AuthenticatedRequest): Promise<BillingViewDto> {
+    async success(
+        @Req() req: AuthenticatedRequest,
+        @Query('session_id') sessionId?: string
+    ): Promise<BillingViewDto> {
         this.LOGGER.log(`Billing success landing for user ${req.user?.id}.`);
+        if (sessionId) {
+            await this.orchestrator.syncFromCheckoutSession(req, sessionId);
+        }
         const view = await this.orchestrator.getBillingView(req);
         return new BillingViewDto({ ...view, title: 'Welcome to Premium - I Want My MTG' });
     }

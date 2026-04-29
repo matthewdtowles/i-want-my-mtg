@@ -19,6 +19,7 @@ export interface StripeGatewayPort {
         returnUrl: string;
     }): Promise<{ url: string }>;
     retrieveSubscription(subscriptionId: string): Promise<Stripe.Subscription>;
+    retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session>;
     constructEvent(rawBody: Buffer | string, signature: string): Stripe.Event;
     priceIdForPlan(plan: SubscriptionPlan): string;
     planForPriceId(priceId: string): SubscriptionPlan | null;

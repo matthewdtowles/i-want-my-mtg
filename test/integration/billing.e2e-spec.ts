@@ -57,6 +57,14 @@ class FakeStripeGateway implements StripeGatewayPort {
         } as unknown as Stripe.Subscription;
     }
 
+    async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+        return {
+            id: sessionId,
+            client_reference_id: null,
+            subscription: 'sub_fake_from_session',
+        } as unknown as Stripe.Checkout.Session;
+    }
+
     constructEvent(rawBody: Buffer | string, _signature: string): Stripe.Event {
         const body = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf8');
         return JSON.parse(body) as Stripe.Event;

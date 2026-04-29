@@ -125,6 +125,32 @@ export class SubscriptionService {
         );
     }
 
+    async syncFromCheckoutSessionId(sessionId: string, userId: number): Promise<void> {
+        try {
+            const session = await this.stripe.retrieveCheckoutSession(sessionId);
+            if (session.client_reference_id && session.client_reference_id !== String(userId)) {
+                this.LOGGER.warn(
+                    `Checkout session ${sessionId} client_reference_id does not match user ${userId}; skipping sync.`
+                );
+                return;
+            }
+            const subId =
+                typeof session.subscription === 'string'
+                    ? session.subscription
+                    : session.subscription?.id;
+            if (!subId) {
+                this.LOGGER.warn(`Checkout session ${sessionId} has no subscription; skipping sync.`);
+                return;
+            }
+            const full = await this.stripe.retrieveSubscription(subId);
+            await this.syncFromStripeSubscription(full);
+        } catch (error) {
+            this.LOGGER.error(
+                `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${error?.message}`
+            );
+        }
+    }
+
     async getSubscriptionForUser(userId: number): Promise<Subscription | null> {
         return this.repository.findByUserId(userId);
     }

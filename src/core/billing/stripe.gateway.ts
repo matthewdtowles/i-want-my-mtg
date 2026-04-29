@@ -93,6 +93,10 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         return this.requireClient().subscriptions.retrieve(subscriptionId);
     }
 
+    async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+        return this.requireClient().checkout.sessions.retrieve(sessionId);
+    }
+
     constructEvent(rawBody: Buffer | string, signature: string): Stripe.Event {
         if (!this.webhookSecret) {
             throw new StripeConfigurationError('STRIPE_WEBHOOK_SECRET is not configured.');

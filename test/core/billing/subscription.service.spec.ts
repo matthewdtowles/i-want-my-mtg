@@ -36,6 +36,7 @@ describe('SubscriptionService', () => {
             createCheckoutSession: jest.fn(),
             createBillingPortalSession: jest.fn(),
             retrieveSubscription: jest.fn(),
+            retrieveCheckoutSession: jest.fn(),
             constructEvent: jest.fn(),
             priceIdForPlan: jest.fn().mockImplementation((p) => `price_${p}`),
             planForPriceId: jest.fn().mockImplementation((id) => {

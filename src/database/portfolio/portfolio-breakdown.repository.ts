@@ -30,6 +30,9 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
         userId: number,
         dimension: BreakdownDimension
     ): Promise<PortfolioBreakdownSlice[]> {
+        if (dimension === 'cost-basis') {
+            return this.aggregateCostBasis(userId);
+        }
         const config = this.dimensionConfig(dimension);
         this.LOGGER.debug(`Aggregating portfolio by ${dimension} for user ${userId}.`);
 
@@ -89,6 +92,58 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
                     labelExpr: `COALESCE(NULLIF(SPLIT_PART(c.type, ' —', 1), ''), 'Unknown')`,
                     extraJoins: '',
                 };
+            case 'format':
+                return {
+                    keyExpr: `l.format::text`,
+                    labelExpr: `INITCAP(l.format::text)`,
+                    extraJoins: `JOIN legality l ON l.card_id = c.id AND l.status = 'legal'`,
+                };
         }
+    }
+
+    private async aggregateCostBasis(userId: number): Promise<PortfolioBreakdownSlice[]> {
+        this.LOGGER.debug(`Aggregating portfolio by cost-basis for user ${userId}.`);
+        const rows = (await this.inventoryRepo.query(
+            `
+            WITH bucketed AS (
+                SELECT
+                    CASE
+                        WHEN unrealized_gain > 0 THEN 'gain'
+                        WHEN unrealized_gain < 0 THEN 'loss'
+                        ELSE 'flat'
+                    END AS bucket,
+                    quantity,
+                    current_value,
+                    card_id
+                FROM portfolio_card_performance
+                WHERE user_id = $1
+            )
+            SELECT
+                bucket AS "key",
+                CASE bucket
+                    WHEN 'gain' THEN 'Unrealized Gainers'
+                    WHEN 'loss' THEN 'Unrealized Losers'
+                    ELSE 'At Cost'
+                END AS "label",
+                COUNT(DISTINCT card_id)::int AS "cardCount",
+                SUM(quantity)::int AS "itemCount",
+                COALESCE(SUM(current_value), 0)::numeric AS "value"
+            FROM bucketed
+            GROUP BY bucket
+            ORDER BY "value" DESC NULLS LAST
+            `,
+            [userId]
+        )) as AggregationRow[];
+
+        return rows.map(
+            (r) =>
+                new PortfolioBreakdownSlice({
+                    key: String(r.key ?? ''),
+                    label: String(r.label ?? r.key ?? ''),
+                    cardCount: Number(r.cardCount) || 0,
+                    itemCount: Number(r.itemCount) || 0,
+                    value: Number(r.value) || 0,
+                })
+        );
     }
 }

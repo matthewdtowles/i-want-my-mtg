@@ -484,7 +484,7 @@ API rate limits remain 100/day for free and premium alike - all API monetization
 
 The advanced analytics page is gated end-to-end as the architectural pattern. Each item below applies the same pattern (inject `SubscriptionService`, branch on `isUserSubscribed`, show preserved-data + upgrade CTA for free users) to existing routes. Each is a small but careful UX change to a feature free users currently use unrestricted - tackle one at a time, not as a batch.
 
-- [ ] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $3.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
+- [x] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $3.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
 - [x] Transaction list view: cap query to last 30 days for free users, show "Upgrade for full history" inline tip on the transactions page (HBS + API both apply `freeTierHistoryCutoff()`; tip shown via `freeHistoryCutoff` flag on `TransactionViewDto`)
 - [x] Portfolio history chart: replace with upgrade tile for free users (current snapshot still shown); `GET /portfolio/history` 403s via `SubscriptionGuard`
 - [x] Portfolio P&L stat cards (`Unrealized P&L`, `Realized Gains`, `ROI`): replaced with locked Premium tiles linking to `/pricing` for free users; Current Value, Total Invested, Cards/Units stay visible
@@ -507,11 +507,11 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 
 - [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
 - [ ] Add `by=color` dimension once we ingest card colors (requires Scry schema change to populate `card.colors` from MTGJSON `colorIdentity`)
-- [ ] Add `by=format` dimension - join through `legality` table, count cards legal in each format
-- [ ] Add cost-basis dimension: which slices have unrealized gain vs loss (requires joining `portfolio_card_performance`)
+- [x] Add `by=format` dimension - join through `legality` table, count cards legal in each format
+- [x] Add cost-basis dimension: gain/loss/at-cost buckets sourced from `portfolio_card_performance`
 - [ ] Visual upgrade: stacked bar chart or treemap option (current is per-row horizontal bars - works but not flashy)
-- [ ] Sticky dimension preference (localStorage) so users return to the same view
-- [ ] Empty state for new users: instead of "no data" show a sample/demo breakdown
+- [x] Sticky dimension preference (localStorage) so users return to the same view
+- [x] Empty state for new users: sample/demo breakdown shown when slices are empty
 
 ### 3.5 Feature: Deck Building
 

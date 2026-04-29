@@ -63,7 +63,9 @@
         <a class="navbar-link-mobile" href="/">Home</a>
         <a class="navbar-link-mobile" href="/sets">Sets</a>
         <a class="navbar-link-mobile" href="/spoilers">Spoilers</a>
+        {{#unless authenticated}}
         <a class="navbar-link-mobile" href="/pricing">Pricing</a>
+        {{/unless}}
         {{#if authenticated}}
         <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
         <a class="navbar-link-mobile" href="/transactions">Transactions</a>

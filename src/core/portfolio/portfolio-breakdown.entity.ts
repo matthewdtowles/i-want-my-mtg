@@ -1,6 +1,12 @@
-export type BreakdownDimension = 'set' | 'rarity' | 'type';
+export type BreakdownDimension = 'set' | 'rarity' | 'type' | 'format' | 'cost-basis';
 
-export const BREAKDOWN_DIMENSIONS: BreakdownDimension[] = ['set', 'rarity', 'type'];
+export const BREAKDOWN_DIMENSIONS: BreakdownDimension[] = [
+    'set',
+    'rarity',
+    'type',
+    'format',
+    'cost-basis',
+];
 
 export class PortfolioBreakdownSlice {
     readonly key: string;

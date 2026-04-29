@@ -2,7 +2,7 @@
     <div class='flex items-center justify-between mb-2 flex-wrap gap-3'>
         <div>
             <h1 class='page-title'>Portfolio Analytics</h1>
-            <p class='page-subtitle'>Where your collection's value lives - by set, rarity, or card type.</p>
+            <p class='page-subtitle'>Where your collection's value lives - by set, rarity, type, format, or cost basis.</p>
         </div>
         <a href='/portfolio' class='btn btn-ghost text-sm'>&larr; Back to Portfolio</a>
     </div>
@@ -47,10 +47,12 @@
         {{!-- Dimension switcher --}}
         <div class='section-container'>
             <div class='flex items-center justify-between flex-wrap gap-3 mb-4'>
-                <div class='inline-flex rounded-lg border border-gray-200 dark:border-midnight-600 bg-gray-50 dark:bg-midnight-800 p-1'>
-                    <a href='/portfolio/breakdown?by=set' class='breakdown-tab {{#if (eq dimension "set")}}active{{/if}}'>By Set</a>
-                    <a href='/portfolio/breakdown?by=rarity' class='breakdown-tab {{#if (eq dimension "rarity")}}active{{/if}}'>By Rarity</a>
-                    <a href='/portfolio/breakdown?by=type' class='breakdown-tab {{#if (eq dimension "type")}}active{{/if}}'>By Type</a>
+                <div class='inline-flex flex-wrap rounded-lg border border-gray-200 dark:border-midnight-600 bg-gray-50 dark:bg-midnight-800 p-1'>
+                    <a href='/portfolio/breakdown?by=set' class='breakdown-tab {{#if (eq dimension "set")}}active{{/if}}' data-dimension='set'>By Set</a>
+                    <a href='/portfolio/breakdown?by=rarity' class='breakdown-tab {{#if (eq dimension "rarity")}}active{{/if}}' data-dimension='rarity'>By Rarity</a>
+                    <a href='/portfolio/breakdown?by=type' class='breakdown-tab {{#if (eq dimension "type")}}active{{/if}}' data-dimension='type'>By Type</a>
+                    <a href='/portfolio/breakdown?by=format' class='breakdown-tab {{#if (eq dimension "format")}}active{{/if}}' data-dimension='format'>By Format</a>
+                    <a href='/portfolio/breakdown?by=cost-basis' class='breakdown-tab {{#if (eq dimension "cost-basis")}}active{{/if}}' data-dimension='cost-basis'>By Cost Basis</a>
                 </div>
                 <div class='text-sm text-gray-600 dark:text-gray-400'>
                     Total: <span class='font-mono font-semibold text-gray-900 dark:text-gray-100'>{{totalValueFormatted}}</span>
@@ -78,16 +80,68 @@
                     {{/each}}
                 </div>
             {{else}}
-                {{>emptyState
-                    icon='chart-bar'
-                    heading='Nothing to break down yet'
-                    message='Add cards to your inventory and your collection will appear here, sliced by set, rarity, and type.'
-                    hint='Analytics get more interesting as your collection grows.'
-                    hintWide=true
-                    buttonHref='/sets'
-                    buttonText='Browse Sets'
-                }}
+                <div class='py-8'>
+                    <div class='max-w-2xl mx-auto text-center mb-6'>
+                        <div class='inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mb-3'>
+                            <i class='fas fa-chart-bar text-lg' aria-hidden='true'></i>
+                        </div>
+                        <h2 class='font-display font-bold text-lg text-gray-900 dark:text-white mb-1'>Nothing to break down yet</h2>
+                        <p class='text-gray-600 dark:text-gray-400 text-sm leading-relaxed'>
+                            Once you have cards in your inventory, your real breakdown will appear here.
+                            Below is a preview of what to expect.
+                        </p>
+                    </div>
+                    <div class='breakdown-list opacity-60 pointer-events-none' aria-hidden='true'>
+                        <div class='breakdown-row'>
+                            <div class='breakdown-row-header'><span class='breakdown-label'>Sample slice A</span><span class='breakdown-stats'><span class='breakdown-percent'>42.0%</span><span class='breakdown-value'>$420.00</span></span></div>
+                            <div class='breakdown-bar'><div class='breakdown-bar-fill' style='width: 42%;'></div></div>
+                            <div class='breakdown-meta'>12 unique &middot; 18 items</div>
+                        </div>
+                        <div class='breakdown-row'>
+                            <div class='breakdown-row-header'><span class='breakdown-label'>Sample slice B</span><span class='breakdown-stats'><span class='breakdown-percent'>28.5%</span><span class='breakdown-value'>$285.00</span></span></div>
+                            <div class='breakdown-bar'><div class='breakdown-bar-fill' style='width: 28.5%;'></div></div>
+                            <div class='breakdown-meta'>9 unique &middot; 11 items</div>
+                        </div>
+                        <div class='breakdown-row'>
+                            <div class='breakdown-row-header'><span class='breakdown-label'>Sample slice C</span><span class='breakdown-stats'><span class='breakdown-percent'>18.0%</span><span class='breakdown-value'>$180.00</span></span></div>
+                            <div class='breakdown-bar'><div class='breakdown-bar-fill' style='width: 18%;'></div></div>
+                            <div class='breakdown-meta'>7 unique &middot; 7 items</div>
+                        </div>
+                        <div class='breakdown-row'>
+                            <div class='breakdown-row-header'><span class='breakdown-label'>Sample slice D</span><span class='breakdown-stats'><span class='breakdown-percent'>11.5%</span><span class='breakdown-value'>$115.00</span></span></div>
+                            <div class='breakdown-bar'><div class='breakdown-bar-fill' style='width: 11.5%;'></div></div>
+                            <div class='breakdown-meta'>4 unique &middot; 5 items</div>
+                        </div>
+                    </div>
+                    <div class='text-center mt-6'>
+                        <a href='/sets' class='btn btn-primary text-sm px-4 py-2'>Browse Sets to add cards</a>
+                    </div>
+                </div>
             {{/if}}
         </div>
     {{/if}}
 </div>
+<script>
+    (function () {
+        var STORAGE_KEY = 'iwmtg.portfolioBreakdownDimension';
+        var validDims = ['set', 'rarity', 'type', 'format', 'cost-basis'];
+        var params = new URLSearchParams(window.location.search);
+        var current = params.get('by');
+        if (!current) {
+            try {
+                var saved = localStorage.getItem(STORAGE_KEY);
+                if (saved && validDims.indexOf(saved) !== -1 && saved !== 'set') {
+                    window.location.replace('/portfolio/breakdown?by=' + encodeURIComponent(saved));
+                    return;
+                }
+            } catch (e) { /* ignore */ }
+        } else if (validDims.indexOf(current) !== -1) {
+            try { localStorage.setItem(STORAGE_KEY, current); } catch (e) { /* ignore */ }
+        }
+        document.querySelectorAll('.breakdown-tab[data-dimension]').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                try { localStorage.setItem(STORAGE_KEY, tab.dataset.dimension); } catch (e) { /* ignore */ }
+            });
+        });
+    })();
+</script>

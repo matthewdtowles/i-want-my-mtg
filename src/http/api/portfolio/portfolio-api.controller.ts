@@ -179,7 +179,7 @@ export class PortfolioApiController {
     @ApiQuery({
         name: 'by',
         required: false,
-        description: 'Dimension to group by (set, rarity, type)',
+        description: 'Dimension to group by (set, rarity, type, format, cost-basis)',
     })
     @ApiResponse({ status: 200, description: 'Breakdown slices and totals' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })

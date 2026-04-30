@@ -47,7 +47,7 @@
                 <li class='card-feature'>{{>pricingCheck}}Track your collection (unlimited cards)</li>
                 <li class='card-feature'>{{>pricingCheck}}Log unlimited transactions (last 30 days visible)</li>
                 <li class='card-feature'>{{>pricingCheck}}Set price alerts (up to 5)</li>
-                <li class='card-feature'>{{>pricingCheck}}Live market prices &amp; 30-day history</li>
+                <li class='card-feature'>{{>pricingCheck}}Live market prices &amp; full price history</li>
                 <li class='card-feature'>{{>pricingCheck}}Basic portfolio overview</li>
                 <li class='card-feature'>{{>pricingCheck}}CSV import &amp; export</li>
                 <li class='card-feature'>{{>pricingCheck}}Binder view</li>
@@ -71,7 +71,8 @@
                 <li class='card-feature'>{{>pricingCheck}}Unlimited price alerts &amp; multi-threshold</li>
                 <li class='card-feature'>{{>pricingCheck}}Full transaction history (no cutoff)</li>
                 <li class='card-feature'>{{>pricingCheck}}Portfolio value history &amp; P&amp;L charts</li>
-                <li class='card-feature'>{{>pricingCheck}}Advanced analytics (set, format, color, rarity)</li>
+                <li class='card-feature'>{{>pricingCheck}}FIFO cost basis &amp; realized gains</li>
+                <li class='card-feature'>{{>pricingCheck}}Advanced analytics (set, type, rarity, cost basis)</li>
                 <li class='card-feature'>{{>pricingCheck}}Sealed product &amp; set completion tracking</li>
                 <li class='card-feature'>{{>pricingCheck}}External imports (Moxfield, Archidekt, Deckbox) <span class='ml-1 text-xs uppercase tracking-wide text-amber-600 dark:text-amber-400'>(Coming soon)</span></li>
                 <li class='card-feature'>{{>pricingCheck}}Priority support &amp; early access</li>
@@ -126,10 +127,11 @@
                 <tr class='pricing-table-category'><td colspan='3'>Portfolio &amp; Analytics</td></tr>
                 <tr><td>Portfolio value overview</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
                 <tr><td>Portfolio value history</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
-                <tr><td>P&amp;L tracking</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Cost basis<span class='pricing-table-note'>FIFO matches sells to oldest buys for accurate tax-style gain tracking</span></td><td><span class='pricing-table-partial'>Average</span></td><td><span class='pricing-table-partial'>FIFO</span></td></tr>
+                <tr><td>P&amp;L tracking<span class='pricing-table-note'>Realized gains and FIFO-based unrealized P&amp;L</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
                 <tr><td>Cash flow charts</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
                 <tr><td>Transaction history</td><td><span class='pricing-table-partial'>Last 30 days</span></td><td>{{>pricingYes}}</td></tr>
-                <tr><td>Advanced analytics<span class='pricing-table-note'>Breakdown by set, format, color, rarity</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Advanced analytics<span class='pricing-table-note'>Breakdown by set, type, rarity, cost basis</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
 
                 <tr class='pricing-table-category'><td colspan='3'>Account</td></tr>
                 <tr><td>Standard support</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>

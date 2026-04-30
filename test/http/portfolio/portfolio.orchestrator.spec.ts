@@ -248,7 +248,7 @@ describe('PortfolioOrchestrator', () => {
             const result = await orchestrator.refresh(mockAuthenticatedRequest);
 
             expect(result.success).toBe(true);
-            expect(summaryService.refreshSummary).toHaveBeenCalledWith(1);
+            expect(summaryService.refreshSummary).toHaveBeenCalledWith(1, false);
         });
 
         it('should return error on rate limit', async () => {

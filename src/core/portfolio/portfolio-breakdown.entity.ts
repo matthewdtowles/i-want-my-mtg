@@ -1,10 +1,9 @@
-export type BreakdownDimension = 'set' | 'rarity' | 'type' | 'format' | 'cost-basis';
+export type BreakdownDimension = 'set' | 'rarity' | 'type' | 'cost-basis';
 
 export const BREAKDOWN_DIMENSIONS: BreakdownDimension[] = [
     'set',
     'rarity',
     'type',
-    'format',
     'cost-basis',
 ];
 

@@ -14,6 +14,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequiresSubscription } from 'src/core/billing/requires-subscription.decorator';
 import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import {
     BreakdownDimension,
@@ -47,7 +48,8 @@ export class PortfolioApiController {
         @Inject(PortfolioBreakdownService)
         private readonly breakdownService: PortfolioBreakdownService,
         @Inject(CardService) private readonly cardService: CardService,
-        @Inject(TransactionService) private readonly transactionService: TransactionService
+        @Inject(TransactionService) private readonly transactionService: TransactionService,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {}
 
     @Get()
@@ -138,7 +140,8 @@ export class PortfolioApiController {
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<{ refreshed: boolean }>> {
         try {
-            await this.summaryService.refreshSummary(req.user.id);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+            await this.summaryService.refreshSummary(req.user.id, subscribed);
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
@@ -162,7 +165,9 @@ export class PortfolioApiController {
     }
 
     @Get('realized-gains')
-    @ApiOperation({ summary: 'Get realized gains' })
+    @UseGuards(SubscriptionGuard)
+    @RequiresSubscription()
+    @ApiOperation({ summary: 'Get realized gains (Premium)' })
     @ApiResponse({ status: 200, description: 'Realized gains data' })
     async getRealizedGains(
         @Req() req: AuthenticatedRequest

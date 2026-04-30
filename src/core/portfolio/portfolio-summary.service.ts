@@ -67,8 +67,8 @@ export class PortfolioSummaryService {
         return this.performanceRepository.aggregateBySet(userId);
     }
 
-    async refreshSummary(userId: number): Promise<PortfolioSummary> {
-        this.LOGGER.debug(`Refresh portfolio summary for user ${userId}.`);
+    async refreshSummary(userId: number, useFifo = true): Promise<PortfolioSummary> {
+        this.LOGGER.debug(`Refresh portfolio summary for user ${userId} (useFifo=${useFifo}).`);
 
         const manager = this.summaryRepository.getManager();
         return manager.transaction(async (txManager: EntityManager) => {
@@ -77,7 +77,7 @@ export class PortfolioSummaryService {
                 this.assertCanRefresh(existing);
             }
 
-            const summary = await this.computeSummary(userId, txManager);
+            const summary = await this.computeSummary(userId, txManager, useFifo);
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -89,7 +89,7 @@ export class PortfolioSummaryService {
                 ...summary,
                 refreshesToday,
                 lastRefreshDate: new Date(),
-                computationMethod: 'fifo',
+                computationMethod: useFifo ? 'fifo' : 'average',
             });
 
             return this.summaryRepository.save(summaryToSave, txManager);
@@ -98,7 +98,8 @@ export class PortfolioSummaryService {
 
     async computeSummary(
         userId: number,
-        manager?: EntityManager
+        manager?: EntityManager,
+        useFifo = true
     ): Promise<{
         userId: number;
         totalValue: number;
@@ -121,7 +122,8 @@ export class PortfolioSummaryService {
             userId,
             inventoryItems,
             transactions,
-            totalValue
+            totalValue,
+            useFifo
         );
 
         await this.performanceRepository.replaceForUser(userId, computed.performances, manager);

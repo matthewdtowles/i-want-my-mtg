@@ -92,12 +92,6 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
                     labelExpr: `COALESCE(NULLIF(SPLIT_PART(c.type, ' —', 1), ''), 'Unknown')`,
                     extraJoins: '',
                 };
-            case 'format':
-                return {
-                    keyExpr: `l.format::text`,
-                    labelExpr: `INITCAP(l.format::text)`,
-                    extraJoins: `JOIN legality l ON l.card_id = c.id AND l.status = 'legal'`,
-                };
             case 'cost-basis':
                 throw new Error(
                     "dimensionConfig does not support 'cost-basis'; use aggregateCostBasis() instead."

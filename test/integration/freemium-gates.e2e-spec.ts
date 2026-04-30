@@ -204,32 +204,6 @@ describe('Freemium gates (e2e)', () => {
         });
     });
 
-    describe('Card price history clamp', () => {
-        it('clamps history to 30 days for free users (older points excluded)', async () => {
-            const res = await request(app.getHttpServer())
-                .get(`/api/v1/cards/${TEST_CARD_ID}/price-history?days=365`)
-                .set('Authorization', bearer)
-                .expect(200);
-
-            const cutoff = new Date();
-            cutoff.setUTCDate(cutoff.getUTCDate() - 30);
-            for (const point of res.body.data) {
-                expect(new Date(point.date).getTime()).toBeGreaterThanOrEqual(cutoff.getTime());
-            }
-        });
-
-        it('returns full history for subscribed users when requested', async () => {
-            await setSubscribed(true);
-            const res = await request(app.getHttpServer())
-                .get(`/api/v1/cards/${TEST_CARD_ID}/price-history?days=365`)
-                .set('Authorization', bearer)
-                .expect(200);
-
-            // Seed has rows at -60d, -45d, -7d, -3d, today; subscribed should see >=4 of those
-            expect(res.body.data.length).toBeGreaterThanOrEqual(4);
-        });
-    });
-
     describe('Transaction list 30-day cap', () => {
         it('hides transactions older than 30 days for free users', async () => {
             const res = await request(app.getHttpServer())

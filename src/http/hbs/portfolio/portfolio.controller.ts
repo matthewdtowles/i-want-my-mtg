@@ -70,7 +70,8 @@ export class PortfolioController {
         return this.orchestrator.getCashFlow(req);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @RequiresSubscription()
     @Get('realized-gains')
     async getRealizedGains(
         @Req() req: AuthenticatedRequest

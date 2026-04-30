@@ -156,7 +156,8 @@ export class PortfolioOrchestrator {
         this.LOGGER.debug(`Refresh portfolio summary for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            await this.summaryService.refreshSummary(req.user.id);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+            await this.summaryService.refreshSummary(req.user.id, subscribed);
             return { success: true };
         } catch (error) {
             this.LOGGER.debug(`Error refreshing portfolio summary: ${error?.message}`);
@@ -214,10 +215,6 @@ export class PortfolioOrchestrator {
                 this.summaryService.getSummary(req.user.id),
             ]);
 
-            // Use portfolio summary as the source of truth for totals. The 'format'
-            // dimension JOINs legality so a card legal in N formats appears in N slices;
-            // summing slice values would double-count. Percentages use the true total,
-            // so format slices may sum to >100% — that is correct (it reflects overlap).
             const totalValue = summary?.totalValue ?? 0;
             const totalItems = summary?.totalQuantity ?? 0;
 

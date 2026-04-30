@@ -78,17 +78,24 @@ export class BillingController {
     }
 
     @Get('success')
-    @Render('billingSuccess')
     async success(
         @Req() req: AuthenticatedRequest,
+        @Res() res: Response,
         @Query('session_id') sessionId?: string
-    ): Promise<BillingViewDto> {
+    ): Promise<void> {
         this.LOGGER.log(`Billing success landing for user ${req.user?.id}.`);
         if (sessionId) {
             await this.orchestrator.syncFromCheckoutSession(req, sessionId);
         }
         const view = await this.orchestrator.getBillingView(req);
-        return new BillingViewDto({ ...view, title: 'Welcome to Premium - I Want My MTG' });
+        if (!sessionId && !view.subscribed) {
+            res.redirect(303, '/billing');
+            return;
+        }
+        res.render(
+            'billingSuccess',
+            new BillingViewDto({ ...view, title: 'Welcome to Premium - I Want My MTG' })
+        );
     }
 
     @Get('canceled')

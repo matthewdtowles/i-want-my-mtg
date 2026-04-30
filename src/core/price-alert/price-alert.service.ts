@@ -63,7 +63,7 @@ export class PriceAlertService {
                     'Multi-threshold alerts (increase AND decrease on the same card) are a Premium feature. Upgrade at /pricing to enable.'
                 );
             }
-            const existingCount = await this.alertRepo.countByUser(alert.userId);
+            const existingCount = await this.alertRepo.countActiveByUser(alert.userId);
             if (existingCount >= FREE_ALERT_LIMIT) {
                 throw new DomainValidationError(
                     `Free plan is limited to ${FREE_ALERT_LIMIT} active price alerts. Upgrade at /pricing for unlimited alerts.`

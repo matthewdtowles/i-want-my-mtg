@@ -26,6 +26,7 @@ describe('PriceAlertService', () => {
         findByUser: jest.fn(),
         findByUserWithCardData: jest.fn(),
         countByUser: jest.fn(),
+        countActiveByUser: jest.fn(),
         findActiveWithPriceData: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
@@ -138,7 +139,7 @@ describe('PriceAlertService', () => {
 
         it(`should reject creation when free user is at the ${FREE_ALERT_LIMIT}-alert limit`, async () => {
             mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
-            alertRepo.countByUser.mockResolvedValue(FREE_ALERT_LIMIT);
+            alertRepo.countActiveByUser.mockResolvedValue(FREE_ALERT_LIMIT);
             const alert = new PriceAlert({ userId: 1, cardId: 'card-1', increasePct: 10 });
             await expect(service.create(alert)).rejects.toThrow(/Free plan is limited/);
             expect(alertRepo.create).not.toHaveBeenCalled();
@@ -146,7 +147,7 @@ describe('PriceAlertService', () => {
 
         it('should not enforce alert limit for subscribed user', async () => {
             mockSubscriptionService.isUserSubscribed.mockResolvedValue(true);
-            alertRepo.countByUser.mockResolvedValue(999);
+            alertRepo.countActiveByUser.mockResolvedValue(999);
             alertRepo.findByUserAndCard.mockResolvedValue(null);
             alertRepo.create.mockImplementation(async (a) => new PriceAlert({ ...a, id: 1 }));
             const alert = new PriceAlert({ userId: 1, cardId: 'card-1', increasePct: 10 });

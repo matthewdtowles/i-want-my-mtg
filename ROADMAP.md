@@ -507,7 +507,7 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 - [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
 - [x] Add `by=format` dimension - join through `legality` table, count cards legal in each format
 - [x] Add cost-basis dimension: gain/loss/at-cost buckets sourced from `portfolio_card_performance`
-- [ ] Visual upgrade: stacked bar chart or treemap option (current is per-row horizontal bars - works but not flashy)
+- [x] Visual upgrade: stacked bar chart or treemap option - decided against; per-row horizontal bars are the most readable form for this data (small slices stay legible, exact values are easy to scan)
 - [x] Sticky dimension preference (localStorage) so users return to the same view
 - [x] Empty state for new users: sample/demo breakdown shown when slices are empty
 

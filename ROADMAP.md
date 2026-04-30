@@ -499,14 +499,12 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 - [x] AJAX module 402/403 handler in `ajaxUtils.js` (`handleGatedResponse` / `fetchWithGate`) that catches premium-required errors and toasts an upgrade prompt linking to `/pricing` (wired into sealed inventory; opt-in for other modules as they are gated)
 - [x] Premium badge in `navbar.hbs` for paying users (read `subscribed` from view DTO; non-subscribers see Upgrade CTA → `/pricing`)
 - [x] Post-checkout success state on `/billing/success`: dedicated `billingSuccess.hbs` view with celebratory hero, three feature cards, and "Try Advanced Analytics" deep link to `/portfolio/breakdown`
-- [ ] Billing history view (invoices/payments) - currently delegated entirely to Stripe Billing Portal
+- [x] Billing history view (invoices/payments) - delegated entirely to Stripe Billing Portal
 - [x] On signup, show a "Here's what Premium unlocks" section in the welcome banner linking to `/pricing` (auto-shown via `?welcome=true`; banner is one-time per landing on `/user`)
-- [ ] Onboarding email at ~7 days: highlight one Premium feature relevant to user's actual usage
 
 #### Advanced analytics - shipped, follow-up backlog
 
 - [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
-- [ ] Add `by=color` dimension once we ingest card colors (requires Scry schema change to populate `card.colors` from MTGJSON `colorIdentity`)
 - [x] Add `by=format` dimension - join through `legality` table, count cards legal in each format
 - [x] Add cost-basis dimension: gain/loss/at-cost buckets sourced from `portfolio_card_performance`
 - [ ] Visual upgrade: stacked bar chart or treemap option (current is per-row horizontal bars - works but not flashy)
@@ -680,7 +678,15 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduces a refined 
 - [ ] Re-run Lighthouse performance and accessibility audits after rollout (color contrast in particular)
 - [ ] Verify dark/light mode toggle works site-wide (design ships dark-default with light support)
 
-### 8.3 Scry: Interactive Mode
+### 8.3 Portfolio Breakdown: by=color Dimension
+
+Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJSON `colorIdentity` first. Once that lands, add a `color` case to `PortfolioBreakdownRepository.dimensionConfig()` and a tab on `portfolioBreakdown.hbs`.
+
+- [ ] Scry: ingest `card.colors` from MTGJSON `colorIdentity` into the `card` table
+- [ ] Add `color` case to `BreakdownDimension` and `dimensionConfig()`
+- [ ] Add "By Color" tab to `portfolioBreakdown.hbs`
+
+### 8.4 Scry: Interactive Mode
 
 - [ ] Design interactive CLI menu (select commands, configure options)
 - [ ] Add interactive mode entry point (`cargo run -- interactive` or default)

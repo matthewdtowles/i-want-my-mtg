@@ -128,9 +128,10 @@ export class SubscriptionService {
     async syncFromCheckoutSessionId(sessionId: string, userId: number): Promise<void> {
         try {
             const session = await this.stripe.retrieveCheckoutSession(sessionId);
-            if (session.client_reference_id && session.client_reference_id !== String(userId)) {
+            const clientReferenceId = session.client_reference_id?.trim();
+            if (clientReferenceId !== String(userId)) {
                 this.LOGGER.warn(
-                    `Checkout session ${sessionId} client_reference_id does not match user ${userId}; skipping sync.`
+                    `Checkout session ${sessionId} missing or mismatched client_reference_id for user ${userId}; skipping sync.`
                 );
                 return;
             }
@@ -139,7 +140,9 @@ export class SubscriptionService {
                     ? session.subscription
                     : session.subscription?.id;
             if (!subId) {
-                this.LOGGER.warn(`Checkout session ${sessionId} has no subscription; skipping sync.`);
+                this.LOGGER.warn(
+                    `Checkout session ${sessionId} has no subscription; skipping sync.`
+                );
                 return;
             }
             const full = await this.stripe.retrieveSubscription(subId);

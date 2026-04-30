@@ -130,9 +130,9 @@ describe('SubscriptionService', () => {
                     status,
                 })
             );
-            await expect(service.startCheckout(user, SubscriptionPlan.Monthly)).rejects.toBeInstanceOf(
-                AlreadySubscribedError
-            );
+            await expect(
+                service.startCheckout(user, SubscriptionPlan.Monthly)
+            ).rejects.toBeInstanceOf(AlreadySubscribedError);
             expect(gateway.createCheckoutSession).not.toHaveBeenCalled();
         });
 
@@ -148,7 +148,9 @@ describe('SubscriptionService', () => {
                     status,
                 })
             );
-            gateway.createCheckoutSession.mockResolvedValue({ url: 'https://checkout.stripe/resubscribe' });
+            gateway.createCheckoutSession.mockResolvedValue({
+                url: 'https://checkout.stripe/resubscribe',
+            });
             const result = await service.startCheckout(user, SubscriptionPlan.Monthly);
             expect(result.url).toBe('https://checkout.stripe/resubscribe');
         });
@@ -246,6 +248,23 @@ describe('SubscriptionService', () => {
             await service.handleSubscriptionDeleted('sub_missing');
             expect(repo.upsert).not.toHaveBeenCalled();
         });
+    });
+
+    describe('syncFromCheckoutSessionId', () => {
+        it.each([null, '', '   '])(
+            'skips sync when client_reference_id is %p',
+            async (clientReferenceId) => {
+                gateway.retrieveCheckoutSession.mockResolvedValue({
+                    client_reference_id: clientReferenceId,
+                    subscription: 'sub_1',
+                } as Stripe.Checkout.Session);
+
+                await service.syncFromCheckoutSessionId('cs_123', user.id);
+
+                expect(gateway.retrieveSubscription).not.toHaveBeenCalled();
+                expect(repo.upsert).not.toHaveBeenCalled();
+            }
+        );
     });
 
     describe('getSubscriptionForUser', () => {

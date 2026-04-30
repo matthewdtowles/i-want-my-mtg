@@ -38,15 +38,33 @@ export class PricingOrchestrator {
     }
 
     pricingDisplay(): PricingDisplay {
+        const monthlyAmount =
+            this.configService.get<string>('STRIPE_DISPLAY_PRICE_MONTHLY') || '$3.99';
+        const annualAmount =
+            this.configService.get<string>('STRIPE_DISPLAY_PRICE_ANNUAL') || '$39.99';
+        const monthlyValue = parsePriceValue(monthlyAmount);
+        const annualValue = parsePriceValue(annualAmount);
+        const perMonth = (annualValue / 12).toFixed(2);
+        const annualMonthlyTotal = (monthlyValue * 12).toFixed(2);
         return {
             monthly: {
-                amount: this.configService.get<string>('STRIPE_DISPLAY_PRICE_MONTHLY') || '$3.99',
+                amount: monthlyAmount,
                 label: 'per month',
+                amountValue: monthlyValue.toFixed(2),
             },
             annual: {
-                amount: this.configService.get<string>('STRIPE_DISPLAY_PRICE_ANNUAL') || '$39.99',
+                amount: annualAmount,
                 label: 'per year',
+                amountValue: annualValue.toFixed(2),
+                perMonth,
+                billedNote: `Billed ${annualAmount}/year - save ~2 months`,
             },
+            annualMonthlyTotal,
         };
     }
+}
+
+function parsePriceValue(displayAmount: string): number {
+    const parsed = parseFloat(displayAmount.replace(/[^0-9.]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
 }

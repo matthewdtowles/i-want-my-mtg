@@ -98,6 +98,12 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
                     labelExpr: `INITCAP(l.format::text)`,
                     extraJoins: `JOIN legality l ON l.card_id = c.id AND l.status = 'legal'`,
                 };
+            case 'cost-basis':
+                throw new Error(
+                    "dimensionConfig does not support 'cost-basis'; use aggregateCostBasis() instead."
+                );
+            default:
+                throw new Error(`Unsupported breakdown dimension: ${dimension}`);
         }
     }
 

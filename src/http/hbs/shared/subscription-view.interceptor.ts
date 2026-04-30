@@ -1,5 +1,5 @@
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable, from } from 'rxjs';
+import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';

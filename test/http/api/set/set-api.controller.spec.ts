@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { Set } from 'src/core/set/set.entity';
@@ -35,6 +36,7 @@ describe('SetApiController', () => {
     let controller: SetApiController;
     let setService: jest.Mocked<SetService>;
     let inventoryService: jest.Mocked<InventoryService>;
+    let subscriptionService: jest.Mocked<SubscriptionService>;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -69,6 +71,12 @@ describe('SetApiController', () => {
                     },
                 },
                 {
+                    provide: SubscriptionService,
+                    useValue: {
+                        isUserSubscribed: jest.fn(),
+                    },
+                },
+                {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
@@ -78,10 +86,12 @@ describe('SetApiController', () => {
         controller = module.get(SetApiController);
         setService = module.get(SetService) as jest.Mocked<SetService>;
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
+        subscriptionService = module.get(SubscriptionService) as jest.Mocked<SubscriptionService>;
     });
 
     beforeEach(() => {
         jest.clearAllMocks();
+        subscriptionService.isUserSubscribed.mockResolvedValue(true);
     });
 
     describe('findAll', () => {
@@ -101,6 +111,21 @@ describe('SetApiController', () => {
             expect(result.data[0].completionRate).toBeGreaterThan(0);
             expect(inventoryService.inventoryTotalsForSets).toHaveBeenCalledWith(42, ['mkm']);
             expect(inventoryService.ownedValuesForSets).toHaveBeenCalledWith(42, ['mkm']);
+        });
+
+        it('should omit completionRate when authenticated but not subscribed', async () => {
+            const sets = [createSet()];
+            setService.findSets.mockResolvedValue(sets);
+            setService.totalSetsCount.mockResolvedValue(1);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map([['mkm', 50]]));
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map([['mkm', 75.25]]));
+            subscriptionService.isUserSubscribed.mockResolvedValue(false);
+
+            const result = await controller.findAll(makeReq(42), {});
+
+            expect(result.data[0].ownedTotal).toBe(50);
+            expect(result.data[0].ownedValue).toBe(75.25);
+            expect(result.data[0].completionRate).toBeUndefined();
         });
 
         it('should not include owned data when unauthenticated', async () => {

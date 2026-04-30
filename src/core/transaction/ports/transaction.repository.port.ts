@@ -37,9 +37,11 @@ export interface TransactionRepositoryPort {
     findSells(userId: number, cardId: string, isFoil: boolean): Promise<Transaction[]>;
 
     /**
-     * Find all transactions for a user, ordered by date DESC
+     * Find all transactions for a user, ordered by date DESC.
+     * Optional `sinceDate` caps results to transactions on or after that date
+     * (used by the free-tier 30-day history gate).
      */
-    findByUser(userId: number): Promise<Transaction[]>;
+    findByUser(userId: number, sinceDate?: Date): Promise<Transaction[]>;
 
     /**
      * Update a transaction by ID (only updates provided fields)

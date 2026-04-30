@@ -85,12 +85,16 @@ export class TransactionRepository implements TransactionRepositoryPort {
         return results.map(TransactionMapper.toCore);
     }
 
-    async findByUser(userId: number): Promise<Transaction[]> {
+    async findByUser(userId: number, sinceDate?: Date): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding all transactions for user ${userId}.`);
-        const results = await this.repository.find({
-            where: { userId },
-            order: { date: 'DESC', id: 'DESC' },
-        });
+        const qb = this.repository
+            .createQueryBuilder('transaction')
+            .where('transaction.userId = :userId', { userId });
+        if (sinceDate) {
+            qb.andWhere('transaction.date >= :sinceDate', { sinceDate });
+        }
+        qb.orderBy('transaction.date', 'DESC').addOrderBy('transaction.id', 'DESC');
+        const results = await qb.getMany();
         return results.map(TransactionMapper.toCore);
     }
 

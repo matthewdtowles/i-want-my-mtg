@@ -94,9 +94,9 @@ export class TransactionService {
         return this.repository.findByUserAndCard(userId, cardId, isFoil);
     }
 
-    async findByUser(userId: number): Promise<Transaction[]> {
+    async findByUser(userId: number, sinceDate?: Date): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding all transactions for user ${userId}.`);
-        return this.repository.findByUser(userId);
+        return this.repository.findByUser(userId, sinceDate);
     }
 
     async findByUserPaginated(

@@ -54,7 +54,7 @@ export class TransactionOrchestrator {
             const [transactions, totalCount, unfilteredCount] = await Promise.all([
                 this.transactionService.findByUserPaginated(req.user.id, options, sinceDate),
                 this.transactionService.countByUser(req.user.id, options, sinceDate),
-                this.transactionService.countByUser(req.user.id, new SafeQueryOptions(), sinceDate),
+                this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
             ]);
 
             const responseItems: TransactionResponseDto[] = transactions.map((t) => {
@@ -227,7 +227,9 @@ export class TransactionOrchestrator {
         this.LOGGER.debug(`Export CSV for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const transactions = await this.transactionService.findByUser(req.user.id);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+            const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
+            const transactions = await this.transactionService.findByUser(req.user.id, sinceDate);
             const cardIds = [...new Set(transactions.map((t) => t.cardId))];
             const cardMap = await this.buildCardMap(cardIds);
 

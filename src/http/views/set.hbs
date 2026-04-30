@@ -267,7 +267,6 @@
                     </div>
 
                     {{! Price History Chart }}
-                    {{#if subscribed}}
                     <div id="set-price-history-chart" data-set-code="{{set.code}}"
                         data-base-size="{{set.baseSize}}" data-total-size="{{set.totalSize}}"
                         data-chart-src="/public/js/setPriceHistoryChart.js?v={{assetVersion}}"
@@ -287,11 +286,6 @@
                             <canvas id="set-price-history-canvas"></canvas>
                         </div>
                     </div>
-                    {{else}}
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        {{>upgradeTile heading="Set Price History" description="See how this set's value tracks over time. Premium unlocks weekly, monthly, and yearly price history charts for every set." cta="Upgrade to Premium"}}
-                    </div>
-                    {{/if}}
                 </div>
             </div>
         </div>

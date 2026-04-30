@@ -106,29 +106,6 @@
     </div>
     <div class="toast-progress"><div class="toast-progress-bar" id="toast-progress-bar"></div></div>
 </div>
-{{#if welcome}}
-<div class="welcome-banner" role="status">
-    <h2>Welcome to I Want My MTG!</h2>
-    <p>Your account is ready. Start by browsing sets to find cards you own, or import your whole collection at once if you already have a list.</p>
-    <div class="flex flex-wrap gap-2 mt-3">
-        <a href="/sets" class="btn btn-primary text-sm px-3 py-1.5">Browse Sets</a>
-        <a href="/inventory/import-export-guide" class="btn btn-secondary text-sm px-3 py-1.5">Import from CSV</a>
-        <a href="/guides/getting-started" class="btn btn-ghost text-sm px-3 py-1.5">Getting Started Guide</a>
-    </div>
-    <div class="mt-4 pt-3 border-t border-amber-300/50 dark:border-amber-700/50">
-        <p class="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300 font-semibold mb-1">
-            <i class="fas fa-star text-amber-500 mr-1" aria-hidden="true"></i>Want more depth?
-        </p>
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            Premium unlocks unlimited price alerts, full transaction history, P&amp;L tracking, set completion, sealed product tracking, and advanced portfolio analytics.
-        </p>
-        <a href="/pricing" class="btn text-sm px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold">
-            <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>See what Premium unlocks
-        </a>
-    </div>
-</div>
-{{/if}}
-
 <script src="/public/js/toast.js?v={{assetVersion}}" defer></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {

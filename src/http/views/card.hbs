@@ -144,18 +144,12 @@
 
                 <div class="mt-4" id="price-history-chart" data-card-id="{{card.cardId}}" data-chart-src="/public/js/priceHistoryChart.js?v={{assetVersion}}">
                     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History{{#unless subscribed}} <span class="text-xs font-normal text-gray-500 dark:text-gray-400">(last 30 days)</span>{{/unless}}</h3>
+                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h3>
                         <div class="flex gap-1 items-center">
                             <button class="history-range-btn price-history-range active px-2 py-1 text-xs rounded" data-days="7">1w</button>
                             <button class="history-range-btn price-history-range px-2 py-1 text-xs rounded" data-days="30">30d</button>
-                            {{#if subscribed}}
                             <button class="history-range-btn price-history-range px-2 py-1 text-xs rounded" data-days="365">1y</button>
                             <button class="history-range-btn price-history-range px-2 py-1 text-xs rounded" data-days="">All</button>
-                            {{else}}
-                            <a href="/pricing" class="text-xs text-amber-600 dark:text-amber-400 hover:underline ml-2" title="Premium unlocks 1y and full history">
-                                <i class="fas fa-lock text-xs mr-0.5" aria-hidden="true"></i>1y / All
-                            </a>
-                            {{/if}}
                         </div>
                     </div>
                     <div id="card-price-legend" class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs"></div>

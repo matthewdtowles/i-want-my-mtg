@@ -5,16 +5,11 @@ import {
     NotFoundException,
     Param,
     Query,
-    Req,
     UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FREE_TIER_HISTORY_DAYS } from 'src/core/billing/subscription-limits';
-import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
-import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -26,10 +21,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @Controller('api/v1/cards')
 @UseGuards(ApiRateLimitGuard)
 export class CardApiController {
-    constructor(
-        @Inject(CardService) private readonly cardService: CardService,
-        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
-    ) {}
+    constructor(@Inject(CardService) private readonly cardService: CardService) {}
 
     @Get()
     @ApiOperation({ summary: 'Search cards by name' })
@@ -73,16 +65,14 @@ export class CardApiController {
     }
 
     @Get(':cardId/price-history')
-    @UseGuards(OptionalAuthGuard)
     @ApiOperation({ summary: 'Get price history for a card by ID' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
     async getPriceHistoryById(
         @Param('cardId') cardId: string,
-        @Req() req: AuthenticatedRequest,
         @Query('days') days?: string
     ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
-        return this.getPriceHistoryForCard(cardId, days, req);
+        return this.getPriceHistoryForCard(cardId, days);
     }
 
     @Get(':setCode/:setNumber/prices')
@@ -105,7 +95,6 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber/price-history')
-    @UseGuards(OptionalAuthGuard)
     @ApiOperation({ summary: 'Get price history for a card by set code and number' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
@@ -113,14 +102,13 @@ export class CardApiController {
     async getPriceHistoryBySetCodeAndNumber(
         @Param('setCode') setCode: string,
         @Param('setNumber') setNumber: string,
-        @Req() req: AuthenticatedRequest,
         @Query('days') days?: string
     ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
         const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
         if (!card) {
             throw new NotFoundException('Card not found');
         }
-        return this.getPriceHistoryForCard(card.id, days, req);
+        return this.getPriceHistoryForCard(card.id, days);
     }
 
     @Get(':setCode/:setNumber')
@@ -140,17 +128,9 @@ export class CardApiController {
 
     private async getPriceHistoryForCard(
         cardId: string,
-        days: string | undefined,
-        req: AuthenticatedRequest
+        days: string | undefined
     ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
-        const requested = parseDaysParam(days);
-        const subscribed = req?.user?.id
-            ? await this.subscriptionService.isUserSubscribed(req.user.id)
-            : false;
-        const validDays = subscribed
-            ? requested
-            : Math.min(requested ?? FREE_TIER_HISTORY_DAYS, FREE_TIER_HISTORY_DAYS);
-        const prices = await this.cardService.findPriceHistory(cardId, validDays);
+        const prices = await this.cardService.findPriceHistory(cardId, parseDaysParam(days));
         const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
         return ApiResponseDto.ok(points);
     }

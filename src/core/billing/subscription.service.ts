@@ -73,7 +73,7 @@ export class SubscriptionService {
         });
     }
 
-    async syncFromStripeSubscription(stripeSub: Stripe.Subscription): Promise<void> {
+    async syncFromStripeSubscription(stripeSub: Stripe.Subscription): Promise<boolean> {
         const customerId =
             typeof stripeSub.customer === 'string' ? stripeSub.customer : stripeSub.customer.id;
         const existing = await this.repository.findByStripeCustomerId(customerId);
@@ -81,7 +81,7 @@ export class SubscriptionService {
             this.LOGGER.warn(
                 `Received subscription event for unknown customer ${customerId}; skipping.`
             );
-            return;
+            return false;
         }
         const priceId = stripeSub.items?.data?.[0]?.price?.id ?? null;
         const plan = priceId ? this.stripe.planForPriceId(priceId) : null;
@@ -100,6 +100,7 @@ export class SubscriptionService {
                 cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,
             })
         );
+        return true;
     }
 
     async handleSubscriptionDeleted(stripeSubscriptionId: string): Promise<void> {
@@ -125,7 +126,7 @@ export class SubscriptionService {
         );
     }
 
-    async syncFromCheckoutSessionId(sessionId: string, userId: number): Promise<void> {
+    async syncFromCheckoutSessionId(sessionId: string, userId: number): Promise<boolean> {
         try {
             const session = await this.stripe.retrieveCheckoutSession(sessionId);
             const clientReferenceId = session.client_reference_id?.trim();
@@ -133,7 +134,7 @@ export class SubscriptionService {
                 this.LOGGER.warn(
                     `Checkout session ${sessionId} missing or mismatched client_reference_id for user ${userId}; skipping sync.`
                 );
-                return;
+                return false;
             }
             const subId =
                 typeof session.subscription === 'string'
@@ -143,14 +144,15 @@ export class SubscriptionService {
                 this.LOGGER.warn(
                     `Checkout session ${sessionId} has no subscription; skipping sync.`
                 );
-                return;
+                return false;
             }
             const full = await this.stripe.retrieveSubscription(subId);
-            await this.syncFromStripeSubscription(full);
+            return this.syncFromStripeSubscription(full);
         } catch (error) {
             this.LOGGER.error(
                 `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${error?.message}`
             );
+            return false;
         }
     }
 

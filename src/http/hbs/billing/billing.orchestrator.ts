@@ -46,8 +46,8 @@ export class BillingOrchestrator {
         return this.subscriptionService.startBillingPortal(user);
     }
 
-    async syncFromCheckoutSession(req: AuthenticatedRequest, sessionId: string): Promise<void> {
-        await this.subscriptionService.syncFromCheckoutSessionId(sessionId, req.user.id);
+    async syncFromCheckoutSession(req: AuthenticatedRequest, sessionId: string): Promise<boolean> {
+        return this.subscriptionService.syncFromCheckoutSessionId(sessionId, req.user.id);
     }
 
     private async loadUser(req: AuthenticatedRequest): Promise<User> {

@@ -84,9 +84,9 @@ describe('Freemium gates (e2e)', () => {
         );
 
         // Seed an old transaction (>30 days ago) and a recent one for the cap test
-        await ds.query('DELETE FROM transaction WHERE user_id = $1', [userId]);
+        await ds.query('DELETE FROM "transaction" WHERE user_id = $1', [userId]);
         await ds.query(
-            `INSERT INTO transaction (user_id, card_id, type, quantity, price_per_unit, is_foil, date)
+            `INSERT INTO "transaction" (user_id, card_id, type, quantity, price_per_unit, is_foil, date)
              VALUES ($1, $2, 'BUY', 1, 1.00, false, NOW() - INTERVAL '90 days'),
                     ($1, $3, 'BUY', 1, 2.00, false, NOW() - INTERVAL '5 days')`,
             [userId, TEST_CARD_ID, TEST_CARD_ID_2]
@@ -106,7 +106,7 @@ describe('Freemium gates (e2e)', () => {
         if (ds?.isInitialized) {
             try {
                 await ds.query('DELETE FROM subscription WHERE user_id = $1', [userId]);
-                await ds.query('DELETE FROM transaction WHERE user_id = $1', [userId]);
+                await ds.query('DELETE FROM "transaction" WHERE user_id = $1', [userId]);
                 await ds.query('DELETE FROM price_alert WHERE user_id = $1', [userId]);
                 await ds.query(
                     'DELETE FROM sealed_product_inventory WHERE user_id = $1',

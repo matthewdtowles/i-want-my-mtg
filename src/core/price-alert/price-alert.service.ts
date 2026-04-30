@@ -56,6 +56,10 @@ export class PriceAlertService {
                 'At least one threshold (increasePct or decreasePct) is required'
             );
         }
+        const existing = await this.alertRepo.findByUserAndCard(alert.userId, alert.cardId);
+        if (existing) {
+            throw new DomainValidationError('Price alert already exists for this card');
+        }
         const subscribed = await this.subscriptionService.isUserSubscribed(alert.userId);
         if (!subscribed) {
             if (alert.increasePct != null && alert.decreasePct != null) {
@@ -69,10 +73,6 @@ export class PriceAlertService {
                     `Free plan is limited to ${FREE_ALERT_LIMIT} active price alerts. Upgrade at /pricing for unlimited alerts.`
                 );
             }
-        }
-        const existing = await this.alertRepo.findByUserAndCard(alert.userId, alert.cardId);
-        if (existing) {
-            throw new DomainValidationError('Price alert already exists for this card');
         }
         try {
             return await this.alertRepo.create(alert);

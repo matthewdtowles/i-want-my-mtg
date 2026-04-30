@@ -78,7 +78,7 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
                 return {
                     keyExpr: 'c.set_code',
                     labelExpr: 's.name',
-                    extraJoins: 'JOIN set s ON s.code = c.set_code',
+                    extraJoins: 'JOIN "set" s ON s.code = c.set_code',
                 };
             case 'rarity':
                 return {

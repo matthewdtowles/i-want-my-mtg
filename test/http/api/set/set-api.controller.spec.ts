@@ -3,6 +3,7 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { Set } from 'src/core/set/set.entity';
+import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -24,6 +25,18 @@ function createSet(overrides: Partial<Set> = {}): Set {
             setCode: 'mkm',
             basePrice: 120.5,
         }),
+        ...overrides,
+    });
+}
+
+function createSetPriceHistory(overrides: Partial<SetPriceHistory> = {}): SetPriceHistory {
+    return new SetPriceHistory({
+        setCode: 'mkm',
+        basePrice: 120.5,
+        totalPrice: 180.75,
+        basePriceAll: 200.25,
+        totalPriceAll: 260.5,
+        date: new Date('2024-03-01T00:00:00.000Z'),
         ...overrides,
     });
 }
@@ -50,6 +63,7 @@ describe('SetApiController', () => {
                         searchSets: jest.fn(),
                         totalSearchSets: jest.fn(),
                         findByCode: jest.fn(),
+                        findSetPriceHistory: jest.fn(),
                         findBlockGroupKeys: jest.fn(),
                         findSetsByBlockKeys: jest.fn(),
                         findMultiSetBlockKeys: jest.fn(),
@@ -92,6 +106,27 @@ describe('SetApiController', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         subscriptionService.isUserSubscribed.mockResolvedValue(true);
+    });
+
+    describe('getPriceHistory', () => {
+        it('should return set price history without subscription gating', async () => {
+            setService.findSetPriceHistory.mockResolvedValue([createSetPriceHistory()]);
+
+            const result = await controller.getPriceHistory('mkm', '365');
+
+            expect(setService.findSetPriceHistory).toHaveBeenCalledWith('mkm', 365);
+            expect(subscriptionService.isUserSubscribed).not.toHaveBeenCalled();
+            expect(result.success).toBe(true);
+            expect(result.data).toEqual([
+                {
+                    date: '2024-03-01',
+                    basePrice: 120.5,
+                    totalPrice: 180.75,
+                    basePriceAll: 200.25,
+                    totalPriceAll: 260.5,
+                },
+            ]);
+        });
     });
 
     describe('findAll', () => {
@@ -208,7 +243,11 @@ describe('SetApiController', () => {
             it('should use block-level pagination when group=block', async () => {
                 setService.totalBlockGroups.mockResolvedValue(10);
                 setService.findBlockGroupKeys.mockResolvedValue(['mid', 'neo']);
-                setService.findSetsByBlockKeys.mockResolvedValue([parentSet, childSet, standaloneSet]);
+                setService.findSetsByBlockKeys.mockResolvedValue([
+                    parentSet,
+                    childSet,
+                    standaloneSet,
+                ]);
                 setService.findMultiSetBlockKeys.mockResolvedValue(['mid']);
 
                 const req = makeReq();

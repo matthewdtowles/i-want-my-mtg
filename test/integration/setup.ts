@@ -26,7 +26,9 @@ export async function createTestApp(): Promise<INestApplication> {
         imports: [AppModule],
     }).compile();
 
-    const app = moduleFixture.createNestApplication();
+    const app = moduleFixture.createNestApplication({
+        logger: process.env.TEST_VERBOSE ? ['log', 'error', 'warn', 'debug', 'verbose'] : ['error', 'warn'],
+    });
 
     configureApp(app, VIEWS_DIR);
 

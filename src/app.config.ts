@@ -69,7 +69,6 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
 }
 
 function makeUserFriendly(message: string): string {
-    console.error(`Validation error: ${message}`);
     if (isCustomMessage(message)) return message;
     const lower = message?.toLowerCase();
     if (lower.includes('email')) return 'Please provide a valid email address';

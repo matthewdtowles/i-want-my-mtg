@@ -40,6 +40,7 @@ test.describe('Inventory page (authenticated)', () => {
 
     test('shows transactions nav link', async ({ authedPage: page }) => {
         await page.goto('/inventory');
+        await page.locator('#mobile-menu-button').click();
         await expect(page.locator('a[href="/transactions"]').first()).toBeVisible();
     });
 });

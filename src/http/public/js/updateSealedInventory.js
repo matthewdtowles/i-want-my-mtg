@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateStepperUi(uuid, 0);
                 })
                 .catch(function (err) {
+                    if (err && err.message === 'PREMIUM_GATED') return;
                     console.error('Error removing sealed product:', err);
                 })
                 .finally(function () {
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateStepperUi(uuid, savedQty);
                 })
                 .catch(function (err) {
+                    if (err && err.message === 'PREMIUM_GATED') return;
                     console.error('Error updating sealed product inventory:', err);
                 })
                 .finally(function () {

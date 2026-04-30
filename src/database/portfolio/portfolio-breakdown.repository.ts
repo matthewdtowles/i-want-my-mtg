@@ -47,8 +47,13 @@ export class PortfolioBreakdownRepository implements PortfolioBreakdownRepositor
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             ${config.extraJoins}
-            LEFT JOIN price p ON p.card_id = c.id
-                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
+            LEFT JOIN LATERAL (
+                SELECT p2.normal, p2.foil
+                FROM price p2
+                WHERE p2.card_id = c.id
+                ORDER BY p2.date DESC
+                LIMIT 1
+            ) p ON TRUE
             WHERE i.user_id = $1
             GROUP BY ${config.keyExpr}, ${config.labelExpr}
             ORDER BY "value" DESC NULLS LAST

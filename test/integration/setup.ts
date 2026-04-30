@@ -73,6 +73,19 @@ export async function loginTestUser(app: INestApplication): Promise<string> {
 }
 
 /**
+ * Resolve the integration test user's id by email. Avoids hard-coding `user_id = 1`
+ * in specs, which is brittle if seed order changes.
+ */
+export async function getTestUserId(app: INestApplication): Promise<number> {
+    const ds = app.get(DataSource);
+    const rows = await ds.query(`SELECT id FROM users WHERE email = $1`, [TEST_USER.email]);
+    if (!rows[0]) {
+        throw new Error(`Integration test user ${TEST_USER.email} not found`);
+    }
+    return rows[0].id;
+}
+
+/**
  * Login via API endpoint and return a Bearer token string
  * suitable for the Authorization header.
  */

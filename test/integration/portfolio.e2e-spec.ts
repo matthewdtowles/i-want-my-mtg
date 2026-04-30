@@ -1,25 +1,35 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUser, TEST_CARD_ID, TEST_CARD_ID_2 } from './setup';
+import {
+    createTestApp,
+    closeTestApp,
+    getTestUserId,
+    loginTestUser,
+    TEST_CARD_ID,
+    TEST_CARD_ID_2,
+} from './setup';
 
 describe('Portfolio (e2e)', () => {
     let app: INestApplication;
     let authCookie: string;
+    let userId: number;
 
     beforeAll(async () => {
         app = await createTestApp();
         authCookie = await loginTestUser(app);
+        userId = await getTestUserId(app);
 
         // history/cash-flow are Premium-only after 3.4 freemium gating; seed an active sub for the
         // integ user. The free-403 case is covered in freemium-gates.e2e-spec.ts.
         const ds = app.get(DataSource);
-        await ds.query('DELETE FROM subscription WHERE user_id = 1');
+        await ds.query('DELETE FROM subscription WHERE user_id = $1', [userId]);
         await ds.query(
             `INSERT INTO subscription (user_id, stripe_customer_id, stripe_subscription_id,
                 stripe_price_id, status, plan, current_period_end, cancel_at_period_end)
-             VALUES (1, 'cus_test_p_1', 'sub_test_p_1', 'price_test_monthly', 'active', 'monthly',
-                NOW() + INTERVAL '30 days', false)`
+             VALUES ($1, 'cus_test_p_1', 'sub_test_p_1', 'price_test_monthly', 'active', 'monthly',
+                NOW() + INTERVAL '30 days', false)`,
+            [userId]
         );
 
         // Seed transactions for portfolio computation (skip inventory sync to avoid cleanup issues)
@@ -54,7 +64,7 @@ describe('Portfolio (e2e)', () => {
                 .post('/inventory')
                 .set('Cookie', authCookie)
                 .set('Content-Type', 'application/json')
-                .send([{ cardId, quantity: 3, isFoil: false, userId: 1 }])
+                .send([{ cardId, quantity: 3, isFoil: false, userId }])
                 .expect(201);
             expect(res.body.success).toBe(true);
         }
@@ -65,11 +75,14 @@ describe('Portfolio (e2e)', () => {
         try {
             const ds = app.get(DataSource);
             if (ds?.isInitialized) {
-                await ds.query(`DELETE FROM "transaction" WHERE user_id = 1`);
-                await ds.query(`DELETE FROM inventory WHERE user_id = 1`);
-                await ds.query(`DELETE FROM portfolio_card_performance WHERE user_id = 1`);
-                await ds.query(`DELETE FROM portfolio_summary WHERE user_id = 1`);
-                await ds.query(`DELETE FROM portfolio_value_history WHERE user_id = 1`);
+                await ds.query(`DELETE FROM "transaction" WHERE user_id = $1`, [userId]);
+                await ds.query(`DELETE FROM inventory WHERE user_id = $1`, [userId]);
+                await ds.query(`DELETE FROM portfolio_card_performance WHERE user_id = $1`, [
+                    userId,
+                ]);
+                await ds.query(`DELETE FROM portfolio_summary WHERE user_id = $1`, [userId]);
+                await ds.query(`DELETE FROM portfolio_value_history WHERE user_id = $1`, [userId]);
+                await ds.query(`DELETE FROM subscription WHERE user_id = $1`, [userId]);
             }
         } catch {
             // DB cleanup is best-effort; test DB is ephemeral

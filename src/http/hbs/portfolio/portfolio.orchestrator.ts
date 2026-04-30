@@ -209,10 +209,17 @@ export class PortfolioOrchestrator {
                 });
             }
 
-            const breakdown: PortfolioBreakdown = await this.breakdownService.getBreakdown(
-                req.user.id,
-                dimension
-            );
+            const [breakdown, summary] = await Promise.all([
+                this.breakdownService.getBreakdown(req.user.id, dimension),
+                this.summaryService.getSummary(req.user.id),
+            ]);
+
+            // Use portfolio summary as the source of truth for totals. The 'format'
+            // dimension JOINs legality so a card legal in N formats appears in N slices;
+            // summing slice values would double-count. Percentages use the true total,
+            // so format slices may sum to >100% — that is correct (it reflects overlap).
+            const totalValue = summary?.totalValue ?? 0;
+            const totalItems = summary?.totalQuantity ?? 0;
 
             const slices: BreakdownSliceView[] = breakdown.slices.map((s) => ({
                 key: s.key,
@@ -221,20 +228,18 @@ export class PortfolioOrchestrator {
                 itemCount: s.itemCount,
                 value: s.value,
                 valueFormatted: this.formatCurrency(s.value),
-                percent: breakdown.totalValue > 0 ? (s.value / breakdown.totalValue) * 100 : 0,
+                percent: totalValue > 0 ? (s.value / totalValue) * 100 : 0,
                 percentFormatted:
-                    breakdown.totalValue > 0
-                        ? `${((s.value / breakdown.totalValue) * 100).toFixed(1)}%`
-                        : '0%',
+                    totalValue > 0 ? `${((s.value / totalValue) * 100).toFixed(1)}%` : '0%',
             }));
 
             return new PortfolioBreakdownViewDto({
                 ...baseInit,
                 locked: false,
                 slices,
-                totalValue: breakdown.totalValue,
-                totalValueFormatted: this.formatCurrency(breakdown.totalValue),
-                totalItems: breakdown.totalItems,
+                totalValue,
+                totalValueFormatted: this.formatCurrency(totalValue),
+                totalItems,
             });
         } catch (error) {
             this.LOGGER.debug(`Error getting breakdown view: ${error?.message}`);

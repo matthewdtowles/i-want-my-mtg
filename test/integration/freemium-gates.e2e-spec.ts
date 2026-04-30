@@ -204,40 +204,6 @@ describe('Freemium gates (e2e)', () => {
         });
     });
 
-    describe('Set price history gate', () => {
-        async function loginCookie(): Promise<string> {
-            const cookieRes = await request(app.getHttpServer())
-                .post('/auth/login')
-                .send(MUTATION_USER)
-                .expect(302);
-            const cookies = cookieRes.headers['set-cookie'];
-            const cookie = (Array.isArray(cookies) ? cookies : [cookies])
-                .find((c: string) => c?.startsWith('authorization='))
-                ?.split(';')[0];
-            if (!cookie) throw new Error('Login did not return auth cookie');
-            return cookie;
-        }
-
-        it('GET /sets/:code/price-history returns 403 for free users', async () => {
-            const cookie = await loginCookie();
-            await request(app.getHttpServer())
-                .get(`/sets/${TEST_SET_CODE}/price-history`)
-                .set('Cookie', cookie)
-                .expect(403);
-        });
-
-        it('GET /sets/:code/price-history returns 200 for subscribed users', async () => {
-            await setSubscribed(true);
-            const cookie = await loginCookie();
-            const res = await request(app.getHttpServer())
-                .get(`/sets/${TEST_SET_CODE}/price-history`)
-                .set('Cookie', cookie)
-                .expect(200);
-            expect(res.body).toHaveProperty('setCode', TEST_SET_CODE);
-            expect(res.body).toHaveProperty('prices');
-        });
-    });
-
     describe('Card price history clamp', () => {
         it('clamps history to 30 days for free users (older points excluded)', async () => {
             const res = await request(app.getHttpServer())

@@ -369,25 +369,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Tracks elements we modified so release can restore prior state
+    var inertedEls = [];
+
     function lockBackground() {
         document.body.style.overflow = 'hidden';
-        // Mark siblings of drawer/overlay as inert so background is not focusable/announced
+        // Mark direct body children as inert/aria-hidden, but skip any element
+        // that contains the drawer or overlay (drawer lives inside <header>).
+        inertedEls = [];
         Array.prototype.forEach.call(document.body.children, function (el) {
-            if (el !== drawer && el !== overlay) {
-                el.setAttribute('inert', '');
-                el.setAttribute('aria-hidden', 'true');
-            }
+            if (el.contains(drawer) || el.contains(overlay)) return;
+            inertedEls.push({
+                el: el,
+                hadInert: el.hasAttribute('inert'),
+                priorAriaHidden: el.getAttribute('aria-hidden'),
+            });
+            el.setAttribute('inert', '');
+            el.setAttribute('aria-hidden', 'true');
         });
     }
 
     function releaseBackground() {
         document.body.style.overflow = '';
-        Array.prototype.forEach.call(document.body.children, function (el) {
-            if (el !== drawer && el !== overlay) {
-                el.removeAttribute('inert');
-                el.removeAttribute('aria-hidden');
-            }
+        inertedEls.forEach(function (rec) {
+            if (!rec.hadInert) rec.el.removeAttribute('inert');
+            if (rec.priorAriaHidden === null) rec.el.removeAttribute('aria-hidden');
+            else rec.el.setAttribute('aria-hidden', rec.priorAriaHidden);
         });
+        inertedEls = [];
     }
 
     function openDrawer() {

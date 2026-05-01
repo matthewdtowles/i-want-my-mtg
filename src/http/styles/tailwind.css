@@ -594,16 +594,6 @@
     @apply text-gray-400 dark:text-gray-500 mx-0.5;
 }
 
-/* ===== Navbar ===== */
-
-.navbar-link {
-    @apply text-white hover:text-teal-300 px-3 py-2 rounded-md font-medium transition-colors;
-}
-
-.navbar-link-mobile {
-    @apply text-white hover:text-teal-300 hover:bg-purple-800 dark:hover:bg-midnight-700 block px-3 py-2 rounded-md text-base font-medium transition-colors;
-}
-
 /* ===== Search Suggest ===== */
 
 .search-suggest-dropdown {

@@ -60,6 +60,10 @@
                 </a>
             {{else}}
                 {{!-- Unauthenticated: public links --}}
+                <a href="/" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M1 6l7-5 7 5v8H10V9H6v5H1z" stroke-linejoin="round"/></svg>
+                    Home
+                </a>
                 <a href="/sets" class="iwm-nav-link">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
                     Sets
@@ -105,9 +109,6 @@
                         Upgrade
                     </a>
                 {{/if}}
-            {{else}}
-                <a href="/auth/login" class="iwm-auth-signin navbar-login-link">Sign In</a>
-                <a href="/user/create" class="iwm-auth-signup">Sign Up</a>
             {{/if}}
 
             {{!-- Theme toggle --}}

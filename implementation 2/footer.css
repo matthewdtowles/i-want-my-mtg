@@ -1,0 +1,241 @@
+/* =============================================================
+   FOOTER REFRESH — drop this block into app.css
+   Replaces all previous footer / .footer-* rules.
+   Uses container queries so the grid responds to its own width
+   (works correctly inside narrower layout contexts too).
+   ============================================================= */
+
+/* ── Shell ── */
+.iwm-footer {
+    background: #131025; /* midnight-900 */
+    border-top: 1px solid #241e45; /* midnight-700 */
+    margin-top: auto;
+    /* Container query context */
+    container-type: inline-size;
+    container-name: footer;
+}
+
+.dark .iwm-footer {
+    background: #131025;
+    border-top-color: #241e45;
+}
+
+html:not(.dark) .iwm-footer {
+    background: #ffffff;
+    border-top-color: #e2e8f0;
+}
+
+/* ── Gradient color bar ── */
+.iwm-footer-bar {
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        #45ddd6 0%,
+        #2cc8ca 20%,
+        #a95de0 60%,
+        #f43f82 100%
+    );
+}
+
+/* ── Main body ── */
+.iwm-footer-body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+}
+
+/* ── Columns grid ── */
+.iwm-footer-cols {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 2.5rem 2rem;
+}
+
+@container footer (max-width: 700px) {
+    .iwm-footer-cols {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem 1.5rem;
+    }
+}
+
+@container footer (max-width: 420px) {
+    .iwm-footer-cols {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+    }
+}
+
+/* ── Brand column ── */
+.iwm-footer-brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    margin-bottom: 0.85rem;
+}
+.iwm-footer-brand-logo:hover { text-decoration: none; }
+
+.iwm-footer-brand-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.iwm-footer-brand-name {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: -0.02em;
+    color: #f0f4f8;
+    white-space: nowrap;
+}
+html:not(.dark) .iwm-footer-brand-name { color: #0f172a; }
+
+.iwm-footer-brand-tagline {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.55;
+    max-width: 220px;
+    margin-bottom: 1.1rem;
+}
+
+/* Social icon buttons */
+.iwm-footer-social {
+    display: flex;
+    gap: 0.5rem;
+}
+.iwm-footer-social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid #2e2758;
+    color: #64748b;
+    text-decoration: none;
+    transition: border-color 0.14s, color 0.14s, background-color 0.14s;
+    flex-shrink: 0;
+}
+html:not(.dark) .iwm-footer-social-btn {
+    border-color: #cbd5e1;
+    color: #94a3b8;
+}
+.iwm-footer-social-btn:hover {
+    border-color: #2cc8ca;
+    color: #2cc8ca;
+    background: rgba(44, 200, 202, 0.07);
+    text-decoration: none;
+}
+
+/* ── Nav columns ── */
+.iwm-footer-col-heading {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #2cc8ca;
+    margin-bottom: 0.85rem;
+}
+
+.iwm-footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.iwm-footer-link {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.845rem;
+    font-weight: 500;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.13s;
+    line-height: 1.3;
+    display: inline-block;
+}
+.iwm-footer-link:hover {
+    color: #f0f4f8;
+    text-decoration: none;
+}
+html:not(.dark) .iwm-footer-link { color: #475569; }
+html:not(.dark) .iwm-footer-link:hover { color: #0f172a; }
+
+/* ── Divider ── */
+.iwm-footer-divider {
+    height: 1px;
+    background: #241e45;
+    margin: 2rem 0 1.25rem;
+}
+html:not(.dark) .iwm-footer-divider { background: #e2e8f0; }
+
+/* ── Bottom bar ── */
+.iwm-footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+}
+
+@container footer (max-width: 560px) {
+    .iwm-footer-bottom {
+        flex-direction: column;
+    }
+    .iwm-footer-legal {
+        text-align: left;
+        max-width: 100%;
+    }
+}
+
+/* Credit */
+.iwm-footer-credit {
+    font-size: 0.78rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.iwm-footer-credit-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #2e2758;
+    display: inline-block;
+    flex-shrink: 0;
+}
+html:not(.dark) .iwm-footer-credit-dot { background: #cbd5e1; }
+
+.iwm-footer-credit-star {
+    color: #2cc8ca;
+    font-size: 0.72rem;
+}
+
+/* Legal small print */
+.iwm-footer-legal {
+    font-size: 0.72rem;
+    color: #2e2758;
+    line-height: 1.6;
+    max-width: 560px;
+    text-align: right;
+}
+html:not(.dark) .iwm-footer-legal { color: #94a3b8; }
+
+/* ── Screen reader utility ── */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

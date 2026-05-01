@@ -151,99 +151,99 @@ When ready to generate designs, use these prompts. Each is self-contained — Cl
 
 ## Prompt 1 — Navbar redesign
 
-> I'm refreshing the global navbar of my Magic: The Gathering collection tracker (NestJS + Handlebars + Tailwind). The site has a polished `/pricing` page with a refined visual direction (midnight/teal/purple gradient palette, Space Grotesk display, soft gradients, generous radii) and I want the navbar to match that tone.
+I'm refreshing the global navbar of my Magic: The Gathering collection tracker (NestJS + Handlebars + Tailwind). The site has a polished `/pricing` page with a refined visual direction (midnight/teal/purple gradient palette, Space Grotesk display, soft gradients, generous radii) and I want the navbar to match that tone.
 >
-> **Current navbar** (mobile-first drawer at all breakpoints — no horizontal desktop nav):
-> - Solid purple→midnight gradient bar with bottom teal border
-> - Logo left; theme toggle + hamburger right
-> - On authenticated users: "Premium" badge OR amber "Upgrade" CTA between logo and theme toggle
-> - Drawer holds: search input, then routes (Home, Sets, Spoilers, Pricing OR My Inventory/Portfolio/Transactions/Alerts/Account/Subscription/Logout, Getting Started)
+**Current navbar** (mobile-first drawer at all breakpoints — no horizontal desktop nav):
+- Solid purple→midnight gradient bar with bottom teal border
+- Logo left; theme toggle + hamburger right
+- On authenticated users: "Premium" badge OR amber "Upgrade" CTA between logo and theme toggle
+- Drawer holds: search input, then routes (Home, Sets, Spoilers, Pricing OR My Inventory/Portfolio/Transactions/Alerts/Account/Subscription/Logout, Getting Started)
 >
-> **Goals:**
-> - Surface 3–5 primary routes horizontally on desktop (≥ md) so authenticated users don't always open the drawer for top-level navigation. Drawer becomes secondary (Account, Subscription, Logout, Help).
-> - Promote the search input to a visible navbar element on desktop (currently hidden in drawer)
-> - Replace heavy bottom border + shadow with a refined separator (e.g. gradient hairline)
-> - Keep theme toggle, premium badge, upgrade CTA visible
-> - Match the pricing page's typography rhythm and color depth
+**Goals:**
+- Surface 3–5 primary routes horizontally on desktop (≥ md) so authenticated users don't always open the drawer for top-level navigation. Drawer becomes secondary (Account, Subscription, Logout, Help).
+- Promote the search input to a visible navbar element on desktop (currently hidden in drawer)
+- Replace heavy bottom border + shadow with a refined separator (e.g. gradient hairline)
+- Keep theme toggle, premium badge, upgrade CTA visible
+- Match the pricing page's typography rhythm and color depth
 >
-> **Constraints:**
-> - Authenticated and unauthenticated states must both work
-> - Premium badge and amber Upgrade CTA states must persist
-> - Mobile (< md) keeps the drawer-only pattern
-> - Theme toggle (light/dark) must remain prominent and accessible
+**Constraints:**
+- Authenticated and unauthenticated states must both work
+- Premium badge and amber Upgrade CTA states must persist
+- Mobile (< md) keeps the drawer-only pattern
+- Theme toggle (light/dark) must remain prominent and accessible
 >
-> Produce: a single HTML+inline-style design page demonstrating the navbar in (a) desktop unauthenticated, (b) desktop authenticated free-tier, (c) desktop authenticated premium, (d) mobile collapsed, (e) mobile drawer open. Match the typography and palette of the existing `/pricing` page.
+Produce: a single HTML+inline-style design page demonstrating the navbar in (a) desktop unauthenticated, (b) desktop authenticated free-tier, (c) desktop authenticated premium, (d) mobile collapsed, (e) mobile drawer open. Match the typography and palette of the existing `/pricing` page.
 
 ## Prompt 2 — Footer redesign
 
-> Redesign the site footer to a "color bar + tri-column" treatment that matches the `/pricing` page's visual language (midnight/teal/purple, Space Grotesk display, soft palette).
->
-> **Current footer:**
-> - 1px gradient color bar (teal → purple → hotpink)
-> - Solid purple-900/midnight-950 background
-> - Centered single-column: links row (Pricing, Privacy, Terms, Getting Started), then credit "I Want My MTG! ☆ mdt", then WotC disclaimer, then affiliate disclaimer
->
-> **Goals:**
-> - Keep the gradient color bar at top
-> - Three (or four) columns at desktop: brand block + Product (Pricing, Sets, Spoilers, Getting Started) + Account (Login / Sign up / Billing) + Legal (Privacy, Terms)
-> - Move WotC fan-content disclaimer and affiliate disclaimer to small print at the bottom
-> - Stack to a single column on mobile
-> - Match pricing-page typography and softness
->
-> Produce: HTML+inline-style design at desktop and mobile breakpoints.
+Redesign the site footer to a "color bar + tri-column" treatment that matches the `/pricing` page's visual language (midnight/teal/purple, Space Grotesk display, soft palette).
+
+**Current footer:**
+- 1px gradient color bar (teal → purple → hotpink)
+- Solid purple-900/midnight-950 background
+- Centered single-column: links row (Pricing, Privacy, Terms, Getting Started), then credit "I Want My MTG! ☆ mdt", then WotC disclaimer, then affiliate disclaimer
+
+**Goals:**
+- Keep the gradient color bar at top
+- Three (or four) columns at desktop: brand block + Product (Pricing, Sets, Spoilers, Getting Started) + Account (Login / Sign up / Billing) + Legal (Privacy, Terms)
+- Move WotC fan-content disclaimer and affiliate disclaimer to small print at the bottom
+- Stack to a single column on mobile
+- Match pricing-page typography and softness
+
+Produce: HTML+inline-style design at desktop and mobile breakpoints.
 
 ## Prompt 3 — Home page hero
 
-> The home page (`/`) is a browse-first landing — anonymous users see a hero, then a paginated set list. Redesign just the hero to match the `/pricing` page's tone (radial-gradient ambient bg, large balanced title with gradient text accent, refined badge pill, generous spacing).
+The home page (`/`) is a browse-first landing — anonymous users see a hero, then a paginated set list. Redesign just the hero to match the `/pricing` page's tone (radial-gradient ambient bg, large balanced title with gradient text accent, refined badge pill, generous spacing).
 >
-> **Current hero:**
-> - Linear-gradient bg
-> - Title "I Want My MTG!" with 3-color gradient text clip
-> - Tagline: "Your Magic: The Gathering collection tracker — know what you own, what it's worth, and what you've spent."
-> - Three inline icon callouts: "Track cards & sets you own", "Watch your portfolio value", "Log buys, sells & gains"
-> - Mana color bar (5 colored pills) below hero, before set list
+**Current hero:**
+- Linear-gradient bg
+- Title "I Want My MTG!" with 3-color gradient text clip
+- Tagline: "Your Magic: The Gathering collection tracker — know what you own, what it's worth, and what you've spent."
+- Three inline icon callouts: "Track cards & sets you own", "Watch your portfolio value", "Log buys, sells & gains"
+- Mana color bar (5 colored pills) below hero, before set list
 >
-> **Goals:**
-> - Match pricing-hero ambient depth (radial gradients) and typography (balanced title, tight letter-spacing, big size)
-> - Keep the three feature callouts but treat them more like the pricing-hero badge or pricing-card features
-> - One primary CTA (Start tracking / Sign up free) and one secondary (Browse sets, scrolls down)
-> - Decide whether the mana color bar stays
+**Goals:**
+- Match pricing-hero ambient depth (radial gradients) and typography (balanced title, tight letter-spacing, big size)
+- Keep the three feature callouts but treat them more like the pricing-hero badge or pricing-card features
+- One primary CTA (Start tracking / Sign up free) and one secondary (Browse sets, scrolls down)
+- Decide whether the mana color bar stays
 >
-> Produce: HTML+inline-style design for desktop and mobile.
+Produce: HTML+inline-style design for desktop and mobile.
 
 ## Prompt 4 — Authenticated app surfaces (portfolio + inventory)
 
-> The app has data-heavy authenticated pages (`/portfolio`, `/inventory`, `/transactions`) that need to absorb the `/pricing` page's visual language without becoming marketing-shaped. Redesign **page header + immediate-content surfaces** for `/portfolio` and `/inventory` only — don't touch the rest of the page yet.
+The app has data-heavy authenticated pages (`/portfolio`, `/inventory`, `/transactions`) that need to absorb the `/pricing` page's visual language without becoming marketing-shaped. Redesign **page header + immediate-content surfaces** for `/portfolio` and `/inventory` only — don't touch the rest of the page yet.
 >
-> **Current:** small gradient-clipped page title, then directly into content. Stat cards use white/midnight-800 surfaces, rounded-lg, gray borders.
+**Current:** small gradient-clipped page title, then directly into content. Stat cards use white/midnight-800 surfaces, rounded-lg, gray borders.
 >
-> **Goals:**
-> - Refined page header: subtitle / breadcrumb / action row
-> - Stat tiles upgraded to richer surfaces (deeper dark bg, larger radius, optional gradient wash for primary metric)
-> - Match pricing typography rhythm and color depth
-> - Stay utility-shaped, not marketing-shaped
+**Goals:**
+- Refined page header: subtitle / breadcrumb / action row
+- Stat tiles upgraded to richer surfaces (deeper dark bg, larger radius, optional gradient wash for primary metric)
+- Match pricing typography rhythm and color depth
+- Stay utility-shaped, not marketing-shaped
 >
-> Specific data to design around:
-> - `/portfolio`: one big "Current Value" stat, then a row of secondary stats (Total Invested, Cards/Units, with Unrealized P&L / Realized Gains / ROI as locked premium tiles for free users), then a refresh button
-> - `/inventory`: filter/sort controls, then a list/binder toggle, then results
+Specific data to design around:
+- `/portfolio`: one big "Current Value" stat, then a row of secondary stats (Total Invested, Cards/Units, with Unrealized P&L / Realized Gains / ROI as locked premium tiles for free users), then a refresh button
+- `/inventory`: filter/sort controls, then a list/binder toggle, then results
 >
-> Produce: HTML+inline-style designs for both pages at desktop and mobile, free-tier and premium states for `/portfolio`.
+Produce: HTML+inline-style designs for both pages at desktop and mobile, free-tier and premium states for `/portfolio`.
 
 ## Prompt 5 — Button system reconciliation
 
-> Reconcile two button systems into one cohesive language. Both currently exist:
+Reconcile two button systems into one cohesive language. Both currently exist:
 >
-> **In-app buttons (`.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-ghost`):** solid teal/purple/hotpink, rounded-lg, glow shadow on hover.
+**In-app buttons (`.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-ghost`):** solid teal/purple/hotpink, rounded-lg, glow shadow on hover.
 >
-> **Pricing-page buttons (`.pricing-btn-cta`, `.pricing-btn-ghost`):** teal→blue gradient with dark text, soft outer glow; or transparent + gray border.
+**Pricing-page buttons (`.pricing-btn-cta`, `.pricing-btn-ghost`):** teal→blue gradient with dark text, soft outer glow; or transparent + gray border.
 >
-> **Goal:** propose a unified button system that:
-> - Has a clear "marketing CTA" treatment (sign up, upgrade, checkout) — likely matches the pricing CTA
-> - Has a clear "in-app primary action" treatment (save, submit, search) — slightly less heavy
-> - Has secondary, tertiary, ghost, and danger variants
-> - Works at multiple sizes (sm/md/lg) and full-width
+**Goal:** propose a unified button system that:
+- Has a clear "marketing CTA" treatment (sign up, upgrade, checkout) — likely matches the pricing CTA
+- Has a clear "in-app primary action" treatment (save, submit, search) — slightly less heavy
+- Has secondary, tertiary, ghost, and danger variants
+- Works at multiple sizes (sm/md/lg) and full-width
 >
-> Produce: a button system design page showing all variants, sizes, and states (default, hover, active, disabled, loading) at desktop. Provide the CSS.
+Produce: a button system design page showing all variants, sizes, and states (default, hover, active, disabled, loading) at desktop. Provide the CSS.
 
 ## How to apply
 

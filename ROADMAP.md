@@ -349,6 +349,36 @@
 - [x] Show active price alert indicator on card detail page (badge or icon when user has an alert set for the card)
 - [x] Add price info to card overlay in binder view (normal/foil prices in the hover/tap preview)
 
+### 2.14 Site-wide Visual Refresh
+
+The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined visual direction (midnight/teal/purple gradient palette, Space Grotesk typography, gradient-bordered navbar with drawer menu, footer color bar). The pricing page ships with this design page-scoped only; this section rolls it out site-wide and is the next major UX initiative. (Promoted from former §8.2.)
+
+#### Foundations
+
+- [ ] Audit current site chrome (navbar, drawer, footer) against the pricing page's chrome — document deltas
+- [ ] Decide on font: roll Space Grotesk site-wide or substitute current stack (consider page-weight cost, brand fit)
+- [ ] Promote the page-scoped color tokens (midnight, teal, purple, amber) to global Tailwind theme tokens; reconcile with existing teal/purple usage
+- [ ] Tighten typography rhythm (sizes, weights, line-height) toward pricing page's hierarchy
+
+#### Chrome
+
+- [ ] Replace `main.hbs` navbar with the design's gradient-bordered navbar + drawer menu pattern
+- [ ] Replace footer with the design's color-bar + tri-column treatment
+
+#### Pages and components
+
+- [ ] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles)
+- [ ] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
+- [ ] Refresh button styles site-wide to match pricing page's primary/secondary CTA language
+- [ ] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment
+- [ ] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views
+- [ ] Quick-add (+) affordance on card tiles in search results, set page, and binder grids — one click adds qty 1 via `/api/v1/inventory` with toast confirmation; click-through to detail page preserved (#458)
+
+#### Verification
+
+- [ ] Re-run Lighthouse performance and accessibility audits after rollout (color contrast in particular)
+- [ ] Verify dark/light mode toggle works site-wide (design ships dark-default with light support)
+
 ---
 
 ## Phase 3: Monetization Foundation & New Features
@@ -414,7 +444,7 @@
 - [x] Draft Privacy Policy (`/privacy`) — US-focused, CCPA notice, no cookie consent banner
 - [x] Draft Terms of Service (`/terms`) — Maryland governing law, acceptable use, WotC fan-content disclaimer
 - [x] Link Privacy and Terms from footer and include in sitemap
-- [ ] Set up `legal@iwantmymtg.net` email alias (AWS SES / registrar)
+- [x] Set up `legal@iwantmymtg.net` email alias (AWS SES / registrar)
 - [x] Build user data export endpoint (`GET /api/v1/user/export` → JSON attachment, download button on user settings)
 - [x] Verify account deletion fully scrubs related records (all FKs confirmed `ON DELETE CASCADE` in schema)
 
@@ -665,20 +695,7 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 - [ ] If migrating: execute migration module by module
 - [ ] If keeping: document decision and rationale
 
-### 8.2 Site-wide Visual Refresh
-
-The Claude-generated `/pricing` page (`Pricing Page.html`) introduces a refined visual direction (midnight/teal/purple gradient palette, Space Grotesk typography, gradient-bordered navbar with drawer menu, footer color bar). The pricing page ships with this design page-scoped only; this section is the broader rollout.
-
-- [ ] Audit current site chrome (navbar, drawer, footer) against the design's chrome - document deltas
-- [ ] Decide on font: roll Space Grotesk site-wide or substitute current stack (consider page-weight cost, brand fit)
-- [ ] Promote the page-scoped color tokens (midnight, teal, purple, amber) to global Tailwind theme tokens; reconcile with existing teal/purple usage
-- [ ] Replace `main.hbs` navbar with the design's gradient-bordered navbar + drawer menu pattern
-- [ ] Replace footer with the design's color-bar + tri-column treatment
-- [ ] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles)
-- [ ] Re-run Lighthouse performance and accessibility audits after rollout (color contrast in particular)
-- [ ] Verify dark/light mode toggle works site-wide (design ships dark-default with light support)
-
-### 8.3 Portfolio Breakdown: by=color Dimension
+### 8.2 Portfolio Breakdown: by=color Dimension
 
 Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJSON `colorIdentity` first. Once that lands, add a `color` case to `PortfolioBreakdownRepository.dimensionConfig()` and a tab on `portfolioBreakdown.hbs`.
 
@@ -686,10 +703,10 @@ Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJ
 - [ ] Add `color` case to `BreakdownDimension` and `dimensionConfig()`
 - [ ] Add "By Color" tab to `portfolioBreakdown.hbs`
 
-### 8.4 Scry: Interactive Mode
+### 8.3 Scry: Interactive Mode
 
-- [ ] Design interactive CLI menu (select commands, configure options)
-- [ ] Add interactive mode entry point (`cargo run -- interactive` or default)
-- [ ] Add interactive selection for ingestion targets (sets, cards, prices)
-- [ ] Add progress display and confirmation prompts
-- [ ] Add dry-run option for destructive operations
+- [x] Design interactive CLI menu (select commands, configure options)
+- [x] Add interactive mode entry point (`cargo run -- interactive` or default)
+- [x] Add interactive selection for ingestion targets (sets, cards, prices)
+- [x] Add progress display and confirmation prompts
+- [x] Add dry-run option for destructive operations

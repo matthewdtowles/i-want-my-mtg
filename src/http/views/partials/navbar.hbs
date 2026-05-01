@@ -347,6 +347,49 @@ document.addEventListener('DOMContentLoaded', function () {
     var openBtn   = document.getElementById('nav-menu-btn');
     var closeBtn2 = document.getElementById('nav-drawer-close');
 
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function getDrawerFocusables() {
+        return Array.prototype.slice.call(drawer.querySelectorAll(FOCUSABLE))
+            .filter(function (el) { return el.offsetParent !== null || el === document.activeElement; });
+    }
+
+    function trapTab(e) {
+        if (e.key !== 'Tab' || drawer.hidden) return;
+        var items = getDrawerFocusables();
+        if (items.length === 0) return;
+        var first = items[0];
+        var last  = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
+
+    function lockBackground() {
+        document.body.style.overflow = 'hidden';
+        // Mark siblings of drawer/overlay as inert so background is not focusable/announced
+        Array.prototype.forEach.call(document.body.children, function (el) {
+            if (el !== drawer && el !== overlay) {
+                el.setAttribute('inert', '');
+                el.setAttribute('aria-hidden', 'true');
+            }
+        });
+    }
+
+    function releaseBackground() {
+        document.body.style.overflow = '';
+        Array.prototype.forEach.call(document.body.children, function (el) {
+            if (el !== drawer && el !== overlay) {
+                el.removeAttribute('inert');
+                el.removeAttribute('aria-hidden');
+            }
+        });
+    }
+
     function openDrawer() {
         drawer.hidden  = false;
         overlay.classList.add('open');
@@ -357,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
         openBtn.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
+        lockBackground();
         // focus first focusable element
         var first = drawer.querySelector('button, [href], input');
         if (first) first.focus();
@@ -367,14 +410,16 @@ document.addEventListener('DOMContentLoaded', function () {
         drawer.classList.remove('open');
         overlay.classList.remove('open');
         openBtn.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
 
         var duration = parseFloat(getComputedStyle(drawer).transitionDuration) || 0;
         if (duration === 0) {
             drawer.hidden = true;
+            releaseBackground();
         } else {
-            drawer.addEventListener('transitionend', function handler() {
+            drawer.addEventListener('transitionend', function handler(e) {
+                if (e.target !== drawer || e.propertyName !== 'transform') return;
                 drawer.hidden = true;
+                releaseBackground();
                 drawer.removeEventListener('transitionend', handler);
             });
         }
@@ -385,9 +430,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (closeBtn2) closeBtn2.addEventListener('click', closeDrawer);
     if (overlay)   overlay.addEventListener('click',   closeDrawer);
 
-    // Close on Escape
+    // Close on Escape, trap Tab inside drawer
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && drawer && !drawer.hidden) closeDrawer();
+        if (drawer && !drawer.hidden) {
+            if (e.key === 'Escape') closeDrawer();
+            else if (e.key === 'Tab') trapTab(e);
+        }
     });
 
     /* ── Collection dropdown (WAI-ARIA menu button) ── */

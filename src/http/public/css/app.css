@@ -1326,12 +1326,12 @@ html:not(.dark) .iwm-footer-credit-dot { background: #cbd5e1; }
 /* Legal small print */
 .iwm-footer-legal {
     font-size: 0.72rem;
-    color: #2e2758;
+    color: #94a3b8;
     line-height: 1.6;
     max-width: 560px;
     text-align: right;
 }
-html:not(.dark) .iwm-footer-legal { color: #94a3b8; }
+html:not(.dark) .iwm-footer-legal { color: #64748b; }
 
 /* ── Screen reader utility ── */
 .sr-only {

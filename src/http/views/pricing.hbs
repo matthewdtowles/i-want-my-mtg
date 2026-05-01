@@ -1,0 +1,252 @@
+{{!-- Pricing page - free vs premium comparison --}}
+
+<div class='pricing-page font-display'>
+
+    {{!-- Hero --}}
+    <section class='pricing-hero'>
+        <div class='pricing-hero-bg' aria-hidden='true'></div>
+        <div class='relative max-w-5xl mx-auto px-5 py-16 md:py-20 text-center'>
+            <div class='pricing-hero-badge'>
+                <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+                    <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/>
+                </svg>
+                Simple, transparent pricing
+            </div>
+            <h1 class='pricing-hero-title'>
+                Track your collection.<br />
+                <span>Own your investment.</span>
+            </h1>
+            <p class='pricing-hero-sub'>
+                Free forever for the essentials. Upgrade for unlimited alerts, full history, and portfolio analytics.
+            </p>
+
+            {{!-- Billing toggle --}}
+            <div class='billing-toggle' role='group' aria-label='Billing period'>
+                <button type='button' class='toggle-option active' data-period='monthly' aria-pressed='true'>Monthly</button>
+                <button type='button' class='toggle-option' data-period='annual' aria-pressed='false'>
+                    Annual
+                    <span class='toggle-badge'>Save 17%</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    {{!-- Pricing cards --}}
+    <section class='pricing-cards-grid'>
+        {{!-- Free --}}
+        <div class='pricing-card'>
+            <p class='card-tier'>Free</p>
+            <div class='card-price'>
+                <span class='price-currency'>$</span>
+                <span class='price-amount'>0</span>
+            </div>
+            <p class='price-note'>&nbsp;</p>
+            <p class='card-desc'>Everything you need to get started tracking your Magic collection. No credit card required.</p>
+            <ul class='card-features'>
+                <li class='card-feature'>{{>pricingCheck}}Browse all MTG sets &amp; cards</li>
+                <li class='card-feature'>{{>pricingCheck}}Track your collection (unlimited cards)</li>
+                <li class='card-feature'>{{>pricingCheck}}Log unlimited transactions (last 30 days visible)</li>
+                <li class='card-feature'>{{>pricingCheck}}Set price alerts (up to 5)</li>
+                <li class='card-feature'>{{>pricingCheck}}Live market prices &amp; full price history</li>
+                <li class='card-feature'>{{>pricingCheck}}Basic portfolio overview</li>
+                <li class='card-feature'>{{>pricingCheck}}CSV import &amp; export</li>
+                <li class='card-feature'>{{>pricingCheck}}Binder view</li>
+            </ul>
+            <a href='/user/create' class='pricing-btn pricing-btn-ghost' data-monthly-href='/user/create' data-annual-href='/user/create'>Get started free</a>
+        </div>
+
+        {{!-- Premium --}}
+        <div class='pricing-card featured'>
+            <div class='card-badge'>Most Popular</div>
+            <p class='card-tier teal'>Premium</p>
+            <div class='card-price'>
+                <span class='price-currency'>$</span>
+                <span class='price-amount' data-monthly='{{pricing.monthly.amountValue}}' data-annual='{{pricing.annual.perMonth}}'>{{pricing.monthly.amountValue}}</span>
+                <span class='price-period'>/mo</span>
+            </div>
+            <p class='price-note' data-monthly='' data-annual='{{pricing.annual.billedNote}}'>&nbsp;</p>
+            <p class='card-desc'>The full toolkit for serious collectors and investors. Unlimited everything plus advanced analytics.</p>
+            <ul class='card-features'>
+                <li class='card-feature'>{{>pricingCheck}}Everything in Free</li>
+                <li class='card-feature'>{{>pricingCheck}}Unlimited price alerts &amp; multi-threshold</li>
+                <li class='card-feature'>{{>pricingCheck}}Full transaction history (no cutoff)</li>
+                <li class='card-feature'>{{>pricingCheck}}Portfolio value history &amp; P&amp;L charts</li>
+                <li class='card-feature'>{{>pricingCheck}}FIFO cost basis &amp; realized gains</li>
+                <li class='card-feature'>{{>pricingCheck}}Advanced analytics (set, type, rarity, cost basis)</li>
+                <li class='card-feature'>{{>pricingCheck}}Sealed product &amp; set completion tracking</li>
+                <li class='card-feature'>{{>pricingCheck}}External imports (Moxfield, Archidekt, Deckbox) <span class='ml-1 text-xs uppercase tracking-wide text-amber-600 dark:text-amber-400'>(Coming soon)</span></li>
+                <li class='card-feature'>{{>pricingCheck}}Priority support &amp; early access</li>
+            </ul>
+            {{#if subscribed}}
+                <a href='/billing' class='pricing-btn pricing-btn-cta'>
+                    <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                    Manage subscription
+                </a>
+            {{else if authenticated}}
+                <form method='POST' action='/billing/checkout' class='pricing-form'>
+                    <input type='hidden' name='plan' value='monthly' data-period-input />
+                    <button type='submit' class='pricing-btn pricing-btn-cta'>
+                        <span data-period-label data-monthly-label='Subscribe monthly' data-annual-label='Subscribe annually'>Subscribe monthly</span>
+                    </button>
+                </form>
+            {{else}}
+                <a href='/user/create' class='pricing-btn pricing-btn-cta'>Start free, then upgrade</a>
+            {{/if}}
+        </div>
+    </section>
+
+    {{!-- Comparison table --}}
+    <section class='pricing-table-section'>
+        <h2 class='pricing-section-heading'>Compare plans</h2>
+        <p class='pricing-section-sub'>Everything side by side</p>
+        <table class='pricing-table'>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Free</th>
+                    <th>Premium</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class='pricing-table-category'><td colspan='3'>Collection</td></tr>
+                <tr><td>Browse sets &amp; cards</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Track card inventory</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Binder view</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>CSV import &amp; export</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>External imports<span class='pricing-table-note'>Moxfield, Archidekt, Deckbox - coming soon</span></td><td>{{>pricingNo}}</td><td><span class='pricing-table-partial'>Coming soon</span></td></tr>
+                <tr><td>Sealed product tracking<span class='pricing-table-note'>Boosters, bundles, etc.</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Set completion tracking</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+
+                <tr class='pricing-table-category'><td colspan='3'>Prices &amp; Alerts</td></tr>
+                <tr><td>Live market prices</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Price history charts</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Price alerts<span class='pricing-table-note'>Email when price moves</span></td><td><span class='pricing-table-partial'>Up to 5</span></td><td><span class='pricing-table-partial'>Unlimited</span></td></tr>
+                <tr><td>Multi-threshold alerts<span class='pricing-table-note'>Trigger on increase AND decrease</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Set price history</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+
+                <tr class='pricing-table-category'><td colspan='3'>Portfolio &amp; Analytics</td></tr>
+                <tr><td>Portfolio value overview</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Portfolio value history</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Cost basis<span class='pricing-table-note'>FIFO matches sells to oldest buys for accurate tax-style gain tracking</span></td><td><span class='pricing-table-partial'>Average</span></td><td><span class='pricing-table-partial'>FIFO</span></td></tr>
+                <tr><td>P&amp;L tracking<span class='pricing-table-note'>Realized gains and FIFO-based unrealized P&amp;L</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Cash flow charts</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Transaction history</td><td><span class='pricing-table-partial'>Last 30 days</span></td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Advanced analytics<span class='pricing-table-note'>Breakdown by set, type, rarity, cost basis</span></td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+
+                <tr class='pricing-table-category'><td colspan='3'>Account</td></tr>
+                <tr><td>Standard support</td><td>{{>pricingYes}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Priority support</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+                <tr><td>Early access to new features</td><td>{{>pricingNo}}</td><td>{{>pricingYes}}</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    {{!-- FAQ --}}
+    <section class='pricing-faq-section'>
+        <h2 class='pricing-section-heading'>Frequently asked</h2>
+        <p class='pricing-section-sub'>Common questions answered</p>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>Can I cancel anytime?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>Yes - cancel any time from the billing portal. You keep Premium access until the end of your current billing period. No questions asked.</div>
+        </details>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>What happens to my data if I cancel?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>Your entire collection, transaction history, and alerts are always yours. Cancelling moves you to the Free plan; premium-only views (full history, P&amp;L charts, advanced analytics) are hidden but the underlying data is preserved. Resubscribe and it all comes back.</div>
+        </details>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>Is there a free trial?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>The Free plan has no time limit - use it forever. We don&rsquo;t offer a dedicated Premium trial right now, but at {{pricing.monthly.amount}}/mo there&rsquo;s very little risk to try it.</div>
+        </details>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>How does the annual plan save money?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>Annual is {{pricing.annual.amount}}/year vs {{pricing.monthly.amount}} &times; 12 = ${{pricing.annualMonthlyTotal}}/year on monthly - that&rsquo;s roughly 2 months free. Switch between plans any time from the billing portal.</div>
+        </details>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>What payment methods are accepted?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>We use Stripe for payments. All major credit and debit cards are accepted.</div>
+        </details>
+
+        <details class='pricing-faq-item'>
+            <summary class='pricing-faq-question'>
+                <span>Do prices include tax?</span>
+                {{>pricingChevron}}
+            </summary>
+            <div class='pricing-faq-answer'>Stripe automatically calculates and applies any applicable sales tax based on your location at checkout.</div>
+        </details>
+    </section>
+
+    {{!-- Bottom CTA --}}
+    <section class='pricing-bottom-cta'>
+        <h2>Ready to level up?</h2>
+        <p>Join collectors who use I Want My MTG to track every card, every trade, every dollar.</p>
+        <div class='pricing-bottom-cta-btns'>
+            {{#if subscribed}}
+                <a href='/inventory' class='pricing-btn pricing-btn-ghost'>Back to my collection</a>
+                <a href='/billing' class='pricing-btn pricing-btn-cta'>
+                    <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                    Manage subscription
+                </a>
+            {{else if authenticated}}
+                <a href='/inventory' class='pricing-btn pricing-btn-ghost'>Back to my collection</a>
+                <form method='POST' action='/billing/checkout' class='pricing-form'>
+                    <input type='hidden' name='plan' value='monthly' data-period-input />
+                    <button type='submit' class='pricing-btn pricing-btn-cta'>
+                        <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                        Go Premium
+                    </button>
+                </form>
+            {{else}}
+                <a href='/user/create' class='pricing-btn pricing-btn-ghost'>Start for free</a>
+                <a href='/auth/login' class='pricing-btn pricing-btn-cta'>
+                    <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+                    Sign in to upgrade
+                </a>
+            {{/if}}
+        </div>
+    </section>
+
+</div>
+
+<script>
+    (function() {
+        const buttons = document.querySelectorAll('.toggle-option');
+        const priceAmount = document.querySelector('.price-amount[data-monthly]');
+        const priceNote = document.querySelector('.price-note[data-monthly]');
+        const periodLabel = document.querySelector('[data-period-label]');
+        const periodInputs = document.querySelectorAll('[data-period-input]');
+
+        function setPeriod(period) {
+            buttons.forEach(b => {
+                const active = b.dataset.period === period;
+                b.classList.toggle('active', active);
+                b.setAttribute('aria-pressed', String(active));
+            });
+            if (priceAmount) priceAmount.textContent = priceAmount.dataset[period];
+            if (priceNote) priceNote.textContent = priceNote.dataset[period] || ' ';
+            if (periodLabel) periodLabel.textContent = periodLabel.dataset[period + 'Label'];
+            periodInputs.forEach(i => { i.value = period; });
+        }
+
+        buttons.forEach(b => b.addEventListener('click', () => setPeriod(b.dataset.period)));
+    })();
+</script>

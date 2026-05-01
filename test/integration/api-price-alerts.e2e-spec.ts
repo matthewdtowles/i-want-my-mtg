@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import {
     createTestApp,
     closeTestApp,
+    getTestUserId,
     loginTestUserApi,
     TEST_CARD_ID,
     TEST_CARD_ID_2,
@@ -15,12 +16,25 @@ describe('Price Alerts API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
     let ds: DataSource;
+    let userId: number;
     const savedApiKey = process.env.INTERNAL_API_KEY;
 
     beforeAll(async () => {
         app = await createTestApp();
         bearerToken = await loginTestUserApi(app);
         ds = app.get(DataSource);
+        userId = await getTestUserId(app);
+
+        // Premium-only behaviors (multi-threshold alerts, >5 alerts) require an active
+        // subscription. Seed one for the integ user; cleaned up in afterAll.
+        await ds.query('DELETE FROM subscription WHERE user_id = $1', [userId]);
+        await ds.query(
+            `INSERT INTO subscription (user_id, stripe_customer_id, stripe_subscription_id,
+                stripe_price_id, status, plan, current_period_end, cancel_at_period_end)
+             VALUES ($1, 'cus_test_alerts_1', 'sub_test_alerts_1', 'price_test_monthly', 'active',
+                'monthly', NOW() + INTERVAL '30 days', false)`,
+            [userId]
+        );
     }, 30000);
 
     afterAll(async () => {
@@ -33,6 +47,7 @@ describe('Price Alerts API (e2e)', () => {
             if (ds?.isInitialized) {
                 await ds.query('DELETE FROM price_notification');
                 await ds.query('DELETE FROM price_alert');
+                await ds.query('DELETE FROM subscription WHERE user_id = $1', [userId]);
             }
         } catch {
             // best-effort cleanup

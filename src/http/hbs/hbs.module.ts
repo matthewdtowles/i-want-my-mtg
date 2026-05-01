@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { BillingController } from './billing/billing.controller';
 import { BillingOrchestrator } from './billing/billing.orchestrator';
+import { PricingController } from './billing/pricing.controller';
+import { PricingOrchestrator } from './billing/pricing.orchestrator';
+import { SubscriptionViewInterceptor } from './shared/subscription-view.interceptor';
 import { CardController } from './card/card.controller';
 import { CardOrchestrator } from './card/card.orchestrator';
 import { HomeController } from './home/home.controller';
@@ -35,6 +39,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     controllers: [
         AuthController,
         BillingController,
+        PricingController,
         CardController,
         HomeController,
         InventoryController,
@@ -53,6 +58,8 @@ import { UserOrchestrator } from './user/user.orchestrator';
         UploadRateLimitGuard,
         AuthOrchestrator,
         BillingOrchestrator,
+        PricingOrchestrator,
+        { provide: APP_INTERCEPTOR, useClass: SubscriptionViewInterceptor },
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,
@@ -67,6 +74,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
     exports: [
         AuthOrchestrator,
         BillingOrchestrator,
+        PricingOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,

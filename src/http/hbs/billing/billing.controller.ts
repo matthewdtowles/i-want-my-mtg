@@ -12,6 +12,8 @@ import { BillingOrchestrator } from './billing.orchestrator';
 const ERROR_MESSAGES: Record<string, string> = {
     invalid_plan: 'That plan is not recognized. Please choose Monthly or Annual.',
     checkout_failed: 'We could not start checkout. Please try again in a moment.',
+    invalid_session:
+        'We could not verify that checkout session. Please return to billing and try again.',
     portal_failed: 'We could not open the billing portal. Please try again in a moment.',
 };
 
@@ -78,15 +80,29 @@ export class BillingController {
     }
 
     @Get('success')
-    @Render('billing')
-    async success(@Req() req: AuthenticatedRequest): Promise<BillingViewDto> {
+    async success(
+        @Req() req: AuthenticatedRequest,
+        @Res() res: Response,
+        @Query('session_id') sessionId?: string
+    ): Promise<void> {
         this.LOGGER.log(`Billing success landing for user ${req.user?.id}.`);
+        let verifiedSession = false;
+        if (sessionId) {
+            verifiedSession = await this.orchestrator.syncFromCheckoutSession(req, sessionId);
+        }
         const view = await this.orchestrator.getBillingView(req);
-        const message = view.subscription?.isActive
-            ? 'Your subscription is active. Thanks for supporting I Want My MTG!'
-            : 'Payment received. Your subscription is being activated — this usually takes a few seconds. Refresh if it does not appear shortly.';
-        const notice: BillingNotice = { type: 'success', message };
-        return new BillingViewDto({ ...view, title: 'Subscription Active - I Want My MTG', notice });
+        if (sessionId && !verifiedSession && !view.subscribed) {
+            res.redirect(303, '/billing?error=invalid_session');
+            return;
+        }
+        if (!sessionId && !view.subscribed) {
+            res.redirect(303, '/billing');
+            return;
+        }
+        res.render(
+            'billingSuccess',
+            new BillingViewDto({ ...view, title: 'Welcome to Premium - I Want My MTG' })
+        );
     }
 
     @Get('canceled')

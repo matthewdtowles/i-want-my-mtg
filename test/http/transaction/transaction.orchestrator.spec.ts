@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TransactionImportService } from 'src/core/transaction/import/transaction-import.service';
@@ -60,6 +61,12 @@ describe('TransactionOrchestrator', () => {
                     provide: CardService,
                     useValue: {
                         findByIds: jest.fn(),
+                    },
+                },
+                {
+                    provide: SubscriptionService,
+                    useValue: {
+                        isUserSubscribed: jest.fn().mockResolvedValue(true),
                     },
                 },
             ],

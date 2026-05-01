@@ -29,6 +29,7 @@ export interface PriceAlertRepositoryPort {
         limit: number
     ): Promise<AlertWithCardData[]>;
     countByUser(userId: number): Promise<number>;
+    countActiveByUser(userId: number): Promise<number>;
     findActiveWithPriceData(): Promise<AlertWithPriceData[]>;
     update(alert: PriceAlert): Promise<PriceAlert>;
     delete(id: number): Promise<void>;

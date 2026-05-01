@@ -104,6 +104,10 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
         return this.repo.countBy({ userId });
     }
 
+    async countActiveByUser(userId: number): Promise<number> {
+        return this.repo.countBy({ userId, isActive: true });
+    }
+
     async findActiveWithPriceData(): Promise<AlertWithPriceData[]> {
         const rows = await this.dataSource.query(`
             SELECT

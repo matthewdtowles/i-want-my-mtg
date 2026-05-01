@@ -3,7 +3,8 @@
 
   Parameters:
     products        - SealedProductRowDto[] (required)
-    authenticated   - boolean; when true, the owned stepper column is rendered
+    authenticated   - boolean; when true, the owned column is rendered
+    subscribed      - boolean; subscribers see the stepper, free users see a Premium link
 --~}}
 <div class="content-wrapper">
     <div class="table-wrapper">
@@ -25,6 +26,7 @@
                 <tr class="table-row">
                     {{#if ../authenticated}}
                     <td class="table-cell">
+                        {{#if ../subscribed}}
                         <div class="sealed-inv-stepper" data-sealed-uuid="{{this.uuid}}">
                             <div class="inv-stepper inv-stepper--sm">
                                 <button type="button" class="sealed-inv-btn sealed-inv-btn--dec inv-stepper-btn inv-stepper-btn--dec"
@@ -38,6 +40,11 @@
                                 </button>
                             </div>
                         </div>
+                        {{else}}
+                        <a href="/pricing" class="text-xs text-amber-600 dark:text-amber-400 hover:underline" title="Sealed product tracking is a Premium feature">
+                            <i class="fas fa-star text-xs mr-0.5" aria-hidden="true"></i>Premium
+                        </a>
+                        {{/if}}
                     </td>
                     {{/if}}
                     <td class="table-cell">

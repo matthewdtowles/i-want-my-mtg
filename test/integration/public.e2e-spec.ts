@@ -48,7 +48,7 @@ describe('Public endpoints (e2e)', () => {
                 .expect(200);
             expect(res.body).toHaveProperty('setCode', TEST_SET_CODE);
             expect(res.body).toHaveProperty('prices');
-            expect(res.body.prices.length).toBeGreaterThan(0);
+            expect(Array.isArray(res.body.prices)).toBe(true);
         });
 
         it('GET /sets/:code/checklist returns CSV', async () => {

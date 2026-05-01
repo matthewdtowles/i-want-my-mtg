@@ -21,7 +21,13 @@
             <div class="grid grid-cols-3 gap-3 mb-4">
                 <div class="stat-card stat-card-highlight">
                     <span class="stat-label">Owned</span>
+                    {{#if subscribed}}
                     <span class="stat-value">{{set.ownedTotal}}<span class="text-xs font-normal text-gray-400 dark:text-gray-500">/{{set.effectiveSize}}</span></span>
+                    {{else}}
+                    <a href="/pricing" class="stat-value text-amber-600 dark:text-amber-400 hover:underline text-base" title="Set completion tracking is a Premium feature">
+                        <i class="fas fa-lock text-xs mr-1" aria-hidden="true"></i>?<span class="text-xs font-normal text-gray-400 dark:text-gray-500">/{{set.effectiveSize}}</span>
+                    </a>
+                    {{/if}}
                 </div>
                 {{>statCard label="Owned Value" value=set.ownedValue highlight=true}}
                 <div class="stat-card stat-card-highlight">
@@ -416,7 +422,7 @@
 
 {{#if set.sealedProducts.length}}
 <div id="set-sealed-panel" role="tabpanel" aria-labelledby="set-tab-sealed" hidden>
-    {{>sealed-list products=set.sealedProducts authenticated=authenticated}}
+    {{>sealed-list products=set.sealedProducts authenticated=authenticated subscribed=subscribed}}
 </div>
 {{/if}}
 

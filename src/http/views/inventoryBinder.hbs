@@ -19,11 +19,23 @@
             <div class="grid grid-cols-3 gap-3 mt-4">
                 <div class="stat-card">
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Owned</div>
+                    {{#if subscribed}}
                     <div class="text-lg font-bold text-gray-900 dark:text-gray-100" id="owned-count">{{ownedTotal}} / {{cardTotal}}</div>
+                    {{else}}
+                    <a href="/pricing" class="text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline" id="owned-count" title="Set completion tracking is a Premium feature">
+                        <i class="fas fa-lock text-xs mr-1" aria-hidden="true"></i>? / {{cardTotal}}
+                    </a>
+                    {{/if}}
                 </div>
                 <div class="stat-card">
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Completion</div>
+                    {{#if subscribed}}
                     <div class="text-lg font-bold text-teal-600 dark:text-teal-400">{{completionRate}}%</div>
+                    {{else}}
+                    <a href="/pricing" class="text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline" title="Premium feature">
+                        <i class="fas fa-lock text-xs mr-1" aria-hidden="true"></i>Premium
+                    </a>
+                    {{/if}}
                 </div>
                 <div class="stat-card">
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Value</div>

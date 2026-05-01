@@ -22,12 +22,14 @@ export class BillingOrchestrator {
 
     async getBillingView(req: AuthenticatedRequest): Promise<BillingViewDto> {
         const subscription = await this.subscriptionService.getSubscriptionForUser(req.user.id);
+        const summary = this.toSummary(subscription);
         return new BillingViewDto({
             authenticated: req.isAuthenticated(),
+            subscribed: !!summary?.isActive,
             breadcrumbs: this.breadCrumbs,
             indexable: false,
             title: 'Subscription - I Want My MTG',
-            subscription: this.toSummary(subscription),
+            subscription: summary,
         });
     }
 
@@ -42,6 +44,10 @@ export class BillingOrchestrator {
     async startBillingPortal(req: AuthenticatedRequest): Promise<{ url: string }> {
         const user = await this.loadUser(req);
         return this.subscriptionService.startBillingPortal(user);
+    }
+
+    async syncFromCheckoutSession(req: AuthenticatedRequest, sessionId: string): Promise<boolean> {
+        return this.subscriptionService.syncFromCheckoutSessionId(sessionId, req.user.id);
     }
 
     private async loadUser(req: AuthenticatedRequest): Promise<User> {

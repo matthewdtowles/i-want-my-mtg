@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
+import {
+    FREE_TIER_HISTORY_DAYS,
+    freeTierHistoryCutoff,
+} from 'src/core/billing/subscription-limits';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { ImportError } from 'src/core/import/import.types';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -31,7 +36,8 @@ export class TransactionOrchestrator {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,
         @Inject(TransactionImportService) private readonly importService: TransactionImportService,
-        @Inject(CardService) private readonly cardService: CardService
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -43,9 +49,11 @@ export class TransactionOrchestrator {
         this.LOGGER.debug(`Find transactions for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+            const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
             const [transactions, totalCount, unfilteredCount] = await Promise.all([
-                this.transactionService.findByUserPaginated(req.user.id, options),
-                this.transactionService.countByUser(req.user.id, options),
+                this.transactionService.findByUserPaginated(req.user.id, options, sinceDate),
+                this.transactionService.countByUser(req.user.id, options, sinceDate),
                 this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
             ]);
 
@@ -64,6 +72,7 @@ export class TransactionOrchestrator {
 
             return new TransactionViewDto({
                 authenticated: req.isAuthenticated(),
+                subscribed,
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Transactions', url: baseUrl },
@@ -72,6 +81,7 @@ export class TransactionOrchestrator {
                 username: req.user.name,
                 totalTransactions: totalCount,
                 hasTransactions: unfilteredCount > 0,
+                freeHistoryCutoff: subscribed ? null : FREE_TIER_HISTORY_DAYS,
                 filter: new FilterView(options, baseUrl, 'Filter by card name...'),
                 pagination: new PaginationView(options, baseUrl, totalCount),
                 tableHeadersRow: new TableHeadersRowView([
@@ -217,7 +227,9 @@ export class TransactionOrchestrator {
         this.LOGGER.debug(`Export CSV for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
-            const transactions = await this.transactionService.findByUser(req.user.id);
+            const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+            const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
+            const transactions = await this.transactionService.findByUser(req.user.id, sinceDate);
             const cardIds = [...new Set(transactions.map((t) => t.cardId))];
             const cardMap = await this.buildCardMap(cardIds);
 

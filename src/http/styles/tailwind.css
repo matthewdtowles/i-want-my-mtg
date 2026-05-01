@@ -1188,3 +1188,382 @@
 .welcome-banner .btn {
     @apply text-sm;
 }
+
+/* ===== Pricing Page ===== */
+
+.pricing-page {
+    @apply text-gray-700 dark:text-gray-200;
+}
+
+.pricing-hero {
+    @apply relative overflow-hidden;
+}
+.pricing-hero-bg {
+    @apply absolute inset-0 pointer-events-none;
+    background:
+        radial-gradient(ellipse 60% 55% at 50% -10%, rgba(114, 51, 164, 0.28) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+}
+.pricing-hero-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-6
+           border border-teal-300/40 dark:border-teal-500/30
+           bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300;
+    letter-spacing: 0.01em;
+}
+.pricing-hero-title {
+    @apply font-display font-bold text-gray-900 dark:text-white mb-4;
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+}
+.pricing-hero-title span {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, #45ddd6, #c48aed);
+}
+.pricing-hero-sub {
+    @apply text-gray-600 dark:text-gray-400 mx-auto mb-10;
+    font-size: 1.05rem;
+    max-width: 480px;
+    line-height: 1.6;
+}
+
+.billing-toggle {
+    @apply inline-flex items-center gap-3 rounded-full p-1.5
+           border bg-gray-100 dark:bg-midnight-800
+           border-gray-200 dark:border-midnight-600;
+}
+.toggle-option {
+    @apply flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium
+           text-gray-500 dark:text-gray-400 transition-all duration-150
+           bg-transparent border-0 cursor-pointer;
+    font-family: inherit;
+}
+.toggle-option.active {
+    @apply bg-white dark:bg-midnight-700 text-gray-900 dark:text-white shadow-sm;
+}
+.toggle-badge {
+    @apply text-white font-bold rounded-full;
+    background: linear-gradient(90deg, #2cc8ca, #a95de0);
+    font-size: 0.68rem;
+    padding: 0.15rem 0.45rem;
+    letter-spacing: 0.01em;
+}
+
+.pricing-cards-grid {
+    @apply grid gap-5 max-w-4xl mx-auto px-5 mt-16;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+@media (max-width: 620px) {
+    .pricing-cards-grid { grid-template-columns: 1fr; }
+}
+
+.pricing-card {
+    @apply relative rounded-2xl border bg-white dark:bg-midnight-900
+           border-gray-200 dark:border-midnight-700
+           p-8 transition-colors duration-200;
+}
+.pricing-card.featured {
+    @apply border-teal-500;
+    background: linear-gradient(160deg, rgba(44, 200, 202, 0.06) 0%, var(--pricing-card-bg, #ffffff) 60%);
+    box-shadow: 0 0 40px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+}
+.dark .pricing-card.featured {
+    --pricing-card-bg: #131025;
+}
+.card-badge {
+    @apply absolute font-bold uppercase;
+    top: -1px;
+    right: 1.5rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0 0 8px 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    background: #2cc8ca;
+    color: #0d0b1a;
+}
+.card-tier {
+    @apply font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+}
+.card-tier.teal {
+    @apply text-teal-600 dark:text-teal-400;
+}
+.card-price {
+    @apply flex items-baseline gap-1 mb-1;
+}
+.price-amount {
+    @apply font-bold text-gray-900 dark:text-white;
+    font-size: 2.75rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+.price-currency {
+    @apply font-semibold text-gray-500 dark:text-gray-400 self-start;
+    font-size: 1.25rem;
+    margin-top: 0.3rem;
+}
+.price-period {
+    @apply text-gray-500 dark:text-gray-500 font-medium;
+    font-size: 0.875rem;
+}
+.price-note {
+    @apply text-teal-600 dark:text-teal-400 font-medium mb-1;
+    font-size: 0.8rem;
+    min-height: 1.2em;
+}
+.card-desc {
+    @apply text-gray-500 dark:text-gray-400 mb-6 pb-6 border-b border-gray-200 dark:border-midnight-700;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+.card-features {
+    @apply flex flex-col gap-3 mb-7 list-none p-0;
+}
+.card-feature {
+    @apply flex items-start gap-2 text-gray-700 dark:text-gray-200;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+.pricing-feat-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+}
+.pricing-feat-icon-check {
+    @apply text-teal-500 dark:text-teal-400;
+}
+
+.pricing-btn {
+    @apply w-full rounded-lg font-semibold cursor-pointer transition-all duration-150 inline-flex items-center justify-center gap-2;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.925rem;
+    border: none;
+    text-decoration: none;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+}
+.pricing-btn-cta {
+    color: #0d0b1a;
+    background: linear-gradient(90deg, #2cc8ca, #3ab5e0);
+    box-shadow: 0 0 20px rgba(44, 200, 202, 0.25);
+}
+.pricing-btn-cta:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 28px rgba(44, 200, 202, 0.4);
+}
+.pricing-btn-ghost {
+    @apply bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-midnight-600;
+}
+.pricing-btn-ghost:hover {
+    @apply bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-gray-100;
+}
+.pricing-form { @apply w-full; }
+
+.pricing-table-section {
+    @apply max-w-4xl mx-auto px-5 mt-20;
+}
+.pricing-section-heading {
+    @apply text-center font-display font-bold text-gray-900 dark:text-white mb-2;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+}
+.pricing-section-sub {
+    @apply text-center text-gray-500 dark:text-gray-500 mb-8;
+    font-size: 0.9rem;
+}
+.pricing-table {
+    @apply w-full bg-white dark:bg-midnight-900 border border-gray-200 dark:border-midnight-700;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+.pricing-table thead th {
+    @apply font-semibold uppercase text-gray-500 dark:text-gray-400
+           bg-gray-50 dark:bg-midnight-800
+           border-b border-gray-200 dark:border-midnight-700;
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-align: left;
+}
+.pricing-table thead th:nth-child(2),
+.pricing-table thead th:nth-child(3) {
+    text-align: center;
+    width: 120px;
+}
+.pricing-table thead th:nth-child(3) {
+    @apply text-teal-600 dark:text-teal-400;
+}
+.pricing-table tbody tr {
+    @apply border-t border-gray-100 dark:border-midnight-800;
+}
+.pricing-table tbody tr:first-child {
+    border-top: none;
+}
+.pricing-table tbody td {
+    @apply text-gray-700 dark:text-gray-200;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.875rem;
+}
+.pricing-table tbody td:nth-child(2),
+.pricing-table tbody td:nth-child(3) {
+    text-align: center;
+}
+.pricing-table tbody tr:hover td {
+    background: rgba(0, 0, 0, 0.02);
+}
+.dark .pricing-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+.pricing-table-category td {
+    @apply font-bold uppercase text-purple-600 dark:text-purple-400
+           border-t border-gray-200 dark:border-midnight-700;
+    padding: 0.6rem 1.25rem 0.3rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    background: rgba(114, 51, 164, 0.06);
+}
+.pricing-table-category:first-child td {
+    border-top: none;
+}
+.pricing-table-note {
+    @apply block text-gray-400 dark:text-gray-500;
+    font-size: 0.75rem;
+    margin-top: 0.1rem;
+}
+.pricing-table-partial {
+    @apply text-gray-500 dark:text-gray-400 font-medium;
+    font-size: 0.78rem;
+}
+.pricing-cell-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+.pricing-cell-icon-check {
+    @apply text-teal-500 dark:text-teal-400;
+}
+.pricing-cell-icon-x {
+    @apply text-gray-300 dark:text-midnight-600;
+}
+
+.pricing-faq-section {
+    @apply max-w-2xl mx-auto px-5 mt-20;
+}
+.pricing-faq-item {
+    @apply border-b border-gray-200 dark:border-midnight-700;
+}
+.pricing-faq-item summary {
+    list-style: none;
+}
+.pricing-faq-item summary::-webkit-details-marker {
+    display: none;
+}
+.pricing-faq-question {
+    @apply flex items-center justify-between gap-4 py-4 cursor-pointer
+           font-semibold text-gray-800 dark:text-gray-100
+           transition-colors duration-150;
+    font-size: 0.95rem;
+}
+.pricing-faq-question:hover {
+    @apply text-teal-600 dark:text-teal-300;
+}
+.pricing-faq-chevron {
+    flex-shrink: 0;
+    color: #94a3b8;
+    transition: transform 0.2s, color 0.15s;
+}
+.pricing-faq-item[open] .pricing-faq-chevron {
+    transform: rotate(180deg);
+    @apply text-teal-500 dark:text-teal-400;
+}
+.pricing-faq-answer {
+    @apply text-gray-600 dark:text-gray-400 pb-5;
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+.pricing-bottom-cta {
+    @apply max-w-2xl mx-auto px-5 text-center;
+    margin-top: 5rem;
+    padding-bottom: 6rem;
+}
+.pricing-bottom-cta h2 {
+    @apply font-display font-bold text-gray-900 dark:text-white mb-3;
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+}
+.pricing-bottom-cta p {
+    @apply text-gray-500 dark:text-gray-400 mb-7;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+.pricing-bottom-cta-btns {
+    @apply flex flex-wrap items-center justify-center gap-3;
+}
+.pricing-bottom-cta-btns .pricing-btn {
+    width: auto;
+    padding: 0.7rem 1.75rem;
+}
+.pricing-bottom-cta-btns .pricing-form {
+    width: auto;
+}
+
+/* ===== Portfolio Breakdown ===== */
+
+.breakdown-tab {
+    @apply px-4 py-1.5 text-sm font-medium rounded-md
+           text-gray-500 dark:text-gray-400
+           transition-colors duration-150;
+    text-decoration: none;
+}
+.breakdown-tab:hover {
+    @apply text-gray-900 dark:text-gray-100;
+}
+.breakdown-tab.active {
+    @apply bg-white dark:bg-midnight-700 text-teal-600 dark:text-teal-300 shadow-sm;
+}
+
+.breakdown-list {
+    @apply flex flex-col gap-4;
+}
+.breakdown-row {
+    @apply rounded-lg border border-gray-200 dark:border-midnight-700
+           bg-white dark:bg-midnight-900 p-4
+           transition-colors duration-150;
+}
+.breakdown-row:hover {
+    @apply border-teal-300 dark:border-teal-500/40;
+}
+.breakdown-row-header {
+    @apply flex items-baseline justify-between gap-3 mb-2;
+}
+.breakdown-label {
+    @apply font-display font-semibold text-gray-800 dark:text-gray-100 text-base;
+    text-transform: capitalize;
+}
+.breakdown-stats {
+    @apply flex items-baseline gap-3 text-sm;
+}
+.breakdown-percent {
+    @apply font-mono font-semibold text-teal-600 dark:text-teal-400;
+}
+.breakdown-value {
+    @apply font-mono text-gray-700 dark:text-gray-300;
+}
+.breakdown-bar {
+    @apply h-2 rounded-full bg-gray-100 dark:bg-midnight-800 overflow-hidden;
+}
+.breakdown-bar-fill {
+    @apply h-full rounded-full;
+    background: linear-gradient(90deg, #2cc8ca, #a95de0);
+    transition: width 0.4s ease;
+}
+.breakdown-meta {
+    @apply text-xs text-gray-500 dark:text-gray-500 mt-2;
+}

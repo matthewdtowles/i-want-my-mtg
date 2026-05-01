@@ -28,14 +28,19 @@ export class PortfolioComputationService {
     /**
      * Pure computation: given pre-fetched inventory + transactions + totalValue,
      * compute portfolio summary and per-card performance data.
+     *
+     * useFifo=true (premium): FIFO lot matching, realized gains tracked per sale.
+     * useFifo=false (free): perpetual average cost basis (sum(buy_value)/sum(buy_qty)),
+     * no realized gain tracking. Both produce per-card performance rows.
      */
     compute(
         userId: number,
         inventoryItems: Inventory[],
         transactions: Transaction[],
-        totalValue: number
+        totalValue: number,
+        useFifo = true
     ): ComputedPortfolio {
-        this.LOGGER.debug(`Computing portfolio for user ${userId}.`);
+        this.LOGGER.debug(`Computing portfolio for user ${userId} (useFifo=${useFifo}).`);
 
         const hasTransactions = transactions.length > 0;
         const now = new Date();
@@ -46,7 +51,7 @@ export class PortfolioComputationService {
 
         if (hasTransactions) {
             totalCost = 0;
-            totalRealizedGain = 0;
+            totalRealizedGain = useFifo ? 0 : null;
 
             const inventoryMap = new Map<string, Inventory>();
             const cardFoilKeys = new Set<string>();
@@ -94,23 +99,40 @@ export class PortfolioComputationService {
 
                 const currentValue = quantity * marketPrice;
 
-                const fifo = this.transactionService.computeFifoFromTransactions(
-                    buysByKey.get(key) || [],
-                    sellsByKey.get(key) || []
-                );
+                const buys = buysByKey.get(key) || [];
+                const sells = sellsByKey.get(key) || [];
 
-                const lotTotalCost = fifo.lots.reduce(
-                    (sum, lot) => sum + lot.remaining * lot.costPerUnit,
-                    0
-                );
-                const lotQuantity = fifo.lots.reduce((sum, lot) => sum + lot.remaining, 0);
-                const averageCost = lotQuantity > 0 ? lotTotalCost / lotQuantity : 0;
+                let cardTotalCost: number;
+                let averageCost: number;
+                let cardRealizedGain: number;
+
+                if (useFifo) {
+                    const fifo = this.transactionService.computeFifoFromTransactions(buys, sells);
+                    const lotTotalCost = fifo.lots.reduce(
+                        (sum, lot) => sum + lot.remaining * lot.costPerUnit,
+                        0
+                    );
+                    const lotQuantity = fifo.lots.reduce((sum, lot) => sum + lot.remaining, 0);
+                    averageCost = lotQuantity > 0 ? lotTotalCost / lotQuantity : 0;
+                    cardTotalCost = lotTotalCost;
+                    cardRealizedGain = fifo.totalRealizedGain;
+                    totalRealizedGain! += cardRealizedGain;
+                } else {
+                    // Perpetual average: avg = sum(buy_value)/sum(buy_qty); cost = qty × avg.
+                    let buyValue = 0;
+                    let buyQty = 0;
+                    for (const b of buys) {
+                        buyValue += b.quantity * b.pricePerUnit;
+                        buyQty += b.quantity;
+                    }
+                    averageCost = buyQty > 0 ? buyValue / buyQty : 0;
+                    cardTotalCost = quantity * averageCost;
+                    cardRealizedGain = 0;
+                }
+
                 const unrealizedGain = quantity * (marketPrice - averageCost);
+                totalCost += cardTotalCost;
 
-                totalCost += lotTotalCost;
-                totalRealizedGain += fifo.totalRealizedGain;
-
-                const cardTotalCost = lotTotalCost;
                 const roiPercent =
                     cardTotalCost > 0
                         ? ((currentValue - cardTotalCost) / cardTotalCost) * 100
@@ -123,11 +145,11 @@ export class PortfolioComputationService {
                             cardId,
                             isFoil,
                             quantity,
-                            totalCost: lotTotalCost,
+                            totalCost: cardTotalCost,
                             averageCost,
                             currentValue,
                             unrealizedGain,
-                            realizedGain: fifo.totalRealizedGain,
+                            realizedGain: cardRealizedGain,
                             roiPercent,
                             computedAt: now,
                         })

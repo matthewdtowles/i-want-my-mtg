@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
 import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-inventory.entity';
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
+import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { SealedProductApiController } from 'src/http/api/sealed-product/sealed-product-api.controller';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -66,7 +67,10 @@ describe('SealedProductApiController', () => {
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(SubscriptionGuard)
+            .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+            .compile();
 
         controller = module.get(SealedProductApiController);
         sealedProductService = module.get(

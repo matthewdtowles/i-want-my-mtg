@@ -9,6 +9,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -33,7 +34,8 @@ export class SetApiController {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(CardService) private readonly cardService: CardService,
-        @Inject(InventoryService) private readonly inventoryService: InventoryService
+        @Inject(InventoryService) private readonly inventoryService: InventoryService,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {}
 
     @Get()
@@ -98,12 +100,14 @@ export class SetApiController {
         const userId = req.user?.id;
         let totalsMap = new Map<string, number>();
         let valuesMap = new Map<string, number>();
+        let subscribed = false;
 
         if (userId) {
             const setCodes = sets.map((s) => s.code);
-            [totalsMap, valuesMap] = await Promise.all([
+            [totalsMap, valuesMap, subscribed] = await Promise.all([
                 this.inventoryService.inventoryTotalsForSets(userId, setCodes),
                 this.inventoryService.ownedValuesForSets(userId, setCodes),
+                this.subscriptionService.isUserSubscribed(userId),
             ]);
         }
 
@@ -118,7 +122,9 @@ export class SetApiController {
                 ...dto,
                 ownedTotal,
                 ownedValue,
-                completionRate: completionRate(ownedTotal, s.effectiveSize),
+                ...(subscribed
+                    ? { completionRate: completionRate(ownedTotal, s.effectiveSize) }
+                    : {}),
             };
         });
 

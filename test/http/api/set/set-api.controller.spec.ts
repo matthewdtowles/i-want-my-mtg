@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { Set } from 'src/core/set/set.entity';
+import { SetPriceHistory } from 'src/core/set/set-price-history.entity';
 import { SetPrice } from 'src/core/set/set-price.entity';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -27,6 +29,18 @@ function createSet(overrides: Partial<Set> = {}): Set {
     });
 }
 
+function createSetPriceHistory(overrides: Partial<SetPriceHistory> = {}): SetPriceHistory {
+    return new SetPriceHistory({
+        setCode: 'mkm',
+        basePrice: 120.5,
+        totalPrice: 180.75,
+        basePriceAll: 200.25,
+        totalPriceAll: 260.5,
+        date: new Date('2024-03-01T00:00:00.000Z'),
+        ...overrides,
+    });
+}
+
 function makeReq(userId?: number): AuthenticatedRequest {
     return { user: userId !== undefined ? { id: userId } : undefined } as AuthenticatedRequest;
 }
@@ -35,6 +49,7 @@ describe('SetApiController', () => {
     let controller: SetApiController;
     let setService: jest.Mocked<SetService>;
     let inventoryService: jest.Mocked<InventoryService>;
+    let subscriptionService: jest.Mocked<SubscriptionService>;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -48,6 +63,7 @@ describe('SetApiController', () => {
                         searchSets: jest.fn(),
                         totalSearchSets: jest.fn(),
                         findByCode: jest.fn(),
+                        findSetPriceHistory: jest.fn(),
                         findBlockGroupKeys: jest.fn(),
                         findSetsByBlockKeys: jest.fn(),
                         findMultiSetBlockKeys: jest.fn(),
@@ -69,6 +85,12 @@ describe('SetApiController', () => {
                     },
                 },
                 {
+                    provide: SubscriptionService,
+                    useValue: {
+                        isUserSubscribed: jest.fn(),
+                    },
+                },
+                {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
@@ -78,10 +100,33 @@ describe('SetApiController', () => {
         controller = module.get(SetApiController);
         setService = module.get(SetService) as jest.Mocked<SetService>;
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
+        subscriptionService = module.get(SubscriptionService) as jest.Mocked<SubscriptionService>;
     });
 
     beforeEach(() => {
         jest.clearAllMocks();
+        subscriptionService.isUserSubscribed.mockResolvedValue(true);
+    });
+
+    describe('getPriceHistory', () => {
+        it('should return set price history without subscription gating', async () => {
+            setService.findSetPriceHistory.mockResolvedValue([createSetPriceHistory()]);
+
+            const result = await controller.getPriceHistory('mkm', '365');
+
+            expect(setService.findSetPriceHistory).toHaveBeenCalledWith('mkm', 365);
+            expect(subscriptionService.isUserSubscribed).not.toHaveBeenCalled();
+            expect(result.success).toBe(true);
+            expect(result.data).toEqual([
+                {
+                    date: '2024-03-01',
+                    basePrice: 120.5,
+                    totalPrice: 180.75,
+                    basePriceAll: 200.25,
+                    totalPriceAll: 260.5,
+                },
+            ]);
+        });
     });
 
     describe('findAll', () => {
@@ -101,6 +146,21 @@ describe('SetApiController', () => {
             expect(result.data[0].completionRate).toBeGreaterThan(0);
             expect(inventoryService.inventoryTotalsForSets).toHaveBeenCalledWith(42, ['mkm']);
             expect(inventoryService.ownedValuesForSets).toHaveBeenCalledWith(42, ['mkm']);
+        });
+
+        it('should omit completionRate when authenticated but not subscribed', async () => {
+            const sets = [createSet()];
+            setService.findSets.mockResolvedValue(sets);
+            setService.totalSetsCount.mockResolvedValue(1);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map([['mkm', 50]]));
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map([['mkm', 75.25]]));
+            subscriptionService.isUserSubscribed.mockResolvedValue(false);
+
+            const result = await controller.findAll(makeReq(42), {});
+
+            expect(result.data[0].ownedTotal).toBe(50);
+            expect(result.data[0].ownedValue).toBe(75.25);
+            expect(result.data[0].completionRate).toBeUndefined();
         });
 
         it('should not include owned data when unauthenticated', async () => {
@@ -183,7 +243,11 @@ describe('SetApiController', () => {
             it('should use block-level pagination when group=block', async () => {
                 setService.totalBlockGroups.mockResolvedValue(10);
                 setService.findBlockGroupKeys.mockResolvedValue(['mid', 'neo']);
-                setService.findSetsByBlockKeys.mockResolvedValue([parentSet, childSet, standaloneSet]);
+                setService.findSetsByBlockKeys.mockResolvedValue([
+                    parentSet,
+                    childSet,
+                    standaloneSet,
+                ]);
                 setService.findMultiSetBlockKeys.mockResolvedValue(['mid']);
 
                 const req = makeReq();

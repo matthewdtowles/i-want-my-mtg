@@ -36,6 +36,7 @@ describe('SubscriptionService', () => {
             createCheckoutSession: jest.fn(),
             createBillingPortalSession: jest.fn(),
             retrieveSubscription: jest.fn(),
+            retrieveCheckoutSession: jest.fn(),
             constructEvent: jest.fn(),
             priceIdForPlan: jest.fn().mockImplementation((p) => `price_${p}`),
             planForPriceId: jest.fn().mockImplementation((id) => {
@@ -129,9 +130,9 @@ describe('SubscriptionService', () => {
                     status,
                 })
             );
-            await expect(service.startCheckout(user, SubscriptionPlan.Monthly)).rejects.toBeInstanceOf(
-                AlreadySubscribedError
-            );
+            await expect(
+                service.startCheckout(user, SubscriptionPlan.Monthly)
+            ).rejects.toBeInstanceOf(AlreadySubscribedError);
             expect(gateway.createCheckoutSession).not.toHaveBeenCalled();
         });
 
@@ -147,7 +148,9 @@ describe('SubscriptionService', () => {
                     status,
                 })
             );
-            gateway.createCheckoutSession.mockResolvedValue({ url: 'https://checkout.stripe/resubscribe' });
+            gateway.createCheckoutSession.mockResolvedValue({
+                url: 'https://checkout.stripe/resubscribe',
+            });
             const result = await service.startCheckout(user, SubscriptionPlan.Monthly);
             expect(result.url).toBe('https://checkout.stripe/resubscribe');
         });
@@ -198,7 +201,7 @@ describe('SubscriptionService', () => {
                     status: SubscriptionStatus.Incomplete,
                 })
             );
-            await service.syncFromStripeSubscription(stripeSub);
+            await expect(service.syncFromStripeSubscription(stripeSub)).resolves.toBe(true);
             expect(repo.upsert).toHaveBeenCalledWith(
                 expect.objectContaining({
                     userId: user.id,
@@ -215,7 +218,7 @@ describe('SubscriptionService', () => {
 
         it('ignores subscription with unknown customer', async () => {
             repo.findByStripeCustomerId.mockResolvedValue(null);
-            await service.syncFromStripeSubscription(stripeSub);
+            await expect(service.syncFromStripeSubscription(stripeSub)).resolves.toBe(false);
             expect(repo.upsert).not.toHaveBeenCalled();
         });
     });
@@ -243,6 +246,72 @@ describe('SubscriptionService', () => {
         it('no-ops when subscription unknown', async () => {
             repo.findByStripeSubscriptionId.mockResolvedValue(null);
             await service.handleSubscriptionDeleted('sub_missing');
+            expect(repo.upsert).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('syncFromCheckoutSessionId', () => {
+        it.each([null, '', '   '])(
+            'skips sync when client_reference_id is %p',
+            async (clientReferenceId) => {
+                gateway.retrieveCheckoutSession.mockResolvedValue({
+                    client_reference_id: clientReferenceId,
+                    subscription: 'sub_1',
+                } as Stripe.Checkout.Session);
+
+                await expect(service.syncFromCheckoutSessionId('cs_123', user.id)).resolves.toBe(
+                    false
+                );
+
+                expect(gateway.retrieveSubscription).not.toHaveBeenCalled();
+                expect(repo.upsert).not.toHaveBeenCalled();
+            }
+        );
+
+        it('returns true when session matches the user and sync persists the subscription', async () => {
+            gateway.retrieveCheckoutSession.mockResolvedValue({
+                client_reference_id: String(user.id),
+                subscription: 'sub_1',
+            } as Stripe.Checkout.Session);
+            gateway.retrieveSubscription.mockResolvedValue({
+                id: 'sub_1',
+                customer: 'cus_1',
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: 1_800_000_000,
+                items: { data: [{ price: { id: 'price_monthly' } }] },
+            } as unknown as Stripe.Subscription);
+            repo.findByStripeCustomerId.mockResolvedValue(
+                new Subscription({
+                    userId: user.id,
+                    stripeCustomerId: 'cus_1',
+                    status: SubscriptionStatus.Incomplete,
+                })
+            );
+
+            await expect(service.syncFromCheckoutSessionId('cs_123', user.id)).resolves.toBe(
+                true
+            );
+
+            expect(gateway.retrieveSubscription).toHaveBeenCalledWith('sub_1');
+            expect(repo.upsert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    userId: user.id,
+                    stripeCustomerId: 'cus_1',
+                    stripeSubscriptionId: 'sub_1',
+                    status: SubscriptionStatus.Active,
+                })
+            );
+        });
+
+        it('returns false when Stripe session lookup fails', async () => {
+            gateway.retrieveCheckoutSession.mockRejectedValue(new Error('no such checkout session'));
+
+            await expect(service.syncFromCheckoutSessionId('cs_404', user.id)).resolves.toBe(
+                false
+            );
+
+            expect(gateway.retrieveSubscription).not.toHaveBeenCalled();
             expect(repo.upsert).not.toHaveBeenCalled();
         });
     });

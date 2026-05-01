@@ -54,6 +54,7 @@ test.describe('Logout flow', () => {
 
         // Accessing an authenticated page should be denied - nav shows Sign In
         await page.goto('/inventory');
+        await page.locator('#mobile-menu-button').click();
         await expect(page.locator('a[href^="/auth/login"]').first()).toBeVisible();
     });
 });

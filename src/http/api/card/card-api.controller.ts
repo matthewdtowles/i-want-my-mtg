@@ -128,10 +128,9 @@ export class CardApiController {
 
     private async getPriceHistoryForCard(
         cardId: string,
-        days?: string
+        days: string | undefined
     ): Promise<ApiResponseDto<PriceHistoryPointDto[]>> {
-        const validDays = parseDaysParam(days);
-        const prices = await this.cardService.findPriceHistory(cardId, validDays);
+        const prices = await this.cardService.findPriceHistory(cardId, parseDaysParam(days));
         const points: PriceHistoryPointDto[] = prices.map(CardPresenter.toPriceHistoryPoint);
         return ApiResponseDto.ok(points);
     }

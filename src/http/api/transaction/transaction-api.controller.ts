@@ -16,6 +16,8 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -36,7 +38,8 @@ import { TransactionApiPresenter } from './transaction-api.presenter';
 export class TransactionApiController {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,
-        @Inject(CardService) private readonly cardService: CardService
+        @Inject(CardService) private readonly cardService: CardService,
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {}
 
     @Get()
@@ -52,9 +55,11 @@ export class TransactionApiController {
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
         const options = new SafeQueryOptions(query);
+        const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+        const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
         const [transactions, total] = await Promise.all([
-            this.transactionService.findByUserPaginated(req.user.id, options),
-            this.transactionService.countByUser(req.user.id, options),
+            this.transactionService.findByUserPaginated(req.user.id, options, sinceDate),
+            this.transactionService.countByUser(req.user.id, options, sinceDate),
         ]);
 
         return ApiResponseDto.ok(

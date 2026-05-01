@@ -869,7 +869,7 @@ describe('SetOrchestrator', () => {
             const prices = createMockSetPrice({
                 basePrice: 99.99,
                 basePriceAll: 199.99,
-                totalPrice: 149.99,
+                totalPrice: 139.99,
                 totalPriceAll: 299.99,
             });
 
@@ -877,7 +877,7 @@ describe('SetOrchestrator', () => {
 
             expect(result.basePriceNormal).toBe('$99.99');
             expect(result.basePriceAll).toBe('$199.99');
-            expect(result.totalPriceNormal).toBe('$149.99');
+            expect(result.totalPriceNormal).toBe('$139.99');
             expect(result.totalPriceAll).toBe('$299.99');
         });
 

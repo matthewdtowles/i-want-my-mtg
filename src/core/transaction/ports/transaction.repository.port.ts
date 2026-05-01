@@ -37,9 +37,11 @@ export interface TransactionRepositoryPort {
     findSells(userId: number, cardId: string, isFoil: boolean): Promise<Transaction[]>;
 
     /**
-     * Find all transactions for a user, ordered by date DESC
+     * Find all transactions for a user, ordered by date DESC.
+     * Optional `sinceDate` caps results to transactions on or after that date
+     * (used by the free-tier 30-day history gate).
      */
-    findByUser(userId: number): Promise<Transaction[]>;
+    findByUser(userId: number, sinceDate?: Date): Promise<Transaction[]>;
 
     /**
      * Update a transaction by ID (only updates provided fields)
@@ -52,14 +54,21 @@ export interface TransactionRepositoryPort {
     delete(id: number, userId: number): Promise<void>;
 
     /**
-     * Find transactions for a user with pagination, sorting, and filtering
+     * Find transactions for a user with pagination, sorting, and filtering.
+     * Optional `sinceDate` caps results to transactions on or after that date
+     * (used by the free-tier 30-day history gate).
      */
-    findByUserPaginated(userId: number, options: SafeQueryOptions): Promise<Transaction[]>;
+    findByUserPaginated(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date
+    ): Promise<Transaction[]>;
 
     /**
-     * Count transactions for a user with the same filters
+     * Count transactions for a user with the same filters.
+     * Optional `sinceDate` matches the cap applied by `findByUserPaginated`.
      */
-    countByUser(userId: number, options: SafeQueryOptions): Promise<number>;
+    countByUser(userId: number, options: SafeQueryOptions, sinceDate?: Date): Promise<number>;
 
     /**
      * Aggregate transaction amounts by month for cash flow analysis

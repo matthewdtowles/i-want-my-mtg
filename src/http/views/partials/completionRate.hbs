@@ -1,9 +1,11 @@
 {{~!
-  Completion progress bar with percentage label.
+  Completion progress bar with percentage label. For free users (no
+  @root.subscribed) the actual percentage is masked behind a Premium link.
 
   Parameters:
     completionRate - numeric percentage (0-100)
 ~}}
+{{#if @root.subscribed}}
 <div class='completion-bar-container flex items-center relative'>
     <div
         class='completion-bar absolute top-0 left-0 h-full'
@@ -11,3 +13,10 @@
     ></div>
     <span class='w-full text-center z-10 font-bold relative'>{{completionRate}}%</span>
 </div>
+{{else}}
+<a href='/pricing' class='completion-bar-container flex items-center relative opacity-70 hover:opacity-100 transition-opacity' title='Set completion tracking is a Premium feature'>
+    <span class='w-full text-center z-10 font-bold relative text-amber-600 dark:text-amber-400'>
+        <i class='fas fa-lock text-xs mr-1' aria-hidden='true'></i>Premium
+    </span>
+</a>
+{{/if}}

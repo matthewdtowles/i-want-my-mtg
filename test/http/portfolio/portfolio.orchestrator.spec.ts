@@ -2,7 +2,9 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardService } from 'src/core/card/card.service';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
+import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
+import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -72,6 +74,14 @@ describe('PortfolioOrchestrator', () => {
                         getSetRoi: jest.fn(),
                         refreshSummary: jest.fn(),
                     },
+                },
+                {
+                    provide: PortfolioBreakdownService,
+                    useValue: { getBreakdown: jest.fn() },
+                },
+                {
+                    provide: SubscriptionService,
+                    useValue: { isUserSubscribed: jest.fn().mockResolvedValue(false) },
                 },
                 {
                     provide: CardService,
@@ -238,7 +248,7 @@ describe('PortfolioOrchestrator', () => {
             const result = await orchestrator.refresh(mockAuthenticatedRequest);
 
             expect(result.success).toBe(true);
-            expect(summaryService.refreshSummary).toHaveBeenCalledWith(1);
+            expect(summaryService.refreshSummary).toHaveBeenCalledWith(1, false);
         });
 
         it('should return error on rate limit', async () => {

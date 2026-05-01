@@ -12,6 +12,7 @@ export class TransactionViewDto extends BaseViewDto {
     readonly filter?: FilterView;
     readonly pagination?: PaginationView;
     readonly tableHeadersRow?: TableHeadersRowView;
+    readonly freeHistoryCutoff: number | null;
 
     constructor(init: Partial<TransactionViewDto>) {
         super(init);
@@ -22,5 +23,6 @@ export class TransactionViewDto extends BaseViewDto {
         this.filter = init.filter;
         this.pagination = init.pagination;
         this.tableHeadersRow = init.tableHeadersRow;
+        this.freeHistoryCutoff = init.freeHistoryCutoff ?? null;
     }
 }

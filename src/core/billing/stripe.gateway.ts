@@ -6,6 +6,13 @@ import type { Stripe } from './stripe.types';
 import { CheckoutSessionParams, StripeGatewayPort } from './ports/stripe-gateway.port';
 import { SubscriptionPlan } from './subscription-plan.enum';
 
+export class StripeConfigurationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'StripeConfigurationError';
+    }
+}
+
 @Injectable()
 export class StripeGateway implements StripeGatewayPort, OnModuleInit {
     private readonly LOGGER = getLogger(StripeGateway.name);
@@ -32,7 +39,9 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
 
     private requireClient(): Stripe {
         if (!this.client) {
-            throw new Error('Stripe is not configured (STRIPE_SECRET_KEY missing).');
+            throw new StripeConfigurationError(
+                'Stripe is not configured (STRIPE_SECRET_KEY missing).'
+            );
         }
         return this.client;
     }
@@ -84,9 +93,13 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         return this.requireClient().subscriptions.retrieve(subscriptionId);
     }
 
+    async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+        return this.requireClient().checkout.sessions.retrieve(sessionId);
+    }
+
     constructEvent(rawBody: Buffer | string, signature: string): Stripe.Event {
         if (!this.webhookSecret) {
-            throw new Error('STRIPE_WEBHOOK_SECRET is not configured.');
+            throw new StripeConfigurationError('STRIPE_WEBHOOK_SECRET is not configured.');
         }
         return this.requireClient().webhooks.constructEvent(rawBody, signature, this.webhookSecret);
     }

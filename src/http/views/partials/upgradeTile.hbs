@@ -1,0 +1,18 @@
+{{~!--
+  Upgrade tile - replaces premium-only sections for free users.
+
+  Parameters:
+    heading      - section heading (e.g. "Value History Chart")
+    description  - one or two sentences explaining what's behind the gate
+    cta          - call-to-action label (default "Upgrade to Premium")
+    href         - link target (default /pricing)
+--~}}
+<div class="rounded-lg border border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50 to-teal-50 dark:from-midnight-900 dark:to-purple-950 p-6 text-center">
+    <i class="fas fa-star text-3xl text-amber-500 mb-2" aria-hidden="true"></i>
+    <h4 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1">{{heading}}</h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-4">{{description}}</p>
+    <a href="{{#if href}}{{href}}{{else}}/pricing{{/if}}"
+       class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold px-4 py-2 rounded shadow-sm">
+        <i class="fas fa-star text-xs" aria-hidden="true"></i>{{#if cta}}{{cta}}{{else}}Upgrade to Premium{{/if}}
+    </a>
+</div>

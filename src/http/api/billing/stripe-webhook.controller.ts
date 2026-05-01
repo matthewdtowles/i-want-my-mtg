@@ -4,6 +4,7 @@ import {
     Headers,
     HttpCode,
     Inject,
+    InternalServerErrorException,
     Post,
     RawBodyRequest,
     Req,
@@ -12,6 +13,7 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
+import { StripeConfigurationError } from 'src/core/billing/stripe.gateway';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { getLogger } from 'src/logger/global-app-logger';
 
@@ -42,6 +44,13 @@ export class StripeWebhookController {
         try {
             event = this.stripe.constructEvent(req.rawBody, signature);
         } catch (error) {
+            if (error instanceof StripeConfigurationError) {
+                this.LOGGER.error(
+                    `Stripe webhook received but gateway is misconfigured: ${error.message}`
+                );
+                // 500 so Stripe retries — config issues are a server problem, not a bad request.
+                throw new InternalServerErrorException('Stripe webhook gateway misconfigured.');
+            }
             this.LOGGER.warn(`Stripe webhook signature verification failed: ${error?.message}`);
             throw new BadRequestException('Invalid Stripe signature.');
         }

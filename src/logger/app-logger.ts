@@ -29,6 +29,9 @@ export class AppLogger implements LoggerService {
     }
 
     private print(level: LogLevel | string, message: string, context?: string, trace?: string) {
+        if (process.env.NODE_ENV === 'test' && !process.env.TEST_VERBOSE) {
+            return;
+        }
         const requestId = getRequestContext()?.correlationId ?? '-';
         const userId = getRequestContext()?.userId ?? '-';
         const timestamp = new Date().toISOString();

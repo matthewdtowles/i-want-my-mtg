@@ -95,6 +95,27 @@ services:
         profiles: ['migrate']
         restart: 'no'
 
+    stripe-listener:
+        image: stripe/stripe-cli:latest
+        command:
+            [
+                'listen',
+                '--forward-to',
+                'web:3000/api/v1/billing/webhooks/stripe',
+                '--skip-verify',
+            ]
+        volumes:
+            - ${HOME}/.config/stripe:/root/.config/stripe
+        depends_on:
+            - web
+        profiles: ['stripe']
+        restart: unless-stopped
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '10m'
+                max-file: '3'
+
     mailhog:
         image: mailhog/mailhog:latest
         container_name: mtg-mailhog

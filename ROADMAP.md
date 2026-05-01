@@ -342,6 +342,7 @@
 - [x] Notifications history page (`/notifications`) with unread highlighting and mark-as-read
 - [x] Navbar links for Alerts (desktop and mobile)
 - [x] Hide Owned column on set card list when not authenticated
+- [ ] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) - status uncertain after recent infra changes
 
 ### 2.13 UI Polish
 
@@ -424,15 +425,91 @@
 
 ### 3.4 Freemium Structure & Subscription Billing
 
-- [ ] Define free tier limits (collection tracking, basic transaction logging, card search)
-- [ ] Define premium tier features (new features only — do not gate existing shipped features)
-  - Advanced analytics (collection value breakdown by set, format, color, rarity)
-  - Priority access to new features
-  - Extended price history retention
-  - Deck building and management
-- [x] Integrate Stripe for subscription billing ($4.99/month, $49/year — customer creation, Checkout, Billing Portal, webhooks, subscription sync)
-- [ ] Build subscription management UI (upgrade prompts across app, billing history view) — plan selection + cancellation done via `/billing` + Stripe portal
-- [ ] Implement feature gating in API layer — `SubscriptionGuard` + `@RequiresSubscription()` scaffolded but not applied to any route yet
+#### Shipped
+- [x] Integrate Stripe for subscription billing - customer creation, Checkout, Billing Portal, webhooks, subscription sync
+- [x] Subscription plan selection and cancellation via `/billing` + Stripe Billing Portal
+- [x] Scaffold feature-gating primitives (`SubscriptionGuard`, `@RequiresSubscription()` decorator in `src/core/billing/`)
+- [x] Drop displayed pricing to $3.99/mo, $39.99/yr (`BillingViewDto`, `/pricing` page) - Stripe Price objects still need to be updated in dashboard + env vars
+- [x] `SubscriptionService.isUserSubscribed(userId)` helper for use in orchestrators
+- [x] `subscribed` field added to `BaseViewDto` so all views can branch on subscription state
+- [x] `/pricing` page live (hero, billing toggle, comparison table, FAQ, bottom CTA - matches Claude-designed artifact)
+- [x] Pricing link in navbar (desktop + mobile) and footer
+- [x] **Advanced analytics flagship feature shipped** - `/portfolio/breakdown?by=set|rarity|type` with premium gating
+  - `PortfolioBreakdownService` + `PortfolioBreakdownRepository` (raw SQL aggregation joining inventory + card + price)
+  - Server-side gating: free users see upgrade pitch (`locked: true` view state); subscribed users see breakdown bars
+  - Three dimensions live: by set, by rarity, by primary card type
+  - Linked from portfolio page header with gradient "Analytics" button + premium star
+
+#### Freemium model (depth gating, no creation caps)
+
+Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card cap (widely criticized), ManaBox $2.49/mo gating decks not inventory, Deckbox $3.99/mo with QoL-only premium, Moxfield/Archidekt mostly free. Hard caps convert poorly and damage word-of-mouth. IWMM positions closer to Moxfield/Deckbox: free tier is fully usable forever; premium unlocks depth (analytics, history, external integrations, scanning) - the things serious collectors care about.
+
+**Pricing change:** drop from $3.99/mo, $49/yr to **$3.99/mo, $39.99/yr** (matches Deckbox annual; annual saves ~2 months vs monthly). No existing paid subs as of the change, so no Stripe migration needed - update Stripe Prices and `STRIPE_PRICE_*` env vars.
+
+**Free tier (no creation limits, fully usable forever):**
+- Browse all sets and cards
+- Track inventory: unlimited cards
+- Track transactions: unlimited (last 30 days visible in history view; older data preserved server-side)
+- Price alerts: up to 5, single threshold direction per alert
+- Live market prices
+- Price history charts: 30 days
+- Basic portfolio overview (current value)
+- CSV import and export
+- Binder view
+- Standard support
+- API: 100 requests/day
+
+**Premium ($3.99/mo, $39.99/yr):**
+- Everything in Free, plus:
+- Unlimited price alerts
+- Multi-threshold alerts (increase AND decrease per card)
+- Full transaction history (no 30-day view cutoff)
+- Portfolio value history and charts
+- P&L tracking
+- Cash flow charts
+- Set completion tracking
+- Sealed product tracking
+- Set price history
+- Advanced analytics (collection value breakdown by set, format, color, rarity) - to build
+- External imports: Moxfield, Archidekt, Deckbox - ships in Phase 5.1
+- Card image scanning - ships in Phase 6.3
+- Priority support
+- Early access to new features
+
+API rate limits remain 100/day for free and premium alike - all API monetization is deferred to Phase 4.1's separate Developer/Business tiers.
+
+**Conversion model implication:** with no creation caps, conversion depends on users *wanting* depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. Trade-off: weaker conversion in the short term until advanced analytics, external imports, and scanning ship - those are the load-bearing premium pitches.
+
+#### Remaining implementation (gating existing features)
+
+The advanced analytics page is gated end-to-end as the architectural pattern. Each item below applies the same pattern (inject `SubscriptionService`, branch on `isUserSubscribed`, show preserved-data + upgrade CTA for free users) to existing routes. Each is a small but careful UX change to a feature free users currently use unrestricted - tackle one at a time, not as a batch.
+
+- [x] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $3.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
+- [x] Transaction list view: cap query to last 30 days for free users, show "Upgrade for full history" inline tip on the transactions page (HBS + API both apply `freeTierHistoryCutoff()`; tip shown via `freeHistoryCutoff` flag on `TransactionViewDto`)
+- [x] Portfolio history chart: replace with upgrade tile for free users (current snapshot still shown); `GET /portfolio/history` 403s via `SubscriptionGuard`
+- [x] Portfolio P&L stat cards (`Unrealized P&L`, `Realized Gains`, `ROI`): replaced with locked Premium tiles linking to `/pricing` for free users; Current Value, Total Invested, Cards/Units stay visible
+- [x] Cash flow chart endpoint: 403 via `SubscriptionGuard`; portfolio page hides the section for free users
+- [x] Reusable `upgradeTile.hbs` partial introduced for premium-gated UI tiles
+- [x] Sealed product inventory routes (`/api/v1/inventory/sealed` POST/PATCH/DELETE; `/sealed-products/:uuid` add-to-inventory): 403 for free users via `SubscriptionGuard` + `@RequiresSubscription()`; sealed product detail page and set sealed-list show "Premium" CTA → `/pricing` instead of stepper for non-subscribers
+- [x] Set completion tracking: completion-rate badges replaced with "Premium" lock for free users (HBS partial via `@root.subscribed`; AJAX-rendered set list via `data-subscribed` body attr); per-set "?/Y owned" tooltip on set + binder pages links to `/pricing`
+- [x] Price history charts: card detail page hides 1y / All buttons for free users and shows a "Last 30 days" hint with upgrade link
+- [x] Set price history page/widget: `GET /sets/:code/price-history` remains available without `SubscriptionGuard`; set page continues to render the price history chart/widget for free users
+- [x] Alert creation: enforce 5-alert max in `PriceAlertService.create()`; reject with `DomainValidationError` linking to `/pricing`
+- [x] Multi-threshold alert creation: reject second-direction threshold for free users (enforced in both `create()` and `update()`)
+- [x] AJAX module 402/403 handler in `ajaxUtils.js` (`handleGatedResponse` / `fetchWithGate`) that catches premium-required errors and toasts an upgrade prompt linking to `/pricing` (wired into sealed inventory; opt-in for other modules as they are gated)
+- [x] Premium badge in `navbar.hbs` for paying users (read `subscribed` from view DTO; non-subscribers see Upgrade CTA → `/pricing`)
+- [x] Post-checkout success state on `/billing/success`: dedicated `billingSuccess.hbs` view with celebratory hero, three feature cards, and "Try Advanced Analytics" deep link to `/portfolio/breakdown`
+- [x] Billing history view (invoices/payments) - delegated entirely to Stripe Billing Portal
+- [x] On signup, show a "Here's what Premium unlocks" section in the welcome banner linking to `/pricing` (auto-shown via `?welcome=true`; banner is one-time per landing on `/user`)
+
+#### Advanced analytics - shipped, follow-up backlog
+
+- [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
+- [x] Add `by=format` dimension - join through `legality` table, count cards legal in each format
+- [x] Add cost-basis dimension: gain/loss/at-cost buckets sourced from `portfolio_card_performance`
+- [x] Visual upgrade: stacked bar chart or treemap option - decided against; per-row horizontal bars are the most readable form for this data (small slices stay legible, exact values are easy to scan)
+- [x] Sticky dimension preference (localStorage) so users return to the same view
+- [x] Empty state for new users: sample/demo breakdown shown when slices are empty
 
 ### 3.5 Feature: Deck Building
 
@@ -453,7 +530,7 @@
 
 ### 4.1 API Monetization & Tiering
 
-- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–49.99/mo: 50,000 req/day + bulk endpoints)
+- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–39.99/mo: 50,000 req/day + bulk endpoints)
 - [ ] Implement API key management (generate, revoke, view usage)
 - [ ] Extend rate limiting to enforce per-tier limits with clear error messages and upgrade prompts
 - [ ] Integrate Stripe for API subscriptions (separate from consumer subscription, or bundled)
@@ -588,7 +665,28 @@
 - [ ] If migrating: execute migration module by module
 - [ ] If keeping: document decision and rationale
 
-### 8.2 Scry: Interactive Mode
+### 8.2 Site-wide Visual Refresh
+
+The Claude-generated `/pricing` page (`Pricing Page.html`) introduces a refined visual direction (midnight/teal/purple gradient palette, Space Grotesk typography, gradient-bordered navbar with drawer menu, footer color bar). The pricing page ships with this design page-scoped only; this section is the broader rollout.
+
+- [ ] Audit current site chrome (navbar, drawer, footer) against the design's chrome - document deltas
+- [ ] Decide on font: roll Space Grotesk site-wide or substitute current stack (consider page-weight cost, brand fit)
+- [ ] Promote the page-scoped color tokens (midnight, teal, purple, amber) to global Tailwind theme tokens; reconcile with existing teal/purple usage
+- [ ] Replace `main.hbs` navbar with the design's gradient-bordered navbar + drawer menu pattern
+- [ ] Replace footer with the design's color-bar + tri-column treatment
+- [ ] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles)
+- [ ] Re-run Lighthouse performance and accessibility audits after rollout (color contrast in particular)
+- [ ] Verify dark/light mode toggle works site-wide (design ships dark-default with light support)
+
+### 8.3 Portfolio Breakdown: by=color Dimension
+
+Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJSON `colorIdentity` first. Once that lands, add a `color` case to `PortfolioBreakdownRepository.dimensionConfig()` and a tab on `portfolioBreakdown.hbs`.
+
+- [ ] Scry: ingest `card.colors` from MTGJSON `colorIdentity` into the `card` table
+- [ ] Add `color` case to `BreakdownDimension` and `dimensionConfig()`
+- [ ] Add "By Color" tab to `portfolioBreakdown.hbs`
+
+### 8.4 Scry: Interactive Mode
 
 - [ ] Design interactive CLI menu (select commands, configure options)
 - [ ] Add interactive mode entry point (`cargo run -- interactive` or default)

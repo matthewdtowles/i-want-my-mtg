@@ -6,6 +6,7 @@ import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repo
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/ports/password-reset.repository.port';
 import { SetPriceHistoryRepositoryPort } from 'src/core/set/ports/set-price-history.repository.port';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
+import { PortfolioBreakdownRepositoryPort } from 'src/core/portfolio/ports/portfolio-breakdown.repository.port';
 import { PortfolioCardPerformanceRepositoryPort } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { PortfolioSummaryRepositoryPort } from 'src/core/portfolio/ports/portfolio-summary.repository.port';
 import { PortfolioValueHistoryRepositoryPort } from 'src/core/portfolio/ports/portfolio-value-history.repository.port';
@@ -31,6 +32,7 @@ import { SetPriceHistoryRepository } from './set-price-history/set-price-history
 import { SetPriceOrmEntity } from './set/set-price.orm-entity';
 import { SetOrmEntity } from './set/set.orm-entity';
 import { SetRepository } from './set/set.repository';
+import { PortfolioBreakdownRepository } from './portfolio/portfolio-breakdown.repository';
 import { PortfolioCardPerformanceOrmEntity } from './portfolio/portfolio-card-performance.orm-entity';
 import { PortfolioCardPerformanceRepository } from './portfolio/portfolio-card-performance.repository';
 import { PortfolioSummaryOrmEntity } from './portfolio/portfolio-summary.orm-entity';
@@ -90,6 +92,7 @@ import { SubscriptionRepository } from './subscription/subscription.repository';
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
         { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
+        { provide: PortfolioBreakdownRepositoryPort, useClass: PortfolioBreakdownRepository },
         {
             provide: PortfolioCardPerformanceRepositoryPort,
             useClass: PortfolioCardPerformanceRepository,
@@ -111,6 +114,7 @@ import { SubscriptionRepository } from './subscription/subscription.repository';
         PasswordResetRepositoryPort,
         SetPriceHistoryRepositoryPort,
         SetRepositoryPort,
+        PortfolioBreakdownRepositoryPort,
         PortfolioCardPerformanceRepositoryPort,
         PortfolioSummaryRepositoryPort,
         PortfolioValueHistoryRepositoryPort,

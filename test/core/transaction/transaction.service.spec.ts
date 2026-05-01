@@ -642,7 +642,7 @@ describe('TransactionService', () => {
 
             const result = await service.findByUser(1);
 
-            expect(repository.findByUser).toHaveBeenCalledWith(1);
+            expect(repository.findByUser).toHaveBeenCalledWith(1, undefined);
             expect(result).toEqual(transactions);
         });
     });

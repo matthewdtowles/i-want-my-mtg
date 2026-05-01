@@ -1,22 +1,86 @@
-{{~! Site footer with gradient bar and credit line. No parameters. ~}}
-<div class='w-full mt-auto'>
-    <div class='h-1 bg-gradient-to-r from-teal-400 via-purple-500 to-hotpink-500'></div>
-    <div class='py-6 bg-purple-900 dark:bg-midnight-950 text-center text-xs text-teal-300 dark:text-teal-400'>
-        <div class='flex flex-wrap justify-center gap-x-4 gap-y-1'>
-            <a href='/pricing' class='hover:underline'>Pricing</a>
-            <a href='/privacy' class='hover:underline'>Privacy</a>
-            <a href='/terms' class='hover:underline'>Terms</a>
-            <a href='/guides/getting-started' class='hover:underline'>Getting Started</a>
+{{~!--
+  Site footer — refreshed four-column design.
+
+  Parameters:
+    authenticated  boolean  toggles Account column content
+    subscribed     boolean  (unused in footer, kept for compat)
+    assetVersion   string   cache-busting query param for footer logo asset
+--~}}
+<div class="iwm-footer">
+    <div class="iwm-footer-bar" aria-hidden="true"></div>
+    <div class="iwm-footer-body">
+        <div class="iwm-footer-cols">
+
+            {{!-- Brand column --}}
+            <div class="iwm-footer-brand">
+                <a href="/" class="iwm-footer-brand-logo" aria-label="I Want My MTG home">
+                    <img src="/public/images/logo.webp?v={{assetVersion}}"
+                         alt="I Want My MTG logo" width="28" height="28"
+                         class="iwm-footer-brand-img" fetchpriority="low" />
+                    <span class="iwm-footer-brand-name">I Want My MTG</span>
+                </a>
+                <p class="iwm-footer-brand-tagline">
+                    Track your Magic: The Gathering collection, portfolio value, and market prices — free forever.
+                </p>
+                <div class="iwm-footer-social">
+                    <a href="https://github.com/matthewdtowles/i-want-my-mtg" class="iwm-footer-social-btn" title="GitHub" rel="noopener noreferrer" target="_blank">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.54 2.87 8.39 6.84 9.75.5.09.68-.22.68-.49v-1.71c-2.78.62-3.37-1.37-3.37-1.37-.45-1.17-1.1-1.48-1.1-1.48-.9-.63.07-.62.07-.62 1 .07 1.52 1.05 1.52 1.05.89 1.56 2.33 1.11 2.9.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0112 7.41c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.59.69.49A10.27 10.27 0 0022 12.26C22 6.58 17.52 2 12 2z"/></svg>
+                        <span class="sr-only">GitHub</span>
+                    </a>
+                </div>
+            </div>
+
+            {{!-- Product column --}}
+            <div class="iwm-footer-col">
+                <div class="iwm-footer-col-heading">Product</div>
+                <nav class="iwm-footer-links" aria-label="Product links">
+                    <a href="/pricing"                class="iwm-footer-link">Pricing</a>
+                    <a href="/sets"                   class="iwm-footer-link">Sets</a>
+                    <a href="/spoilers"               class="iwm-footer-link">Spoilers</a>
+                    <a href="/guides/getting-started" class="iwm-footer-link">Getting Started</a>
+                </nav>
+            </div>
+
+            {{!-- Account column --}}
+            <div class="iwm-footer-col">
+                <div class="iwm-footer-col-heading">Account</div>
+                <nav class="iwm-footer-links" aria-label="Account links">
+                    {{#if authenticated}}
+                        <a href="/inventory"    class="iwm-footer-link">My Inventory</a>
+                        <a href="/portfolio"    class="iwm-footer-link">Portfolio</a>
+                        <a href="/price-alerts" class="iwm-footer-link">Price Alerts</a>
+                        <a href="/billing"      class="iwm-footer-link">Subscription</a>
+                    {{else}}
+                        <a href="/auth/login"   class="iwm-footer-link navbar-login-link">Sign In</a>
+                        <a href="/user/create"  class="iwm-footer-link">Create Account</a>
+                    {{/if}}
+                </nav>
+            </div>
+
+            {{!-- Legal column --}}
+            <div class="iwm-footer-col">
+                <div class="iwm-footer-col-heading">Legal</div>
+                <nav class="iwm-footer-links" aria-label="Legal links">
+                    <a href="/privacy" class="iwm-footer-link">Privacy Policy</a>
+                    <a href="/terms"   class="iwm-footer-link">Terms of Service</a>
+                </nav>
+            </div>
+
         </div>
-        <div class='mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1'>
-            I Want My MTG! &#9734; mdt
-        </div>
-        <div class='mt-2 text-teal-400/70 dark:text-teal-500/70 mx-auto px-4'>
-            Magic: the Gathering&trade; is property of Wizards of the Coast. &copy;Wizards of the Coast LLC.
-        </div>
-        <div class='text-teal-400/70 dark:text-teal-500/70 mx-auto px-4'>
-            When you click on some links on this site and make a purchase, this can
-            result in this site earning a commission at no extra cost to you.
+
+        <div class="iwm-footer-divider" aria-hidden="true"></div>
+
+        <div class="iwm-footer-bottom">
+            <div class="iwm-footer-credit">
+                <span>I Want My MTG</span>
+                <span class="iwm-footer-credit-dot" aria-hidden="true"></span>
+                <span>mdt</span>
+                <span class="iwm-footer-credit-dot" aria-hidden="true"></span>
+                <span class="iwm-footer-credit-star" aria-hidden="true">★</span>
+            </div>
+            <p class="iwm-footer-legal">
+                Magic: The Gathering&trade; is property of Wizards of the Coast LLC. This is unofficial fan content.&ensp;Some links on this site may earn an affiliate commission at no extra cost to you.
+            </p>
         </div>
     </div>
 </div>

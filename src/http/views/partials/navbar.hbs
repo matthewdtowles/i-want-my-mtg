@@ -1,159 +1,527 @@
 {{~!--
-  Site navigation bar with logo, drawer menu, dynamic upgrade CTA, and toast notifications.
+  Site navigation bar — refreshed design.
 
   Parameters:
-    authenticated - boolean, toggles login vs. user menu
-    subscribed    - boolean, toggles Upgrade CTA vs. Premium badge (auth only)
-    welcome       - display name for logged-in user
-    toast         - optional { status, message } for flash notifications
-    assetVersion  - cache-busting version for toast.js script
+    authenticated  boolean  toggles auth vs. public nav
+    subscribed     boolean  Premium badge (true) vs. Upgrade CTA (false), auth only
+    welcome        string   display name (unused in navbar, kept for compat)
+    toast          object   optional { status, message } flash notification
+    assetVersion   string   cache-busting query param
 --~}}
-<nav class="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-800 dark:from-midnight-950 dark:via-purple-950 dark:to-midnight-950 shadow-lg py-4 border-b-2 border-teal-400 dark:shadow-glow-teal">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <div class="flex items-center">
-                <a href="/" aria-label="I Want My MTG home">
-                    <img class="logo" src="/public/images/logo.webp?v={{assetVersion}}" alt="I Want My MTG logo" width="80" height="80" fetchpriority="low" />
-                </a>
-            </div>
-            <div class="flex items-center gap-2">
-                {{#if authenticated}}
-                    {{#if subscribed}}
-                        <span class="inline-flex items-center gap-1 bg-teal-500 text-midnight-950 text-xs font-semibold px-2 py-1 rounded shadow-sm" title="Premium subscriber">
-                            <i class="fas fa-star text-xs" aria-hidden="true"></i>Premium
-                        </span>
-                    {{else}}
-                        <a class="navbar-link bg-amber-500 hover:bg-amber-400 text-midnight-950 font-semibold px-3 py-1 rounded shadow-sm"
-                            href="/pricing">
-                            <i class="fas fa-star text-xs mr-1" aria-hidden="true"></i>Upgrade
+<nav class="iwm-nav" aria-label="Site navigation">
+    <div class="iwm-nav-inner">
+
+        {{!-- Logo --}}
+        <a href="/" class="iwm-logo" aria-label="I Want My MTG home">
+            <img class="iwm-logo-img" src="/public/images/logo.webp?v={{assetVersion}}"
+                 alt="I Want My MTG logo" width="28" height="28" fetchpriority="low" />
+            <span class="iwm-logo-name">I Want My MTG</span>
+        </a>
+
+        {{!-- Desktop primary nav --}}
+        <div class="iwm-primary-nav" role="navigation" aria-label="Primary">
+            {{#if authenticated}}
+                {{!-- Authenticated: Collection dropdown + Explore links --}}
+                <div class="iwm-dropdown" id="collection-dropdown">
+                    <button class="iwm-nav-link iwm-dropdown-trigger"
+                            aria-haspopup="menu" aria-expanded="false"
+                            aria-controls="collection-menu"
+                            id="collection-btn">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="4" width="6" height="5" rx="0.5"/><rect x="9" y="4" width="6" height="5" rx="0.5"/><rect x="1" y="11" width="6" height="4" rx="0.5"/><rect x="9" y="11" width="6" height="4" rx="0.5"/></svg>
+                        Collection
+                        <svg class="iwm-dd-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="iwm-dropdown-menu" id="collection-menu" role="menu" aria-labelledby="collection-btn" hidden>
+                        <a href="/inventory" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="4" width="6" height="5" rx="0.5"/><rect x="9" y="4" width="6" height="5" rx="0.5"/><rect x="1" y="11" width="6" height="4" rx="0.5"/><rect x="9" y="11" width="6" height="4" rx="0.5"/></svg>
+                            My Inventory
                         </a>
-                    {{/if}}
+                        <a href="/portfolio" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12l3-4 3 2 3-5 3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Portfolio
+                        </a>
+                        <a href="/transactions" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 5h12M2 8h7M2 11h4" stroke-linecap="round"/></svg>
+                            Transactions
+                        </a>
+                        <a href="/price-alerts" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 2a4.5 4.5 0 00-4.5 4.5c0 2-1 2.5-1 2.5h11s-1-.5-1-2.5A4.5 4.5 0 008 2zM7 13h2" stroke-linecap="round"/></svg>
+                            Price Alerts
+                        </a>
+                    </div>
+                </div>
+                <a href="/sets" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
+                    Sets
+                </a>
+                <a href="/spoilers" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5v.2" stroke-linecap="round"/></svg>
+                    Spoilers
+                </a>
+            {{else}}
+                {{!-- Unauthenticated: public links --}}
+                <a href="/sets" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
+                    Sets
+                </a>
+                <a href="/spoilers" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5v.2" stroke-linecap="round"/></svg>
+                    Spoilers
+                </a>
+                <a href="/pricing" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v1m0 5v1M5.5 8h4" stroke-linecap="round"/></svg>
+                    Pricing
+                </a>
+            {{/if}}
+        </div>
+
+        {{!-- Spacer --}}
+        <div class="iwm-nav-spacer" aria-hidden="true"></div>
+
+        {{!-- Desktop search --}}
+        <div class="iwm-search-wrap">
+            <span class="iwm-search-icon" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </span>
+            <form method="get" action="/search" role="search">
+                <input class="iwm-search" type="text" name="q"
+                       placeholder="Search cards, sets…"
+                       autocomplete="off"
+                       aria-label="Search cards and sets" />
+            </form>
+        </div>
+
+        {{!-- Right cluster --}}
+        <div class="iwm-nav-right">
+            {{#if authenticated}}
+                {{#if subscribed}}
+                    <span class="iwm-premium-badge" title="Premium subscriber">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Premium
+                    </span>
+                {{else}}
+                    <a href="/pricing" class="iwm-upgrade-cta">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Upgrade
+                    </a>
                 {{/if}}
-                <button id="theme-toggle" type="button"
-                    class="text-teal-300 hover:text-white p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    aria-label="Toggle theme">
-                    <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                    </svg>
-                    <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                    </svg>
-                </button>
-                <button id="mobile-menu-button" aria-label="Open navigation menu"
-                    aria-expanded="false" aria-controls="mobile-menu"
-                    class="text-teal-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-400 p-2 rounded-md">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
-                </button>
-            </div>
+            {{else}}
+                <a href="/auth/login" class="iwm-auth-signin navbar-login-link">Sign In</a>
+                <a href="/user/create" class="iwm-auth-signup">Sign Up</a>
+            {{/if}}
+
+            {{!-- Theme toggle --}}
+            <button id="theme-toggle" type="button" class="iwm-icon-btn"
+                    aria-label="Toggle light/dark theme"
+                    title="Toggle theme">
+                <svg id="theme-icon-sun" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg id="theme-icon-moon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                </svg>
+            </button>
+
+            {{!-- Hamburger --}}
+            <button id="nav-menu-btn" type="button" class="iwm-icon-btn"
+                    aria-label="Open navigation menu"
+                    aria-expanded="false"
+                    aria-controls="nav-drawer">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h10"/>
+                </svg>
+            </button>
         </div>
     </div>
-    {{!-- Drawer menu (used at all breakpoints) --}}
-    <div id="mobile-menu" class="hidden bg-purple-800 dark:bg-midnight-900 border-t border-purple-600 dark:border-midnight-700">
-        <form method="get" action="/search" class="px-4 py-3">
-            <input type="text" name="q" placeholder="Search cards and sets..." autocomplete="off"
-                class="w-full px-3 py-2 text-sm rounded-md
-                       bg-purple-900/50 dark:bg-midnight-800/50 border border-purple-600 dark:border-midnight-600
-                       text-white placeholder-purple-300 dark:placeholder-gray-400
-                       focus:ring-2 focus:ring-teal-400 focus:outline-none focus:border-teal-400" />
-        </form>
-        <a class="navbar-link-mobile" href="/">Home</a>
-        <a class="navbar-link-mobile" href="/sets">Sets</a>
-        <a class="navbar-link-mobile" href="/spoilers">Spoilers</a>
-        {{#unless authenticated}}
-        <a class="navbar-link-mobile" href="/pricing">Pricing</a>
-        {{/unless}}
-        {{#if authenticated}}
-        <a class="navbar-link-mobile" href="/inventory">My Inventory</a>
-        <a class="navbar-link-mobile" href="/portfolio">Portfolio</a>
-        <a class="navbar-link-mobile" href="/transactions">Transactions</a>
-        <a class="navbar-link-mobile" href="/price-alerts">Alerts</a>
-        <a class="navbar-link-mobile" href="/user">My Account</a>
-        <a class="navbar-link-mobile" href="/billing">
-            <i class="fas fa-credit-card text-xs mr-1" aria-hidden="true"></i>Subscription
-        </a>
-        <form method="post" action="/auth/logout" class="block">
-            <button type="submit" class="navbar-link-mobile bg-transparent border-0 cursor-pointer p-0 w-full text-left">Logout</button>
-        </form>
-        {{else}}
-        <a class="navbar-link-mobile navbar-login-link" href="/auth/login">Login</a>
-        <a class="navbar-link-mobile" href="/user/create">Create Account</a>
-        {{/if}}
-        <a class="navbar-link-mobile" href="/guides/getting-started">
-            <i class="fas fa-circle-question text-sm mr-1" aria-hidden="true"></i>Getting Started
-        </a>
-    </div>
+    {{!-- Gradient hairline separator --}}
+    <div class="iwm-nav-hairline" aria-hidden="true"></div>
 </nav>
-<div id="response-message" class="response-message bg-{{#if toast }}{{ toast.status }}{{else}}info{{/if}} hidden" role="alert">
+
+{{!-- Drawer overlay --}}
+<div id="nav-overlay" class="iwm-overlay" aria-hidden="true"></div>
+
+{{!-- Drawer --}}
+<div id="nav-drawer" class="iwm-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu" hidden>
+    <div class="iwm-drawer-top">
+        <span class="iwm-drawer-logo">
+            <img src="/public/images/logo.webp?v={{assetVersion}}"
+                 alt="" width="24" height="24" aria-hidden="true" />
+            I Want My MTG
+        </span>
+        <button id="nav-drawer-close" type="button" class="iwm-icon-btn" aria-label="Close navigation menu">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    {{!-- Drawer search --}}
+    <div class="iwm-drawer-search-wrap">
+        <span class="iwm-drawer-search-icon" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </span>
+        <form method="get" action="/search" role="search">
+            <input class="iwm-drawer-search" type="text" name="q"
+                   placeholder="Search cards and sets…"
+                   autocomplete="off"
+                   aria-label="Search cards and sets" />
+        </form>
+    </div>
+
+    {{#if authenticated}}
+        <div class="iwm-drawer-section-label">My Collection</div>
+        <a href="/inventory"     class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="4" width="6" height="5" rx="0.5"/><rect x="9" y="4" width="6" height="5" rx="0.5"/><rect x="1" y="11" width="6" height="4" rx="0.5"/><rect x="9" y="11" width="6" height="4" rx="0.5"/></svg>
+            My Inventory
+        </a>
+        <a href="/portfolio"     class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12l3-4 3 2 3-5 3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Portfolio
+        </a>
+        <a href="/transactions"  class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 5h12M2 8h7M2 11h4" stroke-linecap="round"/></svg>
+            Transactions
+        </a>
+        <a href="/price-alerts"  class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 2a4.5 4.5 0 00-4.5 4.5c0 2-1 2.5-1 2.5h11s-1-.5-1-2.5A4.5 4.5 0 008 2zM7 13h2" stroke-linecap="round"/></svg>
+            Price Alerts
+        </a>
+
+        <div class="iwm-drawer-section-label">Explore</div>
+        <a href="/sets"     class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
+            Sets
+        </a>
+        <a href="/spoilers"  class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5v.2" stroke-linecap="round"/></svg>
+            Spoilers
+        </a>
+
+        <div class="iwm-drawer-divider"></div>
+
+        {{#if subscribed}}
+            <div class="iwm-drawer-premium-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>Premium Active</span>
+            </div>
+        {{else}}
+            <a href="/pricing" class="iwm-drawer-upgrade-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Upgrade to Premium
+            </a>
+        {{/if}}
+
+        <div class="iwm-drawer-section-label">Account</div>
+        <a href="/user"    class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="5" r="2.5"/><path d="M2.5 14c0-3 2.4-5 5.5-5s5.5 2 5.5 5" stroke-linecap="round"/></svg>
+            My Account
+        </a>
+        <a href="/billing" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 7h12M5 10h2M9 10h2" stroke-linecap="round"/></svg>
+            Subscription
+        </a>
+        <a href="/guides/getting-started" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M6.5 6.5S7 5 8 5s1.5.75 1.5 1.5c0 1-1.5 1.5-1.5 2.5M8 12v.2" stroke-linecap="round"/></svg>
+            Getting Started
+        </a>
+
+        <div class="iwm-drawer-divider"></div>
+
+        <form method="post" action="/auth/logout" class="iwm-drawer-logout-form">
+            <button type="submit" class="iwm-drawer-link iwm-drawer-link--danger">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 11l4-3-4-3m4 3H5m5-7H3a1 1 0 00-1 1v10a1 1 0 001 1h7" stroke-linecap="round"/></svg>
+                Logout
+            </button>
+        </form>
+
+    {{else}}
+
+        <div class="iwm-drawer-section-label">Explore</div>
+        <a href="/"        class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M1 6l7-5 7 5v8H10V9H6v5H1z" stroke-linejoin="round"/></svg>
+            Home
+        </a>
+        <a href="/sets"     class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
+            Sets
+        </a>
+        <a href="/spoilers"  class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5v.2" stroke-linecap="round"/></svg>
+            Spoilers
+        </a>
+        <a href="/pricing"   class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v1m0 5v1M5.5 8h4" stroke-linecap="round"/></svg>
+            Pricing
+        </a>
+
+        <div class="iwm-drawer-divider"></div>
+
+        <a href="/auth/login"  class="iwm-drawer-link navbar-login-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 11l-4-3 4-3m-4 3h11m-4-7h3a1 1 0 011 1v10a1 1 0 01-1 1h-3" stroke-linecap="round"/></svg>
+            Sign In
+        </a>
+        <a href="/user/create" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="7" cy="5" r="2.5"/><path d="M1.5 14c0-3 2.4-5 5.5-5"/><path d="M12 10v4M10 12h4" stroke-linecap="round"/></svg>
+            Create Account
+        </a>
+
+        <div class="iwm-drawer-divider"></div>
+
+        <a href="/guides/getting-started" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M6.5 6.5S7 5 8 5s1.5.75 1.5 1.5c0 1-1.5 1.5-1.5 2.5M8 12v.2" stroke-linecap="round"/></svg>
+            Getting Started
+        </a>
+
+    {{/if}}
+
+    <div class="iwm-drawer-footer">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/guides/getting-started">Guide</a>
+    </div>
+</div>
+
+{{!-- Toast --}}
+<div id="response-message" class="response-message bg-{{#if toast}}{{toast.status}}{{else}}info{{/if}} hidden" role="alert">
     <div class="toast-body">
         <div class="toast-icon">
             {{#if (eq toast.status 'success')}}
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             {{else if (eq toast.status 'error')}}
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {{else if (eq toast.status 'warning')}}
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             {{else}}
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {{/if}}
         </div>
         <span class="toast-text">{{toast.message}}</span>
         <button class="toast-close" id="toast-close-btn" aria-label="Close notification">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
     </div>
     <div class="toast-progress"><div class="toast-progress-bar" id="toast-progress-bar"></div></div>
 </div>
-<script src="/public/js/toast.js?v={{assetVersion}}" defer></script>
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const closeBtn = document.getElementById("toast-close-btn");
-        if (closeBtn) {
-            closeBtn.addEventListener("click", function () {
-                if (typeof window.dismissToast === 'function') window.dismissToast();
-            });
-        }
 
-        const message = document.getElementById("response-message");
-        if (message) {
-            const toastText = message.querySelector(".toast-text");
-            if (toastText && toastText.textContent.trim().length > 0) {
-                if (typeof window.showToast === 'function') {
-                    var status = 'info';
-                    if (message.classList.contains('bg-success')) status = 'success';
-                    else if (message.classList.contains('bg-error')) status = 'error';
-                    else if (message.classList.contains('bg-warning')) status = 'warning';
-                    window.showToast(toastText.textContent.trim(), status);
-                }
+<script src="/public/js/toast.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/theme-toggle.js?v={{assetVersion}}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── Toast ── */
+    var closeBtn = document.getElementById('toast-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            if (typeof window.dismissToast === 'function') window.dismissToast();
+        });
+    }
+    var message = document.getElementById('response-message');
+    if (message) {
+        var toastText = message.querySelector('.toast-text');
+        if (toastText && toastText.textContent.trim().length > 0) {
+            if (typeof window.showToast === 'function') {
+                var status = 'info';
+                if (message.classList.contains('bg-success'))      status = 'success';
+                else if (message.classList.contains('bg-error'))   status = 'error';
+                else if (message.classList.contains('bg-warning')) status = 'warning';
+                window.showToast(toastText.textContent.trim(), status);
             }
         }
+    }
 
-        const menuBtn = document.getElementById("mobile-menu-button");
-        menuBtn.addEventListener("click", () => {
-            const menu = document.getElementById("mobile-menu");
-            const isOpen = menu.classList.toggle("hidden") === false;
-            menuBtn.setAttribute("aria-expanded", String(isOpen));
-            menuBtn.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+    /* ── Login return URL ── */
+    var currentPath = window.location.pathname + window.location.search;
+    if (currentPath && window.location.pathname !== '/auth/login') {
+        document.querySelectorAll('.navbar-login-link').forEach(function (link) {
+            link.href = '/auth/login?returnUrl=' + encodeURIComponent(currentPath);
         });
+    }
 
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle("dark");
-            localStorage.setItem("theme", isDark ? "dark" : "light");
+    /* ── Drawer ── */
+    var overlay   = document.getElementById('nav-overlay');
+    var drawer    = document.getElementById('nav-drawer');
+    var openBtn   = document.getElementById('nav-menu-btn');
+    var closeBtn2 = document.getElementById('nav-drawer-close');
+
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function getDrawerFocusables() {
+        return Array.prototype.slice.call(drawer.querySelectorAll(FOCUSABLE))
+            .filter(function (el) { return el.offsetParent !== null || el === document.activeElement; });
+    }
+
+    function trapTab(e) {
+        if (e.key !== 'Tab' || drawer.hidden) return;
+        var items = getDrawerFocusables();
+        if (items.length === 0) return;
+        var first = items[0];
+        var last  = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
         }
+    }
 
-        var currentPath = window.location.pathname + window.location.search;
-        if (currentPath && window.location.pathname !== '/auth/login') {
-            document.querySelectorAll('.navbar-login-link').forEach(function(link) {
-                link.href = '/auth/login?returnUrl=' + encodeURIComponent(currentPath);
+    // Tracks elements we modified so release can restore prior state
+    var inertedEls = [];
+
+    function lockBackground() {
+        document.body.style.overflow = 'hidden';
+        // Mark direct body children as inert/aria-hidden, but skip any element
+        // that contains the drawer or overlay (drawer lives inside <header>).
+        inertedEls = [];
+        Array.prototype.forEach.call(document.body.children, function (el) {
+            if (el.contains(drawer) || el.contains(overlay)) return;
+            inertedEls.push({
+                el: el,
+                hadInert: el.hasAttribute('inert'),
+                priorAriaHidden: el.getAttribute('aria-hidden'),
+            });
+            el.setAttribute('inert', '');
+            el.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+    function releaseBackground() {
+        document.body.style.overflow = '';
+        inertedEls.forEach(function (rec) {
+            if (!rec.hadInert) rec.el.removeAttribute('inert');
+            if (rec.priorAriaHidden === null) rec.el.removeAttribute('aria-hidden');
+            else rec.el.setAttribute('aria-hidden', rec.priorAriaHidden);
+        });
+        inertedEls = [];
+    }
+
+    function openDrawer() {
+        drawer.hidden  = false;
+        overlay.classList.add('open');
+        // rAF so transition fires after display
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                drawer.classList.add('open');
+            });
+        });
+        openBtn.setAttribute('aria-expanded', 'true');
+        lockBackground();
+        // focus first focusable element
+        var first = drawer.querySelector('button, [href], input');
+        if (first) first.focus();
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        openBtn.setAttribute('aria-expanded', 'false');
+
+        var duration = parseFloat(getComputedStyle(drawer).transitionDuration) || 0;
+        if (duration === 0) {
+            drawer.hidden = true;
+            releaseBackground();
+        } else {
+            drawer.addEventListener('transitionend', function handler(e) {
+                if (e.target !== drawer || e.propertyName !== 'transform') return;
+                drawer.hidden = true;
+                releaseBackground();
+                drawer.removeEventListener('transitionend', handler);
             });
         }
+        openBtn.focus();
+    }
 
-        const themeToggle = document.getElementById("theme-toggle");
-        if (themeToggle) {
-            themeToggle.addEventListener("click", toggleTheme);
+    if (openBtn)   openBtn.addEventListener('click',   openDrawer);
+    if (closeBtn2) closeBtn2.addEventListener('click', closeDrawer);
+    if (overlay)   overlay.addEventListener('click',   closeDrawer);
+
+    // Close on Escape, trap Tab inside drawer
+    document.addEventListener('keydown', function (e) {
+        if (drawer && !drawer.hidden) {
+            if (e.key === 'Escape') closeDrawer();
+            else if (e.key === 'Tab') trapTab(e);
         }
     });
+
+    /* ── Collection dropdown (WAI-ARIA menu button) ── */
+    var ddBtn  = document.getElementById('collection-btn');
+    var ddMenu = document.getElementById('collection-menu');
+
+    if (ddBtn && ddMenu) {
+        var ddItems = Array.prototype.slice.call(ddMenu.querySelectorAll('[role="menuitem"]'));
+        ddItems.forEach(function (item) { item.setAttribute('tabindex', '-1'); });
+
+        function focusItem(idx) {
+            if (ddItems.length === 0) return;
+            var i = (idx + ddItems.length) % ddItems.length;
+            ddItems[i].focus();
+        }
+        function currentIndex() {
+            return ddItems.indexOf(document.activeElement);
+        }
+        function openDD(focusIdx) {
+            ddMenu.hidden = false;
+            ddBtn.setAttribute('aria-expanded', 'true');
+            ddBtn.querySelector('.iwm-dd-chevron').classList.add('open');
+            if (typeof focusIdx === 'number') focusItem(focusIdx);
+        }
+        function closeDD(returnFocus) {
+            ddMenu.hidden = true;
+            ddBtn.setAttribute('aria-expanded', 'false');
+            ddBtn.querySelector('.iwm-dd-chevron').classList.remove('open');
+            if (returnFocus) ddBtn.focus();
+        }
+
+        ddBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            ddMenu.hidden ? openDD() : closeDD();
+        });
+
+        // Trigger keyboard: Down/Up/Enter/Space open the menu and focus an item
+        ddBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openDD(0);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                openDD(ddItems.length - 1);
+            }
+        });
+
+        // Menu keyboard: arrows, Home/End, Esc, Tab
+        ddMenu.addEventListener('keydown', function (e) {
+            var idx = currentIndex();
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                focusItem(idx + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                focusItem(idx - 1);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                focusItem(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                focusItem(ddItems.length - 1);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeDD(true);
+            } else if (e.key === 'Tab') {
+                // Tab moves focus out of the menu — close without trapping
+                closeDD(false);
+            }
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+            if (!document.getElementById('collection-dropdown').contains(e.target)) {
+                closeDD(false);
+            }
+        });
+    }
+});
 </script>

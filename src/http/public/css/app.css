@@ -467,9 +467,9 @@ input[type='number'] {
     color: #2dd4bf;
 }
 /* =============================================================
-   NAVBAR REFRESH — drop this block into app.css
-   Replaces all previous .navbar / .navbar-* rules.
-   Depends on: Space Grotesk loaded, Tailwind dark-mode class strategy.
+   Navbar styles
+   Source-of-truth navbar tokens and rules for the current theme system.
+   Assumes Space Grotesk is available and uses Tailwind's dark-mode class strategy.
    ============================================================= */
 
 /* ── Custom properties (dark default, light override) ── */
@@ -1105,10 +1105,10 @@ html:not(.dark) .iwm-drawer-link--danger:hover {
     .iwm-dd-chevron { transition: none; }
 }
 /* =============================================================
-   FOOTER REFRESH — drop this block into app.css
-   Replaces all previous footer / .footer-* rules.
-   Uses container queries so the grid responds to its own width
-   (works correctly inside narrower layout contexts too).
+   Footer styles
+   Source-of-truth footer rules. Uses container queries so the grid
+   responds to its own width (works correctly inside narrower layout
+   contexts too).
    ============================================================= */
 
 /* ── Shell ── */

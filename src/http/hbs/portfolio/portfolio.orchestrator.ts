@@ -244,8 +244,13 @@ export class PortfolioOrchestrator {
         }
     }
 
+    private static readonly CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    });
+
     private formatCurrency(value: number): string {
-        return `$${value.toFixed(2)}`;
+        return PortfolioOrchestrator.CURRENCY_FORMATTER.format(value);
     }
 
     async getRealizedGains(

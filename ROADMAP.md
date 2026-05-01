@@ -492,7 +492,7 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 - [x] Reusable `upgradeTile.hbs` partial introduced for premium-gated UI tiles
 - [x] Sealed product inventory routes (`/api/v1/inventory/sealed` POST/PATCH/DELETE; `/sealed-products/:uuid` add-to-inventory): 403 for free users via `SubscriptionGuard` + `@RequiresSubscription()`; sealed product detail page and set sealed-list show "Premium" CTA → `/pricing` instead of stepper for non-subscribers
 - [x] Set completion tracking: completion-rate badges replaced with "Premium" lock for free users (HBS partial via `@root.subscribed`; AJAX-rendered set list via `data-subscribed` body attr); per-set "?/Y owned" tooltip on set + binder pages links to `/pricing`
-- [x] Price history charts: API truncates to 30 days for free users (clamped via `OptionalAuthGuard` + `SubscriptionService` in `CardApiController`); card detail page hides 1y / All buttons and shows "Last 30 days" hint with upgrade link
+- [x] Price history charts: card detail page hides 1y / All buttons for free users and shows a "Last 30 days" hint with upgrade link
 - [x] Set price history page/widget: `GET /sets/:code/price-history` remains available without `SubscriptionGuard`; set page continues to render the price history chart/widget for free users
 - [x] Alert creation: enforce 5-alert max in `PriceAlertService.create()`; reject with `DomainValidationError` linking to `/pricing`
 - [x] Multi-threshold alert creation: reject second-direction threshold for free users (enforced in both `create()` and `update()`)

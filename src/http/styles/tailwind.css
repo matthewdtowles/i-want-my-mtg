@@ -29,27 +29,71 @@
 /* ===== Buttons ===== */
 
 .btn {
-    @apply py-2 px-4 rounded-lg shadow-md font-medium transition-all duration-200 no-underline inline-flex items-center gap-1.5;
+    @apply py-2 px-4 rounded-md font-display font-semibold transition-all duration-150 no-underline inline-flex items-center justify-center gap-1.5 cursor-pointer;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
+.btn:disabled,
+.btn.is-disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+/* Sizes */
+.btn--sm {
+    @apply py-1 px-3 text-xs;
+}
+
+.btn--lg {
+    @apply py-3 px-6 text-base;
+}
+
+/* Marketing/conversion CTA — teal gradient on dark text */
+.btn-cta {
+    @apply bg-gradient-to-r from-teal-500 to-teal-400 text-midnight-950 hover:brightness-110 focus:ring-2 focus:ring-teal-400;
+    box-shadow: 0 0 12px rgba(44, 200, 202, 0.2);
+}
+.btn-cta:hover {
+    box-shadow: 0 0 22px rgba(44, 200, 202, 0.4);
+}
+
+/* Upgrade-to-premium CTA — amber gradient on dark text */
+.btn-upgrade {
+    @apply bg-gradient-to-r from-amber-500 to-amber-400 text-midnight-950 hover:brightness-110 focus:ring-2 focus:ring-amber-400;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+.btn-upgrade:hover {
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.4);
+}
+
+/* In-app primary action — solid teal */
 .btn-primary {
-    @apply bg-teal-700 text-white hover:bg-teal-800 hover:shadow-glow-teal focus:ring-4 focus:ring-teal-300
-           dark:bg-teal-500 dark:hover:bg-teal-400 dark:hover:shadow-glow-teal dark:focus:ring-teal-400;
+    @apply bg-teal-700 text-white hover:bg-teal-800 hover:shadow-glow-teal focus:ring-2 focus:ring-teal-400
+           dark:bg-teal-600 dark:hover:bg-teal-500;
 }
 
+/* In-app secondary — solid purple */
 .btn-secondary {
-    @apply bg-purple-700 text-white hover:bg-purple-800 hover:shadow-glow-purple focus:ring-4 focus:ring-purple-300
-           dark:bg-purple-500 dark:hover:bg-purple-400 dark:hover:shadow-glow-purple dark:focus:ring-purple-400;
+    @apply bg-purple-700 text-white hover:bg-purple-800 hover:shadow-glow-purple focus:ring-2 focus:ring-purple-400
+           dark:bg-purple-600 dark:hover:bg-purple-500;
 }
 
+/* Outlined ghost — for cancel / back / "browse sets" / non-conversion secondary actions */
+.btn-outline {
+    @apply bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:ring-2 focus:ring-gray-400
+           dark:border-midnight-600 dark:text-gray-300 dark:hover:bg-midnight-800 dark:hover:text-gray-100;
+}
+
+/* Destructive */
 .btn-danger {
-    @apply bg-hotpink-500 text-white hover:bg-hotpink-600 hover:shadow-glow-pink focus:ring-4 focus:ring-hotpink-300
-           dark:bg-hotpink-500 dark:hover:bg-hotpink-400 dark:hover:shadow-glow-pink dark:focus:ring-hotpink-400;
+    @apply bg-hotpink-500 text-white hover:bg-hotpink-600 hover:shadow-glow-pink focus:ring-2 focus:ring-hotpink-400
+           dark:bg-hotpink-500 dark:hover:bg-hotpink-400;
 }
 
+/* Tertiary text-only — inline links styled as buttons */
 .btn-ghost {
-    @apply bg-transparent text-teal-600 hover:text-teal-800 hover:bg-teal-50 focus:ring-2 focus:ring-teal-300 shadow-none
-           dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-700;
+    @apply bg-transparent text-teal-700 hover:text-teal-800 hover:bg-teal-50 focus:ring-2 focus:ring-teal-400
+           dark:text-teal-400 dark:hover:text-teal-300 dark:hover:bg-midnight-800;
 }
 
 /* ===== Set Product Tabs ===== */

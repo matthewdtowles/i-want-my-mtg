@@ -375,8 +375,8 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
   - [x] Home hero (#471)
   - [x] Portfolio + inventory headers and stat tiles (#472)
   - [ ] Set + card detail
-- [ ] Refresh button styles site-wide to match pricing page's primary/secondary CTA language
-- [ ] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment
+- [x] Refresh button styles site-wide to match pricing page's primary/secondary CTA language (#477) — `.btn-cta` aligned to `.pricing-btn-cta` (teal→sky-blue gradient, matching glow); `.btn-upgrade` retired and folded into `.btn-cta`
+- [x] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment — class-level via foundations (`rounded-xl`, `midnight-900`); inline cleanups (#477) for billingSuccess, portfolioBreakdown teasers, gettingStarted, spoilers, set price popover, upgradeTile
 - [ ] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views
 - [ ] Quick-add (+) affordance on card tiles in search results, set page, and binder grids — one click adds qty 1 via `/api/v1/inventory` with toast confirmation; click-through to detail page preserved (#458)
 

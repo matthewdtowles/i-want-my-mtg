@@ -371,7 +371,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 #### Pages and components
 
 - [x] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles) — appended to `docs/visual-refresh-audit.md`
-- [ ] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
+- [x] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
   - [x] Home hero (#471)
   - [x] Portfolio + inventory headers and stat tiles (#472)
   - [x] Set + card detail — already covered by `.app-page-header` (set, post-#472) and `.card-info` + `.card-info-bg` (card, post-#476); audit doc updated to reflect current state

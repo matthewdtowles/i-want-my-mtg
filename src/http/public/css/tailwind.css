@@ -2409,11 +2409,11 @@ input:where([type='file']):focus {
 
 .btn-cta {
   background: linear-gradient(90deg, #2cc8ca, #3ab5e0);
-  box-shadow: 0 0 16px rgba(44, 200, 202, 0.25);
+  box-shadow: 0 0 20px rgba(44, 200, 202, 0.25);
 }
 
 .btn-cta:hover {
-  box-shadow: 0 0 24px rgba(44, 200, 202, 0.4);
+  box-shadow: 0 0 28px rgba(44, 200, 202, 0.4);
 }
 
 /* In-app primary action — solid teal */

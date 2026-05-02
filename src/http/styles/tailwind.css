@@ -48,22 +48,14 @@
     @apply py-3 px-6 text-base;
 }
 
-/* Marketing/conversion CTA — teal gradient on dark text */
+/* Marketing/conversion CTA — teal→sky-blue gradient on dark text. Matches .pricing-btn-cta. */
 .btn-cta {
-    @apply bg-gradient-to-r from-teal-500 to-teal-400 text-midnight-950 hover:brightness-110 focus:ring-2 focus:ring-teal-400;
-    box-shadow: 0 0 12px rgba(44, 200, 202, 0.2);
+    @apply text-midnight-950 hover:brightness-110 focus:ring-2 focus:ring-teal-400;
+    background: linear-gradient(90deg, theme('colors.teal.500'), #3ab5e0);
+    box-shadow: 0 0 16px rgba(44, 200, 202, 0.25);
 }
 .btn-cta:hover {
-    box-shadow: 0 0 22px rgba(44, 200, 202, 0.4);
-}
-
-/* Upgrade-to-premium CTA — amber gradient on dark text */
-.btn-upgrade {
-    @apply bg-gradient-to-r from-amber-500 to-amber-400 text-midnight-950 hover:brightness-110 focus:ring-2 focus:ring-amber-400;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
-}
-.btn-upgrade:hover {
-    box-shadow: 0 0 22px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 24px rgba(44, 200, 202, 0.4);
 }
 
 /* In-app primary action — solid teal */

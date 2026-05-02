@@ -44,6 +44,18 @@ module.exports = {
                     100: '#f5ecfd',
                     50: '#faf6fe',
                 },
+                amber: {
+                    900: '#78350f',
+                    800: '#92400e',
+                    700: '#b45309',
+                    600: '#d97706',
+                    500: '#f59e0b',
+                    400: '#fbbf24',
+                    300: '#fcd34d',
+                    200: '#fde68a',
+                    100: '#fef3c7',
+                    50: '#fffbeb',
+                },
                 hotpink: {
                     700: '#c4175c',
                     600: '#e0206a',
@@ -63,7 +75,7 @@ module.exports = {
             },
             fontFamily: {
                 display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                body: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                body: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
             },
         },
     },

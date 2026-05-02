@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Home page', () => {
     test('renders heading and mana color bar', async ({ page }) => {
         await page.goto('/');
-        await expect(page.locator('h1')).toContainText('I Want My MTG');
+        await expect(page.locator('h1')).toContainText('Your Magic collection');
         await expect(page.locator('.mana-color-bar')).toBeVisible();
     });
 

@@ -1548,6 +1548,131 @@
     width: auto;
 }
 
+/* ===== Home Hero ===== */
+
+.home-hero {
+    @apply relative overflow-hidden;
+}
+.home-hero-bg {
+    @apply absolute inset-0 pointer-events-none;
+    background:
+        radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.30) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 40% at 80% 65%, rgba(44, 200, 202, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 35% at 15% 70%, rgba(214, 74, 154, 0.08) 0%, transparent 70%);
+}
+.home-hero-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-6
+           border border-teal-300/40 dark:border-teal-500/30
+           bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300;
+    letter-spacing: 0.01em;
+}
+.home-hero-title {
+    @apply font-display font-bold text-gray-900 dark:text-white mb-4;
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+}
+.home-hero-title span {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, #45ddd6, #c48aed);
+}
+.home-hero-sub {
+    @apply text-gray-600 dark:text-gray-400 mx-auto mb-8;
+    font-size: 1.05rem;
+    max-width: 540px;
+    line-height: 1.6;
+}
+.home-hero-ctas {
+    @apply flex flex-wrap items-center justify-center gap-3 mb-10;
+}
+.home-hero-ctas .pricing-btn {
+    width: auto;
+    min-width: 180px;
+    padding: 0.7rem 1.75rem;
+}
+.home-hero-feats {
+    @apply flex flex-wrap items-center justify-center gap-x-6 gap-y-3 list-none p-0 m-0;
+}
+.home-hero-feats li {
+    @apply inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300;
+}
+.home-hero-feats li i {
+    @apply text-teal-600 dark:text-teal-400;
+    font-size: 0.85rem;
+}
+
+/* ===== App Page Header (portfolio, inventory) ===== */
+
+.app-page-header {
+    @apply relative overflow-hidden rounded-t-2xl
+           bg-white dark:bg-midnight-900
+           border-b border-gray-200 dark:border-midnight-700;
+}
+.app-page-header-bg {
+    @apply absolute inset-0 pointer-events-none;
+    background:
+        radial-gradient(ellipse 55% 70% at 50% -20%, rgba(114, 51, 164, 0.20) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 85% 80%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+}
+.app-page-header-inner {
+    @apply relative px-5 pt-10 pb-7;
+}
+.app-page-title {
+    @apply font-display font-bold text-gray-900 dark:text-white text-center;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+.app-page-sub {
+    @apply text-center text-gray-500 dark:text-gray-400 mt-1;
+    font-size: 0.9rem;
+}
+
+/* ===== App Stat Tiles (portfolio, inventory) ===== */
+
+.app-stat-tile {
+    @apply relative rounded-2xl border bg-white dark:bg-midnight-900
+           border-gray-200 dark:border-midnight-700
+           p-4 text-center transition-colors duration-200;
+    min-width: 0;
+}
+.app-stat-tile--featured {
+    @apply border-teal-500;
+    background: linear-gradient(160deg, rgba(44, 200, 202, 0.08) 0%, var(--tile-bg, #ffffff) 70%);
+    box-shadow: 0 0 30px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+}
+.dark .app-stat-tile--featured {
+    --tile-bg: #131025;
+}
+.app-stat-tile--locked {
+    @apply block no-underline opacity-90 hover:opacity-100;
+}
+.app-stat-tile-label {
+    @apply block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1;
+    letter-spacing: 0.06em;
+}
+.app-stat-tile-value {
+    @apply block font-bold text-gray-900 dark:text-white;
+    font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+    letter-spacing: -0.02em;
+    overflow-wrap: break-word;
+    min-width: 0;
+}
+.app-stat-tile--featured .app-stat-tile-value {
+    font-size: clamp(1.4rem, 3vw, 1.875rem);
+}
+.app-stat-tile-locked-value {
+    @apply block font-bold text-gray-400 dark:text-gray-500 select-none;
+    font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+    letter-spacing: -0.02em;
+}
+.app-stat-tile-premium {
+    @apply inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400;
+    letter-spacing: 0.08em;
+}
+
 /* ===== Portfolio Breakdown ===== */
 
 .breakdown-tab {

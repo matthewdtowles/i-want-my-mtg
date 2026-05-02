@@ -1,17 +1,25 @@
 {{#if hasInventory}}
-<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
-    <section class="bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg pb-5">
-        <div class="text-center pt-4 pb-2">
-            <h1 class="page-title">{{this.username}}'s Inventory</h1>
+<section class="border border-gray-200 dark:border-midnight-700 rounded-2xl sm:m-0 md:m-4 overflow-hidden">
+    <section class="app-page-header mb-4">
+        <div class="app-page-header-bg" aria-hidden="true"></div>
+        <div class="app-page-header-inner">
+            <h1 class="app-page-title font-display">{{this.username}}'s Inventory</h1>
+            <p class="app-page-sub">Your collection at a glance.</p>
         </div>
 
-        <div class="max-w-2xl mx-auto px-4">
-            <div class="grid grid-cols-3 gap-3 mb-4">
-                {{>statCard label="Total Cards" value=this.ownedTotal highlight=true}}
-                {{>statCard label="Value" value=this.ownedValue highlight=true}}
-                <div class="stat-card stat-card-highlight">
-                    <span class="stat-label">Completion</span>
-                    <div class="mt-1">{{>completionRate}}</div>
+        <div class="relative max-w-3xl mx-auto px-4 pb-6">
+            <div class="app-stat-tile app-stat-tile--featured mb-3">
+                <span class="app-stat-tile-label">Collection Value</span>
+                <span class="app-stat-tile-value">{{this.ownedValue}}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="app-stat-tile">
+                    <span class="app-stat-tile-label">Total Cards</span>
+                    <span class="app-stat-tile-value">{{this.ownedTotal}}</span>
+                </div>
+                <div class="app-stat-tile">
+                    <span class="app-stat-tile-label">Completion</span>
+                    <div class="app-stat-tile-value">{{>completionRate}}</div>
                 </div>
             </div>
 
@@ -126,9 +134,10 @@
 </section>
 
 {{else}}
-<section class="border border-gray-200 dark:border-midnight-600 rounded-lg sm:m-0 md:m-4">
-    <div class="bg-teal-50 dark:bg-midnight-900 rounded-lg pb-5">
-        <div class="text-center pt-8 pb-2 px-4">
+<section class="border border-gray-200 dark:border-midnight-700 rounded-2xl sm:m-0 md:m-4 overflow-hidden">
+    <div class="app-page-header rounded-2xl pb-5">
+        <div class="app-page-header-bg" aria-hidden="true"></div>
+        <div class="relative text-center pt-8 pb-2 px-4">
             <i class="fas fa-box-open text-5xl text-teal-300 dark:text-teal-600 mb-4"></i>
             <h3 class="page-title mt-4">Your collection is empty</h3>
             <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
@@ -142,7 +151,7 @@
                 New here? <a href="/guides/getting-started" class="text-teal-600 dark:text-teal-400 hover:underline font-medium">Read the Getting Started guide</a>
             </p>
         </div>
-        <div class="max-w-md mx-auto px-4 mt-6">
+        <div class="relative max-w-md mx-auto px-4 mt-6">
             <div class="action-card">
                 <span class="action-card-label">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

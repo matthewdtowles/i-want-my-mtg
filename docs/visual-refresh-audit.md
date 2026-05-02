@@ -251,3 +251,157 @@ Produce: a button system design page showing all variants, sizes, and states (de
 2. Run prompt 5 (button system) — feeds into everything else
 3. Run prompts 3 and 4 (page-level hero / surface treatments)
 4. After each batch, I implement the corresponding bullet on §2.14
+
+---
+
+# Per-page audit (§2.14)
+
+Read this in conjunction with the chrome/foundations audit above. This section covers the per-page bullet ("Audit every existing page for visual reconciliation"). Each entry covers four axes: hero/header, card surfaces, tables, buttons.
+
+## Tier 1 — high-traffic app pages
+
+**set.hbs**
+- Header: small `.page-title`, then a 4-6 column `.stat-card` grid. Utility-shaped, far below pricing-hero scale.
+- Surfaces: `.stat-card` and `.section-container` are `rounded-lg`, midnight-800. `.stat-card-highlight` uses a left-border accent rather than the gradient-wash pattern from `.pricing-card.featured`.
+- Tables: none — uses grids and `.price-tile` (border-teal/purple, rounded-md).
+- Buttons: `.btn-primary` / `.btn-secondary` / `.btn-ghost`. No marketing CTA.
+
+**card.hbs**
+- Header: inline `.card-title` next to mana cost and tags. No hero treatment.
+- Surfaces: `.card-image-wrapper` (rounded-lg, shadow-lg), `.section-container` info panels, `.price-tile` for prices. Lacks the larger radii / gradient treatment.
+- Tables: none.
+- Buttons: mix of `.btn-primary`, `.btn-secondary`, and one raw-Tailwind gradient on the sync-inventory button — inconsistent.
+
+**search.hbs**
+- Header: small `.page-title`, no bg.
+- Surfaces: result grid is `rounded-lg`, midnight-800, gray border. Uniform — no featured state.
+- Tables: none.
+- Buttons: `.btn-primary` for submit, ghost secondaries. Simple and consistent.
+
+**setListPage.hbs**
+- Defers to `partials/setList.hbs` — no page-level chrome to audit here.
+
+**transactions.hbs**
+- Header: centered header in `bg-teal-50 dark:bg-midnight-900` with `.page-title` + `.page-subtitle`. Minimal.
+- Surfaces: none — page is dominated by a table.
+- Tables: `.table-container` / `.table-row` / `.table-cell`. Header row has no hierarchy (no uppercase, no accent), hover is subtle. Major gap vs. `.pricing-table` styling.
+- Buttons: `.btn-secondary` for Portfolio / Export, inline icon buttons for edit/delete.
+
+**spoilers.hbs**
+- Header: centered `.font-display text-2xl` with subtitle. Minimal.
+- Surfaces: grid of set cards, `rounded-lg`, midnight-800.
+- Tables: none.
+- Buttons: none at page level.
+
+**priceAlerts.hbs / notifications.hbs**
+- Header: centered `.page-title` + subtitle. Minimal.
+- Surfaces: rendered via AJAX (placeholder spinner in source).
+- Tables: rendered via AJAX (not visible at SSR).
+- Buttons: `.btn-primary` / `.btn-secondary`. Standard.
+
+## Tier 2 — auth + account
+
+**login.hbs / forgotPassword.hbs / resetPassword.hbs / resetRequestSent.hbs / resetPasswordResult.hbs / verificationResult.hbs / verificationSent.hbs**
+- Header: `.page-title` (small) + optional `.page-subtitle` inside `.login-container` / `.verification-container`.
+- Surfaces: shared pattern — `bg-white dark:bg-midnight-800`, `rounded-lg`, `border-t-4` accent stripe (purple-500 on most, teal on createUser). Distinctive but not pricing-shaped.
+- Tables: none.
+- Buttons: `.btn-primary` on submits. Ghost links for secondary nav.
+
+**createUser.hbs**
+- Same `.create-user-container` shape, `border-t-4 border-teal-400`, max-w-3xl.
+- Already uses `.btn-cta` (gradient) on submit — ahead of the curve.
+
+**user.hbs**
+- Header: `.page-title` then per-section `.page-subtitle`. Minimal.
+- Surfaces: stack of `.section-container` cards. Last section uses `border-l-4 border-hotpink-500` for the danger zone (left-stripe pattern, not gradient).
+- Tables: none.
+- Buttons: full mix — `.btn-primary`, `.btn-secondary`, `.btn-upgrade` (amber gradient), `.btn-danger` (hotpink). Most inconsistent button surface on the site.
+
+**billing.hbs**
+- Header: `.page-title` then conditional sections.
+- Surfaces: standard `.section-container`. No special treatment for active subscription state.
+- Tables: none.
+- Buttons: `.btn-primary`, `.btn-secondary`, `.btn-upgrade`. Good upgrade button placement.
+
+**billingSuccess.hbs**
+- Header: large centered section, gradient bg `from-amber-50 via-teal-50 to-purple-50`, icon badge with glow. Most hero-shaped Tier 2 page — closest in spirit to the pricing tone.
+- Surfaces: three feature link cards, teal borders, soft hover glow. Simple, effective.
+- Tables: none.
+- Buttons: `.btn-cta` (gradient) + `.btn-secondary`. Correct CTA usage.
+
+## Tier 3 — informational
+
+**gettingStarted.hbs**
+- Header: centered header in `bg-teal-50 dark:bg-midnight-900`, `.page-title`. Minimal.
+- Surfaces: long-form text + accent boxes (`bg-gray-50` / `bg-midnight-800`, `rounded-lg`, gray borders). Numbered teal step badges.
+- Tables: none.
+- Buttons: `.text-link` only.
+
+**importExportGuide.hbs**
+- Header: centered `bg-teal-50` header.
+- Surfaces: text plus tables.
+- Tables: `.table-container` / `.table-header` / `.table-row` — plain, no hierarchy. Same gap as transactions.
+- Buttons: none.
+
+**privacy.hbs / terms.hbs**
+- Header: centered `bg-teal-50` header with date subtitle.
+- Surfaces: none — long-form text.
+- Tables: none.
+- Buttons: inline `.text-link`.
+
+**offline.hbs**
+- Header: centered icon + `text-2xl` heading.
+- Surfaces: none.
+- Tables: none.
+- Buttons: one inline-Tailwind `bg-teal-500` button — should adopt `.btn-primary`.
+
+**importResult.hbs**
+- Header: centered `bg-teal-50` header.
+- Surfaces: none.
+- Tables: `.table-container` for error rows. Plain.
+- Buttons: `.btn-primary` + `.btn-secondary`.
+
+**portfolioBreakdown.hbs**
+- Header: flex header with `.page-title` + `.page-subtitle` + back link. Larger and more balanced than most utility pages, but no hero bg.
+- Surfaces: free-tier upsell uses `.section-container` centered. Tabs are `inline-flex rounded-lg border bg-gray-50` (no active-state styling visible). Breakdown rows are custom `.breakdown-row` etc.
+- Tables: custom list, not a table.
+- Buttons: `.pricing-btn .pricing-btn-cta` for premium upsell (correct), `.btn-secondary` for nav.
+
+**sealed-product-detail.hbs**
+- Header: inline title (`.card-title`), no hero.
+- Surfaces: `.section-container` + `.subsection-container` + `.price-tile`. Same shape as card.hbs.
+- Tables: none.
+- Buttons: `.btn-ghost` back link, inline upsell elements.
+
+**inventoryBinder.hbs**
+- Header: `.section-container` flex header (title + back). Subtitle link to set view.
+- Surfaces: 3-col `.stat-card` grid above a `.binder-grid` of card images.
+- Tables: none.
+- Buttons: `.btn-ghost` for back, custom toggle for "Owned only".
+
+**errors/401.hbs / 404.hbs / 500.hbs**
+- Header: large centered code (`font-display text-8xl`, teal/hotpink), heading, description.
+- Surfaces: none — centered flex.
+- Tables: none.
+- Buttons: `.btn-primary` + `.btn-secondary`.
+
+## Cross-cutting findings
+
+1. **Tables are the biggest gap.** `.pricing-table` has uppercase headers, teal accent on the premium column, subtle row hover, category rows. App tables (`transactions.hbs`, `importExportGuide.hbs`, `importResult.hbs`) use plain `.table-header` / `.table-row` / `.table-cell` with no hierarchy. Universal across every page that uses a table.
+2. **Surface radius is uniform at `rounded-lg`.** Pricing uses `rounded-2xl`. No variance anywhere on the site — every panel, stat card, container is the same radius. Bumping to `rounded-xl` (12px) site-wide would give a meaningful softness lift without breaking dense data views.
+3. **Dark-mode bg sits at `midnight-800`; pricing sits at `midnight-900`.** Pricing feels deeper and richer. Subtle but consistent mismatch.
+4. **CTA button language is fragmented.** `.btn-primary` (solid teal), `.btn-cta` (gradient teal — used only in createUser, billingSuccess, portfolioBreakdown), `.btn-upgrade` (amber gradient — user, billing), plus inline-Tailwind gradient on the card-detail sync button and offline.hbs retry button. Three CTAs are doing the job of one.
+5. **Form/auth pages converge on a `border-t-4` accent stripe pattern.** Login, createUser, verification all share it — cohesive within Tier 2, but disconnected from the pricing/home gradient-wash language.
+6. **Hero treatments are binary.** Either marketing-grade (home, pricing, billingSuccess) or absent (everything else). No "utility hero" middle ground for app pages — portfolio.hbs and inventory.hbs are the closest after #472.
+7. **Title typography compresses everywhere.** `.page-title` clamps to 1.25-1.5rem; pricing hero clamps to 2.2-3.5rem. No size progression by page type.
+8. **No featured-surface pattern on app pages.** `.stat-card-highlight` uses a left-border accent rather than the gradient-wash + soft glow from `.pricing-card.featured`. Locked premium tiles, billing-success cards, "Most Popular" cards all under-treated.
+9. **Empty-state and accent-box styling is consistent** (teal-50 bg, soft borders) — fine to keep.
+10. **Several spots use raw inline Tailwind for gradients** (card-detail sync button, offline retry, billingSuccess feature cards). These should adopt named classes once the CTA system is unified.
+
+## Recommended next implementation order
+
+1. **Unify CTAs into a two-tier system: `.btn-cta` (gradient, marketing/conversion) and `.btn-primary` (solid teal, in-app actions).** Retire `.btn-upgrade` (fold into `.btn-cta`). Replace inline-Tailwind gradients. Highest visual coherence return — every button on the site touches this.
+2. **Standardize tables.** Adopt `.pricing-table`'s header treatment (uppercase, border-b, teal accent column), row hover, and category-row styling on `.table-container`. Hits transactions, importExportGuide, importResult immediately and any future tables.
+3. **Bump surface radius to `rounded-xl` and dark-mode bg to `midnight-900` site-wide.** One-shot Tailwind/CSS change that lifts every page without per-page work. Cheap.
+4. **Define a "utility hero" pattern** (subtle radial bg, larger clamp on `.page-title`, optional badge row) and roll out to set, card, search, transactions, spoilers. Closes the binary gap between marketing-shaped and absent.
+5. **Promote `.pricing-card.featured` treatment to a reusable `.surface-featured` class.** Apply to locked premium tiles (upgradeTile.hbs), billingSuccess feature cards, "Most Popular" pricing card, future flagship stat tiles.

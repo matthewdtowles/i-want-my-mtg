@@ -355,20 +355,23 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 
 #### Foundations
 
-- [ ] Audit current site chrome (navbar, drawer, footer) against the pricing page's chrome — document deltas
+- [x] Audit current site chrome (navbar, drawer, footer) against the pricing page's chrome — document deltas (`docs/visual-refresh-audit.md`)
 - [ ] Decide on font: roll Space Grotesk site-wide or substitute current stack (consider page-weight cost, brand fit)
 - [ ] Promote the page-scoped color tokens (midnight, teal, purple, amber) to global Tailwind theme tokens; reconcile with existing teal/purple usage
 - [ ] Tighten typography rhythm (sizes, weights, line-height) toward pricing page's hierarchy
 
 #### Chrome
 
-- [ ] Replace `main.hbs` navbar with the design's gradient-bordered navbar + drawer menu pattern
-- [ ] Replace footer with the design's color-bar + tri-column treatment
+- [x] Replace `main.hbs` navbar with the design's gradient-bordered navbar + drawer menu pattern (#473)
+- [x] Replace footer with the design's color-bar + tri-column treatment (#473)
 
 #### Pages and components
 
 - [ ] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles)
 - [ ] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
+  - [x] Home hero (#471)
+  - [x] Portfolio + inventory headers and stat tiles (#472)
+  - [ ] Set + card detail
 - [ ] Refresh button styles site-wide to match pricing page's primary/secondary CTA language
 - [ ] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment
 - [ ] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views
@@ -541,19 +544,6 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 - [x] Sticky dimension preference (localStorage) so users return to the same view
 - [x] Empty state for new users: sample/demo breakdown shown when slices are empty
 
-### 3.5 Feature: Deck Building
-
-- [ ] Design deck data model (deck table with user FK, deck_card join table with quantity, sideboard flag)
-- [ ] Create database migration for deck tables
-- [ ] Implement domain entities, repository ports, ORM entities, mappers, and repositories
-- [ ] Implement DeckService with CRUD operations (create, update, delete, add/remove cards)
-- [ ] Create REST API endpoints for decks (CRUD, add/remove cards, list user decks)
-- [ ] Build deck list view page (user's saved decks with name, format, card count, estimated value)
-- [ ] Build deck detail view page (card list grouped by type, mana curve visualization, price breakdown)
-- [ ] Add "Add to Deck" action from card detail and search results
-- [ ] Deck import/export (paste decklist text format, CSV)
-- [ ] Format legality validation (check deck against format rules — Standard, Modern, Commander, etc.)
-
 ---
 
 ## Phase 4: API & Developer Ecosystem
@@ -710,3 +700,18 @@ Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJ
 - [x] Add interactive selection for ingestion targets (sets, cards, prices)
 - [x] Add progress display and confirmation prompts
 - [x] Add dry-run option for destructive operations
+
+### 8.4 Feature: Deck Building
+
+Deferred from former §3.5. Not on the near-term roadmap; revisit after monetization, platform expansion, and ecosystem phases land.
+
+- [ ] Design deck data model (deck table with user FK, deck_card join table with quantity, sideboard flag)
+- [ ] Create database migration for deck tables
+- [ ] Implement domain entities, repository ports, ORM entities, mappers, and repositories
+- [ ] Implement DeckService with CRUD operations (create, update, delete, add/remove cards)
+- [ ] Create REST API endpoints for decks (CRUD, add/remove cards, list user decks)
+- [ ] Build deck list view page (user's saved decks with name, format, card count, estimated value)
+- [ ] Build deck detail view page (card list grouped by type, mana curve visualization, price breakdown)
+- [ ] Add "Add to Deck" action from card detail and search results
+- [ ] Deck import/export (paste decklist text format, CSV)
+- [ ] Format legality validation (check deck against format rules - Standard, Modern, Commander, etc.)

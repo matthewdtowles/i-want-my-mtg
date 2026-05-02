@@ -1,6 +1,8 @@
 <link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <section class="content-wrapper">
-    <section class="card-info flex flex-col md:flex-row section-container">
+    <section class="card-info relative overflow-hidden bg-white dark:bg-midnight-900 border border-gray-200 dark:border-midnight-700 rounded-2xl p-6 m-6">
+        <div class="card-info-bg" aria-hidden="true"></div>
+        <div class="relative flex flex-col md:flex-row">
 
         <section class="md:w-1/4 flex-shrink-0 mb-4 md:mb-6">
             <div class="card-image-wrapper" id="card-image-wrapper" role="button" tabindex="0" aria-label="View enlarged image of {{card.name}}">
@@ -111,7 +113,7 @@
                             </p>
                             <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Record as buy to track cost basis</p>
                         </div>
-                        <button type="button" class="sync-inventory-button text-xs px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                        <button type="button" class="sync-inventory-button btn btn-upgrade btn--sm"
                                 data-card-id="{{card.cardId}}" data-quantity="{{untrackedNormal}}" data-is-foil="false"
                                 data-price="{{card.normalPriceRaw}}">
                             Record
@@ -129,7 +131,7 @@
                             </p>
                             <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Record as buy to track cost basis</p>
                         </div>
-                        <button type="button" class="sync-inventory-button text-xs px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                        <button type="button" class="sync-inventory-button btn btn-upgrade btn--sm"
                                 data-card-id="{{card.cardId}}" data-quantity="{{untrackedFoil}}" data-is-foil="true"
                                 data-price="{{card.foilPriceRaw}}">
                             Record
@@ -159,6 +161,7 @@
                 </div>
             </section>
         </section>
+        </div>
     </section>
     </section>
 

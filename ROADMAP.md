@@ -358,7 +358,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Audit current site chrome (navbar, drawer, footer) against the pricing page's chrome — document deltas (`docs/visual-refresh-audit.md`)
 - [x] Per-page audit (hero/header, surfaces, tables, buttons) appended to `docs/visual-refresh-audit.md`
 - [x] Decide on font: Space Grotesk for body site-wide (`tailwind.config.js` font-body); already loaded in `main.hbs`, no extra payload
-- [x] Promote color tokens: added `amber` palette to Tailwind config; normalized literal hex usage in `tailwind.css` to `theme('colors.*')` references
+- [x] Promote color tokens: added `amber` palette to Tailwind config; normalized white CSS-var fallbacks in `tailwind.css` to `theme('colors.white')`. Two intentional one-offs remain: `#3ab5e0` (pricing CTA gradient mid-stop, no Tailwind equivalent) and `#1a1a1a` (warning toast text contrast)
 - [x] Tighten typography rhythm: `.page-title` and `.card-title` clamps bumped to 1.5-2rem, added `letter-spacing: -0.02em`, `line-height: 1.2`, `text-wrap: balance`; `.section-title` gains font-display
 - [x] Lift surface treatment site-wide: `rounded-lg` → `rounded-xl`, `dark:bg-midnight-800` → `dark:bg-midnight-900`, `dark:border-midnight-600` → `dark:border-midnight-700` on `.section-container`, `.stat-card`, `.action-card`, `.welcome-banner`, `.table-wrapper`, all auth/settings/verification containers
 - [x] Mobile navbar overflow fix: hide Sign In / Sign Up below 600px (drawer-only), hide Upgrade CTA below 380px, reduce inner padding 1.25rem → 0.75rem at narrow widths

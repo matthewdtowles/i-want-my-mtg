@@ -1043,7 +1043,7 @@
 }
 
 .table-header-row {
-    @apply bg-gray-50 dark:bg-midnight-800 text-left;
+    @apply bg-gray-50 dark:bg-midnight-700 text-left;
 }
 
 .table-link {

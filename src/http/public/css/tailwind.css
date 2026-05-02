@@ -5104,7 +5104,7 @@ input:where([type='file']):focus {
 
 .table-header-row:is(.dark *) {
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(36 30 69 / var(--tw-bg-opacity, 1));
 }
 
 .table-link {

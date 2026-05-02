@@ -356,9 +356,12 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 #### Foundations
 
 - [x] Audit current site chrome (navbar, drawer, footer) against the pricing page's chrome — document deltas (`docs/visual-refresh-audit.md`)
-- [ ] Decide on font: roll Space Grotesk site-wide or substitute current stack (consider page-weight cost, brand fit)
-- [ ] Promote the page-scoped color tokens (midnight, teal, purple, amber) to global Tailwind theme tokens; reconcile with existing teal/purple usage
-- [ ] Tighten typography rhythm (sizes, weights, line-height) toward pricing page's hierarchy
+- [x] Per-page audit (hero/header, surfaces, tables, buttons) appended to `docs/visual-refresh-audit.md`
+- [x] Decide on font: Space Grotesk for body site-wide (`tailwind.config.js` font-body); already loaded in `main.hbs`, no extra payload
+- [x] Promote color tokens: added `amber` palette to Tailwind config; normalized literal hex usage in `tailwind.css` to `theme('colors.*')` references
+- [x] Tighten typography rhythm: `.page-title` and `.card-title` clamps bumped to 1.5-2rem, added `letter-spacing: -0.02em`, `line-height: 1.2`, `text-wrap: balance`; `.section-title` gains font-display
+- [x] Lift surface treatment site-wide: `rounded-lg` → `rounded-xl`, `dark:bg-midnight-800` → `dark:bg-midnight-900`, `dark:border-midnight-600` → `dark:border-midnight-700` on `.section-container`, `.stat-card`, `.action-card`, `.welcome-banner`, `.table-wrapper`, all auth/settings/verification containers
+- [x] Mobile navbar overflow fix: hide Sign In / Sign Up below 600px (drawer-only), hide Upgrade CTA below 380px, reduce inner padding 1.25rem → 0.75rem at narrow widths
 
 #### Chrome
 
@@ -389,12 +392,14 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 ### 3.1 Sealed Product Support
 
 #### Database & Schema
+
 - [x] Design sealed product data model (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
 - [x] Create migration 027: sealed product tables
 - [x] Create migration 028: card purchase URL columns (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
 - [x] Update complete schema file (001_complete_schema.sql)
 
 #### Domain Layer
+
 - [x] Create SealedProduct domain entity with validateInit
 - [x] Create SealedProductPrice domain entity
 - [x] Create SealedProductInventory domain entity
@@ -403,12 +408,14 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Create SealedProductModule, register in CoreModule
 
 #### Database Layer
+
 - [x] Create ORM entities (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
 - [x] Create mappers (SealedProductMapper, SealedProductPriceMapper)
 - [x] Create SealedProductRepository implementing port
 - [x] Register ORM entities and port binding in DatabaseModule
 
 #### API Layer
+
 - [x] Create SealedProductApiResponseDto, SealedProductInventoryApiDto, request DTOs
 - [x] Create SealedProductApiPresenter (TDD)
 - [x] Create SealedProductApiController with endpoints:
@@ -422,6 +429,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Register in ApiModule
 
 #### View Layer
+
 - [x] Create SealedProductOrchestrator
 - [x] Create SealedProductController (/sealed-products/:uuid)
 - [x] Create sealed-product-detail.hbs template
@@ -429,6 +437,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Register in HbsModule
 
 #### Scry ETL (separate repo)
+
 - [x] Create SealedProduct domain struct
 - [x] Create mapper: MTGJSON JSON -> SealedProduct (flatten contents, extract TCGPlayer URL, filter online-only)
 - [x] Create repository with UPSERT for sealed_product table
@@ -438,6 +447,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
 
 #### AJAX & Frontend
+
 - [x] Add sealed product AJAX loading on set detail page
 - [x] Add sealed product inventory management UI (add/remove from collection)
 
@@ -459,6 +469,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 ### 3.4 Freemium Structure & Subscription Billing
 
 #### Shipped
+
 - [x] Integrate Stripe for subscription billing - customer creation, Checkout, Billing Portal, webhooks, subscription sync
 - [x] Subscription plan selection and cancellation via `/billing` + Stripe Billing Portal
 - [x] Scaffold feature-gating primitives (`SubscriptionGuard`, `@RequiresSubscription()` decorator in `src/core/billing/`)
@@ -480,6 +491,7 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 **Pricing change:** drop from $3.99/mo, $49/yr to **$3.99/mo, $39.99/yr** (matches Deckbox annual; annual saves ~2 months vs monthly). No existing paid subs as of the change, so no Stripe migration needed - update Stripe Prices and `STRIPE_PRICE_*` env vars.
 
 **Free tier (no creation limits, fully usable forever):**
+
 - Browse all sets and cards
 - Track inventory: unlimited cards
 - Track transactions: unlimited (last 30 days visible in history view; older data preserved server-side)
@@ -493,6 +505,7 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 - API: 100 requests/day
 
 **Premium ($3.99/mo, $39.99/yr):**
+
 - Everything in Free, plus:
 - Unlimited price alerts
 - Multi-threshold alerts (increase AND decrease per card)

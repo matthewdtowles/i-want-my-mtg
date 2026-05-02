@@ -1453,10 +1453,6 @@ input:where([type='file']):focus {
   border-radius: 0.5rem;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
-}
-
 .rounded-sm {
   border-radius: 0.125rem;
 }
@@ -1782,11 +1778,6 @@ input:where([type='file']):focus {
   padding-right: 1.25rem;
 }
 
-.px-6 {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
 .py-0\.5 {
   padding-top: 0.125rem;
   padding-bottom: 0.125rem;
@@ -1898,7 +1889,7 @@ input:where([type='file']):focus {
 }
 
 .font-body {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
 }
 
 .font-display {
@@ -3480,7 +3471,9 @@ input:where([type='file']):focus {
 }
 
 .card-title {
-  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   overflow-wrap: break-word;
 }
 
@@ -3492,7 +3485,7 @@ input:where([type='file']):focus {
   margin-top: 2.5rem;
   width: 100%;
   max-width: 48rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-top-width: 4px;
   --tw-border-opacity: 1;
   border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
@@ -3508,7 +3501,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .login-container {
@@ -3517,7 +3510,7 @@ input:where([type='file']):focus {
   margin-top: 2.5rem;
   width: 100%;
   max-width: 28rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-top-width: 4px;
   --tw-border-opacity: 1;
   border-color: rgb(169 93 224 / var(--tw-border-opacity, 1));
@@ -3533,7 +3526,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(196 138 237 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .settings-container {
@@ -3542,7 +3535,7 @@ input:where([type='file']):focus {
   margin-top: 2.5rem;
   width: 100%;
   max-width: 48rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-top-width: 4px;
   --tw-border-opacity: 1;
   border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
@@ -3558,7 +3551,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .verification-container {
@@ -3567,7 +3560,7 @@ input:where([type='file']):focus {
   margin-top: 2.5rem;
   width: 100%;
   max-width: 32rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-top-width: 4px;
   --tw-border-opacity: 1;
   border-color: rgb(169 93 224 / var(--tw-border-opacity, 1));
@@ -3583,7 +3576,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(196 138 237 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 /* ===== Delete Inventory ===== */
@@ -4130,8 +4123,10 @@ input:where([type='file']):focus {
 }
 
 .page-title {
-  font-size: clamp(1.25rem, 3vw, 1.5rem);
-  line-height: 1.3;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   overflow-wrap: break-word;
 }
 
@@ -4160,6 +4155,10 @@ input:where([type='file']):focus {
     font-size: 1.25rem;
     line-height: 1.75rem;
   }
+}
+
+.page-subtitle {
+  line-height: 1.5;
 }
 
 /* ===== Pagination ===== */
@@ -4970,7 +4969,7 @@ input:where([type='file']):focus {
 
 .section-container {
   margin: 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -4981,9 +4980,9 @@ input:where([type='file']):focus {
 
 .section-container:is(.dark *) {
   --tw-border-opacity: 1;
-  border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .section-content {
@@ -5000,6 +4999,7 @@ input:where([type='file']):focus {
 
 .section-title {
   margin-bottom: 0.5rem;
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   font-size: 1.125rem;
   line-height: 1.75rem;
   font-weight: 600;
@@ -5024,6 +5024,10 @@ input:where([type='file']):focus {
     font-size: 1.25rem;
     line-height: 1.75rem;
   }
+}
+
+.section-title {
+  letter-spacing: -0.01em;
 }
 
 .subsection-container {
@@ -5247,7 +5251,7 @@ input:where([type='file']):focus {
 
 .table-wrapper {
   overflow-x: auto;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -5258,7 +5262,7 @@ input:where([type='file']):focus {
 
 .table-wrapper:is(.dark *) {
   --tw-border-opacity: 1;
-  border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
 }
 
 .table-cell {
@@ -5462,7 +5466,7 @@ input:where([type='file']):focus {
 /* ===== Stat Cards ===== */
 
 .stat-card {
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -5474,9 +5478,9 @@ input:where([type='file']):focus {
 
 .stat-card:is(.dark *) {
   --tw-border-opacity: 1;
-  border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .stat-card {
@@ -5494,7 +5498,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(20 96 96 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .stat-label {
@@ -5535,7 +5539,7 @@ input:where([type='file']):focus {
 /* ===== Action Cards ===== */
 
 .action-card {
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -5547,9 +5551,9 @@ input:where([type='file']):focus {
 
 .action-card:is(.dark *) {
   --tw-border-opacity: 1;
-  border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .action-card-label {
@@ -5593,7 +5597,7 @@ input:where([type='file']):focus {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   max-width: 48rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border-left-width: 4px;
   --tw-border-opacity: 1;
   border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
@@ -5609,7 +5613,7 @@ input:where([type='file']):focus {
   --tw-border-opacity: 1;
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
-  background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+  background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
 .welcome-banner h2 {
@@ -6428,7 +6432,7 @@ input:where([type='file']):focus {
 
 .pricing-faq-chevron {
   flex-shrink: 0;
-  color: #94a3b8;
+  color: #9ca3af;
   transition: transform 0.2s, color 0.15s;
 }
 
@@ -7121,11 +7125,6 @@ input:where([type='file']):focus {
 .hover\:bg-red-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:bg-teal-600:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(32 153 143 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:from-teal-400:hover {

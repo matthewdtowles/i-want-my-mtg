@@ -510,29 +510,31 @@
 
 .card-title {
     @apply font-display font-bold mb-4 text-gray-900 dark:text-gray-100;
-    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
     overflow-wrap: break-word;
 }
 
 /* ===== Form Containers ===== */
 
 .create-user-container {
-    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-3xl w-full mx-auto mt-10
            border-t-4 border-teal-400 dark:border-teal-500;
 }
 
 .login-container {
-    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-md w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-md w-full mx-auto mt-10
            border-t-4 border-purple-500 dark:border-purple-400;
 }
 
 .settings-container {
-    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-3xl w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-3xl w-full mx-auto mt-10
            border-t-4 border-teal-400 dark:border-teal-500;
 }
 
 .verification-container {
-    @apply bg-white dark:bg-midnight-800 shadow-lg rounded-lg p-8 max-w-lg w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-lg w-full mx-auto mt-10
            border-t-4 border-purple-500 dark:border-purple-400;
 }
 
@@ -692,13 +694,16 @@
            bg-gradient-to-r from-purple-700 via-teal-600 to-purple-700
            dark:from-purple-400 dark:via-teal-400 dark:to-purple-400
            bg-clip-text text-transparent;
-    font-size: clamp(1.25rem, 3vw, 1.5rem);
-    line-height: 1.3;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
     overflow-wrap: break-word;
 }
 
 .page-subtitle {
     @apply text-gray-600 dark:text-gray-400 text-lg md:text-base lg:text-xl mb-6;
+    line-height: 1.5;
 }
 
 /* ===== Pagination ===== */
@@ -997,7 +1002,7 @@
 /* ===== Sections ===== */
 
 .section-container {
-    @apply bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600 rounded-lg p-6 m-6;
+    @apply bg-white dark:bg-midnight-900 border border-gray-200 dark:border-midnight-700 rounded-xl p-6 m-6;
 }
 
 .section-content {
@@ -1005,7 +1010,8 @@
 }
 
 .section-title {
-    @apply text-lg md:text-base lg:text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200;
+    @apply font-display text-lg md:text-base lg:text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200;
+    letter-spacing: -0.01em;
 }
 
 .subsection-container {
@@ -1066,7 +1072,7 @@
 }
 
 .table-wrapper {
-    @apply rounded-lg border border-gray-200 dark:border-midnight-600 shadow-sm overflow-x-auto;
+    @apply rounded-xl border border-gray-200 dark:border-midnight-700 shadow-sm overflow-x-auto;
 }
 
 .table-cell {
@@ -1166,13 +1172,13 @@
 /* ===== Stat Cards ===== */
 
 .stat-card {
-    @apply bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
-           rounded-lg p-3 text-center;
+    @apply bg-white dark:bg-midnight-900 border border-gray-200 dark:border-midnight-700
+           rounded-xl p-3 text-center;
     min-width: 0;
 }
 
 .stat-card-highlight {
-    @apply border-teal-200 dark:border-teal-800 bg-white dark:bg-midnight-800;
+    @apply border-teal-200 dark:border-teal-800 bg-white dark:bg-midnight-900;
 }
 
 .stat-label {
@@ -1189,8 +1195,8 @@
 /* ===== Action Cards ===== */
 
 .action-card {
-    @apply bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600
-           rounded-lg p-4 text-left;
+    @apply bg-white dark:bg-midnight-900 border border-gray-200 dark:border-midnight-700
+           rounded-xl p-4 text-left;
 }
 
 .action-card-label {
@@ -1207,7 +1213,7 @@
 /* ===== Welcome Banner ===== */
 
 .welcome-banner {
-    @apply max-w-3xl mx-auto mt-4 mb-2 p-4 rounded-lg bg-white dark:bg-midnight-800
+    @apply max-w-3xl mx-auto mt-4 mb-2 p-4 rounded-xl bg-white dark:bg-midnight-900
            border-l-4 border-teal-400 dark:border-teal-500 shadow-md;
 }
 
@@ -1253,7 +1259,7 @@
 }
 .pricing-hero-title span {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, #45ddd6, #c48aed);
+    background-image: linear-gradient(90deg, theme('colors.teal.400'), theme('colors.purple.400'));
 }
 .pricing-hero-sub {
     @apply text-gray-600 dark:text-gray-400 mx-auto mb-10;
@@ -1278,7 +1284,7 @@
 }
 .toggle-badge {
     @apply text-white font-bold rounded-full;
-    background: linear-gradient(90deg, #2cc8ca, #a95de0);
+    background: linear-gradient(90deg, theme('colors.teal.500'), theme('colors.purple.500'));
     font-size: 0.68rem;
     padding: 0.15rem 0.45rem;
     letter-spacing: 0.01em;
@@ -1304,7 +1310,7 @@
     box-shadow: 0 0 40px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .pricing-card.featured {
-    --pricing-card-bg: #131025;
+    --pricing-card-bg: theme('colors.midnight.900');
 }
 .card-badge {
     @apply absolute font-bold uppercase;
@@ -1314,8 +1320,8 @@
     border-radius: 0 0 8px 8px;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
-    background: #2cc8ca;
-    color: #0d0b1a;
+    background: theme('colors.teal.500');
+    color: theme('colors.midnight.950');
 }
 .card-tier {
     @apply font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2;
@@ -1381,8 +1387,8 @@
     letter-spacing: -0.01em;
 }
 .pricing-btn-cta {
-    color: #0d0b1a;
-    background: linear-gradient(90deg, #2cc8ca, #3ab5e0);
+    color: theme('colors.midnight.950');
+    background: linear-gradient(90deg, theme('colors.teal.500'), #3ab5e0);
     box-shadow: 0 0 20px rgba(44, 200, 202, 0.25);
 }
 .pricing-btn-cta:hover {
@@ -1509,7 +1515,7 @@
 }
 .pricing-faq-chevron {
     flex-shrink: 0;
-    color: #94a3b8;
+    color: theme('colors.gray.400');
     transition: transform 0.2s, color 0.15s;
 }
 .pricing-faq-item[open] .pricing-faq-chevron {
@@ -1575,7 +1581,7 @@
 }
 .home-hero-title span {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(90deg, #45ddd6, #c48aed);
+    background-image: linear-gradient(90deg, theme('colors.teal.400'), theme('colors.purple.400'));
 }
 .home-hero-sub {
     @apply text-gray-600 dark:text-gray-400 mx-auto mb-8;
@@ -1644,7 +1650,7 @@
     box-shadow: 0 0 30px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .app-stat-tile--featured {
-    --tile-bg: #131025;
+    --tile-bg: theme('colors.midnight.900');
 }
 .app-stat-tile--locked {
     @apply block no-underline opacity-90 hover:opacity-100;
@@ -1720,7 +1726,7 @@
 }
 .breakdown-bar-fill {
     @apply h-full rounded-full;
-    background: linear-gradient(90deg, #2cc8ca, #a95de0);
+    background: linear-gradient(90deg, theme('colors.teal.500'), theme('colors.purple.500'));
     transition: width 0.4s ease;
 }
 .breakdown-meta {

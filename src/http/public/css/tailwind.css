@@ -908,6 +908,10 @@ input:where([type='file']):focus {
   z-index: 50;
 }
 
+.m-6 {
+  margin: 1.5rem;
+}
+
 .mx-1 {
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -1457,9 +1461,8 @@ input:where([type='file']):focus {
   border-radius: 0.125rem;
 }
 
-.rounded-b-lg {
-  border-bottom-right-radius: 0.5rem;
-  border-bottom-left-radius: 0.5rem;
+.rounded-xl {
+  border-radius: 0.75rem;
 }
 
 .rounded-t-lg {
@@ -1681,10 +1684,6 @@ input:where([type='file']):focus {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
 
-.bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--tw-gradient-stops));
-}
-
 .bg-none {
   background-image: none;
 }
@@ -1698,12 +1697,6 @@ input:where([type='file']):focus {
 .from-teal-400 {
   --tw-gradient-from: #45ddd6 var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(69 221 214 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-teal-500 {
-  --tw-gradient-from: #2cc8ca var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(44 200 202 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -2210,12 +2203,6 @@ input:where([type='file']):focus {
 .shadow-lg {
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.shadow-sm {
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
@@ -6752,6 +6739,19 @@ input:where([type='file']):focus {
   font-size: 0.9rem;
 }
 
+/* ===== Card Detail Surface ===== */
+
+.card-info-bg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0px;
+  overflow: hidden;
+  border-radius: inherit;
+  background:
+        radial-gradient(ellipse 55% 60% at 50% -10%, rgba(114, 51, 164, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 45% at 100% 100%, rgba(44, 200, 202, 0.08) 0%, transparent 70%);
+}
+
 /* ===== App Stat Tiles (portfolio, inventory) ===== */
 
 .app-stat-tile {
@@ -7117,24 +7117,9 @@ input:where([type='file']):focus {
   background-color: rgb(251 191 36 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-amber-600:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(217 119 6 / var(--tw-bg-opacity, 1));
-}
-
 .hover\:bg-red-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:from-teal-400:hover {
-  --tw-gradient-from: #45ddd6 var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(69 221 214 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.hover\:to-purple-400:hover {
-  --tw-gradient-to: #c48aed var(--tw-gradient-to-position);
 }
 
 .hover\:text-gray-600:hover {

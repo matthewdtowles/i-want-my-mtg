@@ -1306,7 +1306,7 @@
 }
 .pricing-card.featured {
     @apply border-teal-500;
-    background: linear-gradient(160deg, rgba(44, 200, 202, 0.06) 0%, var(--pricing-card-bg, #ffffff) 60%);
+    background: linear-gradient(160deg, rgba(44, 200, 202, 0.06) 0%, var(--pricing-card-bg, theme('colors.white')) 60%);
     box-shadow: 0 0 40px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .pricing-card.featured {
@@ -1636,6 +1636,16 @@
     font-size: 0.9rem;
 }
 
+/* ===== Card Detail Surface ===== */
+
+.card-info-bg {
+    @apply absolute inset-0 pointer-events-none overflow-hidden;
+    border-radius: inherit;
+    background:
+        radial-gradient(ellipse 55% 60% at 50% -10%, rgba(114, 51, 164, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 45% at 100% 100%, rgba(44, 200, 202, 0.08) 0%, transparent 70%);
+}
+
 /* ===== App Stat Tiles (portfolio, inventory) ===== */
 
 .app-stat-tile {
@@ -1646,7 +1656,7 @@
 }
 .app-stat-tile--featured {
     @apply border-teal-500;
-    background: linear-gradient(160deg, rgba(44, 200, 202, 0.08) 0%, var(--tile-bg, #ffffff) 70%);
+    background: linear-gradient(160deg, rgba(44, 200, 202, 0.08) 0%, var(--tile-bg, theme('colors.white')) 70%);
     box-shadow: 0 0 30px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .app-stat-tile--featured {

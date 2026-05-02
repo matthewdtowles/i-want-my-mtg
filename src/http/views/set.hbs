@@ -1,15 +1,16 @@
 <link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div id="set-header-container" class="relative">
-    <section class="bg-teal-50 dark:bg-midnight-900 mb-4 pb-5 rounded-b-lg">
-        <div class="text-center pt-4 pb-2">
-            <h1 class="page-title">
+    <section class="app-page-header rounded-2xl mb-4 pb-5" style="overflow: visible;">
+        <div class="app-page-header-bg" aria-hidden="true"></div>
+        <div class="app-page-header-inner">
+            <h1 class="app-page-title font-display">
                 <i class="ss ss-{{set.keyruneCode}} ss-2x ss-foil mr-2 align-middle"></i>
                 <span class="align-middle">{{set.name}}</span>
                 {{>tags item=set}}
             </h1>
         </div>
 
-        <div class="max-w-2xl mx-auto px-4">
+        <div class="relative max-w-2xl mx-auto px-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                 {{>statCard label="Block" value=set.block valueClass="text-sm"}}
                 {{>statCard label="Code" value=(toUpperCase set.code)}}

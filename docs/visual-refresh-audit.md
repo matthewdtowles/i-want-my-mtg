@@ -261,16 +261,16 @@ Read this in conjunction with the chrome/foundations audit above. This section c
 ## Tier 1 — high-traffic app pages
 
 **set.hbs**
-- Header: small `.page-title`, then a 4-6 column `.stat-card` grid. Utility-shaped, far below pricing-hero scale.
-- Surfaces: `.stat-card` and `.section-container` are `rounded-lg`, midnight-800. `.stat-card-highlight` uses a left-border accent rather than the gradient-wash pattern from `.pricing-card.featured`.
-- Tables: none — uses grids and `.price-tile` (border-teal/purple, rounded-md).
+- Header: `.app-page-header` utility hero (radial-gradient bg, centered `.app-page-title` font-display, keyrune icon + tags). Adopted post-#472.
+- Surfaces: `.stat-card` and `.section-container` at foundations defaults (`rounded-xl`, midnight-900). `.stat-card-highlight` uses a left-border accent rather than the gradient-wash pattern from `.pricing-card.featured`.
+- Tables: cards table uses `.table-container` + `.table-header-row` (post-tables PR). Plus `.price-tile` (border-teal/purple, rounded-md) for set-price tiers.
 - Buttons: `.btn-primary` / `.btn-secondary` / `.btn-ghost`. No marketing CTA.
 
 **card.hbs**
-- Header: inline `.card-title` next to mana cost and tags. No hero treatment.
-- Surfaces: `.card-image-wrapper` (rounded-lg, shadow-lg), `.section-container` info panels, `.price-tile` for prices. Lacks the larger radii / gradient treatment.
-- Tables: none.
-- Buttons: mix of `.btn-primary`, `.btn-secondary`, and one raw-Tailwind gradient on the sync-inventory button — inconsistent.
+- Header: `.card-info` outer surface (rounded-2xl, `.card-info-bg` radial gradient — purple top / teal bottom-right) wrapping image + play info + pricing as a single elevated block. The card image is the visual anchor; no separate hero header on top by design. Adopted post-#476.
+- Surfaces: `.card-image-wrapper` inside `.card-info`, `.section-container` info panels, `.price-tile` for prices.
+- Tables: "Other Printings" uses `.table-container` + `.table-header-row` (post-tables PR).
+- Buttons: `.btn-primary` for in-app actions (sync inventory, etc.); CTAs unified post-#477.
 
 **search.hbs**
 - Header: small `.page-title`, no bg.

@@ -374,10 +374,10 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [ ] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
   - [x] Home hero (#471)
   - [x] Portfolio + inventory headers and stat tiles (#472)
-  - [ ] Set + card detail
+  - [x] Set + card detail — already covered by `.app-page-header` (set, post-#472) and `.card-info` + `.card-info-bg` (card, post-#476); audit doc updated to reflect current state
 - [x] Refresh button styles site-wide to match pricing page's primary/secondary CTA language (#477) — `.btn-cta` aligned to `.pricing-btn-cta` (teal→sky-blue gradient, matching glow); `.btn-upgrade` retired and folded into `.btn-cta`
 - [x] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment — class-level via foundations (`rounded-xl`, `midnight-900`); inline cleanups (#477) for billingSuccess, portfolioBreakdown teasers, gettingStarted, spoilers, set price popover, upgradeTile
-- [ ] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views
+- [x] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views — flipped 19 inverted muted-text pairs (`text-gray-400 dark:text-gray-500` → `text-gray-500 dark:text-gray-400`) across set, portfolio, inventory, card, transactions, sealed-product-detail, layouts/main, emptyState, costBasisTooltip, pagination — fixes dark-mode contrast on midnight-900 surfaces. Marketing gradients (billingSuccess, upgradeTile, portfolioBreakdown star icon) and accent stripes (set price popover info, user danger zone) kept as intentional uses.
 - [ ] Quick-add (+) affordance on card tiles in search results, set page, and binder grids — one click adds qty 1 via `/api/v1/inventory` with toast confirmation; click-through to detail page preserved (#458)
 
 #### Verification

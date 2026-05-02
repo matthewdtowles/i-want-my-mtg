@@ -75,7 +75,7 @@
                 </a>
             </div>
 
-            <div class="flex flex-col items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+            <div class="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div class="flex items-center gap-2">
                     <span>Updated: {{this.summary.computedAt}}</span>
                     <span class="px-1.5 py-0.5 rounded {{#if this.summary.isFifo}}bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300{{else}}bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400{{/if}}">{{#if this.summary.isFifo}}FIFO{{else}}Average{{/if}}</span>
@@ -146,7 +146,7 @@
                         {{p.cardName}}
                         {{/if}}
                         {{#if p.isFoil}}<span class="foil-badge">Foil</span>{{/if}}
-                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{p.cardSetCode}})</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">({{p.cardSetCode}})</span>
                     </td>
                     <td class="table-cell">{{p.quantity}}</td>
                     <td class="table-cell font-mono">{{p.totalCost}}</td>
@@ -184,7 +184,7 @@
                 <tr class="table-row">
                     <td class="table-cell">
                         {{>cardLink url=s.setUrl name=s.setName}}
-                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{s.setCode}})</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">({{s.setCode}})</span>
                     </td>
                     <td class="table-cell">{{s.cardsHeld}}</td>
                     <td class="table-cell font-mono">{{s.totalCost}}</td>
@@ -240,7 +240,7 @@
                         {{p.cardName}}
                         {{/if}}
                         {{#if p.isFoil}}<span class="foil-badge">Foil</span>{{/if}}
-                        <span class="text-gray-400 dark:text-gray-500 text-xs">({{p.cardSetCode}})</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">({{p.cardSetCode}})</span>
                     </td>
                     <td class="table-cell">{{p.quantity}}</td>
                     <td class="table-cell font-mono">{{p.totalCost}}</td>

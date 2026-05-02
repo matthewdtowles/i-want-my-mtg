@@ -20,13 +20,13 @@
     {{#if pagination.skipBack}}
     <a href="{{pagination.skipBack.href}}"
         class="pagination-btn pagination-btn-tertiary">{{pagination.skipBack.text}}</a>
-    <span class="text-gray-400 dark:text-gray-500">...</span>
+    <span class="text-gray-500 dark:text-gray-400">...</span>
     {{/if}}
 
     <span class="pagination-btn pagination-btn-current" aria-current="page">{{pagination.current}}</span>
 
     {{#if pagination.skipForward}}
-    <span class="text-gray-400 dark:text-gray-500">...</span>
+    <span class="text-gray-500 dark:text-gray-400">...</span>
     <a href="{{pagination.skipForward.href}}"
         class="pagination-btn pagination-btn-tertiary">{{pagination.skipForward.text}}</a>
     {{/if}}

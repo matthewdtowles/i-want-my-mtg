@@ -2,6 +2,7 @@ import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
 
 export class SearchCardResultDto {
+    readonly id: string;
     readonly name: string;
     readonly number: string;
     readonly imgSrc: string;
@@ -11,6 +12,7 @@ export class SearchCardResultDto {
     readonly url: string;
 
     constructor(init: Partial<SearchCardResultDto>) {
+        this.id = init.id || '';
         this.name = init.name || '';
         this.number = init.number || '';
         this.imgSrc = init.imgSrc || '';

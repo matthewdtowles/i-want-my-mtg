@@ -78,6 +78,7 @@ export class SearchOrchestrator {
 
     private toCardResult(card: Card): SearchCardResultDto {
         return new SearchCardResultDto({
+            id: card.id,
             name: card.name,
             number: card.number,
             imgSrc: `${BASE_IMAGE_URL}/${CardImgType.SMALL}/front/${card.imgSrc}`,

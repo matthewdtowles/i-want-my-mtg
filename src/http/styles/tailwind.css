@@ -1734,3 +1734,35 @@
 .breakdown-meta {
     @apply text-xs text-gray-500 dark:text-gray-500 mt-2;
 }
+
+/* ===== Tile quick-add (+) overlay ===== */
+.tile-quick-add {
+    @apply absolute top-1.5 right-1.5 z-10
+           flex items-center justify-center
+           w-7 h-7 rounded-full
+           bg-teal-600 text-white text-lg font-semibold leading-none
+           shadow-md
+           opacity-0 group-hover:opacity-100 focus:opacity-100
+           hover:bg-teal-500 active:scale-95
+           transition-opacity transition-transform duration-150
+           cursor-pointer;
+}
+.tile-quick-add:focus-visible {
+    @apply opacity-100 outline outline-2 outline-offset-2 outline-teal-400;
+}
+@media (hover: none) {
+    .tile-quick-add {
+        @apply opacity-100;
+    }
+}
+.tile-quick-add--busy {
+    @apply opacity-60 cursor-wait;
+}
+.tile-quick-add--added {
+    @apply bg-emerald-600;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tile-quick-add {
+        transition: none;
+    }
+}

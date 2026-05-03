@@ -196,23 +196,34 @@ document.addEventListener('DOMContentLoaded', function () {
             '/card/' + encodeURIComponent(card.setCode) + '/' + encodeURIComponent(card.number);
         var keyruneCode = AjaxUtils.escapeHtml(card.keyruneCode || card.setCode);
         var rarity = AjaxUtils.escapeHtml(card.rarity || '');
+        var escapedName = AjaxUtils.escapeHtml(card.name);
+        var quickAdd = '';
+        if (document.body.getAttribute('data-authenticated') === 'true' && card.id) {
+            quickAdd =
+                '<button type="button" class="tile-quick-add" data-card-id="' +
+                AjaxUtils.escapeHtml(card.id) +
+                '" aria-label="Add ' +
+                escapedName +
+                ' to inventory">+</button>';
+        }
 
         return (
+            '<div class="relative group">' +
             '<a href="' +
             url +
             '" ' +
-            'class="group flex flex-col items-center p-2 rounded-lg ' +
+            'class="flex flex-col items-center p-2 rounded-lg ' +
             'bg-white dark:bg-midnight-800 border border-gray-200 dark:border-midnight-600 ' +
             'hover:border-teal-400 dark:hover:border-teal-500 transition-colors">' +
             '<img src="' +
             AjaxUtils.escapeHtml(imgSrc) +
             '" alt="' +
-            AjaxUtils.escapeHtml(card.name) +
+            escapedName +
             '" ' +
             'class="rounded w-full max-w-[146px] mb-2" loading="lazy" width="146" height="204" />' +
             '<div class="text-center w-full">' +
             '<div class="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">' +
-            AjaxUtils.escapeHtml(card.name) +
+            escapedName +
             '</div>' +
             '<div class="text-xs text-gray-500 dark:text-gray-400">' +
             '<i class="ss ss-' +
@@ -223,7 +234,9 @@ document.addEventListener('DOMContentLoaded', function () {
             AjaxUtils.escapeHtml(card.setCode.toUpperCase()) +
             ' #' +
             AjaxUtils.escapeHtml(card.number) +
-            '</div></div></a>'
+            '</div></div></a>' +
+            quickAdd +
+            '</div>'
         );
     }
 

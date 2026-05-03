@@ -7133,6 +7133,91 @@ input:where([type='file']):focus {
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
+/* ===== Tile quick-add (+) overlay ===== */
+
+.tile-quick-add {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  z-index: 10;
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(32 153 143 / var(--tw-bg-opacity, 1));
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  opacity: 0;
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  transition-property: opacity;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile-quick-add:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(44 200 202 / var(--tw-bg-opacity, 1));
+  }
+}
+
+.tile-quick-add:focus {
+  opacity: 1;
+}
+
+.tile-quick-add:active {
+  --tw-scale-x: .95;
+  --tw-scale-y: .95;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .tile-quick-add {
+    opacity: 1;
+  }
+}
+
+.tile-quick-add:focus-visible {
+  opacity: 1;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 2px;
+  outline-color: #45ddd6;
+}
+
+@media (hover: none) {
+  .tile-quick-add {
+    opacity: 1;
+  }
+}
+
+.tile-quick-add--busy {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.tile-quick-add--added {
+  --tw-bg-opacity: 1;
+  background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-quick-add {
+    transition: none;
+  }
+}
+
 .after\:absolute::after {
   content: var(--tw-content);
   position: absolute;

@@ -342,7 +342,7 @@
 - [x] Notifications history page (`/notifications`) with unread highlighting and mark-as-read
 - [x] Navbar links for Alerts (desktop and mobile)
 - [x] Hide Owned column on set card list when not authenticated
-- [ ] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) - status uncertain after recent infra changes
+- [x] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) — audit on prod found cron, env, endpoint, SMTP plumbing all healthy. Smoking gun: detection query in `price-alert.repository.ts` filtered previous-price by `ph.date < CURRENT_DATE`, but Scry stamps `price.date` with MTGJSON's source date (~1 day behind), so both LATERAL joins picked the same `price_history` row and pct_change was always 0. Fixed by changing the cutoff to `< COALESCE(p.date, CURRENT_DATE)` and added an integration-test case mirroring the prod date-lag scenario.
 
 ### 2.13 UI Polish
 

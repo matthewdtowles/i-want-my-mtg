@@ -155,6 +155,20 @@ describe('AuthController', () => {
         });
     });
 
+    describe('loginForm', () => {
+        it('returns no toast when no error query param is present', async () => {
+            const view = await controller.loginForm();
+            expect(view.toast).toBeUndefined();
+        });
+
+        it('returns an error toast when ?error is present', async () => {
+            const view = await controller.loginForm(undefined, 'Invalid credentials');
+            expect(view.toast).toBeDefined();
+            expect(view.toast?.message).toBe('Invalid credentials');
+            expect(view.toast?.status).toBe('error');
+        });
+    });
+
     describe('logout', () => {
         it('should clear the auth cookie and redirect', async () => {
             const userDto = {

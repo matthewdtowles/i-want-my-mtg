@@ -1,24 +1,17 @@
 /**
  * Set Price Info Module
- * Handles price popover dialog and tooltip functionality for set price information
+ * Manages the set price popover dialog opened from the "Price Info" button.
  */
 (function () {
     'use strict';
 
     const CONFIG = {
         selectors: {
-            // Popover selectors
             popover: {
                 toggle: '#price-info-toggle',
                 popover: '#price-info-popover',
                 close: '#close-popover',
                 content: '#popover-content',
-            },
-            // Tooltip selectors
-            tooltip: {
-                trigger: '.price-info-tooltip-trigger',
-                tooltip: '.price-info-tooltip',
-                description: '.tooltip-description',
             },
         },
         classes: {
@@ -27,22 +20,10 @@
         events: {
             click: 'click',
             keydown: 'keydown',
-            mouseenter: 'mouseenter',
-            mouseleave: 'mouseleave',
         },
         keys: {
             escape: 'Escape',
             tab: 'Tab',
-        },
-        tooltipTypes: {
-            'base-normal': (baseSize) =>
-                `Main set cards: the first ${baseSize} cards in the set. Non-foil only.`,
-            'base-foil': (baseSize) =>
-                `Main set cards: the first ${baseSize} cards in the set and their foil versions.`,
-            'total-normal': (baseSize, totalSize) =>
-                `All ${totalSize} cards in main and bonus section of set. Non-foil only.`,
-            'total-foil': (baseSize, totalSize) =>
-                `All ${totalSize} cards in main and bonus section of the set and their foil versions.`,
         },
     };
 
@@ -150,7 +131,6 @@
         }
     }
 
-    // Initialize popover only (info tooltips moved to chart legend)
     function initialize() {
         new PopoverManager();
     }

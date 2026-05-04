@@ -889,7 +889,10 @@
 /* ===== Response Messages ===== */
 
 .response-message {
-    @apply fixed top-4 left-1/2 -translate-x-1/2 text-white rounded-lg shadow-lg z-50 overflow-hidden;
+    @apply fixed left-1/2 -translate-x-1/2 text-white rounded-lg shadow-lg overflow-hidden;
+    /* Clear the 58px sticky navbar (z-index: 100) and stack above it. */
+    top: calc(58px + 0.5rem);
+    z-index: 110;
     max-width: 28rem;
     width: calc(100% - 2rem);
 }

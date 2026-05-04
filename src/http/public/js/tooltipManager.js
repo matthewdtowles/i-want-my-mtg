@@ -1,15 +1,20 @@
 /**
  * Shared Tooltip Manager
- * Reusable tooltip utility supporting click toggle, hover show/hide with
- * delayed hide for mouse travel, global dismiss, and active tooltip tracking.
  *
- * @param {Object} config
- * @param {string} config.triggerSelector - CSS selector for tooltip trigger elements
- * @param {string} config.tooltipSelector - CSS selector for tooltip elements
+ * Wires up reference info tooltips: hover/click toggle, delayed hide for
+ * mouse travel, outside-click dismiss. Auto-initializes for the unified
+ * `.info-tooltip-trigger` / `.info-tooltip` pair rendered by the
+ * `infoTooltip` Handlebars partial — pages that use the partial do not
+ * need to construct a TooltipManager themselves.
+ *
+ * @param {Object} [config]
+ * @param {string} [config.triggerSelector='.info-tooltip-trigger']
+ * @param {string} [config.tooltipSelector='.info-tooltip']
  */
 function TooltipManager(config) {
-    this.triggerSelector = config.triggerSelector;
-    this.tooltipSelector = config.tooltipSelector;
+    config = config || {};
+    this.triggerSelector = config.triggerSelector || '.info-tooltip-trigger';
+    this.tooltipSelector = config.tooltipSelector || '.info-tooltip';
     this.activeTooltips = new Set();
     this.attachEventListeners();
     this.setupGlobalClickHandler();
@@ -110,3 +115,16 @@ TooltipManager.prototype.hideAllTooltips = function () {
         self.hideTooltip(tooltip);
     });
 };
+
+(function autoInit() {
+    function init() {
+        if (document.querySelector('.info-tooltip-trigger')) {
+            new TooltipManager();
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

@@ -15,9 +15,11 @@ import {
 import { Response } from 'express';
 import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { ActionStatus } from 'src/http/base/action-status.enum';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { Toast } from 'src/http/base/toast';
 import { getLogger } from 'src/logger/global-app-logger';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { CreateUserViewDto } from './dto/create-user.view.dto';
@@ -50,13 +52,20 @@ export class UserController {
     @Render('user')
     async profile(
         @Req() req: AuthenticatedRequest,
-        @Query('welcome') welcome?: string
+        @Query('welcome') welcome?: string,
+        @Query('reset') reset?: string
     ): Promise<UserViewDto> {
         this.LOGGER.log(`Get user profile.`);
         const user = await this.userOrchestrator.findUser(req);
         this.LOGGER.log(`Profile found for user ${user?.user?.id}.`);
         if (welcome === 'true') {
             return new UserViewDto({ ...user, welcome: true });
+        }
+        if (reset === 'success') {
+            return new UserViewDto({
+                ...user,
+                toast: new Toast('Password updated successfully.', ActionStatus.SUCCESS),
+            });
         }
         return user;
     }

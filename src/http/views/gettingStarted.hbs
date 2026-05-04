@@ -72,10 +72,6 @@
                             need a
                             <code class='bg-gray-200 dark:bg-midnight-700 px-1 rounded'>name</code>
                             column - everything else is optional for smarter matching.</p>
-                        <a
-                            href='/inventory/import-export-guide'
-                            class='text-teal-600 dark:text-teal-400 hover:underline font-medium'
-                        >Read the Import &amp; Export Guide →</a>
                     </div>
                 </div>
             </div>
@@ -124,10 +120,14 @@
                     Understanding Your Portfolio
                 </h2>
                 <p class='mb-3 ml-8'>Once you have transactions recorded, the
-                    <a
-                        href='/portfolio'
-                        class='text-teal-600 dark:text-teal-400 hover:underline'
-                    >Portfolio</a>
+                    {{#if authenticated}}
+                        <a
+                            href='/portfolio'
+                            class='text-teal-600 dark:text-teal-400 hover:underline'
+                        >Portfolio</a>
+                    {{else}}
+                        <strong>Portfolio</strong>
+                    {{/if}}
                     page shows:</p>
                 <ul class='list-disc list-inside ml-8 space-y-1 text-gray-600 dark:text-gray-400'>
                     <li><strong class='text-gray-700 dark:text-gray-300'>Current Value</strong>
@@ -184,9 +184,9 @@
             <div class='text-center pt-6 border-t border-gray-200 dark:border-midnight-600'>
                 <div class='flex flex-wrap justify-center gap-3'>
                     <a href='/sets' class='btn btn-primary'>Browse Sets</a>
-                    <a href='/inventory' class='btn btn-secondary'>Go to My Inventory</a>
-                    <a href='/inventory/import-export-guide' class='btn btn-ghost'>Import &amp;
-                        Export Guide</a>
+                    {{#if authenticated}}
+                        <a href='/inventory' class='btn btn-secondary'>Go to My Inventory</a>
+                    {{/if}}
                 </div>
             </div>
 

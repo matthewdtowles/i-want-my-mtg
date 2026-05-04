@@ -1747,7 +1747,7 @@
            shadow-md
            opacity-0 group-hover:opacity-100 focus:opacity-100
            hover:bg-teal-500 active:scale-95
-           transition-opacity transition-transform duration-150
+           transition-[opacity,transform] duration-150
            cursor-pointer;
 }
 .tile-quick-add:focus-visible {

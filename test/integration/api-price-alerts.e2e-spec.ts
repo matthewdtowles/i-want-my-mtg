@@ -373,7 +373,9 @@ describe('Price Alerts API (e2e)', () => {
             await ds.query('DELETE FROM price_alert');
             await ds.query(
                 `DELETE FROM price_history
-                 WHERE date IN (CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE - INTERVAL '2 day')`
+                 WHERE card_id = $1
+                   AND date IN (CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE - INTERVAL '2 day')`,
+                [TEST_CARD_ID]
             );
         });
 

@@ -44,6 +44,9 @@ describe('SubscriptionService', () => {
                 if (id === 'price_annual') return SubscriptionPlan.Annual;
                 return null;
             }),
+            createCheckoutSessionForPrice: jest.fn(),
+            priceIdForApiTier: jest.fn(),
+            apiTierForPriceId: jest.fn().mockReturnValue(null),
         };
         const config = {
             get: jest.fn((key: string) => {

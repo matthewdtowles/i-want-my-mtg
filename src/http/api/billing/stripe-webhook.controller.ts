@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { StripeConfigurationError } from 'src/core/billing/stripe.gateway';
@@ -24,7 +25,8 @@ export class StripeWebhookController {
 
     constructor(
         @Inject(StripeGatewayPort) private readonly stripe: StripeGatewayPort,
-        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService,
+        private readonly apiSubscriptionService: ApiSubscriptionService
     ) {}
 
     @Post('stripe')
@@ -76,20 +78,24 @@ export class StripeWebhookController {
                         : session.subscription?.id;
                 if (subId) {
                     const full = await this.stripe.retrieveSubscription(subId);
-                    await this.subscriptionService.syncFromStripeSubscription(full);
+                    await this.routeSubscriptionEvent(full);
                 }
                 return;
             }
             case 'customer.subscription.created':
             case 'customer.subscription.updated': {
-                await this.subscriptionService.syncFromStripeSubscription(
-                    event.data.object as Stripe.Subscription
-                );
+                await this.routeSubscriptionEvent(event.data.object as Stripe.Subscription);
                 return;
             }
             case 'customer.subscription.deleted': {
                 const sub = event.data.object as Stripe.Subscription;
-                await this.subscriptionService.handleSubscriptionDeleted(sub.id);
+                // Try API service first; if it didn't own this subscription, fall back to consumer.
+                const handledByApi = await this.apiSubscriptionService.handleSubscriptionDeleted(
+                    sub.id
+                );
+                if (!handledByApi) {
+                    await this.subscriptionService.handleSubscriptionDeleted(sub.id);
+                }
                 return;
             }
             case 'invoice.payment_failed': {
@@ -102,5 +108,15 @@ export class StripeWebhookController {
             default:
                 this.LOGGER.debug(`Ignoring unhandled Stripe event type: ${event.type}.`);
         }
+    }
+
+    /** Route by price_id: API-tier prices go to ApiSubscriptionService, others to consumer SubscriptionService. */
+    private async routeSubscriptionEvent(stripeSub: Stripe.Subscription): Promise<void> {
+        const priceId = stripeSub.items?.data?.[0]?.price?.id ?? null;
+        if (priceId && this.stripe.apiTierForPriceId(priceId)) {
+            await this.apiSubscriptionService.syncFromStripeSubscription(stripeSub);
+            return;
+        }
+        await this.subscriptionService.syncFromStripeSubscription(stripeSub);
     }
 }

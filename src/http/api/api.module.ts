@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CoreModule } from 'src/core/core.module';
+import { ApiKeyApiController } from './api-tier/api-key-api.controller';
 import { AuthApiController } from './auth/auth-api.controller';
 import { BillingApiController } from './billing/billing-api.controller';
 import { StripeWebhookController } from './billing/stripe-webhook.controller';
@@ -21,6 +22,7 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
 @Module({
     imports: [ConfigModule, CoreModule],
     controllers: [
+        ApiKeyApiController,
         AuthApiController,
         BillingApiController,
         StripeWebhookController,

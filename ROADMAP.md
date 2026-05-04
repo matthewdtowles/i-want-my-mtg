@@ -572,31 +572,34 @@ API tiering is a **separate subscription model** from the consumer Premium tier 
 
 #### Tier definitions
 
-- [ ] Tier limits constant (Free: 100 req/day, 60/min burst; Developer $9.99/mo: 5,000/day, 300/min; Business $29.99–39.99/mo: 50,000/day, 1,000/min + bulk endpoints/webhooks)
+- [x] Tier limits constant (Free: 100 req/day, 60/min burst; Developer $9.99/mo: 5,000/day, 300/min; Business $29.99/mo: 50,000/day, 1,000/min + bulk endpoints/webhooks)
 
 #### Auth & rate limiting
 
-- [ ] `ApiKeyAuthGuard` — accepts `Authorization: Bearer iwm_live_...` or `X-API-Key` header; resolves user via `sha256(rawKey)` lookup; updates `last_used_at`
-- [ ] Extend `ApiRateLimitGuard` to (a) read tier from `api_subscription` for the resolved user, (b) UPSERT `api_usage(user_id, day)` and reject on overage with `429` + retry-after, (c) keep per-minute burst protection in-memory as today
-- [ ] Cookie-JWT browser traffic: keep current per-minute burst only; do NOT count toward daily quota
-- [ ] Error responses include `X-RateLimit-*` headers and an upgrade-prompt message linking to the API pricing page
+- [x] `ApiKeyAuthGuard` — accepts `Authorization: Bearer iwm_live_...` or `X-API-Key` header; resolves user via `sha256(rawKey)` lookup; updates `last_used_at`
+- [x] Extend `ApiRateLimitGuard` to (a) read tier from `api_subscription` for the resolved user, (b) UPSERT `api_usage(user_id, day)` and reject on overage with `429`, (c) keep per-minute burst protection in-memory
+- [x] Cookie-JWT browser traffic: keeps per-minute burst only; does NOT count toward daily quota
+- [x] Error responses include `X-RateLimit-Limit/Remaining/Reset` headers and an upgrade-prompt message linking to `/developer/pricing` (omitted at Business tier)
 
 #### API key management
 
-- [ ] `ApiKeyService` — generate (32 url-safe random + `iwm_live_` prefix; raw shown once), revoke, list; enforce one-active-key-per-user
-- [ ] REST endpoints: `POST /api/v1/api-keys`, `GET /api/v1/api-keys`, `DELETE /api/v1/api-keys/:id`
-- [ ] Settings page UI: create / view (prefix + last4 only after creation) / revoke
+- [x] `ApiKeyService` — generate (32 url-safe random + `iwm_live_` prefix; raw shown once), revoke, list; enforces one-active-key-per-user
+- [x] REST endpoints: `POST /api/v1/api-keys`, `GET /api/v1/api-keys`, `DELETE /api/v1/api-keys/:id` (JWT-auth, not API-key-auth — chicken/egg)
+- [x] Settings page UI at `/user/api-keys`: create / view (prefix only after creation) / revoke
 
 #### Stripe integration (API tier)
 
-- [ ] New Stripe Products + Prices for Developer monthly and Business monthly (separate from consumer Premium); env vars `STRIPE_PRICE_API_DEVELOPER`, `STRIPE_PRICE_API_BUSINESS`
-- [ ] `ApiSubscriptionService` mirroring `SubscriptionService` patterns; webhook handler updates `api_subscription.tier` on subscription events
-- [ ] `/developer/pricing` page (or section on existing `/pricing`) with tier comparison and checkout buttons
+- [x] Stripe gateway extended with `priceIdForApiTier`/`apiTierForPriceId`/`createCheckoutSessionForPrice`; env vars `STRIPE_PRICE_API_DEVELOPER`, `STRIPE_PRICE_API_BUSINESS`
+- [x] `ApiSubscriptionService` provides full Stripe lifecycle (checkout, portal, webhook sync); reuses one Stripe Customer per user across consumer + API subscriptions
+- [x] Webhook handler routes `customer.subscription.{created,updated,deleted}` events to either consumer `SubscriptionService` or `ApiSubscriptionService` by inspecting the price id
+- [x] `/developer/pricing` page with tier comparison and checkout buttons; `/developer/billing/{checkout,portal,success}` flow
+
+**Stripe-side work still required (manual, not code):** create new Products + Prices for "API Developer" ($9.99/mo) and "API Business" ($29.99/mo), set `STRIPE_PRICE_API_*` env vars in dev and prod.
 
 #### Usage dashboard
 
-- [ ] `GET /api/v1/api-keys/usage` — current-day count, headroom, last 30 days
-- [ ] Settings → Developer page showing current tier, today's usage, headroom, 30-day chart, current key prefix
+- [x] `GET /api/v1/api-keys/usage` — current tier, perDay/perMinute limits, today's count, headroom, last-30-day history
+- [x] Today's usage tile + 30-day bar chart on `/user/api-keys`
 
 #### Follow-ups (deferred)
 

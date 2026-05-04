@@ -1,9 +1,14 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as StripeCtor from 'stripe';
+import { ApiTier } from 'src/core/api-tier/api-tier.enum';
 import { getLogger } from 'src/logger/global-app-logger';
 import type { Stripe } from './stripe.types';
-import { CheckoutSessionParams, StripeGatewayPort } from './ports/stripe-gateway.port';
+import {
+    CheckoutSessionForPriceParams,
+    CheckoutSessionParams,
+    StripeGatewayPort,
+} from './ports/stripe-gateway.port';
 import { SubscriptionPlan } from './subscription-plan.enum';
 
 export class StripeConfigurationError extends Error {
@@ -20,6 +25,8 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
     private webhookSecret = '';
     private monthlyPriceId = '';
     private annualPriceId = '';
+    private apiDeveloperPriceId = '';
+    private apiBusinessPriceId = '';
 
     constructor(private readonly configService: ConfigService) {}
 
@@ -28,6 +35,10 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
         this.monthlyPriceId = this.configService.get<string>('STRIPE_PRICE_MONTHLY') || '';
         this.annualPriceId = this.configService.get<string>('STRIPE_PRICE_ANNUAL') || '';
+        this.apiDeveloperPriceId =
+            this.configService.get<string>('STRIPE_PRICE_API_DEVELOPER') || '';
+        this.apiBusinessPriceId =
+            this.configService.get<string>('STRIPE_PRICE_API_BUSINESS') || '';
         if (!secretKey) {
             this.LOGGER.warn(
                 'STRIPE_SECRET_KEY not set — billing actions will return error notices / redirects until configured.'
@@ -78,6 +89,24 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
         return { url: session.url };
     }
 
+    async createCheckoutSessionForPrice(
+        params: CheckoutSessionForPriceParams
+    ): Promise<{ url: string }> {
+        const session = await this.requireClient().checkout.sessions.create({
+            mode: 'subscription',
+            customer: params.customerId,
+            line_items: [{ price: params.priceId, quantity: 1 }],
+            success_url: params.successUrl,
+            cancel_url: params.cancelUrl,
+            client_reference_id: params.clientReferenceId,
+            allow_promotion_codes: true,
+        });
+        if (!session.url) {
+            throw new Error('Stripe did not return a checkout URL.');
+        }
+        return { url: session.url };
+    }
+
     async createBillingPortalSession(params: {
         customerId: string;
         returnUrl: string;
@@ -115,6 +144,20 @@ export class StripeGateway implements StripeGatewayPort, OnModuleInit {
     planForPriceId(priceId: string): SubscriptionPlan | null {
         if (priceId === this.monthlyPriceId) return SubscriptionPlan.Monthly;
         if (priceId === this.annualPriceId) return SubscriptionPlan.Annual;
+        return null;
+    }
+
+    priceIdForApiTier(tier: ApiTier): string {
+        const id = tier === ApiTier.Business ? this.apiBusinessPriceId : this.apiDeveloperPriceId;
+        if (!id) {
+            throw new Error(`No Stripe price configured for API tier '${tier}'.`);
+        }
+        return id;
+    }
+
+    apiTierForPriceId(priceId: string): ApiTier | null {
+        if (priceId && priceId === this.apiDeveloperPriceId) return ApiTier.Developer;
+        if (priceId && priceId === this.apiBusinessPriceId) return ApiTier.Business;
         return null;
     }
 }

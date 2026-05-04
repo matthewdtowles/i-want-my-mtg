@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
@@ -22,6 +23,9 @@ describe('StripeWebhookController', () => {
             constructEvent: jest.fn(),
             priceIdForPlan: jest.fn(),
             planForPriceId: jest.fn(),
+            createCheckoutSessionForPrice: jest.fn(),
+            priceIdForApiTier: jest.fn(),
+            apiTierForPriceId: jest.fn().mockReturnValue(null),
         };
         service = {
             getOrCreateCustomer: jest.fn(),
@@ -31,12 +35,17 @@ describe('StripeWebhookController', () => {
             handleSubscriptionDeleted: jest.fn(),
             getSubscriptionForUser: jest.fn(),
         } as any;
+        const apiSubService = {
+            syncFromStripeSubscription: jest.fn().mockResolvedValue(false),
+            handleSubscriptionDeleted: jest.fn().mockResolvedValue(false),
+        };
 
         const module: TestingModule = await Test.createTestingModule({
             controllers: [StripeWebhookController],
             providers: [
                 { provide: StripeGatewayPort, useValue: gateway },
                 { provide: SubscriptionService, useValue: service },
+                { provide: ApiSubscriptionService, useValue: apiSubService },
             ],
         }).compile();
 

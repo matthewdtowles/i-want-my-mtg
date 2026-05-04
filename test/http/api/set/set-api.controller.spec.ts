@@ -9,6 +9,8 @@ import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BlockPaginationMeta } from 'src/http/base/api-response.dto';
 import { SetApiController } from 'src/http/api/set/set-api.controller';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
+import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
 
 function createSet(overrides: Partial<Set> = {}): Set {
@@ -94,6 +96,8 @@ describe('SetApiController', () => {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
+                { provide: ApiSubscriptionService, useValue: {} },
+                { provide: ApiUsageService, useValue: {} },
             ],
         }).compile();
 

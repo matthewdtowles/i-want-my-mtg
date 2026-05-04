@@ -1,6 +1,6 @@
 {
     "name": "i-want-my-mtg",
-    "version": "1.21.9",
+    "version": "1.21.10-rc.1",
     "description": "MTG Collection Tracker",
     "author": "Matthew Towles",
     "private": true,

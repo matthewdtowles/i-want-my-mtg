@@ -14,6 +14,7 @@ import { PriceAlertApiController } from './price-alert/price-alert-api.controlle
 import { PriceNotificationApiController } from './price-alert/price-notification-api.controller';
 import { SealedProductApiController } from './sealed-product/sealed-product-api.controller';
 import { UserApiController } from './user/user-api.controller';
+import { ApiKeyAuthGuard } from './shared/api-key-auth.guard';
 import { ApiRateLimitGuard } from './shared/api-rate-limit.guard';
 import { CacheControlInterceptor } from './shared/cache-control.interceptor';
 
@@ -33,6 +34,10 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
         TransactionApiController,
         UserApiController,
     ],
-    providers: [ApiRateLimitGuard, { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor }],
+    providers: [
+        ApiKeyAuthGuard,
+        ApiRateLimitGuard,
+        { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor },
+    ],
 })
 export class ApiModule {}

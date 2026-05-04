@@ -6,24 +6,31 @@ import {
     Injectable,
     OnModuleDestroy,
 } from '@nestjs/common';
+import { Response } from 'express';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
+import { ApiTier } from 'src/core/api-tier/api-tier.enum';
+import { getTierLimits } from 'src/core/api-tier/api-tier-limits';
+import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { getLogger } from 'src/logger/global-app-logger';
 
-const MAX_REQUESTS_USER = 200;
-const MAX_REQUESTS_IP = 60;
-const WINDOW_MS = 60 * 1000; // 1 minute
-const CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+const COOKIE_USER_BURST_PER_MIN = 200;
+const IP_BURST_PER_MIN = 60;
+const WINDOW_MS = 60 * 1000;
+const CLEANUP_INTERVAL_MS = 30 * 60 * 1000;
+const PRICING_URL = '/developer/pricing';
 
 @Injectable()
 export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
     private readonly LOGGER = getLogger(ApiRateLimitGuard.name);
-    private readonly userRequests = new Map<number, number[]>();
-    private readonly ipRequests = new Map<string, number[]>();
+    private readonly userBursts = new Map<number, number[]>();
+    private readonly ipBursts = new Map<string, number[]>();
     private readonly cleanupTimer: NodeJS.Timeout;
 
-    constructor() {
+    constructor(
+        private readonly apiSubscriptionService: ApiSubscriptionService,
+        private readonly apiUsageService: ApiUsageService
+    ) {
         this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
-        // NOTE: In-memory, per-process. A shared store (e.g. Redis) would be needed
-        // for global enforcement in a multi-instance deployment.
         if (this.cleanupTimer.unref) this.cleanupTimer.unref();
     }
 
@@ -31,74 +38,96 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         clearInterval(this.cleanupTimer);
     }
 
-    canActivate(context: ExecutionContext): boolean {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
-        const userId: number = request.user?.id;
+        const response = context.switchToHttp().getResponse<Response>();
+        const userId: number | undefined = request.user?.id;
+        const isApiKeyAuth = !!request.apiKey;
 
-        if (!userId) {
-            return this.checkIpLimit(request.ip);
+        if (isApiKeyAuth && userId) {
+            return this.checkApiKeyTier(userId, response);
         }
-
-        return this.checkUserLimit(userId);
+        if (userId) {
+            return this.checkBurst(this.userBursts, userId, COOKIE_USER_BURST_PER_MIN, `user ${userId}`);
+        }
+        return this.checkBurst(this.ipBursts, request.ip || 'unknown', IP_BURST_PER_MIN, `IP ${request.ip}`);
     }
 
-    private checkUserLimit(userId: number): boolean {
-        const now = Date.now();
-        const windowStart = now - WINDOW_MS;
-        const timestamps = (this.userRequests.get(userId) ?? []).filter((t) => t > windowStart);
+    private async checkApiKeyTier(userId: number, response: Response): Promise<boolean> {
+        const tier = await this.apiSubscriptionService.getEffectiveTier(userId);
+        const limits = getTierLimits(tier);
 
-        if (timestamps.length >= MAX_REQUESTS_USER) {
-            this.LOGGER.warn(`API rate limit exceeded for user ${userId}.`);
+        // Per-minute burst (in-memory; keyed by user_id since the tier is per-user).
+        this.checkBurst(this.userBursts, userId, limits.perMinute, `user ${userId} (${tier})`);
+
+        // Daily quota: atomic INSERT/INCREMENT — count includes this request.
+        const today = new Date();
+        const count = await this.apiUsageService.incrementCount(userId, today);
+        this.setRateLimitHeaders(response, limits.perDay, count, today);
+
+        if (count > limits.perDay) {
+            this.LOGGER.warn(
+                `Daily quota exceeded for user ${userId} on ${tier} tier (${count}/${limits.perDay}).`
+            );
             throw new HttpException(
-                'Too Many Requests: API rate limit is 200 requests per minute',
+                {
+                    statusCode: HttpStatus.TOO_MANY_REQUESTS,
+                    message: `Daily API quota of ${limits.perDay} requests exceeded for the ${tier} tier.`,
+                    upgrade: tier === ApiTier.Business ? null : PRICING_URL,
+                },
                 HttpStatus.TOO_MANY_REQUESTS
             );
         }
-
-        timestamps.push(now);
-        this.userRequests.set(userId, timestamps);
         return true;
     }
 
-    private checkIpLimit(ip: string): boolean {
-        const key = ip || 'unknown';
+    private checkBurst(
+        store: Map<number, number[]> | Map<string, number[]>,
+        key: number | string,
+        max: number,
+        label: string
+    ): boolean {
         const now = Date.now();
         const windowStart = now - WINDOW_MS;
-        const timestamps = (this.ipRequests.get(key) ?? []).filter((t) => t > windowStart);
-
-        if (timestamps.length >= MAX_REQUESTS_IP) {
-            this.LOGGER.warn(`API rate limit exceeded for IP ${key}.`);
+        const map = store as Map<number | string, number[]>;
+        const timestamps = (map.get(key) ?? []).filter((t) => t > windowStart);
+        if (timestamps.length >= max) {
+            this.LOGGER.warn(`Burst rate-limit exceeded for ${label}.`);
             throw new HttpException(
-                'Too Many Requests: API rate limit exceeded',
+                `Too Many Requests: burst limit is ${max} requests per minute`,
                 HttpStatus.TOO_MANY_REQUESTS
             );
         }
-
         timestamps.push(now);
-        this.ipRequests.set(key, timestamps);
+        map.set(key, timestamps);
         return true;
+    }
+
+    private setRateLimitHeaders(response: Response, limit: number, count: number, day: Date): void {
+        const remaining = Math.max(0, limit - count);
+        const resetEpoch = Math.floor(this.nextUtcMidnight(day).getTime() / 1000);
+        response.setHeader('X-RateLimit-Limit', String(limit));
+        response.setHeader('X-RateLimit-Remaining', String(remaining));
+        response.setHeader('X-RateLimit-Reset', String(resetEpoch));
+    }
+
+    private nextUtcMidnight(now: Date): Date {
+        const next = new Date(now);
+        next.setUTCHours(24, 0, 0, 0);
+        return next;
     }
 
     private cleanup(): void {
         const windowStart = Date.now() - WINDOW_MS;
-        for (const [userId, timestamps] of this.userRequests.entries()) {
-            const active = timestamps.filter((t) => t > windowStart);
-            if (active.length === 0) {
-                this.userRequests.delete(userId);
-            } else {
-                this.userRequests.set(userId, active);
-            }
+        for (const [k, ts] of this.userBursts.entries()) {
+            const active = ts.filter((t) => t > windowStart);
+            if (active.length === 0) this.userBursts.delete(k);
+            else this.userBursts.set(k, active);
         }
-        for (const [ip, timestamps] of this.ipRequests.entries()) {
-            const active = timestamps.filter((t) => t > windowStart);
-            if (active.length === 0) {
-                this.ipRequests.delete(ip);
-            } else {
-                this.ipRequests.set(ip, active);
-            }
+        for (const [k, ts] of this.ipBursts.entries()) {
+            const active = ts.filter((t) => t > windowStart);
+            if (active.length === 0) this.ipBursts.delete(k);
+            else this.ipBursts.set(k, active);
         }
-        this.LOGGER.debug(
-            `API rate-limit cleanup: ${this.userRequests.size} users, ${this.ipRequests.size} IPs.`
-        );
     }
 }

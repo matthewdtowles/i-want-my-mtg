@@ -72,6 +72,12 @@
                             need a
                             <code class='bg-gray-200 dark:bg-midnight-700 px-1 rounded'>name</code>
                             column - everything else is optional for smarter matching.</p>
+                        {{#if authenticated}}
+                            <a
+                                href='/inventory/import-export-guide'
+                                class='text-teal-600 dark:text-teal-400 hover:underline'
+                            >See the Import &amp; Export Guide →</a>
+                        {{/if}}
                     </div>
                 </div>
             </div>
@@ -186,6 +192,8 @@
                     <a href='/sets' class='btn btn-primary'>Browse Sets</a>
                     {{#if authenticated}}
                         <a href='/inventory' class='btn btn-secondary'>Go to My Inventory</a>
+                        <a href='/inventory/import-export-guide' class='btn btn-ghost'>Import &amp;
+                            Export Guide</a>
                     {{/if}}
                 </div>
             </div>

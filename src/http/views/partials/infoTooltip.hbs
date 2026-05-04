@@ -1,0 +1,35 @@
+{{~!
+  Reference info tooltip: gray "i" icon trigger with a dark bubble that toggles
+  on hover/click. Auto-wired by tooltipManager.js via .info-tooltip-trigger /
+  .info-tooltip selectors.
+
+  Parameters:
+    ariaLabel   - accessible label for the trigger (default 'More info')
+    title       - optional bold heading shown at top of the bubble
+    description - tooltip body text
+    width       - optional Tailwind width class for the bubble (default 'w-64')
+~}}
+<span class='relative inline-block'>
+    <button
+        type='button'
+        class='info-tooltip-trigger text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors ml-1 align-middle'
+        aria-label='{{#if ariaLabel}}{{ariaLabel}}{{else}}More info{{/if}}'
+    >
+        <svg class='w-3.5 h-3.5 inline' fill='currentColor' viewBox='0 0 20 20'>
+            <path
+                fill-rule='evenodd'
+                d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+                clip-rule='evenodd'
+            />
+        </svg>
+    </button>
+    <span
+        class='info-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-midnight-800 dark:bg-midnight-700 text-white text-xs rounded-lg p-3 shadow-lg z-10 {{#if width}}{{width}}{{else}}w-64{{/if}} text-left'
+    >
+        {{#if title}}<span class='font-semibold block mb-1'>{{title}}</span>{{/if}}
+        {{description}}
+        <span
+            class='absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-midnight-800 dark:bg-midnight-700 transform rotate-45'
+        ></span>
+    </span>
+</span>

@@ -12,7 +12,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { Toast } from 'src/http/base/toast';
 import { getLogger } from 'src/logger/global-app-logger';
 import { getAuthCookieOptions } from './auth.cookie.util';
 import { AuthOrchestrator } from './auth.orchestrator';
@@ -35,12 +37,16 @@ export class AuthController {
 
     @Get('login')
     @Render('login')
-    async loginForm(@Query('returnUrl') returnUrl?: string): Promise<LoginFormViewDto> {
+    async loginForm(
+        @Query('returnUrl') returnUrl?: string,
+        @Query('error') error?: string
+    ): Promise<LoginFormViewDto> {
         this.LOGGER.log(`Fetch login form.`);
         return new LoginFormViewDto({
             returnUrl: this.sanitizeReturnUrl(returnUrl),
             title: 'Sign In - I Want My MTG',
             metaDescription: 'Sign in to your I Want My MTG account to manage your collection.',
+            toast: error ? new Toast(error, ActionStatus.ERROR) : undefined,
         });
     }
 
@@ -132,7 +138,7 @@ export class AuthController {
 
         if (result.success && result.token) {
             res.cookie(AUTH_TOKEN_NAME, result.token, getAuthCookieOptions(this.configService));
-            res.redirect('/user');
+            res.redirect('/user?reset=success');
         } else {
             res.render('resetPasswordResult', {
                 success: false,

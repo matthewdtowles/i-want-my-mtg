@@ -121,7 +121,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
             FROM price_alert a
             JOIN card c ON c.id = a.card_id
             LEFT JOIN LATERAL (
-                SELECT p2.normal
+                SELECT p2.normal, p2.date
                 FROM price p2
                 WHERE p2.card_id = a.card_id
                 ORDER BY p2.date DESC
@@ -131,7 +131,7 @@ export class PriceAlertRepository implements PriceAlertRepositoryPort {
                 SELECT ph2.normal
                 FROM price_history ph2
                 WHERE ph2.card_id = a.card_id
-                  AND ph2.date < CURRENT_DATE
+                  AND ph2.date < COALESCE(p.date, CURRENT_DATE)
                 ORDER BY ph2.date DESC
                 LIMIT 1
             ) ph ON true

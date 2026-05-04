@@ -342,7 +342,7 @@
 - [x] Notifications history page (`/notifications`) with unread highlighting and mark-as-read
 - [x] Navbar links for Alerts (desktop and mobile)
 - [x] Hide Owned column on set card list when not authenticated
-- [ ] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) - status uncertain after recent infra changes
+- [x] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) — audit on prod found cron, env, endpoint, SMTP plumbing all healthy. Smoking gun: detection query in `price-alert.repository.ts` filtered previous-price by `ph.date < CURRENT_DATE`, but Scry stamps `price.date` with MTGJSON's source date (~1 day behind), so both LATERAL joins picked the same `price_history` row and pct_change was always 0. Fixed by changing the cutoff to `< COALESCE(p.date, CURRENT_DATE)` and added an integration-test case mirroring the prod date-lag scenario.
 
 ### 2.13 UI Polish
 
@@ -378,7 +378,7 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Refresh button styles site-wide to match pricing page's primary/secondary CTA language (#477) — `.btn-cta` aligned to `.pricing-btn-cta` (teal→sky-blue gradient, matching glow); `.btn-upgrade` retired and folded into `.btn-cta`
 - [x] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment — class-level via foundations (`rounded-xl`, `midnight-900`); inline cleanups (#477) for billingSuccess, portfolioBreakdown teasers, gettingStarted, spoilers, set price popover, upgradeTile
 - [x] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views — flipped 19 inverted muted-text pairs (`text-gray-400 dark:text-gray-500` → `text-gray-500 dark:text-gray-400`) across set, portfolio, inventory, card, transactions, sealed-product-detail, layouts/main, emptyState, costBasisTooltip, pagination — fixes dark-mode contrast on midnight-900 surfaces. Marketing gradients (billingSuccess, upgradeTile, portfolioBreakdown star icon) and accent stripes (set price popover info, user danger zone) kept as intentional uses.
-- [ ] Quick-add (+) affordance on card tiles in search results, set page, and binder grids — one click adds qty 1 via `/api/v1/inventory` with toast confirmation; click-through to detail page preserved (#458)
+- [x] Quick-add (+) affordance on card tiles in search results — hover/focus-revealed `+` overlay button posts to `/inventory` (cookie-auth, matches existing stepper pattern) with toast confirmation; click-through to detail page preserved. Set page list, set page binder, and inventory binder already have full +/- steppers via `invStepper.hbs` / `AjaxUtils.createStepperGroup`, which subsume the quick-add affordance, so no parallel button was added there.
 
 #### Verification
 

@@ -326,6 +326,82 @@ describe('Price Alerts API (e2e)', () => {
         });
     });
 
+    describe('Process alerts when price.date lags behind today (mirrors prod)', () => {
+        // Scry stamps price.date with MTGJSON's source date, which is typically
+        // ~1 day behind the calendar. The detection query must compare against
+        // history rows older than price.date, not older than CURRENT_DATE.
+        beforeAll(async () => {
+            await ds.query('DELETE FROM price_notification');
+            await ds.query('DELETE FROM price_alert');
+
+            const userRows = await ds.query(
+                `SELECT id FROM users WHERE email = 'integ@test.com'`
+            );
+            const userId = userRows[0].id;
+
+            await ds.query(
+                `INSERT INTO price_alert (user_id, card_id, increase_pct, decrease_pct, is_active)
+                 VALUES ($1, $2, 10, NULL, true)`,
+                [userId, TEST_CARD_ID]
+            );
+
+            // Simulate scry: price.date = yesterday (the latest snapshot we have)
+            await ds.query(
+                `UPDATE price SET normal = 6.00, date = CURRENT_DATE - INTERVAL '1 day'
+                 WHERE card_id = $1`,
+                [TEST_CARD_ID]
+            );
+
+            // History: yesterday matches current price (same snapshot), and
+            // day-before-yesterday is the actual "previous" we should compare to.
+            await ds.query(
+                `INSERT INTO price_history (card_id, normal, foil, date)
+                 VALUES
+                    ($1, 6.00, NULL, CURRENT_DATE - INTERVAL '1 day'),
+                    ($1, 5.00, NULL, CURRENT_DATE - INTERVAL '2 day')
+                 ON CONFLICT (card_id, date) DO UPDATE SET normal = EXCLUDED.normal`,
+                [TEST_CARD_ID]
+            );
+        });
+
+        afterAll(async () => {
+            await ds.query(
+                `UPDATE price SET normal = 5.00, date = CURRENT_DATE WHERE card_id = $1`,
+                [TEST_CARD_ID]
+            );
+            await ds.query('DELETE FROM price_notification');
+            await ds.query('DELETE FROM price_alert');
+            await ds.query(
+                `DELETE FROM price_history
+                 WHERE card_id = $1
+                   AND date IN (CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE - INTERVAL '2 day')`,
+                [TEST_CARD_ID]
+            );
+        });
+
+        it('triggers alert by comparing price.normal against history older than price.date', async () => {
+            process.env.INTERNAL_API_KEY = 'test-api-key-12345';
+
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/price-alerts/process')
+                .set('x-api-key', 'test-api-key-12345')
+                .expect(200);
+
+            expect(res.body.data.notificationsSent).toBe(1);
+
+            const notifs = await ds.query(
+                `SELECT direction, old_price, new_price, change_pct
+                 FROM price_notification WHERE card_id = $1`,
+                [TEST_CARD_ID]
+            );
+            expect(notifs.length).toBe(1);
+            expect(notifs[0].direction).toBe('increase');
+            expect(Number(notifs[0].old_price)).toBe(5.0);
+            expect(Number(notifs[0].new_price)).toBe(6.0);
+            expect(Number(notifs[0].change_pct)).toBe(20.0);
+        });
+    });
+
     describe('Notification history', () => {
         let notificationId: number;
 

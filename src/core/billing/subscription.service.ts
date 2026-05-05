@@ -149,8 +149,9 @@ export class SubscriptionService {
             const full = await this.stripe.retrieveSubscription(subId);
             return this.syncFromStripeSubscription(full);
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             this.LOGGER.error(
-                `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${error?.message}`
+                `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${errorMessage}`
             );
             return false;
         }

@@ -23,13 +23,13 @@ import { SetApiPresenter } from './set-api.presenter';
 import { CardApiResponseDto } from '../card/dto/card-response.dto';
 import { CardApiPresenter } from '../card/card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
-import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
+import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
 
 @ApiTags('Sets')
 @Controller('api/v1/sets')
-@UseGuards(ApiRateLimitGuard)
+@UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
 export class SetApiController {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
@@ -39,7 +39,6 @@ export class SetApiController {
     ) {}
 
     @Get()
-    @UseGuards(OptionalAuthGuard)
     @ApiOperation({ summary: 'List sets' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })

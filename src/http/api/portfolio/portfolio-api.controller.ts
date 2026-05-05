@@ -24,7 +24,7 @@ import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdow
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { PortfolioPresenter } from 'src/http/hbs/portfolio/portfolio.presenter';
@@ -40,7 +40,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @ApiTags('Portfolio')
 @ApiBearerAuth()
 @Controller('api/v1/portfolio')
-@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class PortfolioApiController {
     constructor(
         @Inject(PortfolioService) private readonly portfolioService: PortfolioService,

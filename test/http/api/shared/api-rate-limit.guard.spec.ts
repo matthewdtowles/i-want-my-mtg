@@ -137,5 +137,34 @@ describe('ApiRateLimitGuard', () => {
             const { ctx } = makeContext({ user: { id: 7 }, apiKey });
             await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
         });
+
+        it('does NOT consume the cookie-user burst budget for the same user_id', async () => {
+            // Saturate the API-key burst budget for user 7 (Free tier = 60/min).
+            subSvc.getEffectiveTier.mockResolvedValue(ApiTier.Free);
+            usageSvc.incrementCount.mockResolvedValue(1);
+            for (let i = 0; i < 60; i++) {
+                const { ctx } = makeContext({ user: { id: 7 }, apiKey });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            // The same user's cookie session must still have its full 200/min budget —
+            // no bleed between API-key and cookie maps.
+            for (let i = 0; i < 200; i++) {
+                const { ctx } = makeContext({ user: { id: 7 } });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+        });
+
+        it('cookie burst exhaustion does NOT block API-key requests', async () => {
+            // Saturate cookie burst for user 7.
+            for (let i = 0; i < 200; i++) {
+                const { ctx } = makeContext({ user: { id: 7 } });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            // API-key requests for the same user must still go through.
+            subSvc.getEffectiveTier.mockResolvedValue(ApiTier.Free);
+            usageSvc.incrementCount.mockResolvedValue(1);
+            const { ctx } = makeContext({ user: { id: 7 }, apiKey });
+            await expect(guard.canActivate(ctx)).resolves.toBe(true);
+        });
     });
 });

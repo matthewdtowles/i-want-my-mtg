@@ -21,7 +21,7 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
-import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
+import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { parseDaysParam } from 'src/http/base/query.util';
@@ -46,7 +46,7 @@ export class SealedProductApiController {
     ) {}
 
     @Get('sets/:code/sealed-products')
-    @UseGuards(OptionalAuthGuard)
+    @UseGuards(OptionalAuthOrApiKeyGuard)
     @ApiOperation({ summary: 'List sealed products for a set' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })

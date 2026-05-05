@@ -22,7 +22,8 @@ const PRICING_URL = '/developer/pricing';
 @Injectable()
 export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
     private readonly LOGGER = getLogger(ApiRateLimitGuard.name);
-    private readonly userBursts = new Map<number, number[]>();
+    private readonly cookieBursts = new Map<number, number[]>();
+    private readonly apiKeyBursts = new Map<number, number[]>();
     private readonly ipBursts = new Map<string, number[]>();
     private readonly cleanupTimer: NodeJS.Timeout;
 
@@ -48,7 +49,7 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
             return this.checkApiKeyTier(userId, response);
         }
         if (userId) {
-            return this.checkBurst(this.userBursts, userId, COOKIE_USER_BURST_PER_MIN, `user ${userId}`);
+            return this.checkBurst(this.cookieBursts, userId, COOKIE_USER_BURST_PER_MIN, `user ${userId}`);
         }
         return this.checkBurst(this.ipBursts, request.ip || 'unknown', IP_BURST_PER_MIN, `IP ${request.ip}`);
     }
@@ -57,8 +58,9 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         const tier = await this.apiSubscriptionService.getEffectiveTier(userId);
         const limits = getTierLimits(tier);
 
-        // Per-minute burst (in-memory; keyed by user_id since the tier is per-user).
-        this.checkBurst(this.userBursts, userId, limits.perMinute, `user ${userId} (${tier})`);
+        // Per-minute burst tracked in a dedicated map so API-key traffic cannot consume
+        // the cookie-user budget (and vice versa) for the same user_id.
+        this.checkBurst(this.apiKeyBursts, userId, limits.perMinute, `user ${userId} (${tier})`);
 
         // Daily quota: atomic INSERT/INCREMENT — count includes this request.
         const today = new Date();
@@ -119,15 +121,15 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
 
     private cleanup(): void {
         const windowStart = Date.now() - WINDOW_MS;
-        for (const [k, ts] of this.userBursts.entries()) {
-            const active = ts.filter((t) => t > windowStart);
-            if (active.length === 0) this.userBursts.delete(k);
-            else this.userBursts.set(k, active);
-        }
-        for (const [k, ts] of this.ipBursts.entries()) {
-            const active = ts.filter((t) => t > windowStart);
-            if (active.length === 0) this.ipBursts.delete(k);
-            else this.ipBursts.set(k, active);
-        }
+        const sweep = <K>(store: Map<K, number[]>): void => {
+            for (const [k, ts] of store.entries()) {
+                const active = ts.filter((t) => t > windowStart);
+                if (active.length === 0) store.delete(k);
+                else store.set(k, active);
+            }
+        };
+        sweep(this.cookieBursts);
+        sweep(this.apiKeyBursts);
+        sweep(this.ipBursts);
     }
 }

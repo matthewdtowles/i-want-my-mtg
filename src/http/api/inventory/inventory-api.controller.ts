@@ -17,7 +17,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@ne
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryRequestApiDto } from './dto/inventory-request-api.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -29,7 +29,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @ApiTags('Inventory')
 @ApiBearerAuth()
 @Controller('api/v1/inventory')
-@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class InventoryApiController {
     constructor(@Inject(InventoryService) private readonly inventoryService: InventoryService) {}
 

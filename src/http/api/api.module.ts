@@ -18,6 +18,8 @@ import { UserApiController } from './user/user-api.controller';
 import { ApiKeyAuthGuard } from './shared/api-key-auth.guard';
 import { ApiRateLimitGuard } from './shared/api-rate-limit.guard';
 import { CacheControlInterceptor } from './shared/cache-control.interceptor';
+import { JwtOrApiKeyGuard } from './shared/jwt-or-api-key.guard';
+import { OptionalAuthOrApiKeyGuard } from './shared/optional-auth-or-api-key.guard';
 
 @Module({
     imports: [ConfigModule, CoreModule],
@@ -39,6 +41,8 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
     providers: [
         ApiKeyAuthGuard,
         ApiRateLimitGuard,
+        JwtOrApiKeyGuard,
+        OptionalAuthOrApiKeyGuard,
         { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor },
     ],
 })

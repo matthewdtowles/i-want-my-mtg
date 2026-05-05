@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public."api_key" (
     CONSTRAINT FK_api_key_user FOREIGN KEY (user_id) REFERENCES public."users"(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_api_key_user_active ON public."api_key" (user_id) WHERE revoked_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_api_key_user_active ON public."api_key" (user_id) WHERE revoked_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS public."api_usage" (
     user_id integer NOT NULL,

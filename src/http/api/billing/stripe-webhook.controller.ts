@@ -110,13 +110,34 @@ export class StripeWebhookController {
         }
     }
 
-    /** Route by price_id: API-tier prices go to ApiSubscriptionService, others to consumer SubscriptionService. */
+    /**
+     * Route by price_id. Consumer and API subscriptions intentionally share the same
+     * Stripe customer, so we must positively identify the price as one or the other —
+     * never default-route. An unknown price id throws so Stripe retries and the
+     * misconfiguration (e.g. STRIPE_PRICE_API_* unset in this env) surfaces in logs.
+     */
     private async routeSubscriptionEvent(stripeSub: Stripe.Subscription): Promise<void> {
         const priceId = stripeSub.items?.data?.[0]?.price?.id ?? null;
-        if (priceId && this.stripe.apiTierForPriceId(priceId)) {
+        if (!priceId) {
+            this.LOGGER.error(
+                `Subscription ${stripeSub.id} has no price id; cannot route to a subscription service.`
+            );
+            throw new InternalServerErrorException('Stripe subscription missing price id.');
+        }
+        if (this.stripe.apiTierForPriceId(priceId)) {
             await this.apiSubscriptionService.syncFromStripeSubscription(stripeSub);
             return;
         }
-        await this.subscriptionService.syncFromStripeSubscription(stripeSub);
+        if (this.stripe.planForPriceId(priceId)) {
+            await this.subscriptionService.syncFromStripeSubscription(stripeSub);
+            return;
+        }
+        this.LOGGER.error(
+            `Subscription ${stripeSub.id} has unknown price id '${priceId}' (matches neither consumer nor API tier). ` +
+                `Check STRIPE_PRICE_* env vars in this environment.`
+        );
+        throw new InternalServerErrorException(
+            `Unknown Stripe price id '${priceId}'; cannot route subscription event safely.`
+        );
     }
 }

@@ -21,7 +21,7 @@ import { SealedProductService } from 'src/core/sealed-product/sealed-product.ser
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { UpdatePasswordRequestDto } from 'src/http/hbs/user/dto/update-password.request.dto';
 import { UpdateUserRequestDto } from 'src/http/hbs/user/dto/update-user.request.dto';
@@ -33,7 +33,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @ApiTags('User')
 @ApiBearerAuth()
 @Controller('api/v1/user')
-@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class UserApiController {
     private static readonly EXPORT_LIMIT = 100000;
 

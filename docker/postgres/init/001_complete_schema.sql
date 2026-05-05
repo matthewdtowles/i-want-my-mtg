@@ -894,7 +894,7 @@ CREATE TABLE public.api_key (
     CONSTRAINT FK_api_key_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_api_key_user_active ON public.api_key (user_id) WHERE revoked_at IS NULL;
+CREATE UNIQUE INDEX idx_api_key_user_active ON public.api_key (user_id) WHERE revoked_at IS NULL;
 
 
 --

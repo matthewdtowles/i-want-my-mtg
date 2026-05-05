@@ -142,6 +142,16 @@ export class DeveloperController {
             return;
         }
         try {
+            // If user already has an active paid API subscription, route any tier-change
+            // through the billing portal (Stripe handles upgrade/downgrade prorations there).
+            const currentTier = await this.apiSubscriptionService.getEffectiveTier(req.user.id);
+            if (currentTier !== ApiTier.Free && currentTier !== tierInput) {
+                const { url } = await this.apiSubscriptionService.startBillingPortal(
+                    req.user as never
+                );
+                res.redirect(303, url);
+                return;
+            }
             const { url } = await this.apiSubscriptionService.startCheckout(
                 req.user as never,
                 tierInput as ApiTier
@@ -186,8 +196,14 @@ export class DeveloperController {
             }
         }
         if (!synced) {
-            res.redirect(303, '/developer/pricing?error=checkout_failed');
-            return;
+            // The webhook may have already activated the subscription before the user
+            // landed here (or on a return-visit to the success URL). Treat an active
+            // paid tier as success rather than showing a misleading checkout failure.
+            const currentTier = await this.apiSubscriptionService.getEffectiveTier(req.user.id);
+            if (currentTier === ApiTier.Free) {
+                res.redirect(303, '/developer/pricing?error=checkout_failed');
+                return;
+            }
         }
         res.redirect(303, '/user/api-keys?upgraded=1');
     }

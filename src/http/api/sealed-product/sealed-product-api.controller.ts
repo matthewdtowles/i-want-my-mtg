@@ -39,14 +39,13 @@ import { SealedProductApiPresenter } from './sealed-product-api.presenter';
 
 @ApiTags('Sealed Products')
 @Controller('api/v1')
-@UseGuards(ApiRateLimitGuard)
 export class SealedProductApiController {
     constructor(
         @Inject(SealedProductService) private readonly sealedProductService: SealedProductService
     ) {}
 
     @Get('sets/:code/sealed-products')
-    @UseGuards(OptionalAuthOrApiKeyGuard)
+    @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
     @ApiOperation({ summary: 'List sealed products for a set' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
@@ -84,6 +83,7 @@ export class SealedProductApiController {
     }
 
     @Get('sealed-products/:uuid')
+    @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
     @ApiOperation({ summary: 'Get sealed product detail' })
     @ApiResponse({ status: 200, description: 'Sealed product detail' })
     @ApiResponse({ status: 404, description: 'Not found' })
@@ -98,6 +98,7 @@ export class SealedProductApiController {
     }
 
     @Get('sealed-products/:uuid/price-history')
+    @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
     @ApiOperation({ summary: 'Get sealed product price history' })
     @ApiQuery({ name: 'days', required: false })
     @ApiResponse({ status: 200, description: 'Price history data' })
@@ -111,7 +112,7 @@ export class SealedProductApiController {
     }
 
     @Get('inventory/sealed')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List sealed product inventory' })
     @ApiQuery({ name: 'page', required: false })
@@ -133,7 +134,7 @@ export class SealedProductApiController {
     }
 
     @Post('inventory/sealed')
-    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard, ApiRateLimitGuard)
     @RequiresSubscription()
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
@@ -156,7 +157,7 @@ export class SealedProductApiController {
     }
 
     @Patch('inventory/sealed')
-    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard, ApiRateLimitGuard)
     @RequiresSubscription()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update sealed product inventory quantity (Premium)' })
@@ -178,7 +179,7 @@ export class SealedProductApiController {
     }
 
     @Delete('inventory/sealed')
-    @UseGuards(JwtAuthGuard, SubscriptionGuard)
+    @UseGuards(JwtAuthGuard, SubscriptionGuard, ApiRateLimitGuard)
     @RequiresSubscription()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Remove sealed product from inventory (Premium)' })

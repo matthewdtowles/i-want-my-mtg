@@ -35,7 +35,7 @@ describe('StripeWebhookController', () => {
             getOrCreateCustomer: jest.fn(),
             startCheckout: jest.fn(),
             startBillingPortal: jest.fn(),
-            syncFromStripeSubscription: jest.fn(),
+            syncFromStripeSubscription: jest.fn().mockResolvedValue(true),
             handleSubscriptionDeleted: jest.fn(),
             getSubscriptionForUser: jest.fn(),
         } as any;
@@ -126,6 +126,17 @@ describe('StripeWebhookController', () => {
         } as unknown as Stripe.Event);
         service.syncFromStripeSubscription.mockRejectedValue(new Error('boom'));
         await expect(controller.handle(rawReq, 'sig')).rejects.toThrow('boom');
+    });
+
+    it('throws when consumer sync returns false so Stripe retries', async () => {
+        service.syncFromStripeSubscription.mockResolvedValueOnce(false);
+        gateway.constructEvent.mockReturnValue({
+            type: 'customer.subscription.updated',
+            data: { object: subWithPrice('sub_orphan') },
+        } as unknown as Stripe.Event);
+        await expect(controller.handle(rawReq, 'sig')).rejects.toThrow(
+            /Failed to sync consumer subscription/
+        );
     });
 
     it('throws on unknown price id so Stripe retries (no silent default-route to consumer)', async () => {

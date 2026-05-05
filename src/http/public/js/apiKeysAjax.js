@@ -69,21 +69,21 @@
                 var status = k.revokedAt
                     ? '<span class="text-xs text-gray-500">Revoked ' + fmtDate(k.revokedAt) + '</span>'
                     : '<button class="btn btn-danger btn-sm" data-revoke-id="' + k.id + '">Revoke</button>';
-                return '<tr>'
-                    + '<td class="py-2 pr-4 font-medium">' + escapeHtml(k.name) + '</td>'
-                    + '<td class="py-2 pr-4"><code class="text-xs">' + escapeHtml(k.keyPrefix) + '…</code></td>'
-                    + '<td class="py-2 pr-4 text-xs text-gray-500">' + fmtDate(k.lastUsedAt) + '</td>'
-                    + '<td class="py-2 pr-4 text-xs text-gray-500">' + fmtDate(k.createdAt) + '</td>'
-                    + '<td class="py-2 text-right">' + status + '</td>'
+                return '<tr class="table-row">'
+                    + '<td class="table-cell font-medium">' + escapeHtml(k.name) + '</td>'
+                    + '<td class="table-cell"><code class="text-xs">' + escapeHtml(k.keyPrefix) + '…</code></td>'
+                    + '<td class="table-cell text-xs text-gray-500">' + fmtDate(k.lastUsedAt) + '</td>'
+                    + '<td class="table-cell text-xs text-gray-500">' + fmtDate(k.createdAt) + '</td>'
+                    + '<td class="table-cell text-right">' + status + '</td>'
                     + '</tr>';
             }).join('');
-            listEl.innerHTML = '<table class="w-full text-sm"><thead>'
-                + '<tr class="text-left text-xs text-gray-500 uppercase">'
-                + '<th class="py-2 pr-4">Name</th>'
-                + '<th class="py-2 pr-4">Prefix</th>'
-                + '<th class="py-2 pr-4">Last used</th>'
-                + '<th class="py-2 pr-4">Created</th>'
-                + '<th></th>'
+            listEl.innerHTML = '<table class="table-container w-full text-sm"><thead>'
+                + '<tr class="table-header-row">'
+                + '<th class="table-header text-left">Name</th>'
+                + '<th class="table-header text-left">Prefix</th>'
+                + '<th class="table-header text-left">Last used</th>'
+                + '<th class="table-header text-left">Created</th>'
+                + '<th class="table-header"></th>'
                 + '</tr></thead><tbody>' + rows + '</tbody></table>';
         }
         createSection.classList.toggle('hidden', hasActive);

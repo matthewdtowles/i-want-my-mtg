@@ -9,6 +9,7 @@ import {
     Res,
     UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { API_TIER_LIMITS } from 'src/core/api-tier/api-tier-limits';
@@ -41,8 +42,14 @@ interface DeveloperPricingViewDto extends BaseViewDto {
 @Controller('developer')
 export class DeveloperController {
     private readonly LOGGER = getLogger(DeveloperController.name);
+    private readonly appUrl: string;
 
-    constructor(private readonly apiSubscriptionService: ApiSubscriptionService) {}
+    constructor(
+        private readonly apiSubscriptionService: ApiSubscriptionService,
+        private readonly configService: ConfigService
+    ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+    }
 
     @UseGuards(OptionalAuthGuard)
     @Get('pricing')
@@ -113,6 +120,7 @@ export class DeveloperController {
                 title: 'API Pricing — I Want My MTG',
                 metaDescription: 'Pricing for the IWMM API: Free, Developer, and Business tiers.',
                 indexable: true,
+                canonicalUrl: `${this.appUrl}/developer/pricing`,
             }),
             {
                 tiers,

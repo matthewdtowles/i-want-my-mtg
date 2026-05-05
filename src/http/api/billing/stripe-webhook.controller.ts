@@ -125,11 +125,27 @@ export class StripeWebhookController {
             throw new InternalServerErrorException('Stripe subscription missing price id.');
         }
         if (this.stripe.apiTierForPriceId(priceId)) {
-            await this.apiSubscriptionService.syncFromStripeSubscription(stripeSub);
+            const synced = await this.apiSubscriptionService.syncFromStripeSubscription(stripeSub);
+            if (!synced) {
+                this.LOGGER.error(
+                    `API subscription sync returned false for ${stripeSub.id} (price ${priceId}); likely unknown customer.`
+                );
+                throw new InternalServerErrorException(
+                    `Failed to sync API subscription ${stripeSub.id}; Stripe will retry.`
+                );
+            }
             return;
         }
         if (this.stripe.planForPriceId(priceId)) {
-            await this.subscriptionService.syncFromStripeSubscription(stripeSub);
+            const synced = await this.subscriptionService.syncFromStripeSubscription(stripeSub);
+            if (!synced) {
+                this.LOGGER.error(
+                    `Consumer subscription sync returned false for ${stripeSub.id} (price ${priceId}); likely unknown customer.`
+                );
+                throw new InternalServerErrorException(
+                    `Failed to sync consumer subscription ${stripeSub.id}; Stripe will retry.`
+                );
+            }
             return;
         }
         this.LOGGER.error(

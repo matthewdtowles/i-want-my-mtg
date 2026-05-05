@@ -20,6 +20,7 @@ import { ApiRateLimitGuard } from './shared/api-rate-limit.guard';
 import { CacheControlInterceptor } from './shared/cache-control.interceptor';
 import { JwtOrApiKeyGuard } from './shared/jwt-or-api-key.guard';
 import { OptionalAuthOrApiKeyGuard } from './shared/optional-auth-or-api-key.guard';
+import { RapidApiProxyGuard } from './shared/rapidapi-proxy.guard';
 
 @Module({
     imports: [ConfigModule, CoreModule],
@@ -43,6 +44,7 @@ import { OptionalAuthOrApiKeyGuard } from './shared/optional-auth-or-api-key.gua
         ApiRateLimitGuard,
         JwtOrApiKeyGuard,
         OptionalAuthOrApiKeyGuard,
+        RapidApiProxyGuard,
         { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor },
     ],
 })

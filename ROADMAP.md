@@ -607,10 +607,38 @@ API tiering is a **separate subscription model** from the consumer Premium tier 
 
 ### 4.2 Developer Portal
 
-- [ ] Build or host interactive API docs page (Redoc or Stoplight — more polished than raw Swagger UI)
-- [ ] Create developer portal section with API key management and usage stats
-- [ ] Write "Getting Started" guide and 2–3 integration tutorials (e.g., "Build an MTG Discord price bot")
-- [ ] List API on RapidAPI and similar marketplaces as a discovery channel
+Decision (2026-05-05): API key management and usage stats already shipped in 4.1 at `/user/api-keys` (create/revoke key, today's usage tile, 30-day bar chart). Left the canonical route there since it's account-scoped state (parallel to `/billing`); the developer portal links to it rather than duplicate or move it. `/developer/pricing` already existed from 4.1; the new `/developer` hub sits alongside it.
+
+- [x] API key management UI — shipped in 4.1 at `/user/api-keys`
+- [x] Usage stats (today + 30-day chart) — shipped in 4.1 at `/user/api-keys`
+- [x] Interactive API docs page at `/developer/docs` — Redoc loading `/api/openapi.json`. OpenAPI spec generation moved out of the non-prod-only branch in `main.ts` and exposed at `/api/openapi.json` in all envs (Swagger UI at `/api/docs` still non-prod only). Spec response is `Cache-Control: public, max-age=3600`.
+- [x] `/developer` portal landing — hub page linking docs, pricing, the three guides below, and "Manage API Keys" → `/user/api-keys`. Footer "Developer API" link repointed from `/developer/pricing` to `/developer`.
+- [x] Getting Started guide (`/developer/guides/getting-started`) — key creation, Bearer auth, first request, rate-limit headers
+- [x] Tutorial: Discord price bot (`/developer/guides/discord-bot`) — discord.js slash command + IWMM card lookup
+- [x] Tutorial: Portfolio CSV export (`/developer/guides/portfolio-export`) — Python stdlib walk of `/inventory` paginated + portfolio snapshot to CSV
+- [x] Sitemap updated to include `/developer*` URLs
+- [ ] List API on RapidAPI and similar marketplaces — manual external work, deferred until ready to go live (account signup + listing curation). Engineering prerequisites shipped (see below).
+
+#### RapidAPI listing — engineering prereqs (shipped)
+
+- [x] `RapidApiProxyGuard` (`src/http/api/shared/rapidapi-proxy.guard.ts`) — validates `X-RapidAPI-Proxy-Secret` against `RAPIDAPI_PROXY_SECRET` with `timingSafeEqual`. Stamps `request.rapidApi = { user }` on success; throws on bad secret (no silent downgrade); returns false (not throws) when header is absent so it can be composed.
+- [x] `OptionalAuthOrApiKeyGuard` calls `RapidApiProxyGuard.tryAuthenticate()` first; RapidAPI traffic gets through anonymous on read endpoints. Auth-required endpoints (`JwtOrApiKeyGuard`) are unchanged — they still require an IWMM key/JWT, so RapidAPI traffic cannot reach inventory/portfolio/transactions/alerts.
+- [x] `ApiRateLimitGuard` skips per-user daily quota for `request.rapidApi`; applies a coarse origin-wide burst cap (`RAPIDAPI_BURST_PER_MIN = 600`) under a single `__rapidapi__` bucket. No `X-RateLimit-*` headers on those responses (would mislead the marketplace consumer).
+- [x] Public OpenAPI spec at `/api/openapi-public.json` — `buildPublicSpec()` in `main.ts` filters to `/api/v1/cards`, `/api/v1/sets`, `/api/v1/sealed-products` GETs only; strips Bearer security scheme; rewrites `info.title`/`description` for marketplace consumers. Cache-Control: `public, max-age=3600`.
+- [x] `RAPIDAPI_PROXY_SECRET` added to `.env.example`. Not in `REQUIRED_PROD_ENV` — leaving unset disables RapidAPI access entirely (the guard rejects with 401 if a request arrives bearing the proxy header but no secret is configured).
+
+#### RapidAPI listing — remaining manual work (when ready to go live)
+
+- [ ] Add `RAPIDAPI_PROXY_SECRET` (32+ byte random) to prod env via deploy pipeline
+- [ ] Sign up at https://rapidapi.com/provider, complete provider profile + payout details
+- [ ] Add API → Import from OpenAPI URL `https://iwantmymtg.net/api/openapi-public.json`
+- [ ] Configure proxy secret in RapidAPI dashboard, set base URL `https://iwantmymtg.net`
+- [ ] Configure pricing tiers (suggested: Free 100/day, Pro $10/mo 10k/day, Ultra $50/mo 100k/day, Mega custom)
+- [ ] Upload logo (512x512 PNG re-export of `/public/images/logo.webp`), write description, set support email
+- [ ] Run RapidAPI's "Test Endpoint" flow on each public endpoint, fix anything that returns unexpected shapes
+- [ ] Submit for listing review (1–3 business days)
+- [ ] Post-listing: add "Available on RapidAPI" badge to `/developer` hub; cross-check their dashboard volume against origin logs in week 1
+- [ ] Adjacent free marketplaces (do once RapidAPI is stable): APIs.guru, Postman API Network, Public APIs GitHub repo
 
 ### 4.3 MCP Server & Agentic AI Integration
 

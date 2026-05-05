@@ -1,0 +1,108 @@
+<section class='settings-container max-w-3xl mx-auto'>
+    <p class='text-xs text-gray-500 dark:text-gray-400 mb-2'>
+        <a class='text-link' href='/developer'>← Developer Portal</a>
+    </p>
+    <h1 class='page-title'>Tutorial: MTG Price Discord Bot</h1>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+        A small Node.js bot that responds to <code
+            class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>/price &lt;card name&gt;</code>
+        with the current TCGplayer market price.
+    </p>
+
+    <div class='space-y-8 text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+
+        <div>
+            <h2 class='text-lg font-semibold mb-2'>What you'll need</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li>An IWMM API key — see <a class='text-link' href='/developer/guides/getting-started'>Getting Started</a></li>
+                <li>A Discord application + bot token (<a class='text-link' href='https://discord.com/developers/applications' rel='noopener noreferrer' target='_blank'>discord.com/developers</a>)</li>
+                <li>Node 20+</li>
+            </ul>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>1. Install dependencies</h2>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>npm init -y
+npm install discord.js</code></pre>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>2. Register the slash command</h2>
+            <p class='mb-2'>Save as <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>register.mjs</code> and run once:</p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>import { REST, Routes, SlashCommandBuilder } from "discord.js";
+
+const command = new SlashCommandBuilder()
+  .setName("price")
+  .setDescription("Look up the current price of a Magic card")
+  .addStringOption(o =&gt; o.setName("card").setDescription("Card name").setRequired(true));
+
+const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+await rest.put(
+  Routes.applicationCommands(process.env.DISCORD_APP_ID),
+  { body: [command.toJSON()] }
+);
+console.log("Command registered.");</code></pre>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>3. Wire up the bot</h2>
+            <p class='mb-2'>Save as <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>bot.mjs</code>:</p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>import { Client, GatewayIntentBits } from "discord.js";
+
+const API = "https://iwantmymtg.net/api/v1";
+const headers = { Authorization: `Bearer ${process.env.IWMM_API_KEY}` };
+
+async function lookupPrice(name) {
+  const res = await fetch(`${API}/cards?q=${encodeURIComponent(name)}&amp;limit=1`, { headers });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const { data } = await res.json();
+  if (!data?.length) return null;
+  const card = data[0];
+  const pricesRes = await fetch(`${API}/cards/${card.id}/prices`, { headers });
+  const prices = (await pricesRes.json()).data;
+  return { card, prices };
+}
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+client.on("interactionCreate", async (i) =&gt; {
+  if (!i.isChatInputCommand() || i.commandName !== "price") return;
+  await i.deferReply();
+  try {
+    const result = await lookupPrice(i.options.getString("card"));
+    if (!result) return i.editReply("No card found.");
+    const { card, prices } = result;
+    const normal = prices.normal ? `$${prices.normal.toFixed(2)}` : "—";
+    const foil = prices.foil ? `$${prices.foil.toFixed(2)}` : "—";
+    await i.editReply(`**${card.name}** (${card.setCode.toUpperCase()})\nNormal: ${normal} · Foil: ${foil}`);
+  } catch (e) {
+    await i.editReply(`Lookup failed: ${e.message}`);
+  }
+});
+
+client.login(process.env.DISCORD_TOKEN);</code></pre>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>4. Run it</h2>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>export DISCORD_TOKEN=...
+export DISCORD_APP_ID=...
+export IWMM_API_KEY=iwm_live_...
+
+node register.mjs   # one-time
+node bot.mjs</code></pre>
+            <p class='mt-2'>
+                Invite the bot to a server, run <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>/price Lightning Bolt</code>,
+                and you should see a price reply.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>Where to go next</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1'>
+                <li>Cache results in memory for a minute to keep request volume down on free tier</li>
+                <li>Add a <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>set</code> option and look up by set code + number for exact printings</li>
+                <li>Show price history with <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>/cards/:cardId/price-history</code> + an embed</li>
+            </ul>
+        </div>
+    </div>
+</section>

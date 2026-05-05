@@ -15,6 +15,11 @@ import { getLogger } from 'src/logger/global-app-logger';
 
 const COOKIE_USER_BURST_PER_MIN = 200;
 const IP_BURST_PER_MIN = 60;
+// Origin-wide cap for RapidAPI proxy traffic. RapidAPI handles per-user metering
+// on their side; we keep a coarse ceiling here so a misbehaving marketplace user
+// can't overwhelm Postgres. Tune up if proxy traffic grows.
+const RAPIDAPI_BURST_PER_MIN = 600;
+const RAPIDAPI_BURST_KEY = '__rapidapi__';
 const WINDOW_MS = 60 * 1000;
 const CLEANUP_INTERVAL_MS = 30 * 60 * 1000;
 const PRICING_URL = '/developer/pricing';
@@ -45,6 +50,17 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         const userId: number | undefined = request.user?.id;
         const isApiKeyAuth = !!request.apiKey;
 
+        if (request.rapidApi) {
+            // RapidAPI meters and bills per-user on their side; we apply only a coarse
+            // origin-wide burst cap. Skip daily quota and X-RateLimit-* headers — those
+            // would be misleading to the marketplace consumer.
+            return this.checkBurst(
+                this.ipBursts,
+                RAPIDAPI_BURST_KEY,
+                RAPIDAPI_BURST_PER_MIN,
+                'RapidAPI proxy'
+            );
+        }
         if (isApiKeyAuth && userId) {
             return this.checkApiKeyTier(userId, response);
         }

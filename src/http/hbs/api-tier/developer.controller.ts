@@ -52,6 +52,99 @@ export class DeveloperController {
     }
 
     @UseGuards(OptionalAuthGuard)
+    @Get()
+    @Render('developer')
+    hub(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Developer Portal — I Want My MTG',
+            metaDescription:
+                'Build with the IWMM API: interactive docs, pricing, guides, and API key management.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('docs')
+    @Render('developerDocs')
+    docs(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'API Reference — I Want My MTG',
+            metaDescription: 'Interactive API reference for the I Want My MTG REST API.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/docs`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'API Reference', url: '/developer/docs' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('guides/getting-started')
+    @Render('developerGettingStarted')
+    gettingStarted(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'API Getting Started — I Want My MTG',
+            metaDescription:
+                'Get started with the IWMM API: create a key, authenticate, and make your first request.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/getting-started`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'Getting Started', url: '/developer/guides/getting-started' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('guides/discord-bot')
+    @Render('developerDiscordBot')
+    discordBot(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Tutorial: Build an MTG Discord Price Bot — I Want My MTG',
+            metaDescription:
+                'Walk through building a Discord bot that returns Magic: The Gathering card prices using the IWMM API.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/discord-bot`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'Discord Bot Tutorial', url: '/developer/guides/discord-bot' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
+    @Get('guides/portfolio-export')
+    @Render('developerPortfolioExport')
+    portfolioExport(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Tutorial: Export Your Portfolio with the API — I Want My MTG',
+            metaDescription:
+                'Walk through fetching your IWMM inventory and portfolio totals via the API and writing them to CSV.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/portfolio-export`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'Portfolio Export Tutorial', url: '/developer/guides/portfolio-export' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
     @Get('pricing')
     @Render('developerPricing')
     async pricing(

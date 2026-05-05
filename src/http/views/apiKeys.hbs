@@ -1,0 +1,40 @@
+<div class='settings-container'>
+    <h1 class='page-title'>API Keys</h1>
+    <p class='text-sm text-gray-500 dark:text-gray-400 mb-6'>
+        Use API keys to authenticate programmatic requests to
+        <a class='text-link' href='/api/docs'>the IWMM API</a>. Pass the key in
+        the <code>X-API-Key</code> header or as
+        <code>Authorization: Bearer &lt;key&gt;</code>. Daily limits depend on your
+        <a class='text-link' href='/developer/pricing'>API tier</a>.
+    </p>
+
+    <div id='api-key-usage' class='section-container'>
+        <h3 class='page-subtitle'>Today's Usage</h3>
+        <div class='text-sm text-gray-500 dark:text-gray-400'>Loading…</div>
+    </div>
+
+    <div class='section-container'>
+        <h3 class='page-subtitle'>Your Key</h3>
+        <div id='api-key-list' class='mt-4'>
+            <div class='text-sm text-gray-500 dark:text-gray-400'>Loading…</div>
+        </div>
+
+        <div id='api-key-create-section' class='mt-6 hidden'>
+            <form id='api-key-create-form' class='flex flex-col gap-3' novalidate>
+                <label class='input-label' for='api-key-name'>Key label</label>
+                <input id='api-key-name' class='input-field' type='text' name='name' placeholder='e.g. CLI scripts'
+                    required maxlength='64' />
+                <button type='submit' class='btn btn-primary self-start'>Create API Key</button>
+            </form>
+        </div>
+
+        <div id='api-key-just-created' class='hidden mt-6 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4'>
+            <p class='text-sm font-semibold mb-2'>Save this key now — it will not be shown again.</p>
+            <div class='flex gap-2 items-center'>
+                <code id='api-key-just-created-value' class='flex-1 text-xs break-all'></code>
+                <button id='api-key-copy-btn' class='btn btn-secondary' type='button'>Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src='/public/js/apiKeysAjax.js?v={{assetVersion}}' defer></script>

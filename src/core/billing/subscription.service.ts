@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Stripe } from './stripe.types';
 import { getLogger } from 'src/logger/global-app-logger';
+import { ApiSubscriptionRepositoryPort } from 'src/core/api-tier/ports/api-subscription.repository.port';
 import { User } from 'src/core/user/user.entity';
 import { AlreadySubscribedError } from './already-subscribed.error';
 import { StripeGatewayPort } from './ports/stripe-gateway.port';
@@ -16,6 +17,8 @@ export class SubscriptionService {
 
     constructor(
         @Inject(SubscriptionRepositoryPort) private readonly repository: SubscriptionRepositoryPort,
+        @Inject(ApiSubscriptionRepositoryPort)
+        private readonly apiSubscriptionRepository: ApiSubscriptionRepositoryPort,
         @Inject(StripeGatewayPort) private readonly stripe: StripeGatewayPort,
         private readonly configService: ConfigService
     ) {}
@@ -23,6 +26,20 @@ export class SubscriptionService {
     async getOrCreateCustomer(user: User): Promise<string> {
         const existing = await this.repository.findByUserId(user.id);
         if (existing) return existing.stripeCustomerId;
+
+        // Reuse the Stripe customer from the API subscription if one already exists,
+        // so a single user keeps one customer across consumer + API billing.
+        const existingApi = await this.apiSubscriptionRepository.findByUserId(user.id);
+        if (existingApi?.stripeCustomerId) {
+            await this.repository.upsert(
+                new Subscription({
+                    userId: user.id,
+                    stripeCustomerId: existingApi.stripeCustomerId,
+                    status: SubscriptionStatus.Incomplete,
+                })
+            );
+            return existingApi.stripeCustomerId;
+        }
 
         const customerId = await this.stripe.createCustomer({
             email: user.email,
@@ -149,8 +166,9 @@ export class SubscriptionService {
             const full = await this.stripe.retrieveSubscription(subId);
             return this.syncFromStripeSubscription(full);
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             this.LOGGER.error(
-                `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${error?.message}`
+                `Failed to sync subscription from checkout session ${sessionId} for user ${userId}: ${errorMessage}`
             );
             return false;
         }

@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
+import { ApiKeyPageController } from './api-tier/api-key.controller';
+import { DeveloperController } from './api-tier/developer.controller';
 import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { BillingController } from './billing/billing.controller';
@@ -37,6 +39,8 @@ import { UserOrchestrator } from './user/user.orchestrator';
 @Module({
     imports: [ConfigModule, CoreModule],
     controllers: [
+        ApiKeyPageController,
+        DeveloperController,
         AuthController,
         BillingController,
         PricingController,

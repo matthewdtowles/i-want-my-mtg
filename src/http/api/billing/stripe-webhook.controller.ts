@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { StripeConfigurationError } from 'src/core/billing/stripe.gateway';
@@ -24,7 +25,8 @@ export class StripeWebhookController {
 
     constructor(
         @Inject(StripeGatewayPort) private readonly stripe: StripeGatewayPort,
-        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
+        @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService,
+        private readonly apiSubscriptionService: ApiSubscriptionService
     ) {}
 
     @Post('stripe')
@@ -76,20 +78,24 @@ export class StripeWebhookController {
                         : session.subscription?.id;
                 if (subId) {
                     const full = await this.stripe.retrieveSubscription(subId);
-                    await this.subscriptionService.syncFromStripeSubscription(full);
+                    await this.routeSubscriptionEvent(full);
                 }
                 return;
             }
             case 'customer.subscription.created':
             case 'customer.subscription.updated': {
-                await this.subscriptionService.syncFromStripeSubscription(
-                    event.data.object as Stripe.Subscription
-                );
+                await this.routeSubscriptionEvent(event.data.object as Stripe.Subscription);
                 return;
             }
             case 'customer.subscription.deleted': {
                 const sub = event.data.object as Stripe.Subscription;
-                await this.subscriptionService.handleSubscriptionDeleted(sub.id);
+                // Try API service first; if it didn't own this subscription, fall back to consumer.
+                const handledByApi = await this.apiSubscriptionService.handleSubscriptionDeleted(
+                    sub.id
+                );
+                if (!handledByApi) {
+                    await this.subscriptionService.handleSubscriptionDeleted(sub.id);
+                }
                 return;
             }
             case 'invoice.payment_failed': {
@@ -102,5 +108,52 @@ export class StripeWebhookController {
             default:
                 this.LOGGER.debug(`Ignoring unhandled Stripe event type: ${event.type}.`);
         }
+    }
+
+    /**
+     * Route by price_id. Consumer and API subscriptions intentionally share the same
+     * Stripe customer, so we must positively identify the price as one or the other —
+     * never default-route. An unknown price id throws so Stripe retries and the
+     * misconfiguration (e.g. STRIPE_PRICE_API_* unset in this env) surfaces in logs.
+     */
+    private async routeSubscriptionEvent(stripeSub: Stripe.Subscription): Promise<void> {
+        const priceId = stripeSub.items?.data?.[0]?.price?.id ?? null;
+        if (!priceId) {
+            this.LOGGER.error(
+                `Subscription ${stripeSub.id} has no price id; cannot route to a subscription service.`
+            );
+            throw new InternalServerErrorException('Stripe subscription missing price id.');
+        }
+        if (this.stripe.apiTierForPriceId(priceId)) {
+            const synced = await this.apiSubscriptionService.syncFromStripeSubscription(stripeSub);
+            if (!synced) {
+                this.LOGGER.error(
+                    `API subscription sync returned false for ${stripeSub.id} (price ${priceId}); likely unknown customer.`
+                );
+                throw new InternalServerErrorException(
+                    `Failed to sync API subscription ${stripeSub.id}; Stripe will retry.`
+                );
+            }
+            return;
+        }
+        if (this.stripe.planForPriceId(priceId)) {
+            const synced = await this.subscriptionService.syncFromStripeSubscription(stripeSub);
+            if (!synced) {
+                this.LOGGER.error(
+                    `Consumer subscription sync returned false for ${stripeSub.id} (price ${priceId}); likely unknown customer.`
+                );
+                throw new InternalServerErrorException(
+                    `Failed to sync consumer subscription ${stripeSub.id}; Stripe will retry.`
+                );
+            }
+            return;
+        }
+        this.LOGGER.error(
+            `Subscription ${stripeSub.id} has unknown price id '${priceId}' (matches neither consumer nor API tier). ` +
+                `Check STRIPE_PRICE_* env vars in this environment.`
+        );
+        throw new InternalServerErrorException(
+            `Unknown Stripe price id '${priceId}'; cannot route subscription event safely.`
+        );
     }
 }

@@ -563,11 +563,47 @@ The advanced analytics page is gated end-to-end as the architectural pattern. Ea
 
 ### 4.1 API Monetization & Tiering
 
-- [ ] Define API tiers (Free: 100 req/day read-only; Developer $9.99/mo: 5,000 req/day + webhooks; Business $29.99–39.99/mo: 50,000 req/day + bulk endpoints)
-- [ ] Implement API key management (generate, revoke, view usage)
-- [ ] Extend rate limiting to enforce per-tier limits with clear error messages and upgrade prompts
-- [ ] Integrate Stripe for API subscriptions (separate from consumer subscription, or bundled)
-- [ ] Build usage dashboard (request counts, rate limit headroom, historical usage)
+API tiering is a **separate subscription model** from the consumer Premium tier — different Stripe Prices, different lifecycle, tracked in `api_subscription` (not `subscription`). Limits apply **per-user, not per-key**, so a user can't game the quota by creating multiple keys. Counter store is Postgres (no new infra; current scale doesn't justify Redis).
+
+#### Schema & data model
+
+- [x] Migration 032: `api_subscription` (separate Stripe sub), `api_key` (max 1 active per user, sha256-hashed), `api_usage` (per-user daily counters)
+- [x] Update complete schema file (001_complete_schema.sql)
+
+#### Tier definitions
+
+- [x] Tier limits constant (Free: 100 req/day, 60/min burst; Developer $9.99/mo: 5,000/day, 300/min; Business $29.99/mo: 50,000/day, 1,000/min + bulk endpoints/webhooks)
+
+#### Auth & rate limiting
+
+- [x] `ApiKeyAuthGuard` — accepts `Authorization: Bearer iwm_live_...` or `X-API-Key` header; resolves user via `sha256(rawKey)` lookup; updates `last_used_at`
+- [x] Extend `ApiRateLimitGuard` to (a) read tier from `api_subscription` for the resolved user, (b) UPSERT `api_usage(user_id, day)` and reject on overage with `429`, (c) keep per-minute burst protection in-memory
+- [x] Cookie-JWT browser traffic: keeps per-minute burst only; does NOT count toward daily quota
+- [x] Error responses include `X-RateLimit-Limit/Remaining/Reset` headers and an upgrade-prompt message linking to `/developer/pricing` (omitted at Business tier)
+
+#### API key management
+
+- [x] `ApiKeyService` — generate (32 url-safe random + `iwm_live_` prefix; raw shown once), revoke, list; enforces one-active-key-per-user
+- [x] REST endpoints: `POST /api/v1/api-keys`, `GET /api/v1/api-keys`, `DELETE /api/v1/api-keys/:id` (JWT-auth, not API-key-auth — chicken/egg)
+- [x] Settings page UI at `/user/api-keys`: create / view (prefix only after creation) / revoke
+
+#### Stripe integration (API tier)
+
+- [x] Stripe gateway extended with `priceIdForApiTier`/`apiTierForPriceId`/`createCheckoutSessionForPrice`; env vars `STRIPE_PRICE_API_DEVELOPER`, `STRIPE_PRICE_API_BUSINESS`
+- [x] `ApiSubscriptionService` provides full Stripe lifecycle (checkout, portal, webhook sync); reuses one Stripe Customer per user across consumer + API subscriptions
+- [x] Webhook handler routes `customer.subscription.{created,updated,deleted}` events to either consumer `SubscriptionService` or `ApiSubscriptionService` by inspecting the price id
+- [x] `/developer/pricing` page with tier comparison and checkout buttons; `/developer/billing/{checkout,portal,success}` flow
+
+**Stripe-side work still required (manual, not code):** create new Products + Prices for "API Developer" ($9.99/mo) and "API Business" ($29.99/mo), set `STRIPE_PRICE_API_*` env vars in dev and prod.
+
+#### Usage dashboard
+
+- [x] `GET /api/v1/api-keys/usage` — current tier, perDay/perMinute limits, today's count, headroom, last-30-day history
+- [x] Today's usage tile + 30-day bar chart on `/user/api-keys`
+
+#### Follow-ups (deferred)
+
+- [ ] **Retention sweeper for `api_usage`** — delete rows where `day < CURRENT_DATE - 90` (cron, runs daily). Not implemented at launch since the table grows ~1 row/active-user/day; revisit when row count crosses ~1M.
 
 ### 4.2 Developer Portal
 

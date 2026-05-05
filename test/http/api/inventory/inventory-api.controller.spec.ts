@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { InventoryApiController } from 'src/http/api/inventory/inventory-api.controller';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
+import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 
@@ -31,6 +33,8 @@ describe('InventoryApiController', () => {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
+                { provide: ApiSubscriptionService, useValue: {} },
+                { provide: ApiUsageService, useValue: {} },
             ],
         }).compile();
 

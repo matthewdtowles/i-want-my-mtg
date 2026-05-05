@@ -57,6 +57,15 @@ import { PendingUserRepository } from './user/pending-user.repository';
 import { SubscriptionRepositoryPort } from 'src/core/billing/ports/subscription.repository.port';
 import { SubscriptionOrmEntity } from './subscription/subscription.orm-entity';
 import { SubscriptionRepository } from './subscription/subscription.repository';
+import { ApiKeyRepositoryPort } from 'src/core/api-tier/ports/api-key.repository.port';
+import { ApiSubscriptionRepositoryPort } from 'src/core/api-tier/ports/api-subscription.repository.port';
+import { ApiUsageRepositoryPort } from 'src/core/api-tier/ports/api-usage.repository.port';
+import { ApiKeyOrmEntity } from './api-tier/api-key.orm-entity';
+import { ApiKeyRepository } from './api-tier/api-key.repository';
+import { ApiSubscriptionOrmEntity } from './api-tier/api-subscription.orm-entity';
+import { ApiSubscriptionRepository } from './api-tier/api-subscription.repository';
+import { ApiUsageOrmEntity } from './api-tier/api-usage.orm-entity';
+import { ApiUsageRepository } from './api-tier/api-usage.repository';
 
 @Module({
     imports: [
@@ -83,6 +92,9 @@ import { SubscriptionRepository } from './subscription/subscription.repository';
             UserOrmEntity,
             PendingUserOrmEntity,
             SubscriptionOrmEntity,
+            ApiKeyOrmEntity,
+            ApiSubscriptionOrmEntity,
+            ApiUsageOrmEntity,
         ]),
     ],
     providers: [
@@ -106,6 +118,9 @@ import { SubscriptionRepository } from './subscription/subscription.repository';
         { provide: UserRepositoryPort, useClass: UserRepository },
         { provide: PendingUserRepositoryPort, useClass: PendingUserRepository },
         { provide: SubscriptionRepositoryPort, useClass: SubscriptionRepository },
+        { provide: ApiKeyRepositoryPort, useClass: ApiKeyRepository },
+        { provide: ApiSubscriptionRepositoryPort, useClass: ApiSubscriptionRepository },
+        { provide: ApiUsageRepositoryPort, useClass: ApiUsageRepository },
     ],
     exports: [
         CardRepositoryPort,
@@ -125,6 +140,9 @@ import { SubscriptionRepository } from './subscription/subscription.repository';
         UserRepositoryPort,
         PendingUserRepositoryPort,
         SubscriptionRepositoryPort,
+        ApiKeyRepositoryPort,
+        ApiSubscriptionRepositoryPort,
+        ApiUsageRepositoryPort,
     ],
 })
 export class DatabaseModule {

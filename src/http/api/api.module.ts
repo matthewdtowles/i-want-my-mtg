@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CoreModule } from 'src/core/core.module';
+import { ApiKeyApiController } from './api-tier/api-key-api.controller';
 import { AuthApiController } from './auth/auth-api.controller';
 import { BillingApiController } from './billing/billing-api.controller';
 import { StripeWebhookController } from './billing/stripe-webhook.controller';
@@ -14,12 +15,16 @@ import { PriceAlertApiController } from './price-alert/price-alert-api.controlle
 import { PriceNotificationApiController } from './price-alert/price-notification-api.controller';
 import { SealedProductApiController } from './sealed-product/sealed-product-api.controller';
 import { UserApiController } from './user/user-api.controller';
+import { ApiKeyAuthGuard } from './shared/api-key-auth.guard';
 import { ApiRateLimitGuard } from './shared/api-rate-limit.guard';
 import { CacheControlInterceptor } from './shared/cache-control.interceptor';
+import { JwtOrApiKeyGuard } from './shared/jwt-or-api-key.guard';
+import { OptionalAuthOrApiKeyGuard } from './shared/optional-auth-or-api-key.guard';
 
 @Module({
     imports: [ConfigModule, CoreModule],
     controllers: [
+        ApiKeyApiController,
         AuthApiController,
         BillingApiController,
         StripeWebhookController,
@@ -33,6 +38,12 @@ import { CacheControlInterceptor } from './shared/cache-control.interceptor';
         TransactionApiController,
         UserApiController,
     ],
-    providers: [ApiRateLimitGuard, { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor }],
+    providers: [
+        ApiKeyAuthGuard,
+        ApiRateLimitGuard,
+        JwtOrApiKeyGuard,
+        OptionalAuthOrApiKeyGuard,
+        { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor },
+    ],
 })
 export class ApiModule {}

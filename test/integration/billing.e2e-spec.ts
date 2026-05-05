@@ -79,6 +79,18 @@ class FakeStripeGateway implements StripeGatewayPort {
         if (priceId === ANNUAL_PRICE_ID) return SubscriptionPlan.Annual;
         return null;
     }
+
+    async createCheckoutSessionForPrice(): Promise<{ url: string }> {
+        return { url: 'https://checkout.stripe.test/price' };
+    }
+
+    priceIdForApiTier(): string {
+        throw new Error('Not configured for billing e2e test');
+    }
+
+    apiTierForPriceId(): null {
+        return null;
+    }
 }
 
 describe('Billing (e2e)', () => {

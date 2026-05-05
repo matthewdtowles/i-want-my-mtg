@@ -16,10 +16,11 @@ import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { CardApiResponseDto, PriceHistoryPointDto } from './dto/card-response.dto';
 import { CardApiPresenter } from './card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { OptionalAuthOrApiKeyGuard } from '../shared/optional-auth-or-api-key.guard';
 
 @ApiTags('Cards')
 @Controller('api/v1/cards')
-@UseGuards(ApiRateLimitGuard)
+@UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
 export class CardApiController {
     constructor(@Inject(CardService) private readonly cardService: CardService) {}
 

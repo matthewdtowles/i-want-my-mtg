@@ -5,6 +5,8 @@ import { Price } from 'src/core/card/price.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardService } from 'src/core/card/card.service';
 import { CardApiController } from 'src/http/api/card/card-api.controller';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
+import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
 
 function createCard(overrides: Partial<Card> = {}): Card {
@@ -56,6 +58,8 @@ describe('CardApiController', () => {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
+                { provide: ApiSubscriptionService, useValue: {} },
+                { provide: ApiUsageService, useValue: {} },
             ],
         }).compile();
 

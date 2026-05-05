@@ -29,7 +29,7 @@ import {
 import { PriceAlert } from 'src/core/price-alert/price-alert.entity';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { getLogger } from 'src/logger/global-app-logger';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { CreatePriceAlertDto, UpdatePriceAlertDto } from './dto/price-alert-request.dto';
@@ -48,7 +48,7 @@ export class PriceAlertApiController {
     ) {}
 
     @Get()
-    @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+    @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List price alerts' })
     @ApiQuery({ name: 'page', required: false })
@@ -75,7 +75,7 @@ export class PriceAlertApiController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+    @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a price alert' })
     @ApiResponse({ status: 201, description: 'Alert created' })
@@ -109,7 +109,7 @@ export class PriceAlertApiController {
 
     @Patch(':id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+    @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a price alert' })
     @ApiResponse({ status: 200, description: 'Alert updated' })
@@ -135,7 +135,7 @@ export class PriceAlertApiController {
 
     @Delete(':id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+    @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a price alert' })
     @ApiResponse({ status: 200, description: 'Alert deleted' })

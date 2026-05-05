@@ -21,7 +21,7 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TransactionService } from 'src/core/transaction/transaction.service';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { TransactionRequestDto } from 'src/http/hbs/transaction/dto/transaction.request.dto';
@@ -34,7 +34,7 @@ import { TransactionApiPresenter } from './transaction-api.presenter';
 @ApiTags('Transactions')
 @ApiBearerAuth()
 @Controller('api/v1/transactions')
-@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class TransactionApiController {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,

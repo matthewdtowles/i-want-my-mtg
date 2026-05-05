@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
@@ -22,21 +23,33 @@ describe('StripeWebhookController', () => {
             constructEvent: jest.fn(),
             priceIdForPlan: jest.fn(),
             planForPriceId: jest.fn(),
+            createCheckoutSessionForPrice: jest.fn(),
+            priceIdForApiTier: jest.fn(),
+            apiTierForPriceId: jest.fn().mockReturnValue(null),
         };
+        // Default: any price id is treated as a known consumer plan so legacy tests
+        // (which don't care about routing) keep working. Tests that exercise unknown
+        // price ids override this.
+        gateway.planForPriceId.mockReturnValue('monthly' as any);
         service = {
             getOrCreateCustomer: jest.fn(),
             startCheckout: jest.fn(),
             startBillingPortal: jest.fn(),
-            syncFromStripeSubscription: jest.fn(),
+            syncFromStripeSubscription: jest.fn().mockResolvedValue(true),
             handleSubscriptionDeleted: jest.fn(),
             getSubscriptionForUser: jest.fn(),
         } as any;
+        const apiSubService = {
+            syncFromStripeSubscription: jest.fn().mockResolvedValue(false),
+            handleSubscriptionDeleted: jest.fn().mockResolvedValue(false),
+        };
 
         const module: TestingModule = await Test.createTestingModule({
             controllers: [StripeWebhookController],
             providers: [
                 { provide: StripeGatewayPort, useValue: gateway },
                 { provide: SubscriptionService, useValue: service },
+                { provide: ApiSubscriptionService, useValue: apiSubService },
             ],
         }).compile();
 
@@ -60,8 +73,12 @@ describe('StripeWebhookController', () => {
         await expect(controller.handle(rawReq, 'sig')).rejects.toBeInstanceOf(BadRequestException);
     });
 
+    function subWithPrice(id: string, priceId = 'price_consumer'): Stripe.Subscription {
+        return { id, items: { data: [{ price: { id: priceId } }] } } as unknown as Stripe.Subscription;
+    }
+
     it('syncs subscription on customer.subscription.updated', async () => {
-        const stripeSub = { id: 'sub_1' } as unknown as Stripe.Subscription;
+        const stripeSub = subWithPrice('sub_1');
         gateway.constructEvent.mockReturnValue({
             type: 'customer.subscription.updated',
             data: { object: stripeSub },
@@ -76,7 +93,7 @@ describe('StripeWebhookController', () => {
             type: 'checkout.session.completed',
             data: { object: { subscription: 'sub_2' } },
         } as unknown as Stripe.Event);
-        const full = { id: 'sub_2' } as unknown as Stripe.Subscription;
+        const full = subWithPrice('sub_2');
         gateway.retrieveSubscription.mockResolvedValue(full);
         await controller.handle(rawReq, 'sig');
         expect(gateway.retrieveSubscription).toHaveBeenCalledWith('sub_2');
@@ -105,9 +122,31 @@ describe('StripeWebhookController', () => {
     it('propagates unexpected dispatch errors so Stripe retries', async () => {
         gateway.constructEvent.mockReturnValue({
             type: 'customer.subscription.updated',
-            data: { object: {} },
+            data: { object: subWithPrice('sub_x') },
         } as unknown as Stripe.Event);
         service.syncFromStripeSubscription.mockRejectedValue(new Error('boom'));
         await expect(controller.handle(rawReq, 'sig')).rejects.toThrow('boom');
+    });
+
+    it('throws when consumer sync returns false so Stripe retries', async () => {
+        service.syncFromStripeSubscription.mockResolvedValueOnce(false);
+        gateway.constructEvent.mockReturnValue({
+            type: 'customer.subscription.updated',
+            data: { object: subWithPrice('sub_orphan') },
+        } as unknown as Stripe.Event);
+        await expect(controller.handle(rawReq, 'sig')).rejects.toThrow(
+            /Failed to sync consumer subscription/
+        );
+    });
+
+    it('throws on unknown price id so Stripe retries (no silent default-route to consumer)', async () => {
+        gateway.planForPriceId.mockReturnValue(null);
+        gateway.apiTierForPriceId.mockReturnValue(null);
+        gateway.constructEvent.mockReturnValue({
+            type: 'customer.subscription.updated',
+            data: { object: subWithPrice('sub_unknown', 'price_unknown') },
+        } as unknown as Stripe.Event);
+        await expect(controller.handle(rawReq, 'sig')).rejects.toThrow(/Unknown Stripe price id/);
+        expect(service.syncFromStripeSubscription).not.toHaveBeenCalled();
     });
 });

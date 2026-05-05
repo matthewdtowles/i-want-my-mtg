@@ -5,6 +5,8 @@ import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-i
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SubscriptionGuard } from 'src/core/billing/subscription.guard';
 import { SealedProductApiController } from 'src/http/api/sealed-product/sealed-product-api.controller';
+import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
+import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 
@@ -66,6 +68,8 @@ describe('SealedProductApiController', () => {
                     provide: ApiRateLimitGuard,
                     useValue: { canActivate: jest.fn().mockReturnValue(true) },
                 },
+                { provide: ApiSubscriptionService, useValue: {} },
+                { provide: ApiUsageService, useValue: {} },
             ],
         })
             .overrideGuard(SubscriptionGuard)

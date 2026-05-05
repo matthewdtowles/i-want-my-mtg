@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { AlreadySubscribedError } from 'src/core/billing/already-subscribed.error';
 import type { Stripe } from 'src/core/billing/stripe.types';
+import { ApiSubscriptionRepositoryPort } from 'src/core/api-tier/ports/api-subscription.repository.port';
 import { SubscriptionRepositoryPort } from 'src/core/billing/ports/subscription.repository.port';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { SubscriptionPlan } from 'src/core/billing/subscription-plan.enum';
@@ -14,6 +15,7 @@ import { UserRole } from 'src/shared/constants/user.role.enum';
 describe('SubscriptionService', () => {
     let service: SubscriptionService;
     let repo: jest.Mocked<SubscriptionRepositoryPort>;
+    let apiRepo: jest.Mocked<ApiSubscriptionRepositoryPort>;
     let gateway: jest.Mocked<StripeGatewayPort>;
 
     const user = new User({
@@ -31,6 +33,12 @@ describe('SubscriptionService', () => {
             upsert: jest.fn().mockImplementation(async (s: Subscription) => s),
             deleteByUserId: jest.fn(),
         };
+        apiRepo = {
+            findByUserId: jest.fn().mockResolvedValue(null),
+            findByStripeCustomerId: jest.fn(),
+            findByStripeSubscriptionId: jest.fn(),
+            upsert: jest.fn(),
+        } as unknown as jest.Mocked<ApiSubscriptionRepositoryPort>;
         gateway = {
             createCustomer: jest.fn(),
             createCheckoutSession: jest.fn(),
@@ -44,6 +52,9 @@ describe('SubscriptionService', () => {
                 if (id === 'price_annual') return SubscriptionPlan.Annual;
                 return null;
             }),
+            createCheckoutSessionForPrice: jest.fn(),
+            priceIdForApiTier: jest.fn(),
+            apiTierForPriceId: jest.fn().mockReturnValue(null),
         };
         const config = {
             get: jest.fn((key: string) => {
@@ -58,6 +69,7 @@ describe('SubscriptionService', () => {
             providers: [
                 SubscriptionService,
                 { provide: SubscriptionRepositoryPort, useValue: repo },
+                { provide: ApiSubscriptionRepositoryPort, useValue: apiRepo },
                 { provide: StripeGatewayPort, useValue: gateway },
                 { provide: ConfigService, useValue: config },
             ],

@@ -15,7 +15,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { PriceNotificationService } from 'src/core/price-alert/price-notification.service';
-import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { PriceNotificationApiDto } from './dto/price-notification-response.dto';
@@ -25,7 +25,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @Controller('api/v1/notifications')
-@UseGuards(JwtAuthGuard, ApiRateLimitGuard)
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class PriceNotificationApiController {
     constructor(
         @Inject(PriceNotificationService)

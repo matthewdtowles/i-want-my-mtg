@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { getLogger } from 'src/logger/global-app-logger';
+import { ApiTierModule } from './api-tier/api-tier.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
 import { CardModule } from './card/card.module';
@@ -17,6 +18,7 @@ import { UserModule } from './user/user.module';
 
 @Module({
     imports: [
+        ApiTierModule,
         AuthModule,
         BillingModule,
         CardModule,
@@ -33,6 +35,7 @@ import { UserModule } from './user/user.module';
         UserModule,
     ],
     exports: [
+        ApiTierModule,
         AuthModule,
         BillingModule,
         CardModule,

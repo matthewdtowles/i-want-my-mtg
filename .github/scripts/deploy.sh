@@ -39,6 +39,8 @@ required_vars=(
     "STRIPE_WEBHOOK_SECRET"
     "STRIPE_PRICE_MONTHLY"
     "STRIPE_PRICE_ANNUAL"
+    "STRIPE_PRICE_API_DEVELOPER"
+    "STRIPE_PRICE_API_BUSINESS"
 )
 
 log_info "Validating environment variables..."
@@ -82,6 +84,8 @@ echo "STRIPE_SECRET_KEY=\"$STRIPE_SECRET_KEY\"" >> .env
 echo "STRIPE_WEBHOOK_SECRET=\"$STRIPE_WEBHOOK_SECRET\"" >> .env
 echo "STRIPE_PRICE_MONTHLY=\"$STRIPE_PRICE_MONTHLY\"" >> .env
 echo "STRIPE_PRICE_ANNUAL=\"$STRIPE_PRICE_ANNUAL\"" >> .env
+echo "STRIPE_PRICE_API_DEVELOPER=\"$STRIPE_PRICE_API_DEVELOPER\"" >> .env
+echo "STRIPE_PRICE_API_BUSINESS=\"$STRIPE_PRICE_API_BUSINESS\"" >> .env
 
 # Generate internal API key for cron-triggered endpoints
 log_info "Generating INTERNAL_API_KEY..."

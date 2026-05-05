@@ -164,8 +164,22 @@ export class DeveloperController {
         @Res() res: Response,
         @Query('session_id') sessionId?: string
     ): Promise<void> {
+        let synced = false;
         if (sessionId) {
-            await this.apiSubscriptionService.syncFromCheckoutSessionId(sessionId, req.user.id);
+            try {
+                synced = await this.apiSubscriptionService.syncFromCheckoutSessionId(
+                    sessionId,
+                    req.user.id
+                );
+            } catch (error) {
+                this.LOGGER.error(
+                    `API checkout sync failed for user ${req.user.id}: ${error?.message}`
+                );
+            }
+        }
+        if (!synced) {
+            res.redirect(303, '/developer/pricing?error=checkout_failed');
+            return;
         }
         res.redirect(303, '/user/api-keys?upgraded=1');
     }

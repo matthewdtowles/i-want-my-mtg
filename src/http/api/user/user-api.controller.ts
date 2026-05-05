@@ -22,6 +22,7 @@ import { TransactionService } from 'src/core/transaction/transaction.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
+import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { UpdatePasswordRequestDto } from 'src/http/hbs/user/dto/update-password.request.dto';
 import { UpdateUserRequestDto } from 'src/http/hbs/user/dto/update-user.request.dto';
@@ -150,8 +151,9 @@ export class UserApiController {
     }
 
     @Patch()
+    @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Update user profile' })
+    @ApiOperation({ summary: 'Update user profile (session only, not API keys)' })
     @ApiResponse({ status: 200, description: 'Profile updated' })
     async updateProfile(
         @Body() dto: UpdateUserRequestDto,
@@ -167,8 +169,9 @@ export class UserApiController {
     }
 
     @Patch('password')
+    @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Update password' })
+    @ApiOperation({ summary: 'Update password (session only, not API keys)' })
     @ApiResponse({ status: 200, description: 'Password updated' })
     async updatePassword(
         @Body() dto: UpdatePasswordRequestDto,
@@ -180,8 +183,9 @@ export class UserApiController {
     }
 
     @Delete()
+    @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Delete account' })
+    @ApiOperation({ summary: 'Delete account (session only, not API keys)' })
     @ApiResponse({ status: 200, description: 'Account deleted' })
     async deleteAccount(
         @Req() req: AuthenticatedRequest

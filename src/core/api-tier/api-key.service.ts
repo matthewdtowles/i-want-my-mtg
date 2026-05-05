@@ -36,9 +36,21 @@ export class ApiKeyService {
         const rawKey = this.generateRawKey();
         const keyHash = this.hashKey(rawKey);
         const keyPrefix = rawKey.slice(0, 13); // "iwm_live_" + 4 chars
-        const apiKey = await this.repository.create(
-            new ApiKey({ userId, keyHash, keyPrefix, name: trimmed })
-        );
+        let apiKey: ApiKey;
+        try {
+            apiKey = await this.repository.create(
+                new ApiKey({ userId, keyHash, keyPrefix, name: trimmed })
+            );
+        } catch (err) {
+            // Concurrent create raced past the pre-check; the unique partial
+            // index (idx_api_key_user_active) rejects the loser with 23505.
+            if ((err as { code?: string })?.code === '23505') {
+                throw new DomainValidationError(
+                    'You already have an active API key. Revoke it before creating a new one.'
+                );
+            }
+            throw err;
+        }
         this.LOGGER.log(`Created API key ${apiKey.id} for user ${userId}.`);
         return { apiKey, rawKey };
     }

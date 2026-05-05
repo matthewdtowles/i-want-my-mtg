@@ -184,4 +184,6 @@ jobs:
                   STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
                   STRIPE_PRICE_MONTHLY: ${{ secrets.STRIPE_PRICE_MONTHLY }}
                   STRIPE_PRICE_ANNUAL: ${{ secrets.STRIPE_PRICE_ANNUAL }}
+                  STRIPE_PRICE_API_DEVELOPER: ${{ secrets.STRIPE_PRICE_API_DEVELOPER }}
+                  STRIPE_PRICE_API_BUSINESS: ${{ secrets.STRIPE_PRICE_API_BUSINESS }}
               run: ./.github/scripts/deploy.sh

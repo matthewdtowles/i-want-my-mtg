@@ -8,6 +8,7 @@ import { CardApiController } from 'src/http/api/card/card-api.controller';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
+import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 
 function createCard(overrides: Partial<Card> = {}): Card {
     return new Card({
@@ -61,7 +62,10 @@ describe('CardApiController', () => {
                 { provide: ApiSubscriptionService, useValue: {} },
                 { provide: ApiUsageService, useValue: {} },
             ],
-        }).compile();
+        })
+            .overrideGuard(OptionalAuthOrApiKeyGuard)
+            .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+            .compile();
 
         controller = module.get(CardApiController);
         cardService = module.get(CardService) as jest.Mocked<CardService>;

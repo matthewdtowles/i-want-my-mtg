@@ -12,6 +12,7 @@ import { SetApiController } from 'src/http/api/set/set-api.controller';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
+import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 
 function createSet(overrides: Partial<Set> = {}): Set {
     return new Set({
@@ -99,7 +100,10 @@ describe('SetApiController', () => {
                 { provide: ApiSubscriptionService, useValue: {} },
                 { provide: ApiUsageService, useValue: {} },
             ],
-        }).compile();
+        })
+            .overrideGuard(OptionalAuthOrApiKeyGuard)
+            .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+            .compile();
 
         controller = module.get(SetApiController);
         setService = module.get(SetService) as jest.Mocked<SetService>;

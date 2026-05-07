@@ -1,8 +1,10 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ApiKey } from 'src/core/api-tier/api-key.entity';
 import { ApiKeyService } from 'src/core/api-tier/api-key.service';
+import { ConfigService } from '@nestjs/config';
 import { ApiKeyAuthGuard } from 'src/http/api/shared/api-key-auth.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
+import { RapidApiProxyGuard } from 'src/http/api/shared/rapidapi-proxy.guard';
 
 function ctxFor(opts: { headers?: Record<string, string>; cookies?: Record<string, string> }) {
     const request: any = { headers: opts.headers ?? {}, cookies: opts.cookies ?? {} };
@@ -21,8 +23,10 @@ describe('OptionalAuthOrApiKeyGuard', () => {
 
     beforeEach(() => {
         apiKeySvc = { resolveByRawKey: jest.fn(), touchLastUsed: jest.fn() };
+        const config = { get: jest.fn().mockReturnValue(undefined) } as unknown as ConfigService;
         guard = new OptionalAuthOrApiKeyGuard(
-            new ApiKeyAuthGuard(apiKeySvc as unknown as ApiKeyService)
+            new ApiKeyAuthGuard(apiKeySvc as unknown as ApiKeyService),
+            new RapidApiProxyGuard(config)
         );
         jwtSpy = jest
             .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')

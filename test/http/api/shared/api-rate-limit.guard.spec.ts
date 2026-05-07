@@ -9,12 +9,18 @@ function makeContext(opts: {
     user?: { id: number };
     apiKey?: ApiKey;
     ip?: string;
+    rapidApi?: { user?: string };
 }): { ctx: ExecutionContext; res: { headers: Record<string, string>; setHeader: jest.Mock } } {
     const headers: Record<string, string> = {};
     const setHeader = jest.fn((k: string, v: string) => {
         headers[k] = v;
     });
-    const request = { user: opts.user, apiKey: opts.apiKey, ip: opts.ip };
+    const request = {
+        user: opts.user,
+        apiKey: opts.apiKey,
+        ip: opts.ip,
+        rapidApi: opts.rapidApi,
+    };
     const response = { setHeader, headers };
     const ctx = {
         switchToHttp: () => ({ getRequest: () => request, getResponse: () => response }),
@@ -59,6 +65,34 @@ describe('ApiRateLimitGuard', () => {
             await guard.canActivate(ctx);
             expect(subSvc.getEffectiveTier).not.toHaveBeenCalled();
             expect(usageSvc.incrementCount).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('RapidAPI proxy path', () => {
+        it('uses the shared 600/min burst bucket and rejects beyond it', async () => {
+            for (let i = 0; i < 600; i++) {
+                const { ctx } = makeContext({ rapidApi: { user: 'alice' } });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            const { ctx } = makeContext({ rapidApi: { user: 'alice' } });
+            await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
+        });
+
+        it('does not call subscription/usage services and does not set X-RateLimit headers', async () => {
+            const { ctx, res } = makeContext({ rapidApi: { user: 'alice' } });
+            await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            expect(subSvc.getEffectiveTier).not.toHaveBeenCalled();
+            expect(usageSvc.incrementCount).not.toHaveBeenCalled();
+            expect(res.setHeader).not.toHaveBeenCalled();
+        });
+
+        it('shares the bucket across distinct rapidApi users (origin-wide cap)', async () => {
+            for (let i = 0; i < 600; i++) {
+                const { ctx } = makeContext({ rapidApi: { user: `u${i}` } });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            const { ctx } = makeContext({ rapidApi: { user: 'someone-else' } });
+            await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
         });
     });
 

@@ -6,7 +6,7 @@
 
 - [x] Evaluate managed Postgres providers — chose AWS Lightsail Managed DB
 - [x] Upgrade local dev Postgres from 15 to 18 (docker-compose.yml)
-- [x] Fix docker-compose.yml DATABASE_URL to construct from POSTGRES_* vars (postgres hostname)
+- [x] Fix docker-compose.yml DATABASE*URL to construct from POSTGRES*\* vars (postgres hostname)
 - [x] Verify PG 18 compatibility (ingest, web app, user registration all working)
 - [x] Plan migration strategy — chose pg_dump/pg_restore (simple, cross-version compatible)
 - [x] Set up Lightsail managed PostgreSQL 18 instance (`iwantmymtg-db`)
@@ -15,7 +15,7 @@
 - [x] Install postgresql-client on Lightsail web instance
 - [x] Add `db-managed` alias to deploy script for managed DB access
 - [x] Point production app at managed DB (update .env DATABASE_URL with `?sslmode=require`)
-- [x] Update deploy script — remove POSTGRES_* vars, update DB_HOST/DB_PORT for managed DB
+- [x] Update deploy script — remove POSTGRES\_\* vars, update DB_HOST/DB_PORT for managed DB
 - [x] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
 - [x] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
 - [x] Fix migration script quoting — DATABASE_URL `?sslmode=require` broke under `nullglob`
@@ -69,37 +69,37 @@
 ### 1.5 Progressive Web Enhancement
 
 - [x] Set list: AJAX paginate/sort/filter (builds core infrastructure)
-  - [x] Move SetTypeMapper to shared location (`src/http/base/`)
-  - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
-  - [x] Add owned data to Set API (TDD) — OptionalAuthGuard, InventoryService injection, completionRate
-  - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
-  - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
-  - [x] Wire up setListPage.hbs template with container div and deferred script
+    - [x] Move SetTypeMapper to shared location (`src/http/base/`)
+    - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
+    - [x] Add owned data to Set API (TDD) — OptionalAuthGuard, InventoryService injection, completionRate
+    - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
+    - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
+    - [x] Wire up setListPage.hbs template with container div and deferred script
 - [x] Card search/list: AJAX paginate/sort/filter
-  - [x] Add `keyruneCode` to Card API DTO (TDD — presenter maps from `card.set.keyruneCode` with `setCode` fallback)
-  - [x] Add `@ApiQuery` decorators for `filter` and `baseOnly` on set cards endpoint
-  - [x] Build `searchAjax.js` — intercepts form submit, independent card/set pagination, parallel API fetches
-  - [x] Build `setCardListAjax.js` — sort/filter/paginate/baseOnly via `/api/v1/sets/:code/cards`
-  - [x] Wire search.hbs and set.hbs templates with container divs and deferred scripts
-  - [x] Add integration tests for `keyruneCode`, filter, and baseOnly params
-  - [x] Scroll position preservation via `min-height` pinning during AJAX content swap
+    - [x] Add `keyruneCode` to Card API DTO (TDD — presenter maps from `card.set.keyruneCode` with `setCode` fallback)
+    - [x] Add `@ApiQuery` decorators for `filter` and `baseOnly` on set cards endpoint
+    - [x] Build `searchAjax.js` — intercepts form submit, independent card/set pagination, parallel API fetches
+    - [x] Build `setCardListAjax.js` — sort/filter/paginate/baseOnly via `/api/v1/sets/:code/cards`
+    - [x] Wire search.hbs and set.hbs templates with container divs and deferred scripts
+    - [x] Add integration tests for `keyruneCode`, filter, and baseOnly params
+    - [x] Scroll position preservation via `min-height` pinning during AJAX content swap
 - [x] Inventory list: AJAX paginate/sort/filter + toast notifications on errors
-  - [x] Extract global toast utility (`toast.js`) — `window.showToast`/`window.dismissToast` with status-based durations
-  - [x] Enrich Inventory API response with display fields (imgSrc, rarity, keyruneCode, prices, tags, url)
-  - [x] Add batch inventory quantities endpoint (`GET /api/v1/inventory/quantities?cardIds=...`)
-  - [x] Build `inventoryListAjax.js` — filter/sort/paginate/limit/baseOnly via `/api/v1/inventory`
-  - [x] Wire inventory +/- and delete controls for AJAX-rendered rows (event delegation compatibility)
-  - [x] Wire toast notifications to inventory update/delete failures
-  - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
-  - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
+    - [x] Extract global toast utility (`toast.js`) — `window.showToast`/`window.dismissToast` with status-based durations
+    - [x] Enrich Inventory API response with display fields (imgSrc, rarity, keyruneCode, prices, tags, url)
+    - [x] Add batch inventory quantities endpoint (`GET /api/v1/inventory/quantities?cardIds=...`)
+    - [x] Build `inventoryListAjax.js` — filter/sort/paginate/limit/baseOnly via `/api/v1/inventory`
+    - [x] Wire inventory +/- and delete controls for AJAX-rendered rows (event delegation compatibility)
+    - [x] Wire toast notifications to inventory update/delete failures
+    - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
+    - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
 - [x] Transaction list: AJAX paginate/sort/filter
-  - [x] Add TX_DATE, TX_TYPE, TX_CARD, TX_PRICE sort options
-  - [x] Add paginated query methods to TransactionRepositoryPort and implement with QueryBuilderHelper
-  - [x] Build TransactionApiPresenter (TDD — 10 tests) with card join data (cardUrl, cardNumber)
-  - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
-  - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
-  - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
-  - [x] Cross-browser testing
+    - [x] Add TX_DATE, TX_TYPE, TX_CARD, TX_PRICE sort options
+    - [x] Add paginated query methods to TransactionRepositoryPort and implement with QueryBuilderHelper
+    - [x] Build TransactionApiPresenter (TDD — 10 tests) with card join data (cardUrl, cardNumber)
+    - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
+    - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
+    - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
+    - [x] Cross-browser testing
 
 ### 1.6 Frontend Consolidation
 
@@ -127,71 +127,71 @@
 ### 2.1 Add Pre-fetching for Performance
 
 - [x] Resource hints in `<head>` (`main.hbs`)
-  - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
-  - [x] Add `preload` for critical CSS (tailwind.css, app.css)
-  - [x] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
+    - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
+    - [x] Add `preload` for critical CSS (tailwind.css, app.css)
+    - [x] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
 - [x] Cache headers for static assets
-  - [x] Configure `maxAge` on Express static middleware (`app.config.ts`)
-  - [x] Add cache-busting query param or versioning strategy for CSS/JS
+    - [x] Configure `maxAge` on Express static middleware (`app.config.ts`)
+    - [x] Add cache-busting query param or versioning strategy for CSS/JS
 - [x] Cache headers for API responses
-  - [x] Add `CacheControlInterceptor` for GET API endpoints (short TTL, stale-while-revalidate)
-  - [x] Set `no-store` for authenticated/user-specific endpoints
+    - [x] Add `CacheControlInterceptor` for GET API endpoints (short TTL, stale-while-revalidate)
+    - [x] Set `no-store` for authenticated/user-specific endpoints
 - [x] Link prefetching module (`prefetch.js`)
-  - [x] Prefetch visible nav links on idle via `requestIdleCallback`
-  - [x] Prefetch on hover/touchstart for any internal `<a>` link
-  - [x] Respect `Save-Data` header and `prefers-reduced-data`
-  - [x] Wire into `main.hbs` layout
+    - [x] Prefetch visible nav links on idle via `requestIdleCallback`
+    - [x] Prefetch on hover/touchstart for any internal `<a>` link
+    - [x] Respect `Save-Data` header and `prefers-reduced-data`
+    - [x] Wire into `main.hbs` layout
 - [x] Service worker for offline caching
-  - [x] Register service worker from `main.hbs`
-  - [x] Precache static assets (CSS, JS, logo) with versioned cache name
-  - [x] Cache-first strategy for static assets, network-first for API/pages
-  - [x] Offline fallback page
-  - [x] Cache card image URLs on visit for offline browsing
+    - [x] Register service worker from `main.hbs`
+    - [x] Precache static assets (CSS, JS, logo) with versioned cache name
+    - [x] Cache-first strategy for static assets, network-first for API/pages
+    - [x] Offline fallback page
+    - [x] Cache card image URLs on visit for offline browsing
 - [x] Measure improvement (Lighthouse before/after)
 
 ### 2.2 Lighthouse Performance Optimization
 
 - [x] Run Lighthouse audit and document baseline scores
 - [x] Optimize render-blocking resources (defer non-critical CSS/JS)
-  - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
-  - [x] Make Google Fonts non-render-blocking (`media="print" onload="this.media='all'"`)
-  - [x] Make mana-font CSS non-render-blocking on card/set pages
-  - [x] Switch Font Awesome from `all.min.css` to `fontawesome.min.css` + `solid.min.css` (only solid icons used)
-  - [x] Upgrade Font Awesome from 6.0.0-beta3 to 6.7.2
-  - [x] Pin CDN dependencies to specific versions (keyrune@3.18.0, mana-font@1.18.0)
-  - [x] Add `<noscript>` fallbacks for deferred CSS (Google Fonts, keyrune, FA)
+    - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
+    - [x] Make Google Fonts non-render-blocking (`media="print" onload="this.media='all'"`)
+    - [x] Make mana-font CSS non-render-blocking on card/set pages
+    - [x] Switch Font Awesome from `all.min.css` to `fontawesome.min.css` + `solid.min.css` (only solid icons used)
+    - [x] Upgrade Font Awesome from 6.0.0-beta3 to 6.7.2
+    - [x] Pin CDN dependencies to specific versions (keyrune@3.18.0, mana-font@1.18.0)
+    - [x] Add `<noscript>` fallbacks for deferred CSS (Google Fonts, keyrune, FA)
 - [x] Optimize image loading (lazy loading, proper sizing, modern formats)
-  - [x] Add `loading="lazy"` to card images on set, card (other printings), and inventory pages
-  - [x] Add `width`/`height` attributes to all images to prevent CLS (logo, card detail, card previews, search results)
-  - [x] Add `fetchpriority="high"` to card detail hero image (LCP element)
-  - [x] Add `loading="lazy"` + dimensions to AJAX-rendered images (searchAjax, setCardListAjax, inventoryListAjax)
-  - [x] Convert logo and background images to WebP (logo: 206KB→56KB, background: 55KB→21KB)
+    - [x] Add `loading="lazy"` to card images on set, card (other printings), and inventory pages
+    - [x] Add `width`/`height` attributes to all images to prevent CLS (logo, card detail, card previews, search results)
+    - [x] Add `fetchpriority="high"` to card detail hero image (LCP element)
+    - [x] Add `loading="lazy"` + dimensions to AJAX-rendered images (searchAjax, setCardListAjax, inventoryListAjax)
+    - [x] Convert logo and background images to WebP (logo: 206KB→56KB, background: 55KB→21KB)
 - [x] Reduce unused CSS/JS payload
-  - [x] Fix Tailwind content paths (removed `node_modules/@tailwindcss/**/*.js` — 200KB → 122KB, 39% reduction)
-  - [x] Remove unused `@tailwindcss/aspect-ratio` plugin
-  - [x] Add `--minify` to Tailwind build (122KB → 97KB)
+    - [x] Fix Tailwind content paths (removed `node_modules/@tailwindcss/**/*.js` — 200KB → 122KB, 39% reduction)
+    - [x] Remove unused `@tailwindcss/aspect-ratio` plugin
+    - [x] Add `--minify` to Tailwind build (122KB → 97KB)
 - [x] Minimize main-thread work and reduce JavaScript execution time
-  - [x] Defer `searchSuggest.js` eliminates parser-blocking script on every page
+    - [x] Defer `searchSuggest.js` eliminates parser-blocking script on every page
 - [x] Fix SEO issues
-  - [x] Add dynamic `<title>` tags to all pages via `BaseViewDto`
-  - [x] Add `<meta name="description">` to all public pages
-  - [x] Set `indexable: true` (robots index/follow) on public pages
+    - [x] Add dynamic `<title>` tags to all pages via `BaseViewDto`
+    - [x] Add `<meta name="description">` to all public pages
+    - [x] Set `indexable: true` (robots index/follow) on public pages
 - [x] Fix accessibility issues
-  - [x] Fix heading hierarchy (h4→h2 on search page, mismatched closing tags on card page)
-  - [x] Add `aria-label` to buttons with icon-only content (mobile menu, quantity inputs)
-  - [x] Fix color contrast ratios (`.header-subtitle`, `.table-link`)
-  - [x] Fix `aria-label` mismatch on set page price-info-toggle
+    - [x] Fix heading hierarchy (h4→h2 on search page, mismatched closing tags on card page)
+    - [x] Add `aria-label` to buttons with icon-only content (mobile menu, quantity inputs)
+    - [x] Fix color contrast ratios (`.header-subtitle`, `.table-link`)
+    - [x] Fix `aria-label` mismatch on set page price-info-toggle
 - [x] Fix Best Practices issues
-  - [x] Fix CORS errors from protocol-relative CDN URLs (changed to explicit `https://`)
-  - [x] Add favicon.ico to fix 404 console error (generated from logo, served at `/favicon.ico`)
-  - [x] Add `<link rel="icon">` to layout
+    - [x] Fix CORS errors from protocol-relative CDN URLs (changed to explicit `https://`)
+    - [x] Add favicon.ico to fix 404 console error (generated from logo, served at `/favicon.ico`)
+    - [x] Add `<link rel="icon">` to layout
 - [x] Verify improvements with follow-up Lighthouse audit
-  - [x] Local: all pages 95+ mobile/desktop (card-detail 91 mobile due to external Scryfall image)
-  - [x] Self-hosted mana-font with woff2 (408KB → 187KB)
-  - [x] Fixed set-detail CLS (0.291 → 0 desktop) by matching placeholder styles to final font CSS
-  - [x] Delayed eager prefetch (3s) to avoid competing with critical resources on slow 4G
-  - [x] Optimized logo image (55KB → 4KB, resized to 160x160 for 80x80 display)
-  - [x] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
+    - [x] Local: all pages 95+ mobile/desktop (card-detail 91 mobile due to external Scryfall image)
+    - [x] Self-hosted mana-font with woff2 (408KB → 187KB)
+    - [x] Fixed set-detail CLS (0.291 → 0 desktop) by matching placeholder styles to final font CSS
+    - [x] Delayed eager prefetch (3s) to avoid competing with critical resources on slow 4G
+    - [x] Optimized logo image (55KB → 4KB, resized to 160x160 for 80x80 display)
+    - [x] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
 
 ### 2.3 Standardize Card Links
 
@@ -277,30 +277,30 @@
 - [x] Fix import/export guide heading hierarchy (h4→h2, h5→h3)
 - [x] Add Help (?) icon link in navbar to Getting Started guide
 - [x] Contextual first-visit hints (localStorage-gated, one-time tooltips)
-  - [x] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder - flip through your cards page by page"), dismissed to `localStorage`
-  - [x] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
-  - [x] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
+    - [x] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder - flip through your cards page by page"), dismissed to `localStorage`
+    - [x] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
+    - [x] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
 - [x] Surface cost basis tooltip on Portfolio page header (simplified version of existing `costBasisTooltip.hbs`, for first-time visitors)
 - [x] Copy audit for remaining pages
-  - [x] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")
-  - [x] `transactions.hbs` — add subtitle explaining what transactions are for
-  - [x] Error pages (401, 404, 500) — more helpful and brand-consistent
-  - [x] `spoilers.hbs` — add brief description of what "spoilers" means in context
+    - [x] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")
+    - [x] `transactions.hbs` — add subtitle explaining what transactions are for
+    - [x] Error pages (401, 404, 500) — more helpful and brand-consistent
+    - [x] `spoilers.hbs` — add brief description of what "spoilers" means in context
 
 ### 2.10 Restructure Set Blocking UI for Set Lists
 
 - [x] Audit current set list layout and identify UX pain points
 - [x] Design improved set list UI with clearer visual hierarchy
 - [x] Implement restructured set list layout
-  - [x] Block-level pagination via `SetService.findBlockGroupKeys` and `findSetsByBlockKeys`
-  - [x] `SetBlockGroup` DTO for grouped rendering with block name, multi-set flag, aggregate price
-  - [x] `BlockPaginationMeta` extends `PaginationMeta` with `multiSetBlockKeys` for client-side grouping
-  - [x] `SetListUtils.groupByBlock` mirrors server-side grouping logic in the browser
-  - [x] Block label rows and `block-child-row` indentation for multi-set blocks
+    - [x] Block-level pagination via `SetService.findBlockGroupKeys` and `findSetsByBlockKeys`
+    - [x] `SetBlockGroup` DTO for grouped rendering with block name, multi-set flag, aggregate price
+    - [x] `BlockPaginationMeta` extends `PaginationMeta` with `multiSetBlockKeys` for client-side grouping
+    - [x] `SetListUtils.groupByBlock` mirrors server-side grouping logic in the browser
+    - [x] Block label rows and `block-child-row` indentation for multi-set blocks
 - [x] Ensure responsive behavior on mobile and desktop
 - [x] Update AJAX rendering to match new layout
-  - [x] `setListAjax.js` renders block groups when `meta.multiSetBlockKeys` is present
-  - [x] Frontend tests for `SetListUtils.groupByBlock` and `setListAjax` rendering
+    - [x] `setListAjax.js` renders block groups when `meta.multiSetBlockKeys` is present
+    - [x] Frontend tests for `SetListUtils.groupByBlock` and `setListAjax` rendering
 
 ### 2.11 Support Flavor Name
 
@@ -372,9 +372,9 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 
 - [x] Audit every existing page for visual reconciliation (hero treatments, card surfaces, table styles, button styles) — appended to `docs/visual-refresh-audit.md`
 - [x] Align hero/header treatments on key pages (home, portfolio, inventory, set, card detail) with pricing page's depth and gradient accents
-  - [x] Home hero (#471)
-  - [x] Portfolio + inventory headers and stat tiles (#472)
-  - [x] Set + card detail — already covered by `.app-page-header` (set, post-#472) and `.card-info` + `.card-info-bg` (card, post-#476); audit doc updated to reflect current state
+    - [x] Home hero (#471)
+    - [x] Portfolio + inventory headers and stat tiles (#472)
+    - [x] Set + card detail — already covered by `.app-page-header` (set, post-#472) and `.card-info` + `.card-info-bg` (card, post-#476); audit doc updated to reflect current state
 - [x] Refresh button styles site-wide to match pricing page's primary/secondary CTA language (#477) — `.btn-cta` aligned to `.pricing-btn-cta` (teal→sky-blue gradient, matching glow); `.btn-upgrade` retired and folded into `.btn-cta`
 - [x] Refine card surfaces (tiles, stat cards, panels) toward pricing page's elevation, border, and radius treatment — class-level via foundations (`rounded-xl`, `midnight-900`); inline cleanups (#477) for billingSuccess, portfolioBreakdown teasers, gettingStarted, spoilers, set price popover, upgradeTile
 - [x] Reconcile color usage (accents, gradients, muted text) with the pricing page palette across all views — flipped 19 inverted muted-text pairs (`text-gray-400 dark:text-gray-500` → `text-gray-500 dark:text-gray-400`) across set, portfolio, inventory, card, transactions, sealed-product-detail, layouts/main, emptyState, costBasisTooltip, pagination — fixes dark-mode contrast on midnight-900 surfaces. Marketing gradients (billingSuccess, upgradeTile, portfolioBreakdown star icon) and accent stripes (set price popover info, user danger zone) kept as intentional uses.
@@ -419,13 +419,13 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] Create SealedProductApiResponseDto, SealedProductInventoryApiDto, request DTOs
 - [x] Create SealedProductApiPresenter (TDD)
 - [x] Create SealedProductApiController with endpoints:
-  - GET /api/v1/sets/:code/sealed-products
-  - GET /api/v1/sealed-products/:uuid
-  - GET /api/v1/sealed-products/:uuid/price-history
-  - GET /api/v1/inventory/sealed (auth)
-  - POST /api/v1/inventory/sealed (auth)
-  - PATCH /api/v1/inventory/sealed (auth)
-  - DELETE /api/v1/inventory/sealed (auth)
+    - GET /api/v1/sets/:code/sealed-products
+    - GET /api/v1/sealed-products/:uuid
+    - GET /api/v1/sealed-products/:uuid/price-history
+    - GET /api/v1/inventory/sealed (auth)
+    - POST /api/v1/inventory/sealed (auth)
+    - PATCH /api/v1/inventory/sealed (auth)
+    - DELETE /api/v1/inventory/sealed (auth)
 - [x] Register in ApiModule
 
 #### View Layer
@@ -479,10 +479,10 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [x] `/pricing` page live (hero, billing toggle, comparison table, FAQ, bottom CTA - matches Claude-designed artifact)
 - [x] Pricing link in navbar (desktop + mobile) and footer
 - [x] **Advanced analytics flagship feature shipped** - `/portfolio/breakdown?by=set|rarity|type` with premium gating
-  - `PortfolioBreakdownService` + `PortfolioBreakdownRepository` (raw SQL aggregation joining inventory + card + price)
-  - Server-side gating: free users see upgrade pitch (`locked: true` view state); subscribed users see breakdown bars
-  - Three dimensions live: by set, by rarity, by primary card type
-  - Linked from portfolio page header with gradient "Analytics" button + premium star
+    - `PortfolioBreakdownService` + `PortfolioBreakdownRepository` (raw SQL aggregation joining inventory + card + price)
+    - Server-side gating: free users see upgrade pitch (`locked: true` view state); subscribed users see breakdown bars
+    - Three dimensions live: by set, by rarity, by primary card type
+    - Linked from portfolio page header with gradient "Analytics" button + premium star
 
 #### Freemium model (depth gating, no creation caps)
 
@@ -524,7 +524,7 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 
 API rate limits remain 100/day for free and premium alike - all API monetization is deferred to Phase 4.1's separate Developer/Business tiers.
 
-**Conversion model implication:** with no creation caps, conversion depends on users *wanting* depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. Trade-off: weaker conversion in the short term until advanced analytics, external imports, and scanning ship - those are the load-bearing premium pitches.
+**Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. Trade-off: weaker conversion in the short term until advanced analytics, external imports, and scanning ship - those are the load-bearing premium pitches.
 
 #### Remaining implementation (gating existing features)
 
@@ -607,10 +607,42 @@ API tiering is a **separate subscription model** from the consumer Premium tier 
 
 ### 4.2 Developer Portal
 
-- [ ] Build or host interactive API docs page (Redoc or Stoplight — more polished than raw Swagger UI)
-- [ ] Create developer portal section with API key management and usage stats
-- [ ] Write "Getting Started" guide and 2–3 integration tutorials (e.g., "Build an MTG Discord price bot")
-- [ ] List API on RapidAPI and similar marketplaces as a discovery channel
+Decision (2026-05-05): API key management and usage stats already shipped in 4.1 at `/user/api-keys` (create/revoke key, today's usage tile, 30-day bar chart). Left the canonical route there since it's account-scoped state (parallel to `/billing`); the developer portal links to it rather than duplicate or move it. `/developer/pricing` already existed from 4.1; the new `/developer` hub sits alongside it.
+
+- [x] API key management UI — shipped in 4.1 at `/user/api-keys`
+- [x] Usage stats (today + 30-day chart) — shipped in 4.1 at `/user/api-keys`
+- [x] Interactive API docs page at `/developer/docs` — Redoc loading `/api/openapi.json`. OpenAPI spec generation moved out of the non-prod-only branch in `main.ts` and exposed at `/api/openapi.json` in all envs (Swagger UI at `/api/docs` still non-prod only). Spec response is `Cache-Control: public, max-age=3600`.
+- [x] `/developer` portal landing — hub page linking docs, pricing, the three guides below, and "Manage API Keys" → `/user/api-keys`. Footer "Developer API" link repointed from `/developer/pricing` to `/developer`.
+- [x] Getting Started guide (`/developer/guides/getting-started`) — key creation, Bearer auth, first request, rate-limit headers
+- [x] Tutorial: Discord price bot (`/developer/guides/discord-bot`) — discord.js slash command + IWMM card lookup
+- [x] Tutorial: Portfolio CSV export (`/developer/guides/portfolio-export`) — Python stdlib walk of `/inventory` paginated + portfolio snapshot to CSV
+- [x] Sitemap updated to include `/developer*` URLs
+- [ ] List API on RapidAPI and similar marketplaces — manual external work, deferred until ready to go live (account signup + listing curation). Engineering prerequisites shipped (see below).
+
+#### RapidAPI listing — engineering prereqs (shipped)
+
+- [x] `RapidApiProxyGuard` (`src/http/api/shared/rapidapi-proxy.guard.ts`) — validates `X-RapidAPI-Proxy-Secret` against `RAPIDAPI_PROXY_SECRET` with `timingSafeEqual`. Stamps `request.rapidApi = { user }` on success; throws on bad secret (no silent downgrade); returns false (not throws) when header is absent so it can be composed.
+- [x] `OptionalAuthOrApiKeyGuard` calls `RapidApiProxyGuard.tryAuthenticate()` first; RapidAPI traffic gets through anonymous on read endpoints. Auth-required endpoints (`JwtOrApiKeyGuard`) are unchanged — they still require an IWMM key/JWT, so RapidAPI traffic cannot reach inventory/portfolio/transactions/alerts.
+- [x] `ApiRateLimitGuard` skips per-user daily quota for `request.rapidApi`; applies a coarse origin-wide burst cap (`RAPIDAPI_BURST_PER_MIN = 600`) under a single `__rapidapi__` bucket. No `X-RateLimit-*` headers on those responses (would mislead the marketplace consumer).
+- [x] Public OpenAPI spec at `/api/openapi-public.json` — `buildPublicSpec()` in `main.ts` filters to `/api/v1/cards`, `/api/v1/sets`, `/api/v1/sealed-products` GETs only; strips Bearer security scheme; rewrites `info.title`/`description` for marketplace consumers. Cache-Control: `public, max-age=3600`.
+- [x] `RAPIDAPI_PROXY_SECRET` added to `.env.example`. Not in `REQUIRED_PROD_ENV` — leaving unset disables RapidAPI access entirely (the guard rejects with 401 if a request arrives bearing the proxy header but no secret is configured).
+
+#### RapidAPI listing — remaining manual work (when ready to go live)
+
+- [x] Sign up at https://rapidapi.com/provider, complete provider profile
+- [x] Create API in RapidAPI Studio; upload OpenAPI spec via Definitions → CI/CD (file upload from local dev `/api/openapi-public.json` since prod hasn't shipped the route yet — re-sync from URL after merge to main)
+- [x] Upload logo
+- [x] Copy auto-generated `X-RapidAPI-Proxy-Secret` from Studio → Gateway → Firewall Settings; add as `RAPIDAPI_PROXY_SECRET` in prod env via deploy pipeline (RapidAPI generates the value, not us)
+- [x] Confirm/set base URL to `https://iwantmymtg.net` (General tab — likely auto-set from spec's `servers:` field on import)
+- [x] Set Gateway proxy timeout to ~30s; leave Threat Protection and Request Schema Validation off (NestJS guards + class-validator already cover these)
+- [x] Configure pricing tiers in Monetize tab to match `/developer/pricing` (Free $0/100 per day, Developer $9.99/mo/5k per day, Business $29.99/mo/50k per day) — consider ~25% markup to offset RapidAPI's ~20% revenue share if revenue parity with direct Stripe subscribers matters
+- [ ] Write public description, set support email (General tab)
+- [ ] Complete payout details (Stripe/PayPal) so paid-tier subscriptions can pay out
+- [ ] Run RapidAPI's "Test Endpoint" flow on each endpoint, fix anything that returns unexpected shapes
+- [ ] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live; re-point CI/CD to the URL for future auto-sync
+- [ ] Toggle listing public, submit for review (1–3 business days)
+- [ ] Post-listing: add "Available on RapidAPI" badge to `/developer` hub; cross-check their dashboard volume against origin logs in week 1
+- [ ] Adjacent free marketplaces (do once RapidAPI is stable): APIs.guru, Postman API Network, Public APIs GitHub repo
 
 ### 4.3 MCP Server & Agentic AI Integration
 
@@ -636,10 +668,10 @@ API tiering is a **separate subscription model** from the consumer Premium tier 
 
 - [ ] Set up blog section (markdown-rendered or external platform like Dev.to)
 - [ ] Write 3–5 cornerstone articles targeting high-intent search queries:
-  - "How to track your MTG collection value"
-  - "Best way to log MTG card transactions"
-  - "MTG collection management for serious collectors"
-  - "How to know when to sell your Magic cards"
+    - "How to track your MTG collection value"
+    - "Best way to log MTG card transactions"
+    - "MTG collection management for serious collectors"
+    - "How to know when to sell your Magic cards"
 - [ ] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL)
 
 ### 5.3 Community Engagement

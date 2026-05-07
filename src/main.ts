@@ -63,23 +63,66 @@ async function bootstrap() {
     const viewsDir = join(__dirname, '.', 'http/views');
     configureApp(app, viewsDir);
 
-    // Swagger / OpenAPI docs - scoped to API controllers only, disabled in production
+    // OpenAPI spec — generated in all envs and served at /api/openapi.json so the
+    // Redoc page at /developer/docs can load it in production. Swagger UI itself
+    // (/api/docs) stays non-prod only; the public-facing docs live in the developer portal.
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('I Want My MTG API')
+        .setDescription('REST API for Magic: The Gathering collection tracking')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    const openApiDocument = SwaggerModule.createDocument(app, swaggerConfig, {
+        include: [ApiModule],
+    });
+    server.get('/api/openapi.json', (_req, res) => {
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.json(openApiDocument);
+    });
+
+    // Public spec for the RapidAPI marketplace listing: read-only catalog endpoints
+    // only (cards, sets, sealed-products GETs). User-scoped routes (inventory,
+    // portfolio, transactions, alerts, auth, billing, api-keys) are stripped, as is
+    // the Bearer security scheme — RapidAPI auth is handled by their proxy.
+    const publicOpenApiDocument = buildPublicSpec(openApiDocument);
+    server.get('/api/openapi-public.json', (_req, res) => {
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.json(publicOpenApiDocument);
+    });
+
     if (process.env.NODE_ENV !== 'production') {
-        const swaggerConfig = new DocumentBuilder()
-            .setTitle('I Want My MTG API')
-            .setDescription('REST API for Magic: The Gathering collection tracking')
-            .setVersion('1.0')
-            .addBearerAuth()
-            .build();
-        const document = SwaggerModule.createDocument(app, swaggerConfig, {
-            include: [ApiModule],
-        });
-        SwaggerModule.setup('api/docs', app, document);
+        SwaggerModule.setup('api/docs', app, openApiDocument);
     }
 
     app.use(new CorrelationIdMiddleware().use);
     app.useGlobalInterceptors(new UserContextInterceptor());
     await app.listen(3000);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildPublicSpec(doc: any): any {
+    const PUBLIC_PATH_PREFIXES = ['/api/v1/cards', '/api/v1/sets', '/api/v1/sealed-products'];
+    const clone = JSON.parse(JSON.stringify(doc));
+    for (const path of Object.keys(clone.paths || {})) {
+        const isPublic = PUBLIC_PATH_PREFIXES.some((p) => path.startsWith(p));
+        if (!isPublic) {
+            delete clone.paths[path];
+            continue;
+        }
+        // Only expose GETs; everything else (POST/PATCH/DELETE on inventory/sealed) is gated.
+        for (const method of Object.keys(clone.paths[path])) {
+            if (method.toLowerCase() !== 'get') delete clone.paths[path][method];
+        }
+        if (Object.keys(clone.paths[path]).length === 0) delete clone.paths[path];
+    }
+    if (clone.components?.securitySchemes) delete clone.components.securitySchemes;
+    delete clone.security;
+    clone.info = clone.info || {};
+    clone.info.title = 'I Want My MTG — Public API';
+    clone.info.description =
+        'Read-only catalog endpoints (cards, sets, sealed products, prices, price history). ' +
+        'No authentication required when called via the RapidAPI marketplace.';
+    return clone;
 }
 
 bootstrap();

@@ -53,6 +53,12 @@ export class SitemapController {
         xml += this.urlEntry('/sets', 'daily', '0.9');
         xml += this.urlEntry('/spoilers', 'daily', '0.8');
         xml += this.urlEntry('/guides/getting-started', 'monthly', '0.5');
+        xml += this.urlEntry('/developer', 'monthly', '0.6');
+        xml += this.urlEntry('/developer/docs', 'weekly', '0.6');
+        xml += this.urlEntry('/developer/pricing', 'monthly', '0.5');
+        xml += this.urlEntry('/developer/guides/getting-started', 'monthly', '0.5');
+        xml += this.urlEntry('/developer/guides/discord-bot', 'monthly', '0.4');
+        xml += this.urlEntry('/developer/guides/portfolio-export', 'monthly', '0.4');
         xml += this.urlEntry('/privacy', 'yearly', '0.3');
         xml += this.urlEntry('/terms', 'yearly', '0.3');
         for (const set of releasedSets) {

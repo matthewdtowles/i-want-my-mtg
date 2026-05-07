@@ -8,6 +8,7 @@ import { SealedProductApiController } from 'src/http/api/sealed-product/sealed-p
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
 import { ApiRateLimitGuard } from 'src/http/api/shared/api-rate-limit.guard';
+import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 
 function createProduct(overrides: Partial<SealedProduct> = {}): SealedProduct {
@@ -73,6 +74,8 @@ describe('SealedProductApiController', () => {
             ],
         })
             .overrideGuard(SubscriptionGuard)
+            .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+            .overrideGuard(OptionalAuthOrApiKeyGuard)
             .useValue({ canActivate: jest.fn().mockReturnValue(true) })
             .compile();
 

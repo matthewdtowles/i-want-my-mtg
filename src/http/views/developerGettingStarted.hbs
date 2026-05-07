@@ -1,0 +1,76 @@
+<section class='settings-container max-w-3xl mx-auto'>
+    <p class='text-xs text-gray-500 dark:text-gray-400 mb-2'>
+        <a class='text-link' href='/developer'>← Developer Portal</a>
+    </p>
+    <h1 class='page-title'>Getting Started with the API</h1>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+        From zero to your first authenticated request in five minutes.
+    </p>
+
+    <div class='space-y-8 text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+
+        <div>
+            <h2 class='text-lg font-semibold mb-2'>1. Create an API key</h2>
+            <p class='mb-2'>
+                Sign in, then visit
+                <a class='text-link' href='/user/api-keys'>/user/api-keys</a>
+                and click <strong>Create key</strong>. The raw key is displayed
+                <em>once</em> — copy it somewhere safe (a password manager or your shell's
+                env-var store). The site only stores a SHA-256 hash, so a lost key cannot be
+                recovered; you'll have to revoke it and create a new one.
+            </p>
+            <p>
+                Free tier gives you <strong>100 requests/day</strong> with a 60/minute burst.
+                Need more? See <a class='text-link' href='/developer/pricing'>API pricing</a>.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>2. Authenticate</h2>
+            <p class='mb-2'>Send your key on every request as a Bearer token:</p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>curl https://iwantmymtg.net/api/v1/sets \
+  -H "Authorization: Bearer iwm_live_..."</code></pre>
+            <p class='mt-2'>
+                The <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>X-API-Key</code>
+                header is also accepted if a Bearer token is awkward in your client.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>3. Make your first call</h2>
+            <p class='mb-2'>Look up a card by name:</p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>curl "https://iwantmymtg.net/api/v1/cards?q=lightning+bolt&amp;limit=1" \
+  -H "Authorization: Bearer iwm_live_..."</code></pre>
+            <p class='mt-2'>
+                Every response is wrapped in a standard envelope:
+                <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>{ "data": ..., "meta": ... }</code>.
+                The full schema for each endpoint is in the
+                <a class='text-link' href='/developer/docs'>API reference</a>.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>4. Watch your rate-limit headers</h2>
+            <p class='mb-2'>Every response includes:</p>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li><code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>X-RateLimit-Limit</code> — your daily quota</li>
+                <li><code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>X-RateLimit-Remaining</code> — calls left today</li>
+                <li><code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>X-RateLimit-Reset</code> — Unix timestamp of the next reset (UTC midnight)</li>
+            </ul>
+            <p class='mt-2'>
+                When you hit the limit you'll get a <strong>429</strong> with an upgrade-prompt
+                message. The per-minute burst limit is enforced separately and resets every 60
+                seconds.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>5. Where to next?</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1'>
+                <li><a class='text-link' href='/developer/docs'>API reference</a> — every endpoint</li>
+                <li><a class='text-link' href='/developer/guides/discord-bot'>Discord price bot tutorial</a></li>
+                <li><a class='text-link' href='/developer/guides/portfolio-export'>Portfolio export tutorial</a></li>
+            </ul>
+        </div>
+    </div>
+</section>

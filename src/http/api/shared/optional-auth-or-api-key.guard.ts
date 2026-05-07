@@ -4,23 +4,31 @@ import { Request } from 'express';
 import { AUTH_TOKEN_NAME } from 'src/http/auth/dto/auth.types';
 import { getLogger } from 'src/logger/global-app-logger';
 import { ApiKeyAuthGuard, extractRawKey } from './api-key-auth.guard';
+import { RapidApiProxyGuard } from './rapidapi-proxy.guard';
 
 /**
- * Like OptionalAuthGuard but also accepts API keys. If an API key header is presented,
- * it must validate (no silent downgrade to anonymous on a bad key — the caller asked
- * to be authenticated). Otherwise behaves like OptionalAuthGuard: valid JWT → user;
- * no JWT → anonymous; invalid JWT → anonymous.
+ * Like OptionalAuthGuard but also accepts API keys and the RapidAPI proxy. Order:
+ *   1. RapidAPI proxy header present → validate secret (throws on mismatch);
+ *   2. IWMM API key header present → must validate (no silent downgrade);
+ *   3. JWT cookie/Bearer present → validate, but fall through to anonymous on failure;
+ *   4. Nothing presented → anonymous.
  */
 @Injectable()
 export class OptionalAuthOrApiKeyGuard extends AuthGuard('jwt') {
     private readonly LOGGER = getLogger(OptionalAuthOrApiKeyGuard.name);
 
-    constructor(private readonly apiKeyGuard: ApiKeyAuthGuard) {
+    constructor(
+        private readonly apiKeyGuard: ApiKeyAuthGuard,
+        private readonly rapidApiGuard: RapidApiProxyGuard
+    ) {
         super();
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<Request>();
+        if (this.rapidApiGuard.tryAuthenticate(request)) {
+            return true;
+        }
         if (extractRawKey(request)) {
             return this.apiKeyGuard.canActivate(context) as Promise<boolean>;
         }

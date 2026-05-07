@@ -1,0 +1,81 @@
+<section class='settings-container'>
+    <h1 class='page-title'>Developer Portal</h1>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-8 max-w-2xl'>
+        Programmatic access to your collection, prices, and the full IWMM card catalog. Free tier
+        gives you 100 requests/day with no credit card required.
+    </p>
+
+    <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <a href='/developer/docs'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fas fa-book text-teal-500'></i> API Reference
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Interactive reference for every endpoint, request, and response — powered by your
+                live OpenAPI spec.
+            </p>
+        </a>
+
+        <a href='/developer/guides/getting-started'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fas fa-rocket text-teal-500'></i> Getting Started
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Create a key, authenticate, and make your first request in under five minutes.
+            </p>
+        </a>
+
+        <a href='/developer/guides/discord-bot'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fab fa-discord text-teal-500'></i> Tutorial: Discord Price Bot
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Build a slash-command bot that returns market prices for any Magic card.
+            </p>
+        </a>
+
+        <a href='/developer/guides/portfolio-export'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fas fa-file-csv text-teal-500'></i> Tutorial: Portfolio Export
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Pull your inventory and portfolio totals via the API and write them to CSV.
+            </p>
+        </a>
+
+        <a href='/developer/pricing'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fas fa-tag text-teal-500'></i> API Pricing
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Compare Free, Developer, and Business tiers. Limits apply per user account, not per
+                key.
+            </p>
+        </a>
+
+        <a href='/user/api-keys'
+            class='section-container hover:border-teal-500 dark:hover:border-teal-500 transition-colors block'>
+            <h2 class='page-subtitle flex items-center gap-2'>
+                <i class='fas fa-key text-teal-500'></i> Manage API Keys
+            </h2>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mt-2'>
+                Create or revoke your API key and review today's request usage.
+                {{#unless authenticated}}
+                <span class='block mt-1 text-xs italic'>Sign in required.</span>
+                {{/unless}}
+            </p>
+        </a>
+    </div>
+
+    <div class='mt-10 text-center'>
+        <p class='text-sm text-gray-500 dark:text-gray-400'>
+            Need higher volume or have feedback?
+            <a class='text-link' href='mailto:legal@iwantmymtg.net'>Contact us.</a>
+        </p>
+    </div>
+</section>

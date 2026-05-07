@@ -53,7 +53,13 @@ export class RapidApiProxyGuard implements CanActivate {
      */
     tryAuthenticate(request: Request): boolean {
         const presented = request.headers[RAPIDAPI_PROXY_SECRET_HEADER];
-        if (typeof presented !== 'string' || presented.length === 0) return false;
+        if (presented === undefined) return false;
+        // Express surfaces duplicated headers as string[]. A legitimate proxy sends
+        // a single value; multiple values are ambiguous and we refuse to guess.
+        if (Array.isArray(presented) || typeof presented !== 'string' || presented.length === 0) {
+            this.LOGGER.warn('Invalid RapidAPI proxy header format.');
+            throw new UnauthorizedException('Invalid proxy secret');
+        }
         if (!this.secret) {
             this.LOGGER.warn('Received RapidAPI proxy header but RAPIDAPI_PROXY_SECRET is unset.');
             throw new UnauthorizedException('RapidAPI proxy not configured');

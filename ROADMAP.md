@@ -637,6 +637,7 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 - [x] Set Gateway proxy timeout to ~30s; leave Threat Protection and Request Schema Validation off (NestJS guards + class-validator already cover these)
 - [x] Configure pricing tiers in Monetize tab to match `/developer/pricing` (Free $0/100 per day, Developer $9.99/mo/5k per day, Business $29.99/mo/50k per day) — consider ~25% markup to offset RapidAPI's ~20% revenue share if revenue parity with direct Stripe subscribers matters
 - [ ] Write public description, set support email (General tab)
+- [ ] Add API Overview documentation on the RapidAPI listing (currently shows "Documentation is not set")
 - [ ] Complete payout details (Stripe/PayPal) so paid-tier subscriptions can pay out
 - [ ] Run RapidAPI's "Test Endpoint" flow on each endpoint, fix anything that returns unexpected shapes
 - [ ] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live; re-point CI/CD to the URL for future auto-sync

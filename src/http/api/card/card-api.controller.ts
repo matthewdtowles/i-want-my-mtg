@@ -25,7 +25,7 @@ export class CardApiController {
     constructor(@Inject(CardService) private readonly cardService: CardService) {}
 
     @Get()
-    @ApiOperation({ summary: 'Search cards by name' })
+    @ApiOperation({ operationId: 'searchCards', summary: 'Search cards by name' })
     @ApiQuery({ name: 'q', required: true, description: 'Search query' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
@@ -53,7 +53,7 @@ export class CardApiController {
     }
 
     @Get(':cardId/prices')
-    @ApiOperation({ summary: 'Get current prices for a card by ID' })
+    @ApiOperation({ operationId: 'getCardPrices', summary: 'Get current prices for a card by ID' })
     @ApiResponse({ status: 200, description: 'Card prices' })
     async getPricesById(
         @Param('cardId') cardId: string
@@ -66,7 +66,7 @@ export class CardApiController {
     }
 
     @Get(':cardId/price-history')
-    @ApiOperation({ summary: 'Get price history for a card by ID' })
+    @ApiOperation({ operationId: 'getCardPriceHistory', summary: 'Get price history for a card by ID' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
     async getPriceHistoryById(
@@ -77,7 +77,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber/prices')
-    @ApiOperation({ summary: 'Get current prices for a card by set code and number' })
+    @ApiOperation({ operationId: 'getCardPricesBySetAndNumber', summary: 'Get current prices for a card by set code and number' })
     @ApiResponse({ status: 200, description: 'Card prices' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getPricesBySetCodeAndNumber(
@@ -96,7 +96,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber/price-history')
-    @ApiOperation({ summary: 'Get price history for a card by set code and number' })
+    @ApiOperation({ operationId: 'getCardPriceHistoryBySetAndNumber', summary: 'Get price history for a card by set code and number' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
@@ -113,7 +113,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber')
-    @ApiOperation({ summary: 'Get card by set code and collector number' })
+    @ApiOperation({ operationId: 'getCardBySetAndNumber', summary: 'Get card by set code and collector number' })
     @ApiResponse({ status: 200, description: 'Card detail' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async findBySetCodeAndNumber(

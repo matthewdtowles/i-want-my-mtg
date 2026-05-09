@@ -46,7 +46,7 @@ export class SealedProductApiController {
 
     @Get('sets/:code/sealed-products')
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
-    @ApiOperation({ summary: 'List sealed products for a set' })
+    @ApiOperation({ operationId: 'listSealedProductsForSet', summary: 'List sealed products for a set' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiResponse({ status: 200, description: 'Sealed products for the set' })
@@ -84,7 +84,7 @@ export class SealedProductApiController {
 
     @Get('sealed-products/:uuid')
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
-    @ApiOperation({ summary: 'Get sealed product detail' })
+    @ApiOperation({ operationId: 'getSealedProduct', summary: 'Get sealed product detail' })
     @ApiResponse({ status: 200, description: 'Sealed product detail' })
     @ApiResponse({ status: 404, description: 'Not found' })
     async findByUuid(
@@ -99,7 +99,7 @@ export class SealedProductApiController {
 
     @Get('sealed-products/:uuid/price-history')
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
-    @ApiOperation({ summary: 'Get sealed product price history' })
+    @ApiOperation({ operationId: 'getSealedProductPriceHistory', summary: 'Get sealed product price history' })
     @ApiQuery({ name: 'days', required: false })
     @ApiResponse({ status: 200, description: 'Price history data' })
     async getPriceHistory(

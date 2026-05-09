@@ -617,7 +617,7 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 - [x] Tutorial: Discord price bot (`/developer/guides/discord-bot`) — discord.js slash command + IWMM card lookup
 - [x] Tutorial: Portfolio CSV export (`/developer/guides/portfolio-export`) — Python stdlib walk of `/inventory` paginated + portfolio snapshot to CSV
 - [x] Sitemap updated to include `/developer*` URLs
-- [ ] List API on RapidAPI and similar marketplaces — manual external work, deferred until ready to go live (account signup + listing curation). Engineering prerequisites shipped (see below).
+- [x] List API on RapidAPI — listing live at https://rapidapi.com/matthewdtowles/api/i-want-my-mtg. Adjacent marketplaces (APIs.guru, Postman, public-apis) deferred per `docs/rapidapi-listing-checklist.md`.
 
 #### RapidAPI listing — engineering prereqs (shipped)
 
@@ -630,19 +630,21 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 #### RapidAPI listing — remaining manual work (when ready to go live)
 
 - [x] Sign up at https://rapidapi.com/provider, complete provider profile
-- [x] Create API in RapidAPI Studio; upload OpenAPI spec via Definitions → CI/CD (file upload from local dev `/api/openapi-public.json` since prod hasn't shipped the route yet — re-sync from URL after merge to main)
+- [x] Create API in RapidAPI Studio; upload OpenAPI spec via Definitions → CI/CD (URL-based auto-sync isn't available on personal/free provider accounts — manual file re-upload after meaningful spec changes; workflow in `docs/rapidapi-listing-checklist.md`)
 - [x] Upload logo
 - [x] Copy auto-generated `X-RapidAPI-Proxy-Secret` from Studio → Gateway → Firewall Settings; add as `RAPIDAPI_PROXY_SECRET` in prod env via deploy pipeline (RapidAPI generates the value, not us)
 - [x] Confirm/set base URL to `https://iwantmymtg.net` (General tab — likely auto-set from spec's `servers:` field on import)
 - [x] Set Gateway proxy timeout to ~30s; leave Threat Protection and Request Schema Validation off (NestJS guards + class-validator already cover these)
 - [x] Configure pricing tiers in Monetize tab to match `/developer/pricing` (Free $0/100 per day, Developer $9.99/mo/5k per day, Business $29.99/mo/50k per day) — consider ~25% markup to offset RapidAPI's ~20% revenue share if revenue parity with direct Stripe subscribers matters
 - [ ] Write public description, set support email (General tab)
-- [ ] Add API Overview documentation on the RapidAPI listing (currently shows "Documentation is not set")
-- [ ] Complete payout details (Stripe/PayPal) so paid-tier subscriptions can pay out
+- [x] Add API Overview documentation on the RapidAPI listing (overview, what-you-can-build, endpoints summary, rate limits, write-access pointer all present)
+- [ ] Polish endpoint `operationId`s — sidebar currently shows auto-generated `CardApiController_*` names; add explicit `operationId` to each `@ApiOperation({...})` in API controllers and re-upload spec
+- [ ] Complete payout details (PayPal — RapidAPI's only provider payout option) so paid-tier subscriptions can pay out
 - [ ] Run RapidAPI's "Test Endpoint" flow on each endpoint, fix anything that returns unexpected shapes
-- [ ] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live; re-point CI/CD to the URL for future auto-sync
-- [ ] Toggle listing public, submit for review (1–3 business days)
-- [ ] Post-listing: add "Available on RapidAPI" badge to `/developer` hub; cross-check their dashboard volume against origin logs in week 1
+- [x] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live (URL-based auto-sync N/A on this provider tier — file re-upload only)
+- [x] Toggle listing public, submit for review (listing is live and discoverable in the Hub)
+- [x] Post-listing: "Available on RapidAPI" badge added to `/developer` hub (`developer.hbs`)
+- [ ] Week-1 volume cross-check: RapidAPI dashboard counts vs. origin requests carrying `X-RapidAPI-Proxy-Secret`
 - [ ] Adjacent free marketplaces (do once RapidAPI is stable): APIs.guru, Postman API Network, Public APIs GitHub repo
 
 ### 4.3 MCP Server & Agentic AI Integration

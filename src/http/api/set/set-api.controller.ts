@@ -39,7 +39,7 @@ export class SetApiController {
     ) {}
 
     @Get()
-    @ApiOperation({ summary: 'List sets' })
+    @ApiOperation({ operationId: 'listSets', summary: 'List sets' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -131,7 +131,7 @@ export class SetApiController {
     }
 
     @Get(':code')
-    @ApiOperation({ summary: 'Get set detail by code' })
+    @ApiOperation({ operationId: 'getSet', summary: 'Get set detail by code' })
     @ApiResponse({ status: 200, description: 'Set detail' })
     @ApiResponse({ status: 404, description: 'Set not found' })
     async findByCode(@Param('code') code: string): Promise<ApiResponseDto<SetApiResponseDto>> {
@@ -143,7 +143,7 @@ export class SetApiController {
     }
 
     @Get(':code/cards')
-    @ApiOperation({ summary: 'Get cards in a set' })
+    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -172,7 +172,7 @@ export class SetApiController {
     }
 
     @Get(':code/price-history')
-    @ApiOperation({ summary: 'Get set price history' })
+    @ApiOperation({ operationId: 'getSetPriceHistory', summary: 'Get set price history' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Set price history data' })
     async getPriceHistory(

@@ -14,7 +14,7 @@
     <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
         {{#each tiers}}
         <div
-            class='section-container flex flex-col {{#if this.isCurrent}}border-teal-500 border-2{{/if}}'>
+            class='section-container !m-0 flex flex-col {{#if this.isCurrent}}ring-2 ring-teal-500{{/if}}'>
             <div class='flex items-baseline justify-between'>
                 <h3 class='page-subtitle'>{{this.label}}</h3>
                 {{#if this.isCurrent}}

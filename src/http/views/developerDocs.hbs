@@ -1,0 +1,21 @@
+<section class='docs-container'>
+    <div class='flex items-baseline justify-between flex-wrap gap-2 mb-2'>
+        <h1 class='page-title'>API Reference</h1>
+        <a href='/api/openapi.json' class='text-link text-sm'>Download OpenAPI spec</a>
+    </div>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-2xl'>
+        Generated from the live server. New to the API?
+        <a class='text-link' href='/developer/guides/getting-started'>Start with the Getting
+            Started guide</a>.
+    </p>
+
+    {{!-- Redoc renders the spec as a single-page reference. Loaded from CDN as a deferred
+          standalone bundle so the rest of the app doesn't pay for it. --}}
+    <div id='redoc-container'
+        class='border border-gray-200 dark:border-midnight-700 rounded-xl bg-white'>
+        <redoc spec-url='/api/openapi.json' hide-loading></redoc>
+    </div>
+</section>
+
+<script src='https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js'
+    crossorigin='anonymous' defer></script>

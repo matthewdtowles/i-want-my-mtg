@@ -68,14 +68,15 @@ describe('Cards API (e2e)', () => {
                 expect(res.body.data.length).toBeGreaterThan(0);
             });
 
-            it('filters by setCode', async () => {
+            it('filters by setCode (case-insensitive input, lowercase storage)', async () => {
                 const res = await request(app.getHttpServer())
                     .get('/api/v1/cards?q=Test&setCode=TST')
                     .expect(200);
 
                 expect(
-                    res.body.data.every((c: { setCode: string }) => c.setCode === 'TST')
+                    res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')
                 ).toBe(true);
+                expect(res.body.data.length).toBeGreaterThan(0);
             });
 
             it('rejects unknown setCode (returns empty)', async () => {

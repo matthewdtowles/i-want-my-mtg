@@ -1,8 +1,9 @@
 /**
  * The set of paths exposed at `/api/openapi-public.json` for the RapidAPI listing.
- * External callers identify cards by `{setCode}/{setNumber}` and sealed products by
- * set; UUIDs are internal-only and never appear here. Sealed pricing is intentionally
- * absent — we don't have reliable sealed prices, and buy-intent flows through the
+ * External callers address cards by `{setCode}/{setNumber}` and sealed products by
+ * set — UUID-keyed *paths* are omitted from the public surface (UUIDs may still
+ * appear in response bodies as identifiers). Sealed pricing is intentionally absent
+ * — we don't have reliable sealed prices, and buy-intent flows through the
  * TCGPlayer affiliate link instead.
  */
 const PUBLIC_PATH_ALLOWLIST: ReadonlyArray<string> = [

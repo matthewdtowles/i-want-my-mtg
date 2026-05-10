@@ -5,7 +5,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 describe('SafeQueryOptions — public catalog filters', () => {
     describe('setCode', () => {
-        it('lowercases set codes', () => {
+        it('lowercases set codes to match DB storage convention', () => {
             const opts = new SafeQueryOptions({ setCode: 'LEA' });
             expect(opts.setCode).toBe('lea');
         });

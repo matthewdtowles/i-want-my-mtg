@@ -18,6 +18,8 @@ Listing is live and public. What's left is small Studio form-filling + one recur
 URL-based auto-sync isn't available on personal/free provider accounts. Manual workflow:
 
 ```bash
+npm run gen:openapi-public   # writes ./openapi-public.json (gitignored)
+# or, against prod directly:
 curl https://iwantmymtg.net/api/openapi-public.json -o openapi-public.json
 ```
 
@@ -45,18 +47,18 @@ Only after RapidAPI is stable for 1-2 weeks and there's real subscriber activity
 
 ## Appendix: Endpoint test inputs
 
+Only the endpoints in `PUBLIC_PATH_ALLOWLIST` (`src/http/api/openapi-public-spec.ts`) are
+exposed on RapidAPI. UUID-keyed card and sealed-product paths are deliberately omitted
+from the public surface.
+
 | Endpoint | Test input |
 |---|---|
 | `GET /api/v1/cards` | `?q=lightning bolt&limit=5` (param is `q`, required) |
-| `GET /api/v1/cards/{cardId}/prices` | UUID returned from the search above |
-| `GET /api/v1/cards/{cardId}/price-history` | same UUID |
-| `GET /api/v1/cards/{setCode}/{setNumber}` | `LEA/161` (Lightning Bolt) |
-| `GET /api/v1/cards/{setCode}/{setNumber}/prices` | `LEA/161` |
-| `GET /api/v1/cards/{setCode}/{setNumber}/price-history` | `LEA/161` |
+| `GET /api/v1/cards/{setCode}/{setNumber}` | `lea/161` (Lightning Bolt) |
+| `GET /api/v1/cards/{setCode}/{setNumber}/prices` | `lea/161` |
+| `GET /api/v1/cards/{setCode}/{setNumber}/price-history` | `lea/161` |
 | `GET /api/v1/sets` | `?limit=10` |
-| `GET /api/v1/sets/{code}` | `LEA` |
-| `GET /api/v1/sets/{code}/cards` | code `LEA`, query `?limit=10` |
-| `GET /api/v1/sets/{code}/price-history` | `LEA` |
-| `GET /api/v1/sets/{code}/sealed-products` | `MH3` (recent set with sealed products) |
-| `GET /api/v1/sealed-products/{uuid}` | uuid from the list above |
-| `GET /api/v1/sealed-products/{uuid}/price-history` | same uuid |
+| `GET /api/v1/sets/{code}` | `lea` |
+| `GET /api/v1/sets/{code}/cards` | code `lea`, query `?limit=10` |
+| `GET /api/v1/sets/{code}/price-history` | `lea` |
+| `GET /api/v1/sets/{code}/sealed-products` | `mh3` (recent set with sealed products) |

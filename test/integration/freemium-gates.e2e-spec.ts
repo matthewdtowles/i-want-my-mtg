@@ -11,7 +11,7 @@ const MUTATION_USER = {
 const SEALED_UUID = '99999999-9999-4999-a999-999999999901';
 const TEST_CARD_ID = '00000000-0000-4000-a000-000000000001';
 const TEST_CARD_ID_2 = '00000000-0000-4000-a000-000000000002';
-const TEST_SET_CODE = 'TST';
+const TEST_SET_CODE = 'tst';
 // One extra card seeded for the 5-alert-cap test (seed.sql only has 4 cards).
 const EXTRA_CARD_ID = '00000000-0000-4000-a000-000000000005';
 const ALERT_CARD_IDS = [

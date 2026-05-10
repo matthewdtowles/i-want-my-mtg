@@ -11,6 +11,8 @@ const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
     CardRarity.Mythic,
 ]);
 
+// Set codes are stored lowercase (matches keyrune CSS class convention used in views).
+// Lowercasing input lets callers pass either case in the API.
 function safeSetCode(value: string | undefined): string | undefined {
     const cleaned = safeAlphaNumeric(value);
     return cleaned ? cleaned.toLowerCase() : undefined;

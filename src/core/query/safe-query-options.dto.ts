@@ -1,8 +1,7 @@
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
-import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';
-import { SortOptions } from './sort-options.enum';
+import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';import { SortOptions } from './sort-options.enum';
 
 const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
     CardRarity.Common,
@@ -14,8 +13,9 @@ const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
 // Set codes are stored lowercase (matches keyrune CSS class convention used in views).
 // Lowercasing input lets callers pass either case in the API.
 function safeSetCode(value: string | undefined): string | undefined {
-    const cleaned = safeAlphaNumeric(value);
-    return cleaned ? cleaned.toLowerCase() : undefined;
+    if (!value) return undefined;
+    const cleaned = value.replace(/[^a-zA-Z0-9]/g, '');
+    return cleaned.length > 0 ? cleaned.toLowerCase() : undefined;
 }
 
 function safeRarity(value: string | undefined): CardRarity | undefined {

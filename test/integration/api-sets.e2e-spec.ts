@@ -157,6 +157,7 @@ describe('Sets API (e2e)', () => {
                     .get(`/api/v1/sets/${TEST_SET_CODE}/cards?type=dragon`)
                     .expect(200);
 
+                expect(res.body.data.length).toBeGreaterThan(0);
                 expect(
                     res.body.data.every((c: { type: string }) =>
                         c.type.toLowerCase().includes('dragon')

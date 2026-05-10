@@ -6,7 +6,7 @@
  * — we don't have reliable sealed prices, and buy-intent flows through the
  * TCGPlayer affiliate link instead.
  */
-const PUBLIC_PATH_ALLOWLIST: ReadonlyArray<string> = [
+const PUBLIC_PATH_ALLOWLIST: ReadonlyArray<string> = Object.freeze([
     '/api/v1/cards',
     '/api/v1/cards/{setCode}/{setNumber}',
     '/api/v1/cards/{setCode}/{setNumber}/prices',
@@ -16,7 +16,7 @@ const PUBLIC_PATH_ALLOWLIST: ReadonlyArray<string> = [
     '/api/v1/sets/{code}/cards',
     '/api/v1/sets/{code}/price-history',
     '/api/v1/sets/{code}/sealed-products',
-];
+]);
 
 export function publicPathAllowlist(): ReadonlyArray<string> {
     return PUBLIC_PATH_ALLOWLIST;

@@ -10,6 +10,7 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { configureApp } from './app.config';
 import { ApiModule } from './http/api/api.module';
+import { buildPublicSpec } from './http/api/openapi-public-spec';
 import { CorrelationIdMiddleware } from './logger/correlation-id.middleware';
 import { GlobalAppLogger } from './logger/global-app-logger';
 import { UserContextInterceptor } from './logger/user-context.interceptor';
@@ -80,10 +81,6 @@ async function bootstrap() {
         res.json(openApiDocument);
     });
 
-    // Public spec for the RapidAPI marketplace listing: read-only catalog endpoints
-    // only (cards, sets, sealed-products GETs). User-scoped routes (inventory,
-    // portfolio, transactions, alerts, auth, billing, api-keys) are stripped, as is
-    // the Bearer security scheme — RapidAPI auth is handled by their proxy.
     const publicOpenApiDocument = buildPublicSpec(openApiDocument);
     server.get('/api/openapi-public.json', (_req, res) => {
         res.set('Cache-Control', 'public, max-age=3600');
@@ -97,32 +94,6 @@ async function bootstrap() {
     app.use(new CorrelationIdMiddleware().use);
     app.useGlobalInterceptors(new UserContextInterceptor());
     await app.listen(3000);
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildPublicSpec(doc: any): any {
-    const PUBLIC_PATH_PREFIXES = ['/api/v1/cards', '/api/v1/sets', '/api/v1/sealed-products'];
-    const clone = JSON.parse(JSON.stringify(doc));
-    for (const path of Object.keys(clone.paths || {})) {
-        const isPublic = PUBLIC_PATH_PREFIXES.some((p) => path.startsWith(p));
-        if (!isPublic) {
-            delete clone.paths[path];
-            continue;
-        }
-        // Only expose GETs; everything else (POST/PATCH/DELETE on inventory/sealed) is gated.
-        for (const method of Object.keys(clone.paths[path])) {
-            if (method.toLowerCase() !== 'get') delete clone.paths[path][method];
-        }
-        if (Object.keys(clone.paths[path]).length === 0) delete clone.paths[path];
-    }
-    if (clone.components?.securitySchemes) delete clone.components.securitySchemes;
-    delete clone.security;
-    clone.info = clone.info || {};
-    clone.info.title = 'I Want My MTG — Public API';
-    clone.info.description =
-        'Read-only catalog endpoints (cards, sets, sealed products, prices, price history). ' +
-        'No authentication required when called via the RapidAPI marketplace.';
-    return clone;
 }
 
 bootstrap();

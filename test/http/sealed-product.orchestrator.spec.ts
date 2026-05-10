@@ -102,10 +102,6 @@ describe('SealedProductOrchestrator', () => {
             expect(result.product.detailUrl).toBe('/sealed-products/sp-abc');
             expect(result.product.categoryLabel).toBe('Booster Box');
             expect(result.product.subtypeLabel).toBe('Draft');
-            expect(result.product.price).toBe('$99.99');
-            expect(result.product.hasPrice).toBe(true);
-            expect(result.product.priceChangeWeekly).toBe('+$1.50');
-            expect(result.product.priceChangeWeeklySign).toBe('positive');
             expect(result.product.imageUrl).toBe(
                 'https://product-images.tcgplayer.com/fit-in/437x437/500001.jpg'
             );
@@ -173,21 +169,6 @@ describe('SealedProductOrchestrator', () => {
             const result = await orchestrator.findByUuid(authenticatedReq, 'sp-abc');
 
             expect(result.product.ownedQuantity).toBe(0);
-        });
-
-        it('exposes hasPrice=false when price is null', async () => {
-            sealedProductService.findByUuid.mockResolvedValue(
-                baseProduct({
-                    price: new SealedProductPrice({ price: null, date: '2024-08-02' }),
-                })
-            );
-            setService.findByCode.mockResolvedValue(baseSet);
-
-            const result = await orchestrator.findByUuid(unauthReq, 'sp-abc');
-
-            expect(result.product.hasPrice).toBe(false);
-            expect(result.product.price).toBeUndefined();
-            expect(result.product.priceChangeWeekly).toBeUndefined();
         });
 
         it('omits tcgplayer image when productId is missing', async () => {

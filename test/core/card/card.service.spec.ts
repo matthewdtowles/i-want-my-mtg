@@ -263,7 +263,7 @@ describe('CardService', () => {
 
             const result = await service.totalSearchByName('Test');
 
-            expect(repository.totalSearchByName).toHaveBeenCalledWith('Test');
+            expect(repository.totalSearchByName).toHaveBeenCalledWith('Test', undefined);
             expect(result).toBe(10);
         });
 

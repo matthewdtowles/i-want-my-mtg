@@ -22,13 +22,6 @@ export class SealedProductApiPresenter {
                 product.tcgplayerProductId
             ),
             tcgplayerProductId: product.tcgplayerProductId,
-            price: product.price
-                ? {
-                      price: product.price.price,
-                      priceChangeWeekly: product.price.priceChangeWeekly,
-                      date: product.price.date,
-                  }
-                : undefined,
         };
     }
 

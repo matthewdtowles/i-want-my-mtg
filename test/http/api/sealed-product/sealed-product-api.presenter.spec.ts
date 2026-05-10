@@ -1,5 +1,4 @@
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
-import { SealedProductPrice } from 'src/core/sealed-product/sealed-product-price.entity';
 import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-inventory.entity';
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 
@@ -37,38 +36,6 @@ describe('SealedProductApiPresenter', () => {
             );
         });
 
-        it('should include price when present', () => {
-            const product = new SealedProduct({
-                uuid: 'uuid-1',
-                name: 'Draft Booster Box',
-                setCode: 'blb',
-                price: new SealedProductPrice({
-                    price: 89.99,
-                    priceChangeWeekly: -3.5,
-                    date: '2024-01-15',
-                }),
-            });
-
-            const dto = SealedProductApiPresenter.toResponse(product);
-
-            expect(dto.price).toEqual({
-                price: 89.99,
-                priceChangeWeekly: -3.5,
-                date: '2024-01-15',
-            });
-        });
-
-        it('should omit price when not present', () => {
-            const product = new SealedProduct({
-                uuid: 'uuid-1',
-                name: 'Draft Booster Box',
-                setCode: 'blb',
-            });
-
-            const dto = SealedProductApiPresenter.toResponse(product);
-
-            expect(dto.price).toBeUndefined();
-        });
     });
 
     describe('toInventoryResponse', () => {

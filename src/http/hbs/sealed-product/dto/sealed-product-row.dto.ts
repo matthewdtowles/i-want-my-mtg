@@ -19,11 +19,6 @@ export class SealedProductRowDto {
     readonly tcgplayerProductId?: string;
     readonly imageUrl?: string;
     readonly thumbnailUrl?: string;
-    readonly price?: string;
-    readonly priceRaw?: number;
-    readonly hasPrice: boolean;
-    readonly priceChangeWeekly?: string;
-    readonly priceChangeWeeklySign?: string;
     readonly ownedQuantity: number;
 
     constructor(init: Partial<SealedProductRowDto>) {
@@ -43,11 +38,6 @@ export class SealedProductRowDto {
         this.tcgplayerProductId = init.tcgplayerProductId;
         this.imageUrl = init.imageUrl;
         this.thumbnailUrl = init.thumbnailUrl;
-        this.price = init.price;
-        this.priceRaw = init.priceRaw;
-        this.hasPrice = init.hasPrice ?? false;
-        this.priceChangeWeekly = init.priceChangeWeekly;
-        this.priceChangeWeeklySign = init.priceChangeWeeklySign;
         this.ownedQuantity = init.ownedQuantity ?? 0;
     }
 }

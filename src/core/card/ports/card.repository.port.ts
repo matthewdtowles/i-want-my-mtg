@@ -106,9 +106,10 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     /**
      * Counts total card printings matching a name search.
      * @param filter Search term to match against card names.
+     * @param options Query options for catalog filters (rarity, type, setCode, format/legality).
      * @returns Promise resolving to the total count.
      */
-    totalSearchByName(filter: string): Promise<number>;
+    totalSearchByName(filter: string, options?: SafeQueryOptions): Promise<number>;
 
     /**
      * Finds all Card entities with a given name in a specific set (case-insensitive exact match).

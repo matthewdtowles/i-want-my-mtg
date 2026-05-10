@@ -25,8 +25,28 @@ export class CardApiController {
     constructor(@Inject(CardService) private readonly cardService: CardService) {}
 
     @Get()
-    @ApiOperation({ operationId: 'searchCards', summary: 'Search cards by name' })
-    @ApiQuery({ name: 'q', required: true, description: 'Search query' })
+    @ApiOperation({ operationId: 'searchCards', summary: 'Search cards by name with optional filters' })
+    @ApiQuery({ name: 'q', required: true, description: 'Search query (matches card name)' })
+    @ApiQuery({ name: 'setCode', required: false, description: 'Restrict to a single set (e.g. LEA, MH3)' })
+    @ApiQuery({
+        name: 'rarity',
+        required: false,
+        description: 'Filter by rarity',
+        enum: ['common', 'uncommon', 'rare', 'mythic'],
+    })
+    @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line (e.g. "creature", "instant")' })
+    @ApiQuery({
+        name: 'format',
+        required: false,
+        description: 'Filter by format legality (joins legality table; defaults legality=legal)',
+        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+    })
+    @ApiQuery({
+        name: 'legality',
+        required: false,
+        description: 'Legality status; only meaningful with format. Defaults to "legal".',
+        enum: ['legal', 'banned', 'restricted'],
+    })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -43,7 +63,7 @@ export class CardApiController {
 
         const [cards, total] = await Promise.all([
             this.cardService.searchByName(searchTerm, options),
-            this.cardService.totalSearchByName(searchTerm),
+            this.cardService.totalSearchByName(searchTerm, options),
         ]);
 
         return ApiResponseDto.ok(

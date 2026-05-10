@@ -11,11 +11,6 @@ export interface SealedProductRepositoryPort {
 
     findByUuid(uuid: string): Promise<SealedProduct | null>;
 
-    findPriceHistory(
-        uuid: string,
-        days?: number
-    ): Promise<{ price: number | null; date: string }[]>;
-
     findInventoryForUser(
         userId: number,
         options: SafeQueryOptions

@@ -143,13 +143,32 @@ export class SetApiController {
     }
 
     @Get(':code/cards')
-    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set' })
+    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set with optional filters' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false, description: 'Filter cards by name' })
     @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base set cards' })
+    @ApiQuery({
+        name: 'rarity',
+        required: false,
+        description: 'Filter by rarity',
+        enum: ['common', 'uncommon', 'rare', 'mythic'],
+    })
+    @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line' })
+    @ApiQuery({
+        name: 'format',
+        required: false,
+        description: 'Filter by format legality (defaults legality=legal)',
+        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+    })
+    @ApiQuery({
+        name: 'legality',
+        required: false,
+        description: 'Legality status; only meaningful with format. Defaults to "legal".',
+        enum: ['legal', 'banned', 'restricted'],
+    })
     @ApiResponse({ status: 200, description: 'Cards in set' })
     async findCardsInSet(
         @Param('code') code: string,

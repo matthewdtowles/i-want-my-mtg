@@ -24,7 +24,6 @@ import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
-import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import {
     SealedInventoryDeleteRequestDto,
@@ -33,7 +32,6 @@ import {
 import {
     SealedProductApiResponseDto,
     SealedProductInventoryApiDto,
-    SealedProductPriceHistoryPointDto,
 } from './dto/sealed-product-response.dto';
 import { SealedProductApiPresenter } from './sealed-product-api.presenter';
 
@@ -95,20 +93,6 @@ export class SealedProductApiController {
             throw new NotFoundException('Sealed product not found');
         }
         return ApiResponseDto.ok(SealedProductApiPresenter.toResponse(product));
-    }
-
-    @Get('sealed-products/:uuid/price-history')
-    @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
-    @ApiOperation({ operationId: 'getSealedProductPriceHistory', summary: 'Get sealed product price history' })
-    @ApiQuery({ name: 'days', required: false })
-    @ApiResponse({ status: 200, description: 'Price history data' })
-    async getPriceHistory(
-        @Param('uuid') uuid: string,
-        @Query('days') days?: string
-    ): Promise<ApiResponseDto<SealedProductPriceHistoryPointDto[]>> {
-        const validDays = parseDaysParam(days);
-        const history = await this.sealedProductService.findPriceHistory(uuid, validDays);
-        return ApiResponseDto.ok(history);
     }
 
     @Get('inventory/sealed')

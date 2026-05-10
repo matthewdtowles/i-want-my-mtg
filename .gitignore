@@ -25,6 +25,7 @@ node_modules/
 *.sublime-project
 *.sublime-workspace
 .claude/settings.local.json
+.claude/pr-review-fix-state.json
 
 # Ignore logs and temporary files
 npm-debug.log*

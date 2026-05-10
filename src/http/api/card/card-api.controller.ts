@@ -26,7 +26,7 @@ export class CardApiController {
 
     @Get()
     @ApiOperation({ operationId: 'searchCards', summary: 'Search cards by name with optional filters' })
-    @ApiQuery({ name: 'q', required: true, description: 'Search query (matches card name)' })
+    @ApiQuery({ name: 'q', required: false, description: 'Search query (matches card name)' })
     @ApiQuery({ name: 'setCode', required: false, description: 'Restrict to a single set (e.g. LEA, MH3)' })
     @ApiQuery({
         name: 'rarity',

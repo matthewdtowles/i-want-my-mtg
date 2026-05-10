@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -55,15 +55,14 @@ export class CardApiController {
     async search(
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
-        const options = new SafeQueryOptions(query);
-        const searchTerm = query.q || '';
-        if (!searchTerm) {
+        const options = new SearchQueryOptions(query);
+        if (!options.q) {
             return ApiResponseDto.ok([], new PaginationMeta(1, options.limit, 0));
         }
 
         const [cards, total] = await Promise.all([
-            this.cardService.searchByName(searchTerm, options),
-            this.cardService.totalSearchByName(searchTerm, options),
+            this.cardService.searchByName(options.q, options),
+            this.cardService.totalSearchByName(options.q, options),
         ]);
 
         return ApiResponseDto.ok(

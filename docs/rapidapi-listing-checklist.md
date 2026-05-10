@@ -53,7 +53,7 @@ from the public surface.
 
 | Endpoint | Test input |
 |---|---|
-| `GET /api/v1/cards` | `?q=lightning bolt&limit=5` (param is `q`, required) |
+| `GET /api/v1/cards` | `?q=lightning bolt&limit=5` (param is `q`, optional — omitting it returns an empty result set) |
 | `GET /api/v1/cards/{setCode}/{setNumber}` | `lea/161` (Lightning Bolt) |
 | `GET /api/v1/cards/{setCode}/{setNumber}/prices` | `lea/161` |
 | `GET /api/v1/cards/{setCode}/{setNumber}/price-history` | `lea/161` |

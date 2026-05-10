@@ -45,7 +45,7 @@ export class SearchService {
         this.LOGGER.debug(`Searching for: ${term}.`);
         const [cards, cardTotal, sets, setTotal] = await Promise.all([
             this.cardService.searchByName(term, options),
-            this.cardService.totalSearchByName(term),
+            this.cardService.totalSearchByName(term, options),
             this.setService.searchSets(term, options),
             this.setService.totalSearchSets(term),
         ]);

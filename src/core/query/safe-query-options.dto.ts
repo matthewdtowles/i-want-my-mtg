@@ -1,7 +1,8 @@
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
-import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';import { SortOptions } from './sort-options.enum';
+import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';
+import { SortOptions } from './sort-options.enum';
 
 const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
     CardRarity.Common,

@@ -638,7 +638,7 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 - [x] Configure pricing tiers in Monetize tab to match `/developer/pricing` (Free $0/100 per day, Developer $9.99/mo/5k per day, Business $29.99/mo/50k per day) — consider ~25% markup to offset RapidAPI's ~20% revenue share if revenue parity with direct Stripe subscribers matters
 - [x] Write public description, set support email (General tab)
 - [x] Add API Overview documentation on the RapidAPI listing (overview, what-you-can-build, endpoints summary, rate limits, write-access pointer all present)
-- [ ] Polish endpoint `operationId`s — sidebar currently shows auto-generated `CardApiController_*` names; add explicit `operationId` to each `@ApiOperation({...})` in API controllers and re-upload spec
+- [x] Polish endpoint `operationId`s — sidebar currently shows auto-generated `CardApiController_*` names; add explicit `operationId` to each `@ApiOperation({...})` in API controllers and re-upload spec
 - [x] Complete payout details (PayPal — RapidAPI's only provider payout option) so paid-tier subscriptions can pay out
 - [ ] Run RapidAPI's "Test Endpoint" flow on each endpoint, fix anything that returns unexpected shapes
 - [x] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live (URL-based auto-sync N/A on this provider tier — file re-upload only)
@@ -654,24 +654,24 @@ Design constraints: external identifiers are **names, set codes, and card number
 
 Phase 1 — spec hygiene + sealed price removal:
 
-- [ ] Tighten `buildPublicSpec()` (`src/main.ts`) to an explicit path allowlist: `GET /api/v1/cards`, `/cards/{setCode}/{setNumber}` + `/prices` + `/price-history`, `/sets`, `/sets/{code}` + `/cards` + `/price-history` + `/sealed-products`. Drop `/cards/{cardId}/*` and `/sealed-products/{uuid}*` from the public spec (controllers stay; internal UI keeps using them)
-- [ ] Add unit test asserting the public spec's path set matches the allowlist exactly — guards against future controllers leaking
-- [ ] Strip `price`, `priceChangeWeekly` from `SealedProductApiPresenter` + `SealedProductApiResponseDto`
-- [ ] Strip `price`, `priceRaw`, `hasPrice`, `priceChangeWeekly`, `priceChangeWeeklySign` from `SealedProductRowDto` + `src/http/hbs/sealed-product/sealed-product.presenter.ts`
-- [ ] Remove price tile + Price History section from `src/http/views/sealed-product-detail.hbs`
-- [ ] Remove Price column from `src/http/views/partials/sealed-list.hbs`
-- [ ] Delete orphaned `src/http/public/js/sealedPriceHistoryChart.js`
-- [ ] Delete `GET /sealed-products/{uuid}/price-history` controller endpoint and its service method (no callers after view changes)
-- [ ] DB column `sealed_product.price` left intact (non-destructive; Scry can keep populating without effect)
+- [x] Tighten `buildPublicSpec()` (`src/main.ts`) to an explicit path allowlist: `GET /api/v1/cards`, `/cards/{setCode}/{setNumber}` + `/prices` + `/price-history`, `/sets`, `/sets/{code}` + `/cards` + `/price-history` + `/sealed-products`. Drop `/cards/{cardId}/*` and `/sealed-products/{uuid}*` from the public spec (controllers stay; internal UI keeps using them)
+- [x] Add unit test asserting the public spec's path set matches the allowlist exactly — guards against future controllers leaking
+- [x] Strip `price`, `priceChangeWeekly` from `SealedProductApiPresenter` + `SealedProductApiResponseDto`
+- [x] Strip `price`, `priceRaw`, `hasPrice`, `priceChangeWeekly`, `priceChangeWeeklySign` from `SealedProductRowDto` + `src/http/hbs/sealed-product/sealed-product.presenter.ts`
+- [x] Remove price tile + Price History section from `src/http/views/sealed-product-detail.hbs`
+- [x] Remove Price column from `src/http/views/partials/sealed-list.hbs`
+- [x] Delete orphaned `src/http/public/js/sealedPriceHistoryChart.js`
+- [x] Delete `GET /sealed-products/{uuid}/price-history` controller endpoint and its service method (no callers after view changes)
+- [x] DB column `sealed_product.price` left intact (non-destructive; Scry can keep populating without effect)
 
 Phase 2 — filterable card search:
 
-- [ ] Add query params to `GET /api/v1/cards`: `setCode`, `rarity` (common|uncommon|rare|mythic), `type` (substring), `format` (joins `legality` table), `legality` (defaults to `legal` when `format` set)
-- [ ] Add same params to `GET /api/v1/sets/{code}/cards`
-- [ ] Extend `SafeQueryOptions` to parse + validate the new params (reject unknown values for `rarity`/`legality`)
-- [ ] Repository: build dynamic WHERE in `CardRepository.searchByName` / `findBySet` for the new filters; reuse existing `legality` join shape
-- [ ] Tests-first: integration tests per filter alone, two filters combined, and `format` + non-default `legality` value
-- [ ] Add explicit `operationId`s on any new `@ApiOperation` decorators
+- [x] Add query params to `GET /api/v1/cards`: `setCode`, `rarity` (common|uncommon|rare|mythic), `type` (substring), `format` (joins `legality` table), `legality` (defaults to `legal` when `format` set)
+- [x] Add same params to `GET /api/v1/sets/{code}/cards`
+- [x] Extend `SafeQueryOptions` to parse + validate the new params (reject unknown values for `rarity`/`legality`)
+- [x] Repository: build dynamic WHERE in `CardRepository.searchByName` / `findBySet` for the new filters; reuse existing `legality` join shape
+- [x] Tests-first: integration tests per filter alone, two filters combined, and `format` + non-default `legality` value
+- [x] Add explicit `operationId`s on any new `@ApiOperation` decorators
 
 Post-PR (manual, not code):
 

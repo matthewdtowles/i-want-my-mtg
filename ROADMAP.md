@@ -654,7 +654,7 @@ Design constraints: external identifiers are **names, set codes, and card number
 
 Phase 1 — spec hygiene + sealed price removal:
 
-- [x] Tighten `buildPublicSpec()` (`src/main.ts`) to an explicit path allowlist: `GET /api/v1/cards`, `/cards/{setCode}/{setNumber}` + `/prices` + `/price-history`, `/sets`, `/sets/{code}` + `/cards` + `/price-history` + `/sealed-products`. Drop `/cards/{cardId}/*` and `/sealed-products/{uuid}*` from the public spec (controllers stay; internal UI keeps using them)
+- [x] Tighten `buildPublicSpec()` (`src/http/api/openapi-public-spec.ts`) to an explicit path allowlist: `GET /api/v1/cards`, `/cards/{setCode}/{setNumber}` + `/prices` + `/price-history`, `/sets`, `/sets/{code}` + `/cards` + `/price-history` + `/sealed-products`. Drop `/cards/{cardId}/*` and `/sealed-products/{uuid}*` from the public spec (controllers stay; internal UI keeps using them)
 - [x] Add unit test asserting the public spec's path set matches the allowlist exactly — guards against future controllers leaking
 - [x] Strip `price`, `priceChangeWeekly` from `SealedProductApiPresenter` + `SealedProductApiResponseDto`
 - [x] Strip `price`, `priceRaw`, `hasPrice`, `priceChangeWeekly`, `priceChangeWeeklySign` from `SealedProductRowDto` + `src/http/hbs/sealed-product/sealed-product.presenter.ts`

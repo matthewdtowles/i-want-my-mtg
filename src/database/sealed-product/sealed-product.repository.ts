@@ -52,26 +52,6 @@ export class SealedProductRepository implements SealedProductRepositoryPort {
         return item ? SealedProductMapper.toCore(item) : null;
     }
 
-    async findPriceHistory(
-        uuid: string,
-        days?: number
-    ): Promise<{ price: number | null; date: string }[]> {
-        this.LOGGER.debug(`findPriceHistory(${uuid}, days=${days})`);
-        const qb = this.priceHistoryRepo
-            .createQueryBuilder('sph')
-            .select(['sph.price', 'sph.date'])
-            .where('sph.sealedProductUuid = :uuid', { uuid })
-            .orderBy('sph.date', 'ASC');
-        if (days) {
-            qb.andWhere("sph.date >= CURRENT_DATE - :days * INTERVAL '1 day'", { days });
-        }
-        const rows = await qb.getMany();
-        return rows.map((r) => ({
-            price: r.price != null ? Number(r.price) : null,
-            date: r.date,
-        }));
-    }
-
     async findInventoryForUser(
         userId: number,
         options: SafeQueryOptions

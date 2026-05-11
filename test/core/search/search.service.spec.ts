@@ -77,7 +77,7 @@ describe('SearchService', () => {
             const result = await service.search('bolt', mockOptions);
 
             expect(cardService.searchByName).toHaveBeenCalledWith('bolt', mockOptions);
-            expect(cardService.totalSearchByName).toHaveBeenCalledWith('bolt');
+            expect(cardService.totalSearchByName).toHaveBeenCalledWith('bolt', mockOptions);
             expect(setService.searchSets).toHaveBeenCalledWith('bolt', mockOptions);
             expect(setService.totalSearchSets).toHaveBeenCalledWith('bolt');
             expect(result.cards).toHaveLength(1);

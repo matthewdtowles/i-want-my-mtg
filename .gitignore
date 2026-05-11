@@ -25,6 +25,7 @@ node_modules/
 *.sublime-project
 *.sublime-workspace
 .claude/settings.local.json
+.claude/pr-review-fix-state.json
 
 # Ignore logs and temporary files
 npm-debug.log*
@@ -54,3 +55,6 @@ test/e2e/.auth/
 # Generated mana-font assets (built from npm package via build:mana)
 src/http/public/css/mana.css
 src/http/public/fonts/mana.woff2
+
+# Generated OpenAPI snapshot for RapidAPI (regenerate via `npm run gen:openapi-public`)
+openapi-public.json

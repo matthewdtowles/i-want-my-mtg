@@ -525,6 +525,11 @@
            border-t-4 border-teal-400 dark:border-teal-500;
 }
 
+.docs-container {
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-screen-2xl w-full mx-auto mt-10
+           border-t-4 border-teal-400 dark:border-teal-500;
+}
+
 .verification-container {
     @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-lg w-full mx-auto mt-10
            border-t-4 border-purple-500 dark:border-purple-400;

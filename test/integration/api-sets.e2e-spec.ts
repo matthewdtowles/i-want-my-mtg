@@ -139,6 +139,48 @@ describe('Sets API (e2e)', () => {
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
         });
+
+        describe('catalog filters', () => {
+            it('filters by rarity', async () => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards?rarity=mythic`)
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+                expect(
+                    res.body.data.every((c: { rarity: string }) => c.rarity === 'mythic')
+                ).toBe(true);
+            });
+
+            it('filters by type substring', async () => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards?type=dragon`)
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+                expect(
+                    res.body.data.every((c: { type: string }) =>
+                        c.type.toLowerCase().includes('dragon')
+                    )
+                ).toBe(true);
+            });
+
+            it('filters by format=standard', async () => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards?format=standard`)
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+            });
+
+            it('returns no results for an unseeded format', async () => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards?format=modern`)
+                    .expect(200);
+
+                expect(res.body.data).toEqual([]);
+            });
+        });
     });
 
     describe('GET /api/v1/sets/:code/price-history', () => {

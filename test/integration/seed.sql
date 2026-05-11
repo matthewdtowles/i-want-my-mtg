@@ -3,16 +3,16 @@
 
 -- Test set
 INSERT INTO "set" (code, base_size, total_size, block, keyrune_code, name, parent_code, release_date, type, is_main)
-VALUES ('TST', 4, 4, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
+VALUES ('tst', 4, 4, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Test cards in the set
 INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
 VALUES
-    ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'TST', 'Creature - Angel', 'normal', false, '001', true),
-    ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'TST', 'Creature - Sphinx', 'normal', false, '002', true),
-    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'TST', 'Creature - Zombie', 'normal', false, '003', true),
-    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, 'https://example.com/card4.jpg', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'TST', 'Creature - Dragon', 'normal', false, '004', true)
+    ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'tst', 'Creature - Angel', 'normal', false, '001', true),
+    ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'tst', 'Creature - Sphinx', 'normal', false, '002', true),
+    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'tst', 'Creature - Zombie', 'normal', false, '003', true),
+    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, 'https://example.com/card4.jpg', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', false, '004', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards
@@ -34,14 +34,14 @@ ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Set price
 INSERT INTO set_price (set_code, base_price, total_price, base_price_all, total_price_all, date)
-VALUES ('TST', 6.75, 6.75, 19.75, 19.75, CURRENT_DATE)
+VALUES ('tst', 6.75, 6.75, 19.75, 19.75, CURRENT_DATE)
 ON CONFLICT (set_code) DO NOTHING;
 
 -- Set price history
 INSERT INTO set_price_history (set_code, base_price, total_price, base_price_all, total_price_all, date)
 VALUES
-    ('TST', 6.00, 6.00, 18.00, 18.00, CURRENT_DATE - INTERVAL '7 days'),
-    ('TST', 6.75, 6.75, 19.75, 19.75, CURRENT_DATE)
+    ('tst', 6.00, 6.00, 18.00, 18.00, CURRENT_DATE - INTERVAL '7 days'),
+    ('tst', 6.75, 6.75, 19.75, 19.75, CURRENT_DATE)
 ON CONFLICT (set_code, date) DO NOTHING;
 
 -- Test user (password: TestPass1!)

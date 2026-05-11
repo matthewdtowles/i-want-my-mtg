@@ -617,7 +617,7 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 - [x] Tutorial: Discord price bot (`/developer/guides/discord-bot`) — discord.js slash command + IWMM card lookup
 - [x] Tutorial: Portfolio CSV export (`/developer/guides/portfolio-export`) — Python stdlib walk of `/inventory` paginated + portfolio snapshot to CSV
 - [x] Sitemap updated to include `/developer*` URLs
-- [ ] List API on RapidAPI and similar marketplaces — manual external work, deferred until ready to go live (account signup + listing curation). Engineering prerequisites shipped (see below).
+- [x] List API on RapidAPI — listing live at https://rapidapi.com/matthewdtowles/api/i-want-my-mtg. Adjacent marketplaces (APIs.guru, Postman, public-apis) deferred per `docs/rapidapi-listing-checklist.md`.
 
 #### RapidAPI listing — engineering prereqs (shipped)
 
@@ -630,27 +630,114 @@ Decision (2026-05-05): API key management and usage stats already shipped in 4.1
 #### RapidAPI listing — remaining manual work (when ready to go live)
 
 - [x] Sign up at https://rapidapi.com/provider, complete provider profile
-- [x] Create API in RapidAPI Studio; upload OpenAPI spec via Definitions → CI/CD (file upload from local dev `/api/openapi-public.json` since prod hasn't shipped the route yet — re-sync from URL after merge to main)
+- [x] Create API in RapidAPI Studio; upload OpenAPI spec via Definitions → CI/CD (URL-based auto-sync isn't available on personal/free provider accounts — manual file re-upload after meaningful spec changes; workflow in `docs/rapidapi-listing-checklist.md`)
 - [x] Upload logo
 - [x] Copy auto-generated `X-RapidAPI-Proxy-Secret` from Studio → Gateway → Firewall Settings; add as `RAPIDAPI_PROXY_SECRET` in prod env via deploy pipeline (RapidAPI generates the value, not us)
 - [x] Confirm/set base URL to `https://iwantmymtg.net` (General tab — likely auto-set from spec's `servers:` field on import)
 - [x] Set Gateway proxy timeout to ~30s; leave Threat Protection and Request Schema Validation off (NestJS guards + class-validator already cover these)
 - [x] Configure pricing tiers in Monetize tab to match `/developer/pricing` (Free $0/100 per day, Developer $9.99/mo/5k per day, Business $29.99/mo/50k per day) — consider ~25% markup to offset RapidAPI's ~20% revenue share if revenue parity with direct Stripe subscribers matters
-- [ ] Write public description, set support email (General tab)
-- [ ] Complete payout details (Stripe/PayPal) so paid-tier subscriptions can pay out
+- [x] Write public description, set support email (General tab)
+- [x] Add API Overview documentation on the RapidAPI listing (overview, what-you-can-build, endpoints summary, rate limits, write-access pointer all present)
+- [x] Polish endpoint `operationId`s — sidebar currently shows auto-generated `CardApiController_*` names; add explicit `operationId` to each `@ApiOperation({...})` in API controllers and re-upload spec
+- [x] Complete payout details (PayPal — RapidAPI's only provider payout option) so paid-tier subscriptions can pay out
 - [ ] Run RapidAPI's "Test Endpoint" flow on each endpoint, fix anything that returns unexpected shapes
-- [ ] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live; re-point CI/CD to the URL for future auto-sync
-- [ ] Toggle listing public, submit for review (1–3 business days)
-- [ ] Post-listing: add "Available on RapidAPI" badge to `/developer` hub; cross-check their dashboard volume against origin logs in week 1
+- [x] Merge `api-dashboard` to main and deploy so `https://iwantmymtg.net/api/openapi-public.json` is live (URL-based auto-sync N/A on this provider tier — file re-upload only)
+- [x] Toggle listing public, submit for review (listing is live and discoverable in the Hub)
+- [x] Post-listing: "Available on RapidAPI" badge added to `/developer` hub (`developer.hbs`)
 - [ ] Adjacent free marketplaces (do once RapidAPI is stable): APIs.guru, Postman API Network, Public APIs GitHub repo
+
+#### Public API surface improvements (single PR — Phase 1 + Phase 2)
+
+Audit found UUID-keyed endpoints leaking into the public spec (`/cards/{cardId}/*`, `/sealed-products/{uuid}*`) — internal identifiers a marketplace consumer can't usefully obtain. Sealed product UI also displays prices that are effectively never populated; we don't have real sealed pricing and won't (TCGPlayer affiliate link is the path for sealed buy-intent). Card search is name-substring only; subscribers can't filter by rarity, type, set, or format legality, which limits the use cases the listing's marketing copy promises.
+
+Design constraints: external identifiers are **names, set codes, and card numbers within sets** — never UUIDs. No bulk price lookup (would collapse 50 calls into 1, eroding monetization). Per-set prices are already covered by `GET /sets/{code}/cards`. Sealed kept deliberately simple: list-per-set only, no detail endpoint, no name-based lookup, no prices anywhere.
+
+Phase 1 — spec hygiene + sealed price removal:
+
+- [x] Tighten `buildPublicSpec()` (`src/http/api/openapi-public-spec.ts`) to an explicit path allowlist: `GET /api/v1/cards`, `/cards/{setCode}/{setNumber}` + `/prices` + `/price-history`, `/sets`, `/sets/{code}` + `/cards` + `/price-history` + `/sealed-products`. Drop `/cards/{cardId}/*` and `/sealed-products/{uuid}*` from the public spec (controllers stay; internal UI keeps using them)
+- [x] Add unit test asserting the public spec's path set matches the allowlist exactly — guards against future controllers leaking
+- [x] Strip `price`, `priceChangeWeekly` from `SealedProductApiPresenter` + `SealedProductApiResponseDto`
+- [x] Strip `price`, `priceRaw`, `hasPrice`, `priceChangeWeekly`, `priceChangeWeeklySign` from `SealedProductRowDto` + `src/http/hbs/sealed-product/sealed-product.presenter.ts`
+- [x] Remove price tile + Price History section from `src/http/views/sealed-product-detail.hbs`
+- [x] Remove Price column from `src/http/views/partials/sealed-list.hbs`
+- [x] Delete orphaned `src/http/public/js/sealedPriceHistoryChart.js`
+- [x] Delete `GET /sealed-products/{uuid}/price-history` controller endpoint and its service method (no callers after view changes)
+- [x] DB column `sealed_product.price` left intact (non-destructive; Scry can keep populating without effect)
+
+Phase 2 — filterable card search:
+
+- [x] Add query params to `GET /api/v1/cards`: `setCode`, `rarity` (common|uncommon|rare|mythic), `type` (substring), `format` (joins `legality` table), `legality` (defaults to `legal` when `format` set)
+- [x] Add same params to `GET /api/v1/sets/{code}/cards`
+- [x] Extend `SafeQueryOptions` to parse + validate the new params (reject unknown values for `rarity`/`legality`)
+- [x] Repository: build dynamic WHERE in `CardRepository.searchByName` / `findBySet` for the new filters; reuse existing `legality` join shape
+- [x] Tests-first: integration tests per filter alone, two filters combined, and `format` + non-default `legality` value
+- [x] Add explicit `operationId`s on any new `@ApiOperation` decorators
+
+Post-PR (manual, not code):
+
+- [ ] Re-fetch `https://iwantmymtg.net/api/openapi-public.json` after deploy and re-upload to RapidAPI Studio (Definitions → CI/CD → Import OpenAPI)
+- [ ] Verify in Studio sidebar: no `*Controller_*` operation names, no UUID-shaped paths, no sealed price-history endpoint
+
+Phase 3 (deferred — blocked):
+
+- [ ] Color filtering (`?color=`, `?colorIdentity=`) — blocked on Scry populating `card.colors` from MTGJSON `colorIdentity` (already tracked elsewhere in roadmap)
 
 ### 4.3 MCP Server & Agentic AI Integration
 
-- [ ] Publish OpenAPI spec at well-known URL (`/.well-known/openapi.json`)
-- [ ] Build and publish MCP server for the API (card data, collection management, transaction endpoints)
-- [ ] Create GitHub repository for MCP server with README, examples, and installation instructions
-- [ ] Submit MCP server to community directories and awesome-lists
-- [ ] Write tutorial: "Building an AI-powered MTG collection assistant with the IWMM API"
+Goal: ship an MCP server so Claude Desktop / Claude Code / Cursor / other MCP clients can query IWMM card data and manage a user's collection conversationally. Builds on 4.1 (API keys, tiered rate limits) and 4.2 (OpenAPI spec, developer portal). Auth reuses existing `iwm_live_...` API keys — no new identity surface.
+
+#### Web app prereqs (this repo)
+
+- [ ] Expose OpenAPI spec at `/.well-known/openapi.json` — 301 redirect to existing `/api/openapi.json` (auth-required spec); add a parallel `/.well-known/openapi-public.json` redirect to `/api/openapi-public.json` for unauthenticated discovery
+- [ ] Add MCP server install instructions to `/developer` hub and a new guide at `/developer/guides/mcp-server` (config snippet for Claude Desktop's `claude_desktop_config.json`, env var setup, example prompts)
+- [ ] Add "Use with Claude / MCP" section to `/user/api-keys` page so users discover the integration when they generate a key
+- [ ] Sitemap: add `/developer/guides/mcp-server`
+
+#### MCP server repo (`iwmm-mcp-server`, separate repo)
+
+- [ ] Scaffold new repo using `@modelcontextprotocol/sdk` (TypeScript), stdio transport, Node 20+
+- [ ] Generate typed API client from `/api/openapi.json` at build time (e.g. `openapi-typescript` + `openapi-fetch`) so tool schemas stay in lockstep with the API
+- [ ] Implement read-only tools (no auth required, hit public endpoints):
+    - `search_cards` (name/text/set/type filters, pagination)
+    - `get_card` (by uuid or set+number)
+    - `get_card_prices` (current + history range)
+    - `search_sets` / `get_set` / `list_set_cards`
+    - `get_sealed_products` (per set)
+- [ ] Implement authenticated tools (require `IWMM_API_KEY` env var, hit user-scoped endpoints):
+    - `list_inventory` / `add_to_inventory` / `update_inventory` / `remove_from_inventory`
+    - `list_transactions` / `record_transaction` / `update_transaction` / `delete_transaction`
+    - `get_portfolio_summary` / `get_portfolio_breakdown` (by set/rarity/type/format)
+    - `list_price_alerts` / `create_price_alert` / `update_price_alert` / `delete_price_alert`
+    - `list_notifications` / `mark_notification_read`
+- [ ] Tool descriptions written for LLM consumption — emphasize when to use each, parameter semantics, and that quantity changes are real (no dry-run mode at v1)
+- [ ] Surface premium-gating cleanly: when API returns 402/403 with upgrade message, return that message verbatim to the model so it can relay to the user (don't swallow as a generic error)
+- [ ] Surface rate-limit responses: parse `X-RateLimit-*` headers, include remaining quota in tool error responses on 429
+- [ ] `MCP_SERVER_BASE_URL` env var (default `https://iwantmymtg.net`) for self-hosters / local dev
+- [ ] Unit tests for each tool (mock fetch); integration test that boots the server against a recorded API fixture
+
+#### Distribution
+
+- [ ] Publish to npm as `iwmm-mcp-server` (or scoped `@iwantmymtg/mcp-server`) — runnable via `npx iwmm-mcp-server`
+- [ ] README with: install, Claude Desktop config snippet, Claude Code `.mcp.json` snippet, Cursor config, example prompts ("What's my collection worth?", "Add 4 Lightning Bolt from M11 to my inventory")
+- [ ] Add `examples/` dir with screenshots/transcripts of common flows
+- [ ] CI: build + test + publish on tag (mirror Scry's release workflow)
+
+#### Discovery
+
+- [ ] Submit to `modelcontextprotocol/servers` community list (PR to the awesome-list)
+- [ ] List on Smithery (smithery.ai) and Glama (glama.ai/mcp/servers) — both auto-index from GitHub but explicit submission helps
+- [ ] Mention on r/ClaudeAI, r/mtgfinance launch post once stable
+
+#### Content
+
+- [ ] Tutorial blog post: "Building an AI-powered MTG collection assistant with the IWMM MCP server" — show a Claude conversation managing a real collection, link from `/developer` hub
+- [ ] Short demo video / GIF in repo README
+
+#### Deferred (post-launch follow-ups)
+
+- [ ] Remote MCP transport (Streamable HTTP) hosted at `mcp.iwantmymtg.net` — eliminates the install step but requires OAuth flow design; revisit once stdio version has traction
+- [ ] MCP resources (vs tools) for browsing card/set data as readable URIs (`iwmm://cards/...`) — nice-to-have, not load-bearing for v1
+- [ ] MCP prompts for common workflows ("audit my collection", "find arbitrage opportunities") — value depends on observed usage patterns
 
 ---
 

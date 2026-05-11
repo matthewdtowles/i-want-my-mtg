@@ -1,16 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class SealedProductPriceDto {
-    @ApiPropertyOptional({ type: Number, nullable: true })
-    price?: number | null;
-
-    @ApiPropertyOptional({ type: Number, nullable: true })
-    priceChangeWeekly?: number | null;
-
-    @ApiProperty()
-    date: string;
-}
-
 export class SealedProductApiResponseDto {
     @ApiProperty()
     uuid: string;
@@ -45,21 +34,10 @@ export class SealedProductApiResponseDto {
     @ApiPropertyOptional()
     tcgplayerProductId?: string;
 
-    @ApiPropertyOptional({ type: SealedProductPriceDto })
-    price?: SealedProductPriceDto;
-
     @ApiPropertyOptional({
         description: 'Authenticated user\'s owned quantity; omitted when not logged in',
     })
     ownedQuantity?: number;
-}
-
-export class SealedProductPriceHistoryPointDto {
-    @ApiPropertyOptional({ type: Number, nullable: true })
-    price: number | null;
-
-    @ApiProperty()
-    date: string;
 }
 
 export class SealedProductInventoryApiDto {

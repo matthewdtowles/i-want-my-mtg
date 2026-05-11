@@ -39,7 +39,7 @@ export class SetApiController {
     ) {}
 
     @Get()
-    @ApiOperation({ summary: 'List sets' })
+    @ApiOperation({ operationId: 'listSets', summary: 'List sets' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -131,7 +131,7 @@ export class SetApiController {
     }
 
     @Get(':code')
-    @ApiOperation({ summary: 'Get set detail by code' })
+    @ApiOperation({ operationId: 'getSet', summary: 'Get set detail by code' })
     @ApiResponse({ status: 200, description: 'Set detail' })
     @ApiResponse({ status: 404, description: 'Set not found' })
     async findByCode(@Param('code') code: string): Promise<ApiResponseDto<SetApiResponseDto>> {
@@ -143,13 +143,32 @@ export class SetApiController {
     }
 
     @Get(':code/cards')
-    @ApiOperation({ summary: 'Get cards in a set' })
+    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set with optional filters' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false, description: 'Filter cards by name' })
     @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base set cards' })
+    @ApiQuery({
+        name: 'rarity',
+        required: false,
+        description: 'Filter by rarity',
+        enum: ['common', 'uncommon', 'rare', 'mythic'],
+    })
+    @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line' })
+    @ApiQuery({
+        name: 'format',
+        required: false,
+        description: 'Filter by format legality (defaults legality=legal)',
+        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+    })
+    @ApiQuery({
+        name: 'legality',
+        required: false,
+        description: 'Legality status; only meaningful with format. Defaults to "legal".',
+        enum: ['legal', 'banned', 'restricted'],
+    })
     @ApiResponse({ status: 200, description: 'Cards in set' })
     async findCardsInSet(
         @Param('code') code: string,
@@ -172,7 +191,7 @@ export class SetApiController {
     }
 
     @Get(':code/price-history')
-    @ApiOperation({ summary: 'Get set price history' })
+    @ApiOperation({ operationId: 'getSetPriceHistory', summary: 'Get set price history' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Set price history data' })
     async getPriceHistory(

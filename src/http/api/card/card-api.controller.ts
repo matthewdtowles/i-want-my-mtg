@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CardService } from 'src/core/card/card.service';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -25,8 +25,28 @@ export class CardApiController {
     constructor(@Inject(CardService) private readonly cardService: CardService) {}
 
     @Get()
-    @ApiOperation({ summary: 'Search cards by name' })
-    @ApiQuery({ name: 'q', required: true, description: 'Search query' })
+    @ApiOperation({ operationId: 'searchCards', summary: 'Search cards by name with optional filters' })
+    @ApiQuery({ name: 'q', required: false, description: 'Search query (matches card name)' })
+    @ApiQuery({ name: 'setCode', required: false, description: 'Restrict to a single set (e.g. LEA, MH3)' })
+    @ApiQuery({
+        name: 'rarity',
+        required: false,
+        description: 'Filter by rarity',
+        enum: ['common', 'uncommon', 'rare', 'mythic'],
+    })
+    @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line (e.g. "creature", "instant")' })
+    @ApiQuery({
+        name: 'format',
+        required: false,
+        description: 'Filter by format legality (joins legality table; defaults legality=legal)',
+        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+    })
+    @ApiQuery({
+        name: 'legality',
+        required: false,
+        description: 'Legality status; only meaningful with format. Defaults to "legal".',
+        enum: ['legal', 'banned', 'restricted'],
+    })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -35,15 +55,14 @@ export class CardApiController {
     async search(
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
-        const options = new SafeQueryOptions(query);
-        const searchTerm = query.q || '';
-        if (!searchTerm) {
+        const options = new SearchQueryOptions(query);
+        if (!options.q) {
             return ApiResponseDto.ok([], new PaginationMeta(1, options.limit, 0));
         }
 
         const [cards, total] = await Promise.all([
-            this.cardService.searchByName(searchTerm, options),
-            this.cardService.totalSearchByName(searchTerm),
+            this.cardService.searchByName(options.q, options),
+            this.cardService.totalSearchByName(options.q, options),
         ]);
 
         return ApiResponseDto.ok(
@@ -53,7 +72,7 @@ export class CardApiController {
     }
 
     @Get(':cardId/prices')
-    @ApiOperation({ summary: 'Get current prices for a card by ID' })
+    @ApiOperation({ operationId: 'getCardPrices', summary: 'Get current prices for a card by ID' })
     @ApiResponse({ status: 200, description: 'Card prices' })
     async getPricesById(
         @Param('cardId') cardId: string
@@ -66,7 +85,7 @@ export class CardApiController {
     }
 
     @Get(':cardId/price-history')
-    @ApiOperation({ summary: 'Get price history for a card by ID' })
+    @ApiOperation({ operationId: 'getCardPriceHistory', summary: 'Get price history for a card by ID' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
     async getPriceHistoryById(
@@ -77,7 +96,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber/prices')
-    @ApiOperation({ summary: 'Get current prices for a card by set code and number' })
+    @ApiOperation({ operationId: 'getCardPricesBySetAndNumber', summary: 'Get current prices for a card by set code and number' })
     @ApiResponse({ status: 200, description: 'Card prices' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getPricesBySetCodeAndNumber(
@@ -96,7 +115,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber/price-history')
-    @ApiOperation({ summary: 'Get price history for a card by set code and number' })
+    @ApiOperation({ operationId: 'getCardPriceHistoryBySetAndNumber', summary: 'Get price history for a card by set code and number' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
     @ApiResponse({ status: 200, description: 'Price history data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
@@ -113,7 +132,7 @@ export class CardApiController {
     }
 
     @Get(':setCode/:setNumber')
-    @ApiOperation({ summary: 'Get card by set code and collector number' })
+    @ApiOperation({ operationId: 'getCardBySetAndNumber', summary: 'Get card by set code and collector number' })
     @ApiResponse({ status: 200, description: 'Card detail' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async findBySetCodeAndNumber(

@@ -1,6 +1,5 @@
 import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { SealedProduct } from 'src/core/sealed-product/sealed-product.entity';
-import { formatGain, gainSign, toDollar } from 'src/http/base/http.util';
 import { SealedProductRowDto } from './dto/sealed-product-row.dto';
 
 const TCGPLAYER_IMAGE_BASE = 'https://product-images.tcgplayer.com/fit-in';
@@ -13,11 +12,6 @@ const THUMBNAIL_SIZE = '200x200';
  */
 export class SealedProductHbsPresenter {
     static toRow(product: SealedProduct, ownedQuantity = 0): SealedProductRowDto {
-        const priceRaw = product.price?.price ?? null;
-        const hasPrice = priceRaw != null && priceRaw > 0;
-        const priceChangeRaw = product.price?.priceChangeWeekly ?? null;
-        const hasPriceChange = priceChangeRaw != null && priceChangeRaw !== 0;
-
         return new SealedProductRowDto({
             uuid: product.uuid,
             name: product.name,
@@ -41,11 +35,6 @@ export class SealedProductHbsPresenter {
             thumbnailUrl: product.tcgplayerProductId
                 ? `${TCGPLAYER_IMAGE_BASE}/${THUMBNAIL_SIZE}/${encodeURIComponent(product.tcgplayerProductId)}.jpg`
                 : undefined,
-            price: hasPrice ? toDollar(priceRaw) : undefined,
-            priceRaw: hasPrice ? priceRaw : undefined,
-            hasPrice,
-            priceChangeWeekly: hasPriceChange ? formatGain(priceChangeRaw) : undefined,
-            priceChangeWeeklySign: hasPriceChange ? gainSign(priceChangeRaw) : undefined,
             ownedQuantity,
         });
     }

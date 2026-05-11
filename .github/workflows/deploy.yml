@@ -186,4 +186,5 @@ jobs:
                   STRIPE_PRICE_ANNUAL: ${{ secrets.STRIPE_PRICE_ANNUAL }}
                   STRIPE_PRICE_API_DEVELOPER: ${{ secrets.STRIPE_PRICE_API_DEVELOPER }}
                   STRIPE_PRICE_API_BUSINESS: ${{ secrets.STRIPE_PRICE_API_BUSINESS }}
+                  RAPIDAPI_PROXY_SECRET: ${{ secrets.RAPIDAPI_PROXY_SECRET }}
               run: ./.github/scripts/deploy.sh

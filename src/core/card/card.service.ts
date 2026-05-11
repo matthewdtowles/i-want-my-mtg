@@ -95,10 +95,10 @@ export class CardService {
         }
     }
 
-    async totalSearchByName(filter: string): Promise<number> {
+    async totalSearchByName(filter: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Count search results for: ${filter}.`);
         try {
-            return await this.repository.totalSearchByName(filter);
+            return await this.repository.totalSearchByName(filter, options);
         } catch (error) {
             throw new Error(`Error counting card search results for "${filter}": ${error.message}`);
         }

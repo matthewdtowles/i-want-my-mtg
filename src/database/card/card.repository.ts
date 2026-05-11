@@ -95,6 +95,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
         }
+        this.applyCatalogFilters(qb, options, { skipSetCode: true });
 
         this.queryHelper.applyOptions(qb, options);
         const results = (await qb.getMany()).map(CardMapper.toCore);
@@ -149,6 +150,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         if (options.baseOnly) {
             qb.andWhere(`${this.TABLE}.inMain = :inMain`, { inMain: true });
         }
+        this.applyCatalogFilters(qb, options, { skipSetCode: true });
 
         this.queryHelper.applyFilters(qb, options.filter);
         const count = await qb.getCount();
@@ -217,6 +219,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(`${this.TABLE}.set`, 'set');
 
         this.applySearchFilter(qb, filter);
+        this.applyCatalogFilters(qb, options);
 
         qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
         qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
@@ -227,13 +230,48 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return results;
     }
 
-    async totalSearchByName(filter: string): Promise<number> {
+    async totalSearchByName(filter: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Counting search results for: ${filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE);
         this.applySearchFilter(qb, filter);
+        if (options) this.applyCatalogFilters(qb, options);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total search results for "${filter}": ${count}.`);
         return count;
+    }
+
+    /**
+     * Public catalog filters used by the RapidAPI search and per-set listings:
+     * `setCode`, `rarity`, `type` substring, and `format`+`legality` (joined to
+     * the `legality` table on the format-scoped composite key, no row duplication).
+     * `skipSetCode` lets per-set callers ignore a redundant filter from the query.
+     */
+    private applyCatalogFilters(
+        qb: SelectQueryBuilder<CardOrmEntity>,
+        options: SafeQueryOptions,
+        opts: { skipSetCode?: boolean } = {}
+    ): void {
+        if (!opts.skipSetCode && options.setCode) {
+            qb.andWhere(`${this.TABLE}.setCode = :filterSetCode`, {
+                filterSetCode: options.setCode,
+            });
+        }
+        if (options.rarity) {
+            qb.andWhere(`${this.TABLE}.rarity = :rarity`, { rarity: options.rarity });
+        }
+        if (options.type) {
+            qb.andWhere(`${this.TABLE}.type ILIKE :typeFilter`, {
+                typeFilter: `%${options.type}%`,
+            });
+        }
+        if (options.format && options.legality) {
+            qb.innerJoin(
+                'legality',
+                'lg',
+                `lg.card_id = ${this.TABLE}.id AND lg.format = :format AND lg.status = :legality`,
+                { format: options.format, legality: options.legality }
+            );
+        }
     }
 
     private applySearchFilter(qb: SelectQueryBuilder<CardOrmEntity>, filter: string): void {

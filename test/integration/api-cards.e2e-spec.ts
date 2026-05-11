@@ -55,6 +55,92 @@ describe('Cards API (e2e)', () => {
             expect(res.body.success).toBe(true);
             expect(res.body.data).toEqual([]);
         });
+
+        describe('catalog filters', () => {
+            it('filters by rarity', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&rarity=mythic')
+                    .expect(200);
+
+                expect(res.body.data.every((c: { rarity: string }) => c.rarity === 'mythic')).toBe(
+                    true
+                );
+                expect(res.body.data.length).toBeGreaterThan(0);
+            });
+
+            it('filters by setCode (case-insensitive input, lowercase storage)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=TST')
+                    .expect(200);
+
+                expect(
+                    res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')
+                ).toBe(true);
+                expect(res.body.data.length).toBeGreaterThan(0);
+            });
+
+            it('rejects unknown setCode (returns empty)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=NOPE')
+                    .expect(200);
+
+                expect(res.body.data).toEqual([]);
+            });
+
+            it('filters by type substring', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&type=angel')
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+                expect(
+                    res.body.data.every((c: { type: string }) =>
+                        c.type.toLowerCase().includes('angel')
+                    )
+                ).toBe(true);
+            });
+
+            it('filters by format=standard (defaults legality=legal)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&format=standard')
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+            });
+
+            it('returns no results for format=modern (no seeded modern legalities)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&format=modern')
+                    .expect(200);
+
+                expect(res.body.data).toEqual([]);
+            });
+
+            it('combines rarity and type filters with AND', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&rarity=common&type=zombie')
+                    .expect(200);
+
+                expect(res.body.data.length).toBeGreaterThan(0);
+                expect(
+                    res.body.data.every(
+                        (c: { rarity: string; type: string }) =>
+                            c.rarity === 'common' && c.type.toLowerCase().includes('zombie')
+                    )
+                ).toBe(true);
+            });
+
+            it('paginates total reflects the filtered count, not the unfiltered count', async () => {
+                const unfiltered = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test')
+                    .expect(200);
+                const filtered = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&rarity=mythic')
+                    .expect(200);
+
+                expect(filtered.body.meta.total).toBeLessThan(unfiltered.body.meta.total);
+            });
+        });
     });
 
     describe('GET /api/v1/cards/:setCode/:setNumber', () => {

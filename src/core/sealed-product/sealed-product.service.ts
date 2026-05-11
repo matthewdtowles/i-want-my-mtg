@@ -29,14 +29,6 @@ export class SealedProductService {
         return await this.repository.findByUuid(uuid);
     }
 
-    async findPriceHistory(
-        uuid: string,
-        days?: number
-    ): Promise<{ price: number | null; date: string }[]> {
-        this.LOGGER.debug(`findPriceHistory(${uuid}, days=${days})`);
-        return await this.repository.findPriceHistory(uuid, days);
-    }
-
     async findInventoryForUser(
         userId: number,
         options: SafeQueryOptions

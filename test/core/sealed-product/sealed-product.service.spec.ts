@@ -20,7 +20,6 @@ describe('SealedProductService', () => {
         findBySetCode: jest.fn(),
         totalBySetCode: jest.fn(),
         findByUuid: jest.fn(),
-        findPriceHistory: jest.fn(),
         findInventoryForUser: jest.fn(),
         totalInventoryForUser: jest.fn(),
         findInventoryItem: jest.fn(),
@@ -72,16 +71,6 @@ describe('SealedProductService', () => {
             repository.findByUuid.mockResolvedValue(null);
             const result = await service.findByUuid('nonexistent');
             expect(result).toBeNull();
-        });
-    });
-
-    describe('findPriceHistory', () => {
-        it('should return price history', async () => {
-            const history = [{ price: 89.99, date: '2024-01-01' }];
-            repository.findPriceHistory.mockResolvedValue(history);
-            const result = await service.findPriceHistory('uuid-1', 30);
-            expect(result).toEqual(history);
-            expect(repository.findPriceHistory).toHaveBeenCalledWith('uuid-1', 30);
         });
     });
 

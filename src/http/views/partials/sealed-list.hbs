@@ -18,7 +18,6 @@
                     <th class="table-cell xs-hide">Category</th>
                     <th class="table-cell xs-hide">Subtype</th>
                     <th class="table-cell xs-hide">Contents</th>
-                    <th class="table-cell">Price</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,16 +57,6 @@
                     </td>
                     <td class="table-cell xs-hide text-xs text-gray-500 dark:text-gray-400">
                         {{#if this.contentsSummary}}{{this.contentsSummary}}{{/if}}
-                    </td>
-                    <td class="table-cell">
-                        {{#if this.hasPrice}}
-                        <span class="price-normal">{{this.price}}</span>
-                        {{#if this.priceChangeWeekly}}
-                        <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
-                        {{/if}}
-                        {{else}}
-                        <span class="text-gray-400 dark:text-gray-600">-</span>
-                        {{/if}}
                     </td>
                 </tr>
                 {{/each}}

@@ -87,6 +87,9 @@ echo "STRIPE_PRICE_ANNUAL=\"$STRIPE_PRICE_ANNUAL\"" >> .env
 echo "STRIPE_PRICE_API_DEVELOPER=\"$STRIPE_PRICE_API_DEVELOPER\"" >> .env
 echo "STRIPE_PRICE_API_BUSINESS=\"$STRIPE_PRICE_API_BUSINESS\"" >> .env
 
+# RapidAPI marketplace proxy (optional — guard is dormant when unset)
+echo "RAPIDAPI_PROXY_SECRET=\"${RAPIDAPI_PROXY_SECRET:-}\"" >> .env
+
 # Generate internal API key for cron-triggered endpoints
 log_info "Generating INTERNAL_API_KEY..."
 echo "INTERNAL_API_KEY=\"$(openssl rand -base64 32)\"" >> .env

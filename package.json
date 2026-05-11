@@ -1,6 +1,6 @@
 {
     "name": "i-want-my-mtg",
-    "version": "1.22.1",
+    "version": "1.22.2",
     "description": "MTG Collection Tracker",
     "author": "Matthew Towles",
     "private": true,
@@ -40,6 +40,7 @@
         "db-backup": "./scripts/db-backup.sh",
         "free-docker-port": "./scripts/free-docker-port.sh",
         "gen-api-key": "./scripts/gen-api-key.sh",
+        "gen:openapi-public": "./scripts/gen-openapi-public.sh",
         "etl": "./scripts/etl.sh",
         "lighthouse": "./scripts/lighthouse.sh",
         "lighthouse:prod": "./scripts/lighthouse.sh --base-url=https://iwantmymtg.net",

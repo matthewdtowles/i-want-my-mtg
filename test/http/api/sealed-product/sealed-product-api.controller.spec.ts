@@ -182,31 +182,6 @@ describe('SealedProductApiController', () => {
         });
     });
 
-    describe('getPriceHistory', () => {
-        it('returns price history points for the default window', async () => {
-            const history = [{ price: 120.5, date: '2026-04-01' }];
-            sealedProductService.findPriceHistory.mockResolvedValue(history);
-
-            const result = await controller.getPriceHistory('uuid-1');
-
-            expect(result.success).toBe(true);
-            expect(result.data).toEqual(history);
-            expect(sealedProductService.findPriceHistory).toHaveBeenCalledWith(
-                'uuid-1',
-                undefined
-            );
-        });
-
-        it('passes through the days query parameter', async () => {
-            sealedProductService.findPriceHistory.mockResolvedValue([]);
-
-            await controller.getPriceHistory('uuid-1', '30');
-
-            const [, daysArg] = sealedProductService.findPriceHistory.mock.calls[0];
-            expect(daysArg).toBe(30);
-        });
-    });
-
     describe('findInventory', () => {
         it('returns the authenticated user inventory with pagination', async () => {
             const items = [createInventory({ sealedProduct: createProduct() })];

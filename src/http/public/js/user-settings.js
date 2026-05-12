@@ -64,6 +64,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const setTypeForm = document.getElementById('set-type-pref-form');
+    const setTypeUseDefault = document.getElementById('set-type-use-default');
+    const setTypeOptions = document.getElementById('set-type-options');
+    if (setTypeForm && setTypeUseDefault && setTypeOptions) {
+        const updateDisabledState = () => {
+            const useDefault = setTypeUseDefault.checked;
+            setTypeOptions.disabled = useDefault;
+            setTypeOptions.classList.toggle('opacity-60', useDefault);
+        };
+        setTypeUseDefault.addEventListener('change', updateDisabledState);
+        setTypeForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            let body;
+            if (setTypeUseDefault.checked) {
+                body = JSON.stringify({ types: null });
+            } else {
+                const checkboxes = setTypeOptions.querySelectorAll(
+                    'input.set-type-checkbox:checked'
+                );
+                const types = Array.from(checkboxes).map((cb) => cb.value);
+                body = JSON.stringify({ types });
+            }
+            const response = await fetch('/api/v1/user/preferences/set-types', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body,
+            });
+            updateMessage(response, messageEl, 'update');
+        });
+    }
+
     const deleteUserBtn = document.getElementById('delete-user-btn');
     if (deleteUserBtn) {
         deleteUserBtn.addEventListener('click', async (event) => {

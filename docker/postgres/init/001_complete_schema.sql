@@ -252,7 +252,8 @@ CREATE TABLE public.users (
     email character varying NOT NULL,
     name character varying NOT NULL,
     password character varying NOT NULL,
-    role public.user_role_enum DEFAULT 'user'::public.user_role_enum NOT NULL
+    role public.user_role_enum DEFAULT 'user'::public.user_role_enum NOT NULL,
+    included_set_types text[]
 );
 
 

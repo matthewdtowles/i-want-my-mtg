@@ -52,6 +52,63 @@
             <button id='update-password-btn' class='btn btn-secondary' type='submit'>Update Password</button>
         </form>
     </div>
+    {{#if setTypePreference}}
+        <div class='section-container'>
+            <h3 class='page-subtitle'>Set Types To Show</h3>
+            <p class='text-sm text-gray-600 dark:text-gray-400 mb-3'>Pick the set types that show up
+                in your browse and search views. Leave the default to see the same sets as everyone else.</p>
+            <form id='set-type-pref-form' class='mt-4' novalidate>
+                <label class='flex items-center gap-2 mb-3'>
+                    <input
+                        id='set-type-use-default'
+                        type='checkbox'
+                        name='use-default'
+                        {{#if setTypePreference.usingDefault}}checked{{/if}}
+                    />
+                    <span class='font-medium'>Use the default set list (expansions and core sets only)</span>
+                </label>
+
+                <fieldset id='set-type-options' class='mt-3 space-y-2 {{#if setTypePreference.usingDefault}}opacity-60{{/if}}'
+                          {{#if setTypePreference.usingDefault}}disabled{{/if}}>
+                    {{#each setTypePreference.primary}}
+                        <label class='flex items-center gap-2'>
+                            <input
+                                class='set-type-checkbox'
+                                type='checkbox'
+                                name='types'
+                                value='{{this.value}}'
+                                {{#if this.selected}}checked{{/if}}
+                            />
+                            <span>{{this.label}}</span>
+                        </label>
+                    {{/each}}
+
+                    <details class='mt-3' {{#if setTypePreference.advancedSelectedCount}}open{{/if}}>
+                        <summary class='cursor-pointer select-none text-sm font-medium text-gray-700 dark:text-gray-300'>
+                            Advanced{{#if setTypePreference.advancedSelectedCount}}
+                                ({{setTypePreference.advancedSelectedCount}} selected){{/if}}
+                        </summary>
+                        <div class='mt-2 space-y-2 pl-4'>
+                            {{#each setTypePreference.advanced}}
+                                <label class='flex items-center gap-2'>
+                                    <input
+                                        class='set-type-checkbox'
+                                        type='checkbox'
+                                        name='types'
+                                        value='{{this.value}}'
+                                        {{#if this.selected}}checked{{/if}}
+                                    />
+                                    <span>{{this.label}}</span>
+                                </label>
+                            {{/each}}
+                        </div>
+                    </details>
+                </fieldset>
+
+                <button id='set-type-save-btn' class='btn btn-primary mt-4' type='submit'>Save Preference</button>
+            </form>
+        </div>
+    {{/if}}
     <div class='section-container'>
         <h3 class='page-subtitle'>Subscription</h3>
         <p class='text-sm text-gray-600 dark:text-gray-400 mb-3'>Manage your subscription, billing,

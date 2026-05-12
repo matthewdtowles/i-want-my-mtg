@@ -40,9 +40,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
                 'count'
             )
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
-        if (options.baseOnly) {
-            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
-        }
+        this.applyBaseFilter(qb, options);
         this.queryHelper.applyFilters(qb, options.filter);
         const result = await qb.getRawOne();
         const count = Number(result?.count ?? 0);
@@ -56,9 +54,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             .createQueryBuilder(this.TABLE)
             .select(`COALESCE(${this.TABLE}.parentCode, ${this.TABLE}.code)`, 'block_key')
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
-        if (options.baseOnly) {
-            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
-        }
+        this.applyBaseFilter(qb, options);
         this.queryHelper.applyFilters(qb, options.filter);
         qb.groupBy('block_key');
 
@@ -96,9 +92,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
                 blockKeys,
             })
             .andWhere(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
-        if (options.baseOnly) {
-            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
-        }
+        this.applyBaseFilter(qb, options);
         qb.orderBy(`${this.TABLE}.isMain`, this.DESC);
         qb.addOrderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
         qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
@@ -113,9 +107,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
-        if (options.baseOnly) {
-            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
-        }
+        this.applyBaseFilter(qb, options);
         this.queryHelper.applyFilters(qb, options.filter);
         this.queryHelper.applyPagination(qb, options);
         this.addSetOrdering(qb, options);
@@ -152,9 +144,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
-        if (options.baseOnly) {
-            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
-        }
+        this.applyBaseFilter(qb, options);
         this.queryHelper.applyFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total sets: ${count}.`);
@@ -219,6 +209,32 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const count = await qb.getCount();
         this.LOGGER.debug(`Total set search results for "${filter}": ${count}.`);
         return count;
+    }
+
+    /**
+     * Applies the default-filter clause used by browse-style endpoints.
+     * When the user has a custom set-type preference, filter by type
+     * instead of the is_main default flag. When the preference is an
+     * empty array, return no rows (the user has explicitly cleared all
+     * types).
+     */
+    private applyBaseFilter(
+        qb: SelectQueryBuilder<SetOrmEntity>,
+        options: SafeQueryOptions
+    ): void {
+        if (!options.baseOnly) return;
+        const types = options.includedSetTypes;
+        if (types === undefined || types === null) {
+            qb.andWhere(`${this.TABLE}.isMain = :isMain`, { isMain: true });
+            return;
+        }
+        if (types.length === 0) {
+            qb.andWhere('1 = 0');
+            return;
+        }
+        qb.andWhere(`${this.TABLE}.type IN (:...includedSetTypes)`, {
+            includedSetTypes: types,
+        });
     }
 
     private applySearchFilter(qb: SelectQueryBuilder<SetOrmEntity>, filter: string): void {

@@ -11,12 +11,45 @@ import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { Toast } from 'src/http/base/toast';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
+import {
+    ADVANCED_SET_TYPES_FOR_UI,
+    KnownSetType,
+    PRIMARY_SET_TYPES_FOR_UI,
+} from 'src/shared/constants/set-types';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
+import {
+    SetTypeOption,
+    SetTypePreferenceViewDto,
+} from './dto/set-type-preference-view.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UserViewDto } from './dto/user.view.dto';
 import { VerificationResultDto } from './dto/verification-result.dto';
+
+const SET_TYPE_LABELS: Record<KnownSetType, string> = {
+    expansion: 'Expansion',
+    core: 'Core',
+    draft_innovation: 'Draft innovation (Modern Horizons, Commander Legends, ...)',
+    masters: 'Masters (reprint sets)',
+    funny: 'Un-sets (silly cards)',
+    commander: 'Commander decks',
+    duel_deck: 'Duel decks',
+    starter: 'Starter sets (Portal series)',
+    from_the_vault: 'From the Vault',
+    premium_deck: 'Premium decks',
+    planechase: 'Planechase',
+    archenemy: 'Archenemy',
+    promo: 'Promo',
+    box: 'Box sets (Secret Lair, etc.)',
+    masterpiece: 'Masterpiece series',
+    spellbook: 'Spellbook',
+    arsenal: 'Arsenal',
+    eternal: 'Eternal',
+    memorabilia: 'Memorabilia',
+    alchemy: 'Alchemy',
+    token: 'Token',
+};
 
 @Injectable()
 export class UserOrchestrator {
@@ -209,11 +242,32 @@ export class UserOrchestrator {
                 indexable: false,
                 title: 'My Account - I Want My MTG',
                 user,
+                setTypePreference: this.buildSetTypePreferenceView(
+                    user?.includedSetTypes ?? null
+                ),
             };
         } catch (error) {
             this.LOGGER.debug(`Error finding user ${userId}.`);
             return HttpErrorHandler.toHttpException(error, 'findUser');
         }
+    }
+
+    private buildSetTypePreferenceView(
+        savedTypes: string[] | null
+    ): SetTypePreferenceViewDto {
+        const selected = new Set(savedTypes ?? []);
+        const toOption = (value: KnownSetType): SetTypeOption => ({
+            value,
+            label: SET_TYPE_LABELS[value],
+            selected: selected.has(value),
+        });
+        const advanced = ADVANCED_SET_TYPES_FOR_UI.map(toOption);
+        return new SetTypePreferenceViewDto({
+            usingDefault: savedTypes === null,
+            primary: PRIMARY_SET_TYPES_FOR_UI.map(toOption),
+            advanced,
+            advancedSelectedCount: advanced.filter((o) => o.selected).length,
+        });
     }
 
     async updateUser(

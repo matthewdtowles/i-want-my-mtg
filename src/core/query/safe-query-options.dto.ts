@@ -61,6 +61,7 @@ export interface QueryOptionsData {
     readonly baseOnly: boolean;
     readonly filter?: string;
     readonly format?: Format;
+    readonly includedSetTypes?: string[] | null;
     readonly legality?: LegalityStatus;
     readonly limit: number;
     readonly page: number;
@@ -76,6 +77,7 @@ export class SafeQueryOptions implements QueryOptionsData {
     readonly baseOnly: boolean;
     readonly filter?: string;
     readonly format?: Format;
+    readonly includedSetTypes?: string[] | null;
     readonly legality?: LegalityStatus;
     readonly limit: number;
     readonly page: number;
@@ -84,7 +86,7 @@ export class SafeQueryOptions implements QueryOptionsData {
     readonly sort?: SortOptions;
     readonly type?: string;
 
-    constructor(init?: RawQueryOptions) {
+    constructor(init?: RawQueryOptions, extra?: { includedSetTypes?: string[] | null }) {
         init = init || {};
         this.ascend = safeBoolean(init.ascend);
         this.baseOnly = safeBoolean(init.baseOnly);
@@ -97,21 +99,44 @@ export class SafeQueryOptions implements QueryOptionsData {
         this.setCode = safeSetCode(init.setCode);
         this.sort = safeSort(init.sort);
         this.type = safeAlphaNumeric(init.type);
+        this.includedSetTypes = extra?.includedSetTypes ?? null;
     }
 
     withBaseOnly(baseOnly: boolean): SafeQueryOptions {
-        return new SafeQueryOptions({
-            ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
-            baseOnly: String(baseOnly),
-            filter: this.filter,
-            format: this.format,
-            legality: this.legality,
-            limit: String(this.limit),
-            page: String(this.page),
-            rarity: this.rarity,
-            setCode: this.setCode,
-            sort: this.sort,
-            type: this.type,
-        });
+        return new SafeQueryOptions(
+            {
+                ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
+                baseOnly: String(baseOnly),
+                filter: this.filter,
+                format: this.format,
+                legality: this.legality,
+                limit: String(this.limit),
+                page: String(this.page),
+                rarity: this.rarity,
+                setCode: this.setCode,
+                sort: this.sort,
+                type: this.type,
+            },
+            { includedSetTypes: this.includedSetTypes }
+        );
+    }
+
+    withSetTypes(includedSetTypes: string[] | null): SafeQueryOptions {
+        return new SafeQueryOptions(
+            {
+                ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
+                baseOnly: String(this.baseOnly),
+                filter: this.filter,
+                format: this.format,
+                legality: this.legality,
+                limit: String(this.limit),
+                page: String(this.page),
+                rarity: this.rarity,
+                setCode: this.setCode,
+                sort: this.sort,
+                type: this.type,
+            },
+            { includedSetTypes }
+        );
     }
 }

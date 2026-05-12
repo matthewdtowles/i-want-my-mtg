@@ -10,6 +10,7 @@ export class UserMapper {
             email: ormUser.email,
             role: ormUser.role ?? UserRole.User,
             password: ormUser.password,
+            includedSetTypes: ormUser.includedSetTypes ?? null,
         });
         return user;
     }
@@ -21,6 +22,7 @@ export class UserMapper {
         ormEntity.email = coreUser.email;
         ormEntity.role = coreUser.role ?? UserRole.User;
         ormEntity.password = coreUser.password;
+        ormEntity.includedSetTypes = coreUser.includedSetTypes ?? null;
         return ormEntity;
     }
 }

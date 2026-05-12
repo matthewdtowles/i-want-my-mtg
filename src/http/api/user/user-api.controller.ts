@@ -211,9 +211,8 @@ export class UserApiController {
     async getSetTypePreference(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<SetTypePreferenceResponseDto>> {
-        const user = await this.userService.findById(req.user.id);
         return ApiResponseDto.ok({
-            types: user?.includedSetTypes ?? null,
+            types: req.user?.includedSetTypes ?? null,
             default: [...DEFAULT_INCLUDED_SET_TYPES],
         });
     }

@@ -23,10 +23,10 @@ Net effect:
 
 ## Data model
 
-### New column on `user` table
+### New column on `users` table
 
 ```sql
-ALTER TABLE "user" ADD COLUMN included_set_types text[] NULL;
+ALTER TABLE public."users" ADD COLUMN included_set_types text[] NULL;
 ```
 
 Semantics:

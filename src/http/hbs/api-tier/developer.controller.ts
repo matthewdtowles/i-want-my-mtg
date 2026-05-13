@@ -57,7 +57,7 @@ export class DeveloperController {
     hub(@Req() req: AuthenticatedRequest): BaseViewDto {
         return new BaseViewDto({
             authenticated: !!req.user,
-            title: 'Developer Portal — I Want My MTG',
+            title: 'Developer Portal - I Want My MTG',
             metaDescription:
                 'Build with the IWMM API: interactive docs, pricing, guides, and API key management.',
             indexable: true,
@@ -75,7 +75,7 @@ export class DeveloperController {
     docs(@Req() req: AuthenticatedRequest): BaseViewDto {
         return new BaseViewDto({
             authenticated: !!req.user,
-            title: 'API Reference — I Want My MTG',
+            title: 'API Reference - I Want My MTG',
             metaDescription: 'Interactive API reference for the I Want My MTG REST API.',
             indexable: true,
             canonicalUrl: `${this.appUrl}/developer/docs`,
@@ -93,7 +93,7 @@ export class DeveloperController {
     gettingStarted(@Req() req: AuthenticatedRequest): BaseViewDto {
         return new BaseViewDto({
             authenticated: !!req.user,
-            title: 'API Getting Started — I Want My MTG',
+            title: 'API Getting Started - I Want My MTG',
             metaDescription:
                 'Get started with the IWMM API: create a key, authenticate, and make your first request.',
             indexable: true,
@@ -112,7 +112,7 @@ export class DeveloperController {
     discordBot(@Req() req: AuthenticatedRequest): BaseViewDto {
         return new BaseViewDto({
             authenticated: !!req.user,
-            title: 'Tutorial: Build an MTG Discord Price Bot — I Want My MTG',
+            title: 'Tutorial: Build an MTG Discord Price Bot - I Want My MTG',
             metaDescription:
                 'Walk through building a Discord bot that returns Magic: The Gathering card prices using the IWMM API.',
             indexable: true,
@@ -126,12 +126,31 @@ export class DeveloperController {
     }
 
     @UseGuards(OptionalAuthGuard)
+    @Get('guides/mcp-server')
+    @Render('developerMcpServer')
+    mcpServer(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Use the IWMM API from Claude (MCP Server) - I Want My MTG',
+            metaDescription:
+                'Connect Claude Desktop, Claude Code, and other MCP clients to your IWMM collection using the official MCP server.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/mcp-server`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'MCP Server', url: '/developer/guides/mcp-server' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
     @Get('guides/portfolio-export')
     @Render('developerPortfolioExport')
     portfolioExport(@Req() req: AuthenticatedRequest): BaseViewDto {
         return new BaseViewDto({
             authenticated: !!req.user,
-            title: 'Tutorial: Export Your Portfolio with the API — I Want My MTG',
+            title: 'Tutorial: Export Your Portfolio with the API - I Want My MTG',
             metaDescription:
                 'Walk through fetching your IWMM inventory and portfolio totals via the API and writing them to CSV.',
             indexable: true,
@@ -210,7 +229,7 @@ export class DeveloperController {
         return Object.assign(
             new BaseViewDto({
                 authenticated: !!userId,
-                title: 'API Pricing — I Want My MTG',
+                title: 'API Pricing - I Want My MTG',
                 metaDescription: 'Pricing for the IWMM API: Free, Developer, and Business tiers.',
                 indexable: true,
                 canonicalUrl: `${this.appUrl}/developer/pricing`,

@@ -686,8 +686,8 @@ Phase 2 — filterable card search:
 
 Post-PR (manual, not code):
 
-- [ ] Re-fetch `https://iwantmymtg.net/api/openapi-public.json` after deploy and re-upload to RapidAPI Studio (Definitions → CI/CD → Import OpenAPI)
-- [ ] Verify in Studio sidebar: no `*Controller_*` operation names, no UUID-shaped paths, no sealed price-history endpoint
+- [x] Re-fetch `https://iwantmymtg.net/api/openapi-public.json` after deploy and re-upload to RapidAPI Studio (Definitions → CI/CD → Import OpenAPI)
+- [x] Verify in Studio sidebar: no `*Controller_*` operation names, no UUID-shaped paths, no sealed price-history endpoint
 
 Phase 3 (deferred — blocked):
 
@@ -697,41 +697,44 @@ Phase 3 (deferred — blocked):
 
 Goal: ship an MCP server so Claude Desktop / Claude Code / Cursor / other MCP clients can query IWMM card data and manage a user's collection conversationally. Builds on 4.1 (API keys, tiered rate limits) and 4.2 (OpenAPI spec, developer portal). Auth reuses existing `iwm_live_...` API keys — no new identity surface.
 
-#### Web app prereqs (this repo)
+Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthewdtowles/iwantmymtg-mcp); v0 scaffold + full tool surface is implemented, distribution and discovery still pending.
 
-- [ ] Expose OpenAPI spec at `/.well-known/openapi.json` — 301 redirect to existing `/api/openapi.json` (auth-required spec); add a parallel `/.well-known/openapi-public.json` redirect to `/api/openapi-public.json` for unauthenticated discovery
-- [ ] Add MCP server install instructions to `/developer` hub and a new guide at `/developer/guides/mcp-server` (config snippet for Claude Desktop's `claude_desktop_config.json`, env var setup, example prompts)
-- [ ] Add "Use with Claude / MCP" section to `/user/api-keys` page so users discover the integration when they generate a key
-- [ ] Sitemap: add `/developer/guides/mcp-server`
+#### MCP server repo (`iwantmymtg-mcp`, separate repo)
 
-#### MCP server repo (`iwmm-mcp-server`, separate repo)
-
-- [ ] Scaffold new repo using `@modelcontextprotocol/sdk` (TypeScript), stdio transport, Node 20+
-- [ ] Generate typed API client from `/api/openapi.json` at build time (e.g. `openapi-typescript` + `openapi-fetch`) so tool schemas stay in lockstep with the API
-- [ ] Implement read-only tools (no auth required, hit public endpoints):
+- [x] Scaffold new repo using `@modelcontextprotocol/sdk` (TypeScript), stdio transport, Node 20+
+- [x] Implement read-only tools (no auth required, hit public endpoints):
     - `search_cards` (name/text/set/type filters, pagination)
-    - `get_card` (by uuid or set+number)
-    - `get_card_prices` (current + history range)
+    - `get_card` (by set + number)
+    - `get_card_prices` / `get_card_price_history` (current + history range)
     - `search_sets` / `get_set` / `list_set_cards`
     - `get_sealed_products` (per set)
-- [ ] Implement authenticated tools (require `IWMM_API_KEY` env var, hit user-scoped endpoints):
-    - `list_inventory` / `add_to_inventory` / `update_inventory` / `remove_from_inventory`
+- [x] Implement authenticated tools (require `IWMM_API_KEY` env var, hit user-scoped endpoints):
+    - `list_inventory` / `add_inventory` / `update_inventory` / `remove_inventory` / `get_inventory_quantities`
     - `list_transactions` / `record_transaction` / `update_transaction` / `delete_transaction`
-    - `get_portfolio_summary` / `get_portfolio_breakdown` (by set/rarity/type/format)
+    - `get_portfolio_summary` / `get_portfolio_history` / `get_portfolio_breakdown` / `get_cash_flow` / `get_realized_gains` / `get_cost_basis` / `get_card_performance` / `refresh_portfolio`
     - `list_price_alerts` / `create_price_alert` / `update_price_alert` / `delete_price_alert`
-    - `list_notifications` / `mark_notification_read`
-- [ ] Tool descriptions written for LLM consumption — emphasize when to use each, parameter semantics, and that quantity changes are real (no dry-run mode at v1)
-- [ ] Surface premium-gating cleanly: when API returns 402/403 with upgrade message, return that message verbatim to the model so it can relay to the user (don't swallow as a generic error)
-- [ ] Surface rate-limit responses: parse `X-RateLimit-*` headers, include remaining quota in tool error responses on 429
-- [ ] `MCP_SERVER_BASE_URL` env var (default `https://iwantmymtg.net`) for self-hosters / local dev
-- [ ] Unit tests for each tool (mock fetch); integration test that boots the server against a recorded API fixture
+    - `list_notifications` / `mark_notification_read` / `mark_all_notifications_read` / `get_unread_notification_count`
+- [x] Tool descriptions written for LLM consumption (zod `.describe()` on every input)
+- [x] Surface rate-limit responses: `ApiError` captures `X-RateLimit-Limit/Remaining/Reset` headers and surfaces them in tool error responses
+- [x] `IWMM_BASE_URL` env var (default `https://iwantmymtg.net`) for self-hosters / local dev
+- [ ] Generate typed API client from `/api/openapi.json` at build time (e.g. `openapi-typescript` + `openapi-fetch`) so tool schemas stay in lockstep with the API — currently zod schemas are hand-maintained per tool, which works but will drift
+- [ ] Surface premium-gating cleanly: when API returns 402/403 with upgrade message, return that message verbatim to the model so it can relay to the user (today the body is surfaced raw via `ApiError`; verify it reads cleanly to a model and isn't swallowed as a generic error)
+- [ ] Unit tests for each tool (mock fetch); integration test that boots the server against a recorded API fixture — `test/` dir exists but is empty
+
+#### Web app prereqs (this repo)
+
+- [x] Expose OpenAPI spec at `/.well-known/openapi.json` — 301 redirect to existing `/api/openapi.json` (auth-required spec); parallel `/.well-known/openapi-public.json` redirect to `/api/openapi-public.json` for unauthenticated discovery
+- [x] MCP server guide at `/developer/guides/mcp-server` (config snippets for Claude Desktop + Claude Code, env var setup, example prompts) and card on the `/developer` hub
+- [x] "Use with Claude (MCP)" section on `/user/api-keys` linking to the guide
+- [x] Sitemap: `/developer/guides/mcp-server`
 
 #### Distribution
 
-- [ ] Publish to npm as `iwmm-mcp-server` (or scoped `@iwantmymtg/mcp-server`) — runnable via `npx iwmm-mcp-server`
-- [ ] README with: install, Claude Desktop config snippet, Claude Code `.mcp.json` snippet, Cursor config, example prompts ("What's my collection worth?", "Add 4 Lightning Bolt from M11 to my inventory")
+- [x] README with: install, Claude Desktop config snippet, Claude Code `.mcp.json` snippet, example prompts
+- [ ] Publish to npm as `iwantmymtg-mcp` — runnable via `npx iwantmymtg-mcp` (name confirmed available on registry; not yet published)
 - [ ] Add `examples/` dir with screenshots/transcripts of common flows
-- [ ] CI: build + test + publish on tag (mirror Scry's release workflow)
+- [ ] CI: build + test + publish on tag (mirror Scry's release workflow) — no `.github/workflows` yet
+- [ ] Cursor config snippet in README (currently only Claude Desktop + Claude Code documented)
 
 #### Discovery
 

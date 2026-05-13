@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -6,12 +7,23 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    InternalServerErrorException,
+    NotFoundException,
     Patch,
+    Put,
     Req,
     Res,
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    DEFAULT_INCLUDED_SET_TYPES,
+    isKnownSetType,
+} from 'src/shared/constants/set-types';
+import {
+    SetTypePreferenceResponseDto,
+    UpdateSetTypePreferenceRequestDto,
+} from './dto/set-type-preference.dto';
 import { Response } from 'express';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
@@ -192,6 +204,72 @@ export class UserApiController {
     ): Promise<ApiResponseDto<{ deleted: boolean }>> {
         await this.userService.remove(req.user.id);
         return ApiResponseDto.ok({ deleted: true });
+    }
+
+    @Get('preferences/set-types')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get the current set-type filter preference' })
+    @ApiResponse({ status: 200, description: 'Current preference', type: SetTypePreferenceResponseDto })
+    async getSetTypePreference(
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<SetTypePreferenceResponseDto>> {
+        return ApiResponseDto.ok({
+            types: req.user?.includedSetTypes ?? null,
+            default: [...DEFAULT_INCLUDED_SET_TYPES],
+        });
+    }
+
+    @Put('preferences/set-types')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Update the set-type filter preference' })
+    @ApiResponse({ status: 200, description: 'Preference updated', type: SetTypePreferenceResponseDto })
+    async updateSetTypePreference(
+        @Body() dto: UpdateSetTypePreferenceRequestDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<SetTypePreferenceResponseDto>> {
+        const normalized = this.validateSetTypes(dto?.types);
+        const updated = await this.userService.updateSetTypePreference(
+            req.user.id,
+            normalized
+        );
+        if (!updated) {
+            const exists = await this.userService.findById(req.user.id);
+            if (!exists) {
+                throw new NotFoundException('User not found');
+            }
+            throw new InternalServerErrorException(
+                'Failed to update set-type preference'
+            );
+        }
+        return ApiResponseDto.okWithMessage(
+            {
+                types: updated.includedSetTypes ?? null,
+                default: [...DEFAULT_INCLUDED_SET_TYPES],
+            },
+            'Set-type preference updated'
+        );
+    }
+
+    private validateSetTypes(input: unknown): string[] | null {
+        if (input === null || input === undefined) return null;
+        if (!Array.isArray(input)) {
+            throw new BadRequestException('types must be an array or null');
+        }
+        if (input.length > 25) {
+            throw new BadRequestException('types may not contain more than 25 entries');
+        }
+        const seen = new Set<string>();
+        for (const value of input) {
+            if (typeof value !== 'string') {
+                throw new BadRequestException('each set type must be a string');
+            }
+            if (!isKnownSetType(value)) {
+                throw new BadRequestException(`unknown set type: ${value}`);
+            }
+            seen.add(value);
+        }
+        return Array.from(seen);
     }
 
     private toUserResponse(user: User): UserApiResponseDto {

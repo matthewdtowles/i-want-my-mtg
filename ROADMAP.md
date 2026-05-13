@@ -385,6 +385,17 @@ The Claude-generated `/pricing` page (`Pricing Page.html`) introduced a refined 
 - [ ] Re-run Lighthouse performance and accessibility audits after rollout (color contrast in particular)
 - [ ] Verify dark/light mode toggle works site-wide (design ships dark-default with light support)
 
+### 2.15 `in_main` Classifier Refactor + User Set-Type Filter
+
+Cross-repo refactor (scry + iwmm) fixing two long-standing classification issues: card-level `in_main` was `0` for newly-released sets (MTGJSON `boosterTypes` lag), and set-level `is_main` couldn't distinguish bonus-sheet sets (BIG, TSB, MAT) from legitimate block-child expansions (Dark Ascension, Eldritch Moon, …). Adds user opt-in for showing additional set types.
+
+- [x] **Phase 1 — card classifier fallback (scry `5.10.0`).** When MTGJSON's `boosterTypes` is absent, fall back to intrinsic per-card signals (`borderColor`, `frameEffects`, `availability`) gated to booster-bearing set types. Fixes SOS / TMT / MSH / BIG card counts without polluting commander products.
+- [x] **Phase 2 — order-independent set-level rule (scry `5.11.0`).** New rule: `type IN ('expansion','core') AND code NOT IN BONUS_EXPANSION_OVERRIDES`. Override list (`big`, `mat`, `tsb`) is the authoritative source. Block-children stay `is_main=true`. Tests cover the rule and order-independence as a regression guard.
+- [x] **Phase 3 — user set-type preference (iwmm).** `users.included_set_types text[]` (migration `033`); `GET`/`PUT /api/v1/user/preferences/set-types`; "Set Types To Show" section on `/user` with 8 primary types visible and 12 advanced types behind a disclosure. `NULL` falls back to `is_main` so anonymous + existing users see no change.
+- [ ] Open follow-up: decide whether `type = draft_innovation` sets (Modern Horizons 1–3) belong in the default `is_main` filter. Currently excluded; users can opt in via the Phase 3 preference. They are full-size draftable expansions in everything but MTGJSON's type label.
+
+Detail: [`docs/analysis/in-main-classifier/`](docs/analysis/in-main-classifier/).
+
 ---
 
 ## Phase 3: Monetization Foundation & New Features

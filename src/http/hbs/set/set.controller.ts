@@ -46,7 +46,9 @@ export class SetController {
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<SetListViewDto> {
-        const options = new SafeQueryOptions(query);
+        const options = new SafeQueryOptions(query).withSetTypes(
+            req.user?.includedSetTypes ?? null
+        );
         const view = await this.setOrchestrator.findSetList(
             req,
             [
@@ -115,7 +117,9 @@ export class SetController {
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<SetViewDto> {
-        const options = new SafeQueryOptions(query);
+        const options = new SafeQueryOptions(query).withSetTypes(
+            req.user?.includedSetTypes ?? null
+        );
         const view = await this.setOrchestrator.findBySetCode(req, code, options);
         view.title = `${view.set?.name || code.toUpperCase()} - I Want My MTG`;
         view.metaDescription = `View cards, prices, and collection stats for ${view.set?.name || code.toUpperCase()}.`;

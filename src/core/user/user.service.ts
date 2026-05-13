@@ -48,6 +48,23 @@ export class UserService {
         return (await this.repository.update(user)) ?? null;
     }
 
+    async updateSetTypePreference(
+        userId: number,
+        includedSetTypes: string[] | null
+    ): Promise<User | null> {
+        this.LOGGER.debug(`Update set-type preference for user ${userId}.`);
+        const existing = await this.repository.findById(userId);
+        if (!existing) {
+            return null;
+        }
+        const updated = new User({
+            ...existing,
+            password: undefined,
+            includedSetTypes,
+        });
+        return (await this.repository.update(updated)) ?? null;
+    }
+
     async updatePassword(userIn: User, newPassword: string): Promise<boolean> {
         this.LOGGER.debug(`Update password user ${userIn.id}, pwd XXXXXXXX.`);
         const user: User = new User({

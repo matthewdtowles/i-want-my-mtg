@@ -57,7 +57,9 @@ export class SetApiController {
         @Req() req: AuthenticatedRequest,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
-        const options = new SafeQueryOptions(query);
+        const options = new SafeQueryOptions(query).withSetTypes(
+            req.user?.includedSetTypes ?? null
+        );
         const searchTerm = query.q;
         const useBlockGrouping = query.group === 'block' && !searchTerm && !options.sort;
 

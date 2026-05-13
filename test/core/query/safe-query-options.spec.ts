@@ -129,5 +129,59 @@ describe('SafeQueryOptions — public catalog filters', () => {
             expect(opts.legality).toBe(LegalityStatus.Banned);
             expect(opts.baseOnly).toBe(false);
         });
+
+        it('preserves includedSetTypes across withBaseOnly()', () => {
+            const opts = new SafeQueryOptions(
+                { baseOnly: 'true' },
+                { includedSetTypes: ['expansion', 'core'] }
+            ).withBaseOnly(false);
+            expect(opts.includedSetTypes).toEqual(['expansion', 'core']);
+        });
+    });
+
+    describe('includedSetTypes / withSetTypes', () => {
+        it('defaults includedSetTypes to null when no extra is provided', () => {
+            const opts = new SafeQueryOptions({});
+            expect(opts.includedSetTypes).toBeNull();
+        });
+
+        it('stores includedSetTypes from constructor extra arg', () => {
+            const opts = new SafeQueryOptions(
+                {},
+                { includedSetTypes: ['expansion', 'commander'] }
+            );
+            expect(opts.includedSetTypes).toEqual(['expansion', 'commander']);
+        });
+
+        it('withSetTypes() sets the field on the new instance', () => {
+            const opts = new SafeQueryOptions({}).withSetTypes(['draft_innovation']);
+            expect(opts.includedSetTypes).toEqual(['draft_innovation']);
+        });
+
+        it('withSetTypes(null) clears the field', () => {
+            const opts = new SafeQueryOptions(
+                {},
+                { includedSetTypes: ['expansion'] }
+            ).withSetTypes(null);
+            expect(opts.includedSetTypes).toBeNull();
+        });
+
+        it('withSetTypes() preserves other filter fields', () => {
+            const opts = new SafeQueryOptions({
+                setCode: 'lea',
+                rarity: 'rare',
+                type: 'creature',
+                format: Format.Modern,
+                legality: LegalityStatus.Banned,
+                baseOnly: 'true',
+            }).withSetTypes(['expansion']);
+            expect(opts.setCode).toBe('lea');
+            expect(opts.rarity).toBe(CardRarity.Rare);
+            expect(opts.type).toBe('creature');
+            expect(opts.format).toBe(Format.Modern);
+            expect(opts.legality).toBe(LegalityStatus.Banned);
+            expect(opts.baseOnly).toBe(true);
+            expect(opts.includedSetTypes).toEqual(['expansion']);
+        });
     });
 });

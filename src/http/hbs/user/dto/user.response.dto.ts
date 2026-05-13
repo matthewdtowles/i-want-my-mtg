@@ -3,4 +3,5 @@ export class UserResponseDto {
     readonly email: string;
     readonly name: string;
     readonly role: string;
+    readonly includedSetTypes?: string[] | null;
 }

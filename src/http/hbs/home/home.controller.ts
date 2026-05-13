@@ -27,7 +27,9 @@ export class HomeController {
     @Render('home')
     async getHomePage(@Req() req: AuthenticatedRequest): Promise<SetListViewDto> {
         this.LOGGER.log(`Home page - find initial set list.`);
-        const options: SafeQueryOptions = new SafeQueryOptions(req.query);
+        const options: SafeQueryOptions = new SafeQueryOptions(req.query).withSetTypes(
+            req.user?.includedSetTypes ?? null
+        );
         const setListView = await this.setOrchestrator.findSetList(req, [], options);
         setListView.indexable = true;
         setListView.title = 'I Want My MTG - Magic: The Gathering Collection Tracker';

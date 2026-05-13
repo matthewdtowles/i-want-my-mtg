@@ -24,4 +24,12 @@ export class UserOrmEntity {
         default: UserRole.User,
     })
     role: UserRole;
+
+    @Column({
+        name: 'included_set_types',
+        type: 'text',
+        array: true,
+        nullable: true,
+    })
+    includedSetTypes: string[] | null;
 }

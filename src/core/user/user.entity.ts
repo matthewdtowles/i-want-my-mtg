@@ -8,6 +8,7 @@ export class User {
     // TODO: remove and keep inside of db module
     readonly password: string;
     readonly role: UserRole;
+    readonly includedSetTypes?: string[] | null;
 
     constructor(init: Partial<User>) {
         validateInit(init, ['email', 'name']);
@@ -16,5 +17,6 @@ export class User {
         this.name = init.name;
         this.password = init.password;
         this.role = init.role ?? UserRole.User;
+        this.includedSetTypes = init.includedSetTypes ?? null;
     }
 }

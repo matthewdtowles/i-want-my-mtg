@@ -1,7 +1,7 @@
 # Post-Ingest Audit: `is_main` Classifier State
 
-**Date:** 2026-05-12
-**Status:** Phase 2 spec needs revision; deployed behavior is closer to correct than the spec describes
+**Date:** 2026-05-12 (updated 2026-05-13 with implemented fix)
+**Status:** Resolved by scry branch `in-main-rule-fix` (PR pending). Rule rewritten to be order-independent.
 
 ## Summary
 
@@ -64,48 +64,62 @@ Every other intended exclusion — Modern Horizons, Un-sets, Portal, all block-c
 - **Phase 3 UX testing is partially invalidated.** The documented flow ("user opts in to draft_innovation to see MH3 again") doesn't trigger because MH3 is `draft_innovation`, not `expansion`, so it was already excluded by the type filter rather than the parent_code rule. That side of Phase 3 still needs validation. The historical block-children flow ("user wants to hide block-children") was never a real requirement — those should stay visible by default.
 - **Spec, code, and DB are now three-way inconsistent.** Even if the practical behavior is acceptable, the documented rule, the deployed rule, and the observed DB state all disagree. That's a maintenance hazard.
 
-## Recommendation
+## Resolution
 
-The right fix is **not** to enforce the strict spec by reordering scry's pipeline. That would incorrectly remove ~60 legitimate block expansions from default listings. Instead, amend the rule to target what we actually want to filter: bonus sheets posing as expansions.
+Implemented in scry branch [`in-main-rule-fix`](https://github.com/matthewdtowles/scry/tree/in-main-rule-fix). The rule was rewritten to drop the `parent_code` dependency entirely and rely on the override list as the authoritative bonus-sheet filter:
 
-### Primary recommendation: amend the rule to a bonus-sheet detector
+```sql
+is_main = (type IN ('expansion','core') AND code NOT IN (BONUS_EXPANSION_OVERRIDES))
+```
 
-Replace the strict `parent_code IS NULL` clause with a bonus-sheet predicate. Two candidate signals:
+`BONUS_EXPANSION_OVERRIDES` now contains `big`, `mat`, `tsb`. Adding to the list is the only mechanism for excluding future bonus sheets; there is no longer an implicit parent_code-based detector that depends on execution order.
 
-1. **Native MTGJSON `parentCode`.** Bonus sheets attached to a parent product (BIG → OTJ, TSB → TSP) have `parentCode` populated by MTGJSON directly at upsert time. Block-children do *not* — their `parent_code` is only assigned later by scry's own canonical-parent normalization. The distinction is already there in the data; the rule just needs to read `parent_code` *before* scry's normalization overwrites it, or read from a separate column.
-2. **Override list.** The existing `BONUS_EXPANSION_OVERRIDES` constant covers the MTGJSON gaps (currently `mat`; would extend to whatever else MTGJSON misses).
+### Why this over the alternatives
 
-Concretely, two implementation paths:
+- **Order-independent.** No matter when `update_parent_codes()` runs relative to `update_is_main()`, the result is the same. The prior accidental coupling is gone.
+- **No schema change.** Considered adding a separate `mtgjson_parent_code` column. Rejected because the override list already covers the cases we need (MTGJSON's native `parentCode` is unreliable for the historically-tricky bonus sheets like TSB and MAT anyway), and avoiding a migration on both repos is worth the trade-off.
+- **Same data outcome.** Production result after re-ingest: 134 main sets (112 expansion + 22 core), same 3 bonus sheets excluded. Block-children, historical cores, FDN all preserved as `is_main=true`. No external API contract change.
 
-- **Path A — preserve the ordering bug intentionally.** Keep `update_main_status()` running before `update_parent_codes()`. Document this ordering as load-bearing: "is_main evaluates against MTGJSON-native parent_code only; scry's canonical-parent assignment runs after and does not feed back into is_main." Rename the variables or add a comment so the next maintainer doesn't 'fix' the order. This is essentially formalizing the current accidental behavior.
-- **Path B — separate the two concepts in the schema.** Add a distinct column (`mtgjson_parent_code`, populated only from the raw MTGJSON field) and have `update_main_status` read from that. `parent_code` continues to hold scry's normalized canonical-parent value and is used by application queries. Cleaner long-term but a larger change (migration on both sides).
+### Verification (after running scry from `in-main-rule-fix`)
 
-Path A is the lower-cost option. Path B is the right shape if this surface keeps growing.
+```sql
+-- Main count by type — only expansion/core should appear
+SELECT type, COUNT(*) FILTER (WHERE is_main) AS n FROM "set" GROUP BY type ORDER BY n DESC;
+-- Expect: expansion=112, core=22, everything else 0
 
-### Rollout for Path A
+-- Bonus sheets stay out
+SELECT code, is_main FROM "set" WHERE code IN ('big','tsb','mat');
+-- Expect: all false
 
-1. In scry `classifier-refactor`, add a comment block above `update_main_status()` and above the `update_parent_codes()` / `update_main_status()` calls in `cli/controller.rs` documenting that the ordering is intentional and explaining why.
-2. Amend `phase-1-and-2-spec.md` and the HANDOFF: the rule's intent is "bonus-sheet sets out, block-child expansions in." Document that `parent_code IS NULL` is evaluated against MTGJSON-native parentCode only (i.e., before scry's normalization step writes block-canonical parents).
-3. Audit the `BONUS_EXPANSION_OVERRIDES` list. Walk every `type='expansion'` set in the DB and decide whether any others (besides MAT) are bonus sheets that MTGJSON failed to mark with a parentCode. Likely additions to check: any older insert-sheet products, `MUL` (Multiverse Legends — attached to MOM), `SLD` derivatives.
-4. Verify with:
+-- Block-children stay in
+SELECT code, is_main FROM "set" WHERE code IN ('emn','dka','avr','bng','jou','frf','m14','2ed','fdn','sos','msh');
+-- Expect: all true
+```
 
-   ```sql
-   -- Bonus sheets that should NOT be in main
-   SELECT code, name, parent_code, base_size, total_size, is_main
-   FROM "set"
-   WHERE type IN ('expansion','core')
-     AND total_size > 0
-     AND base_size::float / total_size < 0.5
-   ORDER BY base_size::float / total_size ASC;
-   ```
+### Tests added
 
-   The low base/total ratio is a heuristic for bonus sheets. Any rows here with `is_main = true` are candidates for the override list.
+`tests/set_repository_test.rs`:
 
-5. Re-run a single ingest to apply any override additions. Spot-check that legitimate block expansions (EMN, AVR, DKA, BNG, JOU, RIX) stay `is_main = true` and bonus sheets stay `is_main = false`.
+- `test_update_is_main_block_children_stay_main` — canonical + block-child both stay `is_main=true`
+- `test_update_is_main_bonus_overrides` — `big`, `tsb`, `mat` all flip false
+- `test_update_is_main_non_expansion_types_excluded` — `commander`, `draft_innovation`, `masterpiece`, `promo`, `funny`, `starter`, `duel_deck`, `masters` never become main
+- `test_update_is_main_order_independent` — same result whether `update_parent_codes` runs before or after `update_is_main` (regression guard)
 
-### Out-of-scope question worth answering
+All 12 set integration tests pass; full scry test suite (98 unit + integration) passes; `run-local.sh ingest` against the dev DB produces the expected post-ingest state documented above.
 
-The bigger philosophical question: should Modern Horizons sets (`type = draft_innovation`) be in default browse, or hidden behind the Phase 3 opt-in? They are full-size, draftable expansions in everything but MTGJSON type. Currently they are hidden — that's correct under the spec but may be wrong for users. Worth deciding before Phase 3 ships.
+### Follow-ups
+
+- **Walk the override list** when new bonus sheets ship. Audit query for candidates (any `expansion`/`core` set with low base-to-total ratio):
+
+  ```sql
+  SELECT code, name, base_size, total_size, is_main,
+         base_size::float / NULLIF(total_size,0) AS ratio
+  FROM "set"
+  WHERE type IN ('expansion','core') AND total_size > 0
+  ORDER BY ratio ASC LIMIT 20;
+  ```
+
+- **Out-of-scope question for Phase 3:** Modern Horizons sets are `type = draft_innovation`. Under the current rule they're excluded from default browse. They are full-size, draftable expansions in everything but MTGJSON type. Decide before Phase 3 ships whether they should be `is_main = true` (via an additional rule clause or a `MAIN_EXPANSION_INCLUDES` whitelist) or stay opt-in via the user preference. Current behavior preserves the documented Phase 3 UX.
 
 ## Out-of-scope observations
 

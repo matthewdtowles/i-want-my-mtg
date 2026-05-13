@@ -126,6 +126,25 @@ export class DeveloperController {
     }
 
     @UseGuards(OptionalAuthGuard)
+    @Get('guides/mcp-server')
+    @Render('developerMcpServer')
+    mcpServer(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Use the IWMM API from Claude (MCP Server) - I Want My MTG',
+            metaDescription:
+                'Connect Claude Desktop, Claude Code, and other MCP clients to your IWMM collection using the official MCP server.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/mcp-server`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'MCP Server', url: '/developer/guides/mcp-server' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
     @Get('guides/portfolio-export')
     @Render('developerPortfolioExport')
     portfolioExport(@Req() req: AuthenticatedRequest): BaseViewDto {

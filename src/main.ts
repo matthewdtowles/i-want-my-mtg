@@ -87,6 +87,16 @@ async function bootstrap() {
         res.json(publicOpenApiDocument);
     });
 
+    // Well-known OpenAPI discovery URLs (used by MCP clients and other tooling
+    // that look for a spec at a conventional location). 301 to the canonical
+    // /api/openapi*.json so the spec only lives in one place.
+    server.get('/.well-known/openapi.json', (_req, res) => {
+        res.redirect(301, '/api/openapi.json');
+    });
+    server.get('/.well-known/openapi-public.json', (_req, res) => {
+        res.redirect(301, '/api/openapi-public.json');
+    });
+
     if (process.env.NODE_ENV !== 'production') {
         SwaggerModule.setup('api/docs', app, openApiDocument);
     }

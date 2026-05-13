@@ -1,0 +1,114 @@
+<section class='settings-container max-w-3xl mx-auto'>
+    <p class='text-xs text-gray-500 dark:text-gray-400 mb-2'>
+        <a class='text-link' href='/developer'>&larr; Developer Portal</a>
+    </p>
+    <h1 class='page-title'>Use IWMM from Claude (MCP Server)</h1>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+        The <a class='text-link' href='https://modelcontextprotocol.io' target='_blank' rel='noopener noreferrer'>Model Context Protocol</a>
+        (MCP) lets AI assistants like Claude Desktop, Claude Code, and Cursor call out to external
+        tools. The
+        <a class='text-link' href='https://github.com/matthewdtowles/iwantmymtg-mcp' target='_blank' rel='noopener noreferrer'>iwantmymtg-mcp</a>
+        server exposes the IWMM API as a set of tools, so you can search cards, look up prices, and
+        manage your collection conversationally.
+    </p>
+
+    <div class='space-y-8 text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+
+        <div>
+            <h2 class='text-lg font-semibold mb-2'>What you can do</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li><strong>Without a key:</strong> search cards, look up a card by set and number, fetch current prices and 30-day history, browse sets and sealed products.</li>
+                <li><strong>With your IWMM API key:</strong> read and update your inventory, log transactions, query portfolio breakdowns, and manage price alerts and notifications.</li>
+            </ul>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>1. Create an API key (optional)</h2>
+            <p>
+                Read-only tools work without authentication. To let Claude manage your inventory or
+                portfolio, generate a key at
+                <a class='text-link' href='/user/api-keys'>/user/api-keys</a>
+                and copy it - the raw value is only shown once. Free tier limits apply (100
+                requests/day); see <a class='text-link' href='/developer/pricing'>API pricing</a>
+                for higher tiers.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>2. Configure your MCP client</h2>
+
+            <h3 class='text-base font-semibold mt-4 mb-1'>Claude Desktop</h3>
+            <p class='mb-2'>
+                Edit <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>claude_desktop_config.json</code>
+                (macOS: <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>~/Library/Application Support/Claude/claude_desktop_config.json</code>;
+                Windows: <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>%APPDATA%\Claude\claude_desktop_config.json</code>):
+            </p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>{
+  "mcpServers": {
+    "iwmm": {
+      "command": "npx",
+      "args": ["-y", "iwantmymtg-mcp"],
+      "env": {
+        "IWMM_API_KEY": "iwm_live_..."
+      }
+    }
+  }
+}</code></pre>
+            <p class='mt-2 text-gray-600 dark:text-gray-400'>
+                Restart Claude Desktop after saving. The <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>IWMM_API_KEY</code>
+                line is optional - leave it out if you only need read-only tools.
+            </p>
+
+            <h3 class='text-base font-semibold mt-6 mb-1'>Claude Code</h3>
+            <p class='mb-2'>
+                Add the same block to <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>.mcp.json</code>
+                in your project (or <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>~/.claude/.mcp.json</code> globally):
+            </p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>{
+  "mcpServers": {
+    "iwmm": {
+      "command": "npx",
+      "args": ["-y", "iwantmymtg-mcp"],
+      "env": { "IWMM_API_KEY": "iwm_live_..." }
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>3. Try it out</h2>
+            <p class='mb-2'>Ask Claude something like:</p>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li>"Search for Lightning Bolt printings and show me the cheapest one."</li>
+                <li>"What's the price history of Bloodbraid Elf from Modern Horizons 3?"</li>
+                <li>"Add 4 copies of Lightning Bolt from LEA to my inventory."</li>
+                <li>"Break down my collection value by set."</li>
+                <li>"What sealed products are available for MH3?"</li>
+            </ul>
+            <p class='mt-2 text-gray-600 dark:text-gray-400'>
+                Inventory and transaction tools make real changes - there is no dry-run mode in v1.
+                Claude will confirm before writes, but treat it like running a CLI: review what it
+                proposes before approving.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>Configuration</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li><code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>IWMM_API_KEY</code> - your personal API key. Required for authenticated tools only.</li>
+                <li><code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>IWMM_BASE_URL</code> - defaults to <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>https://iwantmymtg.net</code>. Override for self-hosted or local-dev instances.</li>
+            </ul>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>Source &amp; feedback</h2>
+            <p>
+                The server is open source at
+                <a class='text-link' href='https://github.com/matthewdtowles/iwantmymtg-mcp' target='_blank' rel='noopener noreferrer'>github.com/matthewdtowles/iwantmymtg-mcp</a>.
+                File issues there for bugs and feature requests, or
+                <a class='text-link' href='mailto:legal@iwantmymtg.net'>email us</a> for anything
+                account-related.
+            </p>
+        </div>
+    </div>
+</section>

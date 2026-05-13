@@ -1,52 +1,63 @@
-# `in_main` Classifier Refactor - Analysis and Implementation Plan
+# `in_main` Classifier Refactor
 
-**Date:** 2026-05-11
-**Status:** specs ready for implementation
+**Status:** Shipped (scry `5.11.0`, iwmm `1.23.0`).
 
 ## Problem
 
-`set.base_size = 0` for new expansions (SOS, TMT, MSH, BIG) when users expect it to reflect the count of "main" cards in the set. Root cause: the classifier (`scry/src/card/domain/main_set_classifier.rs`) hard-requires MTGJSON's `boosterTypes` field to contain `"default"`, and MTGJSON does not populate that field promptly. For SOS (released 2026-04-24), every card still has `boosterTypes: null` weeks after release.
+Two issues with how main-set membership was being classified:
 
-Secondary problem: even with a fix, scry's set-level `is_main` derivation (`base_size > 0 AND type != 'masterpiece'`) is wrong about several edge cases - bonus mini-sets like `BIG` (a bonus inside Outlaws of Thunder Junction) and `MAT` (March of the Machine: The Aftermath) get classified as main expansions because their type happens to be `expansion`.
+1. **Card-level (`card.in_main`):** scry's classifier hard-required MTGJSON's `boosterTypes` field. MTGJSON doesn't populate it promptly for newly-released sets, so `base_size` was `0` for recent expansions (SOS, TMT, MSH, BIG).
+2. **Set-level (`set.is_main`):** scry derived `is_main` from `base_size > 0 AND type != 'masterpiece'`. Bonus-sheet sets that MTGJSON types as `expansion` (BIG, TSB, MAT) leaked into main listings.
 
-## Solution overview
+## Solution
 
-Three phases, each independently deployable:
+Three phases, all shipped:
 
-| Phase | Scope | Fixes |
-|---|---|---|
-| **Phase 1** | Card classifier in scry. Add fallback signals (borderColor, frameEffects, availability) when `boosterTypes` is absent. Gate the fallback on booster-bearing set types only. | SOS, TMT, MSH, BIG card counts. Prevents commander-deck explosion. |
-| **Phase 2** | Set-level `is_main` SQL in scry. Use `parent_code IS NULL` + a small `BONUS_EXPANSION_OVERRIDES` constant to catch bonus mini-sets. | TSB, BIG, MAT correctly excluded from main listings. Modern Horizons / Un-sets / Portal flip off (acceptable - Phase 3 brings them back via user choice). |
-| **Phase 3** | User preference for which set types appear in browse / search. Stored as `user.included_set_types text[]`. `NULL` falls back to `is_main` (Phase 2 default). | Users decide whether Modern Horizons, commander decks, etc. appear in their views. Removes the philosophical "is this main?" question from the codebase. |
+### Phase 1 — card classifier fallback (scry)
 
-Phase 1 and Phase 2 are scry-only changes with no schema migration (the `parent_code` column already exists and is already populated). Phase 3 is the larger iwmm-side feature.
+`src/card/domain/main_set_classifier.rs`. When `boosterTypes` is absent, fall back to intrinsic per-card signals (`borderColor`, `frameEffects`, `availability`), gated to booster-bearing set types only (`expansion`, `core`, `draft_innovation`, `masters`, `funny`). Prevents commander decks and other non-booster products from being falsely classified.
 
-## Implementation specs
+### Phase 2 — set-level rule (scry)
 
-- [Phase 1 + Phase 2 spec](phase-1-and-2-spec.md) - card classifier fix and set-level rule tightening
-- [Phase 3 spec](phase-3-spec.md) - user-controlled set-type filter
+`src/set/repository.rs::update_is_main`. Final rule:
 
-## Methodology used during analysis
+```sql
+is_main = (type IN ('expansion','core') AND code NOT IN BONUS_EXPANSION_OVERRIDES)
+```
 
-- Downloaded MTGJSON `AllPrintings.json.gz` (~166 MB compressed) to `/tmp/mtgjson-cache/`.
-- Streamed the JSON with `ijson` to avoid loading the full payload into memory.
-- For every set in the production DB (602 sets), ran both the current classifier and several proposed variants. Recorded `current_main`, `proposed_main`, exclusion reasons, and samples of newly-included or newly-excluded cards.
-- Identified `parentCode` as the cleanest single signal for separating "real expansions" from "bonus mini-sets" - covers BIG, TSB, OM1, OM2, and the FBB/FWB/4BB foreign reprints automatically. Gaps in MTGJSON's `parentCode` data (MAT, possibly HOB and FRA pending release) become the override list.
+The override list (`big`, `mat`, `tsb`) is the authoritative source. Block-children (Dark Ascension, Eldritch Moon, Born of the Gods, Stronghold, …) stay `is_main=true` — they are full block expansions, not bonus sheets, even though scry's `update_parent_codes` later stamps a parent code on them.
 
-## Headline analysis findings
+The rule is intentionally order-independent w.r.t. `update_parent_codes` (regression-tested in `tests/set_repository_test.rs::test_update_is_main_order_independent`).
 
-- 425 of 602 sets show no change under the corrected card classifier.
-- 177 sets see their `in_main` count change, all in the direction of MORE in_main cards (no card is ever removed by the new logic).
-- The naive version of the fix (no set-type gating) would have added ~20,320 in_main cards across the DB - mostly by populating commander decks and other preconstructed products that should stay empty. The gated version (Phase 1) limits the change to set types that legitimately have boosters (~4,400 cards), and Phase 2 cleans up the set-level classifications.
+### Phase 3 — user preference (iwmm)
 
-## Critical decisions captured
+`users.included_set_types text[]` (nullable). Signed-in users can override the default `is_main` filter via the "Set Types To Show" section on `/user`. Default for anonymous + uncustomized users is `is_main = true`.
 
-- **Boundary between Phase 1 and Phase 2:** card-level vs set-level. They're separable; each fixes part of the problem.
-- **Set-type allowlist for the card-level fallback:** `expansion`, `core`, `draft_innovation`, `masters`, `funny` - the types that actually ship in booster packs. Other types (commander, duel_deck, from_the_vault, ...) keep current behavior: `boosterTypes: null` correctly means "not in a booster pack."
-- **Set-level rule:** `type IN ('expansion','core') AND parent_code IS NULL AND code NOT IN override_list`. Phase 2 flips `draft_innovation`, `funny`, `starter` off main listings; Phase 3 lets users opt them back in.
-- **Override list location:** Rust constant in scry source. Start there; graduate to a DB column if the list grows past ~10 entries or you need to fix misclassifications without a release.
+- Primary group (8 types in UI): expansion, core, draft_innovation, masters, commander, duel_deck, funny, starter.
+- Advanced group (12 types behind a `<details>` disclosure): the rest.
+- `GET`/`PUT /api/v1/user/preferences/set-types` with allowlist validation (max 25, only known types, dedup).
+- `SafeQueryOptions.withSetTypes()` mirrors the existing `withBaseOnly()` pattern.
 
-## Decisions locked in
+## Adding a new bonus sheet
 
-1. **Phase 2 set-type list:** strict - `type IN ('expansion','core')` only. Modern Horizons, Un-sets, and Portal sets flip off main listings between Phase 2 ship and Phase 3 ship; users get them back via preference.
-2. **Phase 3 settings UI:** curated primary group of 8 common set types, with an "Advanced" disclosure for the long-tail types. All types still accepted by the PUT validation - the UI tiering is presentation only.
+When a new bonus-sheet set ships and MTGJSON labels it `type=expansion`, add its lowercase code to `BONUS_EXPANSION_OVERRIDES` in `scry/src/set/repository.rs` with a comment explaining what it is. Ship a scry release.
+
+Audit query for candidate bonus sheets in the current DB:
+
+```sql
+SELECT code, name, base_size, total_size, is_main,
+       base_size::float / NULLIF(total_size,0) AS ratio
+FROM "set"
+WHERE type IN ('expansion','core') AND total_size > 0
+ORDER BY ratio ASC LIMIT 20;
+```
+
+A low base-to-total ratio is a heuristic — anything with `is_main=true` that looks like an insert sheet is a candidate.
+
+## Open follow-up
+
+Should `type = draft_innovation` sets (Modern Horizons 1–3) be in default browse? They are full-size draftable expansions in everything but MTGJSON's type label. Currently they're excluded from `is_main` and only appear if the user enables `draft_innovation` in the Phase 3 preference. Decide before declaring Phase 3 done.
+
+## See also
+
+- [`post-ingest-audit.md`](post-ingest-audit.md) — diagnostic record of the ordering bug that led to the order-independent rewrite, kept for reference.

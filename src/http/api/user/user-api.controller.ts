@@ -242,10 +242,13 @@ export class UserApiController {
                 'Failed to update set-type preference'
             );
         }
-        return ApiResponseDto.ok({
-            types: updated.includedSetTypes ?? null,
-            default: [...DEFAULT_INCLUDED_SET_TYPES],
-        });
+        return ApiResponseDto.okWithMessage(
+            {
+                types: updated.includedSetTypes ?? null,
+                default: [...DEFAULT_INCLUDED_SET_TYPES],
+            },
+            'Set-type preference updated'
+        );
     }
 
     private validateSetTypes(input: unknown): string[] | null {

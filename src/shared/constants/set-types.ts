@@ -39,7 +39,8 @@ export function isKnownSetType(value: string): value is KnownSetType {
 /**
  * The implicit set-type list applied when a user has no custom preference
  * saved. Matches the result of `set.is_main = true` after the Phase 2
- * change in scry (`type IN ('expansion','core') AND parent_code IS NULL`).
+ * change in scry: `type IN ('expansion','core')` with bonus-sheet sets
+ * (BIG, TSB, MAT) excluded. Block follow-ons stay in main.
  */
 export const DEFAULT_INCLUDED_SET_TYPES: KnownSetType[] = ['expansion', 'core'];
 

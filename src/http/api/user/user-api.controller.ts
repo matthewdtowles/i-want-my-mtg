@@ -7,6 +7,8 @@ import {
     HttpCode,
     HttpStatus,
     Inject,
+    InternalServerErrorException,
+    NotFoundException,
     Patch,
     Put,
     Req,
@@ -231,8 +233,17 @@ export class UserApiController {
             req.user.id,
             normalized
         );
+        if (!updated) {
+            const exists = await this.userService.findById(req.user.id);
+            if (!exists) {
+                throw new NotFoundException('User not found');
+            }
+            throw new InternalServerErrorException(
+                'Failed to update set-type preference'
+            );
+        }
         return ApiResponseDto.ok({
-            types: updated?.includedSetTypes ?? null,
+            types: updated.includedSetTypes ?? null,
             default: [...DEFAULT_INCLUDED_SET_TYPES],
         });
     }

@@ -718,8 +718,8 @@ Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthew
 - [x] Surface rate-limit responses: `ApiError` captures `X-RateLimit-Limit/Remaining/Reset` headers and surfaces them in tool error responses
 - [x] `IWMM_BASE_URL` env var (default `https://iwantmymtg.net`) for self-hosters / local dev
 - [ ] Generate typed API client from `/api/openapi.json` at build time (e.g. `openapi-typescript` + `openapi-fetch`) so tool schemas stay in lockstep with the API — currently zod schemas are hand-maintained per tool, which works but will drift
-- [ ] Surface premium-gating cleanly: when API returns 402/403 with upgrade message, return that message verbatim to the model so it can relay to the user (today the body is surfaced raw via `ApiError`; verify it reads cleanly to a model and isn't swallowed as a generic error)
-- [ ] Unit tests for each tool (mock fetch); integration test that boots the server against a recorded API fixture — `test/` dir exists but is empty
+- [x] Surface premium-gating cleanly: `formatApiError` (in `src/error-formatter.ts`) parses JSON error bodies, returns a clean upgrade prompt with `/pricing` link for 402/403, an API-key setup hint for 401, and reset-time info for 429
+- [x] Unit tests for each tool (45 tests on `node:test` covering `apiFetch` auth/query/error handling and one happy-path test per registered tool)
 
 #### Web app prereqs (this repo)
 
@@ -731,10 +731,10 @@ Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthew
 #### Distribution
 
 - [x] README with: install, Claude Desktop config snippet, Claude Code `.mcp.json` snippet, example prompts
-- [ ] Publish to npm as `iwantmymtg-mcp` — runnable via `npx iwantmymtg-mcp` (name confirmed available on registry; not yet published)
-- [ ] Add `examples/` dir with screenshots/transcripts of common flows
-- [ ] CI: build + test + publish on tag (mirror Scry's release workflow) — no `.github/workflows` yet
-- [ ] Cursor config snippet in README (currently only Claude Desktop + Claude Code documented)
+- [x] Publish to npm as `iwantmymtg-mcp` — runnable via `npx iwantmymtg-mcp` (v0.1.0 published via Trusted Publishing/OIDC)
+- [x] Add `examples/` dir with prompt walkthroughs of common flows (card lookup, inventory, transactions, portfolio, price alerts, sealed products); screenshots/transcripts to be added as captured
+- [x] CI: build + test on push/PR; publish on tag via Trusted Publishing (`.github/workflows/ci.yml` + `publish.yml`, gated to tags reachable from main)
+- [x] Cursor config snippet in README
 
 #### Discovery
 

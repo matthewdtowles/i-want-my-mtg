@@ -109,6 +109,13 @@
                     <li>Empty or omitted &mdash; ensures at least 1 copy (won't reduce existing quantity)</li>
                 </ul>
 
+                <h3 class="font-semibold mb-2">Importing from Archidekt</h3>
+                <p class="mb-3">An Archidekt collection CSV export is detected automatically &mdash; upload it through <strong>Import Cards</strong> just like a native file. Archidekt's <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Edition Code</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Collector Number</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Scryfall ID</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Quantity</code>, and <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Finish</code> columns are mapped to your inventory.</p>
+                <ul class="list-disc list-inside mb-4 space-y-1">
+                    <li>A <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Finish</code> of <em>Foil</em> or <em>Etched</em> is imported as foil; <em>Normal</em> as non-foil.</li>
+                    <li><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Condition</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Language</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Purchase Price</code>, and <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Tags</code> are not imported yet.</li>
+                </ul>
+
                 <h3 class="font-semibold mb-2">Limits</h3>
                 <ul class="list-disc list-inside space-y-1">
                     <li>2,000 rows per file</li>

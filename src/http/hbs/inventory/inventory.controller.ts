@@ -25,7 +25,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { CardCsvParser } from './parsers/card-csv.parser';
+import { parseCardImport } from './parsers/card-import-dispatch';
 import { SetCsvParser } from './parsers/set-csv.parser';
 import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
@@ -111,7 +111,7 @@ export class InventoryController {
         if (!file) {
             throw new BadRequestException('No CSV file provided or file type not accepted');
         }
-        const rows = CardCsvParser.parse(file.buffer);
+        const rows = parseCardImport(file.buffer);
         const result = await this.inventoryOrchestrator.importCards(rows, req);
         return { result };
     }

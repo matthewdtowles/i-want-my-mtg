@@ -54,26 +54,43 @@ Branch is pushed; PR not opened yet.
 
 Branch pushed; PR not opened yet.
 
+## Done (continued)
+
+### npm publish - `iwantmymtg-mcp@0.1.0`
+
+- Published via Trusted Publishing (OIDC) - no long-lived `NPM_TOKEN` secret;
+  GitHub Actions identity is configured as a trusted publisher on the npm
+  package.
+- Workflow bumped to Node 24 (npm 11 ships natively, required by trusted
+  publishing).
+- Publish workflow gated to tags reachable from `main` - feature-branch
+  tags fail fast with an actionable message instead of publishing.
+- `dist-tags.latest = 0.1.0`; published by `npm-oidc-no-reply@github.com`.
+
+### `0.2.0` UX pass - branch `mcp-examples-and-gating-ux` in `iwantmymtg-mcp`
+
+- `src/error-formatter.ts` parses NestJS-style JSON error bodies and
+  surfaces clean LLM-facing messages: API-key setup hint for 401, upgrade
+  prompt with `/pricing` link for 402/403, reset-time note for 429.
+- Cursor config snippet added to README.
+- `examples/` dir scaffolded: README index plus per-flow walkthroughs
+  (card lookup, inventory, transactions, portfolio, price alerts, sealed
+  products). Screenshots/real transcripts still to be captured.
+- 13 new tests for the error formatter; 58 tests total, all passing.
+- Bumped to `0.2.0` (User-Agent + package + MCP server version).
+
+PR not opened yet; merge -> tag `v0.2.0` -> publish workflow handles npm.
+
 ## Next up (in order)
 
-1. **Review + merge** `mcp-web-prereqs` (this repo) and `mcp-tests-ci` (mcp
-   repo). Each is a small, self-contained PR.
-2. **npm publish** as `iwantmymtg-mcp@0.1.0`. Name is free on the registry.
-   Add `NPM_TOKEN` to the repo secrets, bump `package.json` version, tag
-   `v0.1.0`, push the tag - the publish workflow handles the rest.
-3. **examples/ dir** - screenshots/transcripts of common flows for the
-   README.
-4. **Cursor config snippet** in README (only Claude Desktop + Claude Code
-   documented today).
-5. **Premium-gating UX check** - verify 402/403 API responses surface
-   cleanly through `ApiError.message` so the LLM relays the upgrade prompt
-   verbatim. May need a thin wrapper in `api-client.ts`.
-6. **Typed API client from OpenAPI** - currently hand-rolled zod schemas;
+1. **Capture real screenshots/transcripts** in `examples/` once you've
+   exercised the flows in Claude Desktop / Cursor / Claude Code.
+2. **Typed API client from OpenAPI** - currently hand-rolled zod schemas;
    will drift. Generate at build time with `openapi-typescript` +
    `openapi-fetch`.
-7. **Discovery** - PR to `modelcontextprotocol/servers`, list on Smithery
+3. **Discovery** - PR to `modelcontextprotocol/servers`, list on Smithery
    and Glama, post on r/ClaudeAI + r/mtgfinance.
-8. **Content** - tutorial blog post, demo GIF.
+4. **Content** - tutorial blog post, demo GIF.
 
 ## Deferred
 

@@ -327,14 +327,16 @@ Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthew
 - Web app prereqs: `/.well-known/openapi.json` + `openapi-public.json` redirects; `/developer/guides/mcp-server` guide + hub card; "Use with Claude (MCP)" section on `/user/api-keys`; sitemap entry.
 - Distribution: README with Claude Desktop / Claude Code / Cursor config snippets; published to npm as `iwantmymtg-mcp` v0.1.0 via Trusted Publishing/OIDC; `examples/` dir with prompt walkthroughs; CI on push/PR + publish-on-tag workflow.
 
-#### Remaining: Typed API client (server repo)
+#### Typed API client (server repo)
 
-- [ ] Add `openapi-typescript` + `openapi-fetch` as dev/runtime deps in `iwantmymtg-mcp`
-- [ ] Add `build:types` script that fetches `/api/openapi.json` (configurable via `IWMM_BASE_URL`, default prod) and emits `src/generated/api-types.ts`
-- [ ] Wire `build:types` into `prebuild` and CI so generated types are always fresh
-- [ ] Refactor `apiFetch` to use `openapi-fetch` against the generated types
-- [ ] Replace hand-maintained zod input schemas with schemas derived from (or validated against) the generated types where possible; keep zod at the tool boundary for LLM-facing descriptions
-- [ ] Document the regeneration workflow in CONTRIBUTING.md (when to bump, how to handle breaking API changes)
+Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` client generated from the OpenAPI spec.
+
+- [x] Added `openapi-typescript` (dev) + `openapi-fetch` (runtime) deps in `iwantmymtg-mcp`
+- [x] `build:types` script fetches `/api/openapi.json` (configurable via `IWMM_OPENAPI_URL`, default prod) and emits `src/generated/api-types.ts`
+- [x] `build:types` wired into `prebuild` and CI so generated types are always fresh
+- [x] All tools migrated from the untyped `apiFetch` shim to `apiClient` against the generated `paths` types; shim removed. Typed paths caught a latent bug — `update_transaction` was sending `PATCH` to an endpoint the spec declares as `PUT`.
+- [x] zod input schemas kept at the tool boundary for LLM-facing descriptions (as planned); type safety against the generated spec now comes from the `apiClient` call sites at compile time.
+- [x] Regeneration + breaking-change workflow documented in `CONTRIBUTING.md`
 
 #### Remaining: Discovery
 

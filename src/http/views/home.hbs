@@ -40,3 +40,21 @@
 <div id="set-list">
 {{>setList}}
 </div>
+{{#if latestBlogPosts.length}}
+<section class="max-w-5xl mx-auto px-5 py-10">
+    <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">From the Blog</h2>
+        <a href="/blog" class="text-sm text-teal-600 dark:text-teal-400 hover:underline">All posts &rarr;</a>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {{#each latestBlogPosts}}
+            <a href="/blog/{{this.slug}}"
+               class="block border border-gray-200 dark:border-midnight-700 rounded-xl p-4 transition-colors hover:border-teal-500 dark:hover:border-teal-500">
+                <time datetime="{{this.date}}" class="text-xs text-gray-500 dark:text-gray-400">{{this.date}}</time>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">{{this.title}}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{this.description}}</p>
+            </a>
+        {{/each}}
+    </div>
+</section>
+{{/if}}

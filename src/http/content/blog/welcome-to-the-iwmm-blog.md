@@ -24,5 +24,6 @@ Tracking a collection is partly a tooling problem and partly a knowledge
 problem. The app handles the tooling. The blog is for the knowledge: the
 habits and judgment calls that make the numbers mean something.
 
-If there is a topic you want covered, the GitHub repository linked in the
-footer is the best place to ask.
+If there is a topic you want covered, jump into the Discord linked in the
+footer and say so. That is where requests get answered fastest and where
+you will see drafts before they go up.

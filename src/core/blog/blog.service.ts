@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { existsSync, readdirSync, readFileSync } from 'fs';
+import { readdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { getLogger } from 'src/logger/global-app-logger';
 import { BlogPost, BlogPostSummary } from './blog-post';
@@ -22,39 +22,43 @@ export class BlogService {
     private readonly markdown = new MarkdownIt({ html: false, linkify: true, typographer: true });
 
     /** All posts, newest first. Posts with invalid frontmatter are skipped. */
-    getPosts(): BlogPostSummary[] {
-        return this.readSlugs()
-            .map((slug) => this.parse(slug))
+    async getPosts(): Promise<BlogPostSummary[]> {
+        const slugs = await this.readSlugs();
+        const posts = await Promise.all(slugs.map((slug) => this.parse(slug)));
+        return posts
             .filter((post): post is BlogPost => post !== null)
             .map(({ html: _html, ...summary }) => summary)
             .sort((a, b) => b.date.localeCompare(a.date));
     }
 
     /** A single post by slug, or null if it does not exist or is malformed. */
-    getPost(slug: string): BlogPost | null {
+    async getPost(slug: string): Promise<BlogPost | null> {
         if (!/^[a-z0-9-]+$/.test(slug)) {
             return null;
         }
         return this.parse(slug);
     }
 
-    private readSlugs(): string[] {
-        if (!existsSync(this.contentDir)) {
-            this.LOGGER.warn(`Blog content directory not found: ${this.contentDir}`);
-            return [];
+    private async readSlugs(): Promise<string[]> {
+        try {
+            const files = await readdir(this.contentDir);
+            return files
+                .filter((file) => file.endsWith('.md'))
+                .map((file) => file.replace(/\.md$/, ''))
+                .filter((slug) => /^[a-z0-9-]+$/.test(slug));
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                this.LOGGER.warn(`Blog content directory not found: ${this.contentDir}`);
+                return [];
+            }
+            throw error;
         }
-        return readdirSync(this.contentDir)
-            .filter((file) => file.endsWith('.md'))
-            .map((file) => file.replace(/\.md$/, ''));
     }
 
-    private parse(slug: string): BlogPost | null {
+    private async parse(slug: string): Promise<BlogPost | null> {
         const path = join(this.contentDir, `${slug}.md`);
-        if (!existsSync(path)) {
-            return null;
-        }
         try {
-            const { data, content } = matter(readFileSync(path, 'utf-8'));
+            const { data, content } = matter(await readFile(path, 'utf-8'));
             if (!data.title || !data.date || !data.description) {
                 this.LOGGER.warn(`Blog post '${slug}' is missing required frontmatter; skipping.`);
                 return null;
@@ -67,6 +71,9 @@ export class BlogService {
                 html: this.markdown.render(content),
             };
         } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                return null;
+            }
             this.LOGGER.error(`Failed to parse blog post '${slug}': ${error}`);
             return null;
         }

@@ -1,18 +1,19 @@
 import { Controller, Get, NotFoundException, Param, Render, Req, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BlogService } from 'src/core/blog/blog.service';
-import { BlogPostSummary } from 'src/core/blog/blog-post';
+import { BlogPost, BlogPostSummary } from 'src/core/blog/blog-post';
 import { getLogger } from 'src/logger/global-app-logger';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { buildJsonLd } from 'src/http/base/json-ld.util';
 
 interface BlogIndexViewDto extends BaseViewDto {
     posts: BlogPostSummary[];
 }
 
 interface BlogPostViewDto extends BaseViewDto {
-    post: { slug: string; title: string; date: string; description: string; html: string };
+    post: BlogPost;
 }
 
 @Controller('blog')
@@ -30,8 +31,8 @@ export class BlogController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render('blog')
-    index(@Req() req: AuthenticatedRequest): BlogIndexViewDto {
-        const posts = this.blogService.getPosts();
+    async index(@Req() req: AuthenticatedRequest): Promise<BlogIndexViewDto> {
+        const posts = await this.blogService.getPosts();
         this.LOGGER.log(`Blog index - ${posts.length} posts.`);
         return Object.assign(
             new BaseViewDto({
@@ -53,13 +54,16 @@ export class BlogController {
     @UseGuards(OptionalAuthGuard)
     @Get(':slug')
     @Render('blogPost')
-    post(@Req() req: AuthenticatedRequest, @Param('slug') slug: string): BlogPostViewDto {
-        const post = this.blogService.getPost(slug);
+    async post(
+        @Req() req: AuthenticatedRequest,
+        @Param('slug') slug: string
+    ): Promise<BlogPostViewDto> {
+        const post = await this.blogService.getPost(slug);
         if (!post) {
             throw new NotFoundException('Blog post not found');
         }
         const url = `${this.appUrl}/blog/${post.slug}`;
-        const jsonLd = JSON.stringify({
+        const jsonLd = buildJsonLd({
             '@context': 'https://schema.org',
             '@type': 'BlogPosting',
             headline: post.title,

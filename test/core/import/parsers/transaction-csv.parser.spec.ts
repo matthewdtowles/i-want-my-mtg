@@ -1,4 +1,4 @@
-import { TransactionCsvParser } from 'src/http/hbs/transaction/parsers/transaction-csv.parser';
+import { TransactionCsvParser } from 'src/core/import/parsers/transaction-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');

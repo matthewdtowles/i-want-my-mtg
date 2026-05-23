@@ -19,14 +19,14 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { parse as parseCsv } from 'csv-parse/sync';
 import { memoryStorage } from 'multer';
+import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
+import { parseCardImport } from 'src/core/import/parsers/card-import-dispatch';
+import { SetCsvParser } from 'src/core/import/parsers/set-csv.parser';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { parseCardImport } from './parsers/card-import-dispatch';
-import { SetCsvParser } from './parsers/set-csv.parser';
 import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { ImportExportGuideViewDto } from './dto/import-export-guide.view.dto';
@@ -35,6 +35,9 @@ import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
 
+// `application/octet-stream` is a pragmatic allowance: Safari (and some Windows
+// configurations) send that MIME for .csv uploads. The `.csv` extension check
+// below is the load-bearing defense against renamed-binary uploads.
 const CSV_MIME_TYPES = new Set([
     'text/csv',
     'text/plain',
@@ -111,8 +114,8 @@ export class InventoryController {
         if (!file) {
             throw new BadRequestException('No CSV file provided or file type not accepted');
         }
-        const rows = parseCardImport(file.buffer);
-        const result = await this.inventoryOrchestrator.importCards(rows, req);
+        const { format, rows } = parseCardImport(file.buffer);
+        const result = await this.inventoryOrchestrator.importCards(rows, req, format);
         return { result };
     }
 
@@ -125,26 +128,21 @@ export class InventoryController {
             throw new BadRequestException('No CSV file provided or file type not accepted');
         }
 
-        // Detect truncation: parse at most MAX_SET_ROWS+1 raw records to check if file exceeds the cap.
-        const MAX_SET_ROWS = 2000;
-        const probe: unknown[] = parseCsv(file.buffer, {
-            columns: true,
-            skip_empty_lines: true,
-            to: MAX_SET_ROWS + 1,
-        });
-        const truncated = probe.length > MAX_SET_ROWS;
-
-        const rows = SetCsvParser.parse(file.buffer); // capped at MAX_SET_ROWS by parser
+        // Parser yields every row; we walk row-by-row to call the
+        // single-row service, so we apply MAX_IMPORT_ROWS + emit the
+        // truncation error ourselves rather than inside the service.
+        const allRows = SetCsvParser.parse(file.buffer);
+        const rows = allRows.slice(0, MAX_IMPORT_ROWS);
 
         let totalSaved = 0;
         let totalDeleted = 0;
         let totalSkipped = 0;
         const allErrors: Array<{ row: number; error: string }> = [];
 
-        if (truncated) {
+        if (allRows.length > MAX_IMPORT_ROWS) {
             allErrors.push({
-                row: MAX_SET_ROWS + 1,
-                error: `File exceeds ${MAX_SET_ROWS} row limit; only first ${MAX_SET_ROWS} rows processed`,
+                row: MAX_IMPORT_ROWS + 2,
+                error: `File exceeds ${MAX_IMPORT_ROWS} row limit; only first ${MAX_IMPORT_ROWS} rows processed`,
             });
         }
 

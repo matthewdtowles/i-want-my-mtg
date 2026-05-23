@@ -4,6 +4,7 @@ export interface CardImportRow {
     id?: string;
     name?: string;
     set_code?: string;
+    set_name?: string;
     number?: string;
     quantity?: string;
     foil?: string;

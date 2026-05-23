@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { stringify } from 'csv-stringify';
 import {
     FREE_TIER_HISTORY_DAYS,
     freeTierHistoryCutoff,
 } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
-import { ImportError } from 'src/core/import/import.types';
+import { buildImportErrorCsv } from 'src/core/import/import-error-csv';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
+import { TransactionExportService } from 'src/core/transaction/export/transaction-export.service';
 import { TransactionImportService } from 'src/core/transaction/import/transaction-import.service';
 import { TransactionImportRow } from 'src/core/transaction/import/transaction-import.types';
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
@@ -36,6 +36,7 @@ export class TransactionOrchestrator {
     constructor(
         @Inject(TransactionService) private readonly transactionService: TransactionService,
         @Inject(TransactionImportService) private readonly importService: TransactionImportService,
+        @Inject(TransactionExportService) private readonly exportService: TransactionExportService,
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {
@@ -170,7 +171,13 @@ export class TransactionOrchestrator {
             const result = await this.importService.importTransactions(rows, req.user.id);
             const errorCsv =
                 result.errors.length > 0
-                    ? await this.buildImportErrorCsv(result.errors)
+                    ? await buildImportErrorCsv(result.errors, [
+                          'row',
+                          'name',
+                          'set_code',
+                          'number',
+                          'error',
+                      ])
                     : undefined;
             return new ImportResultDto({ ...result, errorCsv });
         } catch (error) {
@@ -230,74 +237,11 @@ export class TransactionOrchestrator {
             const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
             const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
             const transactions = await this.transactionService.findByUser(req.user.id, sinceDate);
-            const cardIds = [...new Set(transactions.map((t) => t.cardId))];
-            const cardMap = await this.buildCardMap(cardIds);
-
-            const rows = transactions.map((t) => {
-                const card = cardMap.get(t.cardId);
-                const total = t.quantity * t.pricePerUnit;
-                return {
-                    Date: TransactionPresenter.formatDate(t.date),
-                    Type: t.type,
-                    'Card Name': TransactionPresenter.escapeCsvField(card?.name || ''),
-                    Set: card?.setCode?.toUpperCase() || '',
-                    'Collector #': card?.number || '',
-                    Foil: t.isFoil ? 'Yes' : 'No',
-                    Quantity: String(t.quantity),
-                    'Price Per Unit': t.pricePerUnit.toFixed(2),
-                    Total: total.toFixed(2),
-                    Fees: t.fees != null ? t.fees.toFixed(2) : '',
-                    Source: TransactionPresenter.escapeCsvField(t.source || ''),
-                    Notes: TransactionPresenter.escapeCsvField(t.notes || ''),
-                };
-            });
-
-            return new Promise((resolve, reject) => {
-                stringify(
-                    rows,
-                    {
-                        header: true,
-                        columns: [
-                            'Date',
-                            'Type',
-                            'Card Name',
-                            'Set',
-                            'Collector #',
-                            'Foil',
-                            'Quantity',
-                            'Price Per Unit',
-                            'Total',
-                            'Fees',
-                            'Source',
-                            'Notes',
-                        ],
-                    },
-                    (err, output) => (err ? reject(err) : resolve(output))
-                );
-            });
+            return await this.exportService.exportToCsv(transactions);
         } catch (error) {
             this.LOGGER.debug(`Error exporting CSV for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'exportCsv');
         }
-    }
-
-    private buildImportErrorCsv(errors: ImportError[]): Promise<string> {
-        return new Promise((resolve, reject) => {
-            stringify(
-                errors.map((e) => ({
-                    row: e.row,
-                    name: e.name ?? '',
-                    set_code: e.set_code ?? '',
-                    number: e.number ?? '',
-                    error: e.error,
-                })),
-                {
-                    header: true,
-                    columns: ['row', 'name', 'set_code', 'number', 'error'],
-                },
-                (err, out) => (err ? reject(err) : resolve(out))
-            );
-        });
     }
 
     private async buildCardMap(

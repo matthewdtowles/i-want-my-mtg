@@ -1,6 +1,9 @@
 <section class="border border-gray-200 dark:border-midnight-700 rounded-xl sm:m-0 md:m-4">
     <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
         <h3 class="page-title">Import Complete</h3>
+        {{#if result.detectedFormatLabel}}
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Detected format: <span class="font-semibold text-teal-700 dark:text-teal-300">{{result.detectedFormatLabel}}</span></p>
+        {{/if}}
     </section>
     <div class="content-wrapper py-6 px-4">
         <div class="max-w-md mx-auto">

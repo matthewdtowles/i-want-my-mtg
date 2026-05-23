@@ -5,15 +5,12 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { stringify } from 'csv-stringify';
+import { buildImportErrorCsv } from 'src/core/import/import-error-csv';
+import { ImportFormat } from 'src/core/import/import.types';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
-import {
-    CardImportRow,
-    ImportError,
-    SetImportRow,
-} from 'src/core/inventory/import/inventory-import.types';
+import { CardImportRow, SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
@@ -214,14 +211,28 @@ export class InventoryOrchestrator {
         }
     }
 
-    async importCards(rows: CardImportRow[], req: AuthenticatedRequest): Promise<ImportResultDto> {
+    async importCards(
+        rows: CardImportRow[],
+        req: AuthenticatedRequest,
+        detectedFormat?: ImportFormat
+    ): Promise<ImportResultDto> {
         this.LOGGER.debug(`importCards for user ${req.user?.id}: ${rows.length} rows.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const result = await this.importService.importCards(rows, req.user.id);
             const errorCsv =
-                result.errors.length > 0 ? await this.buildErrorCsv(result.errors) : undefined;
-            return new ImportResultDto({ ...result, errorCsv });
+                result.errors.length > 0
+                    ? await buildImportErrorCsv(result.errors, [
+                          'row',
+                          'name',
+                          'set_code',
+                          'number',
+                          'quantity',
+                          'foil',
+                          'error',
+                      ])
+                    : undefined;
+            return new ImportResultDto({ ...result, errorCsv, detectedFormat });
         } catch (error) {
             this.LOGGER.debug(`Error importing cards for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'importCards');
@@ -234,7 +245,17 @@ export class InventoryOrchestrator {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const result = await this.importService.importSet(row, req.user.id);
             const errorCsv =
-                result.errors.length > 0 ? await this.buildErrorCsv(result.errors) : undefined;
+                result.errors.length > 0
+                    ? await buildImportErrorCsv(result.errors, [
+                          'row',
+                          'name',
+                          'set_code',
+                          'number',
+                          'quantity',
+                          'foil',
+                          'error',
+                      ])
+                    : undefined;
             return new ImportResultDto({ ...result, errorCsv });
         } catch (error) {
             this.LOGGER.debug(`Error importing set for user ${req.user?.id}: ${error?.message}`);
@@ -253,27 +274,6 @@ export class InventoryOrchestrator {
             );
             return HttpErrorHandler.toHttpException(error, 'exportInventory');
         }
-    }
-
-    private buildErrorCsv(errors: ImportError[]): Promise<string> {
-        return new Promise((resolve, reject) => {
-            stringify(
-                errors.map((e) => ({
-                    row: e.row,
-                    name: e.name ?? '',
-                    set_code: e.set_code ?? '',
-                    number: e.number ?? '',
-                    quantity: e.quantity ?? '',
-                    foil: e.foil ?? '',
-                    error: e.error,
-                })),
-                {
-                    header: true,
-                    columns: ['row', 'name', 'set_code', 'number', 'quantity', 'foil', 'error'],
-                },
-                (err, out) => (err ? reject(err) : resolve(out))
-            );
-        });
     }
 
     async delete(req: AuthenticatedRequest, cardId: string, isFoil: boolean): Promise<boolean> {

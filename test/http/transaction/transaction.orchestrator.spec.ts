@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionExportService } from 'src/core/transaction/export/transaction-export.service';
 import { TransactionImportService } from 'src/core/transaction/import/transaction-import.service';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -55,6 +56,12 @@ describe('TransactionOrchestrator', () => {
                     provide: TransactionImportService,
                     useValue: {
                         importTransactions: jest.fn(),
+                    },
+                },
+                {
+                    provide: TransactionExportService,
+                    useValue: {
+                        exportToCsv: jest.fn().mockResolvedValue(''),
                     },
                 },
                 {
@@ -254,32 +261,29 @@ describe('TransactionOrchestrator', () => {
     });
 
     describe('exportCsv', () => {
-        it('should generate CSV with headers and transaction rows', async () => {
+        it('should delegate to TransactionExportService with the user transactions', async () => {
             transactionService.findByUser.mockResolvedValue([testTransaction]);
-            cardService.findByIds.mockResolvedValue([
-                { id: 'card-1', name: 'Lightning Bolt', setCode: 'lea', number: '161' } as any,
-            ]);
+            const exportService = (
+                orchestrator as unknown as { exportService: TransactionExportService }
+            ).exportService;
+            (exportService.exportToCsv as jest.Mock).mockResolvedValue('CSV_OUTPUT');
 
             const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
 
-            expect(csv).toContain(
-                'Date,Type,Card Name,Set,Collector #,Foil,Quantity,Price Per Unit,Total,Fees,Source,Notes'
-            );
-            expect(csv).toContain('BUY');
-            expect(csv).toContain('Lightning Bolt');
-            expect(csv).toContain('LEA');
-            expect(csv).toContain('161');
-            expect(csv).toContain('No'); // not foil
+            expect(csv).toBe('CSV_OUTPUT');
+            expect(exportService.exportToCsv).toHaveBeenCalledWith([testTransaction]);
         });
 
-        it('should handle empty transactions', async () => {
+        it('should call the export service with an empty array for no transactions', async () => {
             transactionService.findByUser.mockResolvedValue([]);
-            cardService.findByIds.mockResolvedValue([]);
+            const exportService = (
+                orchestrator as unknown as { exportService: TransactionExportService }
+            ).exportService;
+            (exportService.exportToCsv as jest.Mock).mockResolvedValue('');
 
-            const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
+            await orchestrator.exportCsv(mockAuthenticatedRequest);
 
-            const lines = csv.trim().split('\n');
-            expect(lines).toHaveLength(1); // headers only
+            expect(exportService.exportToCsv).toHaveBeenCalledWith([]);
         });
     });
 

@@ -1,4 +1,4 @@
-import { CardCsvParser } from 'src/http/hbs/inventory/parsers/card-csv.parser';
+import { CardCsvParser } from 'src/core/import/parsers/card-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');
@@ -49,11 +49,11 @@ describe('CardCsvParser', () => {
             expect(row.quantity).toBeUndefined();
         });
 
-        it('caps rows at 2000', () => {
+        it('does not cap rows; service applies MAX_IMPORT_ROWS', () => {
             const header = 'id,name,set_code,number,quantity,foil\n';
             const rows = Array.from({ length: 2100 }, (_, i) => `id${i},,,,1,\n`).join('');
             const result = CardCsvParser.parse(toBuffer(header + rows));
-            expect(result.length).toBe(2000);
+            expect(result.length).toBe(2100);
         });
 
         it('throws for unknown column', () => {

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
-import { ImportError, ImportResult } from 'src/core/import/import.types';
+import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
+import { ImportError, ImportResult, parseBool } from 'src/core/import/import.types';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
@@ -8,8 +9,6 @@ import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { InventoryRepositoryPort } from '../ports/inventory.repository.port';
 import { CardImportRow, SetImportRow } from './inventory-import.types';
-
-const MAX_ROWS = 2000;
 
 @Injectable()
 export class InventoryImportService {
@@ -35,11 +34,11 @@ export class InventoryImportService {
             [];
         const toDelete: Array<{ cardId: string; userId: number; isFoil: boolean }> = [];
 
-        const cappedRows = rows.slice(0, MAX_ROWS);
-        if (rows.length > MAX_ROWS) {
+        const cappedRows = rows.slice(0, MAX_IMPORT_ROWS);
+        if (rows.length > MAX_IMPORT_ROWS) {
             errors.push({
-                row: MAX_ROWS + 2,
-                error: `File exceeds ${MAX_ROWS} row limit; only first ${MAX_ROWS} rows processed`,
+                row: MAX_IMPORT_ROWS + 2,
+                error: `File exceeds ${MAX_IMPORT_ROWS} row limit; only first ${MAX_IMPORT_ROWS} rows processed`,
             });
         }
 
@@ -51,6 +50,7 @@ export class InventoryImportService {
                 id: row.id,
                 name: row.name,
                 set_code: row.set_code,
+                set_name: row.set_name,
                 number: row.number,
             });
 
@@ -183,8 +183,8 @@ export class InventoryImportService {
             };
         }
 
-        const includeVariants = this.parseBool(row.include_variants, false);
-        const foilOverride = this.parseBool(row.foil, false);
+        const includeVariants = parseBool(row.include_variants, false);
+        const foilOverride = parseBool(row.foil, false);
 
         const baseOptions = new SafeQueryOptions({ limit: '10000' });
         const mainOptions = baseOptions.withBaseOnly(true);
@@ -221,11 +221,5 @@ export class InventoryImportService {
         );
 
         return { saved: result.saved, skipped: result.skipped, deleted: 0, errors: [] };
-    }
-
-    private parseBool(value: string | undefined, defaultValue: boolean): boolean {
-        if (value === undefined || value === '') return defaultValue;
-        const lower = value.toLowerCase().trim();
-        return lower === 'true' || lower === '1' || lower === 'yes';
     }
 }

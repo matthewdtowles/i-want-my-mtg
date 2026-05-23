@@ -4,350 +4,79 @@
 
 ### 1.1 Migrate DB from Docker to Managed Instance
 
-- [x] Evaluate managed Postgres providers — chose AWS Lightsail Managed DB
-- [x] Upgrade local dev Postgres from 15 to 18 (docker-compose.yml)
-- [x] Fix docker-compose.yml DATABASE*URL to construct from POSTGRES*\* vars (postgres hostname)
-- [x] Verify PG 18 compatibility (ingest, web app, user registration all working)
-- [x] Plan migration strategy — chose pg_dump/pg_restore (simple, cross-version compatible)
-- [x] Set up Lightsail managed PostgreSQL 18 instance (`iwantmymtg-db`)
-- [x] Configure networking (Lightsail web instance → managed DB)
-- [x] Migrate production data (pg_dump/pg_restore — verified row counts match)
-- [x] Install postgresql-client on Lightsail web instance
-- [x] Add `db-managed` alias to deploy script for managed DB access
-- [x] Point production app at managed DB (update .env DATABASE_URL with `?sslmode=require`)
-- [x] Update deploy script — remove POSTGRES\_\* vars, update DB_HOST/DB_PORT for managed DB
-- [x] Update docker-compose.prod.yml — remove postgres/migrate services and postgres_prod_data volume
-- [x] Update migrations to run against managed DB (run_migrations.sh with managed DB host)
-- [x] Fix migration script quoting — DATABASE_URL `?sslmode=require` broke under `nullglob`
-- [x] Add SSL config for managed DB — `ssl: { rejectUnauthorized: false }` in TypeORM
-- [x] Fix sslmode conflict — strip `sslmode` from URL so TypeORM ssl config takes effect
-- [x] Remove VACUUM ANALYZE calls from Scry retention command (managed DB handles autovacuum)
-- [x] Remove `health --price-history` bloat/vacuum monitoring (not needed with managed DB)
-- [x] Decommission Docker postgres volumes on server (reclaimed ~1.4GB)
-- [x] Verify backups and point-in-time recovery (auto backups enabled, 5-min PITR for 7 days)
-- [x] Update CLAUDE.md and documentation
+Done: migrated production from Docker Postgres to AWS Lightsail Managed PostgreSQL 18 via pg_dump/pg_restore, with SSL config, automated backups/PITR, and full removal of in-cluster postgres/vacuum tooling.
 
 ### 1.2 Split Scry into Separate Repository
 
-- [x] Create new `scry` repository
-- [x] Move `scry/` directory contents to new repo root
-- [x] Set up standalone CI/CD (build, test, Docker image push)
-- [x] Update container registry tags and deploy script for separate ETL image
-- [x] Remove `scry/` from web app repo
-- [x] Update web app CI to remove ETL build step
-- [x] Update web app Docker Compose to pull ETL image from new repo's registry
-- [x] Update documentation in both repos
+Done: ETL extracted to standalone `scry` repo with its own CI/CD; web app pulls the ETL Docker image from ghcr.io.
 
 ### 1.3 Integration Test Suite
 
-- [x] Choose integration test strategy — e2e with real DB via Docker test container
-- [x] Set up test database provisioning (docker-compose.test.yml, postgres on port 5433 with tmpfs)
-- [x] Write integration tests for auth flow (login, logout, cookie handling, guard enforcement)
-- [x] Write integration tests for inventory CRUD (create, update, delete)
-- [x] Write integration tests for transaction CRUD and FIFO calculations
-- [x] Write integration tests for portfolio computation
-- [x] Write integration tests for card/set search and filtering (public endpoints, search, spoilers)
-- [x] Add integration test step to CI pipeline
-- [x] Document how to run integration tests locally
+Done: Docker-based Postgres test harness (`docker-compose.test.yml`, port 5433) running e2e suites for auth, inventory, transactions, portfolio, and card/set search; wired into CI.
 
 ### 1.4 Create API Layer
 
-- [x] Design REST API structure (versioned: `/api/v1/`)
-- [x] Decide on auth strategy for API clients (JWT bearer tokens + cookie fallback)
-- [x] Implement API controllers separate from view controllers
-- [x] Card endpoints: search, detail, prices, price history
-- [x] Set endpoints: list, detail, cards in set, prices
-- [x] Inventory endpoints: list, add, update, delete
-- [x] Transaction endpoints: list, create, update, delete, cost basis
-- [x] Portfolio endpoints: summary, value history, card performance, cash flow, realized gains, refresh
-- [x] User/auth endpoints: login, profile, update, password, delete
-- [x] Add API documentation (OpenAPI/Swagger at `/api/docs`)
-- [x] Add API-specific error response format (`ApiResponseDto` envelope)
-- [x] Add rate limiting for API endpoints (`ApiRateLimitGuard`)
-- [x] Add API integration tests
+Done: versioned `/api/v1/` REST API with JWT bearer + cookie auth, full CRUD across cards/sets/inventory/transactions/portfolio/user, OpenAPI docs at `/api/docs`, `ApiResponseDto` envelope, `ApiRateLimitGuard`, and integration tests.
 
 ### 1.5 Progressive Web Enhancement
 
-- [x] Set list: AJAX paginate/sort/filter (builds core infrastructure)
-    - [x] Move SetTypeMapper to shared location (`src/http/base/`)
-    - [x] Build SetApiPresenter (TDD) — maps Set domain entity → SetApiResponseDto with tags, parentCode, isMain
-    - [x] Add owned data to Set API (TDD) — OptionalAuthGuard, InventoryService injection, completionRate
-    - [x] Build client-side AJAX module (`setListAjax.js`) — fetch/sort/filter/paginate via `/api/v1/sets`
-    - [x] Add URL state management (pushState for sort/paginate, replaceState for filter, popstate for back)
-    - [x] Wire up setListPage.hbs template with container div and deferred script
-- [x] Card search/list: AJAX paginate/sort/filter
-    - [x] Add `keyruneCode` to Card API DTO (TDD — presenter maps from `card.set.keyruneCode` with `setCode` fallback)
-    - [x] Add `@ApiQuery` decorators for `filter` and `baseOnly` on set cards endpoint
-    - [x] Build `searchAjax.js` — intercepts form submit, independent card/set pagination, parallel API fetches
-    - [x] Build `setCardListAjax.js` — sort/filter/paginate/baseOnly via `/api/v1/sets/:code/cards`
-    - [x] Wire search.hbs and set.hbs templates with container divs and deferred scripts
-    - [x] Add integration tests for `keyruneCode`, filter, and baseOnly params
-    - [x] Scroll position preservation via `min-height` pinning during AJAX content swap
-- [x] Inventory list: AJAX paginate/sort/filter + toast notifications on errors
-    - [x] Extract global toast utility (`toast.js`) — `window.showToast`/`window.dismissToast` with status-based durations
-    - [x] Enrich Inventory API response with display fields (imgSrc, rarity, keyruneCode, prices, tags, url)
-    - [x] Add batch inventory quantities endpoint (`GET /api/v1/inventory/quantities?cardIds=...`)
-    - [x] Build `inventoryListAjax.js` — filter/sort/paginate/limit/baseOnly via `/api/v1/inventory`
-    - [x] Wire inventory +/- and delete controls for AJAX-rendered rows (event delegation compatibility)
-    - [x] Wire toast notifications to inventory update/delete failures
-    - [x] Replace `—` placeholder in set card list with real +/- inventory controls via quantities endpoint
-    - [x] Add presenter unit tests (TDD) and integration tests for enriched fields + quantities endpoint
-- [x] Transaction list: AJAX paginate/sort/filter
-    - [x] Add TX_DATE, TX_TYPE, TX_CARD, TX_PRICE sort options
-    - [x] Add paginated query methods to TransactionRepositoryPort and implement with QueryBuilderHelper
-    - [x] Build TransactionApiPresenter (TDD — 10 tests) with card join data (cardUrl, cardNumber)
-    - [x] Update TransactionApiController findAll to paginated with SafeQueryOptions + PaginationMeta
-    - [x] Build `transactionListAjax.js` — sort/filter/paginate + inline edit/delete via `/api/v1/transactions`
-    - [x] Wire transactions.hbs with AJAX container, filter partial, pagination, deferred script
-    - [x] Cross-browser testing
+Done: AJAX paginate/sort/filter across set list, card search, set-card list, inventory, and transactions — all backed by `/api/v1/*` with URL state, scroll preservation, and toast notifications on errors.
 
 ### 1.6 Frontend Consolidation
 
-- [x] Remove duplicated AjaxUtils functions from searchAjax.js
-- [x] Add renderTags() helper to AjaxUtils and replace inline tag loops
-- [x] Fix hover class inconsistency in inventoryCtrl.hbs
-- [x] HTML template elements for quantity and delete forms (template cloning)
-- [x] Populate deleteInventoryEntry.hbs partial
-- [x] Fix mana cost rendering divergence in setCardListAjax.js
-- [x] CSS consolidation — extract history-range-btn base class for price history buttons
-- [x] Standardize content wrapper elements (div → section)
-- [x] Standardize page heading levels (all pages use h1 for primary heading)
-- [x] Standardize table structures (w-full, first/last cell padding in CSS)
-- [x] Standardize empty state patterns (py-16, icon + message + hint)
-- [x] Standardize script loading (defer on all external script tags)
-- [x] Standardize filter form wrapping in transactions.hbs
-- [x] Delete orphaned partials (priceInfoTooltip, importExportTooltip)
-- [x] Add `concat` Handlebars helper for inline string building
-- [x] Extract `emptyState.hbs` partial — consolidate 8 empty state patterns
-- [x] Extract `statCard.hbs` partial — consolidate simple stat card markup
-- [x] Consistent Normal→Foil ordering (inventoryCtrl, set.hbs mobile, AJAX)
-- [x] Dynamic price/foil column visibility (set page, card page, AJAX)
-- [x] Transaction row `<template>` conversion (template cloning in ajaxUtils)
+Done: shared `ajaxUtils` (renderTags, stepperGroup, template cloning), extracted `emptyState.hbs` and `statCard.hbs` partials, standardized headings/tables/wrappers/script-defer, dynamic price/foil columns, consistent Normal→Foil ordering, and `concat` HBS helper.
 
 ### 2.1 Add Pre-fetching for Performance
 
-- [x] Resource hints in `<head>` (`main.hbs`)
-    - [x] Add `dns-prefetch` for CDN origins (jsdelivr, cdnflare, Google Fonts)
-    - [x] Add `preload` for critical CSS (tailwind.css, app.css)
-    - [x] Add `preload` for Keyrune and Font Awesome font files (WOFF2)
-- [x] Cache headers for static assets
-    - [x] Configure `maxAge` on Express static middleware (`app.config.ts`)
-    - [x] Add cache-busting query param or versioning strategy for CSS/JS
-- [x] Cache headers for API responses
-    - [x] Add `CacheControlInterceptor` for GET API endpoints (short TTL, stale-while-revalidate)
-    - [x] Set `no-store` for authenticated/user-specific endpoints
-- [x] Link prefetching module (`prefetch.js`)
-    - [x] Prefetch visible nav links on idle via `requestIdleCallback`
-    - [x] Prefetch on hover/touchstart for any internal `<a>` link
-    - [x] Respect `Save-Data` header and `prefers-reduced-data`
-    - [x] Wire into `main.hbs` layout
-- [x] Service worker for offline caching
-    - [x] Register service worker from `main.hbs`
-    - [x] Precache static assets (CSS, JS, logo) with versioned cache name
-    - [x] Cache-first strategy for static assets, network-first for API/pages
-    - [x] Offline fallback page
-    - [x] Cache card image URLs on visit for offline browsing
-- [x] Measure improvement (Lighthouse before/after)
+Done: resource hints (dns-prefetch, preload), Express static cache headers + cache-busting, `CacheControlInterceptor` for API responses, idle/hover link prefetch with `Save-Data` respect, service worker with offline fallback and versioned caches.
 
 ### 2.2 Lighthouse Performance Optimization
 
-- [x] Run Lighthouse audit and document baseline scores
-- [x] Optimize render-blocking resources (defer non-critical CSS/JS)
-    - [x] Defer `searchSuggest.js` (was synchronous, blocking HTML parsing)
-    - [x] Make Google Fonts non-render-blocking (`media="print" onload="this.media='all'"`)
-    - [x] Make mana-font CSS non-render-blocking on card/set pages
-    - [x] Switch Font Awesome from `all.min.css` to `fontawesome.min.css` + `solid.min.css` (only solid icons used)
-    - [x] Upgrade Font Awesome from 6.0.0-beta3 to 6.7.2
-    - [x] Pin CDN dependencies to specific versions (keyrune@3.18.0, mana-font@1.18.0)
-    - [x] Add `<noscript>` fallbacks for deferred CSS (Google Fonts, keyrune, FA)
-- [x] Optimize image loading (lazy loading, proper sizing, modern formats)
-    - [x] Add `loading="lazy"` to card images on set, card (other printings), and inventory pages
-    - [x] Add `width`/`height` attributes to all images to prevent CLS (logo, card detail, card previews, search results)
-    - [x] Add `fetchpriority="high"` to card detail hero image (LCP element)
-    - [x] Add `loading="lazy"` + dimensions to AJAX-rendered images (searchAjax, setCardListAjax, inventoryListAjax)
-    - [x] Convert logo and background images to WebP (logo: 206KB→56KB, background: 55KB→21KB)
-- [x] Reduce unused CSS/JS payload
-    - [x] Fix Tailwind content paths (removed `node_modules/@tailwindcss/**/*.js` — 200KB → 122KB, 39% reduction)
-    - [x] Remove unused `@tailwindcss/aspect-ratio` plugin
-    - [x] Add `--minify` to Tailwind build (122KB → 97KB)
-- [x] Minimize main-thread work and reduce JavaScript execution time
-    - [x] Defer `searchSuggest.js` eliminates parser-blocking script on every page
-- [x] Fix SEO issues
-    - [x] Add dynamic `<title>` tags to all pages via `BaseViewDto`
-    - [x] Add `<meta name="description">` to all public pages
-    - [x] Set `indexable: true` (robots index/follow) on public pages
-- [x] Fix accessibility issues
-    - [x] Fix heading hierarchy (h4→h2 on search page, mismatched closing tags on card page)
-    - [x] Add `aria-label` to buttons with icon-only content (mobile menu, quantity inputs)
-    - [x] Fix color contrast ratios (`.header-subtitle`, `.table-link`)
-    - [x] Fix `aria-label` mismatch on set page price-info-toggle
-- [x] Fix Best Practices issues
-    - [x] Fix CORS errors from protocol-relative CDN URLs (changed to explicit `https://`)
-    - [x] Add favicon.ico to fix 404 console error (generated from logo, served at `/favicon.ico`)
-    - [x] Add `<link rel="icon">` to layout
-- [x] Verify improvements with follow-up Lighthouse audit
-    - [x] Local: all pages 95+ mobile/desktop (card-detail 91 mobile due to external Scryfall image)
-    - [x] Self-hosted mana-font with woff2 (408KB → 187KB)
-    - [x] Fixed set-detail CLS (0.291 → 0 desktop) by matching placeholder styles to final font CSS
-    - [x] Delayed eager prefetch (3s) to avoid competing with critical resources on slow 4G
-    - [x] Optimized logo image (55KB → 4KB, resized to 160x160 for 80x80 display)
-    - [x] Production: enable HTML compression in CloudFront (infrastructure — highest-impact remaining fix)
+Done: deferred non-critical CSS/JS (FA solid-only, async Google Fonts, mana-font), lazy + sized images with WebP logo/bg, Tailwind path fix + `--minify`, dynamic `<title>`/`<meta description>`, accessibility ARIA/contrast/heading fixes, favicon, CloudFront HTML compression. All pages 95+ on Lighthouse mobile/desktop.
 
 ### 2.3 Standardize Card Links
 
-- [x] Create reusable card link partial/template with consistent markup (`cardLink.hbs`)
-- [x] Show card image preview on hover (desktop tooltip/popover)
-- [x] Long-press on mobile shows image preview (replaced two-tap pattern)
-- [x] Use card link partial across all pages (search, set, inventory, transactions, portfolio, card)
-- [x] Ensure consistent styling and behavior site-wide
-- [x] Add `renderCardLink()` JS utility for AJAX-rendered card links
-- [x] Load `cardPreview.js` globally from layout for site-wide coverage
-- [x] Single floating preview element (replaces per-link hidden images)
-- [x] Respect `prefers-reduced-motion`
+Done: reusable `cardLink.hbs` partial + `renderCardLink()` JS for AJAX, single floating hover/long-press preview element via globally-loaded `cardPreview.js`, respects `prefers-reduced-motion`.
 
 ### 2.4 Card Image Interactivity & Resolution
 
-- [x] Display higher-resolution card images (use Scryfall `normal` or `large` size)
-- [x] Add smooth hover zoom/enlarge effect on card images (desktop)
-- [x] Add tap-to-enlarge modal for card images (mobile)
-- [x] Add subtle card image animations (fade-in on load, hover lift/shadow)
-- [x] Polish card detail page layout — clean, modern feel (inspired by Perplexity aesthetic)
-- [x] Ensure image interactions respect `prefers-reduced-motion`
+Done: Scryfall normal/large images, hover-zoom on desktop, tap-to-enlarge modal on mobile, subtle fade/lift animations gated on `prefers-reduced-motion`, refreshed card-detail layout.
 
 ### 2.5 Accessibility Optimization
 
-- [x] Run Lighthouse accessibility audit and document baseline score (95-96 on most pages, 100 on spoilers)
-- [x] Add proper ARIA labels and roles to interactive elements (done in 2.2: icon-only buttons, quantity inputs, price-info toggle)
-- [x] Fix heading hierarchy (done in 2.2: h4→h2 on search, mismatched tags on card page)
-- [x] Fix remaining color contrast failures (btn-primary teal-500→teal-700, btn-secondary purple-600→purple-700, header-subtitle dark gray-400→gray-300)
-- [x] Add keyboard navigation support for all interactive features (card preview focusin/focusout, card image modal focus trap + Enter/Space activation, mobile menu aria-expanded)
-- [x] Add focus indicators and skip-to-content link (global :focus-visible outline, .skip-link to #main-content)
-- [x] Ensure all images have meaningful alt text (done in 2.2: width/height and alt on all images)
-- [x] Verify screen reader compatibility for AJAX-updated content (ARIA live region announcer in ajaxUtils + searchAjax)
-- [x] Verify improvements with follow-up Lighthouse audit
+Done: ARIA labels, heading hierarchy, color contrast fixes, full keyboard nav (card preview, modal focus trap, mobile menu), skip-link, focus-visible outlines, ARIA live regions for AJAX content swaps.
 
 ### 2.6 SEO
 
-- [x] Add meta tags (title, description) to all public pages (done in 2.2: dynamic `<title>`, `<meta description>`, robots directives)
-- [x] Add Open Graph tags (og:title, og:description, og:type, og:image, og:url, og:site_name) to all public pages
-- [x] Add structured data (JSON-LD) for card pages (Product + BreadcrumbList schemas)
-- [x] Generate sitemap.xml for public card and set pages (sitemap index with per-set card sitemaps)
-- [x] Add robots.txt (existed; added Sitemap URL)
-- [x] Ensure server-rendered HTML is crawlable (already SSR; meta tags and indexable flags in place)
-- [x] Add canonical URLs (on all public pages: home, sets, set detail, card detail, spoilers)
-- [x] Submit sitemap to Google Search Console
+Done: dynamic meta + OG tags, JSON-LD Product + BreadcrumbList on card pages, sitemap index with per-set sitemaps, robots.txt, canonical URLs site-wide, Google Search Console submission.
 
 ### 2.7 Feature: Binder View
 
-- [x] Design binder layout (grid of card images, page-like grouping)
-- [x] Implement binder view component/template
-- [x] Add toggle between list view and binder view
-- [x] Add binder view for inventory (user's collection)
-- [x] Persist view preference (localStorage; per-user DB persistence deferred)
-- [x] Add keyboard navigation for binder pages (arrow keys)
-- [x] Add owned-only filtering toggle for inventory binder
-- [x] Add stepper controls for inventory quantity in binder view
-- [x] Maintain scroll position on binder page navigation
+Done: page-like binder grid for set + inventory with list/binder toggle, arrow-key nav, owned-only filter, in-binder quantity stepper, scroll-position preservation, localStorage view preference.
 
 ### 2.8 Feature: Bulk Upload Transactions
 
-- [x] Design bulk upload flow (CSV file format, UI for upload)
-- [x] Create CSV template/documentation for expected format
-- [x] Extract shared CardImportResolver and import types (reused by inventory and transaction import)
-- [x] Implement file upload endpoint and CSV parsing (TransactionCsvParser, POST /transactions/import)
-- [x] Validate and report errors per row (card resolution, type, quantity, price, date, fees)
-- [x] Handle errors and partial failures (best-effort processing, error CSV download)
-- [x] Reuse TransactionService.create() for inventory-transaction consistency (no duplicated logic)
-- [x] Refactor InventoryImportService to use shared CardImportResolver
-- [x] Reuse importResult template with dynamic back links
-- [x] Add bulk upload UI to transactions page (Import CSV button in header + empty state)
+Done: CSV import for transactions with shared `CardImportResolver`, per-row validation/error reporting, error-CSV download, reuses `TransactionService.create()` and `importResult` template; UI surfaced on transactions page.
 
 ### 2.9 Improve Site Copy and UX Guidance
 
-- [x] Audit current site copy for clarity and completeness
-- [x] Add onboarding guidance for new users (explain core features: inventory, transactions, portfolio)
-- [x] Add contextual help text and tooltips to key pages
-- [x] Improve empty states with helpful prompts (e.g., "No cards in inventory — search for cards to add")
-- [x] Review navigation flow and improve discoverability of features
-- [x] Update page headings, labels, and descriptions for consistency
-- [x] Create Getting Started guide page (`/guides/getting-started`) with step-by-step feature overview
-- [x] Fix text overflow site-wide — fluid clamp() font sizes on page-title, card-title, stat-value, price tiles
-- [x] Improve welcome banner with action CTAs (Browse Sets, Import from CSV, Getting Started Guide)
-- [x] Improve home hero copy with descriptive tagline and feature callouts
-- [x] Fix import/export guide heading hierarchy (h4→h2, h5→h3)
-- [x] Add Help (?) icon link in navbar to Getting Started guide
-- [x] Contextual first-visit hints (localStorage-gated, one-time tooltips)
-    - [x] Binder view discovery: tooltip on `.binder-link` icon first visit ("View as a binder - flip through your cards page by page"), dismissed to `localStorage`
-    - [x] Portfolio metric hints: subtle pulsing ring on each stat card with dismissible `?` explaining the metric
-    - [x] Import hint on transactions page: if user has transactions but no imports, show dismissible inline tip about CSV import
-- [x] Surface cost basis tooltip on Portfolio page header (simplified version of existing `costBasisTooltip.hbs`, for first-time visitors)
-- [x] Copy audit for remaining pages
-    - [x] `portfolio.hbs` refresh button — more descriptive label ("Recalculate P&L")
-    - [x] `transactions.hbs` — add subtitle explaining what transactions are for
-    - [x] Error pages (401, 404, 500) — more helpful and brand-consistent
-    - [x] `spoilers.hbs` — add brief description of what "spoilers" means in context
+Done: getting-started guide at `/guides/getting-started`, first-visit hints (binder, portfolio metrics, import), navbar Help icon, refreshed welcome banner and home hero, fluid `clamp()` typography, page-by-page copy polish including error pages.
 
 ### 2.10 Restructure Set Blocking UI for Set Lists
 
-- [x] Audit current set list layout and identify UX pain points
-- [x] Design improved set list UI with clearer visual hierarchy
-- [x] Implement restructured set list layout
-    - [x] Block-level pagination via `SetService.findBlockGroupKeys` and `findSetsByBlockKeys`
-    - [x] `SetBlockGroup` DTO for grouped rendering with block name, multi-set flag, aggregate price
-    - [x] `BlockPaginationMeta` extends `PaginationMeta` with `multiSetBlockKeys` for client-side grouping
-    - [x] `SetListUtils.groupByBlock` mirrors server-side grouping logic in the browser
-    - [x] Block label rows and `block-child-row` indentation for multi-set blocks
-- [x] Ensure responsive behavior on mobile and desktop
-- [x] Update AJAX rendering to match new layout
-    - [x] `setListAjax.js` renders block groups when `meta.multiSetBlockKeys` is present
-    - [x] Frontend tests for `SetListUtils.groupByBlock` and `setListAjax` rendering
+Done: block-level pagination via `SetService.findBlockGroupKeys`, `SetBlockGroup` DTO + `BlockPaginationMeta`, mirrored client-side grouping in `setListAjax`, indented block-child rows on desktop and mobile.
 
 ### 2.11 Support Flavor Name
 
-- [x] Verify MTGJSON API provides flavorName data
-- [x] Add flavor_name column to card table (migration 023)
-- [x] Update Scry card ingestion to store flavor_name (struct, mapper, repository UPSERT)
-- [x] Add flavorName to NestJS ORM entity, domain entity, mapper, presenters, and API DTOs
-- [x] Display flavor_name on card detail page where applicable (italic subtitle below card name)
-- [x] Add flavor_name to card search (OR condition alongside name in applySearchFilter)
+Done: `flavor_name` column (migration 023), Scry ingestion, full ORM/domain/mapper/DTO plumbing, displayed on card detail and included in card search.
 
 ### 2.12 Feature: Price Notifications
 
-- [x] Design notification data model (user preferences, thresholds, history)
-- [x] Create database migration for price_alert and price_notification tables (migration 025)
-- [x] Implement domain entities, repository ports, ORM entities, mappers, and repositories
-- [x] Implement PriceAlertService with CRUD and processAlerts() price change detection
-- [x] Implement PriceNotificationService with CRUD and mark-as-read operations
-- [x] Create REST API endpoints for price alerts (CRUD) and notifications (list, read, read-all)
-- [x] Implement price change detection (percentage threshold, comparing current vs previous day)
-- [x] Implement email notification delivery (batched per user, HTML template with price table)
-- [x] Add process endpoint with API key auth for cron-triggered processing
-- [x] Add cron job (daily at 2:15 AM) to trigger price alert processing after ingestion
-- [x] Integration tests with 4-card scenario (increase trigger, increase no-trigger, decrease trigger, decrease no-trigger)
-- [x] Typed domain errors (`DomainNotFoundError`, `DomainNotAuthorizedError`, `DomainValidationError`) for clean service-to-controller error mapping
-- [x] HTML-escape all interpolated values in email templates (XSS/injection prevention)
-- [x] Shared `buildCardUrl` utility with URL encoding (moved to `src/shared/utils/card-url.util.ts`)
-- [x] Shared `escapeHtml` utility (`src/shared/utils/html.util.ts`)
-- [x] Fix card links in alert emails to use card number (not name) matching app route pattern
-- [x] Map authorization errors to 404 (not 400) to prevent resource existence leakage
-- [x] Validate updates preserve at least one threshold (prevent active alerts with no triggers)
-- [x] Idempotent alert processing (skip alerts where `lastNotifiedAt >= CURRENT_DATE`)
-- [x] `markAsRead` returns 404 when notification not found or not owned by user
-- [x] DB CHECK constraint ensuring at least one threshold is set (migration 026)
-- [x] Harden cron job: anchored grep, full-value cut, `curl -sSf` for visible errors
-- [x] Fix e2e test env var leak (`PRICE_ALERT_API_KEY` saved/restored in afterAll)
-- [x] Enrich API responses with card name, number, and set code (JOIN queries in repositories)
-- [x] Price Alerts management page (`/price-alerts`) with AJAX table, inline edit/toggle/delete
-- [x] Price Alert form on card detail page (create alerts with increase/decrease % thresholds)
-- [x] Notifications history page (`/notifications`) with unread highlighting and mark-as-read
-- [x] Navbar links for Alerts (desktop and mobile)
-- [x] Hide Owned column on set card list when not authenticated
-- [x] Verify price alert processing is still functioning end-to-end (cron firing, change detection triggering, emails delivering) — audit on prod found cron, env, endpoint, SMTP plumbing all healthy. Smoking gun: detection query in `price-alert.repository.ts` filtered previous-price by `ph.date < CURRENT_DATE`, but Scry stamps `price.date` with MTGJSON's source date (~1 day behind), so both LATERAL joins picked the same `price_history` row and pct_change was always 0. Fixed by changing the cutoff to `< COALESCE(p.date, CURRENT_DATE)` and added an integration-test case mirroring the prod date-lag scenario.
+Done: `price_alert` + `price_notification` data model (migrations 025/026), service CRUD + idempotent detection, batched HTML emails, cron-triggered daily processing (with detection-query fix for Scry's MTGJSON date-lag), `/price-alerts` management page, card-detail alert form, `/notifications` history. Hardened with typed domain errors, HTML-escape utility, shared `buildCardUrl`, CHECK constraint on threshold presence.
 
 ### 2.13 UI Polish
 
-- [x] Show active price alert indicator on card detail page (badge or icon when user has an alert set for the card)
-- [x] Add price info to card overlay in binder view (normal/foil prices in the hover/tap preview)
+Done: active price alert badge on card detail; normal/foil price info in binder card-hover overlay.
 
 ### 2.14 Site-wide Visual Refresh
 
@@ -392,7 +121,7 @@ Cross-repo refactor (scry + iwmm) fixing two long-standing classification issues
 - [x] **Phase 1 — card classifier fallback (scry `5.10.0`).** When MTGJSON's `boosterTypes` is absent, fall back to intrinsic per-card signals (`borderColor`, `frameEffects`, `availability`) gated to booster-bearing set types. Fixes SOS / TMT / MSH / BIG card counts without polluting commander products.
 - [x] **Phase 2 — order-independent set-level rule (scry `5.11.0`).** New rule: `type IN ('expansion','core') AND code NOT IN BONUS_EXPANSION_OVERRIDES`. Override list (`big`, `mat`, `tsb`) is the authoritative source. Block-children stay `is_main=true`. Tests cover the rule and order-independence as a regression guard.
 - [x] **Phase 3 — user set-type preference (iwmm).** `users.included_set_types text[]` (migration `033`); `GET`/`PUT /api/v1/user/preferences/set-types`; "Set Types To Show" section on `/user` with 8 primary types visible and 12 advanced types behind a disclosure. `NULL` falls back to `is_main` so anonymous + existing users see no change.
-- [ ] Open follow-up: decide whether `type = draft_innovation` sets (Modern Horizons 1–3) belong in the default `is_main` filter. Currently excluded; users can opt in via the Phase 3 preference. They are full-size draftable expansions in everything but MTGJSON's type label.
+- [x] Open follow-up: decide whether `type = draft_innovation` sets (Modern Horizons 1–3) belong in the default `is_main` filter. Currently excluded; users can opt in via the Phase 3 preference. They are full-size draftable expansions in everything but MTGJSON's type label.
 
 Detail: [`docs/analysis/in-main-classifier/`](docs/analysis/in-main-classifier/).
 
@@ -402,98 +131,21 @@ Detail: [`docs/analysis/in-main-classifier/`](docs/analysis/in-main-classifier/)
 
 ### 3.1 Sealed Product Support
 
-#### Database & Schema
-
-- [x] Design sealed product data model (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
-- [x] Create migration 027: sealed product tables
-- [x] Create migration 028: card purchase URL columns (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
-- [x] Update complete schema file (001_complete_schema.sql)
-
-#### Domain Layer
-
-- [x] Create SealedProduct domain entity with validateInit
-- [x] Create SealedProductPrice domain entity
-- [x] Create SealedProductInventory domain entity
-- [x] Create SealedProductRepositoryPort interface
-- [x] Create SealedProductService
-- [x] Create SealedProductModule, register in CoreModule
-
-#### Database Layer
-
-- [x] Create ORM entities (sealed_product, sealed_product_price, sealed_product_price_history, sealed_product_inventory)
-- [x] Create mappers (SealedProductMapper, SealedProductPriceMapper)
-- [x] Create SealedProductRepository implementing port
-- [x] Register ORM entities and port binding in DatabaseModule
-
-#### API Layer
-
-- [x] Create SealedProductApiResponseDto, SealedProductInventoryApiDto, request DTOs
-- [x] Create SealedProductApiPresenter (TDD)
-- [x] Create SealedProductApiController with endpoints:
-    - GET /api/v1/sets/:code/sealed-products
-    - GET /api/v1/sealed-products/:uuid
-    - GET /api/v1/sealed-products/:uuid/price-history
-    - GET /api/v1/inventory/sealed (auth)
-    - POST /api/v1/inventory/sealed (auth)
-    - PATCH /api/v1/inventory/sealed (auth)
-    - DELETE /api/v1/inventory/sealed (auth)
-- [x] Register in ApiModule
-
-#### View Layer
-
-- [x] Create SealedProductOrchestrator
-- [x] Create SealedProductController (/sealed-products/:uuid)
-- [x] Create sealed-product-detail.hbs template
-- [x] Create sealed-products.hbs partial for set page
-- [x] Register in HbsModule
-
-#### Scry ETL (separate repo)
-
-- [x] Create SealedProduct domain struct
-- [x] Create mapper: MTGJSON JSON -> SealedProduct (flatten contents, extract TCGPlayer URL, filter online-only)
-- [x] Create repository with UPSERT for sealed_product table
-- [x] Create service to orchestrate fetch/map/save (streams AllPrintings.json)
-- [x] Hook into default ingestion pipeline (runs with `ingest` or `ingest --sealed`)
-- [x] Add sealed product price ingestion (MTGJSON has no sealed pricing — requires TCGPlayer API)
-- [x] Add card purchase URL ingestion (purchase_url_tcgplayer, purchase_url_tcgplayer_etched)
-
-#### AJAX & Frontend
-
-- [x] Add sealed product AJAX loading on set detail page
-- [x] Add sealed product inventory management UI (add/remove from collection)
+Done: end-to-end sealed product support — schema (migrations 027/028), domain entities + service + repository, REST API (per-set list, detail, sealed inventory CRUD), view layer (`/sealed-products/:uuid` + set-page partial), AJAX loading and inventory UI, Scry ingestion (sealed products, MTGJSON contents flatten, TCGPlayer URLs/prices, card purchase URLs).
 
 ### 3.2 Legal & Compliance
 
-- [x] Review Wizards of the Coast's Fan Content Policy and verify compliance (required disclaimer added to footer + Terms; logo/trademark audit clean; public browsing available without login)
-- [x] Draft Privacy Policy (`/privacy`) — US-focused, CCPA notice, no cookie consent banner
-- [x] Draft Terms of Service (`/terms`) — Maryland governing law, acceptable use, WotC fan-content disclaimer
-- [x] Link Privacy and Terms from footer and include in sitemap
-- [x] Set up `legal@iwantmymtg.net` email alias (AWS SES / registrar)
-- [x] Build user data export endpoint (`GET /api/v1/user/export` → JSON attachment, download button on user settings)
-- [x] Verify account deletion fully scrubs related records (all FKs confirmed `ON DELETE CASCADE` in schema)
+Done: WotC Fan Content Policy compliance + footer disclaimer, `/privacy` and `/terms` pages linked from footer/sitemap, `legal@iwantmymtg.net` alias, `GET /api/v1/user/export` JSON download, verified `ON DELETE CASCADE` on all user FKs for deletion scrub.
 
 ### 3.3 Affiliate Integration
 
-- [x] Sign up for TCGPlayer affiliate program (via Impact partner link)
-- [x] Add TCGPlayer affiliate links to card detail and sealed product views (`AffiliateLinkPolicy`, `TCGPLAYER_AFFILIATE_URL` env)
+Done: TCGPlayer Impact affiliate partner signup; `AffiliateLinkPolicy` wraps product URLs on card detail and sealed product views (raw product IDs come from Scry/MTGJSON).
 
 ### 3.4 Freemium Structure & Subscription Billing
 
-#### Shipped
+Done: Stripe subscription billing (customer, Checkout, Billing Portal, webhooks); `SubscriptionGuard` + `@RequiresSubscription()` decorator; `subscribed` propagated through `BaseViewDto`; `/pricing` page + navbar/footer links; advanced analytics flagship at `/portfolio/breakdown?by=set|rarity|type|format|costBasis` with server-side gating; all gating wired across transactions (30-day cutoff), portfolio history/P&L/cash-flow tiles, sealed inventory, set completion, price-history range, alert count/multi-threshold; reusable `upgradeTile.hbs`; AJAX `handleGatedResponse` helper; `/billing/success` celebration view; navbar Premium/Upgrade affordance; one-time welcome banner on signup.
 
-- [x] Integrate Stripe for subscription billing - customer creation, Checkout, Billing Portal, webhooks, subscription sync
-- [x] Subscription plan selection and cancellation via `/billing` + Stripe Billing Portal
-- [x] Scaffold feature-gating primitives (`SubscriptionGuard`, `@RequiresSubscription()` decorator in `src/core/billing/`)
-- [x] Drop displayed pricing to $3.99/mo, $39.99/yr (`BillingViewDto`, `/pricing` page) - Stripe Price objects still need to be updated in dashboard + env vars
-- [x] `SubscriptionService.isUserSubscribed(userId)` helper for use in orchestrators
-- [x] `subscribed` field added to `BaseViewDto` so all views can branch on subscription state
-- [x] `/pricing` page live (hero, billing toggle, comparison table, FAQ, bottom CTA - matches Claude-designed artifact)
-- [x] Pricing link in navbar (desktop + mobile) and footer
-- [x] **Advanced analytics flagship feature shipped** - `/portfolio/breakdown?by=set|rarity|type` with premium gating
-    - `PortfolioBreakdownService` + `PortfolioBreakdownRepository` (raw SQL aggregation joining inventory + card + price)
-    - Server-side gating: free users see upgrade pitch (`locked: true` view state); subscribed users see breakdown bars
-    - Three dimensions live: by set, by rarity, by primary card type
-    - Linked from portfolio page header with gradient "Analytics" button + premium star
+Pricing model below kept as a reference (free vs premium feature split).
 
 #### Freemium model (depth gating, no creation caps)
 
@@ -536,37 +188,6 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 API rate limits remain 100/day for free and premium alike - all API monetization is deferred to Phase 4.1's separate Developer/Business tiers.
 
 **Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. Trade-off: weaker conversion in the short term until advanced analytics, external imports, and scanning ship - those are the load-bearing premium pitches.
-
-#### Remaining implementation (gating existing features)
-
-The advanced analytics page is gated end-to-end as the architectural pattern. Each item below applies the same pattern (inject `SubscriptionService`, branch on `isUserSubscribed`, show preserved-data + upgrade CTA for free users) to existing routes. Each is a small but careful UX change to a feature free users currently use unrestricted - tackle one at a time, not as a batch.
-
-- [x] **Stripe dashboard work** (manual): create new Price objects at $3.99/mo and $39.99/yr; update `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_ANNUAL` env vars in prod and `.env.example`. Old $3.99/$49 prices should be archived (not deleted) so any test subs from dev still resolve.
-- [x] Transaction list view: cap query to last 30 days for free users, show "Upgrade for full history" inline tip on the transactions page (HBS + API both apply `freeTierHistoryCutoff()`; tip shown via `freeHistoryCutoff` flag on `TransactionViewDto`)
-- [x] Portfolio history chart: replace with upgrade tile for free users (current snapshot still shown); `GET /portfolio/history` 403s via `SubscriptionGuard`
-- [x] Portfolio P&L stat cards (`Unrealized P&L`, `Realized Gains`, `ROI`): replaced with locked Premium tiles linking to `/pricing` for free users; Current Value, Total Invested, Cards/Units stay visible
-- [x] Cash flow chart endpoint: 403 via `SubscriptionGuard`; portfolio page hides the section for free users
-- [x] Reusable `upgradeTile.hbs` partial introduced for premium-gated UI tiles
-- [x] Sealed product inventory routes (`/api/v1/inventory/sealed` POST/PATCH/DELETE; `/sealed-products/:uuid` add-to-inventory): 403 for free users via `SubscriptionGuard` + `@RequiresSubscription()`; sealed product detail page and set sealed-list show "Premium" CTA → `/pricing` instead of stepper for non-subscribers
-- [x] Set completion tracking: completion-rate badges replaced with "Premium" lock for free users (HBS partial via `@root.subscribed`; AJAX-rendered set list via `data-subscribed` body attr); per-set "?/Y owned" tooltip on set + binder pages links to `/pricing`
-- [x] Price history charts: card detail page hides 1y / All buttons for free users and shows a "Last 30 days" hint with upgrade link
-- [x] Set price history page/widget: `GET /sets/:code/price-history` remains available without `SubscriptionGuard`; set page continues to render the price history chart/widget for free users
-- [x] Alert creation: enforce 5-alert max in `PriceAlertService.create()`; reject with `DomainValidationError` linking to `/pricing`
-- [x] Multi-threshold alert creation: reject second-direction threshold for free users (enforced in both `create()` and `update()`)
-- [x] AJAX module 402/403 handler in `ajaxUtils.js` (`handleGatedResponse` / `fetchWithGate`) that catches premium-required errors and toasts an upgrade prompt linking to `/pricing` (wired into sealed inventory; opt-in for other modules as they are gated)
-- [x] Premium badge in `navbar.hbs` for paying users (read `subscribed` from view DTO; non-subscribers see Upgrade CTA → `/pricing`)
-- [x] Post-checkout success state on `/billing/success`: dedicated `billingSuccess.hbs` view with celebratory hero, three feature cards, and "Try Advanced Analytics" deep link to `/portfolio/breakdown`
-- [x] Billing history view (invoices/payments) - delegated entirely to Stripe Billing Portal
-- [x] On signup, show a "Here's what Premium unlocks" section in the welcome banner linking to `/pricing` (auto-shown via `?welcome=true`; banner is one-time per landing on `/user`)
-
-#### Advanced analytics - shipped, follow-up backlog
-
-- [x] Add API endpoint `GET /api/v1/portfolio/breakdown?by=set|rarity|type` with same gating (returns 403 for free users via `SubscriptionGuard`); also gated `GET /api/v1/portfolio/history` and `GET /api/v1/portfolio/cash-flow` to match HBS controller
-- [x] Add `by=format` dimension - join through `legality` table, count cards legal in each format
-- [x] Add cost-basis dimension: gain/loss/at-cost buckets sourced from `portfolio_card_performance`
-- [x] Visual upgrade: stacked bar chart or treemap option - decided against; per-row horizontal bars are the most readable form for this data (small slices stay legible, exact values are easy to scan)
-- [x] Sticky dimension preference (localStorage) so users return to the same view
-- [x] Empty state for new users: sample/demo breakdown shown when slices are empty
 
 ---
 
@@ -697,55 +318,76 @@ Phase 3 (deferred — blocked):
 
 Goal: ship an MCP server so Claude Desktop / Claude Code / Cursor / other MCP clients can query IWMM card data and manage a user's collection conversationally. Builds on 4.1 (API keys, tiered rate limits) and 4.2 (OpenAPI spec, developer portal). Auth reuses existing `iwm_live_...` API keys — no new identity surface.
 
-Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthewdtowles/iwantmymtg-mcp); v0 scaffold + full tool surface is implemented, distribution and discovery still pending.
+Server lives in a separate repo at [`iwantmymtg-mcp`](https://github.com/matthewdtowles/iwantmymtg-mcp).
 
-#### MCP server repo (`iwantmymtg-mcp`, separate repo)
+**Done:**
+- MCP server scaffolded (`@modelcontextprotocol/sdk`, stdio, Node 20+) with full tool surface: read-only card/set/sealed-product tools (public endpoints) and authenticated inventory/transaction/portfolio/price-alert/notification tools (gated on `IWMM_API_KEY`).
+- Tool inputs documented via zod `.describe()`; `ApiError` surfaces rate-limit headers; `formatApiError` returns clean upgrade/auth/reset prompts for 401/402/403/429; `IWMM_BASE_URL` env var for self-hosters.
+- 45 unit tests on `node:test` covering `apiFetch` + one happy-path per tool.
+- Web app prereqs: `/.well-known/openapi.json` + `openapi-public.json` redirects; `/developer/guides/mcp-server` guide + hub card; "Use with Claude (MCP)" section on `/user/api-keys`; sitemap entry.
+- Distribution: README with Claude Desktop / Claude Code / Cursor config snippets; published to npm as `iwantmymtg-mcp` v0.1.0 via Trusted Publishing/OIDC; `examples/` dir with prompt walkthroughs; CI on push/PR + publish-on-tag workflow.
 
-- [x] Scaffold new repo using `@modelcontextprotocol/sdk` (TypeScript), stdio transport, Node 20+
-- [x] Implement read-only tools (no auth required, hit public endpoints):
-    - `search_cards` (name/text/set/type filters, pagination)
-    - `get_card` (by set + number)
-    - `get_card_prices` / `get_card_price_history` (current + history range)
-    - `search_sets` / `get_set` / `list_set_cards`
-    - `get_sealed_products` (per set)
-- [x] Implement authenticated tools (require `IWMM_API_KEY` env var, hit user-scoped endpoints):
-    - `list_inventory` / `add_inventory` / `update_inventory` / `remove_inventory` / `get_inventory_quantities`
-    - `list_transactions` / `record_transaction` / `update_transaction` / `delete_transaction`
-    - `get_portfolio_summary` / `get_portfolio_history` / `get_portfolio_breakdown` / `get_cash_flow` / `get_realized_gains` / `get_cost_basis` / `get_card_performance` / `refresh_portfolio`
-    - `list_price_alerts` / `create_price_alert` / `update_price_alert` / `delete_price_alert`
-    - `list_notifications` / `mark_notification_read` / `mark_all_notifications_read` / `get_unread_notification_count`
-- [x] Tool descriptions written for LLM consumption (zod `.describe()` on every input)
-- [x] Surface rate-limit responses: `ApiError` captures `X-RateLimit-Limit/Remaining/Reset` headers and surfaces them in tool error responses
-- [x] `IWMM_BASE_URL` env var (default `https://iwantmymtg.net`) for self-hosters / local dev
-- [ ] Generate typed API client from `/api/openapi.json` at build time (e.g. `openapi-typescript` + `openapi-fetch`) so tool schemas stay in lockstep with the API — currently zod schemas are hand-maintained per tool, which works but will drift
-- [ ] Surface premium-gating cleanly: when API returns 402/403 with upgrade message, return that message verbatim to the model so it can relay to the user (today the body is surfaced raw via `ApiError`; verify it reads cleanly to a model and isn't swallowed as a generic error)
-- [ ] Unit tests for each tool (mock fetch); integration test that boots the server against a recorded API fixture — `test/` dir exists but is empty
+#### Typed API client (server repo)
 
-#### Web app prereqs (this repo)
+Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` client generated from the OpenAPI spec.
 
-- [x] Expose OpenAPI spec at `/.well-known/openapi.json` — 301 redirect to existing `/api/openapi.json` (auth-required spec); parallel `/.well-known/openapi-public.json` redirect to `/api/openapi-public.json` for unauthenticated discovery
-- [x] MCP server guide at `/developer/guides/mcp-server` (config snippets for Claude Desktop + Claude Code, env var setup, example prompts) and card on the `/developer` hub
-- [x] "Use with Claude (MCP)" section on `/user/api-keys` linking to the guide
-- [x] Sitemap: `/developer/guides/mcp-server`
+- [x] Added `openapi-typescript` (dev) + `openapi-fetch` (runtime) deps in `iwantmymtg-mcp`
+- [x] `build:types` script fetches `/api/openapi.json` (configurable via `IWMM_OPENAPI_URL`, default prod) and emits `src/generated/api-types.ts`
+- [x] `build:types` wired into `prebuild` and CI so generated types are always fresh
+- [x] All tools migrated from the untyped `apiFetch` shim to `apiClient` against the generated `paths` types; shim removed. Typed paths caught a latent bug — `update_transaction` was sending `PATCH` to an endpoint the spec declares as `PUT`.
+- [x] zod input schemas kept at the tool boundary for LLM-facing descriptions (as planned); type safety against the generated spec now comes from the `apiClient` call sites at compile time.
+- [x] Regeneration + breaking-change workflow documented in `CONTRIBUTING.md`
 
-#### Distribution
+#### Remaining: Discovery
 
-- [x] README with: install, Claude Desktop config snippet, Claude Code `.mcp.json` snippet, example prompts
-- [ ] Publish to npm as `iwantmymtg-mcp` — runnable via `npx iwantmymtg-mcp` (name confirmed available on registry; not yet published)
-- [ ] Add `examples/` dir with screenshots/transcripts of common flows
-- [ ] CI: build + test + publish on tag (mirror Scry's release workflow) — no `.github/workflows` yet
-- [ ] Cursor config snippet in README (currently only Claude Desktop + Claude Code documented)
+All five items are manual. Do the demo GIF (under Content, below) first so the Reddit posts and listings can reuse it. Suggested order: GIF, then `modelcontextprotocol/servers` PR, then Glama + Smithery, then Reddit.
 
-#### Discovery
+**PR to [`modelcontextprotocol/servers`](https://github.com/modelcontextprotocol/servers)** - the canonical community index; getting listed here is what most other directories crawl.
 
-- [ ] Submit to `modelcontextprotocol/servers` community list (PR to the awesome-list)
-- [ ] List on Smithery (smithery.ai) and Glama (glama.ai/mcp/servers) — both auto-index from GitHub but explicit submission helps
-- [ ] Mention on r/ClaudeAI, r/mtgfinance launch post once stable
+- [ ] Read `README.md` and `CONTRIBUTING.md` in that repo first. Community servers live in `README.md` under a "Community Servers" (or "Third-Party Servers") heading; confirm the exact current heading and entry format before editing.
+- [ ] Fork the repo, branch, add one entry in the community list. Entries are alphabetical by name. Match the existing line format exactly, roughly: `- **[I Want My MTG](https://github.com/matthewdtowles/iwantmymtg-mcp)** - Query Magic: The Gathering cards and prices and manage your collection.`
+- [ ] Keep the description to one line, factual, no marketing language (their reviewers reject hype).
+- [ ] Open the PR using their PR template; check the boxes it asks for (license present, server works, etc.). Expect a slow review and possibly a request to consolidate. Respond promptly.
 
-#### Content
+**[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 
-- [ ] Tutorial blog post: "Building an AI-powered MTG collection assistant with the IWMM MCP server" — show a Claude conversation managing a real collection, link from `/developer` hub
-- [ ] Short demo video / GIF in repo README
+- [ ] Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely auto-indexed already once the repo was public.
+- [ ] If listed: sign in with GitHub and claim the server so you can edit its metadata.
+- [ ] If not listed: use the "Add server" / submit flow with the repo URL.
+- [ ] Glama's quality score rewards a clear README, an OSI license (MIT is present), example usage, and CI. The repo already has these; just confirm the score looks reasonable after indexing.
+
+**[Smithery](https://smithery.ai)** - MCP server registry and (optionally) host.
+
+- [ ] Sign in with GitHub. Use "Add Server" / "Deploy" and point it at the `iwantmymtg-mcp` repo.
+- [ ] Smithery expects a `smithery.yaml` in the repo root describing how to launch the server. For this stdio server it declares the run command (`npx iwantmymtg-mcp`) and a config schema with one optional field, `IWMM_API_KEY`. Add that file as part of this task and confirm the current schema against Smithery's docs before committing.
+- [ ] Verify the listing renders the tool list and the README, then mark it public.
+
+**Reddit launch posts** - post the GIF natively (Reddit deprioritizes link posts). Read each subreddit's rules and self-promotion policy first; both restrict it.
+
+- [ ] r/ClaudeAI - developer/AI framing. Title like "I built an MCP server that lets Claude manage my Magic: The Gathering collection". Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link. Engage with comments for the first few hours.
+- [ ] r/mtgfinance - collector framing, not developer. Lead with the outcome ("track your collection value and get price alerts by just talking to Claude"), not the technology. Same GIF. Mention it is free and open source, link the repo and the `/developer/guides/mcp-server` page. Avoid jargon like "MCP server" in the title; say "Claude integration".
+- [ ] Optional follow-ups once the above land well: r/magicTCG (rules vary, check before posting) and the MTG finance Discord servers.
+
+#### Remaining: Content
+
+**Tutorial blog post** - "Building an AI-powered MTG collection assistant with the IWMM MCP server".
+
+- [ ] Decide location. There is no `/blog` yet (Phase 5.2 builds it), so publish under the existing developer guides as `/developer/guides/mcp-tutorial` rather than blocking on blog infrastructure. Move it to `/blog` later if 5.2 ships.
+- [ ] Outline: (1) what the MCP server does in two sentences, (2) prerequisites - an IWMM account and an API key from `/user/api-keys`, (3) install and Claude Desktop config (copy the snippet from the `iwantmymtg-mcp` README so the two stay in sync), (4) a real walkthrough conversation, (5) link to the repo and the npm package.
+- [ ] For the walkthrough, run an actual Claude Desktop session and paste the real exchange: search for a card, add it to inventory, check portfolio value, create a price alert. Use the same conversation you record for the GIF so the post and GIF match.
+- [ ] Add the page to the sitemap and link it from the `/developer` hub card next to the existing MCP guide.
+
+**Demo GIF** - one short GIF showing a full Claude Desktop conversation, reused in the README, both Reddit posts, and the blog post.
+
+- [ ] Script the conversation before recording: 3-4 prompts that show both read and write tools (card lookup, add to inventory, portfolio value, price alert). Keep it under ~30 seconds.
+- [ ] Record the Claude Desktop window. On macOS, Cmd+Shift+5 records a region; or use a tool like Kap which exports GIF directly.
+- [ ] Convert to GIF if needed. `gifski` gives the best quality-per-byte: record to mp4, then `gifski --width 1200 --fps 12 -o demo.gif demo.mp4`. Keep the file under ~10 MB so GitHub renders it inline; trim length or drop fps/width if it is larger.
+- [ ] Add it near the top of the `iwantmymtg-mcp` README, above or just below the install section.
+
+**Optional screen-recorded video** - a sub-2-minute narrated walkthrough.
+
+- [ ] Only worth doing if the GIF and posts get traction. Same conversation as the GIF, with voiceover explaining each step.
+- [ ] Host on YouTube (unlisted or public), embed the link in the README and the blog post.
 
 #### Deferred (post-launch follow-ups)
 
@@ -877,11 +519,7 @@ Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJ
 
 ### 8.3 Scry: Interactive Mode
 
-- [x] Design interactive CLI menu (select commands, configure options)
-- [x] Add interactive mode entry point (`cargo run -- interactive` or default)
-- [x] Add interactive selection for ingestion targets (sets, cards, prices)
-- [x] Add progress display and confirmation prompts
-- [x] Add dry-run option for destructive operations
+Done (separate repo): interactive CLI menu via `cargo run -- interactive`, ingestion-target selection (sets/cards/prices), progress + confirmation prompts, dry-run option for destructive ops.
 
 ### 8.4 Feature: Deck Building
 

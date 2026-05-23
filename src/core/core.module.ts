@@ -3,6 +3,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { ApiTierModule } from './api-tier/api-tier.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
+import { BlogModule } from './blog/blog.module';
 import { CardModule } from './card/card.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module';
         ApiTierModule,
         AuthModule,
         BillingModule,
+        BlogModule,
         CardModule,
         EmailModule,
         ImportModule,
@@ -38,6 +40,7 @@ import { UserModule } from './user/user.module';
         ApiTierModule,
         AuthModule,
         BillingModule,
+        BlogModule,
         CardModule,
         EmailModule,
         ImportModule,

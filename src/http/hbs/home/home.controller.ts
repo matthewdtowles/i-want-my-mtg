@@ -2,6 +2,7 @@ import { Controller, Get, Header, Inject, Render, Req, Res, UseGuards } from '@n
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { join } from 'path';
+import { BlogService } from 'src/core/blog/blog.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
@@ -10,6 +11,8 @@ import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { SetListViewDto } from 'src/http/hbs/set/dto/set-list.view.dto';
 import { SetOrchestrator } from 'src/http/hbs/set/set.orchestrator';
 
+const HOME_BLOG_POSTS_LIMIT = 3;
+
 @Controller()
 export class HomeController {
     private readonly LOGGER = getLogger(HomeController.name);
@@ -17,6 +20,7 @@ export class HomeController {
 
     constructor(
         @Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator,
+        private readonly blogService: BlogService,
         private readonly configService: ConfigService
     ) {
         this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
@@ -30,7 +34,10 @@ export class HomeController {
         const options: SafeQueryOptions = new SafeQueryOptions(req.query).withSetTypes(
             req.user?.includedSetTypes ?? null
         );
-        const setListView = await this.setOrchestrator.findSetList(req, [], options);
+        const [setListView, allPosts] = await Promise.all([
+            this.setOrchestrator.findSetList(req, [], options),
+            this.blogService.getPosts(),
+        ]);
         setListView.indexable = true;
         setListView.title = 'I Want My MTG - Magic: The Gathering Collection Tracker';
         setListView.metaDescription =
@@ -40,7 +47,9 @@ export class HomeController {
         this.LOGGER.log(
             `Found initial set list with ${setListView?.setList?.length} sets on Home page.`
         );
-        return setListView;
+        return Object.assign(setListView, {
+            latestBlogPosts: allPosts.slice(0, HOME_BLOG_POSTS_LIMIT),
+        });
     }
 
     @UseGuards(OptionalAuthGuard)

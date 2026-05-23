@@ -35,7 +35,10 @@ export class CardImportResolver {
                     : { card: null, error: `Card not found for id: ${identifiers.id}` };
             }
 
-            let setCode = identifiers.set_code;
+            // Set codes are stored lowercase. Normalize incoming values so a
+            // native CSV with an uppercase set_code (common in hand-edited
+            // spreadsheets) still resolves.
+            let setCode = identifiers.set_code?.trim().toLowerCase();
             if (!setCode && identifiers.set_name) {
                 const set = await this.setRepository.findByExactName(identifiers.set_name);
                 if (!set) {

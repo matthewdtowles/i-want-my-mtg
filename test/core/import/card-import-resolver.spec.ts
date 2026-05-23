@@ -163,6 +163,15 @@ describe('CardImportResolver', () => {
             expect(mockCardRepo.findBySetCodeAndNumber).not.toHaveBeenCalled();
         });
 
+        it('normalizes uppercase set_code to lowercase before lookup', async () => {
+            const card = makeCard();
+            mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);
+
+            await resolver.resolveCard({ set_code: ' DMU ', number: '1' });
+
+            expect(mockCardRepo.findBySetCodeAndNumber).toHaveBeenCalledWith('dmu', '1', []);
+        });
+
         it('prefers set_code+number over name+set_code', async () => {
             const card = makeCard();
             mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);

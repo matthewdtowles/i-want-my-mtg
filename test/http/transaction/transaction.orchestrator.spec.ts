@@ -13,6 +13,7 @@ describe('TransactionOrchestrator', () => {
     let orchestrator: TransactionOrchestrator;
     let transactionService: jest.Mocked<TransactionService>;
     let cardService: jest.Mocked<CardService>;
+    let exportService: jest.Mocked<TransactionExportService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -82,6 +83,9 @@ describe('TransactionOrchestrator', () => {
         orchestrator = module.get(TransactionOrchestrator);
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
         cardService = module.get(CardService) as jest.Mocked<CardService>;
+        exportService = module.get(
+            TransactionExportService
+        ) as jest.Mocked<TransactionExportService>;
     });
 
     beforeEach(() => {
@@ -263,10 +267,7 @@ describe('TransactionOrchestrator', () => {
     describe('exportCsv', () => {
         it('should delegate to TransactionExportService with the user transactions', async () => {
             transactionService.findByUser.mockResolvedValue([testTransaction]);
-            const exportService = (
-                orchestrator as unknown as { exportService: TransactionExportService }
-            ).exportService;
-            (exportService.exportToCsv as jest.Mock).mockResolvedValue('CSV_OUTPUT');
+            exportService.exportToCsv.mockResolvedValue('CSV_OUTPUT');
 
             const csv = await orchestrator.exportCsv(mockAuthenticatedRequest);
 
@@ -276,10 +277,7 @@ describe('TransactionOrchestrator', () => {
 
         it('should call the export service with an empty array for no transactions', async () => {
             transactionService.findByUser.mockResolvedValue([]);
-            const exportService = (
-                orchestrator as unknown as { exportService: TransactionExportService }
-            ).exportService;
-            (exportService.exportToCsv as jest.Mock).mockResolvedValue('');
+            exportService.exportToCsv.mockResolvedValue('');
 
             await orchestrator.exportCsv(mockAuthenticatedRequest);
 

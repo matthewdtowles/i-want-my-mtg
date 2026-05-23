@@ -15,6 +15,15 @@ APP_PORT=3000
 COMPOSE=(docker compose -f "$COMPOSE_FILE" -p iwantmymtg-test)
 APP_PID=""
 
+# Fail fast if port 3000 is already bound (commonly the dev `docker compose` web container).
+# Running anyway would silently test against whatever is on the port.
+if ss -ltn "sport = :$APP_PORT" 2>/dev/null | grep -q LISTEN \
+    || lsof -iTCP:"$APP_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "Error: port $APP_PORT is already in use."
+    echo "If your dev container is running, stop it first: docker compose stop web"
+    exit 1
+fi
+
 cleanup() {
     echo "Cleaning up..."
     if [[ -n "$APP_PID" ]] && kill -0 "$APP_PID" 2>/dev/null; then

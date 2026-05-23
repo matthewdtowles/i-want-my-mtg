@@ -8,6 +8,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { BillingController } from './billing/billing.controller';
 import { BillingOrchestrator } from './billing/billing.orchestrator';
+import { BlogController } from './blog/blog.controller';
 import { PricingController } from './billing/pricing.controller';
 import { PricingOrchestrator } from './billing/pricing.orchestrator';
 import { SubscriptionViewInterceptor } from './shared/subscription-view.interceptor';
@@ -44,6 +45,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         AuthController,
         BillingController,
         PricingController,
+        BlogController,
         CardController,
         HomeController,
         InventoryController,

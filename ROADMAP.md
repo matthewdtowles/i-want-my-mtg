@@ -402,7 +402,7 @@ All five items are manual. Do the demo GIF (under Content, below) first so the R
 ### 5.1 External Import Tools
 
 - [ ] Build Moxfield import integration (collection import — powerful acquisition hook)
-- [ ] Build Archidekt import integration
+- [x] Build Archidekt import integration — Archidekt collection CSV exports are auto-detected on the existing Import Cards upload (`ArchidektCsvParser` maps Edition Code/Collector Number/Scryfall ID/Quantity/Finish onto the shared import pipeline; Etched treated as foil)
 - [ ] Build Deckbox import integration (longest-running tool, most legacy data)
 - [ ] Parse common CSV formats (TCGPlayer export, Deckbox export, generic)
 - [ ] Highlight import capability in all marketing — eliminating data entry friction is the #1 acquisition driver

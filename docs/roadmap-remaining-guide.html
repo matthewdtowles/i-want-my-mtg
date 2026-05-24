@@ -123,7 +123,7 @@
 <div class="wrap">
 
 <h1>Roadmap Remaining: 4.3, 5.1, 5.2</h1>
-<p class="subtitle">Snapshot as of 2026-05-24. Step-by-step of what's still open.</p>
+<p class="subtitle">Updated 2026-05-24 after writing the 5.2 cornerstone + building-in-public posts.</p>
 
 <table class="summary-table">
   <thead>
@@ -142,8 +142,8 @@
     </tr>
     <tr>
       <td><strong>5.2</strong> Content &amp; SEO</td>
-      <td><span class="status partial">Infra shipped, articles missing</span></td>
-      <td>Blog framework + 4 starter posts shipped (commit 1ee67ca). Still need: 4 cornerstone SEO articles + 1 building-in-public post. ROADMAP doesn't reflect the partial progress.</td>
+      <td><span class="status partial">All writing done, distribution open</span></td>
+      <td>Blog infra + 9 total posts now live (4 starter + 4 cornerstone + 1 building-in-public). Remaining: add blog URLs to sitemap, cross-post the building-in-public piece to HN/dev.to, share cornerstone posts in subreddits (gated on §5.3 community work).</td>
     </tr>
   </tbody>
 </table>
@@ -280,81 +280,66 @@
 <p>Nothing left. Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV imports all ship on Free tier. JSON-API import/export endpoints also done (commit 4571cb7).</p>
 
 <!-- =============== 5.2 =============== -->
-<h2>5.2 Content &amp; SEO Marketing <span class="status partial">Infra shipped, articles missing</span></h2>
+<h2>5.2 Content &amp; SEO Marketing <span class="status partial">All writing done, distribution open</span></h2>
 
 <div class="step">
-  <strong>State of things:</strong> Blog section was actually built (commit 1ee67ca). Four starter posts exist in <code>src/http/content/blog/</code>: welcome, how prices are sourced, understanding portfolio, when to set a price alert. The ROADMAP wasn't updated to reflect this.<br><br>
-  What's still missing: the <strong>4 cornerstone SEO articles</strong> and the <strong>1 building-in-public technical post</strong> the ROADMAP calls out specifically.
+  <strong>State of things:</strong> blog infrastructure shipped in #491. Nine total posts now live under <code>src/http/content/blog/</code>:
+  <ul>
+    <li><strong>Starter posts</strong> (shipped with #491): welcome, how prices are sourced, understanding portfolio, when to set a price alert.</li>
+    <li><strong>Cornerstone SEO posts</strong> (written 2026-05-24): how to track collection value, best way to log transactions, collection management for serious collectors, when to sell Magic cards.</li>
+    <li><strong>Building-in-public post</strong> (written 2026-05-24): an architecture post-mortem covering NestJS layering, the Rust ETL split, API-first design, Stripe pain, and what we would do differently.</li>
+  </ul>
+  ROADMAP §5.2 has been updated to reflect this.
 </div>
 
-<h3>Step 1 - Update ROADMAP to reflect shipped infra</h3>
+<h3>Step 1 - Add blog URLs to the sitemap</h3>
+<div class="step">
+  Files exist on disk but <code>sitemap.controller.ts</code> does not currently emit <code>/blog</code> or <code>/blog/:slug</code> URLs. The existing four posts have never been in the sitemap either, so this is pre-existing but worth fixing now that there are 9 posts to index.
+</div>
+
 <ol>
-  <li>Check off the "Set up blog section" item in <code>ROADMAP.md</code> §5.2 (it's now done as file-based markdown rendering).</li>
-  <li>Optionally note the 4 starter posts shipped.</li>
+  <li>Open <code>src/http/hbs/sitemap/sitemap.controller.ts</code>.</li>
+  <li>Inject <code>BlogService</code> into the controller (already provided by <code>BlogModule</code> in <code>src/core/blog/</code>).</li>
+  <li>In <code>getStaticSitemap()</code>, after the existing static URLs, add:
+    <pre>xml += this.urlEntry('/blog', 'weekly', '0.6');
+const posts = await this.blogService.getPosts();
+for (const post of posts) {
+    xml += this.urlEntry(`/blog/${post.slug}`, 'monthly', '0.5');
+}</pre>
+  </li>
+  <li>Verify locally: <code>curl http://localhost:3000/sitemap-static.xml | grep blog</code> should list all 9 posts.</li>
 </ol>
 
-<h3>Step 2 - Write the 4 cornerstone SEO articles</h3>
-<p>These are the high-intent search queries the ROADMAP picked. Each becomes a markdown file in <code>src/http/content/blog/</code>. Follow the format of the existing posts (frontmatter + body).</p>
-
-<details>
-  <summary>2a. "How to track your MTG collection value"</summary>
-  <ul>
-    <li><strong>Intent:</strong> beginners deciding how to start. Highest-funnel of the four.</li>
-    <li><strong>Outline:</strong> the problem (cards spread across binders/boxes, prices change daily, hard to know what you have), three approaches (spreadsheet, app, hybrid), what each costs in time and money, why an app wins past ~200 cards.</li>
-    <li><strong>Soft pitch:</strong> end with how IWMM does it. Don't make the whole article a sales pitch - earn the click.</li>
-    <li><strong>Internal links:</strong> <code>/guides/getting-started</code>, <code>/inventory</code>, <code>/portfolio</code>.</li>
-  </ul>
-</details>
-
-<details>
-  <summary>2b. "Best way to log MTG card transactions"</summary>
-  <ul>
-    <li><strong>Intent:</strong> people already tracking but losing money to bad bookkeeping (forgot what they paid, can't tell winners from losers).</li>
-    <li><strong>Outline:</strong> why transaction history matters (real P&amp;L vs guessing), what fields to capture (date, qty, price, fee, source), bulk import vs manual entry, how cost basis flows into tax conversations.</li>
-    <li><strong>Soft pitch:</strong> CSV import (the four formats supported), transaction page features.</li>
-    <li><strong>Internal links:</strong> <code>/transactions</code>, <code>/portfolio/breakdown?by=costBasis</code>, the import/export guide.</li>
-  </ul>
-</details>
-
-<details>
-  <summary>2c. "MTG collection management for serious collectors"</summary>
-  <ul>
-    <li><strong>Intent:</strong> mid-funnel, comparison-shopping users. They've heard of Moxfield, Deckbox, ManaBox.</li>
-    <li><strong>Outline:</strong> what "serious" means here (1000+ cards, treats it as an asset, cares about value over time), what serious collectors need that casual apps skip (P&amp;L, cost basis, portfolio history, set completion, sealed). Be honest about what competitors do well; differentiate on the financial-analysis depth.</li>
-    <li><strong>Soft pitch:</strong> the premium feature stack from §3.4. Mention API + MCP server as the developer hook.</li>
-    <li><strong>Internal links:</strong> <code>/pricing</code>, <code>/portfolio/breakdown</code>, <code>/developer</code>.</li>
-  </ul>
-</details>
-
-<details>
-  <summary>2d. "How to know when to sell your Magic cards"</summary>
-  <ul>
-    <li><strong>Intent:</strong> mtgfinance crowd. Highest commercial intent.</li>
-    <li><strong>Outline:</strong> signal categories (price spikes, format rotation, reprint risk, set release cycles), how to set thresholds without becoming a slave to alerts, how to reason about partial sells.</li>
-    <li><strong>Soft pitch:</strong> price alerts (free tier: 5 alerts, premium: unlimited + multi-threshold), price history, portfolio breakdown by set/rarity.</li>
-    <li><strong>Internal links:</strong> <code>/price-alerts</code>, <code>/notifications</code>.</li>
-  </ul>
-</details>
-
-<h3>Step 3 - Write the building-in-public technical post</h3>
+<h3>Step 2 - Cross-post the building-in-public piece</h3>
 <div class="step">
-  Different audience entirely - HN, Reddit r/programming, dev community. Goal is reputation + API/MCP funnel, not direct conversion.
+  Different audience than the other posts - HN, Reddit r/programming, dev community. Goal is reputation + API/MCP funnel.
+</div>
+
+<ol>
+  <li><strong>HN "Show HN: I Want My MTG - architecture post-mortem of a Magic collection tracker"</strong>. Submit the canonical URL (<code>/blog/building-iwmm-in-public</code>). Tuesday-Thursday morning US time is the sweet spot.</li>
+  <li><strong>dev.to or Hashnode</strong> cross-post. Use canonical URL pointing back to the blog so SEO credit stays with the IWMM domain.</li>
+  <li><strong>r/programming, r/typescript, r/rust</strong> - last one is for the ETL split angle specifically. Read each sub's self-promotion rules; r/programming is strict.</li>
+  <li>Engage with comments for the first few hours. HN ranking is driven heavily by early activity.</li>
+</ol>
+
+<h3>Step 3 - Share the cornerstone posts</h3>
+<div class="step">
+  Wait until §5.3 community engagement groundwork is laid (be a real presence in these subs before posting). The roadmap calls this out explicitly - drive-by self-promotion in mtg communities gets received badly.
 </div>
 
 <ul>
-  <li><strong>Angle:</strong> the architecture choices that worked and didn't (NestJS layered structure, port-adapter pattern with TypeORM, Rust ETL in a separate repo, API-first then PWA, MCP as a downstream beneficiary of OpenAPI discipline).</li>
-  <li><strong>Be specific.</strong> Show the layout diagram, link to real files in the repo (you have CLAUDE.md for the architecture overview).</li>
-  <li><strong>Don't oversell.</strong> HN audience smells marketing. Talk about what was painful.</li>
-  <li><strong>Length:</strong> 1500-2500 words is the sweet spot for HN front-page potential.</li>
-  <li><strong>Cross-post:</strong> dev.to or Hashnode for SEO syndication. Use canonical URL pointing back to your blog.</li>
+  <li><strong>r/mtgfinance:</strong> "When to sell your Magic cards" (highest commercial intent) and "MTG collection management for serious collectors" (frames the comparison favorably).</li>
+  <li><strong>r/magicTCG:</strong> "How to track your MTG collection value" (broadest appeal, beginner framing).</li>
+  <li><strong>r/EDH:</strong> probably "MTG collection management for serious collectors" reframed for commander collectors; less direct fit than the above.</li>
+  <li><strong>MTG finance Discord servers</strong> - share "When to sell" once the post has organic traffic from search.</li>
 </ul>
 
-<h3>Step 4 - Post-publish promotion</h3>
+<h3>Step 4 (optional, longer-term) - More cornerstone posts</h3>
+<p>The four written cover the high-intent queries the ROADMAP picked. There are adjacent queries worth posts later if the first four show traction:</p>
 <ul>
-  <li>Add all 5 new posts to the sitemap (likely already automatic if it scans the content dir - verify).</li>
-  <li>Share each cornerstone post in the matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant).</li>
-  <li>Share the building-in-public post on HN ("Show HN: ..."), r/programming, r/typescript, r/rust (the ETL angle).</li>
-  <li>Coordinate timing with §5.3 community engagement and §5.4 launch events from the ROADMAP - these articles are part of that funnel.</li>
+  <li>"How to import your Moxfield/Archidekt/Deckbox collection" (acquisition-funnel SEO; piggy-backs on existing competitor brand searches).</li>
+  <li>"Cost basis and FIFO accounting for Magic collectors" (deeper than the existing portfolio-numbers post; appeals to the tax-aware sub-audience).</li>
+  <li>"How to value sealed MTG product" (currently zero good content on the open web on this topic).</li>
 </ul>
 
 <p class="footnote">

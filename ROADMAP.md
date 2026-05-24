@@ -409,7 +409,7 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [x] Build Deckbox import integration (longest-running tool, most legacy data)
 - [x] Parse common CSV formats (TCGPlayer app export, TCGPlayer seller export, Deckbox export, native IWMM)
 - [x] Highlight import capability in app copy — inventory empty-state, getting-started guide, import/export guide, and pricing page now mention the four supported sources
-- [ ] Refactor follow-up: extract a JSON-API import/export endpoint (`POST /api/v1/inventory/import/cards` multipart + `GET /api/v1/inventory/export`) for API consumers and MCP, reusing the existing parsers and services (deferred from the 5.1 PR audit)
+- [x] Refactor follow-up: extract a JSON-API import/export endpoint (`POST /api/v1/inventory/import/cards` multipart + `GET /api/v1/inventory/export`) for API consumers and MCP, reusing the existing parsers and services. Shared `csvUploadInterceptor` lifted to `src/http/base/`; `InventoryImportResponseDto` returns `saved`/`deleted`/`skipped`/`errorCount`/`errors`/`detectedFormat`. Auth via `JwtOrApiKeyGuard`; counts toward tier quota.
 
 ### 5.2 Content & SEO Marketing
 

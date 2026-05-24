@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
+import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
 import { InventoryApiController } from 'src/http/api/inventory/inventory-api.controller';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { ApiUsageService } from 'src/core/api-tier/api-usage.service';
@@ -35,6 +37,14 @@ describe('InventoryApiController', () => {
                 },
                 { provide: ApiSubscriptionService, useValue: {} },
                 { provide: ApiUsageService, useValue: {} },
+                {
+                    provide: InventoryImportService,
+                    useValue: { importCards: jest.fn() },
+                },
+                {
+                    provide: InventoryExportService,
+                    useValue: { exportToCsv: jest.fn() },
+                },
             ],
         }).compile();
 

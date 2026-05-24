@@ -18,8 +18,6 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
 import { parseCardImport } from 'src/core/import/parsers/card-import-dispatch';
 import { SetCsvParser } from 'src/core/import/parsers/set-csv.parser';
@@ -27,6 +25,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { csvUploadInterceptor } from 'src/http/base/csv-upload.interceptor';
 import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { ImportExportGuideViewDto } from './dto/import-export-guide.view.dto';
@@ -34,26 +33,6 @@ import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
-
-// `application/octet-stream` is a pragmatic allowance: Safari (and some Windows
-// configurations) send that MIME for .csv uploads. The `.csv` extension check
-// below is the load-bearing defense against renamed-binary uploads.
-const CSV_MIME_TYPES = new Set([
-    'text/csv',
-    'text/plain',
-    'application/csv',
-    'application/octet-stream',
-]);
-
-const csvUploadInterceptor = FileInterceptor('file', {
-    storage: memoryStorage(),
-    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-    fileFilter: (_req, file, cb) => {
-        const validExtension = file.originalname.toLowerCase().endsWith('.csv');
-        const validMime = CSV_MIME_TYPES.has(file.mimetype);
-        cb(null, validExtension && validMime);
-    },
-});
 
 @Controller('inventory')
 export class InventoryController {

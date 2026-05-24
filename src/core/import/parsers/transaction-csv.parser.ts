@@ -16,12 +16,18 @@ const EXPECTED_HEADERS = new Set([
     'notes',
 ]);
 
+/**
+ * Native IWMM transaction CSV format. Parser does not cap row count —
+ * TransactionImportService applies MAX_IMPORT_ROWS so the user sees a
+ * single accurate truncation message per file.
+ */
 export class TransactionCsvParser {
     static parse(csvBuffer: Buffer): TransactionImportRow[] {
         const records: Record<string, string>[] = parse(csvBuffer, {
             columns: true,
             skip_empty_lines: true,
             trim: true,
+            bom: true,
         });
 
         if (records.length === 0) {

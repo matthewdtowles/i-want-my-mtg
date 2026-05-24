@@ -1,4 +1,4 @@
-import { SetCsvParser } from 'src/http/hbs/inventory/parsers/set-csv.parser';
+import { SetCsvParser } from 'src/core/import/parsers/set-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');
@@ -40,11 +40,11 @@ describe('SetCsvParser', () => {
             expect(result[1].set_code).toBe('grn');
         });
 
-        it('caps rows at 2000', () => {
+        it('does not cap rows; service applies MAX_IMPORT_ROWS', () => {
             const header = 'set_code,set_name,foil,include_variants\n';
             const rows = Array.from({ length: 2100 }, (_, i) => `set${i},,,\n`).join('');
             const result = SetCsvParser.parse(toBuffer(header + rows));
-            expect(result.length).toBe(2000);
+            expect(result.length).toBe(2100);
         });
 
         it('throws for unknown column', () => {

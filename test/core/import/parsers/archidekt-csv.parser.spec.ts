@@ -1,4 +1,4 @@
-import { ArchidektCsvParser } from 'src/http/hbs/inventory/parsers/archidekt-csv.parser';
+import { ArchidektCsvParser } from 'src/core/import/parsers/archidekt-csv.parser';
 
 function toBuffer(content: string): Buffer {
     return Buffer.from(content, 'utf-8');
@@ -21,7 +21,14 @@ describe('ArchidektCsvParser', () => {
 
         it('rejects the native IWMM header row', () => {
             expect(
-                ArchidektCsvParser.matchesFormat(['id', 'name', 'set_code', 'number', 'quantity', 'foil'])
+                ArchidektCsvParser.matchesFormat([
+                    'id',
+                    'name',
+                    'set_code',
+                    'number',
+                    'quantity',
+                    'foil',
+                ])
             ).toBe(false);
         });
     });
@@ -69,13 +76,13 @@ describe('ArchidektCsvParser', () => {
             expect(parsed.quantity).toBeUndefined();
         });
 
-        it('caps rows at 2000', () => {
+        it('does not cap rows; service applies MAX_IMPORT_ROWS', () => {
             const rows = Array.from(
                 { length: 2100 },
                 (_, i) => `1,Card ${i},Normal,NM,,,,,,MH3,,scry-${i},,${i}`
             ).join('\n');
             const result = ArchidektCsvParser.parse(toBuffer(`${ARCHIDEKT_HEADER}\n${rows}\n`));
-            expect(result.length).toBe(2000);
+            expect(result.length).toBe(2100);
         });
 
         it('ignores extra Archidekt columns without error', () => {

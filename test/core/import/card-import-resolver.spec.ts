@@ -3,6 +3,8 @@ import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
+import { Set } from 'src/core/set/set.entity';
+import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 
 function makeCard(overrides: Partial<Card> = {}): Card {
     return new Card({
@@ -34,11 +36,19 @@ describe('CardImportResolver', () => {
         delete: jest.fn(),
     };
 
+    const mockSetRepo = {
+        findByCode: jest.fn(),
+        findByExactName: jest.fn(),
+        findAllSetsMeta: jest.fn(),
+        totalSets: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 CardImportResolver,
                 { provide: CardRepositoryPort, useValue: mockCardRepo },
+                { provide: SetRepositoryPort, useValue: mockSetRepo },
             ],
         }).compile();
 
@@ -153,6 +163,15 @@ describe('CardImportResolver', () => {
             expect(mockCardRepo.findBySetCodeAndNumber).not.toHaveBeenCalled();
         });
 
+        it('normalizes uppercase set_code to lowercase before lookup', async () => {
+            const card = makeCard();
+            mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);
+
+            await resolver.resolveCard({ set_code: ' DMU ', number: '1' });
+
+            expect(mockCardRepo.findBySetCodeAndNumber).toHaveBeenCalledWith('dmu', '1', []);
+        });
+
         it('prefers set_code+number over name+set_code', async () => {
             const card = makeCard();
             mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);
@@ -161,6 +180,79 @@ describe('CardImportResolver', () => {
 
             expect(mockCardRepo.findBySetCodeAndNumber).toHaveBeenCalled();
             expect(mockCardRepo.findByNameAndSetCode).not.toHaveBeenCalled();
+        });
+
+        describe('set_name resolution', () => {
+            function makeSet(overrides: Partial<Set> = {}): Set {
+                return new Set({
+                    code: 'dmu',
+                    baseSize: 280,
+                    isMain: true,
+                    keyruneCode: 'dmu',
+                    name: 'Dominaria United',
+                    releaseDate: '2022-09-09',
+                    totalSize: 400,
+                    type: 'expansion',
+                    ...overrides,
+                });
+            }
+
+            it('resolves set_name to a code, then resolves card by set_code+number', async () => {
+                mockSetRepo.findByExactName.mockResolvedValue(makeSet());
+                const card = makeCard();
+                mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);
+
+                const result = await resolver.resolveCard({
+                    set_name: 'Dominaria United',
+                    number: '1',
+                });
+
+                expect(mockSetRepo.findByExactName).toHaveBeenCalledWith('Dominaria United');
+                expect(mockCardRepo.findBySetCodeAndNumber).toHaveBeenCalledWith('dmu', '1', []);
+                expect(result.card).toBe(card);
+                expect(result.error).toBeNull();
+            });
+
+            it('resolves set_name to a code, then resolves card by name+set_code', async () => {
+                mockSetRepo.findByExactName.mockResolvedValue(makeSet());
+                const card = makeCard();
+                mockCardRepo.findByNameAndSetCode.mockResolvedValue([card]);
+
+                const result = await resolver.resolveCard({
+                    name: 'Teferi',
+                    set_name: 'Dominaria United',
+                });
+
+                expect(mockCardRepo.findByNameAndSetCode).toHaveBeenCalledWith('Teferi', 'dmu');
+                expect(result.card).toBe(card);
+            });
+
+            it('returns set-not-found error when set_name does not match any set', async () => {
+                mockSetRepo.findByExactName.mockResolvedValue(null);
+
+                const result = await resolver.resolveCard({
+                    set_name: 'Nonexistent Set',
+                    number: '1',
+                });
+
+                expect(result.card).toBeNull();
+                expect(result.error).toMatch(/Set not found/i);
+                expect(mockCardRepo.findBySetCodeAndNumber).not.toHaveBeenCalled();
+            });
+
+            it('prefers set_code over set_name when both supplied', async () => {
+                const card = makeCard();
+                mockCardRepo.findBySetCodeAndNumber.mockResolvedValue(card);
+
+                await resolver.resolveCard({
+                    set_code: 'dmu',
+                    set_name: 'Some Other Set',
+                    number: '1',
+                });
+
+                expect(mockSetRepo.findByExactName).not.toHaveBeenCalled();
+                expect(mockCardRepo.findBySetCodeAndNumber).toHaveBeenCalledWith('dmu', '1', []);
+            });
         });
     });
 

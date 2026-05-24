@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
+import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
 import { ImportError, ImportResult } from 'src/core/import/import.types';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Transaction, TransactionType } from '../transaction.entity';
 import { TransactionService } from '../transaction.service';
 import { TransactionImportRow } from './transaction-import.types';
 
-const MAX_ROWS = 2000;
 const VALID_TYPES = new Set<string>(['BUY', 'SELL']);
 
 @Injectable()
@@ -26,11 +26,11 @@ export class TransactionImportService {
         const errors: ImportError[] = [];
         let saved = 0;
 
-        const cappedRows = rows.slice(0, MAX_ROWS);
-        if (rows.length > MAX_ROWS) {
+        const cappedRows = rows.slice(0, MAX_IMPORT_ROWS);
+        if (rows.length > MAX_IMPORT_ROWS) {
             errors.push({
-                row: MAX_ROWS + 2,
-                error: `File exceeds ${MAX_ROWS} row limit; only first ${MAX_ROWS} rows processed`,
+                row: MAX_IMPORT_ROWS + 2,
+                error: `File exceeds ${MAX_IMPORT_ROWS} row limit; only first ${MAX_IMPORT_ROWS} rows processed`,
             });
         }
 

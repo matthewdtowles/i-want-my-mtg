@@ -162,7 +162,7 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 - Live market prices
 - Price history charts: 30 days
 - Basic portfolio overview (current value)
-- CSV import and export
+- CSV import and export, including external imports from Moxfield, Archidekt, Deckbox, and TCGPlayer (auto-detected)
 - Binder view
 - Standard support
 - API: 100 requests/day
@@ -180,14 +180,15 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 - Sealed product tracking
 - Set price history
 - Advanced analytics (collection value breakdown by set, format, color, rarity) - to build
-- External imports: Moxfield, Archidekt, Deckbox - ships in Phase 5.1
 - Card image scanning - ships in Phase 6.3
 - Priority support
 - Early access to new features
 
+External imports moved to Free (April 2026, Phase 5.1) — gating acquisition behind a paywall while three direct competitors (Moxfield, Archidekt, Deckbox) let users import for free traded too much top-of-funnel for too little conversion. The Premium pull is the financial analysis (P&L, portfolio history, cost basis, advanced analytics) that only matters after the user has data in the system — imports are the funnel into those features, not a feature in themselves.
+
 API rate limits remain 100/day for free and premium alike - all API monetization is deferred to Phase 4.1's separate Developer/Business tiers.
 
-**Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. Trade-off: weaker conversion in the short term until advanced analytics, external imports, and scanning ship - those are the load-bearing premium pitches.
+**Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. The load-bearing premium pitches are the financial-analysis features (portfolio history, P&L, cost basis, advanced analytics — all shipped) and card image scanning (Phase 6.3). External imports are the acquisition funnel into those features, not a conversion lever.
 
 ---
 
@@ -401,11 +402,14 @@ All five items are manual. Do the demo GIF (under Content, below) first so the R
 
 ### 5.1 External Import Tools
 
-- [ ] Build Moxfield import integration (collection import — powerful acquisition hook)
-- [x] Build Archidekt import integration — Archidekt collection CSV exports are auto-detected on the existing Import Cards upload (`ArchidektCsvParser` maps Edition Code/Collector Number/Scryfall ID/Quantity/Finish onto the shared import pipeline; Etched treated as foil)
-- [ ] Build Deckbox import integration (longest-running tool, most legacy data)
-- [ ] Parse common CSV formats (TCGPlayer export, Deckbox export, generic)
-- [ ] Highlight import capability in all marketing — eliminating data entry friction is the #1 acquisition driver
+Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are auto-detected on the existing `/inventory/import/cards` upload. All map onto the shared `CardImportRow` pipeline via `src/core/import/parsers/`; etched and (Moxfield-only) glossy finishes import as foil. Deckbox / TCGPlayer-seller use set names (resolved via `CardImportResolver` → `SetRepository.findByExactName`); Moxfield / TCGPlayer-app / Archidekt use set codes. Shipped on the Free tier (see §3.4 rationale).
+
+- [x] Build Moxfield import integration (collection import — powerful acquisition hook)
+- [x] Build Archidekt import integration
+- [x] Build Deckbox import integration (longest-running tool, most legacy data)
+- [x] Parse common CSV formats (TCGPlayer app export, TCGPlayer seller export, Deckbox export, native IWMM)
+- [x] Highlight import capability in app copy — inventory empty-state, getting-started guide, import/export guide, and pricing page now mention the four supported sources
+- [ ] Refactor follow-up: extract a JSON-API import/export endpoint (`POST /api/v1/inventory/import/cards` multipart + `GET /api/v1/inventory/export`) for API consumers and MCP, reusing the existing parsers and services (deferred from the 5.1 PR audit)
 
 ### 5.2 Content & SEO Marketing
 

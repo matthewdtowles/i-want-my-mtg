@@ -107,18 +107,6 @@ export class TransactionPresenter {
         return gainSign(amount);
     }
 
-    /**
-     * Mitigate CSV formula injection for spreadsheet apps.
-     * Only prefixes dangerous leading characters; CSV quoting/escaping
-     * is handled by csv-stringify.
-     */
-    static escapeCsvField(value: string): string {
-        if (/^[\s\x00-\x1f]*[=+\-@]/.test(value)) {
-            return "'" + value;
-        }
-        return value;
-    }
-
     static isEditable(createdAt?: Date | string): boolean {
         if (!createdAt) return false;
         const created = createdAt instanceof Date ? createdAt : new Date(createdAt);

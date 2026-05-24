@@ -109,12 +109,39 @@
                     <li>Empty or omitted &mdash; ensures at least 1 copy (won't reduce existing quantity)</li>
                 </ul>
 
-                <h3 class="font-semibold mb-2">Importing from Archidekt</h3>
-                <p class="mb-3">An Archidekt collection CSV export is detected automatically &mdash; upload it through <strong>Import Cards</strong> just like a native file. Archidekt's <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Edition Code</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Collector Number</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Scryfall ID</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Quantity</code>, and <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Finish</code> columns are mapped to your inventory.</p>
-                <ul class="list-disc list-inside mb-4 space-y-1">
-                    <li>A <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Finish</code> of <em>Foil</em> or <em>Etched</em> is imported as foil; <em>Normal</em> as non-foil.</li>
-                    <li><code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Condition</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Language</code>, <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Purchase Price</code>, and <code class="bg-gray-100 dark:bg-midnight-700 px-1 rounded">Tags</code> are not imported yet.</li>
-                </ul>
+                <h3 class="font-semibold mb-2">Importing from Other Trackers</h3>
+                <p class="mb-3">Collection exports from <strong>Moxfield</strong>, <strong>Archidekt</strong>, <strong>Deckbox</strong>, and <strong>TCGPlayer</strong> are detected automatically &mdash; upload the file through <strong>Import Cards</strong> just like a native file. The relevant columns (card name, set, collector number, quantity, and foil) are mapped to your inventory. Etched finishes are imported as foil (and Moxfield's glossy too); other fields like condition, language, price, and tags are not imported yet.</p>
+                <table class="table-container w-full text-sm mb-4">
+                    <thead>
+                        <tr class="table-header-row">
+                            <th class="table-header text-left">Source</th>
+                            <th class="table-header text-left">Where to export</th>
+                            <th class="table-header text-left">Matches by</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-row">
+                            <td class="table-cell"><strong>Moxfield</strong></td>
+                            <td class="table-cell">Collection &rarr; Manage &rarr; Export CSV</td>
+                            <td class="table-cell">Set code + collector number</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><strong>Archidekt</strong></td>
+                            <td class="table-cell">Collection &rarr; Export &rarr; CSV</td>
+                            <td class="table-cell">Scryfall ID (when present) or set code + collector number</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><strong>Deckbox</strong></td>
+                            <td class="table-cell">Inventory &rarr; Export &rarr; CSV</td>
+                            <td class="table-cell">Set name + card number</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="table-cell"><strong>TCGPlayer</strong></td>
+                            <td class="table-cell">App: Collection &rarr; Export. Seller: Inventory &rarr; Export</td>
+                            <td class="table-cell">Set code + card number (app) or set name + number (seller)</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <h3 class="font-semibold mb-2">Limits</h3>
                 <ul class="list-disc list-inside space-y-1">

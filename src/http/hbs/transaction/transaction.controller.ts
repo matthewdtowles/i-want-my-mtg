@@ -27,7 +27,7 @@ import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { UploadRateLimitGuard } from 'src/http/hbs/inventory/guards/upload-rate-limit.guard';
-import { TransactionCsvParser } from './parsers/transaction-csv.parser';
+import { TransactionCsvParser } from 'src/core/import/parsers/transaction-csv.parser';
 import { TransactionRequestDto } from './dto/transaction.request.dto';
 import { TransactionUpdateRequestDto } from './dto/transaction.update-request.dto';
 import { TransactionViewDto } from './dto/transaction.view.dto';

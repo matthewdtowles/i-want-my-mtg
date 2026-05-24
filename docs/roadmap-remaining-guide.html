@@ -142,8 +142,8 @@
     </tr>
     <tr>
       <td><strong>5.2</strong> Content &amp; SEO</td>
-      <td><span class="status partial">All writing done, distribution open</span></td>
-      <td>Blog infra + 9 total posts now live (4 starter + 4 cornerstone + 1 building-in-public). Remaining: add blog URLs to sitemap, cross-post the building-in-public piece to HN/dev.to, share cornerstone posts in subreddits (gated on §5.3 community work).</td>
+      <td><span class="status partial">All writing + sitemap done, distribution open</span></td>
+      <td>Blog infra + 9 total posts live (4 starter + 4 cornerstone + 1 building-in-public), all in the sitemap. Remaining: cross-post the building-in-public piece to HN/dev.to, share cornerstone posts in subreddits (gated on §5.3 community work).</td>
     </tr>
   </tbody>
 </table>
@@ -292,23 +292,10 @@
   ROADMAP §5.2 has been updated to reflect this.
 </div>
 
-<h3>Step 1 - Add blog URLs to the sitemap</h3>
+<h3>Step 1 - Add blog URLs to the sitemap <span class="status done">Done</span></h3>
 <div class="step">
-  Files exist on disk but <code>sitemap.controller.ts</code> does not currently emit <code>/blog</code> or <code>/blog/:slug</code> URLs. The existing four posts have never been in the sitemap either, so this is pre-existing but worth fixing now that there are 9 posts to index.
+  <code>SitemapController</code> now injects <code>BlogService</code> and emits <code>/blog</code> + one entry per post in <code>getStaticSitemap()</code>. All 9 posts (4 starter + 4 cornerstone + building-in-public) now appear in <code>/sitemap-static.xml</code>.
 </div>
-
-<ol>
-  <li>Open <code>src/http/hbs/sitemap/sitemap.controller.ts</code>.</li>
-  <li>Inject <code>BlogService</code> into the controller (already provided by <code>BlogModule</code> in <code>src/core/blog/</code>).</li>
-  <li>In <code>getStaticSitemap()</code>, after the existing static URLs, add:
-    <pre>xml += this.urlEntry('/blog', 'weekly', '0.6');
-const posts = await this.blogService.getPosts();
-for (const post of posts) {
-    xml += this.urlEntry(`/blog/${post.slug}`, 'monthly', '0.5');
-}</pre>
-  </li>
-  <li>Verify locally: <code>curl http://localhost:3000/sitemap-static.xml | grep blog</code> should list all 9 posts.</li>
-</ol>
 
 <h3>Step 2 - Cross-post the building-in-public piece</h3>
 <div class="step">

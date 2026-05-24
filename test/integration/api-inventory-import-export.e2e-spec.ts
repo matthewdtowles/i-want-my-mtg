@@ -125,6 +125,19 @@ describe('Inventory Import/Export API (e2e)', () => {
             expect(res.body.success).toBe(false);
         });
 
+        it('returns 400 when CSV has an unknown column', async () => {
+            const csv = buildCsv(
+                'id,name,set_code,number,quantity,foil,bogus',
+                `,Test Angel,${TEST_SET_CODE},1,3,false,oops`
+            );
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/inventory/import/cards')
+                .set('Authorization', bearerToken)
+                .attach('file', csv, 'inventory.csv')
+                .expect(400);
+            expect(res.body.success).toBe(false);
+        });
+
         it('surfaces per-row errors for unresolved cards', async () => {
             const csv = buildCsv(NATIVE_HEADER, `,Bogus Card,zzz,99,1,false`);
             const res = await request(app.getHttpServer())

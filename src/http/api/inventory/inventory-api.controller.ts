@@ -180,7 +180,15 @@ export class InventoryApiController {
         if (!file) {
             throw new BadRequestException('No CSV file provided or file type not accepted');
         }
-        const { format, rows } = parseCardImport(file.buffer);
+        let format: ReturnType<typeof parseCardImport>['format'];
+        let rows: ReturnType<typeof parseCardImport>['rows'];
+        try {
+            ({ format, rows } = parseCardImport(file.buffer));
+        } catch (err) {
+            throw new BadRequestException(
+                err instanceof Error ? err.message : 'Invalid CSV file'
+            );
+        }
         const result = await this.importService.importCards(rows, req.user.id);
         return ApiResponseDto.ok(
             new InventoryImportResponseDto({

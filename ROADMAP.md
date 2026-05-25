@@ -413,13 +413,16 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 
 ### 5.2 Content & SEO Marketing
 
-- [ ] Set up blog section (markdown-rendered or external platform like Dev.to)
-- [ ] Write 3–5 cornerstone articles targeting high-intent search queries:
-    - "How to track your MTG collection value"
-    - "Best way to log MTG card transactions"
-    - "MTG collection management for serious collectors"
-    - "How to know when to sell your Magic cards"
-- [ ] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL)
+- [x] Set up blog section (file-based markdown under `src/http/content/blog/`, rendered server-side via `BlogService` + `/blog` and `/blog/:slug` routes); shipped in #491 with four starter posts: welcome, how prices are sourced, understanding portfolio numbers, when to set a price alert
+- [x] Write 4 cornerstone articles targeting high-intent search queries:
+    - [x] "How to track your MTG collection value" (`/blog/how-to-track-mtg-collection-value`)
+    - [x] "Best way to log MTG card transactions" (`/blog/best-way-to-log-mtg-card-transactions`)
+    - [x] "MTG collection management for serious collectors" (`/blog/mtg-collection-management-for-serious-collectors`)
+    - [x] "How to know when to sell your Magic cards" (`/blog/when-to-sell-magic-cards`)
+- [x] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL) at `/blog/building-iwmm-in-public`
+- [x] Add `/blog` + `/blog/:slug` URLs to the static sitemap; `SitemapController` now injects `BlogService` and emits an entry per post in `getStaticSitemap()`
+- [ ] Cross-post the "building in public" piece on HN ("Show HN: ...") and dev.to/Hashnode with canonical URL pointing back to the blog
+- [ ] Share each cornerstone post in matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant) once §5.3 community engagement groundwork is laid
 
 ### 5.3 Community Engagement
 

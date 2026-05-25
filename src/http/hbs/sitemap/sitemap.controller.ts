@@ -1,5 +1,6 @@
 import { Controller, Get, Header, Inject, Param, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BlogService } from 'src/core/blog/blog.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetService } from 'src/core/set/set.service';
@@ -11,6 +12,7 @@ export class SitemapController {
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(CardService) private readonly cardService: CardService,
+        @Inject(BlogService) private readonly blogService: BlogService,
         private readonly configService: ConfigService
     ) {
         this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
@@ -62,6 +64,11 @@ export class SitemapController {
         xml += this.urlEntry('/developer/guides/mcp-server', 'monthly', '0.4');
         xml += this.urlEntry('/privacy', 'yearly', '0.3');
         xml += this.urlEntry('/terms', 'yearly', '0.3');
+        xml += this.urlEntry('/blog', 'weekly', '0.6');
+        const posts = await this.blogService.getPosts();
+        for (const post of posts) {
+            xml += this.urlEntry(`/blog/${post.slug}`, 'monthly', '0.5');
+        }
         for (const set of releasedSets) {
             xml += this.urlEntry(`/sets/${set.code}`, 'weekly', '0.7');
         }

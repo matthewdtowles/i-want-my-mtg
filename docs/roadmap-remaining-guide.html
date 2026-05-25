@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap Remaining: 4.3, 5.1, 5.2</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2027;
+    --panel-2: #232b35;
+    --border: #2f3b48;
+    --text: #e6edf3;
+    --muted: #8b95a1;
+    --accent: #5fb3e6;
+    --accent-2: #7dd3a8;
+    --warn: #f0b86e;
+    --done: #4caf50;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1rem 4rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 .25rem;
+    letter-spacing: -.02em;
+  }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; }
+  h2 {
+    font-size: 1.4rem;
+    margin: 2.5rem 0 .5rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -.01em;
+  }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 .25rem; color: var(--accent); }
+  h4 { font-size: .95rem; margin: 1rem 0 .25rem; color: var(--accent-2); }
+  .status {
+    display: inline-block;
+    font-size: .75rem;
+    padding: .15rem .55rem;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-left: .5rem;
+    vertical-align: middle;
+  }
+  .status.done { background: rgba(76,175,80,.15); color: var(--done); border: 1px solid rgba(76,175,80,.4); }
+  .status.partial { background: rgba(240,184,110,.15); color: var(--warn); border: 1px solid rgba(240,184,110,.4); }
+  .status.todo { background: rgba(95,179,230,.15); color: var(--accent); border: 1px solid rgba(95,179,230,.4); }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  ol, ul { padding-left: 1.4rem; }
+  li { margin: .35rem 0; }
+  li.done { color: var(--muted); text-decoration: line-through; }
+  code {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1rem .35rem;
+    font-size: .88em;
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+  }
+  pre {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .85rem 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+  }
+  a { color: var(--accent); }
+  .step {
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+  }
+  .step .meta { color: var(--muted); font-size: .85rem; margin-top: .25rem; }
+  details {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .5rem .85rem;
+    margin: .5rem 0;
+  }
+  details summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: .5rem; }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  .summary-table th, .summary-table td {
+    text-align: left;
+    padding: .55rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-table th { color: var(--muted); font-weight: 600; font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+  blockquote {
+    border-left: 3px solid var(--warn);
+    background: rgba(240,184,110,.08);
+    margin: 1rem 0;
+    padding: .5rem 1rem;
+    color: var(--text);
+    border-radius: 4px;
+  }
+  .footnote { color: var(--muted); font-size: .85rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Roadmap Remaining: 4.3, 5.1, 5.2</h1>
+<p class="subtitle">Updated 2026-05-24 after writing the 5.2 cornerstone + building-in-public posts.</p>
+
+<table class="summary-table">
+  <thead>
+    <tr><th>Section</th><th>Status</th><th>What's left</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>4.3</strong> MCP Server</td>
+      <td><span class="status partial">Code done, manual tasks open</span></td>
+      <td>Discovery (PR to community index, Glama, Smithery, Reddit) + content (tutorial post, demo GIF, optional video)</td>
+    </tr>
+    <tr>
+      <td><strong>5.1</strong> External Imports</td>
+      <td><span class="status done">Done</span></td>
+      <td>Nothing. All items checked.</td>
+    </tr>
+    <tr>
+      <td><strong>5.2</strong> Content &amp; SEO</td>
+      <td><span class="status partial">All writing + sitemap done, distribution open</span></td>
+      <td>Blog infra + 9 total posts live (4 starter + 4 cornerstone + 1 building-in-public), all in the sitemap. Remaining: cross-post the building-in-public piece to HN/dev.to, share cornerstone posts in subreddits (gated on §5.3 community work).</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- =============== 4.3 =============== -->
+<h2>4.3 MCP Server <span class="status partial">Manual tasks only</span></h2>
+
+<p>The server itself, typed API client, docs guide, and npm publish are all done. What's left is getting the listing in front of people. The ROADMAP suggests this order, and you should follow it: <strong>GIF first</strong>, then the community PR, then Glama + Smithery, then Reddit. The GIF is reused everywhere downstream, so it unblocks the rest.</p>
+
+<h3>Step 1 - Record the demo GIF</h3>
+<div class="step">
+  <strong>Why first:</strong> Reused in README, both Reddit posts, and the blog tutorial. Reddit deprioritizes link posts, so the GIF needs to be uploaded natively.
+</div>
+
+<ol>
+  <li><strong>Script the conversation before recording.</strong> 3-4 prompts, under ~30 seconds total. Show both read and write tools. Example flow:
+    <ul>
+      <li>"What is Lightning Bolt worth right now?" (read - card lookup)</li>
+      <li>"Add 4 Lightning Bolt from LEA to my collection." (write - inventory)</li>
+      <li>"What's my portfolio worth?" (read - portfolio)</li>
+      <li>"Alert me if any card in my collection drops 20%." (write - price alert)</li>
+    </ul>
+  </li>
+  <li><strong>Record the Claude Desktop window.</strong> macOS: <code>Cmd+Shift+5</code> records a region. Or use <a href="https://getkap.co">Kap</a> which exports GIF directly.</li>
+  <li><strong>Convert to GIF if you recorded mp4.</strong> <code>gifski</code> gives the best quality-per-byte:
+    <pre>gifski --width 1200 --fps 12 -o demo.gif demo.mp4</pre>
+    Keep the file under ~10 MB so GitHub renders it inline. Trim length or drop fps/width if it's larger.
+  </li>
+  <li><strong>Add it to the iwantmymtg-mcp README</strong> near the top, above or just below the install section. Commit, push, tag if needed.</li>
+</ol>
+
+<h3>Step 2 - PR to <code>modelcontextprotocol/servers</code></h3>
+<div class="step">
+  <strong>Why:</strong> The canonical community index. Other directories crawl it.<br>
+  <span class="meta">Repo: <a href="https://github.com/modelcontextprotocol/servers">github.com/modelcontextprotocol/servers</a></span>
+</div>
+
+<ol>
+  <li><strong>Read their README and CONTRIBUTING first.</strong> Community servers live under a "Community Servers" or "Third-Party Servers" heading. Confirm the exact heading and entry format <em>before</em> editing - it changes.</li>
+  <li><strong>Fork, branch, add one entry.</strong> Entries are alphabetical by name. Match the existing line format <em>exactly</em>. Rough template:
+    <pre>- **[I Want My MTG](https://github.com/matthewdtowles/iwantmymtg-mcp)** - Query Magic: The Gathering cards and prices and manage your collection.</pre>
+  </li>
+  <li><strong>One line, factual, no marketing language.</strong> Their reviewers reject hype.</li>
+  <li><strong>Open PR using their template.</strong> Check all the boxes (license present, server works, etc.). Expect a slow review and possibly a request to consolidate.</li>
+  <li><strong>Respond promptly to review comments.</strong></li>
+</ol>
+
+<h3>Step 3 - Glama listing</h3>
+<div class="step">
+  <strong>Why:</strong> Auto-crawls GitHub for MCP servers and scores them on quality.<br>
+  <span class="meta">Site: <a href="https://glama.ai/mcp/servers">glama.ai/mcp/servers</a></span>
+</div>
+
+<ol>
+  <li>Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely already auto-indexed once the repo went public.</li>
+  <li><strong>If listed:</strong> sign in with GitHub, claim the server, edit metadata.</li>
+  <li><strong>If not listed:</strong> use "Add server" with the repo URL.</li>
+  <li>Quality score rewards clear README, OSI license (MIT is present), example usage, CI. All present - just confirm the score after indexing.</li>
+</ol>
+
+<h3>Step 4 - Smithery listing</h3>
+<div class="step">
+  <strong>Why:</strong> MCP server registry and optional host.<br>
+  <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a></span>
+</div>
+
+<ol>
+  <li>Sign in with GitHub. Use "Add Server" / "Deploy" pointing at the <code>iwantmymtg-mcp</code> repo.</li>
+  <li><strong>Add <code>smithery.yaml</code> to the repo root</strong> describing how to launch the server. For this stdio server it declares the run command (<code>npx iwantmymtg-mcp</code>) and a config schema with one optional field, <code>IWMM_API_KEY</code>.
+    <blockquote>Check Smithery's current docs for the exact <code>smithery.yaml</code> schema before committing - the format has shifted before.</blockquote>
+  </li>
+  <li>Verify the listing renders the tool list and the README, then mark it public.</li>
+</ol>
+
+<h3>Step 5 - Reddit launch posts</h3>
+<div class="step">
+  <strong>Read each subreddit's rules and self-promotion policy first.</strong> Both restrict it.<br>
+  <strong>Post the GIF natively.</strong> Reddit deprioritizes link posts.
+</div>
+
+<h4>r/ClaudeAI - developer/AI framing</h4>
+<ul>
+  <li>Title: "I built an MCP server that lets Claude manage my Magic: The Gathering collection"</li>
+  <li>Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link.</li>
+  <li><strong>Engage with comments for the first few hours.</strong> Reddit's ranking algorithm rewards early activity.</li>
+</ul>
+
+<h4>r/mtgfinance - collector framing, not developer</h4>
+<ul>
+  <li>Lead with the <em>outcome</em>, not the technology: "track your collection value and get price alerts by just talking to Claude".</li>
+  <li>Same GIF. Mention it's free and open source.</li>
+  <li>Link the repo and <code>/developer/guides/mcp-server</code>.</li>
+  <li><strong>Avoid jargon like "MCP server" in the title.</strong> Say "Claude integration".</li>
+</ul>
+
+<h4>Optional follow-ups (only once the above land well)</h4>
+<ul>
+  <li>r/magicTCG - rules vary, check before posting.</li>
+  <li>MTG finance Discord servers.</li>
+</ul>
+
+<h3>Step 6 - Tutorial blog post</h3>
+<div class="step">
+  <strong>Decision from the ROADMAP:</strong> publish under existing developer guides as <code>/developer/guides/mcp-tutorial</code>. The note in the ROADMAP said this would block on the blog infrastructure, but the blog now exists (commit 1ee67ca). You can publish there instead if you prefer - it's now your call.
+</div>
+
+<ol>
+  <li><strong>Outline:</strong>
+    <ol>
+      <li>What the MCP server does in two sentences.</li>
+      <li>Prerequisites - IWMM account, API key from <code>/user/api-keys</code>.</li>
+      <li>Install + Claude Desktop config. <strong>Copy the snippet from the iwantmymtg-mcp README so the two stay in sync.</strong></li>
+      <li>Real walkthrough conversation.</li>
+      <li>Link to repo and npm package.</li>
+    </ol>
+  </li>
+  <li><strong>Use the same conversation you recorded for the GIF</strong> so the post and GIF match.</li>
+  <li>Add the page to the sitemap.</li>
+  <li>Link it from the <code>/developer</code> hub card next to the existing MCP guide.</li>
+</ol>
+
+<h3>Step 7 (optional) - Screen-recorded video</h3>
+<div class="step">
+  Only worth doing if the GIF and Reddit posts get traction.
+</div>
+<ul>
+  <li>Same conversation as the GIF, with voiceover.</li>
+  <li>Under 2 minutes.</li>
+  <li>Host on YouTube (unlisted or public), embed link in README and the blog post.</li>
+</ul>
+
+<!-- =============== 5.1 =============== -->
+<h2>5.1 External Import Tools <span class="status done">Done</span></h2>
+<p>Nothing left. Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV imports all ship on Free tier. JSON-API import/export endpoints also done (commit 4571cb7).</p>
+
+<!-- =============== 5.2 =============== -->
+<h2>5.2 Content &amp; SEO Marketing <span class="status partial">All writing done, distribution open</span></h2>
+
+<div class="step">
+  <strong>State of things:</strong> blog infrastructure shipped in #491. Nine total posts now live under <code>src/http/content/blog/</code>:
+  <ul>
+    <li><strong>Starter posts</strong> (shipped with #491): welcome, how prices are sourced, understanding portfolio, when to set a price alert.</li>
+    <li><strong>Cornerstone SEO posts</strong> (written 2026-05-24): how to track collection value, best way to log transactions, collection management for serious collectors, when to sell Magic cards.</li>
+    <li><strong>Building-in-public post</strong> (written 2026-05-24): an architecture post-mortem covering NestJS layering, the Rust ETL split, API-first design, Stripe pain, and what we would do differently.</li>
+  </ul>
+  ROADMAP §5.2 has been updated to reflect this.
+</div>
+
+<h3>Step 1 - Add blog URLs to the sitemap <span class="status done">Done</span></h3>
+<div class="step">
+  <code>SitemapController</code> now injects <code>BlogService</code> and emits <code>/blog</code> + one entry per post in <code>getStaticSitemap()</code>. All 9 posts (4 starter + 4 cornerstone + building-in-public) now appear in <code>/sitemap-static.xml</code>.
+</div>
+
+<h3>Step 2 - Cross-post the building-in-public piece</h3>
+<div class="step">
+  Different audience than the other posts - HN, Reddit r/programming, dev community. Goal is reputation + API/MCP funnel.
+</div>
+
+<ol>
+  <li><strong>HN "Show HN: I Want My MTG - architecture post-mortem of a Magic collection tracker"</strong>. Submit the canonical URL (<code>/blog/building-iwmm-in-public</code>). Tuesday-Thursday morning US time is the sweet spot.</li>
+  <li><strong>dev.to or Hashnode</strong> cross-post. Use canonical URL pointing back to the blog so SEO credit stays with the IWMM domain.</li>
+  <li><strong>r/programming, r/typescript, r/rust</strong> - last one is for the ETL split angle specifically. Read each sub's self-promotion rules; r/programming is strict.</li>
+  <li>Engage with comments for the first few hours. HN ranking is driven heavily by early activity.</li>
+</ol>
+
+<h3>Step 3 - Share the cornerstone posts</h3>
+<div class="step">
+  Wait until §5.3 community engagement groundwork is laid (be a real presence in these subs before posting). The roadmap calls this out explicitly - drive-by self-promotion in mtg communities gets received badly.
+</div>
+
+<ul>
+  <li><strong>r/mtgfinance:</strong> "When to sell your Magic cards" (highest commercial intent) and "MTG collection management for serious collectors" (frames the comparison favorably).</li>
+  <li><strong>r/magicTCG:</strong> "How to track your MTG collection value" (broadest appeal, beginner framing).</li>
+  <li><strong>r/EDH:</strong> probably "MTG collection management for serious collectors" reframed for commander collectors; less direct fit than the above.</li>
+  <li><strong>MTG finance Discord servers</strong> - share "When to sell" once the post has organic traffic from search.</li>
+</ul>
+
+<h3>Step 4 (optional, longer-term) - More cornerstone posts</h3>
+<p>The four written cover the high-intent queries the ROADMAP picked. There are adjacent queries worth posts later if the first four show traction:</p>
+<ul>
+  <li>"How to import your Moxfield/Archidekt/Deckbox collection" (acquisition-funnel SEO; piggy-backs on existing competitor brand searches).</li>
+  <li>"Cost basis and FIFO accounting for Magic collectors" (deeper than the existing portfolio-numbers post; appeals to the tax-aware sub-audience).</li>
+  <li>"How to value sealed MTG product" (currently zero good content on the open web on this topic).</li>
+</ul>
+
+<p class="footnote">
+File lives at <code>docs/roadmap-remaining-guide.html</code> in the repo.<br>
+Open it in a browser: <code>xdg-open docs/roadmap-remaining-guide.html</code> (Linux) or <code>open docs/roadmap-remaining-guide.html</code> (macOS).
+</p>
+
+</div>
+</body>
+</html>

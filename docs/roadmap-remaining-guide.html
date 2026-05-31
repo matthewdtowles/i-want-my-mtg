@@ -133,8 +133,8 @@
   <tbody>
     <tr>
       <td><strong>4.3</strong> MCP Server</td>
-      <td><span class="status partial">Code + GIF + tutorial done, web sign-ins open</span></td>
-      <td>Done: demo GIF, tutorial page, <code>smithery.yaml</code>. Remaining: MCP Registry publish (replaces the retired community-index PR), Glama + Smithery web sign-in, Reddit, optional video.</td>
+      <td><span class="status partial">Code + GIF + tutorial + Registry + Smithery done, Glama + Reddit open</span></td>
+      <td>Done: demo GIF, tutorial page, MCP Registry publish (npm 0.3.1, status <code>active</code>), Smithery (MCPB bundle, release <code>SUCCESS</code>). Remaining: Glama auto-crawl confirmation, Reddit launch posts, optional video.</td>
     </tr>
     <tr>
       <td><strong>5.1</strong> External Imports</td>
@@ -150,27 +150,20 @@
 </table>
 
 <!-- =============== 4.3 =============== -->
-<h2>4.3 MCP Server <span class="status partial">Web sign-ins + registry publish open</span></h2>
+<h2>4.3 MCP Server <span class="status partial">Glama + Reddit open</span></h2>
 
-<p>The server, typed API client, docs guide, and npm publish are done. The demo GIF, the tutorial page, and <code>smithery.yaml</code> are now also done. What's left is the MCP Registry publish (which <em>replaces</em> the retired community-index PR) plus the web sign-in steps (Glama, Smithery) and Reddit launch posts.</p>
+<p>The server, typed API client, docs guide, npm publish, demo GIF, tutorial page, MCP Registry publish, and Smithery publish are all done. What's left is the Glama auto-crawl confirmation, Reddit launch posts, and the optional walkthrough video.</p>
 
 <h3>Step 1 - Record the demo GIF <span class="status done">Done</span></h3>
 <div class="step">
   <strong>Done.</strong> A 4-query demo GIF (card lookup, add to inventory, portfolio value, price alert) is embedded at the top of the <code>iwantmymtg-mcp</code> README at <code>assets/four-queries-demo.gif</code>. Reuse it natively in the Reddit posts (Reddit deprioritizes link posts).
 </div>
 
-<h3>Step 2 - Publish to the MCP Registry <span class="status partial">Replaces the retired PR</span></h3>
+<h3>Step 2 - Publish to the MCP Registry <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Plan changed.</strong> The original step here was a PR adding an entry to the <code>modelcontextprotocol/servers</code> README. <strong>That community list has been retired.</strong> Their CONTRIBUTING now says they no longer accept third-party listings or new server implementations and redirect everyone to the <a href="https://github.com/modelcontextprotocol/registry">MCP Registry</a>. So the PR is dead - publish to the Registry instead. It's the canonical index that Glama, Smithery, and other directories crawl.<br>
-  <span class="meta">Registry: <a href="https://registry.modelcontextprotocol.io/">registry.modelcontextprotocol.io</a> · Quickstart: <a href="https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/quickstart.mdx">registry quickstart</a></span>
+  <strong>Done.</strong> Live as <code>io.github.matthewdtowles/iwantmymtg-mcp</code> (status <code>active</code>) in the official <a href="https://registry.modelcontextprotocol.io/">MCP Registry</a>. Namespace uses GitHub-based auth (no DNS setup); <code>mcpName</code> + <code>server.json</code> shipped in <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8">iwantmymtg-mcp#8</a>; the <code>mcp-publisher</code> steps are folded into <code>publish.yml</code> after <code>npm publish</code>; npm <code>0.3.1</code> carries <code>mcpName</code> and triggered the registry publish on the same tag. Verify via <code>registry.modelcontextprotocol.io/v0/servers?search=iwantmymtg</code>.<br>
+  <span class="meta">This replaced the original <code>modelcontextprotocol/servers</code> README-PR step - that community list has been retired and CONTRIBUTING redirects everyone to the Registry.</span>
 </div>
-
-<ol>
-  <li><span class="status done">Done</span> <strong>Namespace decided:</strong> <code>io.github.matthewdtowles/iwantmymtg-mcp</code> (GitHub-based auth, no DNS setup). Permanent public identifier in the registry.</li>
-  <li><span class="status done">Done</span> <strong><code>mcpName</code> + <code>server.json</code> added.</strong> PR <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8">iwantmymtg-mcp#8</a> (pending merge): npm package, <code>stdio</code> transport, optional <code>IWMM_API_KEY</code>.</li>
-  <li><strong>Add the publish workflow.</strong> The <code>.github/workflows/publish-mcp.yml</code> YAML is in PR #8's description - it couldn't be committed by the automation (the token lacks the <code>workflow</code> scope). Paste it in yourself, or fold its steps into the existing <code>publish.yml</code> after <code>npm publish</code>.</li>
-  <li><strong>Cut a fresh release.</strong> npm <code>0.3.0</code> is already published <em>without</em> <code>mcpName</code>, so the registry can't validate it. Bump the version and tag (e.g. <code>v0.4.0</code>) so npm gets a build with <code>mcpName</code>; the registry publish then runs (or run <code>mcp-publisher login github</code> + <code>publish</code> once by hand).</li>
-</ol>
 
 <h3>Step 3 - Glama listing</h3>
 <div class="step">
@@ -185,17 +178,11 @@
   <li>Quality score rewards clear README, OSI license (MIT is present), example usage, CI. All present - just confirm the score after indexing.</li>
 </ol>
 
-<h3>Step 4 - Smithery listing</h3>
+<h3>Step 4 - Smithery listing <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why:</strong> MCP server registry and optional host.<br>
-  <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a></span>
+  <strong>Done.</strong> Published via an MCPB bundle (release <code>SUCCESS</code>), not the old stdio "Add Server" flow - Smithery dropped hosted-stdio scanning (it reaches the server over HTTP and 403s), so local servers ship as a downloadable <code>.mcpb</code>. <code>smithery.yaml</code> shipped in <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7">iwantmymtg-mcp#7</a>; build with <code>npm run bundle</code>, then <code>smithery mcp publish ./iwantmymtg-mcp.mcpb -n matthewdtowles/iwantmymtg-mcp</code>.<br>
+  <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a>. One small follow-up: confirm the listing shows the 33 tools and mark it public on the server's settings page (verification badge is optional and not pursued).</span>
 </div>
-
-<ol>
-  <li><span class="status done">Done</span> <strong><code>smithery.yaml</code> added to the repo root.</strong> <code>stdio</code>, <code>npx -y iwantmymtg-mcp</code>, one optional <code>iwmmApiKey</code> config field passed through as <code>IWMM_API_KEY</code>; schema confirmed against current Smithery stdio examples. PR <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7">iwantmymtg-mcp#7</a> (pending merge).</li>
-  <li>Sign in with GitHub. Use "Add Server" / "Deploy" pointing at the <code>iwantmymtg-mcp</code> repo. <em>(Manual - requires browser sign-in.)</em></li>
-  <li>Verify the listing renders the tool list and the README, then mark it public.</li>
-</ol>
 
 <h3>Step 5 - Reddit launch posts</h3>
 <div class="step">

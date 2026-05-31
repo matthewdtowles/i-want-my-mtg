@@ -133,8 +133,8 @@
   <tbody>
     <tr>
       <td><strong>4.3</strong> MCP Server</td>
-      <td><span class="status partial">Code + GIF + tutorial + Registry + Smithery done, Glama + Reddit open</span></td>
-      <td>Done: demo GIF, tutorial page, MCP Registry publish (npm 0.3.1, status <code>active</code>), Smithery (MCPB bundle, release <code>SUCCESS</code>). Remaining: Glama auto-crawl confirmation, Reddit launch posts, optional video.</td>
+      <td><span class="status partial">Discovery + content shipped, optional video open</span></td>
+      <td>Done: demo GIF, tutorial page, MCP Registry publish (npm 0.3.1, status <code>active</code>), Smithery (MCPB bundle, release <code>SUCCESS</code>), Glama listing claimed, Reddit launch posts. Remaining: confirm the Smithery listing is public; optional walkthrough video.</td>
     </tr>
     <tr>
       <td><strong>5.1</strong> External Imports</td>
@@ -150,9 +150,9 @@
 </table>
 
 <!-- =============== 4.3 =============== -->
-<h2>4.3 MCP Server <span class="status partial">Glama + Reddit open</span></h2>
+<h2>4.3 MCP Server <span class="status partial">Optional video open</span></h2>
 
-<p>The server, typed API client, docs guide, npm publish, demo GIF, tutorial page, MCP Registry publish, and Smithery publish are all done. What's left is the Glama auto-crawl confirmation, Reddit launch posts, and the optional walkthrough video.</p>
+<p>The server, typed API client, docs guide, npm publish, demo GIF, tutorial page, MCP Registry publish, Smithery publish, Glama listing, and Reddit launch posts are all done. What's left is one small follow-up (confirm the Smithery listing is public) and the optional walkthrough video.</p>
 
 <h3>Step 1 - Record the demo GIF <span class="status done">Done</span></h3>
 <div class="step">
@@ -165,18 +165,10 @@
   <span class="meta">This replaced the original <code>modelcontextprotocol/servers</code> README-PR step - that community list has been retired and CONTRIBUTING redirects everyone to the Registry.</span>
 </div>
 
-<h3>Step 3 - Glama listing</h3>
+<h3>Step 3 - Glama listing <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why:</strong> Auto-crawls GitHub for MCP servers and scores them on quality.<br>
-  <span class="meta">Site: <a href="https://glama.ai/mcp/servers">glama.ai/mcp/servers</a></span>
+  <strong>Done.</strong> Confirmed listed on <a href="https://glama.ai/mcp/servers">glama.ai</a> and claimed the server (GitHub sign-in). Glama re-crawls automatically, so the claim does not need repeating; just glance at the quality score now and then. Clear README, MIT license, examples, and CI are all present, so the score should stay healthy.
 </div>
-
-<ol>
-  <li>Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely already auto-indexed once the repo went public.</li>
-  <li><strong>If listed:</strong> sign in with GitHub, claim the server, edit metadata.</li>
-  <li><strong>If not listed:</strong> use "Add server" with the repo URL.</li>
-  <li>Quality score rewards clear README, OSI license (MIT is present), example usage, CI. All present - just confirm the score after indexing.</li>
-</ol>
 
 <h3>Step 4 - Smithery listing <span class="status done">Done</span></h3>
 <div class="step">
@@ -184,32 +176,10 @@
   <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a>. One small follow-up: confirm the listing shows the 33 tools and mark it public on the server's settings page (verification badge is optional and not pursued).</span>
 </div>
 
-<h3>Step 5 - Reddit launch posts</h3>
+<h3>Step 5 - Reddit launch posts <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Read each subreddit's rules and self-promotion policy first.</strong> Both restrict it.<br>
-  <strong>Post the GIF natively.</strong> Reddit deprioritizes link posts.
+  <strong>Done.</strong> Posted natively (with the GIF) to r/ClaudeAI (developer/AI framing) and r/mtgfinance (collector framing, led with the outcome rather than the technology). Optional follow-ups in r/magicTCG and MTG finance Discord servers also covered.
 </div>
-
-<h4>r/ClaudeAI - developer/AI framing</h4>
-<ul>
-  <li>Title: "I built an MCP server that lets Claude manage my Magic: The Gathering collection"</li>
-  <li>Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link.</li>
-  <li><strong>Engage with comments for the first few hours.</strong> Reddit's ranking algorithm rewards early activity.</li>
-</ul>
-
-<h4>r/mtgfinance - collector framing, not developer</h4>
-<ul>
-  <li>Lead with the <em>outcome</em>, not the technology: "track your collection value and get price alerts by just talking to Claude".</li>
-  <li>Same GIF. Mention it's free and open source.</li>
-  <li>Link the repo and <code>/developer/guides/mcp-server</code>.</li>
-  <li><strong>Avoid jargon like "MCP server" in the title.</strong> Say "Claude integration".</li>
-</ul>
-
-<h4>Optional follow-ups (only once the above land well)</h4>
-<ul>
-  <li>r/magicTCG - rules vary, check before posting.</li>
-  <li>MTG finance Discord servers.</li>
-</ul>
 
 <h3>Step 6 - Tutorial blog post <span class="status done">Done</span></h3>
 <div class="step">

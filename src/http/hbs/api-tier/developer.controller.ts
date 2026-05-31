@@ -145,6 +145,25 @@ export class DeveloperController {
     }
 
     @UseGuards(OptionalAuthGuard)
+    @Get('guides/mcp-tutorial')
+    @Render('developerMcpTutorial')
+    mcpTutorial(@Req() req: AuthenticatedRequest): BaseViewDto {
+        return new BaseViewDto({
+            authenticated: !!req.user,
+            title: 'Tutorial: Build an AI MTG Collection Assistant (MCP) - I Want My MTG',
+            metaDescription:
+                'Step-by-step walkthrough: connect Claude to your IWMM collection with the MCP server, then look up cards, log inventory, check portfolio value, and set price alerts conversationally.',
+            indexable: true,
+            canonicalUrl: `${this.appUrl}/developer/guides/mcp-tutorial`,
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Developer Portal', url: '/developer' },
+                { label: 'AI Collection Assistant Tutorial', url: '/developer/guides/mcp-tutorial' },
+            ],
+        });
+    }
+
+    @UseGuards(OptionalAuthGuard)
     @Get('guides/portfolio-export')
     @Render('developerPortfolioExport')
     portfolioExport(@Req() req: AuthenticatedRequest): BaseViewDto {

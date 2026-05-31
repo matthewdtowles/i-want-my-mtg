@@ -341,14 +341,16 @@ Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` c
 
 #### Remaining: Discovery
 
-All five items are manual. Do the demo GIF (under Content, below) first so the Reddit posts and listings can reuse it. Suggested order: GIF, then `modelcontextprotocol/servers` PR, then Glama + Smithery, then Reddit.
+The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Remaining: publish to the MCP Registry, Glama, Smithery (`smithery.yaml` done - see below), and Reddit.
 
-**PR to [`modelcontextprotocol/servers`](https://github.com/modelcontextprotocol/servers)** - the canonical community index; getting listed here is what most other directories crawl.
+**MCP Registry ([`registry.modelcontextprotocol.io`](https://registry.modelcontextprotocol.io/))** - the canonical index that Glama, Smithery, and other directories crawl.
 
-- [ ] Read `README.md` and `CONTRIBUTING.md` in that repo first. Community servers live in `README.md` under a "Community Servers" (or "Third-Party Servers") heading; confirm the exact current heading and entry format before editing.
-- [ ] Fork the repo, branch, add one entry in the community list. Entries are alphabetical by name. Match the existing line format exactly, roughly: `- **[I Want My MTG](https://github.com/matthewdtowles/iwantmymtg-mcp)** - Query Magic: The Gathering cards and prices and manage your collection.`
-- [ ] Keep the description to one line, factual, no marketing language (their reviewers reject hype).
-- [ ] Open the PR using their PR template; check the boxes it asks for (license present, server works, etc.). Expect a slow review and possibly a request to consolidate. Respond promptly.
+> Plan changed: the original item here was a PR adding an entry to the `modelcontextprotocol/servers` README. That community list has been **retired**. Their CONTRIBUTING now states they no longer accept third-party server listings or new server implementations and redirect everyone to the [MCP Registry](https://github.com/modelcontextprotocol/registry). The PR approach is dead - publish to the Registry instead.
+
+- [ ] Decide the registry namespace. `io.github.matthewdtowles/iwantmymtg-mcp` (GitHub-based auth, no DNS setup, matches the repo's existing GitHub OIDC npm publish) vs a domain namespace like `net.iwantmymtg/...` (more branded, needs a DNS TXT record to verify). This name is the permanent public identifier in the registry.
+- [ ] Add `mcpName` to the `iwantmymtg-mcp` `package.json` matching the chosen namespace (must start with `io.github.matthewdtowles/` for GitHub auth). Publishing the registry entry requires a fresh npm release carrying this field.
+- [ ] Add `server.json` (schema `https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`); `name` must match `mcpName`. Declare the npm package, `stdio` transport, and the optional `IWMM_API_KEY` env var.
+- [ ] Publish via the `mcp-publisher` CLI (`mcp-publisher login github`, then `publish`) or, preferred, a GitHub Actions workflow using OIDC (mirrors the existing npm Trusted Publishing) so releases publish automatically.
 
 **[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 
@@ -359,8 +361,8 @@ All five items are manual. Do the demo GIF (under Content, below) first so the R
 
 **[Smithery](https://smithery.ai)** - MCP server registry and (optionally) host.
 
-- [ ] Sign in with GitHub. Use "Add Server" / "Deploy" and point it at the `iwantmymtg-mcp` repo.
-- [ ] Smithery expects a `smithery.yaml` in the repo root describing how to launch the server. For this stdio server it declares the run command (`npx iwantmymtg-mcp`) and a config schema with one optional field, `IWMM_API_KEY`. Add that file as part of this task and confirm the current schema against Smithery's docs before committing.
+- [x] `smithery.yaml` added in the repo root: `stdio`, `npx -y iwantmymtg-mcp`, one optional `iwmmApiKey` config field passed through as `IWMM_API_KEY`. Schema confirmed against current Smithery stdio examples. (PR [iwantmymtg-mcp#7](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7) - pending merge.)
+- [ ] Sign in with GitHub. Use "Add Server" / "Deploy" and point it at the `iwantmymtg-mcp` repo (manual - requires browser sign-in).
 - [ ] Verify the listing renders the tool list and the README, then mark it public.
 
 **Reddit launch posts** - post the GIF natively (Reddit deprioritizes link posts). Read each subreddit's rules and self-promotion policy first; both restrict it.
@@ -371,19 +373,16 @@ All five items are manual. Do the demo GIF (under Content, below) first so the R
 
 #### Remaining: Content
 
-**Tutorial blog post** - "Building an AI-powered MTG collection assistant with the IWMM MCP server".
+**Tutorial blog post** - "Building an AI-powered MTG collection assistant with the IWMM MCP server". Done: lives at `/developer/guides/mcp-tutorial` (`developerMcpTutorial.hbs` + route in `developer.controller.ts`).
 
-- [ ] Decide location. There is no `/blog` yet (Phase 5.2 builds it), so publish under the existing developer guides as `/developer/guides/mcp-tutorial` rather than blocking on blog infrastructure. Move it to `/blog` later if 5.2 ships.
-- [ ] Outline: (1) what the MCP server does in two sentences, (2) prerequisites - an IWMM account and an API key from `/user/api-keys`, (3) install and Claude Desktop config (copy the snippet from the `iwantmymtg-mcp` README so the two stay in sync), (4) a real walkthrough conversation, (5) link to the repo and the npm package.
-- [ ] For the walkthrough, run an actual Claude Desktop session and paste the real exchange: search for a card, add it to inventory, check portfolio value, create a price alert. Use the same conversation you record for the GIF so the post and GIF match.
-- [ ] Add the page to the sitemap and link it from the `/developer` hub card next to the existing MCP guide.
+- [x] Location decided: `/developer/guides/mcp-tutorial` under developer guides, matching the existing discord-bot and portfolio-export tutorials. (5.2's `/blog` now exists; could move there later, but developer guides is the consistent home for a code-config tutorial.)
+- [x] Outline covered: (1) what it does, (2) prerequisites - account + key from `/user/api-keys`, (3) install + Claude Desktop config (snippet matches the README; page notes the README is source of truth), (4) walkthrough conversation, (5) repo + npm package links.
+- [x] Walkthrough conversation included (card lookup -> add inventory -> portfolio value -> price alert). NOTE: it is a **representative** example, not a verbatim Claude Desktop transcript. Reconcile with the actual GIF conversation if you want them to match exactly.
+- [x] Added to the sitemap (`sitemap.controller.ts`) and linked from the `/developer` hub card next to the existing MCP guide.
 
 **Demo GIF** - one short GIF showing a full Claude Desktop conversation, reused in the README, both Reddit posts, and the blog post.
 
-- [ ] Script the conversation before recording: 3-4 prompts that show both read and write tools (card lookup, add to inventory, portfolio value, price alert). Keep it under ~30 seconds.
-- [ ] Record the Claude Desktop window. On macOS, Cmd+Shift+5 records a region; or use a tool like Kap which exports GIF directly.
-- [ ] Convert to GIF if needed. `gifski` gives the best quality-per-byte: record to mp4, then `gifski --width 1200 --fps 12 -o demo.gif demo.mp4`. Keep the file under ~10 MB so GitHub renders it inline; trim length or drop fps/width if it is larger.
-- [ ] Add it near the top of the `iwantmymtg-mcp` README, above or just below the install section.
+- [x] Recorded and embedded at the top of the `iwantmymtg-mcp` README (`assets/four-queries-demo.gif`). Reusable in the Reddit posts and tutorial.
 
 **Optional screen-recorded video** - a sub-2-minute narrated walkthrough.
 

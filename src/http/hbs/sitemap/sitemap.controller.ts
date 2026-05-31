@@ -62,6 +62,7 @@ export class SitemapController {
         xml += this.urlEntry('/developer/guides/discord-bot', 'monthly', '0.4');
         xml += this.urlEntry('/developer/guides/portfolio-export', 'monthly', '0.4');
         xml += this.urlEntry('/developer/guides/mcp-server', 'monthly', '0.4');
+        xml += this.urlEntry('/developer/guides/mcp-tutorial', 'monthly', '0.4');
         xml += this.urlEntry('/privacy', 'yearly', '0.3');
         xml += this.urlEntry('/terms', 'yearly', '0.3');
         xml += this.urlEntry('/blog', 'weekly', '0.6');

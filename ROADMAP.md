@@ -347,10 +347,10 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 
 > Plan changed: the original item here was a PR adding an entry to the `modelcontextprotocol/servers` README. That community list has been **retired**. Their CONTRIBUTING now states they no longer accept third-party server listings or new server implementations and redirect everyone to the [MCP Registry](https://github.com/modelcontextprotocol/registry). The PR approach is dead - publish to the Registry instead.
 
-- [ ] Decide the registry namespace. `io.github.matthewdtowles/iwantmymtg-mcp` (GitHub-based auth, no DNS setup, matches the repo's existing GitHub OIDC npm publish) vs a domain namespace like `net.iwantmymtg/...` (more branded, needs a DNS TXT record to verify). This name is the permanent public identifier in the registry.
-- [ ] Add `mcpName` to the `iwantmymtg-mcp` `package.json` matching the chosen namespace (must start with `io.github.matthewdtowles/` for GitHub auth). Publishing the registry entry requires a fresh npm release carrying this field.
-- [ ] Add `server.json` (schema `https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`); `name` must match `mcpName`. Declare the npm package, `stdio` transport, and the optional `IWMM_API_KEY` env var.
-- [ ] Publish via the `mcp-publisher` CLI (`mcp-publisher login github`, then `publish`) or, preferred, a GitHub Actions workflow using OIDC (mirrors the existing npm Trusted Publishing) so releases publish automatically.
+- [x] Namespace decided: `io.github.matthewdtowles/iwantmymtg-mcp` (GitHub-based auth, no DNS setup). This name is the permanent public identifier in the registry.
+- [x] `mcpName` added to `package.json` and `server.json` created (npm package, `stdio`, optional `IWMM_API_KEY`). PR [iwantmymtg-mcp#8](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8) - pending merge.
+- [ ] Add the publish workflow. The `.github/workflows/publish-mcp.yml` YAML is in PR #8's description (it could not be committed via API - the automation token lacks the `workflow` scope). Add it yourself, or fold its steps into the existing `publish.yml` after `npm publish`.
+- [ ] Cut a fresh release. npm `0.3.0` is already published **without** `mcpName`, so the registry can't validate it; bump the version and tag (e.g. `v0.4.0`) so npm gets a build carrying `mcpName`, then the registry publish runs (or run `mcp-publisher login github` + `publish` once by hand).
 
 **[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 

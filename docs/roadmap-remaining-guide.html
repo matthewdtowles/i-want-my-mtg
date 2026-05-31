@@ -166,10 +166,10 @@
 </div>
 
 <ol>
-  <li><strong>Pick a namespace.</strong> <code>io.github.matthewdtowles/iwantmymtg-mcp</code> (GitHub-based auth, no DNS setup, matches the repo's existing GitHub OIDC npm publish) or a domain namespace like <code>net.iwantmymtg/...</code> (more branded, needs a DNS TXT record). This name is the permanent public identifier in the registry.</li>
-  <li><strong>Add <code>mcpName</code> to <code>package.json</code></strong> matching the chosen namespace (must start with <code>io.github.matthewdtowles/</code> for GitHub auth). The registry verifies the npm package carries this field, so it needs a fresh npm release.</li>
-  <li><strong>Add <code>server.json</code></strong> (schema <code>https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json</code>); <code>name</code> must match <code>mcpName</code>. Declare the npm package, <code>stdio</code> transport, and the optional <code>IWMM_API_KEY</code> env var.</li>
-  <li><strong>Publish</strong> with the <code>mcp-publisher</code> CLI (<code>mcp-publisher login github</code>, then <code>publish</code>) or, preferred, a GitHub Actions workflow using OIDC (mirrors the existing npm Trusted Publishing) so releases publish automatically.</li>
+  <li><span class="status done">Done</span> <strong>Namespace decided:</strong> <code>io.github.matthewdtowles/iwantmymtg-mcp</code> (GitHub-based auth, no DNS setup). Permanent public identifier in the registry.</li>
+  <li><span class="status done">Done</span> <strong><code>mcpName</code> + <code>server.json</code> added.</strong> PR <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8">iwantmymtg-mcp#8</a> (pending merge): npm package, <code>stdio</code> transport, optional <code>IWMM_API_KEY</code>.</li>
+  <li><strong>Add the publish workflow.</strong> The <code>.github/workflows/publish-mcp.yml</code> YAML is in PR #8's description - it couldn't be committed by the automation (the token lacks the <code>workflow</code> scope). Paste it in yourself, or fold its steps into the existing <code>publish.yml</code> after <code>npm publish</code>.</li>
+  <li><strong>Cut a fresh release.</strong> npm <code>0.3.0</code> is already published <em>without</em> <code>mcpName</code>, so the registry can't validate it. Bump the version and tag (e.g. <code>v0.4.0</code>) so npm gets a build with <code>mcpName</code>; the registry publish then runs (or run <code>mcp-publisher login github</code> + <code>publish</code> once by hand).</li>
 </ol>
 
 <h3>Step 3 - Glama listing</h3>

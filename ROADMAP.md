@@ -341,7 +341,7 @@ Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` c
 
 #### Remaining: Discovery
 
-The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Published to npm (`0.3.1`), the MCP Registry, and Smithery (all done - see below). Remaining: Glama (auto-crawl, confirm it indexed) and Reddit.
+The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Published to npm (`0.3.1`), the MCP Registry, Glama, and Smithery, and posted to Reddit (all done - see below). Remaining: confirm the Smithery listing is public (below).
 
 **MCP Registry ([`registry.modelcontextprotocol.io`](https://registry.modelcontextprotocol.io/))** - the canonical index that Glama, Smithery, and other directories crawl.
 
@@ -354,10 +354,7 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 
 **[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 
-- [ ] Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely auto-indexed already once the repo was public.
-- [ ] If listed: sign in with GitHub and claim the server so you can edit its metadata.
-- [ ] If not listed: use the "Add server" / submit flow with the repo URL.
-- [ ] Glama's quality score rewards a clear README, an OSI license (MIT is present), example usage, and CI. The repo already has these; just confirm the score looks reasonable after indexing.
+- [x] Confirmed listed on glama.ai and claimed the server (GitHub sign-in). Glama re-crawls automatically, so the claim does not need repeating; just glance at the quality score now and then (clear README, MIT license, examples, and CI are all present).
 
 **[Smithery](https://smithery.ai)** - MCP server registry and (optionally) host.
 
@@ -367,9 +364,9 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 
 **Reddit launch posts** - post the GIF natively (Reddit deprioritizes link posts). Read each subreddit's rules and self-promotion policy first; both restrict it.
 
-- [ ] r/ClaudeAI - developer/AI framing. Title like "I built an MCP server that lets Claude manage my Magic: The Gathering collection". Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link. Engage with comments for the first few hours.
-- [ ] r/mtgfinance - collector framing, not developer. Lead with the outcome ("track your collection value and get price alerts by just talking to Claude"), not the technology. Same GIF. Mention it is free and open source, link the repo and the `/developer/guides/mcp-server` page. Avoid jargon like "MCP server" in the title; say "Claude integration".
-- [ ] Optional follow-ups once the above land well: r/magicTCG (rules vary, check before posting) and the MTG finance Discord servers.
+- [x] r/ClaudeAI - developer/AI framing. Title like "I built an MCP server that lets Claude manage my Magic: The Gathering collection". Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link. Engage with comments for the first few hours.
+- [x] r/mtgfinance - collector framing, not developer. Lead with the outcome ("track your collection value and get price alerts by just talking to Claude"), not the technology. Same GIF. Mention it is free and open source, link the repo and the `/developer/guides/mcp-server` page. Avoid jargon like "MCP server" in the title; say "Claude integration".
+- [x] Optional follow-ups once the above land well: r/magicTCG (rules vary, check before posting) and the MTG finance Discord servers.
 
 #### Remaining: Content
 

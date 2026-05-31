@@ -1,0 +1,167 @@
+<section class='settings-container max-w-3xl mx-auto'>
+    <p class='text-xs text-gray-500 dark:text-gray-400 mb-2'>
+        <a class='text-link' href='/developer'>← Developer Portal</a>
+    </p>
+    <h1 class='page-title'>Tutorial: Build an AI Collection Assistant with the MCP Server</h1>
+    <p class='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+        The <a class='text-link' href='https://github.com/matthewdtowles/iwantmymtg-mcp' target='_blank' rel='noopener noreferrer'>iwantmymtg-mcp</a>
+        server connects Claude to your IWMM collection, so you can look up cards, log what you own,
+        check what it is worth, and set price alerts just by asking. This walkthrough takes you from
+        zero to a real conversation in about ten minutes.
+    </p>
+
+    <div class='space-y-8 text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+
+        <div>
+            <h2 class='text-lg font-semibold mb-2'>What you'll build</h2>
+            <p>
+                By the end you will have Claude Desktop wired to your account and will run one
+                conversation that touches both read tools and write tools: find a card and its
+                price, add copies to your inventory, see your portfolio value, and set an alert for a
+                price drop. The same setup works in Claude Code and Cursor.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>Prerequisites</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li>An IWMM account - <a class='text-link' href='/auth/register'>sign up</a> if you do not have one.</li>
+                <li>An API key from <a class='text-link' href='/user/api-keys'>/user/api-keys</a>. The raw key is shown only once, so copy it somewhere safe.</li>
+                <li>Claude Desktop (or Claude Code / Cursor) and Node 20 or newer.</li>
+            </ul>
+            <p class='mt-2 text-gray-600 dark:text-gray-400'>
+                The Free tier gives you 100 requests/day, which is plenty for this tutorial. See
+                <a class='text-link' href='/developer/pricing'>API pricing</a> for higher limits.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>1. Add the server to Claude Desktop</h2>
+            <p class='mb-2'>
+                Open <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>claude_desktop_config.json</code>
+                (macOS: <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>~/Library/Application Support/Claude/claude_desktop_config.json</code>;
+                Windows: <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>%APPDATA%\Claude\claude_desktop_config.json</code>)
+                and add the <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>iwmm</code> server, pasting your key in place of <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>iwm_live_...</code>:
+            </p>
+            <pre class='bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto'><code>{
+  "mcpServers": {
+    "iwmm": {
+      "command": "npx",
+      "args": ["-y", "iwantmymtg-mcp"],
+      "env": {
+        "IWMM_API_KEY": "iwm_live_..."
+      }
+    }
+  }
+}</code></pre>
+            <p class='mt-2 text-gray-600 dark:text-gray-400'>
+                Save the file and restart Claude Desktop. The first launch downloads the package via
+                <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>npx</code>, so give it a few seconds. This snippet is the
+                same one in the <a class='text-link' href='https://github.com/matthewdtowles/iwantmymtg-mcp#claude-desktop' target='_blank' rel='noopener noreferrer'>repository README</a>;
+                if they ever differ, the README is the source of truth.
+            </p>
+            <p class='mt-2 text-gray-600 dark:text-gray-400'>
+                Prefer Claude Code or Cursor? The same block goes in <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>.mcp.json</code>
+                or <code class='bg-gray-100 dark:bg-midnight-700 px-1 rounded'>.cursor/mcp.json</code>. The full setup for each client is in the
+                <a class='text-link' href='/developer/guides/mcp-server'>MCP Server guide</a>.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>2. Confirm the tools loaded</h2>
+            <p>
+                In a new chat, ask Claude <em>"what iwmm tools do you have?"</em> It should list card
+                and set lookups, inventory and transaction tools, portfolio breakdowns, and price
+                alerts. If nothing shows up, double-check the JSON is valid and that you restarted the
+                app after saving.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>3. A real walkthrough</h2>
+            <p class='mb-4'>
+                Here is a full exchange that exercises both read and write tools. Yours will read back
+                slightly different prices, but the shape is the same.
+            </p>
+
+            <div class='space-y-4'>
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400 mb-1'>You</p>
+                    <p>Find Lightning Bolt and show me the cheapest printing.</p>
+                </div>
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 bg-gray-50 dark:bg-midnight-800 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Claude
+                        <span class='ml-1 font-normal normal-case text-gray-400'>· calls search_cards, get_card_prices</span>
+                    </p>
+                    <p>
+                        Lightning Bolt has dozens of printings. The cheapest in normal (non-foil) is the
+                        Magic 2010 (M10) printing at about $1.20. The original Alpha (LEA) printing is the
+                        priciest. Want me to add one of these to your collection?
+                    </p>
+                </div>
+
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400 mb-1'>You</p>
+                    <p>Add 4 copies of the M10 printing to my inventory.</p>
+                </div>
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 bg-gray-50 dark:bg-midnight-800 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Claude
+                        <span class='ml-1 font-normal normal-case text-gray-400'>· calls add_inventory</span>
+                    </p>
+                    <p>
+                        Done - added 4x Lightning Bolt (M10, non-foil) to your inventory. You now hold 4
+                        copies, worth roughly $4.80 at the current price.
+                    </p>
+                </div>
+
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400 mb-1'>You</p>
+                    <p>What's my whole collection worth right now?</p>
+                </div>
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 bg-gray-50 dark:bg-midnight-800 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Claude
+                        <span class='ml-1 font-normal normal-case text-gray-400'>· calls get_portfolio_summary</span>
+                    </p>
+                    <p>
+                        Your collection is worth about $1,312 across 268 cards. The largest single
+                        contributors are your Modern Horizons 3 cards. Want a breakdown by set?
+                    </p>
+                </div>
+
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400 mb-1'>You</p>
+                    <p>Alert me if Lightning Bolt drops below $1.</p>
+                </div>
+                <div class='rounded-xl border border-gray-200 dark:border-midnight-700 bg-gray-50 dark:bg-midnight-800 p-4'>
+                    <p class='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Claude
+                        <span class='ml-1 font-normal normal-case text-gray-400'>· calls create_price_alert</span>
+                    </p>
+                    <p>
+                        Set. I'll flag Lightning Bolt (M10) the next time its normal price falls below
+                        $1.00. You can see and manage alerts on your IWMM notifications page.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>A note on writes</h2>
+            <p>
+                Inventory, transaction, and alert tools make real changes to your account - there is no
+                dry-run mode in v1. Claude confirms before it writes, but treat it like running a
+                command yourself: read what it proposes before approving. Read-only card, set, price,
+                and portfolio lookups never change anything.
+            </p>
+        </div>
+
+        <div class='border-t border-gray-200 dark:border-midnight-700 pt-6'>
+            <h2 class='text-lg font-semibold mb-2'>Where to go next</h2>
+            <ul class='list-disc list-inside ml-4 space-y-1 text-gray-600 dark:text-gray-400'>
+                <li>Source and issues: <a class='text-link' href='https://github.com/matthewdtowles/iwantmymtg-mcp' target='_blank' rel='noopener noreferrer'>github.com/matthewdtowles/iwantmymtg-mcp</a></li>
+                <li>npm package: <a class='text-link' href='https://www.npmjs.com/package/iwantmymtg-mcp' target='_blank' rel='noopener noreferrer'>npmjs.com/package/iwantmymtg-mcp</a></li>
+                <li>Per-client setup and the full tool list: <a class='text-link' href='/developer/guides/mcp-server'>MCP Server guide</a></li>
+                <li>Prefer raw HTTP? The same data is in the <a class='text-link' href='/developer/docs'>API reference</a>.</li>
+            </ul>
+        </div>
+    </div>
+</section>

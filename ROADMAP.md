@@ -341,49 +341,45 @@ Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` c
 
 #### Remaining: Discovery
 
-All five items are manual. Do the demo GIF (under Content, below) first so the Reddit posts and listings can reuse it. Suggested order: GIF, then `modelcontextprotocol/servers` PR, then Glama + Smithery, then Reddit.
+The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Published to npm (`0.3.1`), the MCP Registry, Glama, and Smithery, and posted to Reddit (all done - see below). Remaining: confirm the Smithery listing is public (below).
 
-**PR to [`modelcontextprotocol/servers`](https://github.com/modelcontextprotocol/servers)** - the canonical community index; getting listed here is what most other directories crawl.
+**MCP Registry ([`registry.modelcontextprotocol.io`](https://registry.modelcontextprotocol.io/))** - the canonical index that Glama, Smithery, and other directories crawl.
 
-- [ ] Read `README.md` and `CONTRIBUTING.md` in that repo first. Community servers live in `README.md` under a "Community Servers" (or "Third-Party Servers") heading; confirm the exact current heading and entry format before editing.
-- [ ] Fork the repo, branch, add one entry in the community list. Entries are alphabetical by name. Match the existing line format exactly, roughly: `- **[I Want My MTG](https://github.com/matthewdtowles/iwantmymtg-mcp)** - Query Magic: The Gathering cards and prices and manage your collection.`
-- [ ] Keep the description to one line, factual, no marketing language (their reviewers reject hype).
-- [ ] Open the PR using their PR template; check the boxes it asks for (license present, server works, etc.). Expect a slow review and possibly a request to consolidate. Respond promptly.
+> Plan changed: the original item here was a PR adding an entry to the `modelcontextprotocol/servers` README. That community list has been **retired**. Their CONTRIBUTING now states they no longer accept third-party server listings or new server implementations and redirect everyone to the [MCP Registry](https://github.com/modelcontextprotocol/registry). The PR approach is dead - publish to the Registry instead.
+
+- [x] Namespace decided: `io.github.matthewdtowles/iwantmymtg-mcp` (GitHub-based auth, no DNS setup). This name is the permanent public identifier in the registry.
+- [x] `mcpName` added to `package.json` and `server.json` created (npm package, `stdio`, optional `IWMM_API_KEY`). PR [iwantmymtg-mcp#8](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8) - merged.
+- [x] Publish workflow added: the `mcp-publisher` steps (install, GitHub OIDC login, publish) are folded into `publish.yml` after `npm publish`, running on the same release tag.
+- [x] Cut a fresh release. `0.3.1` published to npm carrying `mcpName`, then the registry publish ran on the same tag. Live as `io.github.matthewdtowles/iwantmymtg-mcp` (status `active`); confirm via `registry.modelcontextprotocol.io/v0/servers?search=iwantmymtg`.
 
 **[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 
-- [ ] Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely auto-indexed already once the repo was public.
-- [ ] If listed: sign in with GitHub and claim the server so you can edit its metadata.
-- [ ] If not listed: use the "Add server" / submit flow with the repo URL.
-- [ ] Glama's quality score rewards a clear README, an OSI license (MIT is present), example usage, and CI. The repo already has these; just confirm the score looks reasonable after indexing.
+- [x] Confirmed listed on glama.ai and claimed the server (GitHub sign-in). Glama re-crawls automatically, so the claim does not need repeating; just glance at the quality score now and then (clear README, MIT license, examples, and CI are all present).
 
 **[Smithery](https://smithery.ai)** - MCP server registry and (optionally) host.
 
-- [ ] Sign in with GitHub. Use "Add Server" / "Deploy" and point it at the `iwantmymtg-mcp` repo.
-- [ ] Smithery expects a `smithery.yaml` in the repo root describing how to launch the server. For this stdio server it declares the run command (`npx iwantmymtg-mcp`) and a config schema with one optional field, `IWMM_API_KEY`. Add that file as part of this task and confirm the current schema against Smithery's docs before committing.
-- [ ] Verify the listing renders the tool list and the README, then mark it public.
+- [x] `smithery.yaml` added in the repo root: `stdio`, `npx -y iwantmymtg-mcp`, one optional `iwmmApiKey` config field passed through as `IWMM_API_KEY`. (PR [iwantmymtg-mcp#7](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7) - merged.)
+- [x] Published via an MCPB bundle, not the old stdio "Add Server" flow. Smithery dropped hosted-stdio scanning (it reaches the server over HTTP and 403s), so local servers ship as a downloadable `.mcpb`. Build with `npm run bundle` (manifest + `scripts/build-mcpb.sh` in the server repo), then `smithery mcp publish ./iwantmymtg-mcp.mcpb -n matthewdtowles/iwantmymtg-mcp`. Release accepted (`status: SUCCESS`).
+- [ ] Confirm the listing shows the 33 tools and mark it public on the server's settings page. (Verification badge - TXT DNS record, backlink, paid plan - is optional and not pursued.)
 
 **Reddit launch posts** - post the GIF natively (Reddit deprioritizes link posts). Read each subreddit's rules and self-promotion policy first; both restrict it.
 
-- [ ] r/ClaudeAI - developer/AI framing. Title like "I built an MCP server that lets Claude manage my Magic: The Gathering collection". Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link. Engage with comments for the first few hours.
-- [ ] r/mtgfinance - collector framing, not developer. Lead with the outcome ("track your collection value and get price alerts by just talking to Claude"), not the technology. Same GIF. Mention it is free and open source, link the repo and the `/developer/guides/mcp-server` page. Avoid jargon like "MCP server" in the title; say "Claude integration".
-- [ ] Optional follow-ups once the above land well: r/magicTCG (rules vary, check before posting) and the MTG finance Discord servers.
+- [x] r/ClaudeAI - developer/AI framing. Title like "I built an MCP server that lets Claude manage my Magic: The Gathering collection". Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link. Engage with comments for the first few hours.
+- [x] r/mtgfinance - collector framing, not developer. Lead with the outcome ("track your collection value and get price alerts by just talking to Claude"), not the technology. Same GIF. Mention it is free and open source, link the repo and the `/developer/guides/mcp-server` page. Avoid jargon like "MCP server" in the title; say "Claude integration".
+- [x] Optional follow-ups once the above land well: r/magicTCG (rules vary, check before posting) and the MTG finance Discord servers.
 
 #### Remaining: Content
 
-**Tutorial blog post** - "Building an AI-powered MTG collection assistant with the IWMM MCP server".
+**Tutorial blog post** - "Building an AI-powered MTG collection assistant with the IWMM MCP server". Done: lives at `/developer/guides/mcp-tutorial` (`developerMcpTutorial.hbs` + route in `developer.controller.ts`).
 
-- [ ] Decide location. There is no `/blog` yet (Phase 5.2 builds it), so publish under the existing developer guides as `/developer/guides/mcp-tutorial` rather than blocking on blog infrastructure. Move it to `/blog` later if 5.2 ships.
-- [ ] Outline: (1) what the MCP server does in two sentences, (2) prerequisites - an IWMM account and an API key from `/user/api-keys`, (3) install and Claude Desktop config (copy the snippet from the `iwantmymtg-mcp` README so the two stay in sync), (4) a real walkthrough conversation, (5) link to the repo and the npm package.
-- [ ] For the walkthrough, run an actual Claude Desktop session and paste the real exchange: search for a card, add it to inventory, check portfolio value, create a price alert. Use the same conversation you record for the GIF so the post and GIF match.
-- [ ] Add the page to the sitemap and link it from the `/developer` hub card next to the existing MCP guide.
+- [x] Location decided: `/developer/guides/mcp-tutorial` under developer guides, matching the existing discord-bot and portfolio-export tutorials. (5.2's `/blog` now exists; could move there later, but developer guides is the consistent home for a code-config tutorial.)
+- [x] Outline covered: (1) what it does, (2) prerequisites - account + key from `/user/api-keys`, (3) install + Claude Desktop config (snippet matches the README; page notes the README is source of truth), (4) walkthrough conversation, (5) repo + npm package links.
+- [x] Walkthrough conversation included (card lookup -> add inventory -> portfolio value -> price alert). NOTE: it is a **representative** example, not a verbatim Claude Desktop transcript. Reconcile with the actual GIF conversation if you want them to match exactly.
+- [x] Added to the sitemap (`sitemap.controller.ts`) and linked from the `/developer` hub card next to the existing MCP guide.
 
 **Demo GIF** - one short GIF showing a full Claude Desktop conversation, reused in the README, both Reddit posts, and the blog post.
 
-- [ ] Script the conversation before recording: 3-4 prompts that show both read and write tools (card lookup, add to inventory, portfolio value, price alert). Keep it under ~30 seconds.
-- [ ] Record the Claude Desktop window. On macOS, Cmd+Shift+5 records a region; or use a tool like Kap which exports GIF directly.
-- [ ] Convert to GIF if needed. `gifski` gives the best quality-per-byte: record to mp4, then `gifski --width 1200 --fps 12 -o demo.gif demo.mp4`. Keep the file under ~10 MB so GitHub renders it inline; trim length or drop fps/width if it is larger.
-- [ ] Add it near the top of the `iwantmymtg-mcp` README, above or just below the install section.
+- [x] Recorded and embedded at the top of the `iwantmymtg-mcp` README (`assets/four-queries-demo.gif`). Reusable in the Reddit posts and tutorial.
 
 **Optional screen-recorded video** - a sub-2-minute narrated walkthrough.
 

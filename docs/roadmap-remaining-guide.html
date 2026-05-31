@@ -133,8 +133,8 @@
   <tbody>
     <tr>
       <td><strong>4.3</strong> MCP Server</td>
-      <td><span class="status partial">Code done, manual tasks open</span></td>
-      <td>Discovery (PR to community index, Glama, Smithery, Reddit) + content (tutorial post, demo GIF, optional video)</td>
+      <td><span class="status partial">Discovery + content shipped, optional video open</span></td>
+      <td>Done: demo GIF, tutorial page, MCP Registry publish (npm 0.3.1, status <code>active</code>), Smithery (MCPB bundle, release <code>SUCCESS</code>), Glama listing claimed, Reddit launch posts. Remaining: confirm the Smithery listing is public; optional walkthrough video.</td>
     </tr>
     <tr>
       <td><strong>5.1</strong> External Imports</td>
@@ -150,121 +150,46 @@
 </table>
 
 <!-- =============== 4.3 =============== -->
-<h2>4.3 MCP Server <span class="status partial">Manual tasks only</span></h2>
+<h2>4.3 MCP Server <span class="status partial">Optional video open</span></h2>
 
-<p>The server itself, typed API client, docs guide, and npm publish are all done. What's left is getting the listing in front of people. The ROADMAP suggests this order, and you should follow it: <strong>GIF first</strong>, then the community PR, then Glama + Smithery, then Reddit. The GIF is reused everywhere downstream, so it unblocks the rest.</p>
+<p>The server, typed API client, docs guide, npm publish, demo GIF, tutorial page, MCP Registry publish, Smithery publish, Glama listing, and Reddit launch posts are all done. What's left is one small follow-up (confirm the Smithery listing is public) and the optional walkthrough video.</p>
 
-<h3>Step 1 - Record the demo GIF</h3>
+<h3>Step 1 - Record the demo GIF <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why first:</strong> Reused in README, both Reddit posts, and the blog tutorial. Reddit deprioritizes link posts, so the GIF needs to be uploaded natively.
+  <strong>Done.</strong> A 4-query demo GIF (card lookup, add to inventory, portfolio value, price alert) is embedded at the top of the <code>iwantmymtg-mcp</code> README at <code>assets/four-queries-demo.gif</code>. Reuse it natively in the Reddit posts (Reddit deprioritizes link posts).
 </div>
 
-<ol>
-  <li><strong>Script the conversation before recording.</strong> 3-4 prompts, under ~30 seconds total. Show both read and write tools. Example flow:
-    <ul>
-      <li>"What is Lightning Bolt worth right now?" (read - card lookup)</li>
-      <li>"Add 4 Lightning Bolt from LEA to my collection." (write - inventory)</li>
-      <li>"What's my portfolio worth?" (read - portfolio)</li>
-      <li>"Alert me if any card in my collection drops 20%." (write - price alert)</li>
-    </ul>
-  </li>
-  <li><strong>Record the Claude Desktop window.</strong> macOS: <code>Cmd+Shift+5</code> records a region. Or use <a href="https://getkap.co">Kap</a> which exports GIF directly.</li>
-  <li><strong>Convert to GIF if you recorded mp4.</strong> <code>gifski</code> gives the best quality-per-byte:
-    <pre>gifski --width 1200 --fps 12 -o demo.gif demo.mp4</pre>
-    Keep the file under ~10 MB so GitHub renders it inline. Trim length or drop fps/width if it's larger.
-  </li>
-  <li><strong>Add it to the iwantmymtg-mcp README</strong> near the top, above or just below the install section. Commit, push, tag if needed.</li>
-</ol>
-
-<h3>Step 2 - PR to <code>modelcontextprotocol/servers</code></h3>
+<h3>Step 2 - Publish to the MCP Registry <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why:</strong> The canonical community index. Other directories crawl it.<br>
-  <span class="meta">Repo: <a href="https://github.com/modelcontextprotocol/servers">github.com/modelcontextprotocol/servers</a></span>
+  <strong>Done.</strong> Live as <code>io.github.matthewdtowles/iwantmymtg-mcp</code> (status <code>active</code>) in the official <a href="https://registry.modelcontextprotocol.io/">MCP Registry</a>. Namespace uses GitHub-based auth (no DNS setup); <code>mcpName</code> + <code>server.json</code> shipped in <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8">iwantmymtg-mcp#8</a>; the <code>mcp-publisher</code> steps are folded into <code>publish.yml</code> after <code>npm publish</code>; npm <code>0.3.1</code> carries <code>mcpName</code> and triggered the registry publish on the same tag. Verify via <code>registry.modelcontextprotocol.io/v0/servers?search=iwantmymtg</code>.<br>
+  <span class="meta">This replaced the original <code>modelcontextprotocol/servers</code> README-PR step - that community list has been retired and CONTRIBUTING redirects everyone to the Registry.</span>
 </div>
 
-<ol>
-  <li><strong>Read their README and CONTRIBUTING first.</strong> Community servers live under a "Community Servers" or "Third-Party Servers" heading. Confirm the exact heading and entry format <em>before</em> editing - it changes.</li>
-  <li><strong>Fork, branch, add one entry.</strong> Entries are alphabetical by name. Match the existing line format <em>exactly</em>. Rough template:
-    <pre>- **[I Want My MTG](https://github.com/matthewdtowles/iwantmymtg-mcp)** - Query Magic: The Gathering cards and prices and manage your collection.</pre>
-  </li>
-  <li><strong>One line, factual, no marketing language.</strong> Their reviewers reject hype.</li>
-  <li><strong>Open PR using their template.</strong> Check all the boxes (license present, server works, etc.). Expect a slow review and possibly a request to consolidate.</li>
-  <li><strong>Respond promptly to review comments.</strong></li>
-</ol>
-
-<h3>Step 3 - Glama listing</h3>
+<h3>Step 3 - Glama listing <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why:</strong> Auto-crawls GitHub for MCP servers and scores them on quality.<br>
-  <span class="meta">Site: <a href="https://glama.ai/mcp/servers">glama.ai/mcp/servers</a></span>
+  <strong>Done.</strong> Confirmed listed on <a href="https://glama.ai/mcp/servers">glama.ai</a> and claimed the server (GitHub sign-in). Glama re-crawls automatically, so the claim does not need repeating; just glance at the quality score now and then. Clear README, MIT license, examples, and CI are all present, so the score should stay healthy.
 </div>
 
-<ol>
-  <li>Search glama.ai for "iwantmymtg" or "I Want My MTG". It likely already auto-indexed once the repo went public.</li>
-  <li><strong>If listed:</strong> sign in with GitHub, claim the server, edit metadata.</li>
-  <li><strong>If not listed:</strong> use "Add server" with the repo URL.</li>
-  <li>Quality score rewards clear README, OSI license (MIT is present), example usage, CI. All present - just confirm the score after indexing.</li>
-</ol>
-
-<h3>Step 4 - Smithery listing</h3>
+<h3>Step 4 - Smithery listing <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Why:</strong> MCP server registry and optional host.<br>
-  <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a></span>
+  <strong>Done.</strong> Published via an MCPB bundle (release <code>SUCCESS</code>), not the old stdio "Add Server" flow - Smithery dropped hosted-stdio scanning (it reaches the server over HTTP and 403s), so local servers ship as a downloadable <code>.mcpb</code>. <code>smithery.yaml</code> shipped in <a href="https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7">iwantmymtg-mcp#7</a>; build with <code>npm run bundle</code>, then <code>smithery mcp publish ./iwantmymtg-mcp.mcpb -n matthewdtowles/iwantmymtg-mcp</code>.<br>
+  <span class="meta">Site: <a href="https://smithery.ai">smithery.ai</a>. One small follow-up: confirm the listing shows the 33 tools and mark it public on the server's settings page (verification badge is optional and not pursued).</span>
 </div>
 
-<ol>
-  <li>Sign in with GitHub. Use "Add Server" / "Deploy" pointing at the <code>iwantmymtg-mcp</code> repo.</li>
-  <li><strong>Add <code>smithery.yaml</code> to the repo root</strong> describing how to launch the server. For this stdio server it declares the run command (<code>npx iwantmymtg-mcp</code>) and a config schema with one optional field, <code>IWMM_API_KEY</code>.
-    <blockquote>Check Smithery's current docs for the exact <code>smithery.yaml</code> schema before committing - the format has shifted before.</blockquote>
-  </li>
-  <li>Verify the listing renders the tool list and the README, then mark it public.</li>
-</ol>
-
-<h3>Step 5 - Reddit launch posts</h3>
+<h3>Step 5 - Reddit launch posts <span class="status done">Done</span></h3>
 <div class="step">
-  <strong>Read each subreddit's rules and self-promotion policy first.</strong> Both restrict it.<br>
-  <strong>Post the GIF natively.</strong> Reddit deprioritizes link posts.
+  <strong>Done.</strong> Posted natively (with the GIF) to r/ClaudeAI (developer/AI framing) and r/mtgfinance (collector framing, led with the outcome rather than the technology). Optional follow-ups in r/magicTCG and MTG finance Discord servers also covered.
 </div>
 
-<h4>r/ClaudeAI - developer/AI framing</h4>
+<h3>Step 6 - Tutorial blog post <span class="status done">Done</span></h3>
+<div class="step">
+  <strong>Done.</strong> Published at <code>/developer/guides/mcp-tutorial</code> (<code>developerMcpTutorial.hbs</code> + route in <code>developer.controller.ts</code>), in the sitemap, and linked from the <code>/developer</code> hub card next to the existing MCP guide. Kept under developer guides to match the discord-bot and portfolio-export tutorials; the blog (5.2) now exists if you'd rather move it there.
+</div>
+
 <ul>
-  <li>Title: "I built an MCP server that lets Claude manage my Magic: The Gathering collection"</li>
-  <li>Body: what MCP is in one sentence, the demo GIF, 3-4 example prompts ("what's my portfolio worth", "add 4x Lightning Bolt from LEA", "alert me if any card drops 20%"), install snippet, repo link.</li>
-  <li><strong>Engage with comments for the first few hours.</strong> Reddit's ranking algorithm rewards early activity.</li>
+  <li>Covers: what it does, prerequisites (account + API key), install + Claude Desktop config (snippet matches the README, which the page calls the source of truth), a walkthrough conversation (card lookup -> add inventory -> portfolio value -> price alert), and repo + npm links.</li>
+  <li><strong>One open item:</strong> the walkthrough is a <em>representative</em> example, not a verbatim Claude Desktop transcript. If you want it to match the demo GIF exactly, paste the real exchange from your recording.</li>
 </ul>
-
-<h4>r/mtgfinance - collector framing, not developer</h4>
-<ul>
-  <li>Lead with the <em>outcome</em>, not the technology: "track your collection value and get price alerts by just talking to Claude".</li>
-  <li>Same GIF. Mention it's free and open source.</li>
-  <li>Link the repo and <code>/developer/guides/mcp-server</code>.</li>
-  <li><strong>Avoid jargon like "MCP server" in the title.</strong> Say "Claude integration".</li>
-</ul>
-
-<h4>Optional follow-ups (only once the above land well)</h4>
-<ul>
-  <li>r/magicTCG - rules vary, check before posting.</li>
-  <li>MTG finance Discord servers.</li>
-</ul>
-
-<h3>Step 6 - Tutorial blog post</h3>
-<div class="step">
-  <strong>Decision from the ROADMAP:</strong> publish under existing developer guides as <code>/developer/guides/mcp-tutorial</code>. The note in the ROADMAP said this would block on the blog infrastructure, but the blog now exists (commit 1ee67ca). You can publish there instead if you prefer - it's now your call.
-</div>
-
-<ol>
-  <li><strong>Outline:</strong>
-    <ol>
-      <li>What the MCP server does in two sentences.</li>
-      <li>Prerequisites - IWMM account, API key from <code>/user/api-keys</code>.</li>
-      <li>Install + Claude Desktop config. <strong>Copy the snippet from the iwantmymtg-mcp README so the two stay in sync.</strong></li>
-      <li>Real walkthrough conversation.</li>
-      <li>Link to repo and npm package.</li>
-    </ol>
-  </li>
-  <li><strong>Use the same conversation you recorded for the GIF</strong> so the post and GIF match.</li>
-  <li>Add the page to the sitemap.</li>
-  <li>Link it from the <code>/developer</code> hub card next to the existing MCP guide.</li>
-</ol>
 
 <h3>Step 7 (optional) - Screen-recorded video</h3>
 <div class="step">

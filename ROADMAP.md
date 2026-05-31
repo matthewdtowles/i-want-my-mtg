@@ -341,16 +341,16 @@ Done: the MCP server now talks to the IWMM API through a typed `openapi-fetch` c
 
 #### Remaining: Discovery
 
-The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Remaining: publish to the MCP Registry, Glama, Smithery (`smithery.yaml` done - see below), and Reddit.
+The demo GIF (under Content, below) is done and embedded at the top of the `iwantmymtg-mcp` README, so the Reddit posts and listings can reuse it. Published to npm (`0.3.1`), the MCP Registry, and Smithery (all done - see below). Remaining: Glama (auto-crawl, confirm it indexed) and Reddit.
 
 **MCP Registry ([`registry.modelcontextprotocol.io`](https://registry.modelcontextprotocol.io/))** - the canonical index that Glama, Smithery, and other directories crawl.
 
 > Plan changed: the original item here was a PR adding an entry to the `modelcontextprotocol/servers` README. That community list has been **retired**. Their CONTRIBUTING now states they no longer accept third-party server listings or new server implementations and redirect everyone to the [MCP Registry](https://github.com/modelcontextprotocol/registry). The PR approach is dead - publish to the Registry instead.
 
 - [x] Namespace decided: `io.github.matthewdtowles/iwantmymtg-mcp` (GitHub-based auth, no DNS setup). This name is the permanent public identifier in the registry.
-- [x] `mcpName` added to `package.json` and `server.json` created (npm package, `stdio`, optional `IWMM_API_KEY`). PR [iwantmymtg-mcp#8](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8) - pending merge.
-- [ ] Add the publish workflow. The `.github/workflows/publish-mcp.yml` YAML is in PR #8's description (it could not be committed via API - the automation token lacks the `workflow` scope). Add it yourself, or fold its steps into the existing `publish.yml` after `npm publish`.
-- [ ] Cut a fresh release. npm `0.3.0` is already published **without** `mcpName`, so the registry can't validate it; bump the version and tag (e.g. `v0.4.0`) so npm gets a build carrying `mcpName`, then the registry publish runs (or run `mcp-publisher login github` + `publish` once by hand).
+- [x] `mcpName` added to `package.json` and `server.json` created (npm package, `stdio`, optional `IWMM_API_KEY`). PR [iwantmymtg-mcp#8](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/8) - merged.
+- [x] Publish workflow added: the `mcp-publisher` steps (install, GitHub OIDC login, publish) are folded into `publish.yml` after `npm publish`, running on the same release tag.
+- [x] Cut a fresh release. `0.3.1` published to npm carrying `mcpName`, then the registry publish ran on the same tag. Live as `io.github.matthewdtowles/iwantmymtg-mcp` (status `active`); confirm via `registry.modelcontextprotocol.io/v0/servers?search=iwantmymtg`.
 
 **[Glama](https://glama.ai/mcp/servers)** - auto-crawls GitHub for MCP servers and scores them on quality.
 
@@ -361,9 +361,9 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 
 **[Smithery](https://smithery.ai)** - MCP server registry and (optionally) host.
 
-- [x] `smithery.yaml` added in the repo root: `stdio`, `npx -y iwantmymtg-mcp`, one optional `iwmmApiKey` config field passed through as `IWMM_API_KEY`. Schema confirmed against current Smithery stdio examples. (PR [iwantmymtg-mcp#7](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7) - pending merge.)
-- [ ] Sign in with GitHub. Use "Add Server" / "Deploy" and point it at the `iwantmymtg-mcp` repo (manual - requires browser sign-in).
-- [ ] Verify the listing renders the tool list and the README, then mark it public.
+- [x] `smithery.yaml` added in the repo root: `stdio`, `npx -y iwantmymtg-mcp`, one optional `iwmmApiKey` config field passed through as `IWMM_API_KEY`. (PR [iwantmymtg-mcp#7](https://github.com/matthewdtowles/iwantmymtg-mcp/pull/7) - merged.)
+- [x] Published via an MCPB bundle, not the old stdio "Add Server" flow. Smithery dropped hosted-stdio scanning (it reaches the server over HTTP and 403s), so local servers ship as a downloadable `.mcpb`. Build with `npm run bundle` (manifest + `scripts/build-mcpb.sh` in the server repo), then `smithery mcp publish ./iwantmymtg-mcp.mcpb -n matthewdtowles/iwantmymtg-mcp`. Release accepted (`status: SUCCESS`).
+- [ ] Confirm the listing shows the 33 tools and mark it public on the server's settings page. (Verification badge - TXT DNS record, backlink, paid plan - is optional and not pursued.)
 
 **Reddit launch posts** - post the GIF natively (Reddit deprioritizes link posts). Read each subreddit's rules and self-promotion policy first; both restrict it.
 

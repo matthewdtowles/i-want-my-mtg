@@ -398,6 +398,20 @@ This is the remote transport that lets Smithery scan tools over the wire, fixing
 - [ ] MCP resources (vs tools) for browsing card/set data as readable URIs (`iwmm://cards/...`) — nice-to-have, not load-bearing for v1
 - [ ] MCP prompts for common workflows ("audit my collection", "find arbitrage opportunities") — value depends on observed usage patterns
 
+### 4.4 Strict Query-Param Validation on the JSON API
+
+**Next up.** The `/api/v1` list endpoints silently ignore invalid query params: `SafeQueryOptions` drops unknown `rarity`/`format`/`legality`/`sort` and malformed `setCode` to `undefined`, and the transaction `type` filter (parsed separately via `parseTransactionType`) treats a typo like `?type=BOUGHT` as "no filter". For a browser that is fine, but for programmatic API consumers a silently-ignored filter is a footgun - they get unfiltered results and assume the filter worked.
+
+The constraint is that `SafeQueryOptions` is one shared sanitizer used by ~20 call sites, including the server-rendered HBS browse/search pages, which *need* the lenient fallback (a stale `?rarity=foobar` bookmark must still render the page, not 400). So the fix is a validation layer in front of the API controllers, not a change to the shared sanitizer's defaulting.
+
+Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR because 400-ing `type` alone would be inconsistent with every other filter.
+
+- [ ] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. Layer it in front of `SafeQueryOptions`; do not change the sanitizer's behavior.
+- [ ] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
+- [ ] Apply consistently across every list endpoint (cards, sets, inventory, transactions, sealed-products) so one filter does not 400 while the rest silently ignore.
+- [ ] Align the MCP tools that pass raw filters through `SafeQueryOptions` (the `list_transactions` `type` enum already rejects typos; bring the others in line).
+- [ ] Settle the contract (400 body shape: `error` + offending param + allowed values) and document it in the OpenAPI spec.
+
 ---
 
 ## Phase 5: Growth & Content Marketing

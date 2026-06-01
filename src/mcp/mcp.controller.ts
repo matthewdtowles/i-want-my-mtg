@@ -23,6 +23,21 @@ export class McpController {
     @Post()
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
     async handleRpc(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+        // Reject JSON-RPC batch arrays: the rate limiter counts one POST as one
+        // operation, so a batch would let N tool calls run under a single tick.
+        // The 2025-06-18 MCP spec also drops batching, so single requests only.
+        if (Array.isArray(req.body)) {
+            res.status(400).json({
+                jsonrpc: '2.0',
+                error: {
+                    code: -32600,
+                    message: 'Batch requests are not supported. Send one JSON-RPC request per call.',
+                },
+                id: null,
+            });
+            return;
+        }
+
         const server = this.serverFactory.build(req.user ?? undefined);
         // Stateless: no sessions, and respond with a single JSON-RPC body (not SSE)
         // so Smithery's scan and plain HTTP clients get application/json back.

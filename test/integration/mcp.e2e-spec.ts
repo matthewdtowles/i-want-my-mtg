@@ -183,5 +183,19 @@ describe('MCP endpoint (e2e)', () => {
             expect(res.body.result.isError).toBe(true);
             expect(res.body.result.content[0].text).toMatch(/Unknown tool/);
         });
+
+        it('rejects JSON-RPC batch arrays so they cannot run N tools under one rate-limit tick', async () => {
+            const call = {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'get_card',
+                    arguments: { setCode: TEST_CARD_SET_CODE, setNumber: TEST_CARD_NUMBER },
+                },
+            };
+            const res = await mcp([call, { ...call, id: 2 }]).expect(400);
+            expect(res.body.error.message).toMatch(/batch/i);
+        });
     });
 });

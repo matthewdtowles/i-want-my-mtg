@@ -40,7 +40,7 @@ export class McpToolRegistry {
     }
 
     list(): McpToolDefinition[] {
-        return this.tools;
+        return [...this.tools];
     }
 
     get(name: string): McpToolDefinition | undefined {

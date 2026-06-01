@@ -47,5 +47,15 @@ import { RapidApiProxyGuard } from './shared/rapidapi-proxy.guard';
         RapidApiProxyGuard,
         { provide: APP_INTERCEPTOR, useClass: CacheControlInterceptor },
     ],
+    // Exported so the MCP driving adapter (src/mcp) reuses the same guard
+    // instances — sharing in-memory burst state and the per-key daily quota.
+    // The two route guards pull in these deps transitively, so they must be
+    // exported too for resolution in the importing module.
+    exports: [
+        OptionalAuthOrApiKeyGuard,
+        ApiRateLimitGuard,
+        ApiKeyAuthGuard,
+        RapidApiProxyGuard,
+    ],
 })
 export class ApiModule {}

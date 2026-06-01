@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **In-app MCP endpoint.** A streamable-HTTP Model Context Protocol server
+  at `POST /mcp`, exposing 33 tools (cards, sets, inventory, transactions,
+  portfolio, alerts, notifications) over the same core services as the REST
+  API. Stateless transport with JSON responses; `GET`/`DELETE` return 405
+  and JSON-RPC batch requests are rejected. Reuses API-key auth, rate
+  limits, and per-tool premium gating. Catalog tools are anonymous; the
+  rest require `IWMM_API_KEY`.
+
+- **Transaction BUY/SELL filter.** `GET /api/v1/transactions` accepts an
+  optional `type=BUY|SELL` query param to return only buys or only sells;
+  omitting it returns both (unchanged default). The same filter is exposed
+  on the `list_transactions` MCP tool. Case-insensitive (`buy` works).
+
 - **User set-type preference.** Signed-in users can choose which set types
   appear in their default browse/search listings via the new "Set Types To
   Show" section on `/user`. `NULL` preference (the default) falls back to

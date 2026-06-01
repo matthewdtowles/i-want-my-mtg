@@ -1,5 +1,5 @@
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { Transaction } from '../transaction.entity';
+import { Transaction, TransactionType } from '../transaction.entity';
 
 export const TransactionRepositoryPort = 'TransactionRepositoryPort';
 
@@ -56,19 +56,27 @@ export interface TransactionRepositoryPort {
     /**
      * Find transactions for a user with pagination, sorting, and filtering.
      * Optional `sinceDate` caps results to transactions on or after that date
-     * (used by the free-tier 30-day history gate).
+     * (used by the free-tier 30-day history gate). Optional `type` restricts
+     * results to BUY or SELL transactions.
      */
     findByUserPaginated(
         userId: number,
         options: SafeQueryOptions,
-        sinceDate?: Date
+        sinceDate?: Date,
+        type?: TransactionType
     ): Promise<Transaction[]>;
 
     /**
      * Count transactions for a user with the same filters.
      * Optional `sinceDate` matches the cap applied by `findByUserPaginated`.
+     * Optional `type` restricts the count to BUY or SELL transactions.
      */
-    countByUser(userId: number, options: SafeQueryOptions, sinceDate?: Date): Promise<number>;
+    countByUser(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date,
+        type?: TransactionType
+    ): Promise<number>;
 
     /**
      * Aggregate transaction amounts by month for cash flow analysis

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionRepositoryPort } from 'src/core/transaction/ports/transaction.repository.port';
 import { TransactionService } from 'src/core/transaction/transaction.service';
@@ -55,6 +56,8 @@ describe('TransactionService', () => {
         findBuyLots: jest.fn(),
         findSells: jest.fn(),
         findByUser: jest.fn(),
+        findByUserPaginated: jest.fn(),
+        countByUser: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
         getCashFlow: jest.fn(),
@@ -644,6 +647,43 @@ describe('TransactionService', () => {
 
             expect(repository.findByUser).toHaveBeenCalledWith(1, undefined);
             expect(result).toEqual(transactions);
+        });
+    });
+
+    describe('findByUserPaginated', () => {
+        it('forwards the optional transaction-type filter to the repository', async () => {
+            const options = new SafeQueryOptions();
+            const since = new Date('2025-01-01');
+            repository.findByUserPaginated.mockResolvedValue([buyLot1]);
+
+            await service.findByUserPaginated(1, options, since, 'BUY');
+
+            expect(repository.findByUserPaginated).toHaveBeenCalledWith(1, options, since, 'BUY');
+        });
+
+        it('forwards an undefined type when no filter is given', async () => {
+            const options = new SafeQueryOptions();
+            repository.findByUserPaginated.mockResolvedValue([buyLot1, sellTx]);
+
+            await service.findByUserPaginated(1, options);
+
+            expect(repository.findByUserPaginated).toHaveBeenCalledWith(
+                1,
+                options,
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('countByUser', () => {
+        it('forwards the optional transaction-type filter to the repository', async () => {
+            const options = new SafeQueryOptions();
+            repository.countByUser.mockResolvedValue(1);
+
+            await service.countByUser(1, options, undefined, 'SELL');
+
+            expect(repository.countByUser).toHaveBeenCalledWith(1, options, undefined, 'SELL');
         });
     });
 

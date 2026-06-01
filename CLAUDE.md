@@ -22,6 +22,12 @@ After any code change, rebuild and restart:
 docker compose build web && docker compose up -d web
 ```
 
+**When `package.json` dependencies change**, the command above is not enough. The `web` service mounts `node_modules` as an anonymous volume (`- /app/node_modules` in `docker-compose.yml`), and `docker compose up` reuses that stale volume across recreations — so it keeps shadowing the freshly built image's `node_modules` and new deps appear missing (`TS2307: Cannot find module ...`). Recreate the container and discard the anonymous volume with `-V`:
+```bash
+docker compose up -d --build -V web
+```
+The `-V` (`--renew-anon-volumes`) flag repopulates `node_modules` from the rebuilt image. (`docker compose exec web npm install` followed by `docker compose restart web` also works, but `-V` is the one-step fix.)
+
 ### Testing
 
 ```bash

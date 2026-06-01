@@ -20,6 +20,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -49,17 +50,19 @@ export class TransactionApiController {
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false })
+    @ApiQuery({ name: 'type', required: false, enum: ['BUY', 'SELL'] })
     @ApiResponse({ status: 200, description: 'Transaction list' })
     async findAll(
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
         const options = new SafeQueryOptions(query);
+        const type = parseTransactionType(query.type);
         const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
         const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
         const [transactions, total] = await Promise.all([
-            this.transactionService.findByUserPaginated(req.user.id, options, sinceDate),
-            this.transactionService.countByUser(req.user.id, options, sinceDate),
+            this.transactionService.findByUserPaginated(req.user.id, options, sinceDate, type),
+            this.transactionService.countByUser(req.user.id, options, sinceDate, type),
         ]);
 
         return ApiResponseDto.ok(

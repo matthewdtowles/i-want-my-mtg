@@ -2,6 +2,12 @@ import { validateInit } from 'src/core/validation.util';
 
 export type TransactionType = 'BUY' | 'SELL';
 
+/** Parse an untrusted string into a TransactionType, or undefined if it isn't one. */
+export function parseTransactionType(value?: string): TransactionType | undefined {
+    const upper = value?.toUpperCase();
+    return upper === 'BUY' || upper === 'SELL' ? upper : undefined;
+}
+
 export class Transaction {
     readonly id?: number;
     readonly userId: number;

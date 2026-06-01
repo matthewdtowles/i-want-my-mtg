@@ -180,7 +180,7 @@ Competitor benchmarks (April 2026): Dragon Shield $2.99/mo with hard 100-card ca
 - Sealed product tracking
 - Set price history
 - Advanced analytics (collection value breakdown by set, format, color, rarity) - to build
-- Card image scanning - ships in Phase 6.3
+- Card image scanning - ships in Phase 7.3
 - Priority support
 - Early access to new features
 
@@ -188,7 +188,7 @@ External imports moved to Free (April 2026, Phase 5.1) — gating acquisition be
 
 API rate limits remain 100/day for free and premium alike - all API monetization is deferred to Phase 4.1's separate Developer/Business tiers.
 
-**Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. The load-bearing premium pitches are the financial-analysis features (portfolio history, P&L, cost basis, advanced analytics — all shipped) and card image scanning (Phase 6.3). External imports are the acquisition funnel into those features, not a conversion lever.
+**Conversion model implication:** with no creation caps, conversion depends on users _wanting_ depth features. Zero retroactive disruption to existing users (nothing taken away), zero churn risk, no grandfathering required. The load-bearing premium pitches are the financial-analysis features (portfolio history, P&L, cost basis, advanced analytics — all shipped) and card image scanning (Phase 7.3). External imports are the acquisition funnel into those features, not a conversion lever.
 
 ---
 
@@ -386,15 +386,35 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 - [ ] Only worth doing if the GIF and posts get traction. Same conversation as the GIF, with voiceover explaining each step.
 - [ ] Host on YouTube (unlisted or public), embed the link in the README and the blog post.
 
+#### In-app MCP endpoint (Streamable HTTP)
+
+Done: shipped a streamable-HTTP MCP endpoint inside the web app at `POST /mcp` (new `src/mcp` driving adapter) exposing the same 33 tools as the stdio server. Each tool reuses the matching REST controller's core services + presenters, so per-user API-key auth, the per-key daily quota / burst limits, and premium gating are inherited unchanged. Stateless transport (fresh server per request, JSON responses). Verified by unit tests (33-tool contract) and an integration e2e (tools/list count, anonymous reads, no-key auth error, per-key write/read isolation, premium gate). Plan: `docs/mcp-endpoint-plan.md`.
+
+This is the remote transport that lets Smithery scan tools over the wire, fixing the stdio listing's 0/40 Capability Quality. Served same-origin at `/mcp` with API-key auth instead of a separate `mcp.iwantmymtg.net` + OAuth, so no OAuth flow was needed. Remaining: register the remote URL on Smithery and confirm the 33 tools populate (manual, post-deploy - see the Smithery item above).
+
 #### Deferred (post-launch follow-ups)
 
-- [ ] Remote MCP transport (Streamable HTTP) hosted at `mcp.iwantmymtg.net` — eliminates the install step but requires OAuth flow design; revisit once stdio version has traction
+- [x] Remote MCP transport (Streamable HTTP) - shipped in-app at `/mcp` (see above) rather than a hosted `mcp.iwantmymtg.net` + OAuth.
 - [ ] MCP resources (vs tools) for browsing card/set data as readable URIs (`iwmm://cards/...`) — nice-to-have, not load-bearing for v1
 - [ ] MCP prompts for common workflows ("audit my collection", "find arbitrage opportunities") — value depends on observed usage patterns
 
+### 4.4 Strict Query-Param Validation on the JSON API
+
+**Next up.** The `/api/v1` list endpoints silently ignore invalid query params: `SafeQueryOptions` drops unknown `rarity`/`format`/`legality`/`sort` and malformed `setCode` to `undefined`, and the transaction `type` filter (parsed separately via `parseTransactionType`) treats a typo like `?type=BOUGHT` as "no filter". For a browser that is fine, but for programmatic API consumers a silently-ignored filter is a footgun - they get unfiltered results and assume the filter worked.
+
+The constraint is that `SafeQueryOptions` is one shared sanitizer used by ~20 call sites, including the server-rendered HBS browse/search pages, which *need* the lenient fallback (a stale `?rarity=foobar` bookmark must still render the page, not 400). So the fix is a validation layer in front of the API controllers, not a change to the shared sanitizer's defaulting.
+
+Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR because 400-ing `type` alone would be inconsistent with every other filter.
+
+- [ ] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. Layer it in front of `SafeQueryOptions`; do not change the sanitizer's behavior.
+- [ ] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
+- [ ] Apply consistently across every list endpoint (cards, sets, inventory, transactions, sealed-products) so one filter does not 400 while the rest silently ignore.
+- [ ] Align the MCP tools that pass raw filters through `SafeQueryOptions` (the `list_transactions` `type` enum already rejects typos; bring the others in line).
+- [ ] Settle the contract (400 body shape: `error` + offending param + allowed values) and document it in the OpenAPI spec.
+
 ---
 
-## Phase 5: Growth & Community
+## Phase 5: Growth & Content Marketing
 
 ### 5.1 External Import Tools
 
@@ -418,32 +438,60 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [x] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL) at `/blog/building-iwmm-in-public`
 - [x] Add `/blog` + `/blog/:slug` URLs to the static sitemap; `SitemapController` now injects `BlogService` and emits an entry per post in `getStaticSitemap()`
 - [ ] Cross-post the "building in public" piece on HN ("Show HN: ...") and dev.to/Hashnode with canonical URL pointing back to the blog
-- [ ] Share each cornerstone post in matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant) once §5.3 community engagement groundwork is laid
-
-### 5.3 Community Engagement
-
-- [ ] Engage authentically in key communities before promoting (r/mtgfinance, r/magicTCG, r/EDH, MTG finance Discord servers)
-- [ ] Create dedicated Discord server for app feedback and community
-- [ ] Post "Show Reddit" style post on r/mtgfinance when product is polished
-- [ ] Reach out to 3–5 MTG content creators (MTG Goldfish, Tolarian Community College, finance-focused YouTubers)
-
-### 5.4 Launch Events
-
-- [ ] Submit to Product Hunt (Tuesday/Wednesday launch with screenshots, demo video, value proposition)
-- [ ] Post on Hacker News (Show HN — developer-hobbyist crossover audience)
-- [ ] Offer content creators early access + free premium + referral codes
-
-### 5.5 Analytics
-
-- [ ] Set up privacy-respecting analytics (PostHog or Plausible)
-- [ ] Track key metrics: DAU/MAU, free-to-premium conversion, affiliate CTR, API adoption, churn
-- [ ] Run monthly feedback cycle from Discord community and support requests
+- [ ] Share each cornerstone post in matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant) once §8.1 community engagement groundwork is laid
 
 ---
 
-## Phase 6: Platform Expansion
+## Phase 6: Buylist Pricing & Vendor Selling Tools
 
-### 6.1 Mobile App (Cross-Platform)
+Surface buylist (sell-to-vendor) prices alongside retail, highlight the best buylist offer per card, and help users decide *who to sell to* — especially in bulk. The value lands on a user's inventory: what is my collection worth to *sell*, and which vendor pays most? Prioritized ahead of platform expansion and go-to-market because it's net-new differentiating value (not a re-surfacing of existing features) and it strengthens the core product before we invest in new surfaces and marketing.
+
+Tracked as epic #498 (sub-issues #499–#503). Cross-repo: [scry#14](https://github.com/matthewdtowles/scry/issues/14) (ingest), [iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9) (expose via MCP).
+
+Constraints found during scoping: scry currently ingests only the MTGJSON `retail` path and **averages across providers** into one normal/foil value; the web `price` table stores that single averaged value. "Best buylist by vendor" is incompatible with averaging — it needs per-provider (and likely per-condition/finish) data. MTGJSON publishes buylist for a limited set of providers (CardKingdom, Cardsphere); broad vendor coverage likely needs an additional data provider. Direction: stand up a **separate, additive granular price store** (all retail + buylist, per provider) and **derive** today's aggregates from it — non-breaking for current features. The #6.1 spike decides sourcing + architecture before the build.
+
+### 6.1 Spike: Buylist Data Sources & Price-Data Architecture
+
+- [ ] Evaluate buylist data sources: MTGJSON buylist coverage (CardKingdom, Cardsphere), Cardsphere's role as an aggregator, and at least one additional provider (vendor APIs vs. scraping — feasibility, cost, ToS/legality, maintenance)
+- [ ] Design the separate/additive granular price store (provider, retail|buylist, finish/condition) and how to derive the current averaged value from it
+- [ ] Define the "vendor" model for grouping/optimization (store-credit bonus %, conditions, min/max)
+- [ ] Deliverable: recommendation doc + refined scope for 6.2–6.5 and scry#14
+
+### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates)
+
+- [ ] New schema for granular prices (retail + buylist, per provider, per finish/condition)
+- [ ] Web ingestion/storage fed by scry's expanded output (scry#14)
+- [ ] Derive today's averaged normal/foil from the granular data so nothing downstream breaks
+- [ ] Retention consistent with existing price history (daily → weekly → monthly)
+
+### 6.3 Show Buylist Prices on Card Views
+
+- [ ] Display buylist price(s) per card; highlight the best offer and which vendor
+- [ ] Per-vendor buylist where available; respect normal/foil
+- [ ] Fit existing price section/overlay patterns (card, set, binder overlay) and theming
+
+### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export
+
+- [ ] Select a subset (or all) of inventory
+- [ ] Compute best buylist per item and total it
+- [ ] Group results by vendor (what each vendor would pay across the selection)
+- [ ] CSV export
+
+### 6.5 Sell/Buy List Vendor Optimizer
+
+- [ ] Sell-list and buy-list entities per user
+- [ ] Optimizer: best net outcome per vendor, factoring store-credit bonus % (credit vs. cash), buylist offers, and retail buy prices
+- [ ] Favor consolidating into a single vendor/bulk transaction where it wins
+- [ ] Present the recommendation clearly; CSV export of the plan
+- [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9))
+
+---
+
+## Phase 7: Platform Expansion
+
+Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
+
+### 7.1 Mobile App (Cross-Platform)
 
 - [ ] Choose framework (React Native recommended given JS background; Flutter if Dart is appealing)
 - [ ] Scaffold mobile app project in new repo
@@ -454,14 +502,14 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [ ] TestFlight / internal testing distribution
 - [ ] App Store and Play Store submission
 
-### 6.2 Desktop App (Optional)
+### 7.2 Desktop App (Optional)
 
 - [ ] Evaluate whether desktop app adds value beyond existing PWA capabilities (service worker, offline support)
 - [ ] If proceeding: choose framework (Tauri recommended — lighter than Electron, wraps existing web frontend)
 - [ ] Add desktop-specific features (bulk local file import, keyboard shortcuts, system tray for price alerts)
 - [ ] Distribute via direct download and platform stores
 
-### 6.3 Import Inventory by Picture
+### 7.3 Import Inventory by Picture
 
 - [ ] Research card recognition APIs/libraries (Scryfall image matching, ML models)
 - [ ] Design image upload and processing flow
@@ -473,36 +521,67 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 
 ---
 
-## Phase 7: Advanced Monetization & Ecosystem
+## Phase 8: Go-to-Market
 
-### 7.1 Peer-to-Peer Transaction Facilitation
+The marketing push — community, launch events, analytics — split out from platform expansion (former §6.4–§6.6) and sequenced after it (Phase 7) so the spend lands on a product newcomers can actually use on any device.
+
+### 8.1 Community Engagement
+
+Moved from former §5.3 / §6.4, sequenced after platform expansion so the community push points at a product newcomers can try on any device.
+
+- [ ] Engage authentically in key communities before promoting (r/mtgfinance, r/magicTCG, r/EDH, MTG finance Discord servers)
+- [ ] Create dedicated Discord server for app feedback and community
+- [ ] Post "Show Reddit" style post on r/mtgfinance when product is polished
+- [ ] Reach out to 3–5 MTG content creators (MTG Goldfish, Tolarian Community College, finance-focused YouTubers)
+
+### 8.2 Launch Events
+
+Moved from former §5.4 / §6.5.
+
+- [ ] Submit to Product Hunt (Tuesday/Wednesday launch with screenshots, demo video, value proposition)
+- [ ] Post on Hacker News (Show HN — developer-hobbyist crossover audience)
+- [ ] Offer content creators early access + free premium + referral codes
+
+### 8.3 Analytics
+
+Moved from former §5.5 / §6.6.
+
+- [ ] Set up privacy-respecting analytics (PostHog or Plausible)
+- [ ] Track key metrics: DAU/MAU, free-to-premium conversion, affiliate CTR, API adoption, churn
+- [ ] Run monthly feedback cycle from Discord community and support requests
+
+---
+
+## Phase 9: Advanced Monetization & Ecosystem
+
+### 9.1 Peer-to-Peer Transaction Facilitation
 
 - [ ] Research legal and compliance requirements (money transmitter regulations — consult a lawyer)
 - [ ] Build trade/sale matching system (users list cards to sell/trade, system matches buyers, 3–5% fee)
 - [ ] Implement reputation and trust systems (ratings, verified history, dispute resolution)
 - [ ] Start small — limit to verified users in same region or LGS, expand geographically as trust matures
 
-### 7.2 LGS (Local Game Store) Tools
+### 9.2 LGS (Local Game Store) Tools
 
 - [ ] Build store-facing dashboard for inventory management (track inventory, set prices vs. market data, buylist pricing)
 - [ ] Offer "Store" subscription tier ($49–99/month) with POS integration, customer want-lists, event inventory
 - [ ] Partner with 5–10 LGS owners as beta testers
 
-### 7.3 Data & Analytics Products
+### 9.3 Data & Analytics Products
 
 - [ ] Build aggregated market trend reports (weekly/monthly price movements, format staples, set value trends)
 - [ ] Explore anonymized data licensing for content creators, store chains, and market analysts (only viable at scale)
 
-### 7.4 Premium Bundling for Multi-Platform
+### 9.4 Premium Bundling for Multi-Platform
 
 - [ ] Revisit subscription tiers to reflect multi-platform value (one account, everywhere)
 - [ ] Consider "Collector Pro" tier ($7.99–9.99/month) bundling premium app + Developer-tier API access
 
 ---
 
-## Phase 8: Architecture
+## Phase 10: Architecture
 
-### 8.1 Evaluate Removing NestJS Dependency
+### 10.1 Evaluate Removing NestJS Dependency
 
 - [ ] Audit current NestJS features used (DI, guards, pipes, interceptors, etc.)
 - [ ] Evaluate lightweight alternatives (Fastify standalone, Express + tsyringe, etc.)
@@ -512,7 +591,7 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [ ] If migrating: execute migration module by module
 - [ ] If keeping: document decision and rationale
 
-### 8.2 Portfolio Breakdown: by=color Dimension
+### 10.2 Portfolio Breakdown: by=color Dimension
 
 Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJSON `colorIdentity` first. Once that lands, add a `color` case to `PortfolioBreakdownRepository.dimensionConfig()` and a tab on `portfolioBreakdown.hbs`.
 
@@ -520,11 +599,11 @@ Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJ
 - [ ] Add `color` case to `BreakdownDimension` and `dimensionConfig()`
 - [ ] Add "By Color" tab to `portfolioBreakdown.hbs`
 
-### 8.3 Scry: Interactive Mode
+### 10.3 Scry: Interactive Mode
 
 Done (separate repo): interactive CLI menu via `cargo run -- interactive`, ingestion-target selection (sets/cards/prices), progress + confirmation prompts, dry-run option for destructive ops.
 
-### 8.4 Feature: Deck Building
+### 10.4 Feature: Deck Building
 
 Deferred from former §3.5. Not on the near-term roadmap; revisit after monetization, platform expansion, and ecosystem phases land.
 

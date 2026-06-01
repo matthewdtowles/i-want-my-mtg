@@ -4,7 +4,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EDIT_WINDOW_MS } from './transaction.constants';
-import { Transaction } from './transaction.entity';
+import { Transaction, TransactionType } from './transaction.entity';
 import { CashFlowPeriod, TransactionRepositoryPort } from './ports/transaction.repository.port';
 
 export interface LotAllocation {
@@ -102,15 +102,21 @@ export class TransactionService {
     async findByUserPaginated(
         userId: number,
         options: SafeQueryOptions,
-        sinceDate?: Date
+        sinceDate?: Date,
+        type?: TransactionType
     ): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
-        return this.repository.findByUserPaginated(userId, options, sinceDate);
+        return this.repository.findByUserPaginated(userId, options, sinceDate, type);
     }
 
-    async countByUser(userId: number, options: SafeQueryOptions, sinceDate?: Date): Promise<number> {
+    async countByUser(
+        userId: number,
+        options: SafeQueryOptions,
+        sinceDate?: Date,
+        type?: TransactionType
+    ): Promise<number> {
         this.LOGGER.debug(`Counting transactions for user ${userId}.`);
-        return this.repository.countByUser(userId, options, sinceDate);
+        return this.repository.countByUser(userId, options, sinceDate, type);
     }
 
     async update(

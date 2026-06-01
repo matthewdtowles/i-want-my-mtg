@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { DatabaseModule } from './database/database.module';
 import { HttpModule } from './http/http.module';
+import { McpModule } from './mcp/mcp.module';
 import { getLogger } from './logger/global-app-logger';
 
 @Module({
@@ -73,6 +74,7 @@ import { getLogger } from './logger/global-app-logger';
         }),
         DatabaseModule,
         HttpModule,
+        McpModule,
     ],
 })
 export class AppModule {

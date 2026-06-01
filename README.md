@@ -24,6 +24,12 @@ After any code change, rebuild and restart:
 docker compose build web && docker compose up -d web
 ```
 
+If you changed `package.json` dependencies, add `-V` to renew the `node_modules` volume (see [Troubleshooting](#troubleshooting)):
+
+```bash
+docker compose up -d --build -V web
+```
+
 ## Common Commands
 
 | Command                | What it does                                   |
@@ -123,6 +129,12 @@ npm run gen-api-key
 
 ```bash
 docker compose build web --no-cache && docker compose up -d web
+```
+
+**Missing dependencies after a `package.json` change** — if new packages show up as `Cannot find module ...` (`TS2307`) even after building, the cause is the anonymous `node_modules` volume on the `web` service: `docker compose up` reuses the old volume and it shadows the freshly built image's `node_modules`. Recreate the container and renew the volume with `-V`:
+
+```bash
+docker compose up -d --build -V web
 ```
 
 **Reset everything** — nuke containers, volumes, and the local database:

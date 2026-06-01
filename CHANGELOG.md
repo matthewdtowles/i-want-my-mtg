@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Transaction BUY/SELL filter.** `GET /api/v1/transactions` accepts an
+  optional `type=BUY|SELL` query param to return only buys or only sells;
+  omitting it returns both (unchanged default). The same filter is exposed
+  on the `list_transactions` MCP tool. Case-insensitive (`buy` works).
+
 - **User set-type preference.** Signed-in users can choose which set types
   appear in their default browse/search listings via the new "Set Types To
   Show" section on `/user`. `NULL` preference (the default) falls back to

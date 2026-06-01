@@ -153,6 +153,69 @@ describe('Transactions API (e2e)', () => {
         });
     });
 
+    describe('Type filter', () => {
+        beforeAll(async () => {
+            // A BUY lot must exist before a SELL can be recorded (FIFO validation).
+            await request(app.getHttpServer())
+                .post('/api/v1/transactions')
+                .set('Authorization', bearerToken)
+                .send({
+                    cardId: TEST_CARD_ID,
+                    type: 'BUY',
+                    quantity: 5,
+                    pricePerUnit: 1.0,
+                    isFoil: false,
+                    date: new Date().toISOString().split('T')[0],
+                    skipInventorySync: true,
+                })
+                .expect(201);
+            await request(app.getHttpServer())
+                .post('/api/v1/transactions')
+                .set('Authorization', bearerToken)
+                .send({
+                    cardId: TEST_CARD_ID,
+                    type: 'SELL',
+                    quantity: 2,
+                    pricePerUnit: 3.0,
+                    isFoil: false,
+                    date: new Date().toISOString().split('T')[0],
+                    skipInventorySync: true,
+                })
+                .expect(201);
+        });
+
+        it('?type=BUY returns only BUY transactions', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=BUY')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            expect(res.body.data.every((t: any) => t.type === 'BUY')).toBe(true);
+        });
+
+        it('?type=SELL returns only SELL transactions', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=SELL')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            expect(res.body.data.every((t: any) => t.type === 'SELL')).toBe(true);
+        });
+
+        it('omitting type returns both BUY and SELL', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            const types = new Set(res.body.data.map((t: any) => t.type));
+            expect(types.has('BUY')).toBe(true);
+            expect(types.has('SELL')).toBe(true);
+        });
+    });
+
     describe('Validation', () => {
         it('rejects invalid transaction type', async () => {
             const res = await request(app.getHttpServer())

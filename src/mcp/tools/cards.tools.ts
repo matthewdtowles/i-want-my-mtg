@@ -30,13 +30,13 @@ export class CardMcpTools {
             {
                 name: 'search_cards',
                 description:
-                    'Search Magic: The Gathering cards by name (substring), set code, rarity, type, or format legality. Returns a paginated list with prices and basic metadata. Use this for catalog lookups; for a specific printing prefer get_card with set+number.',
+                    'Search Magic: The Gathering cards by name (substring). A name query (q) is required to return results; set code, rarity, type, and format legality only narrow that name search. Returns a paginated list with prices and basic metadata. Use this for catalog lookups; for a specific printing prefer get_card with set+number.',
                 inputSchema: z.object({
                     q: z
                         .string()
                         .optional()
                         .describe(
-                            'Substring to search card name + flavor name. Optional; omit to filter purely by setCode/rarity/type/format.'
+                            'Substring to search card name + flavor name. Required to return results - the other parameters only narrow a name search; omitting q returns an empty list.'
                         ),
                     setCode: z
                         .string()
@@ -116,7 +116,10 @@ export class CardMcpTools {
     }
 
     private async getCard(args: { setCode: string; setNumber: string }): Promise<unknown> {
-        const card = await this.cardService.findBySetCodeAndNumber(args.setCode, args.setNumber);
+        const card = await this.cardService.findBySetCodeAndNumber(
+            args.setCode.trim().toLowerCase(),
+            args.setNumber
+        );
         if (!card) {
             throw new NotFoundException('Card not found');
         }
@@ -124,7 +127,10 @@ export class CardMcpTools {
     }
 
     private async getCardPrices(args: { setCode: string; setNumber: string }): Promise<unknown> {
-        const card = await this.cardService.findBySetCodeAndNumber(args.setCode, args.setNumber);
+        const card = await this.cardService.findBySetCodeAndNumber(
+            args.setCode.trim().toLowerCase(),
+            args.setNumber
+        );
         if (!card) {
             throw new NotFoundException('Card not found');
         }
@@ -139,7 +145,10 @@ export class CardMcpTools {
         setCode: string;
         setNumber: string;
     }): Promise<unknown> {
-        const card = await this.cardService.findBySetCodeAndNumber(args.setCode, args.setNumber);
+        const card = await this.cardService.findBySetCodeAndNumber(
+            args.setCode.trim().toLowerCase(),
+            args.setNumber
+        );
         if (!card) {
             throw new NotFoundException('Card not found');
         }

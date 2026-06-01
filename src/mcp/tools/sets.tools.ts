@@ -123,7 +123,7 @@ export class SetMcpTools {
     }
 
     private async getSet(args: { code: string }): Promise<unknown> {
-        const set = await this.setService.findByCode(args.code);
+        const set = await this.setService.findByCode(args.code.trim().toLowerCase());
         if (!set) {
             throw new NotFoundException('Set not found');
         }
@@ -131,7 +131,8 @@ export class SetMcpTools {
     }
 
     private async listSetCards(args: { code: string } & Record<string, unknown>): Promise<unknown> {
-        const { code, ...rest } = args;
+        const { code: rawCode, ...rest } = args;
+        const code = rawCode.trim().toLowerCase();
         const options = new SafeQueryOptions(this.toQuery(rest));
         const set = await this.setService.findByCode(code);
         const effectiveOptions = set && !set.isMain ? options.withBaseOnly(false) : options;
@@ -146,10 +147,11 @@ export class SetMcpTools {
     }
 
     private async getSealedProducts(args: { code: string }, ctx: McpToolContext): Promise<unknown> {
+        const code = args.code.trim().toLowerCase();
         const options = new SafeQueryOptions({});
         const [products, total] = await Promise.all([
-            this.sealedProductService.findBySetCode(args.code, options),
-            this.sealedProductService.totalBySetCode(args.code),
+            this.sealedProductService.findBySetCode(code, options),
+            this.sealedProductService.totalBySetCode(code),
         ]);
 
         const userId = ctx.user?.id;

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
-import { Transaction } from 'src/core/transaction/transaction.entity';
+import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import {
     CashFlowPeriod,
     TransactionRepositoryPort,
@@ -126,7 +126,8 @@ export class TransactionRepository implements TransactionRepositoryPort {
     async findByUserPaginated(
         userId: number,
         options: SafeQueryOptions,
-        sinceDate?: Date
+        sinceDate?: Date,
+        type?: TransactionType
     ): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
         const qb = this.repository
@@ -135,6 +136,9 @@ export class TransactionRepository implements TransactionRepositoryPort {
             .where('transaction.userId = :userId', { userId });
         if (sinceDate) {
             qb.andWhere('transaction.date >= :sinceDate', { sinceDate });
+        }
+        if (type) {
+            qb.andWhere('transaction.type = :type', { type });
         }
         this.queryHelper.applyOptions(qb, options);
         const results = await qb.getMany();
@@ -153,7 +157,8 @@ export class TransactionRepository implements TransactionRepositoryPort {
     async countByUser(
         userId: number,
         options: SafeQueryOptions,
-        sinceDate?: Date
+        sinceDate?: Date,
+        type?: TransactionType
     ): Promise<number> {
         this.LOGGER.debug(`Counting transactions for user ${userId}.`);
         const qb = this.repository
@@ -162,6 +167,9 @@ export class TransactionRepository implements TransactionRepositoryPort {
             .where('transaction.userId = :userId', { userId });
         if (sinceDate) {
             qb.andWhere('transaction.date >= :sinceDate', { sinceDate });
+        }
+        if (type) {
+            qb.andWhere('transaction.type = :type', { type });
         }
         this.queryHelper.applyFilters(qb, options.filter);
         return qb.getCount();

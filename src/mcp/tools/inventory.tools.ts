@@ -48,7 +48,7 @@ export class InventoryMcpTools {
                 name: 'get_inventory_quantities',
                 description:
                     'Batch lookup: given a list of card UUIDs, return how many of each (normal + foil) the user owns. Useful before recommending adds. Requires IWMM_API_KEY.',
-                inputSchema: z.object({ cardIds: z.array(z.string().uuid()).min(1).max(200) }),
+                inputSchema: z.object({ cardIds: z.array(z.string().trim().uuid()).min(1).max(200) }),
                 requiresAuth: true,
                 handler: async (args, ctx) => this.getQuantities(args, ctx),
             },

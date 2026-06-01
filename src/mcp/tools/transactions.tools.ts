@@ -4,6 +4,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { TransactionApiPresenter } from 'src/http/api/transaction/transaction-api.presenter';
@@ -11,12 +12,12 @@ import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.prese
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
 
 const transactionCreate = z.object({
-    cardId: z.string().describe('Internal IWMM card UUID.'),
+    cardId: z.string().uuid().describe('Internal IWMM card UUID.'),
     type: z.enum(['BUY', 'SELL']),
     quantity: z.number().int().min(1),
     pricePerUnit: z.number().min(0).describe('Per-unit price in USD.'),
     isFoil: z.boolean(),
-    date: z.string().describe('ISO 8601 date (YYYY-MM-DD).'),
+    date: z.string().date().describe('ISO 8601 date (YYYY-MM-DD).'),
     source: z
         .string()
         .optional()
@@ -34,7 +35,7 @@ const transactionCreate = z.object({
 const transactionUpdate = z.object({
     quantity: z.number().int().min(1).optional(),
     pricePerUnit: z.number().min(0).optional(),
-    date: z.string().optional(),
+    date: z.string().date().optional(),
     source: z.string().optional(),
     fees: z.number().min(0).optional(),
     notes: z.string().optional(),
@@ -62,8 +63,15 @@ export class TransactionMcpTools {
                         .string()
                         .optional()
                         .describe('Sort key (e.g. TX_DATE, TX_TYPE, TX_CARD, TX_PRICE).'),
-                    order: z.enum(['asc', 'desc']).optional(),
-                    type: z.enum(['BUY', 'SELL']).optional(),
+                    ascend: z
+                        .boolean()
+                        .optional()
+                        .describe('Sort ascending. Defaults to descending (most recent first).'),
+                    filter: z.string().optional().describe('Substring filter on card name.'),
+                    type: z
+                        .enum(['BUY', 'SELL'])
+                        .optional()
+                        .describe('Filter to BUY or SELL transactions. Omit for both.'),
                 }),
                 requiresAuth: true,
                 handler: async (args, ctx) => this.list(args, ctx),
@@ -100,7 +108,7 @@ export class TransactionMcpTools {
                     'Get FIFO cost basis for a specific card+finish for the authenticated user. Pass either cardId or (setCode, setNumber). Requires IWMM_API_KEY.',
                 inputSchema: z
                     .object({
-                        cardId: z.string().optional(),
+                        cardId: z.string().uuid().optional(),
                         setCode: z.string().optional(),
                         setNumber: z.string().optional(),
                         isFoil: z.boolean().default(false),
@@ -116,11 +124,12 @@ export class TransactionMcpTools {
 
     private async list(args: Record<string, unknown>, ctx: McpToolContext): Promise<unknown> {
         const options = new SafeQueryOptions(this.toQuery(args));
+        const type = parseTransactionType(args.type as string | undefined);
         const subscribed = await this.subscriptionService.isUserSubscribed(ctx.user.id);
         const sinceDate = subscribed ? undefined : freeTierHistoryCutoff();
         const [transactions, total] = await Promise.all([
-            this.transactionService.findByUserPaginated(ctx.user.id, options, sinceDate),
-            this.transactionService.countByUser(ctx.user.id, options, sinceDate),
+            this.transactionService.findByUserPaginated(ctx.user.id, options, sinceDate, type),
+            this.transactionService.countByUser(ctx.user.id, options, sinceDate, type),
         ]);
         return ApiResponseDto.ok(
             transactions.map((t) => TransactionApiPresenter.toTransactionItem(t)),
@@ -168,7 +177,7 @@ export class TransactionMcpTools {
         let cardId = args.cardId;
         if (!cardId) {
             const card = await this.cardService.findBySetCodeAndNumber(
-                args.setCode,
+                args.setCode?.trim().toLowerCase(),
                 args.setNumber
             );
             if (!card) {

@@ -46,10 +46,19 @@ export class McpController {
             enableJsonResponse: true,
         });
 
-        res.on('close', () => {
+        let cleanedUp = false;
+        const cleanup = (): void => {
+            if (cleanedUp) return;
+            cleanedUp = true;
             void transport.close();
             void server.close();
-        });
+        };
+        // 'finish' fires once the response is fully sent (the common path); 'close'
+        // covers connections aborted before finish. With keep-alive, 'close' alone
+        // can lag well past the response, leaving the per-request server/transport
+        // alive longer than needed under load.
+        res.on('finish', cleanup);
+        res.on('close', cleanup);
 
         await server.connect(transport);
         await transport.handleRequest(req, res, req.body);

@@ -19,10 +19,13 @@ export class AlertMcpTools {
             {
                 name: 'list_price_alerts',
                 description:
-                    "List the authenticated user's price alerts. Free tier is capped at 5 active alerts and a single threshold direction per alert; Premium removes both limits. Requires IWMM_API_KEY.",
-                inputSchema: z.object({}),
+                    "List the authenticated user's price alerts. Free tier is capped at 5 active alerts and a single threshold direction per alert; Premium removes both limits. Paginated. Requires IWMM_API_KEY.",
+                inputSchema: z.object({
+                    page: z.number().int().min(1).optional(),
+                    limit: z.number().int().min(1).max(100).optional(),
+                }),
                 requiresAuth: true,
-                handler: async (_args, ctx) => this.list(ctx),
+                handler: async (args, ctx) => this.list(args, ctx),
             },
             {
                 name: 'create_price_alert',
@@ -71,14 +74,19 @@ export class AlertMcpTools {
         ];
     }
 
-    private async list(ctx: McpToolContext): Promise<unknown> {
+    private async list(
+        args: { page?: number; limit?: number },
+        ctx: McpToolContext
+    ): Promise<unknown> {
+        const page = args.page ?? 1;
+        const limit = args.limit ?? 20;
         const [alerts, total] = await Promise.all([
-            this.priceAlertService.findByUserWithCardData(ctx.user.id, 1, 20),
+            this.priceAlertService.findByUserWithCardData(ctx.user.id, page, limit),
             this.priceAlertService.countByUser(ctx.user.id),
         ]);
         return ApiResponseDto.ok(
             alerts.map(PriceAlertApiPresenter.toAlertWithCardDto),
-            new PaginationMeta(1, 20, total)
+            new PaginationMeta(page, limit, total)
         );
     }
 

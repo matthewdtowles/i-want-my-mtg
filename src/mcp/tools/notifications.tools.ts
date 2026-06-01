@@ -18,10 +18,13 @@ export class NotificationMcpTools {
             {
                 name: 'list_notifications',
                 description:
-                    "List the authenticated user's price alert notifications, newest first. Includes both read and unread. Requires IWMM_API_KEY.",
-                inputSchema: z.object({}),
+                    "List the authenticated user's price alert notifications, newest first. Includes both read and unread. Paginated. Requires IWMM_API_KEY.",
+                inputSchema: z.object({
+                    page: z.number().int().min(1).optional(),
+                    limit: z.number().int().min(1).max(100).optional(),
+                }),
                 requiresAuth: true,
-                handler: async (_args, ctx) => this.list(ctx),
+                handler: async (args, ctx) => this.list(args, ctx),
             },
             {
                 name: 'get_unread_notification_count',
@@ -49,14 +52,19 @@ export class NotificationMcpTools {
         ];
     }
 
-    private async list(ctx: McpToolContext): Promise<unknown> {
+    private async list(
+        args: { page?: number; limit?: number },
+        ctx: McpToolContext
+    ): Promise<unknown> {
+        const page = args.page ?? 1;
+        const limit = args.limit ?? 20;
         const [notifications, total] = await Promise.all([
-            this.notificationService.findByUserWithCardData(ctx.user.id, 1, 20),
+            this.notificationService.findByUserWithCardData(ctx.user.id, page, limit),
             this.notificationService.countByUser(ctx.user.id),
         ]);
         return ApiResponseDto.ok(
             notifications.map(PriceAlertApiPresenter.toNotificationDto),
-            new PaginationMeta(1, 20, total)
+            new PaginationMeta(page, limit, total)
         );
     }
 

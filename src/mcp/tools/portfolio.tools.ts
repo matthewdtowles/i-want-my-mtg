@@ -34,7 +34,7 @@ export class PortfolioMcpTools {
             {
                 name: 'get_portfolio_summary',
                 description:
-                    "Get the authenticated user's portfolio summary - current value, total invested, unrealized P&L, ROI, card/unit counts. Free tier sees current value + total invested only; Premium gets the full P&L set. Requires IWMM_API_KEY.",
+                    "Get the authenticated user's portfolio summary - current value, total invested, realized gains, card/unit counts. Requires IWMM_API_KEY.",
                 inputSchema: z.object({}),
                 requiresAuth: true,
                 handler: async (_args, ctx) => this.summary(ctx),
@@ -59,7 +59,7 @@ export class PortfolioMcpTools {
             {
                 name: 'get_card_performance',
                 description:
-                    "Get the user's best- or worst-performing cards by P&L. Default: best, top 10. Premium-gated. Requires IWMM_API_KEY.",
+                    "Get the user's best- or worst-performing cards by P&L. Default: best, top 10. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
                     type: z.enum(['best', 'worst']).optional(),
                     limit: z.number().int().min(1).max(100).optional(),

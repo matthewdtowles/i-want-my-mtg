@@ -69,9 +69,14 @@ export class TransactionMcpTools {
                         .describe('Sort ascending. Defaults to descending (most recent first).'),
                     filter: z.string().optional().describe('Substring filter on card name.'),
                     type: z
-                        .enum(['BUY', 'SELL'])
+                        .preprocess(
+                            (v) => (typeof v === 'string' ? v.toUpperCase() : v),
+                            z.enum(['BUY', 'SELL'])
+                        )
                         .optional()
-                        .describe('Filter to BUY or SELL transactions. Omit for both.'),
+                        .describe(
+                            'Filter to BUY or SELL transactions (case-insensitive). Omit for both.'
+                        ),
                 }),
                 requiresAuth: true,
                 handler: async (args, ctx) => this.list(args, ctx),

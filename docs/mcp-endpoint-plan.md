@@ -1,7 +1,9 @@
 # Plan: In-app MCP endpoint (streamable HTTP) for Smithery scanning
 
-**Status:** Ready to execute. This branch (`plan/mcp-streamable-http-endpoint`) contains only this
-document. Implement on top of it.
+**Status:** Implemented in `src/mcp/` (driving adapter wired into `AppModule`). 33 tools exposed at
+`POST /mcp`; verified by `test/mcp/mcp-tools.spec.ts` (contract) and
+`test/integration/mcp.e2e-spec.ts` (wire behavior). Remaining work is the manual Smithery
+remote-URL registration in §8.
 
 **Repo to change:** `i-want-my-mtg` (this repo).
 **Sibling reference repo:** `iwantmymtg-mcp` — the existing stdio MCP server. Its

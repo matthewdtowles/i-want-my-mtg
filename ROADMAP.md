@@ -386,15 +386,21 @@ The demo GIF (under Content, below) is done and embedded at the top of the `iwan
 - [ ] Only worth doing if the GIF and posts get traction. Same conversation as the GIF, with voiceover explaining each step.
 - [ ] Host on YouTube (unlisted or public), embed the link in the README and the blog post.
 
+#### In-app MCP endpoint (Streamable HTTP)
+
+Done: shipped a streamable-HTTP MCP endpoint inside the web app at `POST /mcp` (new `src/mcp` driving adapter) exposing the same 33 tools as the stdio server. Each tool reuses the matching REST controller's core services + presenters, so per-user API-key auth, the per-key daily quota / burst limits, and premium gating are inherited unchanged. Stateless transport (fresh server per request, JSON responses). Verified by unit tests (33-tool contract) and an integration e2e (tools/list count, anonymous reads, no-key auth error, per-key write/read isolation, premium gate). Plan: `docs/mcp-endpoint-plan.md`.
+
+This is the remote transport that lets Smithery scan tools over the wire, fixing the stdio listing's 0/40 Capability Quality. Served same-origin at `/mcp` with API-key auth instead of a separate `mcp.iwantmymtg.net` + OAuth, so no OAuth flow was needed. Remaining: register the remote URL on Smithery and confirm the 33 tools populate (manual, post-deploy - see the Smithery item above).
+
 #### Deferred (post-launch follow-ups)
 
-- [ ] Remote MCP transport (Streamable HTTP) hosted at `mcp.iwantmymtg.net` — eliminates the install step but requires OAuth flow design; revisit once stdio version has traction
+- [x] Remote MCP transport (Streamable HTTP) - shipped in-app at `/mcp` (see above) rather than a hosted `mcp.iwantmymtg.net` + OAuth.
 - [ ] MCP resources (vs tools) for browsing card/set data as readable URIs (`iwmm://cards/...`) — nice-to-have, not load-bearing for v1
 - [ ] MCP prompts for common workflows ("audit my collection", "find arbitrage opportunities") — value depends on observed usage patterns
 
 ---
 
-## Phase 5: Growth & Community
+## Phase 5: Growth & Content Marketing
 
 ### 5.1 External Import Tools
 
@@ -418,30 +424,13 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [x] Write "building in public" technical post (NestJS architecture, API-first design, Rust ETL) at `/blog/building-iwmm-in-public`
 - [x] Add `/blog` + `/blog/:slug` URLs to the static sitemap; `SitemapController` now injects `BlogService` and emits an entry per post in `getStaticSitemap()`
 - [ ] Cross-post the "building in public" piece on HN ("Show HN: ...") and dev.to/Hashnode with canonical URL pointing back to the blog
-- [ ] Share each cornerstone post in matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant) once §5.3 community engagement groundwork is laid
-
-### 5.3 Community Engagement
-
-- [ ] Engage authentically in key communities before promoting (r/mtgfinance, r/magicTCG, r/EDH, MTG finance Discord servers)
-- [ ] Create dedicated Discord server for app feedback and community
-- [ ] Post "Show Reddit" style post on r/mtgfinance when product is polished
-- [ ] Reach out to 3–5 MTG content creators (MTG Goldfish, Tolarian Community College, finance-focused YouTubers)
-
-### 5.4 Launch Events
-
-- [ ] Submit to Product Hunt (Tuesday/Wednesday launch with screenshots, demo video, value proposition)
-- [ ] Post on Hacker News (Show HN — developer-hobbyist crossover audience)
-- [ ] Offer content creators early access + free premium + referral codes
-
-### 5.5 Analytics
-
-- [ ] Set up privacy-respecting analytics (PostHog or Plausible)
-- [ ] Track key metrics: DAU/MAU, free-to-premium conversion, affiliate CTR, API adoption, churn
-- [ ] Run monthly feedback cycle from Discord community and support requests
+- [ ] Share each cornerstone post in matching subreddit (r/mtgfinance for sell timing + serious collectors, r/magicTCG for getting-started, r/EDH where relevant) once §6.4 community engagement groundwork is laid
 
 ---
 
-## Phase 6: Platform Expansion
+## Phase 6: Platform Expansion & Go-to-Market
+
+Mobile comes first here on purpose. Recurring user feedback is that people expect a mobile app to try the product at all, so the app ships *before* the community push, launch events, and analytics (former §5.3-§5.5, now §6.4-§6.6). Driving adoption first makes the go-to-market spend land on a product newcomers can actually use on their phone.
 
 ### 6.1 Mobile App (Cross-Platform)
 
@@ -470,6 +459,31 @@ Done: Moxfield, Archidekt, Deckbox, and TCGPlayer (app + seller) CSV exports are
 - [ ] Add review/confirm step before adding to inventory
 - [ ] Handle multiple cards in single image
 - [ ] Test accuracy and iterate on recognition
+
+### 6.4 Community Engagement
+
+Moved from former §5.3, sequenced after the mobile app so the community push points at a product newcomers can try on any device.
+
+- [ ] Engage authentically in key communities before promoting (r/mtgfinance, r/magicTCG, r/EDH, MTG finance Discord servers)
+- [ ] Create dedicated Discord server for app feedback and community
+- [ ] Post "Show Reddit" style post on r/mtgfinance when product is polished
+- [ ] Reach out to 3–5 MTG content creators (MTG Goldfish, Tolarian Community College, finance-focused YouTubers)
+
+### 6.5 Launch Events
+
+Moved from former §5.4.
+
+- [ ] Submit to Product Hunt (Tuesday/Wednesday launch with screenshots, demo video, value proposition)
+- [ ] Post on Hacker News (Show HN — developer-hobbyist crossover audience)
+- [ ] Offer content creators early access + free premium + referral codes
+
+### 6.6 Analytics
+
+Moved from former §5.5.
+
+- [ ] Set up privacy-respecting analytics (PostHog or Plausible)
+- [ ] Track key metrics: DAU/MAU, free-to-premium conversion, affiliate CTR, API adoption, churn
+- [ ] Run monthly feedback cycle from Discord community and support requests
 
 ---
 

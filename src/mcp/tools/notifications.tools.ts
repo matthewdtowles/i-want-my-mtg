@@ -4,6 +4,7 @@ import { PriceNotificationService } from 'src/core/price-alert/price-notificatio
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { PriceAlertApiPresenter } from 'src/http/api/price-alert/price-alert-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { IDEMPOTENT_WRITE, READ_ONLY, limitParam, pageParam } from './common';
 
 /** Authenticated notification tools, mirroring `PriceNotificationApiController`. */
 @Injectable()
@@ -20,10 +21,11 @@ export class NotificationMcpTools {
                 description:
                     "List the authenticated user's price alert notifications, newest first. Includes both read and unread. Paginated. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
-                    page: z.number().int().min(1).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    page: pageParam,
+                    limit: limitParam,
                 }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.list(args, ctx),
             },
             {
@@ -32,13 +34,17 @@ export class NotificationMcpTools {
                     'Get the count of unread notifications for the authenticated user. Requires IWMM_API_KEY.',
                 inputSchema: z.object({}),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (_args, ctx) => this.unreadCount(ctx),
             },
             {
                 name: 'mark_notification_read',
                 description: 'Mark a single notification as read. Requires IWMM_API_KEY.',
-                inputSchema: z.object({ id: z.coerce.number().int() }),
+                inputSchema: z.object({
+                    id: z.coerce.number().int().describe('Notification ID from list_notifications.'),
+                }),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (args, ctx) => this.markRead(args, ctx),
             },
             {
@@ -47,6 +53,7 @@ export class NotificationMcpTools {
                     'Mark every notification for the authenticated user as read. Requires IWMM_API_KEY.',
                 inputSchema: z.object({}),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (_args, ctx) => this.markAllRead(ctx),
             },
         ];

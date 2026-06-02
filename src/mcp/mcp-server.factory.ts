@@ -10,6 +10,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { McpToolDefinition, McpUser } from './mcp-tool.types';
 import { toMcpErrorText } from './mcp.error';
+import { outputSchemaByName } from './tools/output-schemas';
 import { McpToolRegistry } from './tools/registry';
 
 const SERVER_NAME = 'iwantmymtg-mcp';
@@ -35,14 +36,26 @@ export class McpServerFactory {
         );
 
         server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
-            const tools = this.registry.list().map((t) => ({
-                name: t.name,
-                description: t.description,
-                // Cast the schema to `never` so zod-to-json-schema doesn't recurse the
+            const tools = this.registry.list().map((t) => {
+                // Cast schemas to `never` so zod-to-json-schema doesn't recurse the
                 // union of every tool's zod type (TS2589); the runtime output is the
                 // JSON Schema object MCP clients expect.
-                inputSchema: zodToJsonSchema(t.inputSchema as never, { target: 'openApi3' }),
-            }));
+                const tool: Record<string, unknown> = {
+                    name: t.name,
+                    description: t.description,
+                    inputSchema: zodToJsonSchema(t.inputSchema as never, { target: 'openApi3' }),
+                };
+                const outputSchema = t.outputSchema ?? outputSchemaByName[t.name];
+                if (outputSchema) {
+                    tool.outputSchema = zodToJsonSchema(outputSchema as never, {
+                        target: 'openApi3',
+                    });
+                }
+                if (t.annotations) {
+                    tool.annotations = t.annotations;
+                }
+                return tool;
+            });
             return { tools } as ListToolsResult;
         });
 

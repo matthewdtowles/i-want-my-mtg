@@ -6,6 +6,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { InventoryApiPresenter } from 'src/http/api/inventory/inventory-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { DESTRUCTIVE, IDEMPOTENT_WRITE, READ_ONLY, WRITE, limitParam, pageParam } from './common';
 
 const inventoryItem = z.object({
     cardId: z
@@ -38,18 +39,28 @@ export class InventoryMcpTools {
                 description:
                     "List the authenticated user's card inventory, paginated. Requires IWMM_API_KEY. Returns cards with quantities, prices, and metadata.",
                 inputSchema: z.object({
-                    page: z.number().int().min(1).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    page: pageParam,
+                    limit: limitParam,
                 }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.list(args, ctx),
             },
             {
                 name: 'get_inventory_quantities',
                 description:
                     'Batch lookup: given a list of card UUIDs, return how many of each (normal + foil) the user owns. Useful before recommending adds. Requires IWMM_API_KEY.',
-                inputSchema: z.object({ cardIds: z.array(z.string().trim().uuid()).min(1).max(200) }),
+                inputSchema: z.object({
+                    cardIds: z
+                        .array(z.string().trim().uuid())
+                        .min(1)
+                        .max(200)
+                        .describe(
+                            'Internal IWMM card UUIDs to look up (1-200). Get them from search_cards or get_card.'
+                        ),
+                }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.getQuantities(args, ctx),
             },
             {
@@ -58,6 +69,7 @@ export class InventoryMcpTools {
                     "Add one or more cards to the authenticated user's inventory. Accepts a batch - pass a single-item array for one card. This is a real write. Use update_inventory to change quantities, remove_inventory to delete a row. Requires IWMM_API_KEY.",
                 inputSchema: z.object({ items: z.array(inventoryItem).min(1) }),
                 requiresAuth: true,
+                annotations: WRITE,
                 handler: async (args, ctx) => this.save(args, ctx),
             },
             {
@@ -66,14 +78,19 @@ export class InventoryMcpTools {
                     'Update quantities for one or more existing inventory rows. Accepts a batch. Use remove_inventory to delete a row entirely. Requires IWMM_API_KEY.',
                 inputSchema: z.object({ items: z.array(inventoryItem).min(1) }),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (args, ctx) => this.save(args, ctx),
             },
             {
                 name: 'remove_inventory',
                 description:
                     "Remove a card+finish row from the authenticated user's inventory. Requires IWMM_API_KEY.",
-                inputSchema: z.object({ cardId: z.string().uuid(), isFoil: z.boolean() }),
+                inputSchema: z.object({
+                    cardId: z.string().uuid().describe('Internal IWMM card UUID.'),
+                    isFoil: z.boolean().describe('Which finish row to remove - foil or non-foil.'),
+                }),
                 requiresAuth: true,
+                annotations: DESTRUCTIVE,
                 handler: async (args, ctx) => this.remove(args, ctx),
             },
         ];

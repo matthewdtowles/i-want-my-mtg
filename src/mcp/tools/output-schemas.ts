@@ -12,31 +12,34 @@ import { z } from 'zod';
 const num = z.number();
 const str = z.string();
 
-/** ApiResponseDto envelope around a single payload. */
-const ok = (data: z.ZodTypeAny): z.ZodTypeAny =>
+const metaSchema = z.object({
+    page: num,
+    limit: num,
+    total: num,
+    totalPages: num,
+    multiSetBlockKeys: z.array(str).optional(),
+});
+
+/**
+ * The ApiResponseDto envelope. `message`, `error`, and `meta` are all optional on
+ * every response per the DTO, so both helpers carry the full optional surface -
+ * single-payload tools just never populate `meta`, list tools never populate
+ * `message`.
+ */
+const envelope = (data: z.ZodTypeAny): z.ZodTypeAny =>
     z.object({
         success: z.boolean(),
         data,
         message: str.optional(),
         error: str.optional(),
+        meta: metaSchema.optional(),
     });
 
+/** ApiResponseDto envelope around a single payload. */
+const ok = (data: z.ZodTypeAny): z.ZodTypeAny => envelope(data);
+
 /** ApiResponseDto envelope around a paginated array payload. */
-const okPaginated = (item: z.ZodTypeAny): z.ZodTypeAny =>
-    z.object({
-        success: z.boolean(),
-        data: z.array(item),
-        meta: z
-            .object({
-                page: num,
-                limit: num,
-                total: num,
-                totalPages: num,
-                multiSetBlockKeys: z.array(str).optional(),
-            })
-            .optional(),
-        error: str.optional(),
-    });
+const okPaginated = (item: z.ZodTypeAny): z.ZodTypeAny => envelope(z.array(item));
 
 const ack = (key: string): z.ZodTypeAny => ok(z.object({ [key]: z.boolean() }));
 

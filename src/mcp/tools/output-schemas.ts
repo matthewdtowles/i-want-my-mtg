@@ -191,14 +191,19 @@ const notification = z.object({
 
 const portfolioSummary = z.object({
     totalValue: num,
-    totalCost: num,
-    totalRealizedGain: num,
+    totalCost: num.nullable(),
+    totalRealizedGain: num.nullable(),
     totalCards: num,
     totalQuantity: num,
     computedAt: str,
 });
 
-const historyPoint = z.object({ date: str, totalValue: num, totalCost: num, totalCards: num });
+const historyPoint = z.object({
+    date: str,
+    totalValue: num,
+    totalCost: num.nullable(),
+    totalCards: num,
+});
 
 const performanceItem = z.object({
     cardId: str,

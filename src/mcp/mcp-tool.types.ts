@@ -39,7 +39,7 @@ export interface McpToolDefinition {
     name: string;
     description: string;
     inputSchema: z.ZodTypeAny;
-    /** JSON Schema (via zod) describing the tool's result envelope, for clients that consume structured output. */
+    /** Zod schema for the tool's result envelope; converted to JSON Schema in the server factory for `tools/list`. */
     outputSchema?: z.ZodTypeAny;
     /** Behavior hints (read-only / destructive / idempotent) surfaced in `tools/list`. */
     annotations?: McpToolAnnotations;

@@ -20,6 +20,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
@@ -63,7 +64,7 @@ export class TransactionApiController {
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
-        validateApiQuery(query, { sort: true, transactionType: true });
+        validateApiQuery(query, { sort: TRANSACTION_SORTS, transactionType: true });
         const options = new SafeQueryOptions(query);
         const type = parseTransactionType(query.type);
         const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);

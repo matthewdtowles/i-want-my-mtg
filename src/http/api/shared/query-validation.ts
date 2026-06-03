@@ -14,14 +14,22 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
  * the filter worked. This validator runs in front of `SafeQueryOptions` on the
  * API controllers only and returns 400 instead of falling back.
  *
- * Each check mirrors the matching sanitizer (same casing rules) so a value the
- * API accepts is exactly a value `SafeQueryOptions` would keep, and vice versa.
+ * The rarity/format/type enum checks mirror the matching sanitizer's casing
+ * rules, so a value the API rejects is one `SafeQueryOptions` would have dropped
+ * anyway. Three checks are deliberately stricter than the sanitizer, because the
+ * sanitizer's lenient fallback is itself the footgun for an API consumer:
+ *   - `setCode`: 400s a non-alphanumeric code the sanitizer would silently coerce
+ *     to its alphanumeric remainder;
+ *   - `sort`: validated against the endpoint's honorable set (see StrictQueryFlags)
+ *     rather than the global enum, so a sort the endpoint can't apply 400s instead
+ *     of silently falling back to the default;
+ *   - `legality`: 400s when `format` is absent, since legality is only applied
+ *     within a format join and would otherwise be silently ignored.
  */
 
 const ALLOWED_RARITIES: readonly string[] = [...PUBLIC_RARITIES];
 const ALLOWED_FORMATS: readonly string[] = Object.values(Format);
 const ALLOWED_LEGALITIES: readonly string[] = Object.values(LegalityStatus);
-const ALLOWED_SORTS: readonly string[] = Object.values(SortOptions);
 const ALLOWED_TRANSACTION_TYPES: readonly string[] = ['BUY', 'SELL'];
 
 const SET_CODE_PATTERN = /^[a-zA-Z0-9]+$/;
@@ -44,7 +52,12 @@ export class InvalidQueryParamException extends BadRequestException {
 
 /** Which filters an endpoint actually consumes, and so should strictly validate. */
 export interface StrictQueryFlags {
-    sort?: boolean;
+    /**
+     * The sort keys this endpoint can honor (its repository's allowed set). A
+     * sort outside it 400s rather than silently falling back to the default.
+     * Omit for endpoints that don't sort (e.g. card search orders by name).
+     */
+    sort?: readonly SortOptions[];
     rarity?: boolean;
     format?: boolean;
     legality?: boolean;
@@ -86,8 +99,8 @@ export function validateApiQuery(
             );
         }
     }
-    if (flags.sort && !isAbsent(query.sort) && !ALLOWED_SORTS.includes(query.sort)) {
-        throw enumError('sort', query.sort, ALLOWED_SORTS);
+    if (flags.sort && !isAbsent(query.sort) && !flags.sort.includes(query.sort as SortOptions)) {
+        throw enumError('sort', query.sort, flags.sort);
     }
     if (
         flags.rarity &&
@@ -103,12 +116,18 @@ export function validateApiQuery(
     ) {
         throw enumError('format', query.format, ALLOWED_FORMATS);
     }
-    if (
-        flags.legality &&
-        !isAbsent(query.legality) &&
-        !ALLOWED_LEGALITIES.includes(query.legality.toLowerCase())
-    ) {
-        throw enumError('legality', query.legality, ALLOWED_LEGALITIES);
+    if (flags.legality && !isAbsent(query.legality)) {
+        if (!ALLOWED_LEGALITIES.includes(query.legality.toLowerCase())) {
+            throw enumError('legality', query.legality, ALLOWED_LEGALITIES);
+        }
+        // legality is only applied within a format join, so legality alone is a
+        // silently-ignored filter - 400 instead of dropping it.
+        if (isAbsent(query.format)) {
+            throw new InvalidQueryParamException(
+                'legality',
+                "Query parameter 'legality' requires 'format' to be set; legality is only meaningful within a format."
+            );
+        }
     }
     if (
         flags.transactionType &&

@@ -367,6 +367,68 @@ describe('QueryBuilderHelper', () => {
 
             expect(customHandler).toHaveBeenCalledWith(mockQueryBuilder, 'DESC');
         });
+
+        describe('allowedSorts guard', () => {
+            const transactionConfig: QueryBuilderConfig = {
+                table: 'transaction',
+                defaultSort: SortOptions.TX_DATE,
+                defaultSortDesc: true,
+                allowedSorts: [SortOptions.TX_DATE, SortOptions.TX_TYPE],
+            };
+
+            it('honors a requested sort that is in the allowed set', () => {
+                const helper = new QueryBuilderHelper(transactionConfig);
+                const options = new SafeQueryOptions({
+                    sort: SortOptions.TX_TYPE,
+                    ascend: 'false',
+                });
+
+                helper.applyOrdering(mockQueryBuilder, options);
+
+                expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+                    SortOptions.TX_TYPE,
+                    'DESC',
+                    'NULLS LAST'
+                );
+            });
+
+            it('falls back to the default sort when a requested sort is not allowed', () => {
+                const helper = new QueryBuilderHelper(transactionConfig);
+                // card.name is a real SortOptions value but references an alias this
+                // query never joins - would be a SQL error if passed to orderBy.
+                const options = new SafeQueryOptions({ sort: SortOptions.CARD });
+
+                helper.applyOrdering(mockQueryBuilder, options);
+
+                expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+                    SortOptions.TX_DATE,
+                    'ASC',
+                    'NULLS LAST'
+                );
+                expect(mockQueryBuilder.orderBy).not.toHaveBeenCalledWith(
+                    SortOptions.CARD,
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+
+            it('accepts any sort when no allowedSorts is configured (legacy)', () => {
+                const config: QueryBuilderConfig = {
+                    table: 'card',
+                    defaultSort: SortOptions.NUMBER,
+                };
+                const helper = new QueryBuilderHelper(config);
+                const options = new SafeQueryOptions({ sort: SortOptions.CARD_SET });
+
+                helper.applyOrdering(mockQueryBuilder, options);
+
+                expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+                    SortOptions.CARD_SET,
+                    'ASC',
+                    'NULLS LAST'
+                );
+            });
+        });
     });
 
     describe('QueryBuilderConfig', () => {

@@ -4,7 +4,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SortOptions } from 'src/core/query/sort-options.enum';
+import { TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -62,12 +62,7 @@ export class TransactionMcpTools {
                     page: pageParam,
                     limit: limitParam,
                     sort: z
-                        .enum([
-                            SortOptions.TX_DATE,
-                            SortOptions.TX_TYPE,
-                            SortOptions.TX_CARD,
-                            SortOptions.TX_PRICE,
-                        ])
+                        .enum(TRANSACTION_SORTS as unknown as [string, ...string[]])
                         .optional()
                         .describe(
                             "Sort key: 'transaction.date', 'transaction.type', 'transaction_card.name', or 'transaction.pricePerUnit'."
@@ -132,7 +127,9 @@ export class TransactionMcpTools {
                             .string()
                             .uuid()
                             .optional()
-                            .describe('Internal IWMM card UUID. Provide this, or setCode + setNumber.'),
+                            .describe(
+                                'Internal IWMM card UUID. Provide this, or setCode + setNumber.'
+                            ),
                         setCode: z
                             .string()
                             .optional()

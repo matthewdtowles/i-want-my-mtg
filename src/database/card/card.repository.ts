@@ -5,7 +5,7 @@ import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { Format } from 'src/core/card/format.enum';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -23,12 +23,14 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     private readonly queryHelper = new QueryBuilderHelper<CardOrmEntity>({
         table: this.TABLE,
         defaultSort: SortOptions.NUMBER,
+        allowedSorts: SET_CARD_SORTS,
     });
 
     private readonly queryHelperPriceDesc = new QueryBuilderHelper<CardOrmEntity>({
         table: this.TABLE,
         defaultSort: SortOptions.PRICE,
         defaultSortDesc: true,
+        allowedSorts: SET_CARD_SORTS,
     });
 
     constructor(

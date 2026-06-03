@@ -13,9 +13,14 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SET_CARD_SORTS, SET_SORTS } from 'src/core/query/sort-options.enum';
 import { SetService } from 'src/core/set/set.service';
 import { Set } from 'src/core/set/set.entity';
-import { ApiResponseDto, BlockPaginationMeta, PaginationMeta } from 'src/http/base/api-response.dto';
+import {
+    ApiResponseDto,
+    BlockPaginationMeta,
+    PaginationMeta,
+} from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { completionRate } from 'src/http/base/http.util';
 import { SetApiResponseDto, SetPriceHistoryPointDto } from './dto/set-response.dto';
@@ -64,7 +69,7 @@ export class SetApiController {
         @Req() req: AuthenticatedRequest,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
-        validateApiQuery(query, { sort: true });
+        validateApiQuery(query, { sort: SET_SORTS });
         const options = new SafeQueryOptions(query).withSetTypes(
             req.user?.includedSetTypes ?? null
         );
@@ -91,12 +96,7 @@ export class SetApiController {
                 this.setService.findMultiSetBlockKeys(blockKeys),
             ]);
             sets = blockSets;
-            meta = new BlockPaginationMeta(
-                options.page,
-                options.limit,
-                totalGroups,
-                multiSetKeys
-            );
+            meta = new BlockPaginationMeta(options.page, options.limit, totalGroups, multiSetKeys);
         } else {
             let total: number;
             [sets, total] = await Promise.all([
@@ -153,7 +153,10 @@ export class SetApiController {
     }
 
     @Get(':code/cards')
-    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set with optional filters' })
+    @ApiOperation({
+        operationId: 'getSetCards',
+        summary: 'Get cards in a set with optional filters',
+    })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -171,7 +174,19 @@ export class SetApiController {
         name: 'format',
         required: false,
         description: 'Filter by format legality (defaults legality=legal)',
-        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+        enum: [
+            'standard',
+            'commander',
+            'modern',
+            'legacy',
+            'vintage',
+            'brawl',
+            'explorer',
+            'historic',
+            'oathbreaker',
+            'pauper',
+            'pioneer',
+        ],
     })
     @ApiQuery({
         name: 'legality',
@@ -189,7 +204,12 @@ export class SetApiController {
         @Param('code') code: string,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
-        validateApiQuery(query, { sort: true, rarity: true, format: true, legality: true });
+        validateApiQuery(query, {
+            sort: SET_CARD_SORTS,
+            rarity: true,
+            format: true,
+            legality: true,
+        });
         const options = new SafeQueryOptions(query);
 
         const set = await this.setService.findByCode(code);

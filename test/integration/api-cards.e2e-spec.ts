@@ -162,12 +162,18 @@ describe('Cards API (e2e)', () => {
                 expect(res.body.param).toBe('format');
             });
 
-            it('returns 400 for an unknown sort key', async () => {
+            it('returns 400 for legality without format', async () => {
                 const res = await request(app.getHttpServer())
-                    .get('/api/v1/cards?q=Test&sort=card.bogus')
+                    .get('/api/v1/cards?q=Test&legality=banned')
                     .expect(400);
 
-                expect(res.body.param).toBe('sort');
+                expect(res.body.param).toBe('legality');
+            });
+
+            it('ignores sort (card search is name-ordered) rather than 400ing', async () => {
+                await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&sort=card.bogus')
+                    .expect(200);
             });
 
             it('returns 400 for a malformed setCode (no allowedValues list)', async () => {

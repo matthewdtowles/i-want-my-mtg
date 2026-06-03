@@ -12,10 +12,19 @@ import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 import { SetApiPresenter } from 'src/http/api/set/set-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY, formatParam, limitParam, pageParam } from './common';
+import {
+    READ_ONLY,
+    formatParam,
+    limitParam,
+    pageParam,
+    refineLegalityRequiresFormat,
+} from './common';
 
 const setCardFilters = {
-    rarity: z.enum(['common', 'uncommon', 'rare', 'mythic']).optional().describe('Filter by rarity.'),
+    rarity: z
+        .enum(['common', 'uncommon', 'rare', 'mythic'])
+        .optional()
+        .describe('Filter by rarity.'),
     type: z
         .string()
         .optional()
@@ -71,10 +80,12 @@ export class SetMcpTools {
                 name: 'list_set_cards',
                 description:
                     'List all cards in a set, paginated. Supports the same filters as search_cards (rarity, type, format, legality).',
-                inputSchema: z.object({
-                    code: z.string().describe('Set code.'),
-                    ...setCardFilters,
-                }),
+                inputSchema: refineLegalityRequiresFormat(
+                    z.object({
+                        code: z.string().describe('Set code.'),
+                        ...setCardFilters,
+                    })
+                ),
                 requiresAuth: false,
                 annotations: READ_ONLY,
                 handler: async (args) => this.listSetCards(args),

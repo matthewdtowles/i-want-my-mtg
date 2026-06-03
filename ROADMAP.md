@@ -81,6 +81,7 @@ Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR becau
 - [x] Apply consistently across cards, set-cards, set-list, inventory, and transactions. (The sealed-product list endpoints read only `page`/`limit` - no enumerated filter to validate.)
 - [x] Align the MCP tools: `format` is now an enum in `search_cards`/`list_set_cards` and `list_transactions` `sort` is an enum, so typos are rejected rather than silently dropped (the `type` enum already did).
 - [x] Contract settled: 400 body is `{ success: false, error, param, allowedValues }` (`allowedValues` omitted for `setCode`), documented via `QueryValidationErrorDto` + `@ApiResponse(400)` on each endpoint.
+- [x] PR #507 review follow-ups: `sort` is validated against each endpoint's honorable set (per-context constants in `sort-options.enum.ts`) rather than the global enum - an endpoint-inapplicable sort (e.g. `?sort=card.name` on `/transactions`) now 400s instead of 500ing. The ordering paths (`QueryBuilderHelper`, set `addSetOrdering`) fall back to the context default via `resolveSort()`, so HBS/internal callers can't hit the SQL error either. `legality` without `format` now 400s (mirrored in the MCP card tools).
 
 ---
 

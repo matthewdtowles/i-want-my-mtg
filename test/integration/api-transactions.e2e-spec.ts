@@ -234,6 +234,21 @@ describe('Transactions API (e2e)', () => {
 
             expect(res.body.param).toBe('sort');
         });
+
+        it('?sort=card.name (valid enum, inapplicable here) returns 400 not 500', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?sort=card.name')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.param).toBe('sort');
+            expect(res.body.allowedValues).toEqual([
+                'transaction.date',
+                'transaction.type',
+                'transaction_card.name',
+                'transaction.pricePerUnit',
+            ]);
+        });
     });
 
     describe('Validation', () => {

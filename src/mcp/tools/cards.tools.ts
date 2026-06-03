@@ -7,7 +7,7 @@ import { parseDaysParam } from 'src/http/base/query.util';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY, formatParam } from './common';
+import { READ_ONLY, formatParam, refineLegalityRequiresFormat } from './common';
 
 const cardKeySchema = {
     setCode: z.string().describe("Set code (e.g. 'lea')."),
@@ -32,41 +32,45 @@ export class CardMcpTools {
                 name: 'search_cards',
                 description:
                     'Search Magic: The Gathering cards by name (substring). A name query (q) is required to return results; set code, rarity, type, and format legality only narrow that name search. Returns a paginated list with prices and basic metadata. Use this for catalog lookups; for a specific printing prefer get_card with set+number.',
-                inputSchema: z.object({
-                    q: z
-                        .string()
-                        .optional()
-                        .describe(
-                            'Substring to search card name + flavor name. Required to return results - the other parameters only narrow a name search; omitting q returns an empty list.'
-                        ),
-                    setCode: z
-                        .string()
-                        .optional()
-                        .describe("3-5 character set code (e.g. 'lea', 'mh3')."),
-                    rarity: z
-                        .enum(['common', 'uncommon', 'rare', 'mythic'])
-                        .optional()
-                        .describe('Filter by rarity.'),
-                    type: z
-                        .string()
-                        .optional()
-                        .describe(
-                            "Substring match against card type line (e.g. 'Goblin', 'Instant')."
-                        ),
-                    format: formatParam,
-                    legality: z
-                        .enum(['legal', 'banned', 'restricted'])
-                        .optional()
-                        .describe("Used with 'format'. Defaults to 'legal' when format is set."),
-                    page: z.number().int().min(1).optional().describe('1-based page index.'),
-                    limit: z
-                        .number()
-                        .int()
-                        .min(1)
-                        .max(100)
-                        .optional()
-                        .describe('Page size (max 100).'),
-                }),
+                inputSchema: refineLegalityRequiresFormat(
+                    z.object({
+                        q: z
+                            .string()
+                            .optional()
+                            .describe(
+                                'Substring to search card name + flavor name. Required to return results - the other parameters only narrow a name search; omitting q returns an empty list.'
+                            ),
+                        setCode: z
+                            .string()
+                            .optional()
+                            .describe("3-5 character set code (e.g. 'lea', 'mh3')."),
+                        rarity: z
+                            .enum(['common', 'uncommon', 'rare', 'mythic'])
+                            .optional()
+                            .describe('Filter by rarity.'),
+                        type: z
+                            .string()
+                            .optional()
+                            .describe(
+                                "Substring match against card type line (e.g. 'Goblin', 'Instant')."
+                            ),
+                        format: formatParam,
+                        legality: z
+                            .enum(['legal', 'banned', 'restricted'])
+                            .optional()
+                            .describe(
+                                "Used with 'format'. Defaults to 'legal' when format is set."
+                            ),
+                        page: z.number().int().min(1).optional().describe('1-based page index.'),
+                        limit: z
+                            .number()
+                            .int()
+                            .min(1)
+                            .max(100)
+                            .optional()
+                            .describe('Page size (max 100).'),
+                    })
+                ),
                 requiresAuth: false,
                 annotations: READ_ONLY,
                 handler: async (args) => this.searchCards(args),

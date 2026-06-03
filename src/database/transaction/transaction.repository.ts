@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SortOptions } from 'src/core/query/sort-options.enum';
+import { SortOptions, TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
 import {
     CashFlowPeriod,
@@ -21,6 +21,7 @@ export class TransactionRepository implements TransactionRepositoryPort {
         filterColumn: 'transaction_card.name',
         defaultSort: SortOptions.TX_DATE,
         defaultSortDesc: true,
+        allowedSorts: TRANSACTION_SORTS,
     });
 
     constructor(

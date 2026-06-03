@@ -30,7 +30,12 @@ export const DESTRUCTIVE: McpToolAnnotations = {
 };
 
 /** Described pagination params reused across every paginated list tool. */
-export const pageParam = z.number().int().min(1).optional().describe('1-based page index. Defaults to 1.');
+export const pageParam = z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe('1-based page index. Defaults to 1.');
 export const limitParam = z
     .number()
     .int()
@@ -47,3 +52,18 @@ export const formatParam = z
     .enum(Object.values(Format) as [string, ...string[]])
     .optional()
     .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander').");
+
+/**
+ * Rejects `legality` without `format`. Legality is only applied within a format
+ * join, so legality alone is a silently-ignored filter - the same combo the strict
+ * JSON API (`validateApiQuery`) 400s. Wrap a card-filter object schema with this.
+ */
+export function refineLegalityRequiresFormat<T extends z.ZodTypeAny>(schema: T) {
+    return schema.refine(
+        (v: { format?: unknown; legality?: unknown }) => !(v.legality && !v.format),
+        {
+            message: 'legality requires format to be set; it is only applied within a format.',
+            path: ['legality'],
+        }
+    );
+}

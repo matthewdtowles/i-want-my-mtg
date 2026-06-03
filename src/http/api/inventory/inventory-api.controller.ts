@@ -34,6 +34,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { parseCardImport } from 'src/core/import/parsers/card-import-dispatch';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { INVENTORY_SORTS } from 'src/core/query/sort-options.enum';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { csvUploadInterceptor } from 'src/http/base/csv-upload.interceptor';
@@ -75,7 +76,7 @@ export class InventoryApiController {
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryItemApiDto[]>> {
-        validateApiQuery(query, { sort: true });
+        validateApiQuery(query, { sort: INVENTORY_SORTS });
         const options = new SafeQueryOptions(query);
         const [items, total] = await Promise.all([
             this.inventoryService.findAllForUser(req.user.id, options),
@@ -193,9 +194,7 @@ export class InventoryApiController {
         try {
             ({ format, rows } = parseCardImport(file.buffer));
         } catch (err) {
-            throw new BadRequestException(
-                err instanceof Error ? err.message : 'Invalid CSV file'
-            );
+            throw new BadRequestException(err instanceof Error ? err.message : 'Invalid CSV file');
         }
         const result = await this.importService.importCards(rows, req.user.id);
         return ApiResponseDto.ok(
@@ -214,7 +213,7 @@ export class InventoryApiController {
         operationId: 'exportInventory',
         summary: 'Export inventory as CSV',
         description:
-            'Returns the authenticated user\'s full inventory as CSV ' +
+            "Returns the authenticated user's full inventory as CSV " +
             '(columns: id, name, set_code, number, quantity, foil). ' +
             'Reimport-compatible with POST /api/v1/inventory/import/cards.',
     })
@@ -222,10 +221,7 @@ export class InventoryApiController {
     @ApiResponse({ status: 200, description: 'CSV body' })
     @Header('Content-Type', 'text/csv')
     @Header('Content-Disposition', 'attachment; filename="inventory.csv"')
-    async exportInventory(
-        @Req() req: AuthenticatedRequest,
-        @Res() res: Response
-    ): Promise<void> {
+    async exportInventory(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         const csv = await this.exportService.exportToCsv(req.user.id);
         res.send(csv);
     }

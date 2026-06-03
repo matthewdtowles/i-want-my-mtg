@@ -26,6 +26,19 @@ export function safeSort(value: string | SortOptions | undefined): SortOptions |
     return validSorts.includes(value as SortOptions) ? (value as SortOptions) : undefined;
 }
 
+/**
+ * Narrows a requested sort to the set a query can actually honor. Returns the
+ * sort if it is in `allowedSorts`, otherwise `undefined` so the caller falls back
+ * to its default sort. Keeps an endpoint-inapplicable (but globally valid) sort
+ * from reaching `ORDER BY` and producing a SQL error on an unjoined alias.
+ */
+export function resolveSort(
+    sort: SortOptions | undefined,
+    allowedSorts: readonly SortOptions[]
+): SortOptions | undefined {
+    return sort && allowedSorts.includes(sort) ? sort : undefined;
+}
+
 export function safeBoolean(
     value: string | boolean | undefined,
     defaultValue: boolean = true

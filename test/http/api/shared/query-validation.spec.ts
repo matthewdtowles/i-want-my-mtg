@@ -1,10 +1,8 @@
-import {
-    InvalidQueryParamException,
-    validateApiQuery,
-} from 'src/http/api/shared/query-validation';
+import { SET_CARD_SORTS, SortOptions, TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
+import { InvalidQueryParamException, validateApiQuery } from 'src/http/api/shared/query-validation';
 
 const ALL_FLAGS = {
-    sort: true,
+    sort: SET_CARD_SORTS,
     rarity: true,
     format: true,
     legality: true,
@@ -18,7 +16,7 @@ describe('validateApiQuery', () => {
             expect(() =>
                 validateApiQuery(
                     {
-                        sort: 'card.name',
+                        sort: SortOptions.CARD,
                         rarity: 'rare',
                         format: 'modern',
                         legality: 'banned',
@@ -43,7 +41,12 @@ describe('validateApiQuery', () => {
         it('is case-insensitive for rarity, format, legality, and type', () => {
             expect(() =>
                 validateApiQuery(
-                    { rarity: 'COMMON', format: 'Standard', legality: 'Legal', type: 'sell' },
+                    {
+                        rarity: 'COMMON',
+                        format: 'Standard',
+                        legality: 'Legal',
+                        type: 'sell',
+                    },
                     ALL_FLAGS
                 )
             ).not.toThrow();
@@ -82,22 +85,10 @@ describe('validateApiQuery', () => {
             expect(err.allowedValues).toContain('pioneer');
         });
 
-        it('rejects an unknown legality', () => {
-            const err = capture({ legality: 'maybe' }, { legality: true });
+        it('rejects an unknown legality value', () => {
+            const err = capture({ legality: 'maybe', format: 'modern' }, ALL_FLAGS);
             expect(err.param).toBe('legality');
             expect(err.allowedValues).toEqual(['legal', 'banned', 'restricted']);
-        });
-
-        it('rejects an unknown sort key', () => {
-            const err = capture({ sort: 'card.bogus' }, { sort: true });
-            expect(err.param).toBe('sort');
-            expect(err.allowedValues).toContain('card.name');
-        });
-
-        it('rejects sort by enum name rather than value (exact match)', () => {
-            expect(() => validateApiQuery({ sort: 'CARD' }, { sort: true })).toThrow(
-                InvalidQueryParamException
-            );
         });
 
         it('rejects an invalid transaction type', () => {
@@ -114,11 +105,55 @@ describe('validateApiQuery', () => {
         });
     });
 
+    describe('legality requires format', () => {
+        it('400s legality when format is absent', () => {
+            const err = capture({ legality: 'banned' }, { legality: true });
+            expect(err.param).toBe('legality');
+            expect(err.allowedValues).toBeUndefined();
+            expect(err.message).toContain('format');
+        });
+
+        it('accepts legality when format is present', () => {
+            expect(() =>
+                validateApiQuery({ legality: 'banned', format: 'modern' }, ALL_FLAGS)
+            ).not.toThrow();
+        });
+    });
+
+    describe('endpoint-scoped sort', () => {
+        it('accepts a sort the endpoint can honor', () => {
+            expect(() =>
+                validateApiQuery({ sort: SortOptions.TX_DATE }, { sort: TRANSACTION_SORTS })
+            ).not.toThrow();
+        });
+
+        it('400s a globally-valid sort the endpoint cannot honor', () => {
+            // card.name is a real SortOptions value but not joinable by the
+            // transaction query - this used to 500, now it 400s.
+            const err = capture({ sort: SortOptions.CARD }, { sort: TRANSACTION_SORTS });
+            expect(err.param).toBe('sort');
+            expect(err.allowedValues).toEqual([...TRANSACTION_SORTS]);
+            expect(err.message).toContain(SortOptions.CARD);
+        });
+
+        it('400s a sort that is not a SortOptions value at all', () => {
+            expect(() =>
+                validateApiQuery({ sort: 'card.bogus' }, { sort: SET_CARD_SORTS })
+            ).toThrow(InvalidQueryParamException);
+        });
+
+        it('does not validate sort when the endpoint passes no sort set', () => {
+            expect(() => validateApiQuery({ sort: 'anything' }, { rarity: true })).not.toThrow();
+        });
+    });
+
     describe('flag gating', () => {
         it('does not validate a filter the endpoint does not consume', () => {
-            expect(() => validateApiQuery({ rarity: 'foobar' }, { sort: true })).not.toThrow();
             expect(() =>
-                validateApiQuery({ type: 'BOUGHT' }, { sort: true, rarity: true })
+                validateApiQuery({ rarity: 'foobar' }, { sort: SET_CARD_SORTS })
+            ).not.toThrow();
+            expect(() =>
+                validateApiQuery({ type: 'BOUGHT' }, { sort: SET_CARD_SORTS, rarity: true })
             ).not.toThrow();
         });
     });

@@ -1,5 +1,6 @@
 import { SelectQueryBuilder } from 'typeorm';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { resolveSort } from 'src/core/query/query.util';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 
 export interface QueryBuilderConfig {
@@ -7,6 +8,13 @@ export interface QueryBuilderConfig {
     filterColumn?: string; // defaults to `${table}.name`
     defaultSort: SortOptions;
     defaultSortDesc?: boolean;
+    /**
+     * Sort keys this query can honor (see the sort-set constants in
+     * sort-options.enum). When set, a requested sort outside it falls back to
+     * `defaultSort` instead of ordering by an unjoined alias (SQL error). Should
+     * be set on any query that exposes user-controlled sort.
+     */
+    allowedSorts?: readonly SortOptions[];
     customSortHandlers?: Map<
         SortOptions,
         (qb: SelectQueryBuilder<any>, direction: 'ASC' | 'DESC') => void
@@ -50,10 +58,16 @@ export class QueryBuilderHelper<T> {
     }
 
     applyOrdering(qb: SelectQueryBuilder<T>, options: SafeQueryOptions): void {
-        const sort = options.sort ?? this.config.defaultSort;
+        // A sort the query can't honor (not in allowedSorts) is treated as "no
+        // sort given" so it falls back to the default instead of ordering by an
+        // unjoined alias. No allowedSorts configured = accept any sort (legacy).
+        const requestedSort = this.config.allowedSorts
+            ? resolveSort(options.sort, this.config.allowedSorts)
+            : options.sort;
+        const sort = requestedSort ?? this.config.defaultSort;
         const direction = options.ascend
             ? QueryBuilderHelper.ASC
-            : options.sort
+            : requestedSort
               ? QueryBuilderHelper.DESC
               : this.config.defaultSortDesc
                 ? QueryBuilderHelper.DESC

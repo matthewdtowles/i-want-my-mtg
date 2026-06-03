@@ -17,6 +17,8 @@ import { CardApiResponseDto, PriceHistoryPointDto } from './dto/card-response.dt
 import { CardApiPresenter } from './card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from '../shared/optional-auth-or-api-key.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import { validateApiQuery } from '../shared/query-validation';
 
 @ApiTags('Cards')
 @Controller('api/v1/cards')
@@ -52,9 +54,21 @@ export class CardApiController {
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
     @ApiResponse({ status: 200, description: 'Search results' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid filter value (unknown rarity/format/legality/sort or malformed setCode)',
+        type: QueryValidationErrorDto,
+    })
     async search(
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
+        validateApiQuery(query, {
+            sort: true,
+            rarity: true,
+            format: true,
+            legality: true,
+            setCode: true,
+        });
         const options = new SearchQueryOptions(query);
         if (!options.q) {
             return ApiResponseDto.ok([], new PaginationMeta(1, options.limit, 0));

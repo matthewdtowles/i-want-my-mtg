@@ -4,6 +4,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SortOptions } from 'src/core/query/sort-options.enum';
 import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
@@ -61,9 +62,16 @@ export class TransactionMcpTools {
                     page: pageParam,
                     limit: limitParam,
                     sort: z
-                        .string()
+                        .enum([
+                            SortOptions.TX_DATE,
+                            SortOptions.TX_TYPE,
+                            SortOptions.TX_CARD,
+                            SortOptions.TX_PRICE,
+                        ])
                         .optional()
-                        .describe('Sort key (e.g. TX_DATE, TX_TYPE, TX_CARD, TX_PRICE).'),
+                        .describe(
+                            "Sort key: 'transaction.date', 'transaction.type', 'transaction_card.name', or 'transaction.pricePerUnit'."
+                        ),
                     ascend: z
                         .boolean()
                         .optional()

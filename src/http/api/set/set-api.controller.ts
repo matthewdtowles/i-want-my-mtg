@@ -24,6 +24,8 @@ import { CardApiResponseDto } from '../card/dto/card-response.dto';
 import { CardApiPresenter } from '../card/card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import { validateApiQuery } from '../shared/query-validation';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
 
@@ -53,10 +55,16 @@ export class SetApiController {
         description: 'Grouping mode: "block" for block-level pagination',
     })
     @ApiResponse({ status: 200, description: 'List of sets' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid sort value',
+        type: QueryValidationErrorDto,
+    })
     async findAll(
         @Req() req: AuthenticatedRequest,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
+        validateApiQuery(query, { sort: true });
         const options = new SafeQueryOptions(query).withSetTypes(
             req.user?.includedSetTypes ?? null
         );
@@ -172,10 +180,16 @@ export class SetApiController {
         enum: ['legal', 'banned', 'restricted'],
     })
     @ApiResponse({ status: 200, description: 'Cards in set' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid filter value (unknown rarity/format/legality/sort)',
+        type: QueryValidationErrorDto,
+    })
     async findCardsInSet(
         @Param('code') code: string,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
+        validateApiQuery(query, { sort: true, rarity: true, format: true, legality: true });
         const options = new SafeQueryOptions(query);
 
         const set = await this.setService.findByCode(code);

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Format } from 'src/core/card/format.enum';
 import { McpToolAnnotations } from '../mcp-tool.types';
 
 /**
@@ -37,3 +38,12 @@ export const limitParam = z
     .max(100)
     .optional()
     .describe('Page size, 1-100. Server default applies if omitted.');
+
+/**
+ * Format-legality filter, enumerated so a typo is rejected rather than silently
+ * dropped (matching the strict JSON API). Shared by search_cards + list_set_cards.
+ */
+export const formatParam = z
+    .enum(Object.values(Format) as [string, ...string[]])
+    .optional()
+    .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander').");

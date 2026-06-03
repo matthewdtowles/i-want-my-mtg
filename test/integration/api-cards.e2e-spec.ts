@@ -141,6 +141,50 @@ describe('Cards API (e2e)', () => {
                 expect(filtered.body.meta.total).toBeLessThan(unfiltered.body.meta.total);
             });
         });
+
+        describe('strict filter validation', () => {
+            it('returns 400 with param + allowedValues for an unknown rarity', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&rarity=foobar')
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+                expect(res.body.param).toBe('rarity');
+                expect(res.body.allowedValues).toEqual(['common', 'uncommon', 'rare', 'mythic']);
+                expect(res.body.error).toContain("Invalid value 'foobar'");
+            });
+
+            it('returns 400 for an unknown format', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&format=pioneerish')
+                    .expect(400);
+
+                expect(res.body.param).toBe('format');
+            });
+
+            it('returns 400 for an unknown sort key', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&sort=card.bogus')
+                    .expect(400);
+
+                expect(res.body.param).toBe('sort');
+            });
+
+            it('returns 400 for a malformed setCode (no allowedValues list)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=mh-3')
+                    .expect(400);
+
+                expect(res.body.param).toBe('setCode');
+                expect(res.body.allowedValues).toBeUndefined();
+            });
+
+            it('400s on invalid filter even without a search term', async () => {
+                await request(app.getHttpServer())
+                    .get('/api/v1/cards?rarity=foobar')
+                    .expect(400);
+            });
+        });
     });
 
     describe('GET /api/v1/cards/:setCode/:setNumber', () => {

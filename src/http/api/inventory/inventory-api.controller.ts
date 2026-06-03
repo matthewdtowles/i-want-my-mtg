@@ -44,6 +44,8 @@ import { InventoryImportResponseDto } from './dto/inventory-import-response.dto'
 import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
 import { InventoryApiPresenter } from './inventory-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import { validateApiQuery } from '../shared/query-validation';
 
 @ApiTags('Inventory')
 @ApiBearerAuth()
@@ -64,10 +66,16 @@ export class InventoryApiController {
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false })
     @ApiResponse({ status: 200, description: 'Inventory list' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid sort value',
+        type: QueryValidationErrorDto,
+    })
     async findAll(
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryItemApiDto[]>> {
+        validateApiQuery(query, { sort: true });
         const options = new SafeQueryOptions(query);
         const [items, total] = await Promise.all([
             this.inventoryService.findAllForUser(req.user.id, options),

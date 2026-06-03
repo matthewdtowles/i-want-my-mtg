@@ -12,7 +12,7 @@ import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 import { SetApiPresenter } from 'src/http/api/set/set-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY, limitParam, pageParam } from './common';
+import { READ_ONLY, formatParam, limitParam, pageParam } from './common';
 
 const setCardFilters = {
     rarity: z.enum(['common', 'uncommon', 'rare', 'mythic']).optional().describe('Filter by rarity.'),
@@ -20,10 +20,7 @@ const setCardFilters = {
         .string()
         .optional()
         .describe("Substring match against card type line (e.g. 'Goblin', 'Instant')."),
-    format: z
-        .string()
-        .optional()
-        .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander')."),
+    format: formatParam,
     legality: z
         .enum(['legal', 'banned', 'restricted'])
         .optional()

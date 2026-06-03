@@ -214,6 +214,26 @@ describe('Transactions API (e2e)', () => {
             expect(types.has('BUY')).toBe(true);
             expect(types.has('SELL')).toBe(true);
         });
+
+        it('?type=BOUGHT returns 400 instead of silently ignoring the filter', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=BOUGHT')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.param).toBe('type');
+            expect(res.body.allowedValues).toEqual(['BUY', 'SELL']);
+        });
+
+        it('?sort=bogus returns 400', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?sort=bogus')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.param).toBe('sort');
+        });
     });
 
     describe('Validation', () => {

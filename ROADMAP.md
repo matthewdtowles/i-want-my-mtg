@@ -76,11 +76,11 @@ The constraint is that `SafeQueryOptions` is one shared sanitizer used by ~20 ca
 
 Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR because 400-ing `type` alone would be inconsistent with every other filter.
 
-- [ ] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. Layer it in front of `SafeQueryOptions`; do not change the sanitizer's behavior.
-- [ ] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
-- [ ] Apply consistently across every list endpoint (cards, sets, inventory, transactions, sealed-products) so one filter does not 400 while the rest silently ignore.
-- [ ] Align the MCP tools that pass raw filters through `SafeQueryOptions` (the `list_transactions` `type` enum already rejects typos; bring the others in line).
-- [ ] Settle the contract (400 body shape: `error` + offending param + allowed values) and document it in the OpenAPI spec.
+- [x] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. `validateApiQuery()` (`src/http/api/shared/query-validation.ts`) runs in front of `SafeQueryOptions` on the API controllers; the sanitizer is unchanged.
+- [x] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
+- [x] Apply consistently across cards, set-cards, set-list, inventory, and transactions. (The sealed-product list endpoints read only `page`/`limit` - no enumerated filter to validate.)
+- [x] Align the MCP tools: `format` is now an enum in `search_cards`/`list_set_cards` and `list_transactions` `sort` is an enum, so typos are rejected rather than silently dropped (the `type` enum already did).
+- [x] Contract settled: 400 body is `{ success: false, error, param, allowedValues }` (`allowedValues` omitted for `setCode`), documented via `QueryValidationErrorDto` + `@ApiResponse(400)` on each endpoint.
 
 ---
 

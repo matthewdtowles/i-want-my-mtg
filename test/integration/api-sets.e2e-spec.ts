@@ -180,6 +180,15 @@ describe('Sets API (e2e)', () => {
 
                 expect(res.body.data).toEqual([]);
             });
+
+            it('returns 400 for an unknown rarity', async () => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards?rarity=foobar`)
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+                expect(res.body.param).toBe('rarity');
+            });
         });
     });
 

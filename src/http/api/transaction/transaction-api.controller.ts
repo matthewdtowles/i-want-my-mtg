@@ -29,6 +29,8 @@ import { TransactionRequestDto } from 'src/http/hbs/transaction/dto/transaction.
 import { TransactionUpdateRequestDto } from 'src/http/hbs/transaction/dto/transaction.update-request.dto';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import { validateApiQuery } from '../shared/query-validation';
 import { CostBasisApiDto, TransactionApiItemDto } from './dto/transaction-response.dto';
 import { TransactionApiPresenter } from './transaction-api.presenter';
 
@@ -52,10 +54,16 @@ export class TransactionApiController {
     @ApiQuery({ name: 'filter', required: false })
     @ApiQuery({ name: 'type', required: false, enum: ['BUY', 'SELL'] })
     @ApiResponse({ status: 200, description: 'Transaction list' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid sort value or transaction type',
+        type: QueryValidationErrorDto,
+    })
     async findAll(
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
+        validateApiQuery(query, { sort: true, transactionType: true });
         const options = new SafeQueryOptions(query);
         const type = parseTransactionType(query.type);
         const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);

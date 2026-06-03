@@ -7,7 +7,7 @@ import { parseDaysParam } from 'src/http/base/query.util';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY } from './common';
+import { READ_ONLY, formatParam } from './common';
 
 const cardKeySchema = {
     setCode: z.string().describe("Set code (e.g. 'lea')."),
@@ -53,12 +53,7 @@ export class CardMcpTools {
                         .describe(
                             "Substring match against card type line (e.g. 'Goblin', 'Instant')."
                         ),
-                    format: z
-                        .string()
-                        .optional()
-                        .describe(
-                            "Filter to cards with a legality entry in this format (e.g. 'modern', 'commander')."
-                        ),
+                    format: formatParam,
                     legality: z
                         .enum(['legal', 'banned', 'restricted'])
                         .optional()

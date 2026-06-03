@@ -63,7 +63,6 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 - **4.1 API tiering** — `api_usage` retention sweeper (daily cron, delete rows older than 90 days; revisit at ~1M rows); create Stripe API Developer/Business products + set `STRIPE_PRICE_API_*` in dev and prod (manual, not code).
 - **4.2 Developer portal** — run RapidAPI's "Test Endpoint" flow on each endpoint and fix unexpected shapes; list on adjacent free marketplaces (APIs.guru, Postman, public-apis) once RapidAPI is stable; color filtering (`?color=`, `?colorIdentity=`) on card search — blocked on Scry populating `card.colors` (see 10.2). Remaining Studio form-filling tracked in [`RAPIDAPI.md`](RAPIDAPI.md).
-- **4.3 MCP** — confirm the Smithery listing shows all 33 tools and mark it public; optional sub-2-minute narrated walkthrough video (only if the GIF/posts get traction); MCP resources (`iwmm://cards/...`) and workflow prompts — nice-to-haves, not load-bearing.
 
 ---
 

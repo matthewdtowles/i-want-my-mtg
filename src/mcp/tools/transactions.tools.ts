@@ -10,20 +10,21 @@ import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { TransactionApiPresenter } from 'src/http/api/transaction/transaction-api.presenter';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { DESTRUCTIVE, IDEMPOTENT_WRITE, READ_ONLY, WRITE, limitParam, pageParam } from './common';
 
 const transactionCreate = z.object({
     cardId: z.string().uuid().describe('Internal IWMM card UUID.'),
-    type: z.enum(['BUY', 'SELL']),
-    quantity: z.number().int().min(1),
+    type: z.enum(['BUY', 'SELL']).describe('Transaction type: BUY or SELL.'),
+    quantity: z.number().int().min(1).describe('Number of copies transacted.'),
     pricePerUnit: z.number().min(0).describe('Per-unit price in USD.'),
-    isFoil: z.boolean(),
+    isFoil: z.boolean().describe('Whether the transacted copies are the foil finish.'),
     date: z.string().date().describe('ISO 8601 date (YYYY-MM-DD).'),
     source: z
         .string()
         .optional()
         .describe("Where the transaction happened (e.g. 'TCGPlayer', 'LGS')."),
-    fees: z.number().min(0).optional(),
-    notes: z.string().optional(),
+    fees: z.number().min(0).optional().describe('Optional fees or shipping in USD.'),
+    notes: z.string().optional().describe('Optional free-text note.'),
     skipInventorySync: z
         .boolean()
         .optional()
@@ -33,12 +34,12 @@ const transactionCreate = z.object({
 });
 
 const transactionUpdate = z.object({
-    quantity: z.number().int().min(1).optional(),
-    pricePerUnit: z.number().min(0).optional(),
-    date: z.string().date().optional(),
-    source: z.string().optional(),
-    fees: z.number().min(0).optional(),
-    notes: z.string().optional(),
+    quantity: z.number().int().min(1).optional().describe('New quantity.'),
+    pricePerUnit: z.number().min(0).optional().describe('New per-unit price in USD.'),
+    date: z.string().date().optional().describe('New transaction date (YYYY-MM-DD).'),
+    source: z.string().optional().describe('New source label.'),
+    fees: z.number().min(0).optional().describe('New fees/shipping in USD.'),
+    notes: z.string().optional().describe('New free-text note.'),
 });
 
 /** Authenticated transaction tools, mirroring `TransactionApiController`. */
@@ -57,8 +58,8 @@ export class TransactionMcpTools {
                 description:
                     "List the authenticated user's transactions, paginated. Supports sort/filter query params. Free tier sees the last 30 days only; Premium gets full history. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
-                    page: z.number().int().min(1).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    page: pageParam,
+                    limit: limitParam,
                     sort: z
                         .string()
                         .optional()
@@ -79,6 +80,7 @@ export class TransactionMcpTools {
                         ),
                 }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.list(args, ctx),
             },
             {
@@ -87,6 +89,7 @@ export class TransactionMcpTools {
                     'Record a buy or sell transaction. By default this also adjusts inventory (BUY adds, SELL subtracts). This is a real write. Requires IWMM_API_KEY.',
                 inputSchema: transactionCreate,
                 requiresAuth: true,
+                annotations: WRITE,
                 handler: async (args, ctx) => this.create(args, ctx),
             },
             {
@@ -98,13 +101,17 @@ export class TransactionMcpTools {
                     patch: transactionUpdate,
                 }),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (args, ctx) => this.update(args, ctx),
             },
             {
                 name: 'delete_transaction',
                 description: 'Delete a transaction by ID. Requires IWMM_API_KEY.',
-                inputSchema: z.object({ id: z.number().int().min(1) }),
+                inputSchema: z.object({
+                    id: z.number().int().min(1).describe('Transaction ID from list_transactions.'),
+                }),
                 requiresAuth: true,
+                annotations: DESTRUCTIVE,
                 handler: async (args, ctx) => this.remove(args, ctx),
             },
             {
@@ -113,15 +120,29 @@ export class TransactionMcpTools {
                     'Get FIFO cost basis for a specific card+finish for the authenticated user. Pass either cardId or (setCode, setNumber). Requires IWMM_API_KEY.',
                 inputSchema: z
                     .object({
-                        cardId: z.string().uuid().optional(),
-                        setCode: z.string().optional(),
-                        setNumber: z.string().optional(),
-                        isFoil: z.boolean().default(false),
+                        cardId: z
+                            .string()
+                            .uuid()
+                            .optional()
+                            .describe('Internal IWMM card UUID. Provide this, or setCode + setNumber.'),
+                        setCode: z
+                            .string()
+                            .optional()
+                            .describe('Set code, used with setNumber as an alternative to cardId.'),
+                        setNumber: z
+                            .string()
+                            .optional()
+                            .describe('Collector number within the set, used with setCode.'),
+                        isFoil: z
+                            .boolean()
+                            .default(false)
+                            .describe('Whether to compute cost basis for the foil finish.'),
                     })
                     .refine((v) => !!v.cardId || (!!v.setCode && !!v.setNumber), {
                         message: 'Provide either cardId, or both setCode and setNumber.',
                     }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.costBasis(args, ctx),
             },
         ];

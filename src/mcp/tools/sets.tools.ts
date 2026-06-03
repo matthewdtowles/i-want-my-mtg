@@ -12,14 +12,24 @@ import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 import { SetApiPresenter } from 'src/http/api/set/set-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { READ_ONLY, limitParam, pageParam } from './common';
 
 const setCardFilters = {
-    rarity: z.enum(['common', 'uncommon', 'rare', 'mythic']).optional(),
-    type: z.string().optional(),
-    format: z.string().optional(),
-    legality: z.enum(['legal', 'banned', 'restricted']).optional(),
-    page: z.number().int().min(1).optional(),
-    limit: z.number().int().min(1).max(100).optional(),
+    rarity: z.enum(['common', 'uncommon', 'rare', 'mythic']).optional().describe('Filter by rarity.'),
+    type: z
+        .string()
+        .optional()
+        .describe("Substring match against card type line (e.g. 'Goblin', 'Instant')."),
+    format: z
+        .string()
+        .optional()
+        .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander')."),
+    legality: z
+        .enum(['legal', 'banned', 'restricted'])
+        .optional()
+        .describe("Used with 'format'. Defaults to 'legal' when format is set."),
+    page: pageParam,
+    limit: limitParam,
 };
 
 /**
@@ -43,17 +53,21 @@ export class SetMcpTools {
                 description:
                     'List Magic: The Gathering sets, optionally paginated. Returns set code, name, release date, type, and aggregate prices.',
                 inputSchema: z.object({
-                    page: z.number().int().min(1).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    page: pageParam,
+                    limit: limitParam,
                 }),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.searchSets(args, ctx),
             },
             {
                 name: 'get_set',
                 description: "Get detail for a single set by code (e.g. 'lea', 'mh3').",
-                inputSchema: z.object({ code: z.string() }),
+                inputSchema: z.object({
+                    code: z.string().describe("Set code (e.g. 'lea', 'mh3')."),
+                }),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.getSet(args),
             },
             {
@@ -65,14 +79,16 @@ export class SetMcpTools {
                     ...setCardFilters,
                 }),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.listSetCards(args),
             },
             {
                 name: 'get_sealed_products',
                 description:
                     'List sealed products (booster boxes, bundles, commander decks, etc.) for a set. Each entry includes a TCGPlayer purchase URL.',
-                inputSchema: z.object({ code: z.string() }),
+                inputSchema: z.object({ code: z.string().describe('Set code.') }),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.getSealedProducts(args, ctx),
             },
         ];

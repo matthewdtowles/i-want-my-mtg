@@ -5,6 +5,7 @@ import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { PriceAlertApiPresenter } from 'src/http/api/price-alert/price-alert-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { DESTRUCTIVE, IDEMPOTENT_WRITE, READ_ONLY, WRITE, limitParam, pageParam } from './common';
 
 const thresholdRefinement = (v: { increasePct?: number | null; decreasePct?: number | null }) =>
     v.increasePct != null || v.decreasePct != null;
@@ -21,10 +22,11 @@ export class AlertMcpTools {
                 description:
                     "List the authenticated user's price alerts. Free tier is capped at 5 active alerts and a single threshold direction per alert; Premium removes both limits. Paginated. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
-                    page: z.number().int().min(1).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    page: pageParam,
+                    limit: limitParam,
                 }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.list(args, ctx),
             },
             {
@@ -49,6 +51,7 @@ export class AlertMcpTools {
                         message: 'Provide at least one of increasePct or decreasePct.',
                     }),
                 requiresAuth: true,
+                annotations: WRITE,
                 handler: async (args, ctx) => this.create(args, ctx),
             },
             {
@@ -57,18 +60,35 @@ export class AlertMcpTools {
                     'Update an existing price alert. Pass null for a threshold to clear it (Premium only - free users must keep exactly one direction). isActive toggles enable/disable without deleting. Requires IWMM_API_KEY.',
                 inputSchema: z.object({
                     id: z.coerce.number().int().describe('Alert ID from list_price_alerts.'),
-                    increasePct: z.number().min(0.01).nullable().optional(),
-                    decreasePct: z.number().min(0.01).nullable().optional(),
-                    isActive: z.boolean().optional(),
+                    increasePct: z
+                        .number()
+                        .min(0.01)
+                        .nullable()
+                        .optional()
+                        .describe('New increase threshold percent, or null to clear it (Premium).'),
+                    decreasePct: z
+                        .number()
+                        .min(0.01)
+                        .nullable()
+                        .optional()
+                        .describe('New decrease threshold percent, or null to clear it (Premium).'),
+                    isActive: z
+                        .boolean()
+                        .optional()
+                        .describe('Enable or disable the alert without deleting it.'),
                 }),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (args, ctx) => this.update(args, ctx),
             },
             {
                 name: 'delete_price_alert',
                 description: 'Delete a price alert by ID. Requires IWMM_API_KEY.',
-                inputSchema: z.object({ id: z.coerce.number().int() }),
+                inputSchema: z.object({
+                    id: z.coerce.number().int().describe('Alert ID from list_price_alerts.'),
+                }),
                 requiresAuth: true,
+                annotations: DESTRUCTIVE,
                 handler: async (args, ctx) => this.remove(args, ctx),
             },
         ];

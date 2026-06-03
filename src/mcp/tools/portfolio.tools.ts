@@ -10,6 +10,7 @@ import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { PortfolioPresenter } from 'src/http/hbs/portfolio/portfolio.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
+import { IDEMPOTENT_WRITE, READ_ONLY } from './common';
 
 /**
  * Authenticated portfolio tools, mirroring `PortfolioApiController`. `premium`
@@ -37,6 +38,7 @@ export class PortfolioMcpTools {
                     "Get the authenticated user's portfolio summary - current value, total invested, realized gains, card/unit counts. Requires IWMM_API_KEY.",
                 inputSchema: z.object({}),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (_args, ctx) => this.summary(ctx),
             },
             {
@@ -54,6 +56,7 @@ export class PortfolioMcpTools {
                 }),
                 requiresAuth: true,
                 premium: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.history(args, ctx),
             },
             {
@@ -61,10 +64,20 @@ export class PortfolioMcpTools {
                 description:
                     "Get the user's best- or worst-performing cards by P&L. Default: best, top 10. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
-                    type: z.enum(['best', 'worst']).optional(),
-                    limit: z.number().int().min(1).max(100).optional(),
+                    type: z
+                        .enum(['best', 'worst'])
+                        .optional()
+                        .describe("Rank by best or worst P&L. Defaults to 'best'."),
+                    limit: z
+                        .number()
+                        .int()
+                        .min(1)
+                        .max(100)
+                        .optional()
+                        .describe('How many cards to return (1-100). Defaults to 10.'),
                 }),
                 requiresAuth: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.performance(args, ctx),
             },
             {
@@ -74,6 +87,7 @@ export class PortfolioMcpTools {
                 inputSchema: z.object({}),
                 requiresAuth: true,
                 premium: true,
+                annotations: READ_ONLY,
                 handler: async (_args, ctx) => this.cashFlow(ctx),
             },
             {
@@ -83,6 +97,7 @@ export class PortfolioMcpTools {
                 inputSchema: z.object({}),
                 requiresAuth: true,
                 premium: true,
+                annotations: READ_ONLY,
                 handler: async (_args, ctx) => this.realizedGains(ctx),
             },
             {
@@ -98,6 +113,7 @@ export class PortfolioMcpTools {
                 }),
                 requiresAuth: true,
                 premium: true,
+                annotations: READ_ONLY,
                 handler: async (args, ctx) => this.breakdown(args, ctx),
             },
             {
@@ -106,6 +122,7 @@ export class PortfolioMcpTools {
                     "Recalculate the user's portfolio P&L. Use after recording a batch of transactions if you want immediate fresh numbers. Requires IWMM_API_KEY.",
                 inputSchema: z.object({}),
                 requiresAuth: true,
+                annotations: IDEMPOTENT_WRITE,
                 handler: async (_args, ctx) => this.refresh(ctx),
             },
         ];

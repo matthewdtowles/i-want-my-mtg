@@ -7,6 +7,7 @@ import { parseDaysParam } from 'src/http/base/query.util';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { McpToolDefinition } from '../mcp-tool.types';
+import { READ_ONLY } from './common';
 
 const cardKeySchema = {
     setCode: z.string().describe("Set code (e.g. 'lea')."),
@@ -72,6 +73,7 @@ export class CardMcpTools {
                         .describe('Page size (max 100).'),
                 }),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.searchCards(args),
             },
             {
@@ -80,6 +82,7 @@ export class CardMcpTools {
                     'Look up a specific card printing by set code and collector number. Returns full card detail including current prices, rarity, type, and flavor name. For broader catalog search use search_cards.',
                 inputSchema: z.object(cardKeySchema),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.getCard(args),
             },
             {
@@ -87,6 +90,7 @@ export class CardMcpTools {
                 description: 'Get current normal and foil prices for a specific card printing.',
                 inputSchema: z.object(cardKeySchema),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.getCardPrices(args),
             },
             {
@@ -95,6 +99,7 @@ export class CardMcpTools {
                     'Get the 30-day price history for a card printing (normal + foil). Older data is retained on a weekly/monthly cadence beyond 30 days.',
                 inputSchema: z.object(cardKeySchema),
                 requiresAuth: false,
+                annotations: READ_ONLY,
                 handler: async (args) => this.getCardPriceHistory(args),
             },
         ];

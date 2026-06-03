@@ -166,9 +166,9 @@ input[type='number'] {
 }
 
 .history-range-btn.active {
-    background: #0d9488;
+    background: #0f766e;
     color: #fff;
-    border-color: #0d9488;
+    border-color: #0f766e;
 }
 
 .history-range-btn:hover {
@@ -176,7 +176,7 @@ input[type='number'] {
 }
 
 .history-range-btn.active:hover {
-    background: #0d9488;
+    background: #0f766e;
 }
 
 .dark .history-range-btn {
@@ -996,7 +996,7 @@ html:not(.dark) .iwm-overlay {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--iwm-teal);
+    color: #1a7a78;
     flex-shrink: 0;
 }
 
@@ -1257,7 +1257,7 @@ html:not(.dark) .iwm-footer-social-btn {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #2cc8ca;
+    color: #1a7a78;
     margin-bottom: 0.85rem;
 }
 

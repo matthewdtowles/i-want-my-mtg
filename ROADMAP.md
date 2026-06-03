@@ -33,7 +33,7 @@ items from those shipped sections live under **Catch-up**. Active and future wor
 - **2.11 Flavor name** — `flavor_name` column (migration 023), Scry ingestion, full plumbing, shown on card detail + search.
 - **2.12 Price notifications** — alert/notification data model (migrations 025/026), idempotent detection, batched emails, daily cron, management pages.
 - **2.13 UI polish** — active price-alert badge on card detail; normal/foil price in binder hover overlay.
-- **2.14 Site-wide visual refresh** — rolled the pricing page's design language (palette, typography, gradient navbar/footer, surfaces) across the site. *(loose ends in Catch-up)*
+- **2.14 Site-wide visual refresh** — rolled the pricing page's design language (palette, typography, gradient navbar/footer, surfaces) across the site. Post-rollout Lighthouse re-audit fixed light-mode contrast regressions (a11y 100 mobile + desktop); dark/light toggle verified site-wide.
 - **2.15 `in_main` classifier + set-type filter** — scry 5.10/5.11 classifier fixes (card + set level) plus user opt-in set-type preference (migration 033).
 
 ### Phase 3: Monetization Foundation
@@ -61,10 +61,8 @@ items from those shipped sections live under **Catch-up**. Active and future wor
 
 Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly manual, low-priority, or deferred.
 
-- **2.14 Visual refresh** — re-run Lighthouse performance + accessibility audits post-rollout (contrast in particular); verify dark/light toggle works site-wide.
 - **4.1 API tiering** — `api_usage` retention sweeper (daily cron, delete rows older than 90 days; revisit at ~1M rows); create Stripe API Developer/Business products + set `STRIPE_PRICE_API_*` in dev and prod (manual, not code).
-- **4.2 Developer portal** — run RapidAPI's "Test Endpoint" flow on each endpoint and fix unexpected shapes; list on adjacent free marketplaces (APIs.guru, Postman, public-apis) once RapidAPI is stable; color filtering (`?color=`, `?colorIdentity=`) on card search — blocked on Scry populating `card.colors` (see 10.2). Remaining Studio form-filling tracked in [`docs/rapidapi-listing-checklist.md`](docs/rapidapi-listing-checklist.md).
-- **4.3 MCP** — confirm the Smithery listing shows all 33 tools and mark it public; optional sub-2-minute narrated walkthrough video (only if the GIF/posts get traction); MCP resources (`iwmm://cards/...`) and workflow prompts — nice-to-haves, not load-bearing.
+- **4.2 Developer portal** — run RapidAPI's "Test Endpoint" flow on each endpoint and fix unexpected shapes; list on adjacent free marketplaces (APIs.guru, Postman, public-apis) once RapidAPI is stable; color filtering (`?color=`, `?colorIdentity=`) on card search — blocked on Scry populating `card.colors` (see 10.2). Remaining Studio form-filling tracked in [`RAPIDAPI.md`](RAPIDAPI.md).
 
 ---
 

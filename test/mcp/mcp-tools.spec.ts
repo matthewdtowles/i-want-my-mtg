@@ -10,6 +10,7 @@ import { PortfolioMcpTools } from 'src/mcp/tools/portfolio.tools';
 import { AlertMcpTools } from 'src/mcp/tools/alerts.tools';
 import { NotificationMcpTools } from 'src/mcp/tools/notifications.tools';
 import { toMcpErrorText } from 'src/mcp/mcp.error';
+import { outputSchemaByName } from 'src/mcp/tools/output-schemas';
 
 // getTools() only declares the contract (name/description/schema/flags); it never
 // touches the injected services, so stub them with `null` for these contract tests.
@@ -87,6 +88,8 @@ const PREMIUM = new Set([
     'get_portfolio_breakdown',
 ]);
 
+const DESTRUCTIVE = new Set(['remove_inventory', 'delete_transaction', 'delete_price_alert']);
+
 describe('McpToolRegistry', () => {
     const registry = buildRegistry();
     const tools = registry.list();
@@ -128,6 +131,39 @@ describe('McpToolRegistry', () => {
             const schema = zodToJsonSchema(tool.inputSchema as never, { target: 'openApi3' }) as {
                 type?: string;
             };
+            expect(schema.type).toBe('object');
+        }
+    });
+
+    it('annotates every tool with closed-world behavior hints', () => {
+        for (const tool of tools) {
+            expect(tool.annotations).toBeDefined();
+            expect(tool.annotations!.openWorldHint).toBe(false);
+        }
+    });
+
+    it('marks catalog reads read-only and flags destructiveHint only on deletes', () => {
+        for (const tool of tools) {
+            if (READ_ONLY.has(tool.name)) {
+                expect(tool.annotations!.readOnlyHint).toBe(true);
+            }
+            expect(!!tool.annotations!.destructiveHint).toBe(DESTRUCTIVE.has(tool.name));
+        }
+    });
+
+    it('provides an output schema for every tool and no orphan schemas', () => {
+        const toolNames = new Set(tools.map((t) => t.name));
+        for (const tool of tools) {
+            expect(outputSchemaByName[tool.name]).toBeDefined();
+        }
+        expect(Object.keys(outputSchemaByName).every((name) => toolNames.has(name))).toBe(true);
+    });
+
+    it('converts every output schema to a JSON-Schema object', () => {
+        for (const tool of tools) {
+            const schema = zodToJsonSchema(outputSchemaByName[tool.name] as never, {
+                target: 'openApi3',
+            }) as { type?: string };
             expect(schema.type).toBe('object');
         }
     });

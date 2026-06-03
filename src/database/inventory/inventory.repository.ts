@@ -4,7 +4,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SortOptions } from 'src/core/query/sort-options.enum';
+import { INVENTORY_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -24,6 +24,7 @@ export class InventoryRepository
         table: this.TABLE,
         filterColumn: 'card.name', // Inventory filters by card name
         defaultSort: SortOptions.NUMBER,
+        allowedSorts: INVENTORY_SORTS,
     });
 
     constructor(

@@ -13,9 +13,14 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { SET_CARD_SORTS, SET_SORTS } from 'src/core/query/sort-options.enum';
 import { SetService } from 'src/core/set/set.service';
 import { Set } from 'src/core/set/set.entity';
-import { ApiResponseDto, BlockPaginationMeta, PaginationMeta } from 'src/http/base/api-response.dto';
+import {
+    ApiResponseDto,
+    BlockPaginationMeta,
+    PaginationMeta,
+} from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { completionRate } from 'src/http/base/http.util';
 import { SetApiResponseDto, SetPriceHistoryPointDto } from './dto/set-response.dto';
@@ -24,6 +29,13 @@ import { CardApiResponseDto } from '../card/dto/card-response.dto';
 import { CardApiPresenter } from '../card/card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import {
+    FORMAT_VALUES,
+    LEGALITY_VALUES,
+    RARITY_VALUES,
+    validateApiQuery,
+} from '../shared/query-validation';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
 
@@ -53,10 +65,16 @@ export class SetApiController {
         description: 'Grouping mode: "block" for block-level pagination',
     })
     @ApiResponse({ status: 200, description: 'List of sets' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid sort value',
+        type: QueryValidationErrorDto,
+    })
     async findAll(
         @Req() req: AuthenticatedRequest,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<SetApiResponseDto[]>> {
+        validateApiQuery(query, { sort: SET_SORTS });
         const options = new SafeQueryOptions(query).withSetTypes(
             req.user?.includedSetTypes ?? null
         );
@@ -83,12 +101,7 @@ export class SetApiController {
                 this.setService.findMultiSetBlockKeys(blockKeys),
             ]);
             sets = blockSets;
-            meta = new BlockPaginationMeta(
-                options.page,
-                options.limit,
-                totalGroups,
-                multiSetKeys
-            );
+            meta = new BlockPaginationMeta(options.page, options.limit, totalGroups, multiSetKeys);
         } else {
             let total: number;
             [sets, total] = await Promise.all([
@@ -145,7 +158,10 @@ export class SetApiController {
     }
 
     @Get(':code/cards')
-    @ApiOperation({ operationId: 'getSetCards', summary: 'Get cards in a set with optional filters' })
+    @ApiOperation({
+        operationId: 'getSetCards',
+        summary: 'Get cards in a set with optional filters',
+    })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'sort', required: false })
@@ -156,26 +172,37 @@ export class SetApiController {
         name: 'rarity',
         required: false,
         description: 'Filter by rarity',
-        enum: ['common', 'uncommon', 'rare', 'mythic'],
+        enum: [...RARITY_VALUES],
     })
     @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line' })
     @ApiQuery({
         name: 'format',
         required: false,
         description: 'Filter by format legality (defaults legality=legal)',
-        enum: ['standard', 'commander', 'modern', 'legacy', 'vintage', 'brawl', 'explorer', 'historic', 'oathbreaker', 'pauper', 'pioneer'],
+        enum: [...FORMAT_VALUES],
     })
     @ApiQuery({
         name: 'legality',
         required: false,
         description: 'Legality status; only meaningful with format. Defaults to "legal".',
-        enum: ['legal', 'banned', 'restricted'],
+        enum: [...LEGALITY_VALUES],
     })
     @ApiResponse({ status: 200, description: 'Cards in set' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid filter value (unknown rarity/format/legality/sort)',
+        type: QueryValidationErrorDto,
+    })
     async findCardsInSet(
         @Param('code') code: string,
         @Query() query: Record<string, string>
     ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
+        validateApiQuery(query, {
+            sort: SET_CARD_SORTS,
+            rarity: true,
+            format: true,
+            legality: true,
+        });
         const options = new SafeQueryOptions(query);
 
         const set = await this.setService.findByCode(code);

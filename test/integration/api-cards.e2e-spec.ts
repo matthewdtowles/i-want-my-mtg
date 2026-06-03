@@ -73,9 +73,9 @@ describe('Cards API (e2e)', () => {
                     .get('/api/v1/cards?q=Test&setCode=TST')
                     .expect(200);
 
-                expect(
-                    res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')
-                ).toBe(true);
+                expect(res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')).toBe(
+                    true
+                );
                 expect(res.body.data.length).toBeGreaterThan(0);
             });
 
@@ -139,6 +139,69 @@ describe('Cards API (e2e)', () => {
                     .expect(200);
 
                 expect(filtered.body.meta.total).toBeLessThan(unfiltered.body.meta.total);
+            });
+        });
+
+        describe('strict filter validation', () => {
+            it('returns 400 with param + allowedValues for an unknown rarity', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&rarity=foobar')
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+                expect(res.body.param).toBe('rarity');
+                expect(res.body.allowedValues).toEqual(['common', 'uncommon', 'rare', 'mythic']);
+                expect(res.body.error).toContain("Invalid value 'foobar'");
+            });
+
+            it('returns 400 for an unknown format', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&format=pioneerish')
+                    .expect(400);
+
+                expect(res.body.param).toBe('format');
+            });
+
+            it('returns 400 for legality without format', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&legality=banned')
+                    .expect(400);
+
+                expect(res.body.param).toBe('legality');
+            });
+
+            it('ignores sort (card search is name-ordered) rather than 400ing', async () => {
+                await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&sort=card.bogus')
+                    .expect(200);
+            });
+
+            it('returns 400 for a malformed setCode (no allowedValues list)', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=mh-3')
+                    .expect(400);
+
+                expect(res.body.param).toBe('setCode');
+                expect(res.body.allowedValues).toBeUndefined();
+            });
+
+            it('returns 400 (not 500) for a repeated param parsed as an array', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=mh3&setCode=lea')
+                    .expect(400);
+
+                expect(res.body.param).toBe('setCode');
+                expect(res.body.error).toContain('single value');
+            });
+
+            it('does not 500 when a non-validated param is repeated', async () => {
+                await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&filter=a&filter=b')
+                    .expect(200);
+            });
+
+            it('400s on invalid filter even without a search term', async () => {
+                await request(app.getHttpServer()).get('/api/v1/cards?rarity=foobar').expect(400);
             });
         });
     });

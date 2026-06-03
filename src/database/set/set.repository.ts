@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { SortOptions } from 'src/core/query/sort-options.enum';
+import { resolveSort } from 'src/core/query/query.util';
+import { SET_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { BaseRepository } from 'src/database/base.repository';
@@ -22,6 +23,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         table: this.TABLE,
         defaultSort: SortOptions.RELEASE_DATE,
         defaultSortDesc: true,
+        allowedSorts: SET_SORTS,
     });
 
     constructor(
@@ -218,10 +220,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
      * empty array, return no rows (the user has explicitly cleared all
      * types).
      */
-    private applyBaseFilter(
-        qb: SelectQueryBuilder<SetOrmEntity>,
-        options: SafeQueryOptions
-    ): void {
+    private applyBaseFilter(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
         if (!options.baseOnly) return;
         const types = options.includedSetTypes;
         if (types === undefined || types === null) {
@@ -255,7 +254,10 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     }
 
     private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
-        if (!options.sort) {
+        // Drop a sort this query can't honor (only `set` + `setPrice` are joined)
+        // back to the default so it can't order by an unjoined alias (SQL error).
+        const sort = resolveSort(options.sort, SET_SORTS);
+        if (!sort) {
             // Default: release date desc, then name asc
             qb.orderBy(`${this.TABLE}.releaseDate`, this.DESC, this.NULLS_LAST);
             qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
@@ -264,13 +266,13 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
         const direction = options.ascend ? this.ASC : this.DESC;
 
-        if (options.sort === SortOptions.SET_BASE_PRICE) {
+        if (sort === SortOptions.SET_BASE_PRICE) {
             qb.addSelect(
                 PriceCalculationPolicy.effectiveSetPriceExpression('setPrice'),
                 'effective_price'
             ).orderBy('effective_price', direction, this.NULLS_LAST);
         } else {
-            qb.orderBy(options.sort, direction, this.NULLS_LAST);
+            qb.orderBy(sort, direction, this.NULLS_LAST);
         }
     }
 }

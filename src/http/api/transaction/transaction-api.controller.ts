@@ -20,6 +20,7 @@ import { freeTierHistoryCutoff } from 'src/core/billing/subscription-limits';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 import { parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
@@ -29,6 +30,8 @@ import { TransactionRequestDto } from 'src/http/hbs/transaction/dto/transaction.
 import { TransactionUpdateRequestDto } from 'src/http/hbs/transaction/dto/transaction.update-request.dto';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
+import { validateApiQuery } from '../shared/query-validation';
 import { CostBasisApiDto, TransactionApiItemDto } from './dto/transaction-response.dto';
 import { TransactionApiPresenter } from './transaction-api.presenter';
 
@@ -52,10 +55,16 @@ export class TransactionApiController {
     @ApiQuery({ name: 'filter', required: false })
     @ApiQuery({ name: 'type', required: false, enum: ['BUY', 'SELL'] })
     @ApiResponse({ status: 200, description: 'Transaction list' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid sort value or transaction type',
+        type: QueryValidationErrorDto,
+    })
     async findAll(
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<TransactionApiItemDto[]>> {
+        validateApiQuery(query, { sort: TRANSACTION_SORTS, transactionType: true });
         const options = new SafeQueryOptions(query);
         const type = parseTransactionType(query.type);
         const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);

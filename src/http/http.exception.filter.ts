@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
+import { InvalidQueryParamException } from './api/shared/query-validation';
 import { ApiResponseDto } from './base/api-response.dto';
 import { LoginFormViewDto } from './hbs/auth/dto/login-form.view.dto';
 import { ActionStatus } from './base/action-status.enum';
@@ -30,9 +31,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
         if (this.isApiRequest(request)) {
-            response
-                .status(status)
-                .json(ApiResponseDto.error(exception.message || 'Internal Server Error'));
+            const body = ApiResponseDto.error(exception.message || 'Internal Server Error');
+            if (exception instanceof InvalidQueryParamException) {
+                response.status(status).json({
+                    ...body,
+                    param: exception.param,
+                    allowedValues: exception.allowedValues,
+                });
+            } else {
+                response.status(status).json(body);
+            }
         } else if (this.isFormRoute(request.url)) {
             this.handleFormError(response, request, exception);
         } else {

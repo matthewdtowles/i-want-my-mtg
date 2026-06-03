@@ -214,6 +214,51 @@ describe('Transactions API (e2e)', () => {
             expect(types.has('BUY')).toBe(true);
             expect(types.has('SELL')).toBe(true);
         });
+
+        it('?type=BOUGHT returns 400 instead of silently ignoring the filter', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=BOUGHT')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.param).toBe('type');
+            expect(res.body.allowedValues).toEqual(['BUY', 'SELL']);
+        });
+
+        it('?sort=bogus returns 400', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?sort=bogus')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.param).toBe('sort');
+        });
+
+        it('?type=%20SELL%20 (whitespace) is accepted, matching the filter gate', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=%20SELL%20')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            expect(res.body.data.every((t: any) => t.type === 'SELL')).toBe(true);
+        });
+
+        it('?sort=card.name (valid enum, inapplicable here) returns 400 not 500', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?sort=card.name')
+                .set('Authorization', bearerToken)
+                .expect(400);
+
+            expect(res.body.param).toBe('sort');
+            expect(res.body.allowedValues).toEqual([
+                'transaction.date',
+                'transaction.type',
+                'transaction_card.name',
+                'transaction.pricePerUnit',
+            ]);
+        });
     });
 
     describe('Validation', () => {

@@ -1,36 +1,50 @@
 import { RawQueryOptions } from './safe-query-options.dto';
 import { SortOptions } from './sort-options.enum';
 
-export function sanitizeInt(value: string | number | undefined, defaultValue: number): number {
-    if (value === undefined || value === null) return defaultValue;
+// All sanitizers accept `unknown`: Express/qs can parse a repeated query param
+// (`?x=a&x=b`) as an array, so a value typed `string` at the call site may be a
+// `string[]` at runtime. Each returns its default rather than calling a string
+// method on a non-string (which would throw and surface as a 500).
+
+export function sanitizeInt(value: unknown, defaultValue: number): number {
     if (typeof value === 'number') return value < 1 ? defaultValue : value;
+    if (typeof value !== 'string') return defaultValue;
     const parsed = parseInt(value, 10);
     return isNaN(parsed) || parsed < 1 ? defaultValue : parsed;
 }
 
-export function safeAlphaNumeric(value: string | undefined): string | undefined {
-    if (!value) return undefined;
+export function safeAlphaNumeric(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
     const sanitized = value.replace(/[^a-zA-Z0-9\s-]/g, '').trim();
     return sanitized.length > 0 ? sanitized : undefined;
 }
 
-export function safeSearchTerm(value: string | undefined): string | undefined {
-    if (!value) return undefined;
+export function safeSearchTerm(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
     const sanitized = value.replace(/[^a-zA-Z0-9\s\-',.;:/]/g, '').trim();
     return sanitized.length > 0 ? sanitized : undefined;
 }
 
-export function safeSort(value: string | SortOptions | undefined): SortOptions | undefined {
-    if (!value) return undefined;
-    const validSorts = Object.values(SortOptions);
-    return validSorts.includes(value as SortOptions) ? (value as SortOptions) : undefined;
+export function safeSort(value: unknown): SortOptions | undefined {
+    if (typeof value !== 'string') return undefined;
+    const validSorts: readonly string[] = Object.values(SortOptions);
+    return validSorts.includes(value) ? (value as SortOptions) : undefined;
 }
 
-export function safeBoolean(
-    value: string | boolean | undefined,
-    defaultValue: boolean = true
-): boolean {
-    if (value === undefined || value === null) return defaultValue;
+/**
+ * Narrows a requested sort to the set a query can actually honor. Returns the
+ * sort if it is in `allowedSorts`, otherwise `undefined` so the caller falls back
+ * to its default sort. Keeps an endpoint-inapplicable (but globally valid) sort
+ * from reaching `ORDER BY` and producing a SQL error on an unjoined alias.
+ */
+export function resolveSort(
+    sort: SortOptions | undefined,
+    allowedSorts: readonly SortOptions[]
+): SortOptions | undefined {
+    return sort && allowedSorts.includes(sort) ? sort : undefined;
+}
+
+export function safeBoolean(value: unknown, defaultValue: boolean = true): boolean {
     if (typeof value === 'boolean') return value;
     if (typeof value !== 'string') return defaultValue;
     const lower = value.toLowerCase();

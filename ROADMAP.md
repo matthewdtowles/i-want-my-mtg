@@ -76,11 +76,20 @@ The constraint is that `SafeQueryOptions` is one shared sanitizer used by ~20 ca
 
 Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR because 400-ing `type` alone would be inconsistent with every other filter.
 
-- [ ] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. Layer it in front of `SafeQueryOptions`; do not change the sanitizer's behavior.
-- [ ] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
-- [ ] Apply consistently across every list endpoint (cards, sets, inventory, transactions, sealed-products) so one filter does not 400 while the rest silently ignore.
-- [ ] Align the MCP tools that pass raw filters through `SafeQueryOptions` (the `list_transactions` `type` enum already rejects typos; bring the others in line).
-- [ ] Settle the contract (400 body shape: `error` + offending param + allowed values) and document it in the OpenAPI spec.
+- [x] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. `validateApiQuery()` (`src/http/api/shared/query-validation.ts`) runs in front of `SafeQueryOptions` on the API controllers; the sanitizer is unchanged.
+- [x] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
+- [x] Apply consistently across cards, set-cards, set-list, inventory, and transactions. (The sealed-product list endpoints read only `page`/`limit` - no enumerated filter to validate.)
+- [x] Align the MCP tools: `format` is now an enum in `search_cards`/`list_set_cards` and `list_transactions` `sort` is an enum, so typos are rejected rather than silently dropped (the `type` enum already did).
+- [x] Contract settled: 400 body is `{ success: false, error, param, allowedValues }` (`allowedValues` omitted for `setCode`), documented via `QueryValidationErrorDto` + `@ApiResponse(400)` on each endpoint.
+- [x] PR #507 review follow-ups: `sort` is validated against each endpoint's honorable set (per-context constants in `sort-options.enum.ts`) rather than the global enum - an endpoint-inapplicable sort (e.g. `?sort=card.name` on `/transactions`) now 400s instead of 500ing. The ordering paths (`QueryBuilderHelper`, set `addSetOrdering`) fall back to the context default via `resolveSort()`, so HBS/internal callers can't hit the SQL error either. `legality` without `format` now 400s (mirrored in the MCP card tools).
+
+### 4.5 Unify HBS sortable headers with the honorable sort sets
+
+Follow-up from 4.4 (PR #507). The per-context honorable sort sets (`SET_CARD_SORTS`/`SET_SORTS`/`INVENTORY_SORTS`/`TRANSACTION_SORTS` in `sort-options.enum.ts`) are the single source of truth for "what a query can sort by", consumed by the repositories (`QueryBuilderHelper.allowedSorts` / set `addSetOrdering`) and the API validator. But each HBS orchestrator still lists its clickable `SortableHeaderView` columns independently. They agree today and a mismatch can't 500 (the `resolveSort` fallback degrades an inapplicable sort to the context default), but nothing *enforces* that every offered header is honorable - so a future header edit could quietly become a dead sort (UI says sortable, click falls back to default; the API would 400 the same value).
+
+- [ ] Decide the mechanism: derive each orchestrator's sortable headers from the honorable set (headers carry labels via `SortOptionLabels` + per-column CSS, so a small per-context header-config table is likely cleaner than a raw list), or keep the lists but add a guardrail test that asserts every `SortableHeaderView` sort key is a member of the matching `*_SORTS` set.
+- [ ] Implement the chosen approach so "offered ⊆ honorable" is enforced, not just currently-true.
+- [ ] Re-verify the browse/inventory/transaction/set pages with Playwright (sort links still work, default ordering unchanged) since this touches the view layer.
 
 ---
 

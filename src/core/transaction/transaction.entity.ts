@@ -1,11 +1,20 @@
 import { validateInit } from 'src/core/validation.util';
 
-export type TransactionType = 'BUY' | 'SELL';
+/** The only valid transaction types. Single source for parsing and validation. */
+export const TRANSACTION_TYPES = ['BUY', 'SELL'] as const;
+export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
-/** Parse an untrusted string into a TransactionType, or undefined if it isn't one. */
-export function parseTransactionType(value?: string): TransactionType | undefined {
-    const upper = value?.toUpperCase();
-    return upper === 'BUY' || upper === 'SELL' ? upper : undefined;
+/**
+ * Parse an untrusted value into a TransactionType, or undefined if it isn't one.
+ * Trims and upper-cases so ` sell ` and `BUY` both resolve; anything else (typos,
+ * non-strings) is undefined. The single gate used by the controllers, the MCP
+ * tools, and the strict API validator so they can't disagree.
+ */
+export function parseTransactionType(value?: unknown): TransactionType | undefined {
+    const upper = typeof value === 'string' ? value.trim().toUpperCase() : undefined;
+    return TRANSACTION_TYPES.includes(upper as TransactionType)
+        ? (upper as TransactionType)
+        : undefined;
 }
 
 export class Transaction {

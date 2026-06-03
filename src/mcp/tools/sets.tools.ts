@@ -12,22 +12,24 @@ import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { SealedProductApiPresenter } from 'src/http/api/sealed-product/sealed-product-api.presenter';
 import { SetApiPresenter } from 'src/http/api/set/set-api.presenter';
 import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY, limitParam, pageParam } from './common';
+import {
+    READ_ONLY,
+    formatParam,
+    legalityParam,
+    limitParam,
+    pageParam,
+    rarityParam,
+    refineLegalityRequiresFormat,
+} from './common';
 
 const setCardFilters = {
-    rarity: z.enum(['common', 'uncommon', 'rare', 'mythic']).optional().describe('Filter by rarity.'),
+    rarity: rarityParam,
     type: z
         .string()
         .optional()
         .describe("Substring match against card type line (e.g. 'Goblin', 'Instant')."),
-    format: z
-        .string()
-        .optional()
-        .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander')."),
-    legality: z
-        .enum(['legal', 'banned', 'restricted'])
-        .optional()
-        .describe("Used with 'format'. Defaults to 'legal' when format is set."),
+    format: formatParam,
+    legality: legalityParam,
     page: pageParam,
     limit: limitParam,
 };
@@ -74,10 +76,12 @@ export class SetMcpTools {
                 name: 'list_set_cards',
                 description:
                     'List all cards in a set, paginated. Supports the same filters as search_cards (rarity, type, format, legality).',
-                inputSchema: z.object({
-                    code: z.string().describe('Set code.'),
-                    ...setCardFilters,
-                }),
+                inputSchema: refineLegalityRequiresFormat(
+                    z.object({
+                        code: z.string().describe('Set code.'),
+                        ...setCardFilters,
+                    })
+                ),
                 requiresAuth: false,
                 annotations: READ_ONLY,
                 handler: async (args) => this.listSetCards(args),

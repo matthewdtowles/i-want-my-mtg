@@ -4,7 +4,7 @@ import { LegalityStatus } from 'src/core/card/legality.status.enum';
 import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';
 import { SortOptions } from './sort-options.enum';
 
-const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
+export const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
     CardRarity.Common,
     CardRarity.Uncommon,
     CardRarity.Rare,
@@ -13,30 +13,31 @@ const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
 
 // Set codes are stored lowercase (matches keyrune CSS class convention used in views).
 // Lowercasing input lets callers pass either case in the API.
-function safeSetCode(value: string | undefined): string | undefined {
-    if (!value) return undefined;
+// All helpers accept `unknown` because a repeated query param can arrive as an
+// array at runtime; a non-string returns the lenient default rather than throwing.
+function safeSetCode(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
     const cleaned = value.replace(/[^a-zA-Z0-9]/g, '');
     return cleaned.length > 0 ? cleaned.toLowerCase() : undefined;
 }
 
-function safeRarity(value: string | undefined): CardRarity | undefined {
-    if (!value) return undefined;
+// Exported so the strict API validator decides "is this a valid rarity/format"
+// with the exact same logic, instead of re-deriving it and risking divergence.
+export function safeRarity(value: unknown): CardRarity | undefined {
+    if (typeof value !== 'string') return undefined;
     const lower = value.toLowerCase() as CardRarity;
     return PUBLIC_RARITIES.has(lower) ? lower : undefined;
 }
 
-function safeFormat(value: string | undefined): Format | undefined {
-    if (!value) return undefined;
+export function safeFormat(value: unknown): Format | undefined {
+    if (typeof value !== 'string') return undefined;
     const lower = value.toLowerCase() as Format;
     return Object.values(Format).includes(lower) ? lower : undefined;
 }
 
-function safeLegality(
-    value: string | undefined,
-    format: Format | undefined
-): LegalityStatus | undefined {
+function safeLegality(value: unknown, format: Format | undefined): LegalityStatus | undefined {
     if (!format) return undefined;
-    if (!value) return LegalityStatus.Legal;
+    if (typeof value !== 'string' || value === '') return LegalityStatus.Legal;
     const lower = value.toLowerCase() as LegalityStatus;
     return Object.values(LegalityStatus).includes(lower) ? lower : LegalityStatus.Legal;
 }

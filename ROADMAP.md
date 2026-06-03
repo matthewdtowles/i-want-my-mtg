@@ -83,6 +83,14 @@ Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR becau
 - [x] Contract settled: 400 body is `{ success: false, error, param, allowedValues }` (`allowedValues` omitted for `setCode`), documented via `QueryValidationErrorDto` + `@ApiResponse(400)` on each endpoint.
 - [x] PR #507 review follow-ups: `sort` is validated against each endpoint's honorable set (per-context constants in `sort-options.enum.ts`) rather than the global enum - an endpoint-inapplicable sort (e.g. `?sort=card.name` on `/transactions`) now 400s instead of 500ing. The ordering paths (`QueryBuilderHelper`, set `addSetOrdering`) fall back to the context default via `resolveSort()`, so HBS/internal callers can't hit the SQL error either. `legality` without `format` now 400s (mirrored in the MCP card tools).
 
+### 4.5 Unify HBS sortable headers with the honorable sort sets
+
+Follow-up from 4.4 (PR #507). The per-context honorable sort sets (`SET_CARD_SORTS`/`SET_SORTS`/`INVENTORY_SORTS`/`TRANSACTION_SORTS` in `sort-options.enum.ts`) are the single source of truth for "what a query can sort by", consumed by the repositories (`QueryBuilderHelper.allowedSorts` / set `addSetOrdering`) and the API validator. But each HBS orchestrator still lists its clickable `SortableHeaderView` columns independently. They agree today and a mismatch can't 500 (the `resolveSort` fallback degrades an inapplicable sort to the context default), but nothing *enforces* that every offered header is honorable - so a future header edit could quietly become a dead sort (UI says sortable, click falls back to default; the API would 400 the same value).
+
+- [ ] Decide the mechanism: derive each orchestrator's sortable headers from the honorable set (headers carry labels via `SortOptionLabels` + per-column CSS, so a small per-context header-config table is likely cleaner than a raw list), or keep the lists but add a guardrail test that asserts every `SortableHeaderView` sort key is a member of the matching `*_SORTS` set.
+- [ ] Implement the chosen approach so "offered ⊆ honorable" is enforced, not just currently-true.
+- [ ] Re-verify the browse/inventory/transaction/set pages with Playwright (sort links still work, default ordering unchanged) since this touches the view layer.
+
 ---
 
 ## Phase 6: Buylist Pricing & Vendor Selling Tools

@@ -18,7 +18,12 @@ import { CardApiPresenter } from './card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from '../shared/optional-auth-or-api-key.guard';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
-import { validateApiQuery } from '../shared/query-validation';
+import {
+    FORMAT_VALUES,
+    LEGALITY_VALUES,
+    RARITY_VALUES,
+    validateApiQuery,
+} from '../shared/query-validation';
 
 @ApiTags('Cards')
 @Controller('api/v1/cards')
@@ -41,7 +46,7 @@ export class CardApiController {
         name: 'rarity',
         required: false,
         description: 'Filter by rarity',
-        enum: ['common', 'uncommon', 'rare', 'mythic'],
+        enum: [...RARITY_VALUES],
     })
     @ApiQuery({
         name: 'type',
@@ -52,25 +57,13 @@ export class CardApiController {
         name: 'format',
         required: false,
         description: 'Filter by format legality (joins legality table; defaults legality=legal)',
-        enum: [
-            'standard',
-            'commander',
-            'modern',
-            'legacy',
-            'vintage',
-            'brawl',
-            'explorer',
-            'historic',
-            'oathbreaker',
-            'pauper',
-            'pioneer',
-        ],
+        enum: [...FORMAT_VALUES],
     })
     @ApiQuery({
         name: 'legality',
         required: false,
         description: 'Legality status; only meaningful with format. Defaults to "legal".',
-        enum: ['legal', 'banned', 'restricted'],
+        enum: [...LEGALITY_VALUES],
     })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })

@@ -30,7 +30,12 @@ import { CardApiPresenter } from '../card/card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
-import { validateApiQuery } from '../shared/query-validation';
+import {
+    FORMAT_VALUES,
+    LEGALITY_VALUES,
+    RARITY_VALUES,
+    validateApiQuery,
+} from '../shared/query-validation';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
 
@@ -167,32 +172,20 @@ export class SetApiController {
         name: 'rarity',
         required: false,
         description: 'Filter by rarity',
-        enum: ['common', 'uncommon', 'rare', 'mythic'],
+        enum: [...RARITY_VALUES],
     })
     @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line' })
     @ApiQuery({
         name: 'format',
         required: false,
         description: 'Filter by format legality (defaults legality=legal)',
-        enum: [
-            'standard',
-            'commander',
-            'modern',
-            'legacy',
-            'vintage',
-            'brawl',
-            'explorer',
-            'historic',
-            'oathbreaker',
-            'pauper',
-            'pioneer',
-        ],
+        enum: [...FORMAT_VALUES],
     })
     @ApiQuery({
         name: 'legality',
         required: false,
         description: 'Legality status; only meaningful with format. Defaults to "legal".',
-        enum: ['legal', 'banned', 'restricted'],
+        enum: [...LEGALITY_VALUES],
     })
     @ApiResponse({ status: 200, description: 'Cards in set' })
     @ApiResponse({

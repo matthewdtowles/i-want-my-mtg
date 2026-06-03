@@ -4,6 +4,33 @@ import { LegalityStatus } from 'src/core/card/legality.status.enum';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 describe('SafeQueryOptions — public catalog filters', () => {
+    describe('array (repeated) query params', () => {
+        it('does not throw on array values and treats them as not provided', () => {
+            // Express/qs parses `?setCode=a&setCode=b` as an array; the sanitizers
+            // must not call string methods on it (would 500). HBS callers stay lenient.
+            const raw = {
+                setCode: ['a', 'b'],
+                rarity: ['common', 'mythic'],
+                format: ['modern'],
+                legality: ['legal'],
+                filter: ['x', 'y'],
+                sort: ['card.name'],
+                type: ['BUY'],
+                baseOnly: ['true'],
+            } as never;
+            const opts = new SafeQueryOptions(raw);
+            expect(opts.setCode).toBeUndefined();
+            expect(opts.rarity).toBeUndefined();
+            expect(opts.format).toBeUndefined();
+            expect(opts.filter).toBeUndefined();
+            expect(opts.sort).toBeUndefined();
+            expect(opts.type).toBeUndefined();
+            // numeric/boolean params fall back to their defaults
+            expect(opts.limit).toBe(25);
+            expect(opts.page).toBe(1);
+        });
+    });
+
     describe('setCode', () => {
         it('lowercases set codes to match DB storage convention', () => {
             const opts = new SafeQueryOptions({ setCode: 'LEA' });
@@ -27,13 +54,10 @@ describe('SafeQueryOptions — public catalog filters', () => {
     });
 
     describe('rarity', () => {
-        it.each(['common', 'uncommon', 'rare', 'mythic'])(
-            'accepts %s',
-            (value) => {
-                const opts = new SafeQueryOptions({ rarity: value });
-                expect(opts.rarity).toBe(value as CardRarity);
-            }
-        );
+        it.each(['common', 'uncommon', 'rare', 'mythic'])('accepts %s', (value) => {
+            const opts = new SafeQueryOptions({ rarity: value });
+            expect(opts.rarity).toBe(value as CardRarity);
+        });
 
         it('lowercases incoming values', () => {
             const opts = new SafeQueryOptions({ rarity: 'RARE' });
@@ -146,10 +170,7 @@ describe('SafeQueryOptions — public catalog filters', () => {
         });
 
         it('stores includedSetTypes from constructor extra arg', () => {
-            const opts = new SafeQueryOptions(
-                {},
-                { includedSetTypes: ['expansion', 'commander'] }
-            );
+            const opts = new SafeQueryOptions({}, { includedSetTypes: ['expansion', 'commander'] });
             expect(opts.includedSetTypes).toEqual(['expansion', 'commander']);
         });
 
@@ -159,10 +180,9 @@ describe('SafeQueryOptions — public catalog filters', () => {
         });
 
         it('withSetTypes(null) clears the field', () => {
-            const opts = new SafeQueryOptions(
-                {},
-                { includedSetTypes: ['expansion'] }
-            ).withSetTypes(null);
+            const opts = new SafeQueryOptions({}, { includedSetTypes: ['expansion'] }).withSetTypes(
+                null
+            );
             expect(opts.includedSetTypes).toBeNull();
         });
 

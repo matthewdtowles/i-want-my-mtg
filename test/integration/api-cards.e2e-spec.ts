@@ -73,9 +73,9 @@ describe('Cards API (e2e)', () => {
                     .get('/api/v1/cards?q=Test&setCode=TST')
                     .expect(200);
 
-                expect(
-                    res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')
-                ).toBe(true);
+                expect(res.body.data.every((c: { setCode: string }) => c.setCode === 'tst')).toBe(
+                    true
+                );
                 expect(res.body.data.length).toBeGreaterThan(0);
             });
 
@@ -185,10 +185,23 @@ describe('Cards API (e2e)', () => {
                 expect(res.body.allowedValues).toBeUndefined();
             });
 
-            it('400s on invalid filter even without a search term', async () => {
-                await request(app.getHttpServer())
-                    .get('/api/v1/cards?rarity=foobar')
+            it('returns 400 (not 500) for a repeated param parsed as an array', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&setCode=mh3&setCode=lea')
                     .expect(400);
+
+                expect(res.body.param).toBe('setCode');
+                expect(res.body.error).toContain('single value');
+            });
+
+            it('does not 500 when a non-validated param is repeated', async () => {
+                await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&filter=a&filter=b')
+                    .expect(200);
+            });
+
+            it('400s on invalid filter even without a search term', async () => {
+                await request(app.getHttpServer()).get('/api/v1/cards?rarity=foobar').expect(400);
             });
         });
     });

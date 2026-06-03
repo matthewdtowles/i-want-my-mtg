@@ -5,7 +5,7 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
-import { parseTransactionType } from 'src/core/transaction/transaction.entity';
+import { TRANSACTION_TYPES, parseTransactionType } from 'src/core/transaction/transaction.entity';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { TransactionApiPresenter } from 'src/http/api/transaction/transaction-api.presenter';
@@ -15,7 +15,7 @@ import { DESTRUCTIVE, IDEMPOTENT_WRITE, READ_ONLY, WRITE, limitParam, pageParam 
 
 const transactionCreate = z.object({
     cardId: z.string().uuid().describe('Internal IWMM card UUID.'),
-    type: z.enum(['BUY', 'SELL']).describe('Transaction type: BUY or SELL.'),
+    type: z.enum(TRANSACTION_TYPES).describe('Transaction type: BUY or SELL.'),
     quantity: z.number().int().min(1).describe('Number of copies transacted.'),
     pricePerUnit: z.number().min(0).describe('Per-unit price in USD.'),
     isFoil: z.boolean().describe('Whether the transacted copies are the foil finish.'),
@@ -74,8 +74,8 @@ export class TransactionMcpTools {
                     filter: z.string().optional().describe('Substring filter on card name.'),
                     type: z
                         .preprocess(
-                            (v) => (typeof v === 'string' ? v.toUpperCase() : v),
-                            z.enum(['BUY', 'SELL'])
+                            (v) => (typeof v === 'string' ? v.trim().toUpperCase() : v),
+                            z.enum(TRANSACTION_TYPES)
                         )
                         .optional()
                         .describe(

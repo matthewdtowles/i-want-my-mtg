@@ -26,7 +26,15 @@ export class QueryBuilderHelper<T> {
     private static readonly DESC = 'DESC';
     private static readonly NULLS_LAST = 'NULLS LAST';
 
-    constructor(private readonly config: QueryBuilderConfig) {}
+    constructor(private readonly config: QueryBuilderConfig) {
+        // The fallback default must itself be honorable, otherwise a dropped sort
+        // would fall back to an unjoined alias and 500. Fail fast at startup.
+        if (config.allowedSorts && !config.allowedSorts.includes(config.defaultSort)) {
+            throw new Error(
+                `QueryBuilderHelper(${config.table}): defaultSort '${config.defaultSort}' is not in allowedSorts`
+            );
+        }
+    }
 
     /**
      * Applies all standard query options in a consistent order.

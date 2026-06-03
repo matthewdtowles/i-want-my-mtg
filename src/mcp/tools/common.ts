@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { Format } from 'src/core/card/format.enum';
+import { LegalityStatus } from 'src/core/card/legality.status.enum';
+import { PUBLIC_RARITIES } from 'src/core/query/safe-query-options.dto';
 import { McpToolAnnotations } from '../mcp-tool.types';
 
 /**
@@ -44,14 +46,23 @@ export const limitParam = z
     .optional()
     .describe('Page size, 1-100. Server default applies if omitted.');
 
-/**
- * Format-legality filter, enumerated so a typo is rejected rather than silently
- * dropped (matching the strict JSON API). Shared by search_cards + list_set_cards.
- */
+// Card catalog filters, enumerated from the same source enums the JSON API uses
+// so a typo is rejected rather than silently dropped, and the accepted values
+// can't drift from the REST contract. Shared by search_cards + list_set_cards.
+export const rarityParam = z
+    .enum([...PUBLIC_RARITIES] as [string, ...string[]])
+    .optional()
+    .describe('Filter by rarity.');
+
 export const formatParam = z
     .enum(Object.values(Format) as [string, ...string[]])
     .optional()
     .describe("Filter to cards with a legality entry in this format (e.g. 'modern', 'commander').");
+
+export const legalityParam = z
+    .enum(Object.values(LegalityStatus) as [string, ...string[]])
+    .optional()
+    .describe("Used with 'format'. Defaults to 'legal' when format is set.");
 
 /**
  * Rejects `legality` without `format`. Legality is only applied within a format

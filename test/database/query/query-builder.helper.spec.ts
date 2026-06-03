@@ -412,6 +412,17 @@ describe('QueryBuilderHelper', () => {
                 );
             });
 
+            it('throws at construction if defaultSort is not in allowedSorts', () => {
+                expect(
+                    () =>
+                        new QueryBuilderHelper({
+                            table: 'transaction',
+                            defaultSort: SortOptions.CARD,
+                            allowedSorts: [SortOptions.TX_DATE, SortOptions.TX_TYPE],
+                        })
+                ).toThrow(/defaultSort/);
+            });
+
             it('accepts any sort when no allowedSorts is configured (legacy)', () => {
                 const config: QueryBuilderConfig = {
                     table: 'card',

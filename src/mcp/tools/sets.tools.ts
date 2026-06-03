@@ -15,25 +15,21 @@ import { McpToolContext, McpToolDefinition } from '../mcp-tool.types';
 import {
     READ_ONLY,
     formatParam,
+    legalityParam,
     limitParam,
     pageParam,
+    rarityParam,
     refineLegalityRequiresFormat,
 } from './common';
 
 const setCardFilters = {
-    rarity: z
-        .enum(['common', 'uncommon', 'rare', 'mythic'])
-        .optional()
-        .describe('Filter by rarity.'),
+    rarity: rarityParam,
     type: z
         .string()
         .optional()
         .describe("Substring match against card type line (e.g. 'Goblin', 'Instant')."),
     format: formatParam,
-    legality: z
-        .enum(['legal', 'banned', 'restricted'])
-        .optional()
-        .describe("Used with 'format'. Defaults to 'legal' when format is set."),
+    legality: legalityParam,
     page: pageParam,
     limit: limitParam,
 };

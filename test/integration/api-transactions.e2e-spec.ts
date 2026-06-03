@@ -235,6 +235,16 @@ describe('Transactions API (e2e)', () => {
             expect(res.body.param).toBe('sort');
         });
 
+        it('?type=%20SELL%20 (whitespace) is accepted, matching the filter gate', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/transactions?type=%20SELL%20')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.data.length).toBeGreaterThan(0);
+            expect(res.body.data.every((t: any) => t.type === 'SELL')).toBe(true);
+        });
+
         it('?sort=card.name (valid enum, inapplicable here) returns 400 not 500', async () => {
             const res = await request(app.getHttpServer())
                 .get('/api/v1/transactions?sort=card.name')

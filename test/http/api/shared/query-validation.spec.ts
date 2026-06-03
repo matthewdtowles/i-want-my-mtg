@@ -97,11 +97,31 @@ describe('validateApiQuery', () => {
             expect(err.allowedValues).toEqual(['BUY', 'SELL']);
         });
 
+        it('accepts a whitespace-padded transaction type (reuses parseTransactionType)', () => {
+            // parseTransactionType trims, and it is the same gate the controller
+            // filters with, so the validator must accept what the filter accepts.
+            expect(() =>
+                validateApiQuery({ type: '  sell  ' }, { transactionType: true })
+            ).not.toThrow();
+        });
+
         it('rejects a malformed setCode without an allowedValues list', () => {
             const err = capture({ setCode: 'mh-3' }, { setCode: true });
             expect(err.param).toBe('setCode');
             expect(err.allowedValues).toBeUndefined();
             expect(err.message).toContain('letters and digits');
+        });
+    });
+
+    describe('repeated (array) query params', () => {
+        it('400s a param parsed as an array instead of throwing a 500', () => {
+            const err = capture({ setCode: ['mh3', 'lea'] }, { setCode: true });
+            expect(err.param).toBe('setCode');
+            expect(err.message).toContain('single value');
+        });
+
+        it('does not choke on an array for a param the endpoint ignores', () => {
+            expect(() => validateApiQuery({ filter: ['a', 'b'] }, { setCode: true })).not.toThrow();
         });
     });
 
@@ -167,7 +187,7 @@ describe('validateApiQuery', () => {
 });
 
 function capture(
-    query: Record<string, string | undefined>,
+    query: Record<string, unknown>,
     flags: Parameters<typeof validateApiQuery>[1]
 ): InvalidQueryParamException {
     try {

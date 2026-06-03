@@ -7,7 +7,13 @@ import { parseDaysParam } from 'src/http/base/query.util';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { McpToolDefinition } from '../mcp-tool.types';
-import { READ_ONLY, formatParam, refineLegalityRequiresFormat } from './common';
+import {
+    READ_ONLY,
+    formatParam,
+    legalityParam,
+    rarityParam,
+    refineLegalityRequiresFormat,
+} from './common';
 
 const cardKeySchema = {
     setCode: z.string().describe("Set code (e.g. 'lea')."),
@@ -44,10 +50,7 @@ export class CardMcpTools {
                             .string()
                             .optional()
                             .describe("3-5 character set code (e.g. 'lea', 'mh3')."),
-                        rarity: z
-                            .enum(['common', 'uncommon', 'rare', 'mythic'])
-                            .optional()
-                            .describe('Filter by rarity.'),
+                        rarity: rarityParam,
                         type: z
                             .string()
                             .optional()
@@ -55,12 +58,7 @@ export class CardMcpTools {
                                 "Substring match against card type line (e.g. 'Goblin', 'Instant')."
                             ),
                         format: formatParam,
-                        legality: z
-                            .enum(['legal', 'banned', 'restricted'])
-                            .optional()
-                            .describe(
-                                "Used with 'format'. Defaults to 'legal' when format is set."
-                            ),
+                        legality: legalityParam,
                         page: z.number().int().min(1).optional().describe('1-based page index.'),
                         limit: z
                             .number()

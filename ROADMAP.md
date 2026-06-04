@@ -76,25 +76,28 @@ Tracked as epic #498 (sub-issues #499–#503). Cross-repo: [scry#14](https://git
 
 Constraints found during scoping: scry currently ingests only the MTGJSON `retail` path and **averages across providers** into one normal/foil value; the web `price` table stores that single averaged value. "Best buylist by vendor" is incompatible with averaging — it needs per-provider (and likely per-condition/finish) data. MTGJSON publishes buylist for a limited set of providers (CardKingdom, Cardsphere); broad vendor coverage likely needs an additional data provider. Direction: stand up a **separate, additive granular price store** (all retail + buylist, per provider) and **derive** today's aggregates from it — non-breaking for current features. The #6.1 spike decides sourcing + architecture before the build.
 
-### 6.1 Spike: Buylist Data Sources & Price-Data Architecture
+### 6.1 Spike: Buylist Data Sources & Price-Data Architecture ✅
 
-- [ ] Evaluate buylist data sources: MTGJSON buylist coverage (CardKingdom, Cardsphere), Cardsphere's role as an aggregator, and at least one additional provider (vendor APIs vs. scraping — feasibility, cost, ToS/legality, maintenance)
-- [ ] Design the separate/additive granular price store (provider, retail|buylist, finish/condition) and how to derive the current averaged value from it
-- [ ] Define the "vendor" model for grouping/optimization (store-credit bonus %, conditions, min/max)
-- [ ] Deliverable: recommendation doc + refined scope for 6.2–6.5 and scry#14
+- [x] Evaluate buylist data sources: MTGJSON buylist coverage (CardKingdom, Cardsphere), Cardsphere's role as an aggregator, and at least one additional provider (vendor APIs vs. scraping — feasibility, cost, ToS/legality, maintenance)
+- [x] Design the separate/additive granular price store (provider, retail|buylist, finish/condition) and how to derive the current averaged value from it
+- [x] Define the "vendor" model for grouping/optimization (store-credit bonus %, conditions, min/max)
+- [x] Deliverable: recommendation doc + refined scope for 6.2–6.5 and scry#14
+
+**Outcome** (`docs/6.1-buylist-price-data-spike.html`): adopt **Tier A + Tier B** — both free, low-maintenance. Tier A expands scry to capture the full MTGJSON tree (per-provider retail + CardKingdom/Cardsphere buylist) instead of averaging; Tier B adds Card Kingdom's free direct pricelist for actionable buylist (live buy qty + condition). Broad multi-vendor coverage (Tier C: go-mtgban scrapers or a paid aggregator) is deferred until 6.3/6.4 show demand. Derive the existing averaged `price` from the granular store so nothing downstream breaks. Vendor metadata stays a code-level constant until the 6.5 optimizer needs the DB table.
 
 ### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates)
 
-- [ ] New schema for granular prices (retail + buylist, per provider, per finish/condition)
-- [ ] Web ingestion/storage fed by scry's expanded output (scry#14)
-- [ ] Derive today's averaged normal/foil from the granular data so nothing downstream breaks
-- [ ] Retention consistent with existing price history (daily → weekly → monthly)
+- [ ] `granular_price` table (migration `034` + init SQL): `(card_id, provider, price_type, finish, condition, date, price, qty)`, PK across all dimensions
+- [ ] `derive_card_prices()` SQL function (mirrors `update_set_prices()`): recompute averaged `normal`/`foil` from granular **retail** rows into the existing `price` table — `PriceCalculationPolicy` and all consumers stay unchanged. Invoked by scry's `post-ingest-updates`
+- [ ] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only; consumed by 6.3)
+- [ ] Population + retention owned by scry (scry#14); retention applied per `(card, provider, type, finish, condition)` series, daily → weekly → monthly
 
 ### 6.3 Show Buylist Prices on Card Views
 
-- [ ] Display buylist price(s) per card; highlight the best offer and which vendor
-- [ ] Per-vendor buylist where available; respect normal/foil
-- [ ] Fit existing price section/overlay patterns (card, set, binder overlay) and theming
+- [ ] Read `granular_price` directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list) — not through the averaged `price` table
+- [ ] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
+- [ ] Same treatment in set page / binder overlay; display NM by default
+- [ ] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
 
 ### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export
 

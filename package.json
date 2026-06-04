@@ -36,6 +36,7 @@
         "setup": "./scripts/setup.sh",
         "migrate": "./scripts/migrate.sh",
         "reset-db": "./scripts/reset-db.sh",
+        "rebuild:web": "./scripts/rebuild-web.sh",
         "logs": "./scripts/logs.sh",
         "db-backup": "./scripts/db-backup.sh",
         "free-docker-port": "./scripts/free-docker-port.sh",

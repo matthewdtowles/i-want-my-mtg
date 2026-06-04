@@ -2,7 +2,7 @@
 
 Shipped work is condensed to one line per section under **Done**; small leftover
 items from those shipped sections live under **Catch-up**. Active and future work
-(4.4 onward) is kept in full detail. Verbose history of completed work lives in
+(Phase 6 onward) is kept in full detail. Verbose history of completed work lives in
 `CHANGELOG.md` and git.
 
 ---
@@ -43,11 +43,13 @@ items from those shipped sections live under **Catch-up**. Active and future wor
 - **3.3 Affiliate integration** — TCGPlayer Impact partner; `AffiliateLinkPolicy` wraps product URLs on card + sealed views.
 - **3.4 Freemium & billing** — Stripe subscriptions (Checkout, portal, webhooks), `SubscriptionGuard`, depth-gating site-wide, `/pricing`, analytics breakdown. *(model in Appendix)*
 
-### Phase 4: API & Developer Ecosystem (4.1–4.3)
+### Phase 4: API & Developer Ecosystem (4.1–4.5)
 
 - **4.1 API monetization & tiering** — `api_subscription`/`api_key`/`api_usage` (migration 032), per-user tier limits, key management + usage dashboard at `/user/api-keys`. *(loose ends in Catch-up)*
 - **4.2 Developer portal** — `/developer` hub, Redoc docs, three tutorial guides, public OpenAPI spec, RapidAPI listing live + proxy guard. *(loose ends in Catch-up)*
 - **4.3 MCP server** — stdio server (separate repo) + in-app streamable-HTTP `/mcp` (33 tools), typed API client, published to npm/registry/Glama/Smithery, Reddit + tutorial + demo GIF. *(loose ends in Catch-up)*
+- **4.4 Strict query-param validation (JSON API)** — `validateApiQuery()` 400s invalid filter values (`rarity`/`format`/`legality`/`sort`/`setCode`, transaction `type`) on the API controllers while `SafeQueryOptions` stays lenient for HBS/internal callers; per-context honorable sort sets in `sort-options.enum.ts` shared by repositories + validator and mirrored in the MCP tools. *(PR #507)*
+- **4.5 Unify HBS sortable headers with the honorable sort sets** — per-context typed header factories (`setCardSortHeader`/`setSortHeader`/`inventorySortHeader`/`transactionSortHeader`) bind each orchestrator's sortable columns to the matching `*_SORTS` set, so a header offering a non-honorable sort fails to compile (offered ⊆ honorable enforced at build time, not just currently-true).
 
 ### Other shipped
 
@@ -63,33 +65,6 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 - **4.1 API tiering** — `api_usage` retention sweeper (daily cron, delete rows older than 90 days; revisit at ~1M rows); create Stripe API Developer/Business products + set `STRIPE_PRICE_API_*` in dev and prod (manual, not code).
 - **4.2 Developer portal** — run RapidAPI's "Test Endpoint" flow on each endpoint and fix unexpected shapes; list on adjacent free marketplaces (APIs.guru, Postman, public-apis) once RapidAPI is stable; color filtering (`?color=`, `?colorIdentity=`) on card search — blocked on Scry populating `card.colors` (see 10.2). Remaining Studio form-filling tracked in [`RAPIDAPI.md`](RAPIDAPI.md).
-
----
-
-## Active & upcoming
-
-### 4.4 Strict Query-Param Validation on the JSON API
-
-**Next up.** The `/api/v1` list endpoints silently ignore invalid query params: `SafeQueryOptions` drops unknown `rarity`/`format`/`legality`/`sort` and malformed `setCode` to `undefined`, and the transaction `type` filter (parsed separately via `parseTransactionType`) treats a typo like `?type=BOUGHT` as "no filter". For a browser that is fine, but for programmatic API consumers a silently-ignored filter is a footgun - they get unfiltered results and assume the filter worked.
-
-The constraint is that `SafeQueryOptions` is one shared sanitizer used by ~20 call sites, including the server-rendered HBS browse/search pages, which *need* the lenient fallback (a stale `?rarity=foobar` bookmark must still render the page, not 400). So the fix is a validation layer in front of the API controllers, not a change to the shared sanitizer's defaulting.
-
-Surfaced by Copilot on PR #497 (transaction `type`); deferred from that PR because 400-ing `type` alone would be inconsistent with every other filter.
-
-- [x] Add a strict validation path for the JSON API that returns 400 on invalid filter values (unknown `rarity`/`format`/`legality`/`sort`, malformed `setCode`, invalid transaction `type`) instead of silent fallback. `validateApiQuery()` (`src/http/api/shared/query-validation.ts`) runs in front of `SafeQueryOptions` on the API controllers; the sanitizer is unchanged.
-- [x] Keep `SafeQueryOptions` lenient for the HBS browse/search pages and the internal service callers - no 400s there.
-- [x] Apply consistently across cards, set-cards, set-list, inventory, and transactions. (The sealed-product list endpoints read only `page`/`limit` - no enumerated filter to validate.)
-- [x] Align the MCP tools: `format` is now an enum in `search_cards`/`list_set_cards` and `list_transactions` `sort` is an enum, so typos are rejected rather than silently dropped (the `type` enum already did).
-- [x] Contract settled: 400 body is `{ success: false, error, param, allowedValues }` (`allowedValues` omitted for `setCode`), documented via `QueryValidationErrorDto` + `@ApiResponse(400)` on each endpoint.
-- [x] PR #507 review follow-ups: `sort` is validated against each endpoint's honorable set (per-context constants in `sort-options.enum.ts`) rather than the global enum - an endpoint-inapplicable sort (e.g. `?sort=card.name` on `/transactions`) now 400s instead of 500ing. The ordering paths (`QueryBuilderHelper`, set `addSetOrdering`) fall back to the context default via `resolveSort()`, so HBS/internal callers can't hit the SQL error either. `legality` without `format` now 400s (mirrored in the MCP card tools).
-
-### 4.5 Unify HBS sortable headers with the honorable sort sets
-
-Follow-up from 4.4 (PR #507). The per-context honorable sort sets (`SET_CARD_SORTS`/`SET_SORTS`/`INVENTORY_SORTS`/`TRANSACTION_SORTS` in `sort-options.enum.ts`) are the single source of truth for "what a query can sort by", consumed by the repositories (`QueryBuilderHelper.allowedSorts` / set `addSetOrdering`) and the API validator. But each HBS orchestrator still lists its clickable `SortableHeaderView` columns independently. They agree today and a mismatch can't 500 (the `resolveSort` fallback degrades an inapplicable sort to the context default), but nothing *enforces* that every offered header is honorable - so a future header edit could quietly become a dead sort (UI says sortable, click falls back to default; the API would 400 the same value).
-
-- [ ] Decide the mechanism: derive each orchestrator's sortable headers from the honorable set (headers carry labels via `SortOptionLabels` + per-column CSS, so a small per-context header-config table is likely cleaner than a raw list), or keep the lists but add a guardrail test that asserts every `SortableHeaderView` sort key is a member of the matching `*_SORTS` set.
-- [ ] Implement the chosen approach so "offered ⊆ honorable" is enforced, not just currently-true.
-- [ ] Re-verify the browse/inventory/transaction/set pages with Playwright (sort links still work, default ordering unchanged) since this touches the view layer.
 
 ---
 

@@ -16,7 +16,7 @@ import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
+import { transactionSortHeader } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
@@ -86,11 +86,11 @@ export class TransactionOrchestrator {
                 filter: new FilterView(options, baseUrl, 'Filter by card name...'),
                 pagination: new PaginationView(options, baseUrl, totalCount),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.TX_DATE),
-                    new SortableHeaderView(options, SortOptions.TX_TYPE),
-                    new SortableHeaderView(options, SortOptions.TX_CARD),
+                    transactionSortHeader(options, SortOptions.TX_DATE),
+                    transactionSortHeader(options, SortOptions.TX_TYPE),
+                    transactionSortHeader(options, SortOptions.TX_CARD),
                     new TableHeaderView('Qty'),
-                    new SortableHeaderView(options, SortOptions.TX_PRICE),
+                    transactionSortHeader(options, SortOptions.TX_PRICE),
                     new TableHeaderView('Total'),
                     new TableHeaderView('', ['tx-actions-cell']),
                 ]),

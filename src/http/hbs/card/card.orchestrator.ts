@@ -14,7 +14,7 @@ import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { InventoryPresenter } from 'src/http/hbs/inventory/inventory.presenter';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
+import { setCardSortHeader } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
@@ -145,16 +145,14 @@ export class CardOrchestrator {
             const hasAnyFoilPrice = otherPrintings.some((c) => c.foilPriceRaw > 0);
 
             const printingHeaders = [
-                new SortableHeaderView(options, SortOptions.CARD_SET, ['pl-2']),
+                setCardSortHeader(options, SortOptions.CARD_SET, ['pl-2']),
                 new TableHeaderView('Card'),
             ];
             if (hasAnyNormalPrice) {
-                printingHeaders.push(new SortableHeaderView(options, SortOptions.PRICE));
+                printingHeaders.push(setCardSortHeader(options, SortOptions.PRICE));
             }
             if (hasAnyFoilPrice) {
-                printingHeaders.push(
-                    new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['pr-2'])
-                );
+                printingHeaders.push(setCardSortHeader(options, SortOptions.PRICE_FOIL, ['pr-2']));
             }
 
             return new CardViewDto({

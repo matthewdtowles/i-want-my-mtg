@@ -24,7 +24,7 @@ import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { BaseOnlyToggleView } from 'src/http/hbs/list/base-only-toggle.view';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
+import { inventorySortHeader } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/hbs/list/toggle-config';
@@ -114,10 +114,10 @@ export class InventoryOrchestrator {
                 pagination: new PaginationView(options, baseUrl, currentCount),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView([
-                    new SortableHeaderView(options, SortOptions.OWNED_QUANTITY, ['pl-2']),
-                    new SortableHeaderView(options, SortOptions.CARD),
-                    new SortableHeaderView(options, SortOptions.CARD_SET),
-                    new SortableHeaderView(options, SortOptions.PRICE),
+                    inventorySortHeader(options, SortOptions.OWNED_QUANTITY, ['pl-2']),
+                    inventorySortHeader(options, SortOptions.CARD),
+                    inventorySortHeader(options, SortOptions.CARD_SET),
+                    inventorySortHeader(options, SortOptions.PRICE),
                     new TableHeaderView('', ['pr-2', 'xs-hide']),
                 ]),
             });

@@ -24,7 +24,7 @@ import { SealedProductHbsPresenter } from 'src/http/hbs/sealed-product/sealed-pr
 import { BaseOnlyToggleView } from 'src/http/hbs/list/base-only-toggle.view';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
-import { SortableHeaderView } from 'src/http/hbs/list/sortable-header.view';
+import { setCardSortHeader, setSortHeader } from 'src/http/hbs/list/sortable-header.view';
 import { TableHeaderView } from 'src/http/hbs/list/table-header.view';
 import { TableHeadersRowView } from 'src/http/hbs/list/table-headers-row.view';
 import { buildToggleConfig } from 'src/http/hbs/list/toggle-config';
@@ -561,15 +561,13 @@ export class SetOrchestrator {
         authenticated: boolean
     ): TableHeadersRowView {
         const headers = new TableHeadersRowView([
-            new SortableHeaderView(options, SortOptions.SET, ['pl-2']),
-            new SortableHeaderView(options, SortOptions.SET_BASE_PRICE, ['pl-2', 'xxs-hide'], '7d'),
+            setSortHeader(options, SortOptions.SET, ['pl-2']),
+            setSortHeader(options, SortOptions.SET_BASE_PRICE, ['pl-2', 'xxs-hide'], '7d'),
         ]);
         if (authenticated) {
             headers.headers.push(new TableHeaderView('Owned Value'));
         }
-        headers.headers.push(
-            new SortableHeaderView(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2'])
-        );
+        headers.headers.push(setSortHeader(options, SortOptions.RELEASE_DATE, ['xs-hide', 'pr-2']));
         return headers;
     }
 
@@ -584,23 +582,21 @@ export class SetOrchestrator {
             headers.push(new TableHeaderView('Owned'));
         }
         headers.push(
-            new SortableHeaderView(options, SortOptions.NUMBER),
-            new SortableHeaderView(options, SortOptions.CARD),
+            setCardSortHeader(options, SortOptions.NUMBER),
+            setCardSortHeader(options, SortOptions.CARD),
             new TableHeaderView('Mana Cost', ['xs-hide']),
             new TableHeaderView('Rarity', ['xs-hide'])
         );
         if (hasAnyNormalPrice) {
-            headers.push(new SortableHeaderView(options, SortOptions.PRICE, ['xs-hide'], '7d'));
+            headers.push(setCardSortHeader(options, SortOptions.PRICE, ['xs-hide'], '7d'));
         }
         if (hasAnyFoilPrice) {
             headers.push(
-                new SortableHeaderView(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d')
+                setCardSortHeader(options, SortOptions.PRICE_FOIL, ['xs-hide', 'pr-2'], '7d')
             );
         }
         if (hasAnyNormalPrice || hasAnyFoilPrice) {
-            headers.push(
-                new SortableHeaderView(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d')
-            );
+            headers.push(setCardSortHeader(options, SortOptions.PRICE, ['xs-show', 'pr-2'], '7d'));
         }
         return new TableHeadersRowView(headers);
     }

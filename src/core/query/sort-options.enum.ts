@@ -49,22 +49,22 @@ export const SortOptionLabels: Record<SortOptions, string> = {
  * and ignores `sort` entirely, matching the `search_cards` MCP tool which exposes
  * no sort param.
  */
-export const SET_CARD_SORTS: readonly SortOptions[] = [
+export const SET_CARD_SORTS = [
     SortOptions.CARD,
     SortOptions.CARD_SET,
     SortOptions.NUMBER,
     SortOptions.PRICE,
     SortOptions.PRICE_FOIL,
-];
+] as const;
 
-export const SET_SORTS: readonly SortOptions[] = [
+export const SET_SORTS = [
     SortOptions.SET,
     SortOptions.SET_CODE,
     SortOptions.RELEASE_DATE,
     SortOptions.SET_BASE_PRICE,
-];
+] as const;
 
-export const INVENTORY_SORTS: readonly SortOptions[] = [
+export const INVENTORY_SORTS = [
     SortOptions.OWNED_QUANTITY,
     SortOptions.CARD,
     SortOptions.CARD_SET,
@@ -74,11 +74,11 @@ export const INVENTORY_SORTS: readonly SortOptions[] = [
     SortOptions.SET,
     SortOptions.SET_CODE,
     SortOptions.RELEASE_DATE,
-];
+] as const;
 
-export const TRANSACTION_SORTS: readonly SortOptions[] = [
+export const TRANSACTION_SORTS = [
     SortOptions.TX_DATE,
     SortOptions.TX_TYPE,
     SortOptions.TX_CARD,
     SortOptions.TX_PRICE,
-];
+] as const;

@@ -66,6 +66,21 @@ describe('Public endpoints (e2e)', () => {
                 .expect(200);
         });
 
+        it('GET /card/:setCode/:setNumber renders buylist offers, best highlighted, latest only', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/card/${TEST_CARD_SET_CODE}/${TEST_CARD_NUMBER}`)
+                .expect(200);
+            // Both buylist vendors shown by display name
+            expect(res.text).toContain('Card Kingdom');
+            expect(res.text).toContain('Cardsphere');
+            // Best normal offer (CK 3.50 > Cardsphere 3.25) and foil offer present
+            expect(res.text).toContain('$3.50');
+            expect(res.text).toContain('$7.00');
+            expect(res.text).toContain('buylist-best');
+            // Stale CK row (2.00, older date) deduped out; retail row not shown as buylist
+            expect(res.text).not.toContain('$2.00');
+        });
+
         it('GET /card/:cardId/price-history returns JSON', async () => {
             const res = await request(app.getHttpServer())
                 .get(`/card/${TEST_CARD_ID}/price-history`)

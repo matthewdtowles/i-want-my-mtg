@@ -3,10 +3,13 @@ import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
+import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { BASE_IMAGE_URL, buildCardUrl, toDollar } from 'src/http/base/http.util';
 import { InventoryQuantities } from 'src/http/hbs/inventory/inventory.quantities';
+import { BuylistFinishView, BuylistOfferView, BuylistView } from './dto/buylist.view.dto';
 import { CardResponseDto, ManaToken } from './dto/card.response.dto';
 import { LegalityResponseDto } from './dto/legality.response.dto';
 import { SingleCardResponseDto } from './dto/single-card.response.dto';
@@ -76,6 +79,44 @@ export class CardPresenter {
                 card.tcgplayerEtchedProductId
             ),
         });
+    }
+
+    private static readonly FINISH_LABELS: Record<string, string> = {
+        normal: 'Normal',
+        foil: 'Foil',
+        etched: 'Etched',
+    };
+
+    /**
+     * Build the card-page buylist section from current offers. NM only (the
+     * default grade); the highest offer per finish is marked best. No usable
+     * offers -> hasAny=false so the section is not rendered.
+     */
+    static toBuylistView(offers: GranularPrice[]): BuylistView {
+        const usable = offers.filter(
+            (o) => o.condition === 'NM' && o.price != null && o.price > 0
+        );
+
+        const finishes: BuylistFinishView[] = Object.keys(this.FINISH_LABELS)
+            .map((finishKey): BuylistFinishView | null => {
+                const finishOffers = usable
+                    .filter((o) => o.finish === finishKey)
+                    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+                if (finishOffers.length === 0) {
+                    return null;
+                }
+                const bestPrice = finishOffers[0].price ?? 0;
+                const views: BuylistOfferView[] = finishOffers.map((o) => ({
+                    vendor: vendorDisplayName(o.provider),
+                    price: toDollar(o.price),
+                    priceRaw: o.price ?? 0,
+                    isBest: (o.price ?? 0) === bestPrice,
+                }));
+                return { finish: this.FINISH_LABELS[finishKey], offers: views };
+            })
+            .filter((f): f is BuylistFinishView => f !== null);
+
+        return { finishes, hasAny: finishes.length > 0 };
     }
 
     static createTags(card: Card): string[] {

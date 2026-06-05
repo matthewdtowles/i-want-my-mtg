@@ -24,6 +24,18 @@ VALUES
     ('00000000-0000-4000-a000-000000000004', 20.00, 40.00, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
+-- Granular prices for test card 1: two buylist vendors (normal), one foil
+-- buylist, a retail row (must not show as buylist), and a stale CK normal
+-- buylist row (older date -> must be deduped out in favor of the current one).
+INSERT INTO granular_price (card_id, provider, price_type, finish, condition, date, price, qty)
+VALUES
+    ('00000000-0000-4000-a000-000000000001', 'cardkingdom', 'buylist', 'normal', 'NM', CURRENT_DATE, 3.50, 12),
+    ('00000000-0000-4000-a000-000000000001', 'cardsphere', 'buylist', 'normal', 'NM', CURRENT_DATE, 3.25, NULL),
+    ('00000000-0000-4000-a000-000000000001', 'cardkingdom', 'buylist', 'foil', 'NM', CURRENT_DATE, 7.00, 4),
+    ('00000000-0000-4000-a000-000000000001', 'tcgplayer', 'retail', 'normal', 'NM', CURRENT_DATE, 5.00, NULL),
+    ('00000000-0000-4000-a000-000000000001', 'cardkingdom', 'buylist', 'normal', 'NM', CURRENT_DATE - INTERVAL '3 days', 2.00, 5)
+ON CONFLICT (card_id, provider, price_type, finish, condition, date) DO NOTHING;
+
 -- Price history for test card
 INSERT INTO price_history (card_id, normal, foil, date)
 VALUES

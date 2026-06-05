@@ -6,6 +6,7 @@ import { CardService } from 'src/core/card/card.service';
 import { Format } from 'src/core/card/format.enum';
 import { Legality } from 'src/core/card/legality.entity';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
+import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -73,12 +74,20 @@ describe('CardService', () => {
         findByCardId: jest.fn(),
     };
 
+    const mockGranularPriceRepository = {
+        findCurrentBuylistByCardId: jest.fn(),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 CardService,
                 { provide: CardRepositoryPort, useValue: mockRepository },
                 { provide: PriceHistoryRepositoryPort, useValue: mockPriceHistoryRepository },
+                {
+                    provide: GranularPriceRepositoryPort,
+                    useValue: mockGranularPriceRepository,
+                },
             ],
         }).compile();
 

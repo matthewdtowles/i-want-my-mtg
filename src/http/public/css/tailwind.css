@@ -840,6 +840,10 @@ input:where([type='file']):focus {
   position: static;
 }
 
+.fixed {
+  position: fixed;
+}
+
 .absolute {
   position: absolute;
 }
@@ -2107,6 +2111,11 @@ input:where([type='file']):focus {
 .text-blue-800 {
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
+}
+
+.text-emerald-700 {
+  --tw-text-opacity: 1;
+  color: rgb(4 120 87 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-100 {
@@ -7508,6 +7517,10 @@ input:where([type='file']):focus {
   transition-duration: 150ms;
 }
 
+.last\:mb-0:last-child {
+  margin-bottom: 0px;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .hover\:border-teal-400:hover {
     --tw-border-opacity: 1;
@@ -7810,6 +7823,11 @@ input:where([type='file']):focus {
 .dark\:text-blue-200:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(191 219 254 / var(--tw-text-opacity, 1));
+}
+
+.dark\:text-emerald-300:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(110 231 183 / var(--tw-text-opacity, 1));
 }
 
 .dark\:text-gray-100:is(.dark *) {

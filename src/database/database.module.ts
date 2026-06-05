@@ -24,6 +24,7 @@ import { InventoryOrmEntity } from './inventory/inventory.orm-entity';
 import { InventoryRepository } from './inventory/inventory.repository';
 import { PasswordResetOrmEntity } from './password-reset/password-reset.orm-entity';
 import { PasswordResetRepository } from './password-reset/password-reset.repository';
+import { GranularPriceOrmEntity } from './granular-price/granular-price.orm-entity';
 import { PriceHistoryOrmEntity } from './price-history/price-history.orm-entity';
 import { PriceHistoryRepository } from './price-history/price-history.repository';
 import { PriceOrmEntity } from './price/price.orm-entity';
@@ -74,6 +75,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             InventoryOrmEntity,
             LegalityOrmEntity,
             PasswordResetOrmEntity,
+            GranularPriceOrmEntity,
             PriceHistoryOrmEntity,
             PriceOrmEntity,
             SetOrmEntity,

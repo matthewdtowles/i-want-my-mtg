@@ -87,10 +87,10 @@ Constraints found during scoping: scry currently ingests only the MTGJSON `retai
 
 ### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates)
 
-- [ ] `granular_price` table (migration `034` + init SQL): `(card_id, provider, price_type, finish, condition, date, price, qty)`, PK across all dimensions
-- [ ] `derive_card_prices()` SQL function (mirrors `update_set_prices()`): recompute averaged `normal`/`foil` from granular **retail** rows into the existing `price` table — `PriceCalculationPolicy` and all consumers stay unchanged. Invoked by scry's `post-ingest-updates`
+- [ ] `granular_price` table (migration `034` + init SQL): `(card_id, provider, price_type, finish, condition, date, price, qty)`; natural-key PK across all dimensions, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the UPSERT key stays NULL-free). MTGJSON and CK-direct CK-buylist rows converge on one key — CK-direct (with live `qty`) wins by ingest order
+- [ ] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider `granular_price` rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
 - [ ] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only; consumed by 6.3)
-- [ ] Population + retention owned by scry (scry#14); retention applied per `(card, provider, type, finish, condition)` series, daily → weekly → monthly
+- [ ] Population, derivation, and retention owned by scry (scry#14); retention applied per `(card, provider, type, finish, condition)` series, daily → weekly → monthly
 
 ### 6.3 Show Buylist Prices on Card Views
 

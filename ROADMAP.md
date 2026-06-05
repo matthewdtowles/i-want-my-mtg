@@ -114,9 +114,13 @@ Constraints found during scoping: scry currently ingests only the MTGJSON `retai
 - [ ] Present the recommendation clearly; CSV export of the plan
 - [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9))
 
----
+### 6.6 Condition Vocabulary Normalization (follow-up, after 6.2/6.3)
 
-## Phase 7: Platform Expansion
+Open question deferred from 6.2 — not blocking, since every row in 6.2/6.3 is `NM`. Revisit only when a source actually delivers multi-grade prices (likely Tier C, or a future CK-retail-by-grade ingest).
+
+- [ ] Decide the canonical **raw-condition** representation and the per-vendor converters. Candidate (from scoping): a normalized numeric rank so "best condition" / offer-matching are cheap comparisons. Caveat: CK (NM/EX/VG/G, 4 grades) and TCGplayer (NM/LP/MP/HP/DMG, 5 grades) don't map 1:1, so any shared scale is lossy cross-vendor — keep the source grade where fidelity matters
+- [ ] Keep **professional grading a separate dimension** (grading company + numeric grade, allowing half-grades like BGS 9.5) rather than overloading the raw-condition column — a slabbed PSA 9 is a distinct product/market from a raw NM, and a different `tcgplayerProductId`
+- [ ] Backfill is trivial: existing rows are all `NM` → map to whatever the canonical NM value becomes
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 

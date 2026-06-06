@@ -201,7 +201,7 @@ CREATE TABLE public.granular_price (
     finish character varying NOT NULL,
     condition character varying DEFAULT 'NM'::character varying NOT NULL,
     date date NOT NULL,
-    price numeric,
+    price numeric NOT NULL,
     qty integer
 );
 

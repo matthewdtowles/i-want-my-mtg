@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.granular_price (
     finish     character varying NOT NULL,
     condition  character varying NOT NULL DEFAULT 'NM',
     date       date NOT NULL,
-    price      numeric,
+    price      numeric NOT NULL,
     qty        integer,
     CONSTRAINT granular_price_pkey
         PRIMARY KEY (card_id, provider, price_type, finish, condition, date),

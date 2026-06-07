@@ -3,7 +3,7 @@
 Shipped work is condensed to one line per section under **Done**; small leftover
 items from those shipped sections live under **Catch-up**. Active and future work
 (Phase 6 onward) is kept in full detail. Verbose history of completed work lives in
-`CHANGELOG.md` and git.
+git.
 
 ---
 

@@ -337,17 +337,18 @@
 
 <h3>5.1 Granular price store (capture all, derive aggregates)</h3>
 <p>Key each row on the card uuid plus the dimensions that make a price distinct:</p>
-<pre><code>granular_price (
-  card_id      varchar      -- MTGJSON uuid, FK to card.id
-  provider     varchar      -- tcgplayer | cardmarket | cardkingdom | cardsphere | manapool
-  price_type   varchar      -- 'retail' | 'buylist'
-  finish       varchar      -- 'normal' | 'foil' | 'etched'
-  condition    varchar null -- null for MTGJSON; populated by CK-direct (e.g. 'NM')
-  date         date
-  price        numeric
-  qty          integer null -- buy quantity where the source provides it (CK-direct)
-  PRIMARY KEY (card_id, provider, price_type, finish, condition, date)
-)</code></pre>
+<pre><code>granular_price (                         -- current per-vendor offer, one row per series
+  card_id      varchar                    -- MTGJSON uuid, FK to card.id
+  provider     varchar                    -- tcgplayer | cardkingdom | cardsphere | manapool
+  price_type   varchar                    -- 'retail' | 'buylist'
+  finish       varchar                    -- 'normal' | 'foil' | 'etched'
+  condition    varchar NOT NULL DEFAULT 'NM'  -- 'NM' by convention; MTGJSON has no grade
+  date         date                       -- as-of date of the current offer (not in the key)
+  price        numeric NOT NULL
+  PRIMARY KEY (card_id, provider, price_type, finish, condition)
+)
+-- granular_price_history: same columns, retention-bounded; PK adds date
+--   PRIMARY KEY (card_id, provider, price_type, finish, condition, date)</code></pre>
 <ul class="tight">
   <li><strong>Derive the existing average</strong> from this store: today's <code>normal</code> = average of
       <code>retail</code> across providers for the <code>normal</code> finish (and likewise <code>foil</code>),

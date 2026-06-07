@@ -191,6 +191,38 @@ CREATE TABLE public.price_history (
 
 
 --
+-- Name: granular_price; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.granular_price (
+    card_id character varying NOT NULL,
+    provider character varying NOT NULL,
+    price_type character varying NOT NULL,
+    finish character varying NOT NULL,
+    condition character varying DEFAULT 'NM'::character varying NOT NULL,
+    date date NOT NULL,
+    price numeric NOT NULL
+);
+
+
+
+--
+-- Name: granular_price_history; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.granular_price_history (
+    card_id character varying NOT NULL,
+    provider character varying NOT NULL,
+    price_type character varying NOT NULL,
+    finish character varying NOT NULL,
+    condition character varying DEFAULT 'NM'::character varying NOT NULL,
+    date date NOT NULL,
+    price numeric NOT NULL
+);
+
+
+
+--
 -- Name: price_history_id_seq; Type: SEQUENCE; Schema: public
 --
 
@@ -381,6 +413,22 @@ ALTER TABLE ONLY public.price_history
 
 
 --
+-- Name: granular_price granular_price_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.granular_price
+    ADD CONSTRAINT granular_price_pkey PRIMARY KEY (card_id, provider, price_type, finish, condition);
+
+
+--
+-- Name: granular_price_history granular_price_history_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.granular_price_history
+    ADD CONSTRAINT granular_price_history_pkey PRIMARY KEY (card_id, provider, price_type, finish, condition, date);
+
+
+--
 -- Name: inventory FK_Inventory_Card; Type: FK CONSTRAINT; Schema: public
 --
 
@@ -426,6 +474,22 @@ ALTER TABLE ONLY public.legality
 
 ALTER TABLE ONLY public.price_history
     ADD CONSTRAINT fk_card_history FOREIGN KEY (card_id) REFERENCES public.card(id) ON DELETE CASCADE;
+
+
+--
+-- Name: granular_price granular_price_card_fk; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.granular_price
+    ADD CONSTRAINT granular_price_card_fk FOREIGN KEY (card_id) REFERENCES public.card(id) ON DELETE CASCADE;
+
+
+--
+-- Name: granular_price_history granular_price_history_card_fk; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.granular_price_history
+    ADD CONSTRAINT granular_price_history_card_fk FOREIGN KEY (card_id) REFERENCES public.card(id) ON DELETE CASCADE;
 
 
 --

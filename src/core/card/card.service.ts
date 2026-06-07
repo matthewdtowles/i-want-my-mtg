@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Card } from './card.entity';
+import { GranularPrice } from './granular-price.entity';
 import { CardRepositoryPort } from './ports/card.repository.port';
+import { GranularPriceRepositoryPort } from './ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
 import { Price } from './price.entity';
 
@@ -13,7 +15,9 @@ export class CardService {
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
         @Inject(PriceHistoryRepositoryPort)
-        private readonly priceHistoryRepository: PriceHistoryRepositoryPort
+        private readonly priceHistoryRepository: PriceHistoryRepositoryPort,
+        @Inject(GranularPriceRepositoryPort)
+        private readonly granularPriceRepository: GranularPriceRepositoryPort
     ) {}
 
     async findByIds(ids: string[]): Promise<Card[]> {
@@ -125,6 +129,15 @@ export class CardService {
             return prices;
         } catch (error) {
             throw new Error(`Error finding price history for card ${cardId}: ${error.message}`);
+        }
+    }
+
+    async findCurrentBuylist(cardId: string): Promise<GranularPrice[]> {
+        this.LOGGER.debug(`Find current buylist for card ${cardId}.`);
+        try {
+            return await this.granularPriceRepository.findCurrentBuylistByCardId(cardId);
+        } catch (error) {
+            throw new Error(`Error finding buylist for card ${cardId}: ${error.message}`);
         }
     }
 }

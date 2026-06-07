@@ -1,5 +1,6 @@
 import { ListView } from 'src/http/hbs/list/list.view';
 import { CostBasisResponseDto } from 'src/http/hbs/transaction/dto/cost-basis.response.dto';
+import { BuylistView } from './buylist.view.dto';
 import { CardResponseDto } from './card.response.dto';
 import { SingleCardResponseDto } from './single-card.response.dto';
 
@@ -19,6 +20,7 @@ export class CardViewDto extends ListView {
     readonly hasAnyNormalPrice?: boolean;
     readonly hasAnyFoilPrice?: boolean;
     readonly priceAlert?: PriceAlertViewDto;
+    readonly buylist?: BuylistView;
 
     constructor(init: Partial<CardViewDto>) {
         super(init);
@@ -30,5 +32,6 @@ export class CardViewDto extends ListView {
         this.hasAnyNormalPrice = init.hasAnyNormalPrice ?? true;
         this.hasAnyFoilPrice = init.hasAnyFoilPrice ?? true;
         this.priceAlert = init.priceAlert;
+        this.buylist = init.buylist;
     }
 }

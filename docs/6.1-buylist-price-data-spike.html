@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6.1 Spike: Buylist Data Sources &amp; Price-Data Architecture</title>
+<style>
+  :root {
+    --bg: #0f1218;
+    --surface: #171b23;
+    --surface-2: #1f242e;
+    --border: #2a313d;
+    --text: #e6e9ef;
+    --muted: #9aa4b2;
+    --accent: #6aa6ff;
+    --good: #57d08a;
+    --warn: #e2b341;
+    --bad: #e8736a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 96px; }
+  header.doc {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 8px; }
+  h2 {
+    font-size: 1.35rem;
+    margin: 44px 0 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p, li { color: var(--text); }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .meta strong { color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font: 0.86em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 11px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--surface-2); font-weight: 600; }
+  tr:nth-child(even) td { background: var(--surface); }
+  .tag {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 2px 9px;
+    line-height: 1.5;
+  }
+  .yes { color: var(--good); }
+  .no { color: var(--bad); }
+  .partial { color: var(--warn); }
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+  }
+  .callout.pick { border-left-color: var(--good); }
+  .callout.warn { border-left-color: var(--warn); }
+  .tier {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .tier h3 { margin-top: 0; }
+  .pill {
+    display: inline-block;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    padding: 3px 8px;
+    margin-right: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .pill.now { color: var(--good); border-color: var(--good); }
+  .pill.next { color: var(--accent); border-color: var(--accent); }
+  .pill.later { color: var(--warn); border-color: var(--warn); }
+  ul.tight { margin: 6px 0; }
+  .src-list { font-size: 0.9rem; }
+  footer.doc { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <h1>6.1 Spike: Buylist Data Sources &amp; Price-Data Architecture</h1>
+  <p class="meta">
+    <strong>Status:</strong> recommendation &nbsp;&middot;&nbsp;
+    <strong>Date:</strong> June 2026 &nbsp;&middot;&nbsp;
+    <strong>Epic:</strong> Phase 6 (#498) &nbsp;&middot;&nbsp;
+    <strong>Cross-repo:</strong> scry#14, iwantmymtg-mcp#9
+  </p>
+  <p class="meta">Deliverable for ROADMAP 6.1. Decides price-data sourcing and the storage approach before the 6.2-6.5 build.</p>
+</header>
+
+<h2>1. The question</h2>
+<p>
+  Phase 6 wants to show <em>buylist</em> (sell-to-vendor) prices next to retail, highlight the best buylist
+  offer per card, and help users decide who to sell to in bulk. Today we only store an averaged retail price,
+  so before building we need to know: where does buylist data come from, how often, how hard is it to pull,
+  what does it cost, how many vendors does it cover, and what are the terms-of-service and maintenance costs.
+</p>
+
+<h2>2. What we have today</h2>
+<ul class="tight">
+  <li>scry pulls MTGJSON's <code>retail</code> path and <strong>averages across providers</strong>
+      (TCGplayer, Card Kingdom, Cardsphere) into a single <code>normal</code>/<code>foil</code> value.</li>
+  <li>The web <code>price</code> table stores that one averaged value per card per day, keyed by the MTGJSON card uuid.
+      Cards also carry <code>tcgplayer_product_id</code>.</li>
+  <li>The averaging is what blocks per-vendor comparison, not a shortage of data. Buylist is dropped entirely.</li>
+</ul>
+<div class="callout">
+  <strong>Matching is mostly already solved.</strong> Our <code>card.id</code> is the MTGJSON uuid, which is the
+  same key MTGJSON prices use. MTGJSON also exposes <code>scryfallId</code> and the TCGplayer product IDs, so scry
+  can carry whatever join key a second source needs at ingest time rather than reconstructing it later.
+</div>
+
+<h2>3. Source evaluation</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Source</th>
+      <th>Retail</th>
+      <th>Buylist</th>
+      <th>Vendors</th>
+      <th>Frequency</th>
+      <th>Cost</th>
+      <th>API ease</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>MTGJSON</strong> (current)</td>
+      <td class="yes">Yes</td>
+      <td class="partial">Card Kingdom + Cardsphere only</td>
+      <td>~5 retail, 2 buylist</td>
+      <td>Daily, 90-day history in the file</td>
+      <td class="yes">Free</td>
+      <td>Trivial - already integrated, same uuid</td>
+    </tr>
+    <tr>
+      <td><strong>Card Kingdom direct</strong></td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes, with live buy quantity + condition</td>
+      <td>1 (CK)</td>
+      <td>Daily</td>
+      <td class="yes">Free, no auth</td>
+      <td>Easy - one public JSON dump</td>
+    </tr>
+    <tr>
+      <td><strong>Scryfall</strong></td>
+      <td class="yes">Yes (usd, usd_foil, usd_etched)</td>
+      <td class="no">No</td>
+      <td>n/a</td>
+      <td>Daily bulk</td>
+      <td class="yes">Free</td>
+      <td>Easy, already our image source</td>
+    </tr>
+    <tr>
+      <td><strong>TCGCSV</strong></td>
+      <td class="yes">Yes (TCGplayer market)</td>
+      <td class="no">No</td>
+      <td>1 (TCGplayer)</td>
+      <td>Daily ~20:00 UTC</td>
+      <td class="yes">Free (Patreon)</td>
+      <td>Easy; re-publishes TCGplayer data (ToS gray area)</td>
+    </tr>
+    <tr>
+      <td><strong>TCGplayer official API</strong></td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes (SKU buylist)</td>
+      <td>1</td>
+      <td>Real-time</td>
+      <td class="bad">Closed to new applicants</td>
+      <td>Not available since the eBay acquisition (late 2024)</td>
+    </tr>
+    <tr>
+      <td><strong>JustTCG</strong></td>
+      <td class="yes">Yes (condition + foil)</td>
+      <td class="partial">Limited, TCGplayer-derived tooling</td>
+      <td>1 aggregate</td>
+      <td>Real-time</td>
+      <td class="partial">$0 (1k/mo) to $149/mo (500k)</td>
+      <td>Easy REST</td>
+    </tr>
+    <tr>
+      <td><strong>TCGAPIs / tcgapi.dev</strong></td>
+      <td class="yes">Yes</td>
+      <td class="partial">Marketplace "credit" prices</td>
+      <td>Many (Cardmarket, Cardtrader, Mana Pool, CK, Cardsphere)</td>
+      <td>Daily / real-time</td>
+      <td class="bad">£99-£499/mo</td>
+      <td>Easy REST, but pricey</td>
+    </tr>
+    <tr>
+      <td><strong>Cardtrader</strong></td>
+      <td class="yes">Yes (EU marketplace offers)</td>
+      <td class="partial">Marketplace, not true vendor buylist</td>
+      <td>EU shops</td>
+      <td>Real-time</td>
+      <td class="yes">Free token</td>
+      <td>Moderate; EU-focused</td>
+    </tr>
+    <tr>
+      <td><strong>go-mtgban scrapers</strong></td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes, broad (CK, SCG, ABU, more)</td>
+      <td>Many</td>
+      <td>You run it</td>
+      <td class="partial">Free (open source); hosted service paid/invite</td>
+      <td class="bad">High maintenance - you own scrapers + ToS risk</td>
+    </tr>
+    <tr>
+      <td><strong>Card Conduit</strong></td>
+      <td class="no">n/a</td>
+      <td class="no">n/a</td>
+      <td>n/a</td>
+      <td>n/a</td>
+      <td>n/a</td>
+      <td>A consignment service, not a price feed</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Notes on the realistic options</h3>
+
+<p><strong>MTGJSON (what scry already pulls).</strong> Daily, free, and the <code>AllPrices</code> file carries the
+  last 90 days, so we get history for free. Retail comes from TCGplayer, Cardmarket, Card Kingdom, Cardsphere, and now
+  Mana Pool (a newer addition). Buylist comes from <strong>only Card Kingdom and Cardsphere</strong>, and Cardsphere is
+  really an aggregate of member credit offers rather than a store you sell to. One known caveat: MTGJSON's Card Kingdom
+  buylist can show a buy price even when CK is buying <strong>zero</strong> copies (MTGJSON issue #1142), so its buylist
+  is indicative, not "is this offer real right now."</p>
+
+<p><strong>Card Kingdom direct pricelist.</strong> A public, no-auth JSON dump at
+  <code>api.cardkingdom.com/api/v2/pricelist</code> (plus a sealed equivalent). It returned more than 10MB in testing,
+  which confirms it is the whole catalog in one file. It includes retail and buylist, the <strong>number of copies CK is
+  currently buying</strong>, the condition, and a <code>scryfall_id</code> for matching. That live buy quantity is exactly
+  what the inventory and optimizer features (6.4, 6.5) need, and it fixes the MTGJSON qty=0 problem. Free, daily, one vendor,
+  but it is the anchor US buylist vendor.</p>
+
+<p><strong>Scryfall</strong> is free and daily but retail only, so it does not move us toward buylist. Useful only as a
+  retail cross-check or image source (which we already use it for).</p>
+
+<p><strong>TCGCSV</strong> is a free daily mirror of TCGplayer market prices keyed by the TCGplayer product ID we already
+  store. Retail only. It would let us hold a true per-card TCGplayer market price instead of the MTGJSON average, but it
+  re-publishes TCGplayer data, so there is some terms-of-service gray area.</p>
+
+<p><strong>TCGplayer official API</strong> is closed to new applicants since the eBay acquisition; existing keys are
+  grandfathered. This closure is why the whole third-party ecosystem exists. Treat as unavailable.</p>
+
+<p><strong>Paid aggregators (JustTCG, TCGAPIs)</strong> are easy to use and TCGAPIs spans many marketplaces on one product
+  ID, but the "buylist" they expose is mostly marketplace lowest-sell or store-credit numbers rather than a clean
+  multi-vendor cash buylist, and TCGAPIs runs £99-£499/mo. Hard to justify before the feature proves itself.</p>
+
+<p><strong>go-mtgban</strong> is the open-source Go library behind the community buylist-comparison tools, with scrapers
+  for many vendors' retail and buylist (Card Kingdom, Star City Games, ABU Games, and more). It is the only realistic path
+  to broad "who pays most across 5+ stores" coverage, but the cost is running and maintaining scrapers and carrying the
+  terms-of-service risk per vendor. The hosted MTGBAN service is paid/invite.</p>
+
+<h2>4. Recommendation</h2>
+<p>
+  A phased, additive approach that fits the epic's direction (separate granular store, derive today's aggregates from it).
+  The headline: <strong>we do not need many APIs to start.</strong> MTGJSON plus one free Card Kingdom endpoint covers the
+  entire first cut of Phase 6.
+</p>
+
+<div class="tier">
+  <h3><span class="pill now">Tier A - now</span>Expand scry to capture the full MTGJSON tree</h3>
+  <p>Free, no new API. Stop averaging at ingest. Store every provider's retail plus Card Kingdom and Cardsphere buylist,
+     per finish, per day, in the new granular store, and <strong>derive</strong> today's averaged <code>normal</code>/<code>foil</code>
+     from it so nothing downstream breaks. This alone delivers buylist for two vendors at zero new cost and zero new integration.</p>
+</div>
+
+<div class="tier">
+  <h3><span class="pill next">Tier B - next</span>Add Card Kingdom's direct pricelist</h3>
+  <p>Free, one integration. Upgrades CK buylist from indicative to actionable by adding live buy quantity and condition,
+     which 6.4 and 6.5 actually need. Card Kingdom is the anchor US buylist vendor.</p>
+</div>
+
+<div class="tier">
+  <h3><span class="pill later">Tier C - later</span>Broad multi-vendor buylist, only if demand shows</h3>
+  <p>Defer. Once Tier A/B prove users want "best across many stores," reach for either the go-mtgban scrapers (free, broad,
+     but you own maintenance and ToS risk) or a paid aggregator (TCGAPIs, ~£99-£499/mo). Do not take on scraper maintenance
+     or a monthly bill speculatively.</p>
+</div>
+
+<div class="callout pick">
+  <strong>Recommended anchor: Tier A + Tier B.</strong> Both are free, both are low-maintenance, and together they give
+  actionable Card Kingdom buylist plus indicative Cardsphere buylist with full per-provider retail. Tier C stays a
+  documented option, not a commitment.
+</div>
+
+<h2>5. Design implications (spike bullets 2-4)</h2>
+
+<h3>5.1 Granular price store (capture all, derive aggregates)</h3>
+<p>Key each row on the card uuid plus the dimensions that make a price distinct:</p>
+<pre><code>granular_price (                         -- current per-vendor offer, one row per series
+  card_id      varchar                    -- MTGJSON uuid, FK to card.id
+  provider     varchar                    -- tcgplayer | cardkingdom | cardsphere | manapool
+  price_type   varchar                    -- 'retail' | 'buylist'
+  finish       varchar                    -- 'normal' | 'foil' | 'etched'
+  condition    varchar NOT NULL DEFAULT 'NM'  -- 'NM' by convention; MTGJSON has no grade
+  date         date                       -- as-of date of the current offer (not in the key)
+  price        numeric NOT NULL
+  PRIMARY KEY (card_id, provider, price_type, finish, condition)
+)
+-- granular_price_history: same columns, retention-bounded; PK adds date
+--   PRIMARY KEY (card_id, provider, price_type, finish, condition, date)</code></pre>
+<ul class="tight">
+  <li><strong>Derive the existing average</strong> from this store: today's <code>normal</code> = average of
+      <code>retail</code> across providers for the <code>normal</code> finish (and likewise <code>foil</code>),
+      matching current behavior exactly so no downstream feature changes.</li>
+  <li><strong>Additive rollout.</strong> Stand it up alongside the current <code>price</code> ingestion so existing
+      pricing keeps working unchanged while the granular path is validated, then switch the derived value to read from it.</li>
+  <li><strong>History/retention</strong> mirrors the existing policy (daily for 7 days, weekly to 28 days, monthly beyond),
+      applied per (card, provider, type, finish, condition) series.</li>
+</ul>
+
+<h3>5.2 Vendor model (for grouping and the optimizer)</h3>
+<p>Separate the data source from the sellable vendor. A <em>provider</em> is where a number came from; a <em>vendor</em> is
+  somewhere a user can actually sell, and carries the rules the optimizer needs:</p>
+<ul class="tight">
+  <li>store-credit bonus % (and whether the bonus applies to credit vs cash)</li>
+  <li>accepted conditions and finish handling</li>
+  <li>minimum / maximum order constraints</li>
+</ul>
+<p>Today only <strong>Card Kingdom</strong> and <strong>Cardsphere</strong> qualify as real sell-to vendors, which keeps the
+  6.5 optimizer small at first. Star City Games, ABU, and others arrive only with Tier C.</p>
+
+<h3>5.3 Matching second sources</h3>
+<ul class="tight">
+  <li><strong>MTGJSON</strong> is the same uuid we already key on (free).</li>
+  <li><strong>Card Kingdom direct</strong> joins via <code>scryfall_id</code> or set + collector number, both of which scry
+      already sees in MTGJSON, so the mapping is carried at ingest, not reconstructed later.</li>
+</ul>
+
+<h2>6. Refined scope for 6.2-6.5 and scry#14</h2>
+<table>
+  <thead><tr><th>Item</th><th>Refined scope</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>scry#14</strong></td>
+      <td>Walk the full MTGJSON <code>retail</code> + <code>buylist</code> tree per provider/finish and emit per-provider rows
+          (Tier A). Add a Card Kingdom direct-pricelist fetch that contributes buylist with qty + condition (Tier B),
+          matched via scryfall_id / set+number.</td>
+    </tr>
+    <tr>
+      <td><strong>6.2 Granular store</strong></td>
+      <td>Build the <code>granular_price</code> table above, web ingestion fed by scry's expanded output, derive the current
+          averaged value from it, and apply the existing retention tiers.</td>
+    </tr>
+    <tr>
+      <td><strong>6.3 Card views</strong></td>
+      <td>Show buylist price(s) per card, highlight the best offer and which vendor, respect normal/foil, and fit the
+          existing price section / overlay patterns.</td>
+    </tr>
+    <tr>
+      <td><strong>6.4 Inventory tools</strong></td>
+      <td>Select a subset (or all) of inventory, compute best buylist per item, total it, group by vendor (what each vendor
+          would pay across the selection), CSV export. Card Kingdom's live buy quantity makes this actionable.</td>
+    </tr>
+    <tr>
+      <td><strong>6.5 Optimizer</strong></td>
+      <td>Sell-list / buy-list entities per user; optimizer favors consolidating into a single vendor and factors store-credit
+          bonus %. Starts with CK + Cardsphere; mirror via iwantmymtg-mcp#9.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>7. Open questions</h2>
+<ul class="tight">
+  <li>Do we want true per-card TCGplayer market price (via TCGCSV) instead of the MTGJSON average for retail, given the
+      TCGCSV terms-of-service gray area? Default for now: keep MTGJSON-derived retail.</li>
+  <li>Condition handling: MTGJSON has no condition; CK-direct does. Do we surface CK's NM-only buylist as-is, or normalize
+      to a single per-card buylist? Default: store condition where present, display NM by default.</li>
+  <li>When (if ever) Tier C is justified, do we prefer maintaining go-mtgban scrapers or paying for an aggregator? Defer the
+      decision until 6.3/6.4 show demand for breadth.</li>
+</ul>
+
+<h2>8. Sources</h2>
+<ul class="src-list">
+  <li><a href="https://mtgjson.com/data-models/price/price-formats/">MTGJSON price formats</a></li>
+  <li><a href="https://mtgjson.com/data-models/price/price-list/">MTGJSON PriceList model</a></li>
+  <li><a href="https://github.com/mtgjson/mtgjson/issues/1142">MTGJSON Card Kingdom qty=0 issue #1142</a></li>
+  <li><a href="https://help.tcgplayer.com/hc/en-us/articles/201577976-How-can-I-get-access-to-your-card-pricing-data">TCGplayer API access help (closed program)</a></li>
+  <li><a href="https://justtcg.com/pricing">JustTCG pricing</a></li>
+  <li><a href="https://tcgcsv.com/">TCGCSV</a></li>
+  <li><a href="https://scryfall.com/docs/api/cards">Scryfall card / price fields</a></li>
+  <li><a href="https://pkg.go.dev/github.com/mtgban/go-cardkingdom">go-mtgban: Card Kingdom client</a></li>
+  <li><a href="https://pkg.go.dev/github.com/mtgban/go-mtgban/starcitygames">go-mtgban: Star City Games scraper</a></li>
+  <li><a href="https://tcgapis.com/pricing">TCGAPIs pricing</a></li>
+  <li><a href="https://www.cardtrader.com/en/docs/api">CardTrader API</a></li>
+</ul>
+
+<footer class="doc">
+  Spike deliverable for ROADMAP 6.1. Supersedes nothing; informs 6.2-6.5 and scry#14.
+</footer>
+
+</div>
+</body>
+</html>

@@ -137,6 +137,15 @@ export class CardOrchestrator {
                 }
             }
 
+            // Current buylist offers (empty until scry populates the granular store)
+            let buylist;
+            try {
+                const offers = await this.cardService.findCurrentBuylist(coreCard.id);
+                buylist = CardPresenter.toBuylistView(offers);
+            } catch (err) {
+                this.LOGGER.debug(`Buylist unavailable: ${err?.message}`);
+            }
+
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
@@ -168,6 +177,7 @@ export class CardOrchestrator {
                 untrackedNormal,
                 untrackedFoil,
                 priceAlert,
+                buylist,
                 otherPrintings,
                 hasAnyNormalPrice,
                 hasAnyFoilPrice,

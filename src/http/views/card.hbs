@@ -96,6 +96,24 @@
                 {{#if card.purchaseUrlTcgplayerEtched}}
                 {{>buyOnTcgplayer url=card.purchaseUrlTcgplayerEtched label="Buy Etched on TCGPlayer"}}
                 {{/if}}
+                {{#if buylist.hasAny}}
+                <div class="buylist-info mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wide mb-2">Buylist <span class="text-gray-400 dark:text-gray-500 normal-case">(NM)</span></h3>
+                    {{#each buylist.finishes}}
+                    <div class="mb-2 last:mb-0">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{this.finish}}</div>
+                        <ul class="space-y-1">
+                            {{#each this.offers}}
+                            <li class="buylist-offer flex items-center justify-between text-sm {{#if this.isBest}}buylist-best font-semibold text-emerald-700 dark:text-emerald-300{{else}}text-gray-600 dark:text-gray-400{{/if}}">
+                                <span>{{this.vendor}}{{#if this.isBest}} <span class="text-xs uppercase tracking-wide">Best</span>{{/if}}</span>
+                                <span class="font-mono">{{this.price}}</span>
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    {{/each}}
+                </div>
+                {{/if}}
                 <section class="inventory-info">
                     {{>invStepper card=card}}
                 </section>

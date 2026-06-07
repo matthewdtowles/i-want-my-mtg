@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/ports/password-reset.repository.port';
@@ -24,6 +25,8 @@ import { InventoryOrmEntity } from './inventory/inventory.orm-entity';
 import { InventoryRepository } from './inventory/inventory.repository';
 import { PasswordResetOrmEntity } from './password-reset/password-reset.orm-entity';
 import { PasswordResetRepository } from './password-reset/password-reset.repository';
+import { GranularPriceOrmEntity } from './granular-price/granular-price.orm-entity';
+import { GranularPriceRepository } from './granular-price/granular-price.repository';
 import { PriceHistoryOrmEntity } from './price-history/price-history.orm-entity';
 import { PriceHistoryRepository } from './price-history/price-history.repository';
 import { PriceOrmEntity } from './price/price.orm-entity';
@@ -74,6 +77,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             InventoryOrmEntity,
             LegalityOrmEntity,
             PasswordResetOrmEntity,
+            GranularPriceOrmEntity,
             PriceHistoryOrmEntity,
             PriceOrmEntity,
             SetOrmEntity,
@@ -99,6 +103,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
     ],
     providers: [
         { provide: CardRepositoryPort, useClass: CardRepository },
+        { provide: GranularPriceRepositoryPort, useClass: GranularPriceRepository },
         { provide: PriceHistoryRepositoryPort, useClass: PriceHistoryRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
@@ -124,6 +129,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
     ],
     exports: [
         CardRepositoryPort,
+        GranularPriceRepositoryPort,
         PriceHistoryRepositoryPort,
         InventoryRepositoryPort,
         PasswordResetRepositoryPort,

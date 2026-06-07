@@ -6,6 +6,7 @@ import { CardService } from 'src/core/card/card.service';
 import { Format } from 'src/core/card/format.enum';
 import { Legality } from 'src/core/card/legality.entity';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
@@ -348,6 +349,48 @@ describe('CardService', () => {
 
             await expect(service.findPriceHistory('test-card-id')).rejects.toThrow(
                 'Error finding price history for card test-card-id'
+            );
+        });
+    });
+
+    describe('findCurrentBuylist', () => {
+        const mockOffers = [
+            new GranularPrice({
+                cardId: 'test-card-id',
+                provider: 'cardkingdom',
+                priceType: 'buylist',
+                finish: 'normal',
+                condition: 'NM',
+                price: 2.5,
+            }),
+        ];
+
+        it('should return current buylist offers for a card', async () => {
+            mockGranularPriceRepository.findCurrentBuylistByCardId.mockResolvedValue(mockOffers);
+
+            const result = await service.findCurrentBuylist('test-card-id');
+
+            expect(mockGranularPriceRepository.findCurrentBuylistByCardId).toHaveBeenCalledWith(
+                'test-card-id'
+            );
+            expect(result).toEqual(mockOffers);
+        });
+
+        it('should return empty array when there are no offers', async () => {
+            mockGranularPriceRepository.findCurrentBuylistByCardId.mockResolvedValue([]);
+
+            const result = await service.findCurrentBuylist('test-card-id');
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw error when repository fails', async () => {
+            mockGranularPriceRepository.findCurrentBuylistByCardId.mockRejectedValue(
+                new Error('Database error')
+            );
+
+            await expect(service.findCurrentBuylist('test-card-id')).rejects.toThrow(
+                'Error finding buylist for card test-card-id'
             );
         });
     });

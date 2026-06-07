@@ -2,6 +2,7 @@ import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-lin
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { InventoryQuantities } from 'src/http/hbs/inventory/inventory.quantities';
@@ -185,6 +186,71 @@ describe('CardPresenter', () => {
 
             expect(result.priceChangeWeekly).toBe('+$5.99');
             expect(result.priceChangeWeeklySign).toBe('positive');
+        });
+    });
+
+    describe('toBuylistView', () => {
+        function offer(overrides: Partial<GranularPrice> = {}): GranularPrice {
+            return new GranularPrice({
+                cardId: 'card-1',
+                provider: 'cardkingdom',
+                priceType: 'buylist',
+                finish: 'normal',
+                condition: 'NM',
+                price: 1,
+                ...overrides,
+            });
+        }
+
+        it('returns hasAny=false when there are no offers', () => {
+            const result = CardPresenter.toBuylistView([]);
+
+            expect(result.hasAny).toBe(false);
+            expect(result.finishes).toEqual([]);
+        });
+
+        it('excludes non-NM, null-priced, and non-positive offers', () => {
+            const result = CardPresenter.toBuylistView([
+                offer({ condition: 'LP', price: 5 }),
+                offer({ price: null }),
+                offer({ price: 0 }),
+            ]);
+
+            expect(result.hasAny).toBe(false);
+        });
+
+        it('groups by finish in normal/foil/etched order, sorting offers high to low', () => {
+            const result = CardPresenter.toBuylistView([
+                offer({ provider: 'cardsphere', finish: 'foil', price: 4 }),
+                offer({ provider: 'cardkingdom', finish: 'normal', price: 2 }),
+                offer({ provider: 'cardsphere', finish: 'normal', price: 3 }),
+            ]);
+
+            expect(result.finishes.map((f) => f.finish)).toEqual(['Normal', 'Foil']);
+            expect(result.finishes[0].offers.map((o) => o.vendor)).toEqual([
+                'Cardsphere',
+                'Card Kingdom',
+            ]);
+        });
+
+        it('marks the single highest offer per finish as best', () => {
+            const result = CardPresenter.toBuylistView([
+                offer({ provider: 'cardkingdom', price: 2 }),
+                offer({ provider: 'cardsphere', price: 5 }),
+            ]);
+
+            const normal = result.finishes[0];
+            expect(normal.offers[0]).toMatchObject({ vendor: 'Cardsphere', isBest: true });
+            expect(normal.offers[1]).toMatchObject({ vendor: 'Card Kingdom', isBest: false });
+        });
+
+        it('marks tied top offers all as best', () => {
+            const result = CardPresenter.toBuylistView([
+                offer({ provider: 'cardkingdom', price: 5 }),
+                offer({ provider: 'cardsphere', price: 5 }),
+            ]);
+
+            expect(result.finishes[0].offers.every((o) => o.isBest)).toBe(true);
         });
     });
 });

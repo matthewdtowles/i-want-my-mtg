@@ -72,7 +72,7 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 Surface buylist (sell-to-vendor) prices alongside retail, highlight the best buylist offer per card, and help users decide *who to sell to* — especially in bulk. The value lands on a user's inventory: what is my collection worth to *sell*, and which vendor pays most? Prioritized ahead of platform expansion and go-to-market because it's net-new differentiating value (not a re-surfacing of existing features) and it strengthens the core product before we invest in new surfaces and marketing.
 
-Tracked as epic #498 (sub-issues #499–#503). Cross-repo: [scry#14](https://github.com/matthewdtowles/scry/issues/14) (ingest), [iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9) (expose via MCP).
+Tracked as epic #498 (sub-issues #499–#503, #512–#515). Cross-repo: [scry#14](https://github.com/matthewdtowles/scry/issues/14) (ingest), [iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9) (expose via MCP).
 
 Constraints found during scoping: scry currently ingests only the MTGJSON `retail` path and **averages across providers** into one normal/foil value; the web `price` table stores that single averaged value. "Best buylist by vendor" is incompatible with averaging — it needs per-provider (and likely per-condition/finish) data. MTGJSON publishes buylist for a limited set of providers (CardKingdom, Cardsphere); broad vendor coverage likely needs an additional data provider. Direction: stand up a **separate, additive granular price store** (all retail + buylist, per provider) and **derive** today's aggregates from it — non-breaking for current features. The #6.1 spike decides sourcing + architecture before the build.
 

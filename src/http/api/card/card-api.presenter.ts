@@ -3,9 +3,13 @@ import { Card } from 'src/core/card/card.entity';
 import { CardApiResponseDto } from './dto/card-response.dto';
 
 export class CardApiPresenter {
-    static toCardApiResponse(card: Card): CardApiResponseDto {
+    static toCardApiResponse(
+        card: Card,
+        bestBuylist: number | null = null
+    ): CardApiResponseDto {
         const latestPrice = card.prices?.[0];
         return {
+            bestBuylist,
             id: card.id,
             name: card.name,
             setCode: card.setCode,

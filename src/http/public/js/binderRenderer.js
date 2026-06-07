@@ -87,6 +87,13 @@
             html += '</span>';
         }
 
+        if (card.bestBuylist != null) {
+            html +=
+                '<span class="binder-card-overlay-buylist">Buylist ' +
+                AjaxUtils.toDollar(card.bestBuylist) +
+                '</span>';
+        }
+
         if (options.authenticated) {
             html +=
                 '<div class="binder-card-stepper">' +

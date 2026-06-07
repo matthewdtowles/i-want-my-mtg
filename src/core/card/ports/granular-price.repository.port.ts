@@ -9,4 +9,10 @@ export interface GranularPriceRepositoryPort {
      * store.
      */
     findCurrentBuylistByCardId(cardId: string): Promise<GranularPrice[]>;
+
+    /**
+     * Current buylist offers for many cards in one query (set page / binder).
+     * Empty array for an empty input or when no card has offers.
+     */
+    findCurrentBuylistByCardIds(cardIds: string[]): Promise<GranularPrice[]>;
 }

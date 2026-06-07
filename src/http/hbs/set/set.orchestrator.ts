@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 import { InventoryService } from 'src/core/inventory/inventory.service';
@@ -692,6 +693,19 @@ export class SetOrchestrator {
 
         const effectiveSize = set.effectiveSize;
 
+        // Compact best-buylist per card for the table / binder (6.3). Best-effort:
+        // buylist is secondary and must never take down the set page.
+        let buylistMap = new Map<string, GranularPrice[]>();
+        if (setPayloadSize > 0) {
+            try {
+                buylistMap = await this.cardService.findCurrentBuylistForCards(
+                    set.cards.map((c) => c.id)
+                );
+            } catch (error) {
+                this.LOGGER.debug(`Buylist unavailable for set ${set.code}: ${error?.message}`);
+            }
+        }
+
         return new SetResponseDto({
             baseSize: set.baseSize,
             block: set.block ?? set.name,
@@ -711,7 +725,8 @@ export class SetOrchestrator {
                       CardPresenter.toCardResponse(
                           card,
                           InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
-                          CardImgType.NORMAL
+                          CardImgType.NORMAL,
+                          buylistMap.get(card.id) ?? []
                       )
                   )
                 : [],

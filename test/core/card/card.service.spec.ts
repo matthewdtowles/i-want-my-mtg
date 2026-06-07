@@ -77,6 +77,7 @@ describe('CardService', () => {
 
     const mockGranularPriceRepository = {
         findCurrentBuylistByCardId: jest.fn(),
+        findCurrentBuylistByCardIds: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -392,6 +393,31 @@ describe('CardService', () => {
             await expect(service.findCurrentBuylist('test-card-id')).rejects.toThrow(
                 'Error finding buylist for card test-card-id'
             );
+        });
+    });
+
+    describe('findCurrentBuylistForCards', () => {
+        it('returns an empty map without querying for an empty input', async () => {
+            const result = await service.findCurrentBuylistForCards([]);
+
+            expect(result.size).toBe(0);
+            expect(
+                mockGranularPriceRepository.findCurrentBuylistByCardIds
+            ).not.toHaveBeenCalled();
+        });
+
+        it('groups offers by card id', async () => {
+            const offers = [
+                new GranularPrice({ cardId: 'a', provider: 'cardkingdom', finish: 'normal', price: 1 }),
+                new GranularPrice({ cardId: 'a', provider: 'cardkingdom', finish: 'foil', price: 2 }),
+                new GranularPrice({ cardId: 'b', provider: 'cardkingdom', finish: 'normal', price: 3 }),
+            ];
+            mockGranularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue(offers);
+
+            const result = await service.findCurrentBuylistForCards(['a', 'b']);
+
+            expect(result.get('a')).toHaveLength(2);
+            expect(result.get('b')).toHaveLength(1);
         });
     });
 });

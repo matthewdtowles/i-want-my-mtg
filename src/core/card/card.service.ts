@@ -140,4 +140,32 @@ export class CardService {
             throw new Error(`Error finding buylist for card ${cardId}: ${error.message}`);
         }
     }
+
+    /**
+     * Current buylist offers for many cards, grouped by card id. For the set
+     * page / binder, which show a compact best-offer per card. Empty map for an
+     * empty input.
+     */
+    async findCurrentBuylistForCards(cardIds: string[]): Promise<Map<string, GranularPrice[]>> {
+        this.LOGGER.debug(`Find current buylist for ${cardIds.length} cards.`);
+        const grouped = new Map<string, GranularPrice[]>();
+        if (cardIds.length === 0) {
+            return grouped;
+        }
+        try {
+            const offers =
+                await this.granularPriceRepository.findCurrentBuylistByCardIds(cardIds);
+            for (const offer of offers) {
+                const list = grouped.get(offer.cardId);
+                if (list) {
+                    list.push(offer);
+                } else {
+                    grouped.set(offer.cardId, [offer]);
+                }
+            }
+            return grouped;
+        } catch (error) {
+            throw new Error(`Error finding buylist for cards: ${error.message}`);
+        }
+    }
 }

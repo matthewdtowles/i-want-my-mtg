@@ -356,6 +356,9 @@
                         <span class="price-change price-change-{{this.priceChangeWeeklySign}}">{{this.priceChangeWeekly}}</span>
                         {{/if}}
                         {{/if}}
+                        {{#if this.bestBuylist}}
+                        <span class="price-buylist" title="Best buylist offer (NM)">sell {{this.bestBuylist}}</span>
+                        {{/if}}
                     </td>
                     {{/if}}
                     {{#if ../hasAnyFoilPrice}}
@@ -381,6 +384,9 @@
                         {{#if this.foilPriceChangeWeekly}}
                         <span class="price-change price-change-{{this.foilPriceChangeWeeklySign}}">{{this.foilPriceChangeWeekly}}</span>
                         {{/if}}
+                        {{/if}}
+                        {{#if this.bestBuylist}}
+                        <span class="price-buylist" title="Best buylist offer (NM)">sell {{this.bestBuylist}}</span>
                         {{/if}}
                     </td>
                     {{/if}}

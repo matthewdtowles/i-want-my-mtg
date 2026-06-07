@@ -36,6 +36,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!btn) return;
         if (btn.hasAttribute('disabled')) return;
 
+        // Sealed-product steppers reuse the .inv-stepper-btn classes but carry a
+        // sealedProductUuid (not a cardId) and are handled by
+        // updateSealedInventory.js. Bail before stopImmediatePropagation so that
+        // handler still runs; otherwise we'd POST an empty cardId. (#510)
+        if (btn.closest('.sealed-inv-stepper')) return;
+
         event.stopImmediatePropagation();
         const stepper = btn.closest('.inv-stepper');
         const cardId = stepper.getAttribute('data-card-id');

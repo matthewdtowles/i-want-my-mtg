@@ -9,7 +9,9 @@ export interface BuylistOfferView {
 /** Buylist offers for one finish (Normal / Foil), best first. */
 export interface BuylistFinishView {
     finish: string; // 'Normal' | 'Foil' | 'Etched'
+    best: BuylistOfferView; // highest offer; headlined on the card page
     offers: BuylistOfferView[];
+    hasMultiple: boolean; // more than one vendor -> show the "compare" expander
 }
 
 /** Card-page buylist section. `hasAny` gates rendering. */

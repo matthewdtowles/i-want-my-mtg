@@ -315,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     html += ' ' + AjaxUtils.renderPriceChange(card.prices.normalChangeWeekly);
                 }
             }
+            html += renderBuylist(card);
             html += '</td>';
         }
 
@@ -353,11 +354,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     html += ' ' + AjaxUtils.renderPriceChange(card.prices.foilChangeWeekly);
                 }
             }
+            html += renderBuylist(card);
             html += '</td>';
         }
 
         html += '</tr>';
         return html;
+    }
+
+    // Compact best-buylist (sell-to-vendor) indicator, mirrors set.hbs (6.3).
+    function renderBuylist(card) {
+        if (card.bestBuylist == null) return '';
+        return (
+            '<span class="price-buylist" title="Best buylist offer (NM)">sell ' +
+            AjaxUtils.toDollar(card.bestBuylist) +
+            '</span>'
+        );
     }
 
     function renderManaCost(manaCost) {

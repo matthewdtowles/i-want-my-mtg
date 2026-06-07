@@ -11,7 +11,9 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
+import { bestBuylistOffer } from 'src/core/pricing/buylist.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SET_SORTS } from 'src/core/query/sort-options.enum';
 import { SetService } from 'src/core/set/set.service';
@@ -213,8 +215,18 @@ export class SetApiController {
             this.cardService.totalInSet(code, effectiveOptions),
         ]);
 
+        // Compact best-buylist per card for the set list / binder (6.3).
+        let buylistMap = new Map<string, GranularPrice[]>();
+        try {
+            buylistMap = await this.cardService.findCurrentBuylistForCards(cards.map((c) => c.id));
+        } catch {
+            // best-effort; buylist is supplementary and must not fail the listing
+        }
+
         return ApiResponseDto.ok(
-            cards.map((c) => CardApiPresenter.toCardApiResponse(c)),
+            cards.map((c) =>
+                CardApiPresenter.toCardApiResponse(c, bestBuylistOffer(buylistMap.get(c.id) ?? []))
+            ),
             new PaginationMeta(effectiveOptions.page, effectiveOptions.limit, total)
         );
     }

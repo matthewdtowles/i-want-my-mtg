@@ -147,3 +147,5 @@ npm run setup
 ## Deploy
 
 CI/CD runs via GitHub Actions on push to `main` and SSH-deploys to AWS Lightsail. See `.github/workflows/deploy.yml` and [CLAUDE.md](./CLAUDE.md) for the full pipeline, including how the Scry binary is extracted from its Docker image on the production host.
+
+**Order with Scry (related repo):** when a change spans both repos (Scry writing a table this repo migrates), publish [Scry](https://github.com/matthewdtowles/scry)'s image first, then deploy web. The web deploy runs migrations and then extracts the new Scry binary, so the schema exists before the new binary runs. Publishing Scry first is safe (it doesn't touch the server). Never hand-refresh the binary on the server ahead of the migration. See [CLAUDE.md](./CLAUDE.md) for why.

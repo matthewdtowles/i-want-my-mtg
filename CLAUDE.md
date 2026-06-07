@@ -89,6 +89,15 @@ docker rmi ghcr.io/matthewdtowles/scry:latest
 
 Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `profiles: ['etl']` and is not what cron uses — it's only there for ad-hoc `docker compose run --rm etl ...` invocations, and `remote-deploy.sh` does not pull it (`docker compose pull web` only).
 
+### Deployment order (web + Scry)
+
+Scry writes tables that **this repo's migrations create**, and **this repo's deploy installs the Scry binary** (`setup-cron.sh` extracts it from `scry:latest`, *after* `run_migrations.sh` runs - see above). So when a change spans both repos (e.g. Scry starts writing a new table):
+
+1. **Publish Scry first** (`ghcr.io/matthewdtowles/scry:latest`). This is safe - it does not touch production; the server keeps running the old binary, which stays correct because Scry changes are additive.
+2. **Deploy web second.** The deploy migrates (creates the table), then extracts the new binary - so the schema exists before the new binary runs, and both land in one deploy.
+
+Web-first is safe but inert: it would extract the still-old binary, so the new behavior only starts after a second web deploy once Scry has published. The one real footgun is hand-refreshing the binary on the server (the `docker cp` steps above) before the migration has run - don't.
+
 ## Architecture
 
 ### Layered Structure (NestJS)

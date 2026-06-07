@@ -93,14 +93,16 @@ Mirrors the existing `price` / `price_history` split — a lean current table th
 - [x] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider granular rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
 - [x] Current writes carry a freshness guard (`ON CONFLICT … WHERE EXCLUDED.date >= granular_price.date`): a stale ingest can't move a series backwards, and a vendor that skips a day keeps its last-known offer. `price` already has this property via `clean_up_prices` (keeps the max date).
 - [x] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only, current table; consumed by 6.3)
-- [x] Population owned by scry (scry#14): daily ingest writes **both** tables; historical backfill writes **history only** (current is filled by the next daily ingest). Retention runs on `granular_price_history` per `(card, provider, type, finish, condition)` series, daily → weekly → monthly.
+- [x] Population owned by scry (scry#14): daily ingest writes **both** tables; historical backfill writes **history only** (current is filled by the next daily ingest). Retention runs on `granular_price_history` per `(card, provider, type, finish, condition)` series, daily → weekly → monthly. Granular capture is USD-only - providers `tcgplayer`, `cardkingdom`, `cardsphere`, `manapool` (Cardmarket/EUR excluded; no currency column); the derived `price` still averages only the original 3 providers, so it stays byte-identical.
 
 ### 6.3 Show Buylist Prices on Card Views
 
-- [ ] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
-- [ ] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
+Card page shipped on branch `spike/6.1-buylist-price-data` (read path, presenter, `card.hbs` tiles, vendor constant); set page / binder overlay is the only open item.
+
+- [x] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
+- [x] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
 - [ ] Same treatment in set page / binder overlay; display NM by default
-- [ ] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
+- [x] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
 
 ### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export
 

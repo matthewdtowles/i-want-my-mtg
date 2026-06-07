@@ -145,6 +145,14 @@ Deferred until 6.3/6.4 show demand (per the 6.1 spike). Adds Card Kingdom's free
 - [ ] Fix `json-ld.util.ts` to emit an **absolute** image URL (it currently sets `schema.image` to the raw `{a}/{b}/{id}.jpg` tail — an already-broken link).
 - [ ] Front-face only is preserved (the scheme always serves `/front/`); back/DFC images remain a separate future feature.
 
+### 6.9 Tier C: Broaden Buylist Vendor Coverage (find more buylist sources)
+
+Promoted from "deferred" by a live-ingest finding (scry#14 Tier A), then **confirmed against the raw MTGJSON feed** (`AllPricesToday.json`, 2026-06-05 data, inspected 2026-06-07): of the four USD providers scry captures, **only `cardkingdom` carries buylist data** (61,428 cards). `cardsphere` — the second buylist source the 6.1 spike assumed — **does not appear in the feed at all** (0 occurrences); `tcgplayer` / `manapool` (and the excluded EUR `cardmarket`) emit an **empty `buylist` key with no values**. So this is **not an ingest bug** — scry captured everything present; buylist is **upstream single-vendor (Card Kingdom only)** today, which undercuts the premise of "best buylist *by vendor*": with one vendor there is nothing to compare, and the 6.5 optimizer has no decision to make. Tier B (6.7) sharpens Card Kingdom's numbers but adds **no new vendor**, so it does not fix this on its own.
+
+- [ ] Decide on `cardsphere` (confirmed absent upstream, so this is cleanup not a bug): drop it from scry's `GRANULAR_PROVIDERS` since it yields nothing today, or keep it as a no-op placeholder for if/when MTGJSON restores it
+- [ ] Evaluate ≥1 additional buylist source for multi-vendor comparison — revisit the 6.1 options (go-mtgban scrapers, a paid aggregator, or direct vendor APIs) and weigh cost / ToS / maintenance
+- [ ] Re-sequence decision: with buylist effectively single-vendor, decide whether broader coverage must land **before** 6.4/6.5 (inventory grouping + vendor optimizer) for those to be meaningful
+
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 
 ### 7.1 Mobile App (Cross-Platform)

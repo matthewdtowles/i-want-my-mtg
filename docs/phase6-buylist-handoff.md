@@ -17,6 +17,18 @@ Neither branch is merged/deployed yet, so nothing is live in production.
 
 ## Done
 
+> **Revision (during build — supersedes the single-table descriptions below).** The
+> store was split to mirror `price` / `price_history`: **`granular_price`** is the
+> current per-vendor offer (PK *without* `date`, one row per series — the card page
+> reads it directly), and **`granular_price_history`** is the dated, retention-bounded
+> series. The **`qty` column was dropped** (buy quantity is inconsistent across
+> vendors; deferred to Tier B and modelled then). Current writes carry a freshness
+> guard (`ON CONFLICT … WHERE EXCLUDED.date >= granular_price.date`) so a stale ingest
+> can't regress a series. Daily ingest writes **both** tables; backfill writes
+> **history only**; retention runs on `granular_price_history`. The web read
+> (`findCurrentBuylistByCardId`) is now a direct one-row-per-series read (no
+> date-sort / JS dedup).
+
 ### Web — 6.2 granular store + 6.3 card-page display (branch `spike/6.1-buylist-price-data`)
 - **6.2** (`5fb8e4d`): `granular_price` table — migration `034` + init schema.
   Composite natural-key PK `(card_id, provider, price_type, finish, condition, date)`,
@@ -58,6 +70,12 @@ Tests across the scry branch: **106 unit + 7 price integration tests (real PG18)
 ---
 
 ## Locked decisions
+- **Current / history split** mirrors `price` / `price_history`: `granular_price` (current,
+  no `date` in the key, one row per series — the hot card-page read) + `granular_price_history`
+  (dated, retention-bounded). Daily ingest writes both; backfill writes history only; the
+  current write is guarded (`WHERE EXCLUDED.date >= granular_price.date`) so it never regresses.
+- **No `qty` column** until Tier B — buy quantity is inconsistent across vendors (buy limits,
+  tiered/per-condition pricing), so it's modelled when CK-direct actually delivers it.
 - **Derivation lives in scry (Rust), not a DB function.** Granular rows + the derived averaged
   `price` are written in the same ingest pass. (`update_set_prices()` is a DB function only
   because it aggregates across cards; per-card averaging is in-memory.)
@@ -116,9 +134,26 @@ Rejected: making scryfall_id the PK (blast radius over user data + API; inverts 
 3. **scry**: stream the CK pricelist (new `HttpClient` method + event processor or chunked
    serde), build a `scryfall_id → card.id` map, emit `granular_price` buylist rows
    (`provider='cardkingdom'`, `price_type='buylist'`, finish from `is_foil`, condition `NM`,
-   `price=price_buy`, `qty=qty_buying`). **Ingest order: MTGJSON first, then CK-direct**, so the
+   `price=price_buy`). **Ingest order: MTGJSON first, then CK-direct**, so the
    CK-direct row overwrites the indicative MTGJSON CK row on the shared key (last-writer-wins is
    already implemented in `save_granular_prices`). Wire into the ingest pipeline.
+   - **Re-add `qty`** here (the column was dropped in 6.2): add `qty` to both granular tables
+     (migration `035` + init + `tests/fixtures/schema.sql`), the scry `GranularPrice` struct, and
+     the upsert column list, carrying `qty_buying`. Decide its modelling against the
+     across-vendor inconsistency noted in the locked decisions before wiring it in.
+
+### Follow-up — **directly after Tier B** (ROADMAP 6.8): normalize the card image
+Once 6.7 adds `card.scryfall_id`, `img_src` is redundant derived data (scry stores exactly
+`{a}/{b}/{scryfall_id}.jpg`; web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total,
+reversible function of scryfall_id). Drop the stored column and derive the image from scryfall_id:
+- **scry**: persist `scryfall_id` only (stop computing/storing the path); drop `img_src` from the
+  card upsert + `tests/fixtures/schema.sql` + the `Card` domain.
+- **web**: a shared helper (TS mirror of `Card::build_scryfall_image_path`) builds the URL at
+  render. **Keep the `imgSrc` field** in the JSON API DTOs (`card-api`, `inventory-api`), MCP
+  output schemas, and HBS views — computed from `scryfall_id`, not read from a column (~6–8 sites).
+- Fix `json-ld.util.ts` to emit an **absolute** image URL (currently sets `schema.image` to the raw
+  `{a}/{b}/{id}.jpg` tail — an already-broken link). Front-face only is preserved (scheme always
+  serves `/front/`); back/DFC images stay a separate future feature.
 
 ### Later
 - 6.3 remainder: buylist on the **set page + binder overlay** (card page is done).
@@ -130,8 +165,8 @@ Rejected: making scryfall_id the PK (blast radius over user data + API; inverts 
 ---
 
 ## Quick reference
-- Web branch `spike/6.1-buylist-price-data` — tip `2a8d4c6`.
-- scry branch `feat/scry-14-granular-tier-a` — tip `969f945`.
+- Web branch `spike/6.1-buylist-price-data` — `2a8d4c6` + the 6.2 current/history-split + qty-drop revision.
+- scry branch `feat/scry-14-granular-tier-a` — tip `4e4e8d8`.
 - scry test DB: integration tests are `#[ignore]`; run with a throwaway PG18 and
   `TEST_DATABASE_URL`, e.g. `cargo test --test price_repository_test -- --ignored`.
 - Issues: epic #498; sub-issues #500 (6.2), #501 (6.3); cross-repo scry#14.

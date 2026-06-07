@@ -77,7 +77,8 @@ describe('Public endpoints (e2e)', () => {
             expect(res.text).toContain('$3.50');
             expect(res.text).toContain('$7.00');
             expect(res.text).toContain('buylist-best');
-            // Stale CK row (2.00, older date) deduped out; retail row not shown as buylist
+            // Stale CK row (2.00) lives only in granular_price_history, not the
+            // current table the card page reads; retail row not shown as buylist
             expect(res.text).not.toContain('$2.00');
         });
 

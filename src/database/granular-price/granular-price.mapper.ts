@@ -11,7 +11,6 @@ export class GranularPriceMapper {
             condition: orm.condition,
             date: orm.date,
             price: orm.price != null ? Number(orm.price) : null,
-            qty: orm.qty != null ? Number(orm.qty) : null,
         });
     }
 }

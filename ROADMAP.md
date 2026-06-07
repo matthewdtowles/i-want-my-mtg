@@ -85,16 +85,19 @@ Constraints found during scoping: scry currently ingests only the MTGJSON `retai
 
 **Outcome** (`docs/6.1-buylist-price-data-spike.html`): adopt **Tier A + Tier B** — both free, low-maintenance. Tier A expands scry to capture the full MTGJSON tree (per-provider retail + CardKingdom/Cardsphere buylist) instead of averaging; Tier B adds Card Kingdom's free direct pricelist for actionable buylist (live buy qty + condition). Broad multi-vendor coverage (Tier C: go-mtgban scrapers or a paid aggregator) is deferred until 6.3/6.4 show demand. Derive the existing averaged `price` from the granular store so nothing downstream breaks. Vendor metadata stays a code-level constant until the 6.5 optimizer needs the DB table.
 
-### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates)
+### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates) ✅
 
-- [ ] `granular_price` table (migration `034` + init SQL): `(card_id, provider, price_type, finish, condition, date, price, qty)`; natural-key PK across all dimensions, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the UPSERT key stays NULL-free). MTGJSON and CK-direct CK-buylist rows converge on one key — CK-direct (with live `qty`) wins by ingest order
-- [ ] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider `granular_price` rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
-- [ ] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only; consumed by 6.3)
-- [ ] Population, derivation, and retention owned by scry (scry#14); retention applied per `(card, provider, type, finish, condition)` series, daily → weekly → monthly
+Mirrors the existing `price` / `price_history` split — a lean current table the card page reads, plus a retention-bounded history table.
+
+- [x] `granular_price` (current per-vendor offer) **+** `granular_price_history` (dated series), migration `034` + init SQL. Columns `(card_id, provider, price_type, finish, condition, date, price)`, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the key stays NULL-free). **Current** is keyed *without* `date` (one row per series), so the card page reads it with a trivial `WHERE card_id = …`; **history** keys on `date` and is retention-bounded. **No `qty` column** — buy quantity is inconsistent across vendors and deferred to Tier B (Card Kingdom direct), modelled when it lands.
+- [x] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider granular rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
+- [x] Current writes carry a freshness guard (`ON CONFLICT … WHERE EXCLUDED.date >= granular_price.date`): a stale ingest can't move a series backwards, and a vendor that skips a day keeps its last-known offer. `price` already has this property via `clean_up_prices` (keeps the max date).
+- [x] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only, current table; consumed by 6.3)
+- [x] Population owned by scry (scry#14): daily ingest writes **both** tables; historical backfill writes **history only** (current is filled by the next daily ingest). Retention runs on `granular_price_history` per `(card, provider, type, finish, condition)` series, daily → weekly → monthly.
 
 ### 6.3 Show Buylist Prices on Card Views
 
-- [ ] Read `granular_price` directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list) — not through the averaged `price` table
+- [ ] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
 - [ ] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
 - [ ] Same treatment in set page / binder overlay; display NM by default
 - [ ] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
@@ -121,6 +124,24 @@ Open question deferred from 6.2 — not blocking, since every row in 6.2/6.3 is 
 - [ ] Decide the canonical **raw-condition** representation and the per-vendor converters. Candidate (from scoping): a normalized numeric rank so "best condition" / offer-matching are cheap comparisons. Caveat: CK (NM/EX/VG/G, 4 grades) and TCGplayer (NM/LP/MP/HP/DMG, 5 grades) don't map 1:1, so any shared scale is lossy cross-vendor — keep the source grade where fidelity matters
 - [ ] Keep **professional grading a separate dimension** (grading company + numeric grade, allowing half-grades like BGS 9.5) rather than overloading the raw-condition column — a slabbed PSA 9 is a distinct product/market from a raw NM, and a different `tcgplayerProductId`
 - [ ] Backfill is trivial: existing rows are all `NM` → map to whatever the canonical NM value becomes
+
+### 6.7 Tier B: Card Kingdom Direct Ingest (live buylist + `scryfall_id` matching)
+
+Deferred until 6.3/6.4 show demand (per the 6.1 spike). Adds Card Kingdom's free direct pricelist (`api.cardkingdom.com/api/v2/pricelist`, ~147k products — stream it) for actionable buylist: live `price_buy` per condition, overwriting the indicative MTGJSON CK row on the shared granular key (MTGJSON ingests first, CK-direct last → last-writer-wins). Full plan + open matching decision in [`docs/phase6-buylist-handoff.md`](docs/phase6-buylist-handoff.md).
+
+- [ ] Add `card.scryfall_id` — a **unique indexed column, NOT the PK**. `card.id` stays the MTGJSON uuid (it's the PK referenced by all prices, user `inventory`/`transaction`, every FK, the public API + MCP; re-keying = high-blast-radius migration over user data, and inverts matching onto the daily price path). We carry both ids on purpose. Backfill immediately from `card.img_src` (already embeds it as `{a}/{b}/{scryfall_id}.jpg`); scry stores it going forward (mapper already parses `identifiers.scryfallId`).
+- [ ] Stream the CK pricelist in scry, build a `scryfall_id → card.id` map, emit `granular_price` + `granular_price_history` buylist rows (`provider='cardkingdom'`, finish from `is_foil`, condition `NM`).
+- [ ] Re-introduce buy-quantity (the `qty` column dropped in 6.2): carry CK's `qty_buying` on both granular tables (migration `035` + init + scry fixture + `GranularPrice` struct + upsert columns), **modelled against the across-vendor inconsistency** noted in the handoff before wiring in.
+
+### 6.8 Normalize card image: derive from `scryfall_id`, drop `img_src` — **directly after 6.7**
+
+`img_src` is pure derived data: scry stores exactly `{a}/{b}/{scryfall_id}.jpg` and the web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total, reversible function of `scryfall_id`. Once 6.7 adds the `scryfall_id` column, storing `img_src` too is denormalized (same fact, two columns), and `scryfall_id` is strictly more useful (it also drives CK matching + Scryfall API interop). Do this **immediately after Tier B**, while it's fresh.
+
+- [ ] Drop the stored `card.img_src` column; scry persists `scryfall_id` only (stop computing/storing the path).
+- [ ] Derive the image at read time via a shared helper (TS mirror of `Card::build_scryfall_image_path`): `${BASE_IMAGE_URL}/${size}/front/${a}/${b}/${scryfall_id}.jpg`.
+- [ ] **Keep the external contract:** the `imgSrc` field stays in the JSON API DTOs (`card-api`, `inventory-api`), MCP output schemas, and HBS views — computed from `scryfall_id` in the presenter, not read from a column (~6–8 read sites).
+- [ ] Fix `json-ld.util.ts` to emit an **absolute** image URL (it currently sets `schema.image` to the raw `{a}/{b}/{id}.jpg` tail — an already-broken link).
+- [ ] Front-face only is preserved (the scheme always serves `/front/`); back/DFC images remain a separate future feature.
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 

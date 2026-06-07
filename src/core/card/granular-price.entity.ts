@@ -11,7 +11,6 @@ export class GranularPrice {
     readonly condition: string; // 'NM' by convention where the source has no grade
     readonly date: Date;
     readonly price: number | null;
-    readonly qty: number | null;
 
     constructor(init: Partial<GranularPrice>) {
         this.cardId = init.cardId;
@@ -21,6 +20,5 @@ export class GranularPrice {
         this.condition = init.condition ?? 'NM';
         this.date = init.date ?? new Date();
         this.price = init.price ?? null;
-        this.qty = init.qty ?? null;
     }
 }

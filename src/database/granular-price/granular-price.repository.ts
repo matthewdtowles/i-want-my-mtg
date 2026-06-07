@@ -14,22 +14,13 @@ export class GranularPriceRepository implements GranularPriceRepositoryPort {
     ) {}
 
     async findCurrentBuylistByCardId(cardId: string): Promise<GranularPrice[]> {
+        // granular_price holds one row per series (current offer), so this is a
+        // direct read -- no date-ordering or dedup needed.
         const rows = await this.repo
             .createQueryBuilder('gp')
             .where('gp.cardId = :cardId', { cardId })
             .andWhere('gp.priceType = :type', { type: 'buylist' })
-            .orderBy('gp.date', 'DESC')
             .getMany();
-
-        // Keep the most recent row per provider/finish/condition. Rows are
-        // date-DESC, so the first one seen for a key is the current offer.
-        const current = new Map<string, GranularPriceOrmEntity>();
-        for (const row of rows) {
-            const key = `${row.provider}|${row.finish}|${row.condition}`;
-            if (!current.has(key)) {
-                current.set(key, row);
-            }
-        }
-        return Array.from(current.values()).map(GranularPriceMapper.toCore);
+        return rows.map(GranularPriceMapper.toCore);
     }
 }

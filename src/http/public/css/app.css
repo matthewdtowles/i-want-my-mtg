@@ -806,18 +806,6 @@ html:not(.dark) .iwm-search:focus {
     color: #0d0b1a;
 }
 
-/* Auth buttons (unauth state) — hide below the primary-nav breakpoint
-   since Sign In / Sign Up are reachable from the drawer. Upgrade CTA stays
-   visible (it's the main conversion signal for authenticated free users)
-   but is hidden at very narrow widths where it competes with the hamburger. */
-@container navbar (max-width: 599px) {
-    .iwm-auth-signin,
-    .iwm-auth-signup { display: none; }
-}
-@container navbar (max-width: 380px) {
-    .iwm-upgrade-cta { display: none; }
-}
-
 .iwm-auth-signin {
     display: inline-flex;
     align-items: center;
@@ -863,6 +851,20 @@ html:not(.dark) .iwm-auth-signin:hover {
     box-shadow: 0 0 20px rgba(44, 200, 202, 0.35);
     text-decoration: none;
     color: #0d0b1a;
+}
+
+/* Auth buttons (unauth state) — hide below the primary-nav breakpoint
+   since Sign In / Sign Up are reachable from the drawer. Upgrade CTA stays
+   visible (it's the main conversion signal for authenticated free users)
+   but is hidden at very narrow widths where it competes with the hamburger.
+   These come after the base display rules above so the container-query
+   `display: none` wins on source order (same specificity). */
+@container navbar (max-width: 599px) {
+    .iwm-auth-signin,
+    .iwm-auth-signup { display: none; }
+}
+@container navbar (max-width: 380px) {
+    .iwm-upgrade-cta { display: none; }
 }
 
 /* Icon buttons */

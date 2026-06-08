@@ -142,9 +142,10 @@ export class CardService {
     }
 
     /**
-     * Current buylist offers for many cards, grouped by card id. For the set
-     * page / binder, which show a compact best-offer per card. Empty map for an
-     * empty input.
+     * Current buylist offers for many cards, grouped by card id. Empty map for
+     * an empty input. Currently unused at call sites (buylist was trimmed to the
+     * card page in 6.3.1); kept for 6.4 inventory best-buylist, which needs this
+     * batched read.
      */
     async findCurrentBuylistForCards(cardIds: string[]): Promise<Map<string, GranularPrice[]>> {
         this.LOGGER.debug(`Find current buylist for ${cardIds.length} cards.`);

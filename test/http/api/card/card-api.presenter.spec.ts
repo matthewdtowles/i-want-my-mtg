@@ -1,7 +1,6 @@
 import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
-import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
 import { Set } from 'src/core/set/set.entity';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
@@ -57,42 +56,6 @@ describe('CardApiPresenter', () => {
                 normalChangeWeekly: 0.25,
                 foilChangeWeekly: -0.1,
             });
-        });
-
-        it('maps the best buylist offer and calls out a non-normal finish', () => {
-            const card = createCard();
-            const foilBest = new GranularPrice({
-                cardId: 'card-1',
-                provider: 'cardkingdom',
-                priceType: 'buylist',
-                finish: 'foil',
-                condition: 'NM',
-                price: 7,
-            });
-            const result = CardApiPresenter.toCardApiResponse(card, foilBest);
-
-            expect(result.bestBuylist).toBe(7);
-            expect(result.bestBuylistFinish).toBe('foil');
-        });
-
-        it('omits the finish callout when the best offer is normal, and nulls when absent', () => {
-            const card = createCard();
-            const normalBest = new GranularPrice({
-                cardId: 'card-1',
-                provider: 'cardkingdom',
-                priceType: 'buylist',
-                finish: 'normal',
-                condition: 'NM',
-                price: 2.5,
-            });
-
-            const withOffer = CardApiPresenter.toCardApiResponse(card, normalBest);
-            expect(withOffer.bestBuylist).toBe(2.5);
-            expect(withOffer.bestBuylistFinish).toBeNull();
-
-            const none = CardApiPresenter.toCardApiResponse(card);
-            expect(none.bestBuylist).toBeNull();
-            expect(none.bestBuylistFinish).toBeNull();
         });
 
         it('should return undefined prices when card has no prices', () => {

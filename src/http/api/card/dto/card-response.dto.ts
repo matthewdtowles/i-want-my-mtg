@@ -63,6 +63,13 @@ export class CardApiResponseDto {
     })
     readonly bestBuylist?: number | null;
 
+    @ApiPropertyOptional({
+        description:
+            "Finish of the best buylist offer when it is not the default 'normal' (e.g. 'foil', 'etched'); null otherwise",
+        nullable: true,
+    })
+    readonly bestBuylistFinish?: string | null;
+
     @ApiPropertyOptional()
     readonly setName?: string;
 

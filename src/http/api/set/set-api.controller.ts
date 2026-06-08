@@ -40,11 +40,14 @@ import {
 } from '../shared/query-validation';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { parseDaysParam } from 'src/http/base/query.util';
+import { getLogger } from 'src/logger/global-app-logger';
 
 @ApiTags('Sets')
 @Controller('api/v1/sets')
 @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
 export class SetApiController {
+    private readonly LOGGER = getLogger(SetApiController.name);
+
     constructor(
         @Inject(SetService) private readonly setService: SetService,
         @Inject(CardService) private readonly cardService: CardService,
@@ -219,8 +222,9 @@ export class SetApiController {
         let buylistMap = new Map<string, GranularPrice[]>();
         try {
             buylistMap = await this.cardService.findCurrentBuylistForCards(cards.map((c) => c.id));
-        } catch {
+        } catch (error) {
             // best-effort; buylist is supplementary and must not fail the listing
+            this.LOGGER.debug(`Buylist unavailable for set ${code}: ${error?.message}`);
         }
 
         return ApiResponseDto.ok(

@@ -363,11 +363,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Compact best-buylist (sell-to-vendor) indicator, mirrors set.hbs (6.3).
+    // Calls out the finish when the best offer is not the default normal.
     function renderBuylist(card) {
         if (card.bestBuylist == null) return '';
+        var finish = card.bestBuylistFinish
+            ? ' ' + AjaxUtils.escapeHtml(card.bestBuylistFinish)
+            : '';
         return (
             '<span class="price-buylist" title="Best buylist offer (NM)">sell ' +
             AjaxUtils.toDollar(card.bestBuylist) +
+            finish +
             '</span>'
         );
     }

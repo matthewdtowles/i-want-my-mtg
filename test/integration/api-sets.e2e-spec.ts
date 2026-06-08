@@ -124,9 +124,11 @@ describe('Sets API (e2e)', () => {
                 .get(`/api/v1/sets/${TEST_SET_CODE}/cards`)
                 .expect(200);
 
-            // Seed card 1 has CK normal 3.50 / Cardsphere normal 3.25 / CK foil 7.00.
+            // Seed card 1 has CK normal 3.50 / Cardsphere normal 3.25 / CK foil 7.00,
+            // so the best offer is the foil one and the finish is called out.
             const card = res.body.data.find((c) => c.number === '1');
             expect(card.bestBuylist).toBe(7);
+            expect(card.bestBuylistFinish).toBe('foil');
         });
 
         it('supports filter parameter', async () => {

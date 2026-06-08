@@ -1,15 +1,18 @@
 import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { CardApiResponseDto } from './dto/card-response.dto';
 
 export class CardApiPresenter {
     static toCardApiResponse(
         card: Card,
-        bestBuylist: number | null = null
+        bestBuylist: GranularPrice | null = null
     ): CardApiResponseDto {
         const latestPrice = card.prices?.[0];
         return {
-            bestBuylist,
+            bestBuylist: bestBuylist ? Number(bestBuylist.price) : null,
+            bestBuylistFinish:
+                bestBuylist && bestBuylist.finish !== 'normal' ? bestBuylist.finish : null,
             id: card.id,
             name: card.name,
             setCode: card.setCode,

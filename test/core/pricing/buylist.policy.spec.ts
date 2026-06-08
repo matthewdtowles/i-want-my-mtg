@@ -21,12 +21,13 @@ describe('bestBuylistOffer', () => {
         expect(bestBuylistOffer([offer({ price: null })])).toBeNull();
     });
 
-    it('returns the highest NM offer across finishes and vendors', () => {
+    it('returns the highest NM offer across finishes and vendors, with its finish', () => {
         const result = bestBuylistOffer([
             offer({ provider: 'cardkingdom', finish: 'normal', price: 3.5 }),
             offer({ provider: 'cardsphere', finish: 'normal', price: 3.25 }),
             offer({ provider: 'cardkingdom', finish: 'foil', price: 7 }),
         ]);
-        expect(result).toBe(7);
+        expect(result?.price).toBe(7);
+        expect(result?.finish).toBe('foil');
     });
 });

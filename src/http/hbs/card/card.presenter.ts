@@ -40,7 +40,7 @@ export class CardPresenter {
             throw new Error('Card is required to create CardResponseDto');
         }
         const price: Price | undefined = card.prices ? card.prices[0] : undefined;
-        const bestBuylistRaw = bestBuylistOffer(buylistOffers);
+        const bestBuylist = bestBuylistOffer(buylistOffers);
         return new CardResponseDto({
             cardId: card.id,
             hasFoil: card.hasFoil,
@@ -60,7 +60,9 @@ export class CardPresenter {
                 card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
             normalPriceRaw: price?.normal ? Math.round(price.normal * 100) / 100 : 0,
             foilPriceRaw: price?.foil ? Math.round(price.foil * 100) / 100 : 0,
-            bestBuylist: bestBuylistRaw != null ? toDollar(bestBuylistRaw) : '',
+            bestBuylist: bestBuylist ? toDollar(bestBuylist.price) : '',
+            bestBuylistFinish:
+                bestBuylist && bestBuylist.finish !== 'normal' ? bestBuylist.finish : '',
             ...this.formatPriceChange(price),
             tags: this.createTags(card),
         });

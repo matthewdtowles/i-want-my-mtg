@@ -100,31 +100,34 @@
                 {{>buyOnTcgplayer url=card.purchaseUrlTcgplayerEtched label="Buy Etched on TCGPlayer"}}
                 {{/if}}
 
-                {{!-- Sell: best buylist offer per finish; vendors behind a disclosure --}}
+                {{!-- Sell: best buylist offer per finish as emerald tiles; vendors behind a disclosure --}}
                 {{#if buylist.hasAny}}
-                <div class="buylist-info mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="price-group-label">Sell <span class="price-group-label-note">buylist · NM</span></h3>
-                    {{#each buylist.finishes}}
-                    <div class="buylist-finish mb-2 last:mb-0">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">{{this.finish}} <span class="text-gray-400 dark:text-gray-500">· {{this.best.vendor}}</span></span>
-                            <span class="font-mono font-semibold text-emerald-700 dark:text-emerald-300">{{this.best.price}}</span>
+                    <div class="grid {{#if (gt buylist.finishes.length 1)}}grid-cols-2{{else}}grid-cols-1{{/if}} gap-2">
+                        {{#each buylist.finishes}}
+                        <div class="price-tile border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30">
+                            <h4 class="font-semibold text-emerald-700 dark:text-emerald-300 text-xs uppercase tracking-wide mb-1">{{this.finish}}</h4>
+                            <div class="price-tile-value font-bold text-emerald-900 dark:text-emerald-200 font-mono">
+                                {{this.best.price}}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{this.best.vendor}}</div>
+                            {{#if this.hasMultiple}}
+                            <details class="buylist-compare">
+                                <summary class="buylist-compare-summary">compare vendors</summary>
+                                <ul class="mt-1 space-y-1">
+                                    {{#each this.offers}}
+                                    <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-emerald-700 dark:text-emerald-300 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
+                                        <span class="min-w-0 truncate">{{this.vendor}}</span>
+                                        <span class="font-mono flex-shrink-0">{{this.price}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </details>
+                            {{/if}}
                         </div>
-                        {{#if this.hasMultiple}}
-                        <details class="buylist-compare">
-                            <summary class="buylist-compare-summary">compare vendors</summary>
-                            <ul class="mt-1 space-y-1">
-                                {{#each this.offers}}
-                                <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-emerald-700 dark:text-emerald-300 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
-                                    <span>{{this.vendor}}</span>
-                                    <span class="font-mono">{{this.price}}</span>
-                                </li>
-                                {{/each}}
-                            </ul>
-                        </details>
-                        {{/if}}
+                        {{/each}}
                     </div>
-                    {{/each}}
                 </div>
                 {{/if}}
                 <section class="inventory-info">

@@ -97,12 +97,21 @@ Mirrors the existing `price` / `price_history` split — a lean current table th
 
 ### 6.3 Show Buylist Prices on Card Views ✅
 
-Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell** (best buylist per finish, vendors behind a "compare" disclosure) split; set page / binder show a compact best-offer. Buylist is single-vendor (Card Kingdom) today (see 6.9), so the per-vendor compare gracefully collapses to one line.
+Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell** (best buylist per finish, vendors behind a "compare" disclosure) split. (A compact best-offer on the set page / binder was added then **removed in 6.3.1** — buylist now lives only on the card page.) Buylist is single-vendor (Card Kingdom) today (see 6.9), so the per-vendor compare gracefully collapses to one line.
 
 - [x] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
 - [x] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
-- [x] Same treatment in set page / binder overlay; display NM by default — compact best-offer ("sell $X" on rows, "Buylist $X" on the binder overlay), sourced from a batched `findCurrentBuylistByCardIds` read and `bestBuylistOffer` policy
+- [x] ~~Same treatment in set page / binder overlay; compact best-offer ("sell $X" on rows, "Buylist $X" on the binder overlay)~~ **Scope-corrected in 6.3.1:** buylist now lives only on the card page; the set-list / binder surfaces were removed (clutter + overflow risk). The batched `findCurrentBuylistByCardIds` read and `bestBuylistOffer` policy are kept for 6.4 inventory best-buylist.
 - [x] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
+
+### 6.3.1 Buylist surface trim + UI parity + responsive hardening ✅
+
+- [x] Limit buylist to the card page (remove from set list + binder overlay; keep batched read for 6.4)
+- [x] Buy/Sell visual parity: render Sell offers as price-tiles (emerald accent) matching retail
+- [x] Responsive contract: base-layer min-width:0 / max-width / overflow-wrap guards
+- [x] `.cluster` + `.badge-pill` utilities; fix legality-tag and set-toolbar overflow
+- [x] Fix navbar mobile overflow: container-query that hides Sign In/Sign Up <599px now ordered after the base `display` rules so it wins (was a source-order bug the guard caught)
+- [x] Playwright overflow guard at 320/375px across key pages (regression gate)
 
 ### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export
 

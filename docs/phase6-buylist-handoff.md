@@ -156,7 +156,9 @@ reversible function of scryfall_id). Drop the stored column and derive the image
   serves `/front/`); back/DFC images stay a separate future feature.
 
 ### Later
-- 6.3 remainder: buylist on the **set page + binder overlay** (card page is done).
+- ~~6.3 remainder: buylist on the **set page + binder overlay**~~ **Descoped in 6.3.1** — buylist
+  lives only on the card page; the set-list "sell $X" rows and binder "Buylist $X" overlay were
+  removed (clutter + mobile overflow). The batched `findCurrentBuylistByCardIds` read is kept for 6.4.
 - 6.4 inventory best-buylist / group-by-vendor / CSV; 6.5 optimizer (needs DB `vendor` table).
 - Possible: currency column → then Cardmarket (only if non-USD is ever wanted; currently out).
 - ROADMAP 6.6: condition grade vocabulary (when a multi-grade source lands; note CK's

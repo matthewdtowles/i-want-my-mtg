@@ -95,13 +95,13 @@ Mirrors the existing `price` / `price_history` split — a lean current table th
 - [x] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only, current table; consumed by 6.3)
 - [x] Population owned by scry (scry#14): daily ingest writes **both** tables; historical backfill writes **history only** (current is filled by the next daily ingest). Retention runs on `granular_price_history` per `(card, provider, type, finish, condition)` series, daily → weekly → monthly. Granular capture is USD-only - providers `tcgplayer`, `cardkingdom`, `cardsphere`, `manapool` (Cardmarket/EUR excluded; no currency column); the derived `price` still averages only the original 3 providers, so it stays byte-identical.
 
-### 6.3 Show Buylist Prices on Card Views
+### 6.3 Show Buylist Prices on Card Views ✅
 
-Card page shipped on branch `spike/6.1-buylist-price-data` (read path, presenter, `card.hbs` tiles, vendor constant); set page / binder overlay is the only open item.
+Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell** (best buylist per finish, vendors behind a "compare" disclosure) split; set page / binder show a compact best-offer. Buylist is single-vendor (Card Kingdom) today (see 6.9), so the per-vendor compare gracefully collapses to one line.
 
 - [x] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
 - [x] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
-- [ ] Same treatment in set page / binder overlay; display NM by default
+- [x] Same treatment in set page / binder overlay; display NM by default — compact best-offer ("sell $X" on rows, "Buylist $X" on the binder overlay), sourced from a batched `findCurrentBuylistByCardIds` read and `bestBuylistOffer` policy
 - [x] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
 
 ### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export

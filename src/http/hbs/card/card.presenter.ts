@@ -5,6 +5,7 @@ import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
 import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
+import { bestBuylistOffer } from 'src/core/pricing/buylist.policy';
 import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { BASE_IMAGE_URL, buildCardUrl, toDollar } from 'src/http/base/http.util';
@@ -32,12 +33,14 @@ export class CardPresenter {
     static toCardResponse(
         card: Card,
         inventory: InventoryQuantities,
-        imageType: CardImgType = CardImgType.SMALL
+        imageType: CardImgType = CardImgType.SMALL,
+        buylistOffers: GranularPrice[] = []
     ): CardResponseDto {
         if (!card) {
             throw new Error('Card is required to create CardResponseDto');
         }
         const price: Price | undefined = card.prices ? card.prices[0] : undefined;
+        const bestBuylist = bestBuylistOffer(buylistOffers);
         return new CardResponseDto({
             cardId: card.id,
             hasFoil: card.hasFoil,
@@ -57,6 +60,9 @@ export class CardPresenter {
                 card.hasNonFoil && inventory?.normalQuantity ? inventory.normalQuantity : 0,
             normalPriceRaw: price?.normal ? Math.round(price.normal * 100) / 100 : 0,
             foilPriceRaw: price?.foil ? Math.round(price.foil * 100) / 100 : 0,
+            bestBuylist: bestBuylist ? toDollar(bestBuylist.price) : '',
+            bestBuylistFinish:
+                bestBuylist && bestBuylist.finish !== 'normal' ? bestBuylist.finish : '',
             ...this.formatPriceChange(price),
             tags: this.createTags(card),
         });
@@ -112,7 +118,12 @@ export class CardPresenter {
                     priceRaw: o.price ?? 0,
                     isBest: (o.price ?? 0) === bestPrice,
                 }));
-                return { finish: this.FINISH_LABELS[finishKey], offers: views };
+                return {
+                    finish: this.FINISH_LABELS[finishKey],
+                    best: views[0],
+                    offers: views,
+                    hasMultiple: views.length > 1,
+                };
             })
             .filter((f): f is BuylistFinishView => f !== null);
 

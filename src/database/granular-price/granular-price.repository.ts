@@ -23,4 +23,16 @@ export class GranularPriceRepository implements GranularPriceRepositoryPort {
             .getMany();
         return rows.map(GranularPriceMapper.toCore);
     }
+
+    async findCurrentBuylistByCardIds(cardIds: string[]): Promise<GranularPrice[]> {
+        if (cardIds.length === 0) {
+            return [];
+        }
+        const rows = await this.repo
+            .createQueryBuilder('gp')
+            .where('gp.cardId IN (:...cardIds)', { cardIds })
+            .andWhere('gp.priceType = :type', { type: 'buylist' })
+            .getMany();
+        return rows.map(GranularPriceMapper.toCore);
+    }
 }

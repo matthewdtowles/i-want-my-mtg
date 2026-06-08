@@ -119,6 +119,18 @@ describe('Sets API (e2e)', () => {
             expect(typeof card.keyruneCode).toBe('string');
         });
 
+        it('returns the best NM buylist offer per card (6.3)', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE}/cards`)
+                .expect(200);
+
+            // Seed card 1 has CK normal 3.50 / Cardsphere normal 3.25 / CK foil 7.00,
+            // so the best offer is the foil one and the finish is called out.
+            const card = res.body.data.find((c) => c.number === '1');
+            expect(card.bestBuylist).toBe(7);
+            expect(card.bestBuylistFinish).toBe('foil');
+        });
+
         it('supports filter parameter', async () => {
             const res = await request(app.getHttpServer())
                 .get(`/api/v1/sets/${TEST_SET_CODE}/cards?filter=Angel`)

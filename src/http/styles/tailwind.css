@@ -231,6 +231,10 @@
     @apply text-yellow-300;
 }
 
+.binder-card-overlay-buylist {
+    @apply block text-[0.7rem] font-medium text-gray-300;
+}
+
 .binder-card-stepper {
     @apply mt-1.5;
 }
@@ -774,6 +778,11 @@
     @apply inline-block text-xs font-medium ml-1;
 }
 
+/* Compact best-buylist (sell-to-vendor) indicator on set rows / binder */
+.price-buylist {
+    @apply block mt-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400;
+}
+
 .price-change-positive {
     @apply text-green-700 dark:text-green-400;
 }
@@ -1200,6 +1209,21 @@
     overflow-wrap: break-word;
     word-break: break-word;
     @apply font-bold;
+}
+
+/* Buy / Sell group labels in the card price section */
+.price-group-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2;
+}
+
+.price-group-label-note {
+    @apply normal-case font-normal text-gray-400 dark:text-gray-500;
+}
+
+/* Per-vendor buylist disclosure */
+.buylist-compare-summary {
+    @apply mt-1 text-xs text-gray-400 dark:text-gray-500 cursor-pointer select-none
+           hover:text-gray-600 dark:hover:text-gray-300;
 }
 
 /* ===== Stat Cards ===== */

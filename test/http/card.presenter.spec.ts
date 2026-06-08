@@ -252,5 +252,20 @@ describe('CardPresenter', () => {
 
             expect(result.finishes[0].offers.every((o) => o.isBest)).toBe(true);
         });
+
+        it('headlines the best offer and flags multiple vendors per finish', () => {
+            const result = CardPresenter.toBuylistView([
+                offer({ provider: 'cardkingdom', finish: 'normal', price: 2 }),
+                offer({ provider: 'cardsphere', finish: 'normal', price: 5 }),
+                offer({ provider: 'cardkingdom', finish: 'foil', price: 9 }),
+            ]);
+
+            const normal = result.finishes.find((f) => f.finish === 'Normal');
+            const foil = result.finishes.find((f) => f.finish === 'Foil');
+            expect(normal.best).toMatchObject({ vendor: 'Cardsphere', price: '$5.00' });
+            expect(normal.hasMultiple).toBe(true);
+            expect(foil.best).toMatchObject({ vendor: 'Card Kingdom' });
+            expect(foil.hasMultiple).toBe(false);
+        });
     });
 });

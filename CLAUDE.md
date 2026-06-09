@@ -168,7 +168,7 @@ Test suites: `test/integration/*.e2e-spec.ts`. Seed data: `test/integration/seed
 
 **Local dev**: PostgreSQL 18 via Docker (docker-compose.yml). Migrations run via `docker compose run --rm migrate`.
 
-Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`.
+Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`, `granular_price`, `granular_price_history`.
 
 ### Price History
 

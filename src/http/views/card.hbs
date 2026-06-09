@@ -46,16 +46,16 @@
                 <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Legalities</h2>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-2">
                     {{#each card.legalities as |legality|}}
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">{{capitalize legality.format}}</span>
+                    <div class="flex items-center justify-between gap-2 text-sm">
+                        <span class="min-w-0 truncate text-gray-600 dark:text-gray-400">{{capitalize legality.format}}</span>
                         {{#if (eq legality.status 'legal')}}
-                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">{{capitalize legality.status}}</span>
+                        <span class="badge-pill bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">{{capitalize legality.status}}</span>
                         {{else if (eq legality.status 'banned')}}
-                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">{{capitalize legality.status}}</span>
+                        <span class="badge-pill bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300">{{capitalize legality.status}}</span>
                         {{else if (eq legality.status 'restricted')}}
-                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">{{capitalize legality.status}}</span>
+                        <span class="badge-pill bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">{{capitalize legality.status}}</span>
                         {{else}}
-                        <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{capitalize legality.status}}</span>
+                        <span class="badge-pill bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{capitalize legality.status}}</span>
                         {{/if}}
                     </div>
                     {{/each}}
@@ -100,31 +100,34 @@
                 {{>buyOnTcgplayer url=card.purchaseUrlTcgplayerEtched label="Buy Etched on TCGPlayer"}}
                 {{/if}}
 
-                {{!-- Sell: best buylist offer per finish; vendors behind a disclosure --}}
+                {{!-- Sell: best buylist offer per finish as emerald tiles; vendors behind a disclosure --}}
                 {{#if buylist.hasAny}}
-                <div class="buylist-info mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="price-group-label">Sell <span class="price-group-label-note">buylist · NM</span></h3>
-                    {{#each buylist.finishes}}
-                    <div class="buylist-finish mb-2 last:mb-0">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">{{this.finish}} <span class="text-gray-400 dark:text-gray-500">· {{this.best.vendor}}</span></span>
-                            <span class="font-mono font-semibold text-emerald-700 dark:text-emerald-300">{{this.best.price}}</span>
+                    <div class="grid {{#if (gt buylist.finishes.length 1)}}grid-cols-2{{else}}grid-cols-1{{/if}} gap-2">
+                        {{#each buylist.finishes}}
+                        <div class="price-tile border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30">
+                            <h4 class="font-semibold text-emerald-700 dark:text-emerald-300 text-xs uppercase tracking-wide mb-1">{{this.finish}}</h4>
+                            <div class="price-tile-value font-bold text-emerald-900 dark:text-emerald-200 font-mono">
+                                {{this.best.price}}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{this.best.vendor}}</div>
+                            {{#if this.hasMultiple}}
+                            <details class="buylist-compare">
+                                <summary class="buylist-compare-summary">compare vendors</summary>
+                                <ul class="mt-1 space-y-1">
+                                    {{#each this.offers}}
+                                    <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-emerald-700 dark:text-emerald-300 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
+                                        <span class="min-w-0 truncate">{{this.vendor}}</span>
+                                        <span class="font-mono flex-shrink-0">{{this.price}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </details>
+                            {{/if}}
                         </div>
-                        {{#if this.hasMultiple}}
-                        <details class="buylist-compare">
-                            <summary class="buylist-compare-summary">compare vendors</summary>
-                            <ul class="mt-1 space-y-1">
-                                {{#each this.offers}}
-                                <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-emerald-700 dark:text-emerald-300 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
-                                    <span>{{this.vendor}}</span>
-                                    <span class="font-mono">{{this.price}}</span>
-                                </li>
-                                {{/each}}
-                            </ul>
-                        </details>
-                        {{/if}}
+                        {{/each}}
                     </div>
-                    {{/each}}
                 </div>
                 {{/if}}
                 <section class="inventory-info">

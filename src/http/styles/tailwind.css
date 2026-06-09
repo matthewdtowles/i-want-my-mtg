@@ -11,9 +11,47 @@
     }
 }
 
+/* ===== Responsive defense layer =====
+   Kills the recurring overflow root causes globally, at specificity 0 (:where)
+   so any component can still override. The Playwright overflow guard
+   (test/e2e/responsive-overflow.e2e.ts) is what keeps this honest. */
+@layer base {
+    /* #1 cause of blowout: flex/grid children won't shrink below their content */
+    :where(.flex, .inline-flex, .grid) > * {
+        min-width: 0;
+    }
+    /* replaced elements never exceed their box */
+    img,
+    svg,
+    video,
+    canvas,
+    iframe {
+        max-width: 100%;
+    }
+    /* long unbreakable tokens (card names, URLs) wrap instead of pushing width */
+    :where(h1, h2, h3, h4, p, a, td, th, li, span) {
+        overflow-wrap: anywhere;
+    }
+}
+
 .skip-link {
     @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50
            focus:px-4 focus:py-2 focus:rounded-lg focus:bg-teal-700 focus:text-white focus:font-medium focus:shadow-lg;
+}
+
+/* ===== Responsive utilities =====
+   Reusable patterns for the recurring overflow sources. */
+
+/* Wrapping button / toolbar rows that never blow out horizontally. */
+.cluster {
+    @apply flex flex-wrap items-center gap-2;
+}
+
+/* Pills (legality statuses, tags) that keep their shape and never warp;
+   pair with min-w-0 on the adjacent label so the label truncates, not the pill. */
+.badge-pill {
+    @apply inline-flex items-center whitespace-nowrap flex-shrink-0
+           px-2 py-0.5 rounded-full text-xs font-medium;
 }
 
 /* ===== Breadcrumbs ===== */
@@ -229,10 +267,6 @@
 
 .binder-card-overlay-price-foil {
     @apply text-yellow-300;
-}
-
-.binder-card-overlay-buylist {
-    @apply block text-[0.7rem] font-medium text-gray-300;
 }
 
 .binder-card-stepper {
@@ -778,11 +812,6 @@
     @apply inline-block text-xs font-medium ml-1;
 }
 
-/* Compact best-buylist (sell-to-vendor) indicator on set rows / binder */
-.price-buylist {
-    @apply block mt-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400;
-}
-
 .price-change-positive {
     @apply text-green-700 dark:text-green-400;
 }
@@ -1185,7 +1214,7 @@
 /* ===== Tags ===== */
 
 .tag {
-    @apply inline text-[0.65rem] font-medium text-white bg-purple-600 dark:bg-purple-700
+    @apply inline-block whitespace-nowrap text-[0.65rem] font-medium text-white bg-purple-600 dark:bg-purple-700
            px-1 py-0 mx-0.5 rounded;
 }
 

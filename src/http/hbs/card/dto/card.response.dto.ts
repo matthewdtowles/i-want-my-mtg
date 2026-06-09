@@ -28,8 +28,6 @@ export class CardResponseDto {
     readonly foilPriceChangeWeeklySign?: string;
     readonly normalPriceRaw?: number;
     readonly foilPriceRaw?: number;
-    readonly bestBuylist?: string; // formatted best NM buylist offer, '' when none
-    readonly bestBuylistFinish?: string; // finish to call out when not 'normal', else ''
     readonly tags: string[];
 
     constructor(init: Partial<CardResponseDto>) {
@@ -54,8 +52,6 @@ export class CardResponseDto {
         this.foilPriceChangeWeeklySign = init.foilPriceChangeWeeklySign || '';
         this.normalPriceRaw = init.normalPriceRaw || 0;
         this.foilPriceRaw = init.foilPriceRaw || 0;
-        this.bestBuylist = init.bestBuylist || '';
-        this.bestBuylistFinish = init.bestBuylistFinish || '';
         this.tags = init.tags || [];
     }
 }

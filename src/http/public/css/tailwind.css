@@ -754,6 +754,32 @@ input:where([type='file']):focus {
   outline-offset: 2px;
 }
 
+/* #1 cause of blowout: flex/grid children won't shrink below their content */
+
+:where(.flex, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
+:where(.flex, .\!inline-flex, .grid) > * {
+  min-width: 0 !important;
+}
+
+/* replaced elements never exceed their box */
+
+img,
+    svg,
+    video,
+    canvas,
+    iframe {
+  max-width: 100%;
+}
+
+/* long unbreakable tokens (card names, URLs) wrap instead of pushing width */
+
+:where(h1, h2, h3, h4, p, a, td, th, li, span) {
+  overflow-wrap: anywhere;
+}
+
 .\!container {
   width: 100% !important;
 }
@@ -1569,6 +1595,11 @@ input:where([type='file']):focus {
   border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
 }
 
+.border-emerald-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(110 231 183 / var(--tw-border-opacity, 1));
+}
+
 .border-gray-100 {
   --tw-border-opacity: 1;
   border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
@@ -1642,6 +1673,11 @@ input:where([type='file']):focus {
 .bg-blue-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
+}
+
+.bg-emerald-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1));
 }
 
 .bg-gray-100 {
@@ -2118,6 +2154,11 @@ input:where([type='file']):focus {
   color: rgb(4 120 87 / var(--tw-text-opacity, 1));
 }
 
+.text-emerald-900 {
+  --tw-text-opacity: 1;
+  color: rgb(6 78 59 / var(--tw-text-opacity, 1));
+}
+
 .text-gray-100 {
   --tw-text-opacity: 1;
   color: rgb(243 244 246 / var(--tw-text-opacity, 1));
@@ -2364,6 +2405,11 @@ input:where([type='file']):focus {
 
 /* ===== Accessibility ===== */
 
+/* ===== Responsive defense layer =====
+   Kills the recurring overflow root causes globally, at specificity 0 (:where)
+   so any component can still override. The Playwright overflow guard
+   (test/e2e/responsive-overflow.e2e.ts) is what keeps this honest. */
+
 .skip-link {
   position: absolute;
   width: 1px;
@@ -2404,6 +2450,44 @@ input:where([type='file']):focus {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+/* ===== Responsive utilities =====
+   Reusable patterns for the recurring overflow sources. */
+
+/* Wrapping button / toolbar rows that never blow out horizontally. */
+
+:where(.cluster, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Pills (legality statuses, tags) that keep their shape and never warp;
+   pair with min-w-0 on the adjacent label so the label truncates, not the pill. */
+
+:where(.flex,.badge-pill, .grid) > * {
+  min-width: 0;
+}
+
+.badge-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 9999px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+}
+
 /* ===== Breadcrumbs ===== */
 
 .breadcrumb-item {
@@ -2416,6 +2500,10 @@ input:where([type='file']):focus {
 .breadcrumb-item:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+:where(.breadcrumb-layout, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .breadcrumb-layout {
@@ -2435,6 +2523,10 @@ input:where([type='file']):focus {
 }
 
 /* ===== Buttons ===== */
+
+:where(.flex,.btn, .grid) > * {
+  min-width: 0;
+}
 
 .btn {
   display: inline-flex;
@@ -2770,6 +2862,10 @@ input:where([type='file']):focus {
 
 /* Binder wrapper: side arrows + grid */
 
+:where(.binder-wrapper, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .binder-wrapper {
   position: relative;
   margin-left: auto;
@@ -2778,6 +2874,10 @@ input:where([type='file']):focus {
   align-items: stretch;
   justify-content: center;
   max-width: 720px;
+}
+
+:where(.binder-side-btn, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .binder-side-btn {
@@ -2878,6 +2978,10 @@ input:where([type='file']):focus {
 :is(.dark) .binder-side-btn--left,
 :is(.dark) .binder-side-btn--right {
   border-color: #241e45;
+}
+
+:where(.flex, .inline-flex,.binder-grid) > * {
+  min-width: 0;
 }
 
 .binder-grid {
@@ -3038,14 +3142,6 @@ input:where([type='file']):focus {
   color: rgb(253 224 71 / var(--tw-text-opacity, 1));
 }
 
-.binder-card-overlay-buylist {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 500;
-  --tw-text-opacity: 1;
-  color: rgb(209 213 219 / var(--tw-text-opacity, 1));
-}
-
 .binder-card-stepper {
   margin-top: 0.375rem;
 }
@@ -3122,6 +3218,10 @@ input:where([type='file']):focus {
   color: rgb(219 181 245 / 0.8);
 }
 
+:where(.binder-page-nav, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .binder-page-nav {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
@@ -3188,6 +3288,10 @@ input:where([type='file']):focus {
     --tw-bg-opacity: 1;
     background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
   }
+}
+
+:where(.flex,.binder-page-indicator, .grid) > * {
+  min-width: 0;
 }
 
 .binder-page-indicator {
@@ -3356,6 +3460,10 @@ input:where([type='file']):focus {
 .binder-card-unowned img {
   opacity: 0.25;
   filter: grayscale(100%);
+}
+
+:where(.binder-card-unowned .binder-card-number, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .binder-card-unowned .binder-card-number {
@@ -3711,6 +3819,10 @@ input:where([type='file']):focus {
 
 /* ===== Delete Inventory ===== */
 
+:where(.delete-inventory-button, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .delete-inventory-button {
   display: flex;
   cursor: pointer;
@@ -3834,6 +3946,10 @@ input:where([type='file']):focus {
 
 /* ===== Foil Badge ===== */
 
+:where(.flex,.foil-badge, .grid) > * {
+  min-width: 0;
+}
+
 .foil-badge {
   margin-left: 0.25rem;
   display: inline-flex;
@@ -3949,6 +4065,10 @@ input:where([type='file']):focus {
 
 /* ===== Inventory Controls ===== */
 
+:where(.inventory-controller-button-normal, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .inventory-controller-button-normal {
   display: flex;
   align-items: center;
@@ -3978,6 +4098,10 @@ input:where([type='file']):focus {
 .inventory-controller-button-normal:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(32 153 143 / var(--tw-bg-opacity, 1));
+}
+
+:where(.inventory-controller-button-foil, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .inventory-controller-button-foil {
@@ -4049,6 +4173,10 @@ input:where([type='file']):focus {
 }
 
 /* ===== Mana Cost ===== */
+
+:where(.flex,.mana-cost, .grid) > * {
+  min-width: 0;
+}
 
 .mana-cost {
   display: inline-flex;
@@ -4123,6 +4251,10 @@ input:where([type='file']):focus {
   background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
   --tw-text-opacity: 1;
   color: rgb(69 221 214 / var(--tw-text-opacity, 1));
+}
+
+:where(.suggest-item, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .suggest-item {
@@ -4447,6 +4579,10 @@ input:where([type='file']):focus {
 
 /* ===== Pagination ===== */
 
+:where(.pagination-container, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .pagination-container {
   margin-top: 1.5rem;
   display: flex;
@@ -4483,8 +4619,19 @@ input:where([type='file']):focus {
 
 .pagination-btn {
   border-radius: 9999px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+:where(.flex,.pagination-btn, .grid) > * {
+  min-width: 0;
+}
+
+.pagination-btn {
   display: inline-flex;
   cursor: pointer;
   align-items: center;
@@ -4669,23 +4816,6 @@ input:where([type='file']):focus {
   font-weight: 500;
 }
 
-/* Compact best-buylist (sell-to-vendor) indicator on set rows / binder */
-
-.price-buylist {
-  margin-top: 0.125rem;
-  display: block;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 500;
-  --tw-text-opacity: 1;
-  color: rgb(4 120 87 / var(--tw-text-opacity, 1));
-}
-
-.price-buylist:is(.dark *) {
-  --tw-text-opacity: 1;
-  color: rgb(52 211 153 / var(--tw-text-opacity, 1));
-}
-
 .price-change-positive {
   --tw-text-opacity: 1;
   color: rgb(21 128 61 / var(--tw-text-opacity, 1));
@@ -4737,6 +4867,10 @@ input:where([type='file']):focus {
   }
 }
 
+:where(.flex,.quantity-form-foil, .grid) > * {
+  min-width: 0;
+}
+
 .quantity-form-foil {
   margin: 0.25rem;
   display: inline-flex;
@@ -4750,6 +4884,10 @@ input:where([type='file']):focus {
   --tw-gradient-to: rgb(196 138 237 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   --tw-gradient-to: #72ece5 var(--tw-gradient-to-position);
+}
+
+:where(.flex,.quantity-form-normal, .grid) > * {
+  min-width: 0;
 }
 
 .quantity-form-normal {
@@ -4822,12 +4960,20 @@ input:where([type='file']):focus {
 
 /* ===== Inventory Stepper ===== */
 
+:where(.flex,.inv-stepper-group, .grid) > * {
+  min-width: 0;
+}
+
 .inv-stepper-group {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   max-width: 100%;
+}
+
+:where(.flex,.inv-stepper, .grid) > * {
+  min-width: 0;
 }
 
 .inv-stepper {
@@ -4908,6 +5054,10 @@ input:where([type='file']):focus {
 .inv-stepper-label--foil:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(196 138 237 / var(--tw-text-opacity, 1));
+}
+
+:where(.inv-stepper-btn, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .inv-stepper-btn {
@@ -5038,6 +5188,10 @@ input:where([type='file']):focus {
   }
 }
 
+:where(.inv-stepper-qty, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .inv-stepper-qty {
   display: flex;
   min-width: 2rem;
@@ -5151,6 +5305,10 @@ input:where([type='file']):focus {
 
 .response-message.toast-exit {
   animation: toast-slide-out 0.25s ease-in forwards;
+}
+
+:where(.toast-body, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .toast-body {
@@ -5372,6 +5530,10 @@ input:where([type='file']):focus {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+}
+
+:where(.sort-btn, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .sort-btn {
@@ -5731,7 +5893,8 @@ input:where([type='file']):focus {
 .tag {
   margin-left: 0.125rem;
   margin-right: 0.125rem;
-  display: inline;
+  display: inline-block;
+  white-space: nowrap;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
   background-color: rgb(139 66 198 / var(--tw-bg-opacity, 1));
@@ -5955,6 +6118,10 @@ input:where([type='file']):focus {
   background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
 }
 
+:where(.action-card-label, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .action-card-label {
   margin-bottom: 0.75rem;
   display: flex;
@@ -6073,6 +6240,10 @@ input:where([type='file']):focus {
         radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
 }
 
+:where(.flex,.pricing-hero-badge, .grid) > * {
+  min-width: 0;
+}
+
 .pricing-hero-badge {
   margin-bottom: 1.5rem;
   display: inline-flex;
@@ -6151,6 +6322,10 @@ input:where([type='file']):focus {
   line-height: 1.6;
 }
 
+:where(.flex,.billing-toggle, .grid) > * {
+  min-width: 0;
+}
+
 .billing-toggle {
   display: inline-flex;
   align-items: center;
@@ -6169,6 +6344,10 @@ input:where([type='file']):focus {
   border-color: rgb(46 39 88 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(26 21 51 / var(--tw-bg-opacity, 1));
+}
+
+:where(.toggle-option, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .toggle-option {
@@ -6228,6 +6407,10 @@ input:where([type='file']):focus {
   font-size: 0.68rem;
   padding: 0.15rem 0.45rem;
   letter-spacing: 0.01em;
+}
+
+:where(.flex, .inline-flex,.pricing-cards-grid) > * {
+  min-width: 0;
 }
 
 .pricing-cards-grid {
@@ -6321,6 +6504,10 @@ input:where([type='file']):focus {
 .card-tier.teal:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(69 221 214 / var(--tw-text-opacity, 1));
+}
+
+:where(.card-price, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .card-price {
@@ -6418,6 +6605,10 @@ input:where([type='file']):focus {
   line-height: 1.5;
 }
 
+:where(.card-features, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .card-features {
   margin-bottom: 1.75rem;
   display: flex;
@@ -6425,6 +6616,10 @@ input:where([type='file']):focus {
   flex-direction: column;
   gap: 0.75rem;
   padding: 0px;
+}
+
+:where(.card-feature, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .card-feature {
@@ -6460,6 +6655,10 @@ input:where([type='file']):focus {
 .pricing-feat-icon-check:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(69 221 214 / var(--tw-text-opacity, 1));
+}
+
+:where(.flex,.pricing-btn, .grid) > * {
+  min-width: 0;
 }
 
 .pricing-btn {
@@ -6794,6 +6993,10 @@ input:where([type='file']):focus {
   display: none;
 }
 
+:where(.pricing-faq-question, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .pricing-faq-question {
   display: flex;
   cursor: pointer;
@@ -6907,6 +7110,10 @@ input:where([type='file']):focus {
   line-height: 1.6;
 }
 
+:where(.pricing-bottom-cta-btns, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .pricing-bottom-cta-btns {
   display: flex;
   flex-wrap: wrap;
@@ -6939,6 +7146,10 @@ input:where([type='file']):focus {
         radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.30) 0%, transparent 70%),
         radial-gradient(ellipse 45% 40% at 80% 65%, rgba(44, 200, 202, 0.12) 0%, transparent 70%),
         radial-gradient(ellipse 35% 35% at 15% 70%, rgba(214, 74, 154, 0.08) 0%, transparent 70%);
+}
+
+:where(.flex,.home-hero-badge, .grid) > * {
+  min-width: 0;
 }
 
 .home-hero-badge {
@@ -7019,6 +7230,10 @@ input:where([type='file']):focus {
   line-height: 1.6;
 }
 
+:where(.home-hero-ctas, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .home-hero-ctas {
   margin-bottom: 2.5rem;
   display: flex;
@@ -7034,6 +7249,10 @@ input:where([type='file']):focus {
   padding: 0.7rem 1.75rem;
 }
 
+:where(.home-hero-feats, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .home-hero-feats {
   margin: 0px;
   display: flex;
@@ -7045,6 +7264,10 @@ input:where([type='file']):focus {
        column-gap: 1.5rem;
   row-gap: 0.75rem;
   padding: 0px;
+}
+
+:where(.flex,.home-hero-feats li, .grid) > * {
+  min-width: 0;
 }
 
 .home-hero-feats li {
@@ -7353,6 +7576,10 @@ input:where([type='file']):focus {
   color: rgb(114 236 229 / var(--tw-text-opacity, 1));
 }
 
+:where(.breakdown-list, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .breakdown-list {
   display: flex;
   flex-direction: column;
@@ -7388,6 +7615,10 @@ input:where([type='file']):focus {
   border-color: rgb(44 200 202 / 0.4);
 }
 
+:where(.breakdown-row-header, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
 .breakdown-row-header {
   margin-bottom: 0.5rem;
   display: flex;
@@ -7412,6 +7643,10 @@ input:where([type='file']):focus {
 
 .breakdown-label {
   text-transform: capitalize;
+}
+
+:where(.breakdown-stats, .inline-flex, .grid) > * {
+  min-width: 0;
 }
 
 .breakdown-stats {
@@ -7479,6 +7714,10 @@ input:where([type='file']):focus {
 }
 
 /* ===== Tile quick-add (+) overlay ===== */
+
+:where(.tile-quick-add, .inline-flex, .grid) > * {
+  min-width: 0;
+}
 
 .tile-quick-add {
   position: absolute;
@@ -7605,10 +7844,6 @@ input:where([type='file']):focus {
   transition-duration: 150ms;
 }
 
-.last\:mb-0:last-child {
-  margin-bottom: 0px;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .hover\:border-teal-400:hover {
     --tw-border-opacity: 1;
@@ -7731,6 +7966,11 @@ input:where([type='file']):focus {
   border-color: rgb(180 83 9 / 0.5);
 }
 
+.dark\:border-emerald-600:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(5 150 105 / var(--tw-border-opacity, 1));
+}
+
 .dark\:border-gray-700:is(.dark *) {
   --tw-border-opacity: 1;
   border-color: rgb(55 65 81 / var(--tw-border-opacity, 1));
@@ -7787,6 +8027,10 @@ input:where([type='file']):focus {
 
 .dark\:bg-blue-900\/30:is(.dark *) {
   background-color: rgb(30 58 138 / 0.3);
+}
+
+.dark\:bg-emerald-950\/30:is(.dark *) {
+  background-color: rgb(2 44 34 / 0.3);
 }
 
 .dark\:bg-gray-800:is(.dark *) {
@@ -7911,6 +8155,11 @@ input:where([type='file']):focus {
 .dark\:text-blue-200:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(191 219 254 / var(--tw-text-opacity, 1));
+}
+
+.dark\:text-emerald-200:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(167 243 208 / var(--tw-text-opacity, 1));
 }
 
 .dark\:text-emerald-300:is(.dark *) {

@@ -57,19 +57,6 @@ export class CardApiResponseDto {
     @ApiPropertyOptional({ type: CardPriceDto })
     readonly prices?: CardPriceDto;
 
-    @ApiPropertyOptional({
-        description: 'Best NM buylist (sell-to-vendor) offer in USD; null when none',
-        nullable: true,
-    })
-    readonly bestBuylist?: number | null;
-
-    @ApiPropertyOptional({
-        description:
-            "Finish of the best buylist offer when it is not the default 'normal' (e.g. 'foil', 'etched'); null otherwise",
-        nullable: true,
-    })
-    readonly bestBuylistFinish?: string | null;
-
     @ApiPropertyOptional()
     readonly setName?: string;
 

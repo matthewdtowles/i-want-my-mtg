@@ -8,10 +8,12 @@ the best offer per card, and (later) helps users decide who to sell to in bulk.
 Recommendation adopted by the 6.1 spike: **Tier A + Tier B** (both free).
 
 The work spans two repos that share one Postgres DB:
-- **web** (`i-want-my-mtg`, this repo) — branch `spike/6.1-buylist-price-data`
-- **scry** (`/Users/matthewtowles/Projects/scry`, Rust ETL) — branch `feat/scry-14-granular-tier-a`
+- **web** (`i-want-my-mtg`, this repo)
+- **scry** (`/Users/matthewtowles/Projects/scry`, Rust ETL)
 
-Neither branch is merged/deployed yet, so nothing is live in production.
+6.2/6.3 (granular store + card-page display, Tier A) are merged and live.
+6.7 (Tier B, CK-direct) is built on branches `feat/6.7-scryfall-id-granular-qty`
+(web) and `feat/scry-14-tier-b-ck-direct` (scry) — scope on issue #513.
 
 ---
 
@@ -87,7 +89,7 @@ Tests across the scry branch: **106 unit + 7 price integration tests (real PG18)
 
 ---
 
-## Open decision — Tier B card matching (BLOCKS Tier B)
+## ~~Open decision~~ RESOLVED (6.7) — Tier B card matching
 
 Tier B = ingest the **Card Kingdom direct pricelist** for live buylist `qty` + condition.
 The CK feed is confirmed (fetched live): `https://api.cardkingdom.com/api/v2/pricelist`,
@@ -107,8 +109,8 @@ Buylist data we want: `price_buy` + `qty_buying` (+ `is_foil` → finish; condit
 and have **no `scryfall_id` column**. So CK rows can't be matched to our cards directly. (Tier A
 needed no matching because MTGJSON prices share the MTGJSON uuid.)
 
-**Recommendation (pending final confirmation): add `scryfall_id` as a unique indexed column —
-NOT as the primary key.** Reasoning:
+**Decision (implemented in web migration `036` — note: NOT 035, which the granular-PK
+hotfix took): `scryfall_id` is a unique indexed column — NOT the primary key.** Reasoning:
 - Keep `card.id` = MTGJSON uuid as PK: it's what user data (`inventory`, `transaction`), all
   prices, every FK, and the public API already reference. Re-keying = huge, risky migration over
   user data, and would *invert* the matching problem onto MTGJSON (our high-volume daily source).
@@ -125,22 +127,38 @@ Rejected: making scryfall_id the PK (blast radius over user data + API; inverts 
 
 ---
 
-## Remaining work
+## Tier B — BUILT (6.7, 2026-06-10)
 
-### Tier B (once matching approach is confirmed)
-1. **Web**: migration `035` add `card.scryfall_id` (unique index) + init schema.
-2. **scry**: store `scryfall_id` in card ingest (mapper already parses it for `img_src`);
-   one-time backfill from `img_src`; add `scryfall_id` to `tests/fixtures/schema.sql`.
-3. **scry**: stream the CK pricelist (new `HttpClient` method + event processor or chunked
-   serde), build a `scryfall_id → card.id` map, emit `granular_price` buylist rows
-   (`provider='cardkingdom'`, `price_type='buylist'`, finish from `is_foil`, condition `NM`,
-   `price=price_buy`). **Ingest order: MTGJSON first, then CK-direct**, so the
-   CK-direct row overwrites the indicative MTGJSON CK row on the shared key (last-writer-wins is
-   already implemented in `save_granular_prices`). Wire into the ingest pipeline.
-   - **Re-add `qty`** here (the column was dropped in 6.2): add `qty` to both granular tables
-     (migration `035` + init + `tests/fixtures/schema.sql`), the scry `GranularPrice` struct, and
-     the upsert column list, carrying `qty_buying`. Decide its modelling against the
-     across-vendor inconsistency noted in the locked decisions before wiring it in.
+As-built (full scope + decision log on issue #513):
+1. **Web** (branch `feat/6.7-scryfall-id-granular-qty`): migration `036` — `card.scryfall_id`
+   (varchar, nullable, **unique index**, SQL backfill from `img_src` shape-guarded to
+   `{a}/{b}/{uuid}.jpg`; verified 1:1 across all 91,316 cards) + nullable `qty integer` on both
+   granular tables; init-schema parity; ORM entity columns only (no read-path changes);
+   integration spec `test/integration/migration-036.e2e-spec.ts` (9 tests).
+2. **scry** (branch `feat/scry-14-tier-b-ck-direct`):
+   - `Card.scryfall_id` persisted on ingest (Option<String>; mapper already required it).
+   - `src/price/cardkingdom.rs`: streaming `CkPricelistEventProcessor` (actson, same harness as
+     MTGJSON) + `granular_from_ck_products` policy fn. **Only real offers emit**:
+     `price_buy > 0 AND qty_buying > 0` — MTGJSON's buylist already encodes "CK is buying" by
+     row presence, so qty-0 products are skipped, not stored. `qty` carried on real offers
+     (kept for 6.4 quantity caps — user decision).
+   - **Per-series dedupe keeping the best offer** — real-feed finding: etched products report
+     `is_foil=true` and can share a `scryfall_id` with the regular foil, collapsing two CK
+     products onto one `(card, finish)` series; duplicate keys in one multi-row upsert are a
+     Postgres error ("cannot affect row a second time").
+   - `qty = EXCLUDED.qty` (last-writer-wins, NOT COALESCE): MTGJSON writes qty NULL, CK-direct
+     overwrites with live qty in the same run; if CK fails, qty reads NULL ("unknown") rather
+     than stale.
+   - Wired into `update_prices` AFTER the MTGJSON ingest (CK-direct overwrites the indicative
+     CK row); **best-effort** — failure is logged, never blocks the averaged price refresh,
+     surfaces via non-zero exit (same policy as the 5.12.1 hardening).
+3. **Deploy order**: publish scry first (inert), then deploy web — migration 036 runs before
+   `setup-cron.sh` extracts the new binary. One web deploy lands everything.
+4. **CK links deferred to 6.4** (user decision): sell tiles get clickable CK buylist-search
+   URLs (built from card name; CK supports `?partner=` attribution à la Archidekt) with the
+   inventory sell workflow.
+
+## Remaining work
 
 ### Follow-up — **directly after Tier B** (ROADMAP 6.8): normalize the card image
 Once 6.7 adds `card.scryfall_id`, `img_src` is redundant derived data (scry stores exactly

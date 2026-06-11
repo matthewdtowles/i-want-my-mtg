@@ -106,7 +106,7 @@ Versions are computed automatically in CI from the squash-merged PR title — no
 | PR title | Bump |
 | --- | --- |
 | `feat: ...` / `feat(scope): ...` | minor |
-| `feat!: ...` or title ending in `!` | major |
+| any type with `!` (`feat!:`, `fix!:`, ...) or title ending in `!` | major |
 | anything else (`fix:`, `docs:`, ...) | patch |
 
 See `.github/scripts/next-version.sh`.

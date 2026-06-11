@@ -3,7 +3,9 @@ import { Reflector } from '@nestjs/core';
 import { of } from 'rxjs';
 import { CacheControlInterceptor } from 'src/http/api/shared/cache-control.interceptor';
 
-function createMockContext(overrides: { method?: string; user?: { id: number } } = {}): {
+function createMockContext(
+    overrides: { method?: string; user?: { id: number }; existingCacheControl?: string } = {}
+): {
     context: ExecutionContext;
     setHeader: jest.Mock;
 } {
@@ -12,7 +14,11 @@ function createMockContext(overrides: { method?: string; user?: { id: number } }
         method: overrides.method ?? 'GET',
         user: overrides.user ?? undefined,
     };
-    const res = { setHeader };
+    const res = {
+        setHeader,
+        getHeader: (name: string) =>
+            name.toLowerCase() === 'cache-control' ? overrides.existingCacheControl : undefined,
+    };
     const context = {
         switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }),
         getHandler: () => ({}),
@@ -80,6 +86,25 @@ describe('CacheControlInterceptor', () => {
                 'Cache-Control',
                 expect.stringContaining('max-age=120')
             );
+            done();
+        });
+    });
+
+    it('should not overwrite a Cache-Control header the route handler already set', (done) => {
+        const { context, setHeader } = createMockContext({ existingCacheControl: 'no-cache' });
+        interceptor.intercept(context, createNext()).subscribe(() => {
+            expect(setHeader).not.toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should not overwrite an explicit Cache-Control header on non-GET requests', (done) => {
+        const { context, setHeader } = createMockContext({
+            method: 'POST',
+            existingCacheControl: 'no-cache',
+        });
+        interceptor.intercept(context, createNext()).subscribe(() => {
+            expect(setHeader).not.toHaveBeenCalled();
             done();
         });
     });

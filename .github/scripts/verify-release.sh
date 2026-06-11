@@ -9,11 +9,14 @@
 #
 # A green deploy job then means "the release is verifiably live", not just
 # "the scripts ran". Usable locally too:
-#   APP_URL=https://iwantmymtg.net ./.github/scripts/verify-release.sh [version]
+#   APP_URL=https://iwantmymtg.net ./.github/scripts/verify-release.sh <version>
+#
+# The version must be passed explicitly — package.json holds a 0.0.0-dev
+# placeholder; the real version is computed in CI (see next-version.sh).
 set -euo pipefail
 
 APP_URL="${APP_URL:?APP_URL is required}"
-EXPECTED_VERSION="${1:-$(jq -r .version package.json)}"
+EXPECTED_VERSION="${1:?version argument is required (e.g. 1.33.0)}"
 
 fail() {
     echo "[VERIFY] FAIL: $1" >&2

@@ -59,16 +59,17 @@ npm run start:dev                 # Watch mode (builds SW + nest watch)
 ## Production
 
 CI/CD is handled by GitHub Actions (`.github/workflows/deploy.yml`). On push to main:
-1. **test** — Runs unit and integration tests
-2. **tag** — Creates a GitHub release from `package.json` version
-3. **build** — Builds Docker image using the `production` target and pushes to `ghcr.io`
-4. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`
+1. **test / integration-test / e2e-test** — Unit, integration, and Playwright E2E tests
+2. **version** — Computes the release version from the squash-merged PR title (`.github/scripts/next-version.sh`)
+3. **tag** — Creates a GitHub release/tag for the computed version
+4. **build** — Builds Docker image using the `production` target (stamped with `APP_VERSION`) and pushes to `ghcr.io`
+5. **deploy** — SSH deploy to Lightsail via `.github/scripts/deploy.sh`, then `verify-release.sh` asserts the live site serves the released version
 
 The production Docker build (`target: production`) runs `npm run build:prod` which produces the final `dist/` directory with compiled TS, minified assets, and versioned service worker. The production stage copies only `dist/` and production dependencies.
 
 ### Service Worker & Cache Busting
 
-The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches. To bump the version: `npm run bump` (patch), `bump:minor`, or `bump:major`.
+The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches. Versioning is automatic: CI computes the version from the squash-merged PR title (`feat:` → minor, `!` → major, anything else → patch — see `.github/scripts/next-version.sh`) and stamps it into the Docker image at build time. `package.json` stays at the `0.0.0-dev` placeholder; never bump it by hand.
 
 ### Scry ETL on the Production Server
 

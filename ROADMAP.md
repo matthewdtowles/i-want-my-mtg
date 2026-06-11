@@ -113,20 +113,34 @@ Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell
 - [x] Fix navbar mobile overflow: container-query that hides Sign In/Sign Up <599px now ordered after the base `display` rules so it wins (was a source-order bug the guard caught)
 - [x] Playwright overflow guard at 320/375px across key pages (regression gate)
 
-### 6.4 Inventory: Best Buylist, Group by Vendor, CSV Export
+### 6.4 Inventory: Market Sell Value & CSV Export
+
+Where the value of the epic lands: what is the user's collection worth to *sell*, right now,
+with real offers behind the number. Framed as **market sell value** in all user-facing copy —
+vendor-neutral, no named-vendor pitch. Buylist offers come from a single upstream source today
+(see 6.9), so the per-vendor grouping degenerates gracefully to one group; the grouping
+structure stays so additional sources (Tier C) slot in additively, not as a refactor.
 
 - [ ] Select a subset (or all) of inventory
-- [ ] Compute best buylist per item and total it
-- [ ] Group results by vendor (what each vendor would pay across the selection)
-- [ ] CSV export
+- [ ] Compute the best buylist offer per item and total it as the selection's market sell value
+- [ ] Cap payouts by buy quantity where known (offer × min(owned, vendor buy qty) — the 6.7 `qty`) so totals are honest
+- [ ] Group results by vendor (single group today; feeds 6.5 and Tier C)
+- [ ] Sell rows link out to the vendor's buylist page for the card (plain links, no partner attribution — deferred from 6.7)
+- [ ] CSV export of the sell list (per-item offer, qty, payout)
 
-### 6.5 Sell/Buy List Vendor Optimizer
+### 6.5 Sell/Buy List Optimizer (re-scoped: cash vs. credit first)
+
+Re-scoped after the 6.9 research: with buylist effectively single-source upstream, the
+*vendor-comparison* optimizer has no decision to make — but **cash vs. store credit** is a real
+decision even with one vendor (store-credit bonus % means "take $X cash, or $Y in credit applied
+against your buy list"). Build that first; the multi-vendor consolidation optimizer is gated on
+6.9 landing a second source.
 
 - [ ] Sell-list and buy-list entities per user
-- [ ] Optimizer: best net outcome per vendor, factoring store-credit bonus % (credit vs. cash), buylist offers, and retail buy prices
-- [ ] Favor consolidating into a single vendor/bulk transaction where it wins
+- [ ] Cash-vs-credit optimizer: net outcome of cash payout vs. store-credit bonus % applied against the user's buy list and retail buy prices
 - [ ] Present the recommendation clearly; CSV export of the plan
 - [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9))
+- [ ] **Gated on 6.9 (≥2 buylist sources):** best net outcome per vendor; favor consolidating into a single vendor/bulk transaction where it wins
 
 ### 6.6 Condition Vocabulary Normalization (follow-up, after 6.2/6.3)
 
@@ -136,13 +150,13 @@ Open question deferred from 6.2 — not blocking, since every row in 6.2/6.3 is 
 - [ ] Keep **professional grading a separate dimension** (grading company + numeric grade, allowing half-grades like BGS 9.5) rather than overloading the raw-condition column — a slabbed PSA 9 is a distinct product/market from a raw NM, and a different `tcgplayerProductId`
 - [ ] Backfill is trivial: existing rows are all `NM` → map to whatever the canonical NM value becomes
 
-### 6.7 Tier B: Card Kingdom Direct Ingest (live buylist + `scryfall_id` matching)
+### 6.7 Tier B: Card Kingdom Direct Ingest (live buylist + `scryfall_id` matching) ✅
 
-Deferred until 6.3/6.4 show demand (per the 6.1 spike). Adds Card Kingdom's free direct pricelist (`api.cardkingdom.com/api/v2/pricelist`, ~147k products — stream it) for actionable buylist: live `price_buy` per condition, overwriting the indicative MTGJSON CK row on the shared granular key (MTGJSON ingests first, CK-direct last → last-writer-wins). Full plan + open matching decision in [`docs/phase6-buylist-handoff.md`](docs/phase6-buylist-handoff.md).
+Adds Card Kingdom's free direct pricelist (`api.cardkingdom.com/api/v2/pricelist`, ~147k products, streamed) for actionable buylist: live `price_buy` + `qty_buying`, overwriting the indicative MTGJSON CK row on the shared granular key (MTGJSON ingests first, CK-direct last → last-writer-wins). As-built log in [`docs/phase6-buylist-handoff.md`](docs/phase6-buylist-handoff.md) + issue #513. Merged via PR #522.
 
-- [ ] Add `card.scryfall_id` — a **unique indexed column, NOT the PK**. `card.id` stays the MTGJSON uuid (it's the PK referenced by all prices, user `inventory`/`transaction`, every FK, the public API + MCP; re-keying = high-blast-radius migration over user data, and inverts matching onto the daily price path). We carry both ids on purpose. Backfill immediately from `card.img_src` (already embeds it as `{a}/{b}/{scryfall_id}.jpg`); scry stores it going forward (mapper already parses `identifiers.scryfallId`).
-- [ ] Stream the CK pricelist in scry, build a `scryfall_id → card.id` map, emit `granular_price` + `granular_price_history` buylist rows (`provider='cardkingdom'`, finish from `is_foil`, condition `NM`).
-- [ ] Re-introduce buy-quantity (the `qty` column dropped in 6.2): carry CK's `qty_buying` on both granular tables (migration `035` + init + scry fixture + `GranularPrice` struct + upsert columns), **modelled against the across-vendor inconsistency** noted in the handoff before wiring in.
+- [x] `card.scryfall_id` — **unique indexed column, NOT the PK** (`card.id` stays the MTGJSON uuid). Migration `036`, SQL backfill from `card.img_src` (verified 1:1 across all 91,316 cards); scry stores it going forward
+- [x] Stream the CK pricelist in scry (`CkPricelistEventProcessor`), `scryfall_id → card.id` map, emit `granular_price` + `granular_price_history` buylist rows (`provider='cardkingdom'`, finish from `is_foil`, condition `NM`); only real offers emit (`price_buy > 0 AND qty_buying > 0`); per-series dedupe keeps the best offer; best-effort (never blocks the averaged price refresh)
+- [x] Buy-quantity re-introduced: nullable `qty` on both granular tables; `qty = EXCLUDED.qty` (last-writer-wins, not COALESCE) so a failed CK fetch reads NULL ("unknown") rather than stale. Surfacing qty deferred to 6.4
 
 ### 6.8 Normalize card image: derive from `scryfall_id`, drop `img_src` — **directly after 6.7**
 
@@ -158,9 +172,12 @@ Deferred until 6.3/6.4 show demand (per the 6.1 spike). Adds Card Kingdom's free
 
 Promoted from "deferred" by a live-ingest finding (scry#14 Tier A), then **confirmed against the raw MTGJSON feed** (`AllPricesToday.json`, 2026-06-05 data, inspected 2026-06-07): of the four USD providers scry captures, **only `cardkingdom` carries buylist data** (61,428 cards). `cardsphere` — the second buylist source the 6.1 spike assumed — **does not appear in the feed at all** (0 occurrences); `tcgplayer` / `manapool` (and the excluded EUR `cardmarket`) emit an **empty `buylist` key with no values**. So this is **not an ingest bug** — scry captured everything present; buylist is **upstream single-vendor (Card Kingdom only)** today, which undercuts the premise of "best buylist *by vendor*": with one vendor there is nothing to compare, and the 6.5 optimizer has no decision to make. Tier B (6.7) sharpens Card Kingdom's numbers but adds **no new vendor**, so it does not fix this on its own.
 
-- [ ] Decide on `cardsphere` (confirmed absent upstream, so this is cleanup not a bug): drop it from scry's `GRANULAR_PROVIDERS` since it yields nothing today, or keep it as a no-op placeholder for if/when MTGJSON restores it
-- [ ] Evaluate ≥1 additional buylist source for multi-vendor comparison — revisit the 6.1 options (go-mtgban scrapers, a paid aggregator, or direct vendor APIs) and weigh cost / ToS / maintenance
-- [ ] Re-sequence decision: with buylist effectively single-vendor, decide whether broader coverage must land **before** 6.4/6.5 (inventory grouping + vendor optimizer) for those to be meaningful
+**Researched (2026-06-09, full findings on #515): no free, legitimate, multi-vendor buylist API exists.** TCGplayer shut down its buylist program (July 2024); Cardsphere is peer-to-peer and absent from the MTGJSON feed; the remaining buylist vendors (Star City Games, CoolStuffInc, ABU Games, Troll & Toad) publish no APIs — reachable only via go-mtgban scrapers (free, but ToS-gray, AGPL, a Go sidecar next to the Rust ETL, perpetual breakage maintenance) or the mtgban BAN API at $1,000/mo. **Decision: proceed single-source.** 6.4 ships framed as vendor-neutral **market sell value**; 6.5 is re-scoped to the cash-vs-credit decision; the multi-vendor pieces stay gated here.
+
+- [x] Evaluate additional buylist sources — done; no viable free/legitimate option (see findings on #515)
+- [x] Re-sequence decision: 6.4/6.5 do **not** wait for broader coverage — built single-source with vendor-neutral framing; the per-vendor comparison + consolidation optimizer are gated on this item
+- [ ] scry cleanup: drop `cardsphere` from `GRANULAR_PROVIDERS` (confirmed absent upstream; yields nothing today)
+- [ ] Revisit go-mtgban / a paid aggregator only when **both** hold: (a) 6.4 has shipped and sell-flow engagement shows demand for vendor comparison; (b) revenue can absorb the scraper ops burden or an aggregator fee
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 

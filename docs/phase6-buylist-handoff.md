@@ -12,8 +12,14 @@ The work spans two repos that share one Postgres DB:
 - **scry** (`/Users/matthewtowles/Projects/scry`, Rust ETL)
 
 6.2/6.3 (granular store + card-page display, Tier A) are merged and live.
-6.7 (Tier B, CK-direct) is built on branches `feat/6.7-scryfall-id-granular-qty`
-(web) and `feat/scry-14-tier-b-ck-direct` (scry) — scope on issue #513.
+6.7 (Tier B, CK-direct) is **merged** (web PR #522 + the scry branch) — scope on issue #513.
+
+**Framing decision (2026-06-11):** user-facing copy for the sell features uses vendor-neutral
+**"market sell value"** terminology — no named-vendor pitch (we are not partnered with Card
+Kingdom). CK remains the data source internally; it is not the brand of the feature. The 6.9
+research (#515) confirmed no free, legitimate multi-vendor buylist API exists, so 6.4 proceeds
+single-source and 6.5 is re-scoped to the cash-vs-credit decision (multi-vendor optimizer gated
+on 6.9).
 
 ---
 
@@ -154,9 +160,10 @@ As-built (full scope + decision log on issue #513):
      surfaces via non-zero exit (same policy as the 5.12.1 hardening).
 3. **Deploy order**: publish scry first (inert), then deploy web — migration 036 runs before
    `setup-cron.sh` extracts the new binary. One web deploy lands everything.
-4. **CK links deferred to 6.4** (user decision): sell tiles get clickable CK buylist-search
-   URLs (built from card name; CK supports `?partner=` attribution à la Archidekt) with the
-   inventory sell workflow.
+4. **Buylist links deferred to 6.4** (user decision): sell tiles get clickable vendor
+   buylist-search URLs (built from card name) with the inventory sell workflow. **Plain links,
+   no `?partner=` attribution** — we are not partnered with CK and don't present the feature
+   as a named-vendor pitch (see framing decision above).
 
 ## Remaining work
 
@@ -177,7 +184,10 @@ reversible function of scryfall_id). Drop the stored column and derive the image
 - ~~6.3 remainder: buylist on the **set page + binder overlay**~~ **Descoped in 6.3.1** — buylist
   lives only on the card page; the set-list "sell $X" rows and binder "Buylist $X" overlay were
   removed (clutter + mobile overflow). The batched `findCurrentBuylistByCardIds` read is kept for 6.4.
-- 6.4 inventory best-buylist / group-by-vendor / CSV; 6.5 optimizer (needs DB `vendor` table).
+- 6.4 inventory **market sell value** (vendor-neutral copy; best offer per item, qty-capped
+  payout totals, group-by-vendor kept as structure, plain buylist links, CSV export); 6.5
+  re-scoped to **cash vs. store credit** first (needs DB `vendor` table), multi-vendor
+  consolidation gated on 6.9.
 - Possible: currency column → then Cardmarket (only if non-USD is ever wanted; currently out).
 - ROADMAP 6.6: condition grade vocabulary (when a multi-grade source lands; note CK's
   `condition_values` already exposes nm/ex/vg/g **retail** — a future source for that).

@@ -57,7 +57,7 @@ pass "tailwind.css?v=$EXPECTED_VERSION served ($css_bytes bytes)"
 # query param bypasses any CDN-cached copy so we verify origin truth.
 sw=$(curl -fsS --max-time 10 "$APP_URL/sw.js?verify=$(date +%s)")
 [[ "$sw" == *"APP_VERSION = '$EXPECTED_VERSION'"* ]] \
-    || fail "sw.js is not stamped with $EXPECTED_VERSION (found: $(echo "$sw" | grep -m1 "APP_VERSION = " || echo 'no APP_VERSION line'))"
+    || fail "sw.js is not stamped with $EXPECTED_VERSION (found: $(grep -m1 "APP_VERSION = " <<<"$sw" || echo 'no APP_VERSION line'))"
 pass "sw.js stamped with $EXPECTED_VERSION"
 
 echo "[VERIFY] Release $EXPECTED_VERSION is live and correct."

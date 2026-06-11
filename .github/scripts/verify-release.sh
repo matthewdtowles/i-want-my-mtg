@@ -40,8 +40,11 @@ done
 pass "app is responding"
 
 # 2. Rendered HTML must reference assets at the released version.
+# Substring match instead of `echo | grep -q`: grep -q exits at the first
+# match, and under pipefail the echo's resulting EPIPE fails the pipeline
+# even when the version IS present.
 html=$(curl -fsS --max-time 10 "$APP_URL/")
-echo "$html" | grep -q "?v=$EXPECTED_VERSION" \
+[[ "$html" == *"?v=$EXPECTED_VERSION"* ]] \
     || fail "HTML does not reference assets at ?v=$EXPECTED_VERSION (found: $(echo "$html" | grep -oE '\?v=[0-9a-zA-Z.\-]+' | sort -u | tr '\n' ' '))"
 pass "HTML references ?v=$EXPECTED_VERSION"
 
@@ -53,8 +56,8 @@ pass "tailwind.css?v=$EXPECTED_VERSION served ($css_bytes bytes)"
 # 4. The service worker must be stamped with the released version. A unique
 # query param bypasses any CDN-cached copy so we verify origin truth.
 sw=$(curl -fsS --max-time 10 "$APP_URL/sw.js?verify=$(date +%s)")
-echo "$sw" | grep -q "APP_VERSION = '$EXPECTED_VERSION'" \
-    || fail "sw.js is not stamped with $EXPECTED_VERSION (found: $(echo "$sw" | grep -m1 "APP_VERSION = " || echo 'no APP_VERSION line'))"
+[[ "$sw" == *"APP_VERSION = '$EXPECTED_VERSION'"* ]] \
+    || fail "sw.js is not stamped with $EXPECTED_VERSION (found: $(grep -m1 "APP_VERSION = " <<<"$sw" || echo 'no APP_VERSION line'))"
 pass "sw.js stamped with $EXPECTED_VERSION"
 
 echo "[VERIFY] Release $EXPECTED_VERSION is live and correct."

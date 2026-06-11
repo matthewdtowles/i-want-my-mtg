@@ -113,4 +113,8 @@ ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP \
 log_info "Cleaning up..."
 rm -f private_key
 
+# Verify the released version is actually being served before declaring success
+log_info "Verifying released version is live at $APP_URL..."
+./.github/scripts/verify-release.sh
+
 log_info "Deployment completed successfully!"

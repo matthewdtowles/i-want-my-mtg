@@ -76,8 +76,56 @@ jobs:
                   NODE_ENV: test
               run: npx jest --config test/jest-e2e.json --runInBand
 
+    e2e-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - name: Run Playwright E2E tests
+              run: npm run test:pw:full
+
+            - name: Upload Playwright report
+              if: failure()
+              uses: actions/upload-artifact@v6
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 7
+
+    # Version is computed from the squash-merged PR title (= head commit
+    # subject): feat -> minor, ! -> major, anything else -> patch. Git tags
+    # are the source of truth; package.json stays at its 0.0.0-dev placeholder.
+    version:
+        needs: [test, integration-test, e2e-test]
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        outputs:
+            version: ${{ steps.next.outputs.version }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Compute next version from PR title
+              id: next
+              run: ./.github/scripts/next-version.sh >> "$GITHUB_OUTPUT"
+
     tag:
-        needs: [test, integration-test]
+        needs: [version]
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         permissions:
@@ -86,14 +134,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
 
-            - name: Get version from package.json
-              id: version
-              run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
-
             - name: Check if tag exists
               id: check
               run: |
-                  if git ls-remote --tags origin "${{ steps.version.outputs.version }}" | grep -q .; then
+                  if git ls-remote --tags origin "${{ needs.version.outputs.version }}" | grep -q .; then
                     echo "exists=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -101,12 +145,12 @@ jobs:
 
             - name: Create release
               if: steps.check.outputs.exists == 'false'
-              run: gh release create "${{ steps.version.outputs.version }}" --generate-notes --title "${{ steps.version.outputs.version }}"
+              run: gh release create "${{ needs.version.outputs.version }}" --generate-notes --title "${{ needs.version.outputs.version }}"
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     build:
-        needs: [test, integration-test]
+        needs: [version]
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         permissions:
@@ -147,10 +191,12 @@ jobs:
                   target: production
                   push: true
                   provenance: false
+                  build-args: |
+                      APP_VERSION=${{ needs.version.outputs.version }}
                   tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
 
     deploy:
-        needs: build
+        needs: [version, build]
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         environment: production
@@ -164,6 +210,7 @@ jobs:
 
             - name: Deploy to Production
               env:
+                  RELEASE_VERSION: ${{ needs.version.outputs.version }}
                   SSH_PRIVATE_KEY: ${{ secrets.LIGHTSAIL_SSH_PK }}
                   LIGHTSAIL_IP: ${{ secrets.LIGHTSAIL_IP }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

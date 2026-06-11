@@ -108,7 +108,8 @@ CREATE TABLE public.card (
     set_code character varying NOT NULL,
     type character varying NOT NULL,
     tcgplayer_product_id character varying,
-    tcgplayer_etched_product_id character varying
+    tcgplayer_etched_product_id character varying,
+    scryfall_id character varying
 );
 
 
@@ -201,7 +202,8 @@ CREATE TABLE public.granular_price (
     finish character varying NOT NULL,
     condition character varying DEFAULT 'NM'::character varying NOT NULL,
     date date NOT NULL,
-    price numeric NOT NULL
+    price numeric NOT NULL,
+    qty integer
 );
 
 
@@ -217,7 +219,8 @@ CREATE TABLE public.granular_price_history (
     finish character varying NOT NULL,
     condition character varying DEFAULT 'NM'::character varying NOT NULL,
     date date NOT NULL,
-    price numeric NOT NULL
+    price numeric NOT NULL,
+    qty integer
 );
 
 
@@ -603,6 +606,13 @@ CREATE INDEX idx_password_reset_token ON public.password_reset(reset_token);
 --
 
 CREATE INDEX idx_password_reset_expires ON public.password_reset(expires_at);
+
+
+--
+-- Name: idx_card_scryfall_id; Type: INDEX; Schema: public
+--
+
+CREATE UNIQUE INDEX idx_card_scryfall_id ON public.card (scryfall_id);
 
 
 --

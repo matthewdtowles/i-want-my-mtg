@@ -35,4 +35,7 @@ export class GranularPriceOrmEntity {
 
     @Column({ type: 'decimal' })
     price: number;
+
+    @Column({ type: 'int', nullable: true })
+    qty?: number;
 }

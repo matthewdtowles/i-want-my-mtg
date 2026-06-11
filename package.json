@@ -1,6 +1,6 @@
 {
     "name": "i-want-my-mtg",
-    "version": "1.32.1",
+    "version": "0.0.0-dev",
     "description": "MTG Collection Tracker",
     "author": "Matthew Towles",
     "private": true,
@@ -44,11 +44,7 @@
         "gen:openapi-public": "./scripts/gen-openapi-public.sh",
         "etl": "./scripts/etl.sh",
         "lighthouse": "./scripts/lighthouse.sh",
-        "lighthouse:prod": "./scripts/lighthouse.sh --base-url=https://iwantmymtg.net",
-        "bump": "npm version patch --no-git-tag-version",
-        "bump:minor": "npm version minor --no-git-tag-version",
-        "bump:major": "npm version major --no-git-tag-version",
-        "bump:dev": "npm version prerelease --preid=rc --no-git-tag-version"
+        "lighthouse:prod": "./scripts/lighthouse.sh --base-url=https://iwantmymtg.net"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",

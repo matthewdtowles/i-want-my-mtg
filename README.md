@@ -101,14 +101,15 @@ Reports land in `lighthouse-reports/<timestamp>/{mobile,desktop}/`. Requires Chr
 
 ## Versioning
 
-Conventional Commits for messages, manual bumps via npm scripts — include the bump in your PR commit.
+Versions are computed automatically in CI from the squash-merged PR title — no manual bumping. Git tags are the source of truth; `package.json` stays at the `0.0.0-dev` placeholder and is stamped at Docker build time.
 
-```bash
-npm run bump          # Patch: 1.0.0 → 1.0.1
-npm run bump:minor    # Minor: 1.0.0 → 1.1.0
-npm run bump:major    # Major: 1.0.0 → 2.0.0
-npm run bump:dev      # Pre-release: 1.0.0 → 1.0.1-rc.0
-```
+| PR title | Bump |
+| --- | --- |
+| `feat: ...` / `feat(scope): ...` | minor |
+| any type with `!` (`feat!:`, `fix!:`, ...) or title ending in `!` | major |
+| anything else (`fix:`, `docs:`, ...) | patch |
+
+See `.github/scripts/next-version.sh`.
 
 ## Troubleshooting
 

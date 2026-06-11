@@ -22,6 +22,7 @@ log_error() {
 
 # Validate required environment variables
 required_vars=(
+    "RELEASE_VERSION"
     "SSH_PRIVATE_KEY"
     "LIGHTSAIL_IP"
     "GITHUB_TOKEN"
@@ -112,5 +113,9 @@ ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$LIGHTSAIL_IP \
 # Cleanup
 log_info "Cleaning up..."
 rm -f private_key
+
+# Verify the released version is actually being served before declaring success
+log_info "Verifying released version $RELEASE_VERSION is live at $APP_URL..."
+./.github/scripts/verify-release.sh "$RELEASE_VERSION"
 
 log_info "Deployment completed successfully!"

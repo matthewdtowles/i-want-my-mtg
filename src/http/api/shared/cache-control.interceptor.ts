@@ -21,6 +21,10 @@ export const CacheTTL = (seconds: number) => SetMetadata(CACHE_TTL_KEY, seconds)
  * - Authenticated endpoints (cookie/bearer): no-store
  * - Public GET endpoints: short TTL with stale-while-revalidate
  * - Non-GET requests: no-store
+ *
+ * Registered as a global interceptor, so it runs after every route handler.
+ * Handlers that set Cache-Control explicitly (e.g. @Header on /sw.js) win;
+ * this interceptor only fills in the header when none was set.
  */
 @Injectable()
 export class CacheControlInterceptor implements NestInterceptor {
@@ -35,7 +39,7 @@ export class CacheControlInterceptor implements NestInterceptor {
                 const req = context.switchToHttp().getRequest();
                 const res = context.switchToHttp().getResponse();
 
-                if (res.headersSent) {
+                if (res.headersSent || res.getHeader('Cache-Control')) {
                     return;
                 }
 

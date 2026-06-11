@@ -1240,13 +1240,38 @@
     @apply font-bold;
 }
 
+/* Compact variant for the card-page Buy/Sell tiles: tighter padding, quieter value */
+.price-tile-compact {
+    @apply p-1.5 md:p-2;
+}
+
+.price-tile-value-compact {
+    font-size: clamp(0.875rem, 2vw, 1.125rem);
+    @apply font-semibold;
+}
+
 /* Buy / Sell group labels in the card price section */
 .price-group-label {
-    @apply text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2;
+    @apply text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2;
 }
 
 .price-group-label-note {
     @apply normal-case font-normal text-gray-400 dark:text-gray-500;
+}
+
+/* Collapsed-by-default Sell disclosure: the group label doubles as the toggle,
+   swapping between "Show buylist" and "Hide buylist" with the open state */
+.price-group-toggle {
+    @apply cursor-pointer select-none;
+}
+
+.buylist-section .buylist-toggle-hide,
+.buylist-section[open] .buylist-toggle-show {
+    display: none;
+}
+
+.buylist-section[open] .buylist-toggle-hide {
+    display: inline;
 }
 
 /* Per-vendor buylist disclosure */

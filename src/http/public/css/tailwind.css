@@ -1595,11 +1595,6 @@ img,
   border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
 }
 
-.border-emerald-300 {
-  --tw-border-opacity: 1;
-  border-color: rgb(110 231 183 / var(--tw-border-opacity, 1));
-}
-
 .border-gray-100 {
   --tw-border-opacity: 1;
   border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
@@ -1673,11 +1668,6 @@ img,
 .bg-blue-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
-}
-
-.bg-emerald-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1));
 }
 
 .bg-gray-100 {
@@ -2147,16 +2137,6 @@ img,
 .text-blue-800 {
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
-}
-
-.text-emerald-700 {
-  --tw-text-opacity: 1;
-  color: rgb(4 120 87 / var(--tw-text-opacity, 1));
-}
-
-.text-emerald-900 {
-  --tw-text-opacity: 1;
-  color: rgb(6 78 59 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-100 {
@@ -5962,6 +5942,23 @@ img,
   font-weight: 700;
 }
 
+/* Compact variant for the card-page Buy/Sell tiles: tighter padding, quieter value */
+
+.price-tile-compact {
+  padding: 0.375rem;
+}
+
+@media (min-width: 768px) {
+  .price-tile-compact {
+    padding: 0.5rem;
+  }
+}
+
+.price-tile-value-compact {
+  font-size: clamp(0.875rem, 2vw, 1.125rem);
+  font-weight: 600;
+}
+
 /* Buy / Sell group labels in the card price section */
 
 .price-group-label {
@@ -5972,12 +5969,12 @@ img,
   text-transform: uppercase;
   letter-spacing: 0.05em;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
 }
 
 .price-group-label:is(.dark *) {
   --tw-text-opacity: 1;
-  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+  color: rgb(209 213 219 / var(--tw-text-opacity, 1));
 }
 
 .price-group-label-note {
@@ -5990,6 +5987,25 @@ img,
 .price-group-label-note:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+/* Collapsed-by-default Sell disclosure: the group label doubles as the toggle,
+   swapping between "Show buylist" and "Hide buylist" with the open state */
+
+.price-group-toggle {
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+.buylist-section .buylist-toggle-hide,
+.buylist-section[open] .buylist-toggle-show {
+  display: none;
+}
+
+.buylist-section[open] .buylist-toggle-hide {
+  display: inline;
 }
 
 /* Per-vendor buylist disclosure */
@@ -7966,11 +7982,6 @@ img,
   border-color: rgb(180 83 9 / 0.5);
 }
 
-.dark\:border-emerald-600:is(.dark *) {
-  --tw-border-opacity: 1;
-  border-color: rgb(5 150 105 / var(--tw-border-opacity, 1));
-}
-
 .dark\:border-gray-700:is(.dark *) {
   --tw-border-opacity: 1;
   border-color: rgb(55 65 81 / var(--tw-border-opacity, 1));
@@ -8027,10 +8038,6 @@ img,
 
 .dark\:bg-blue-900\/30:is(.dark *) {
   background-color: rgb(30 58 138 / 0.3);
-}
-
-.dark\:bg-emerald-950\/30:is(.dark *) {
-  background-color: rgb(2 44 34 / 0.3);
 }
 
 .dark\:bg-gray-800:is(.dark *) {
@@ -8155,16 +8162,6 @@ img,
 .dark\:text-blue-200:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(191 219 254 / var(--tw-text-opacity, 1));
-}
-
-.dark\:text-emerald-200:is(.dark *) {
-  --tw-text-opacity: 1;
-  color: rgb(167 243 208 / var(--tw-text-opacity, 1));
-}
-
-.dark\:text-emerald-300:is(.dark *) {
-  --tw-text-opacity: 1;
-  color: rgb(110 231 183 / var(--tw-text-opacity, 1));
 }
 
 .dark\:text-gray-100:is(.dark *) {

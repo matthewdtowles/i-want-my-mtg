@@ -71,9 +71,9 @@
                 <h3 class="price-group-label">Buy <span class="price-group-label-note">retail</span></h3>
                 <div class="grid {{#if card.hasNormal}}{{#if card.hasFoil}}grid-cols-2{{else}}grid-cols-1{{/if}}{{else}}grid-cols-1{{/if}} gap-2 mb-3">
                     {{#if card.hasNormal}}
-                    <div class="price-tile border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800">
+                    <div class="price-tile price-tile-compact border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800">
                         <h4 class="font-semibold text-teal-700 dark:text-teal-300 text-xs uppercase tracking-wide mb-1">Normal</h4>
-                        <div class="price-tile-value font-bold text-gray-900 dark:text-gray-100 font-mono">
+                        <div class="price-tile-value price-tile-value-compact text-gray-900 dark:text-gray-100 font-mono">
                             {{card.normalPrice}}
                         </div>
                         {{#if card.priceChangeWeekly}}
@@ -82,9 +82,9 @@
                     </div>
                     {{/if}}
                     {{#if card.hasFoil}}
-                    <div class="price-tile border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30">
+                    <div class="price-tile price-tile-compact border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30">
                         <h4 class="font-semibold text-purple-700 dark:text-purple-300 text-xs uppercase tracking-wide mb-1">Foil</h4>
-                        <div class="price-tile-value font-bold text-purple-900 dark:text-purple-200 font-mono">
+                        <div class="price-tile-value price-tile-value-compact text-purple-900 dark:text-purple-200 font-mono">
                             {{card.foilPrice}}
                         </div>
                         {{#if card.foilPriceChangeWeekly}}
@@ -100,15 +100,15 @@
                 {{>buyOnTcgplayer url=card.purchaseUrlTcgplayerEtched label="Buy Etched on TCGPlayer"}}
                 {{/if}}
 
-                {{!-- Sell: best buylist offer per finish as emerald tiles; vendors behind a disclosure --}}
+                {{!-- Sell: best buylist offer per finish, themed like the Buy tiles; collapsed behind a disclosure --}}
                 {{#if buylist.hasAny}}
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="price-group-label">Sell <span class="price-group-label-note">buylist · NM</span></h3>
+                <details class="buylist-section mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <summary class="price-group-toggle"><h3 class="price-group-label inline-block"><span class="buylist-toggle-show">Show buylist</span><span class="buylist-toggle-hide">Hide buylist</span> <span class="price-group-label-note">sell · NM</span></h3></summary>
                     <div class="grid {{#if (gt buylist.finishes.length 1)}}grid-cols-2{{else}}grid-cols-1{{/if}} gap-2">
                         {{#each buylist.finishes}}
-                        <div class="price-tile border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30">
-                            <h4 class="font-semibold text-emerald-700 dark:text-emerald-300 text-xs uppercase tracking-wide mb-1">{{this.finish}}</h4>
-                            <div class="price-tile-value font-bold text-emerald-900 dark:text-emerald-200 font-mono">
+                        <div class="price-tile price-tile-compact {{#if (eq this.finish "Normal")}}border-teal-300 dark:border-teal-600 bg-white dark:bg-midnight-800{{else}}border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/30{{/if}}">
+                            <h4 class="font-semibold {{#if (eq this.finish "Normal")}}text-teal-700 dark:text-teal-300{{else}}text-purple-700 dark:text-purple-300{{/if}} text-xs uppercase tracking-wide mb-1">{{this.finish}}</h4>
+                            <div class="price-tile-value price-tile-value-compact {{#if (eq this.finish "Normal")}}text-gray-900 dark:text-gray-100{{else}}text-purple-900 dark:text-purple-200{{/if}} font-mono">
                                 {{this.best.price}}
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{this.best.vendor}}</div>
@@ -117,7 +117,7 @@
                                 <summary class="buylist-compare-summary">compare vendors</summary>
                                 <ul class="mt-1 space-y-1">
                                     {{#each this.offers}}
-                                    <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-emerald-700 dark:text-emerald-300 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
+                                    <li class="buylist-offer flex items-center justify-between text-xs {{#if this.isBest}}buylist-best text-gray-900 dark:text-gray-100 font-semibold{{else}}text-gray-500 dark:text-gray-400{{/if}}">
                                         <span class="min-w-0 truncate">{{this.vendor}}</span>
                                         <span class="font-mono flex-shrink-0">{{this.price}}</span>
                                     </li>
@@ -128,7 +128,7 @@
                         </div>
                         {{/each}}
                     </div>
-                </div>
+                </details>
                 {{/if}}
                 <section class="inventory-info">
                     {{>invStepper card=card}}

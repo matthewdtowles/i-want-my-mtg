@@ -1,10 +1,13 @@
 import { Card } from 'src/core/card/card.entity';
 import { Price } from 'src/core/card/price.entity';
 import { Inventory } from 'src/core/inventory/inventory.entity';
+import { SellPlan } from 'src/core/pricing/sell-value.policy';
+import { vendorBuylistUrl, vendorDisplayName } from 'src/core/pricing/vendor';
 import { BASE_IMAGE_URL, buildCardUrl, toDollar } from 'src/http/base/http.util';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryResponseDto } from './dto/inventory.response.dto';
+import { SellVendorGroupView } from './dto/inventory-sell.view.dto';
 import { InventoryQuantities } from './inventory.quantities';
 
 export class InventoryPresenter {
@@ -58,6 +61,36 @@ export class InventoryPresenter {
             url: buildCardUrl(card.setCode, card.number),
             tags: CardPresenter.createTags(card),
         });
+    }
+
+    /**
+     * Vendor groups for the market sell value view (6.4). The policy already
+     * sorts groups and items by payout descending; this only formats.
+     */
+    static toSellVendorGroups(plan: SellPlan): SellVendorGroupView[] {
+        return plan.groups.map((group) => ({
+            vendor: vendorDisplayName(group.provider),
+            payout: toDollar(group.payout),
+            payoutRaw: group.payout,
+            itemCount: group.items.length,
+            items: group.items.map((item) => {
+                const card = item.inventory.card;
+                return {
+                    key: `${item.inventory.cardId}:${item.inventory.isFoil ? 'f' : 'n'}`,
+                    name: card?.name ?? '',
+                    url: card ? buildCardUrl(card.setCode, card.number) : '',
+                    setCode: card?.setCode ?? '',
+                    isFoil: item.inventory.isFoil,
+                    quantity: item.inventory.quantity,
+                    sellableQuantity: item.sellableQuantity,
+                    quantityCapped: item.quantityCapped,
+                    offerPrice: toDollar(item.offer.price),
+                    payout: toDollar(item.payout),
+                    payoutRaw: item.payout,
+                    vendorUrl: vendorBuylistUrl(group.provider, card?.name ?? ''),
+                };
+            }),
+        }));
     }
 
     /**

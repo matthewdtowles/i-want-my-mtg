@@ -1,15 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
+import { buildSellPlan, SellPlan } from 'src/core/pricing/sell-value.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Inventory } from './inventory.entity';
 import { InventoryRepositoryPort } from './ports/inventory.repository.port';
+
+/** An inventory key as selected on the sell view: one card in one finish. */
+export interface InventoryKey {
+    cardId: string;
+    isFoil: boolean;
+}
 
 @Injectable()
 export class InventoryService {
     private readonly LOGGER = getLogger(InventoryService.name);
 
     constructor(
-        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort
+        @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
+        @Inject(GranularPriceRepositoryPort)
+        private readonly granularPriceRepository: GranularPriceRepositoryPort
     ) {}
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
@@ -102,6 +112,29 @@ export class InventoryService {
         const ownedValue = await this.repository.totalInventoryValueForSet(userId, setCode);
         this.LOGGER.debug(`User ${userId} inventory value ${ownedValue} for set ${setCode}.`);
         return ownedValue;
+    }
+
+    /**
+     * Market sell value (6.4): the user's inventory matched against current
+     * buylist offers. `selection` narrows the plan to specific items (the sell
+     * view's checkboxes); omitted = whole inventory. Selection keys are matched
+     * against the user's own items, so foreign card ids are simply ignored.
+     */
+    async sellPlanForUser(userId: number, selection?: InventoryKey[]): Promise<SellPlan> {
+        this.LOGGER.debug(`sellPlanForUser ${userId}, selection: ${selection?.length ?? 'all'}.`);
+        if (!userId) return buildSellPlan([], []);
+        let items = await this.repository.findAllForExport(userId);
+        if (selection) {
+            const selected = new Set(selection.map((k) => `${k.cardId}|${k.isFoil}`));
+            items = items.filter((i) => selected.has(`${i.cardId}|${i.isFoil}`));
+        }
+        const cardIds = [...new Set(items.map((i) => i.cardId))];
+        const offers = await this.granularPriceRepository.findCurrentBuylistByCardIds(cardIds);
+        const plan = buildSellPlan(items, offers);
+        this.LOGGER.debug(
+            `Sell plan for user ${userId}: ${plan.itemsWithOffers} items with offers, total ${plan.totalPayout}.`
+        );
+        return plan;
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<boolean> {

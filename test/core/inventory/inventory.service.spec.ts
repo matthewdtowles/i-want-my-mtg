@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
+import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { InventoryService } from 'src/core/inventory/inventory.service';
@@ -7,6 +9,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 describe('InventoryService', () => {
     let service: InventoryService;
     let repository: jest.Mocked<InventoryRepositoryPort>;
+    let granularPriceRepository: jest.Mocked<GranularPriceRepositoryPort>;
 
     const testInventoryItem = new Inventory({
         cardId: 'card-1',
@@ -33,6 +36,12 @@ describe('InventoryService', () => {
         delete: jest.fn(),
         totalInventoryCardsForSets: jest.fn(),
         totalInventoryValuesForSets: jest.fn(),
+        findAllForExport: jest.fn(),
+    };
+
+    const mockGranularPriceRepository = {
+        findCurrentBuylistByCardId: jest.fn(),
+        findCurrentBuylistByCardIds: jest.fn(),
     };
 
     beforeAll(async () => {
@@ -40,11 +49,15 @@ describe('InventoryService', () => {
             providers: [
                 InventoryService,
                 { provide: InventoryRepositoryPort, useValue: mockRepository },
+                { provide: GranularPriceRepositoryPort, useValue: mockGranularPriceRepository },
             ],
         }).compile();
 
         service = module.get<InventoryService>(InventoryService);
         repository = module.get(InventoryRepositoryPort) as jest.Mocked<InventoryRepositoryPort>;
+        granularPriceRepository = module.get(
+            GranularPriceRepositoryPort
+        ) as jest.Mocked<GranularPriceRepositoryPort>;
     });
 
     beforeEach(() => {
@@ -232,6 +245,70 @@ describe('InventoryService', () => {
 
             expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('sellPlanForUser', () => {
+        const offer = new GranularPrice({
+            cardId: 'card-1',
+            provider: 'cardkingdom',
+            priceType: 'buylist',
+            finish: 'normal',
+            condition: 'NM',
+            price: 2.5,
+            qty: null,
+        });
+
+        it('builds a plan from the full inventory and its buylist offers', async () => {
+            repository.findAllForExport.mockResolvedValue([testInventoryItem]);
+            granularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue([offer]);
+
+            const plan = await service.sellPlanForUser(1);
+
+            expect(repository.findAllForExport).toHaveBeenCalledWith(1);
+            expect(granularPriceRepository.findCurrentBuylistByCardIds).toHaveBeenCalledWith([
+                'card-1',
+            ]);
+            expect(plan.itemsWithOffers).toBe(1);
+            expect(plan.totalPayout).toBeCloseTo(10); // $2.50 x 4 owned
+        });
+
+        it('deduplicates card ids across normal and foil rows', async () => {
+            repository.findAllForExport.mockResolvedValue([testInventoryItem, testInventoryFoil]);
+            granularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue([]);
+
+            await service.sellPlanForUser(1);
+
+            expect(granularPriceRepository.findCurrentBuylistByCardIds).toHaveBeenCalledWith([
+                'card-1',
+            ]);
+        });
+
+        it('narrows the plan to the selected keys', async () => {
+            repository.findAllForExport.mockResolvedValue([testInventoryItem, testInventoryFoil]);
+            granularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue([offer]);
+
+            const plan = await service.sellPlanForUser(1, [{ cardId: 'card-1', isFoil: false }]);
+
+            expect(plan.itemsWithOffers).toBe(1);
+            expect(plan.itemsWithoutOffers).toBe(0); // the foil row was deselected, not unmatched
+        });
+
+        it('returns an empty plan for an empty selection', async () => {
+            repository.findAllForExport.mockResolvedValue([testInventoryItem]);
+            granularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue([]);
+
+            const plan = await service.sellPlanForUser(1, []);
+
+            expect(plan.itemsWithOffers).toBe(0);
+            expect(plan.totalPayout).toBe(0);
+        });
+
+        it('returns an empty plan without queries when userId is missing', async () => {
+            const plan = await service.sellPlanForUser(0);
+
+            expect(repository.findAllForExport).not.toHaveBeenCalled();
+            expect(plan.totalPayout).toBe(0);
         });
     });
 });

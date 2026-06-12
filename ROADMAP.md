@@ -113,7 +113,7 @@ Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell
 - [x] Fix navbar mobile overflow: container-query that hides Sign In/Sign Up <599px now ordered after the base `display` rules so it wins (was a source-order bug the guard caught)
 - [x] Playwright overflow guard at 320/375px across key pages (regression gate)
 
-### 6.4 Inventory: Market Sell Value & CSV Export
+### 6.4 Inventory: Market Sell Value & CSV Export ✅
 
 Where the value of the epic lands: what is the user's collection worth to *sell*, right now,
 with real offers behind the number. Framed as **market sell value** in all user-facing copy —
@@ -121,12 +121,20 @@ vendor-neutral, no named-vendor pitch. Buylist offers come from a single upstrea
 (see 6.9), so the per-vendor grouping degenerates gracefully to one group; the grouping
 structure stays so additional sources (Tier C) slot in additively, not as a refactor.
 
-- [ ] Select a subset (or all) of inventory
-- [ ] Compute the best buylist offer per item and total it as the selection's market sell value
-- [ ] Cap payouts by buy quantity where known (offer × min(owned, vendor buy qty) — the 6.7 `qty`) so totals are honest
-- [ ] Group results by vendor (single group today; feeds 6.5 and Tier C)
-- [ ] Sell rows link out to the vendor's buylist page for the card (plain links, no partner attribution — deferred from 6.7)
-- [ ] CSV export of the sell list (per-item offer, qty, payout)
+**As built:** `/inventory/sell` page (linked from the inventory header). `buildSellPlan`
+(`src/core/pricing/sell-value.policy.ts`, pure) matches inventory items to offers on card +
+finish (isFoil → foil, else normal; etched is a distinct product), picks the best NM offer via
+`bestBuylistOffer`, and groups by vendor. `GranularPrice.qty` plumbed through the read path
+(entity/mapper) for the cap. Selection = row checkboxes that *are* the export form's inputs
+(`POST /inventory/sell/export`, works without JS); `inventorySell.js` recomputes totals
+client-side. CSV: `name,set_code,number,finish,owned_qty,vendor,offer,sellable_qty,payout`.
+
+- [x] Select a subset (or all) of inventory — checkboxes on the sell view (per-vendor select-all; default all selected)
+- [x] Compute the best buylist offer per item and total it as the selection's market sell value
+- [x] Cap payouts by buy quantity where known (offer × min(owned, vendor buy qty) — the 6.7 `qty`; capped rows flagged) so totals are honest
+- [x] Group results by vendor (single group today; feeds 6.5 and Tier C)
+- [x] Sell rows link out to the vendor's buylist page for the card (plain links, no partner attribution — deferred from 6.7)
+- [x] CSV export of the sell list (per-item offer, qty, payout) honoring the selection
 
 ### 6.5 Sell/Buy List Optimizer (re-scoped: cash vs. credit first)
 

@@ -1,0 +1,131 @@
+<section class="border border-gray-200 dark:border-midnight-700 rounded-2xl sm:m-0 md:m-4 overflow-hidden">
+    <section class="app-page-header mb-4">
+        <div class="app-page-header-bg" aria-hidden="true"></div>
+        <div class="app-page-header-inner">
+            <h1 class="app-page-title font-display">Market Sell Value</h1>
+            <p class="app-page-sub">What your collection is worth to sell right now.</p>
+        </div>
+
+        <div class="relative max-w-3xl mx-auto px-4 pb-6">
+            <div class="app-stat-tile app-stat-tile--featured mb-3">
+                <span class="app-stat-tile-label">Market Sell Value</span>
+                <span class="app-stat-tile-value" id="sell-total">{{this.totalSellValue}}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="app-stat-tile">
+                    <span class="app-stat-tile-label">Items Selected</span>
+                    <span class="app-stat-tile-value" id="sell-selected-count">{{this.itemsWithOffers}}</span>
+                </div>
+                <div class="app-stat-tile">
+                    <span class="app-stat-tile-label">No Current Offers</span>
+                    <span class="app-stat-tile-value">{{this.itemsWithoutOffers}}</span>
+                </div>
+            </div>
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                Based on current buylist offers (NM) from vendors we track.
+                Offers change daily &mdash; always confirm with the vendor before sending cards.
+            </p>
+        </div>
+    </section>
+
+    {{#if hasOffers}}
+    <form id="sell-export-form" method="POST" action="/inventory/sell/export" class="content-wrapper">
+        {{#each vendorGroups as |group|}}
+        <section class="sell-vendor-group mb-6" data-vendor-group>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+                <h2 class="section-title mb-0 flex items-center gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="sell-group-toggle accent-emerald-600" checked
+                               aria-label="Select all {{group.vendor}} items" />
+                        <span>{{group.vendor}}</span>
+                    </label>
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {{group.itemCount}} item{{#if (gt group.itemCount 1)}}s{{/if}}
+                    </span>
+                </h2>
+                <span class="font-mono font-semibold text-emerald-700 dark:text-emerald-400"
+                      data-group-subtotal>{{group.payout}}</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="table-container w-full">
+                    <thead>
+                        <tr class="table-row">
+                            <th class="table-cell pl-2" scope="col"><span class="sr-only">Include</span></th>
+                            <th class="table-cell text-left" scope="col">Card</th>
+                            <th class="table-cell text-left" scope="col">Set</th>
+                            <th class="table-cell text-right" scope="col">Owned</th>
+                            <th class="table-cell text-right" scope="col">Offer</th>
+                            <th class="table-cell text-right" scope="col">Sells</th>
+                            <th class="table-cell text-right" scope="col">Payout</th>
+                            <th class="table-cell xs-hide" scope="col"><span class="sr-only">Vendor buylist</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each group.items as |item|}}
+                        <tr class="table-row" data-sell-row data-payout="{{item.payoutRaw}}">
+                            <td class="table-cell pl-2">
+                                <input type="checkbox" name="keys" value="{{item.key}}" checked
+                                       class="sell-item-toggle accent-emerald-600"
+                                       aria-label="Include {{item.name}}" />
+                            </td>
+                            <td class="table-cell">
+                                <a href="{{item.url}}" class="table-link">{{item.name}}</a>
+                                {{#if item.isFoil}}
+                                <span class="badge-pill text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/30">Foil</span>
+                                {{/if}}
+                            </td>
+                            <td class="table-cell">
+                                <a href="/sets/{{item.setCode}}" class="table-link">{{toUpperCase item.setCode}}</a>
+                            </td>
+                            <td class="table-cell text-right font-mono">{{item.quantity}}</td>
+                            <td class="table-cell text-right font-mono">{{item.offerPrice}}</td>
+                            <td class="table-cell text-right font-mono">
+                                {{item.sellableQuantity}}{{#if item.quantityCapped}}<span
+                                    class="text-amber-600 dark:text-amber-400"
+                                    title="Vendor is only buying {{item.sellableQuantity}} right now">*</span>{{/if}}
+                            </td>
+                            <td class="table-cell text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">{{item.payout}}</td>
+                            <td class="table-cell text-right xs-hide">
+                                {{#if item.vendorUrl}}
+                                <a href="{{item.vendorUrl}}" target="_blank" rel="noopener noreferrer"
+                                   class="table-link text-xs whitespace-nowrap"
+                                   title="Open the vendor's buylist page for {{item.name}}">
+                                    Buylist <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                                </a>
+                                {{/if}}
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {{/each}}
+
+        <div class="flex flex-wrap items-center justify-between gap-3 px-1 pb-6">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0">
+                <span class="text-amber-600 dark:text-amber-400">*</span>
+                Payout capped at the quantity the vendor is buying right now.
+            </p>
+            <button type="submit" id="sell-export-btn" class="btn btn-primary text-sm px-3 py-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export Selected as CSV
+            </button>
+        </div>
+    </form>
+    {{else}}
+    <div class="content-wrapper">
+        {{#if hasInventory}}
+        {{>emptyState icon="hand-holding-usd" heading="No current offers" message="None of your cards have a buylist offer right now." hint="Offers refresh daily as vendors update what they are buying. Check back soon." hintWide=true buttonHref="/inventory" buttonText="Back to Inventory"}}
+        {{else}}
+        {{>emptyState icon="box-open" heading="Nothing to sell yet" message="Add cards to your inventory to see their market sell value." hintWide=true buttonHref="/inventory" buttonText="Go to Inventory"}}
+        {{/if}}
+    </div>
+    {{/if}}
+</section>
+
+{{#if hasOffers}}
+<script src="/public/js/inventorySell.js?v={{assetVersion}}" defer></script>
+{{/if}}

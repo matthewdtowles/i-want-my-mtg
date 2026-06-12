@@ -30,6 +30,7 @@ import { UploadRateLimitGuard } from './guards/upload-rate-limit.guard';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { ImportExportGuideViewDto } from './dto/import-export-guide.view.dto';
 import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
+import { InventorySellViewDto } from './dto/inventory-sell.view.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
 import { InventoryOrchestrator } from './inventory.orchestrator';
 import { Response } from 'express';
@@ -74,6 +75,26 @@ export class InventoryController {
     ): Promise<InventoryViewDto> {
         const options = new SafeQueryOptions(query);
         return await this.inventoryOrchestrator.findByUser(req, options);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('sell')
+    @Render('inventorySell')
+    async sellView(@Req() req: AuthenticatedRequest): Promise<InventorySellViewDto> {
+        return await this.inventoryOrchestrator.sellView(req);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('sell/export')
+    async exportSellCsv(
+        @Body() body: { keys?: string | string[] },
+        @Req() req: AuthenticatedRequest,
+        @Res() res: Response
+    ): Promise<void> {
+        const csv = await this.inventoryOrchestrator.exportSellCsv(req, body?.keys);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="market-sell-value.csv"');
+        res.send(csv);
     }
 
     @UseGuards(JwtAuthGuard)

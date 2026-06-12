@@ -11,7 +11,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { CardImportRow, SetImportRow } from 'src/core/inventory/import/inventory-import.types';
-import { InventoryService } from 'src/core/inventory/inventory.service';
+import { InventoryKey, InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { SetService } from 'src/core/set/set.service';
@@ -31,6 +31,7 @@ import { buildToggleConfig } from 'src/http/hbs/list/toggle-config';
 import { getLogger } from 'src/logger/global-app-logger';
 import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
 import { InventoryBinderViewDto } from './dto/inventory-binder.view.dto';
+import { InventorySellViewDto } from './dto/inventory-sell.view.dto';
 import { InventoryRequestDto } from './dto/inventory.request.dto';
 import { InventoryResponseDto } from './dto/inventory.response.dto';
 import { InventoryViewDto } from './dto/inventory.view.dto';
@@ -261,6 +262,76 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Error importing set for user ${req.user?.id}: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'importSet');
         }
+    }
+
+    /** Market sell value page (6.4): the whole inventory matched against current buylist offers. */
+    async sellView(req: AuthenticatedRequest): Promise<InventorySellViewDto> {
+        this.LOGGER.debug(`sellView for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const userId = req.user.id;
+            const [plan, unfilteredCount] = await Promise.all([
+                this.inventoryService.sellPlanForUser(userId),
+                this.inventoryService.totalInventoryItems(
+                    userId,
+                    new SafeQueryOptions({ baseOnly: 'false' })
+                ),
+            ]);
+            return new InventorySellViewDto({
+                authenticated: true,
+                username: req.user.name,
+                title: 'Market Sell Value - I Want My MTG',
+                breadcrumbs: [
+                    { label: 'Home', url: '/' },
+                    { label: 'Inventory', url: '/inventory' },
+                    { label: 'Market Sell Value', url: '/inventory/sell' },
+                ],
+                totalSellValue: plan.totalPayout > 0 ? toDollar(plan.totalPayout) : '$0.00',
+                itemsWithOffers: plan.itemsWithOffers,
+                itemsWithoutOffers: plan.itemsWithoutOffers,
+                hasOffers: plan.itemsWithOffers > 0,
+                hasInventory: unfilteredCount > 0,
+                vendorGroups: InventoryPresenter.toSellVendorGroups(plan),
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error in sellView for user ${req.user?.id}: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'sellView');
+        }
+    }
+
+    /**
+     * Market sell value CSV (6.4) for the selected items. `rawKeys` is the
+     * posted checkbox value(s) (`cardId:n` | `cardId:f`); absent/empty means
+     * nothing selected and yields a header-only CSV.
+     */
+    async exportSellCsv(req: AuthenticatedRequest, rawKeys: unknown): Promise<string> {
+        this.LOGGER.debug(`exportSellCsv for user ${req.user?.id}.`);
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const selection = this.parseSellSelection(rawKeys);
+            const plan = await this.inventoryService.sellPlanForUser(req.user.id, selection);
+            return await this.exportService.sellPlanToCsv(plan);
+        } catch (error) {
+            this.LOGGER.debug(
+                `Error exporting sell CSV for user ${req.user?.id}: ${error?.message}`
+            );
+            return HttpErrorHandler.toHttpException(error, 'exportSellCsv');
+        }
+    }
+
+    /** Normalize the posted `keys` field (string | string[] | absent) into inventory keys. */
+    private parseSellSelection(rawKeys: unknown): InventoryKey[] {
+        const values = Array.isArray(rawKeys) ? rawKeys : rawKeys != null ? [rawKeys] : [];
+        const selection: InventoryKey[] = [];
+        for (const value of values) {
+            if (typeof value !== 'string') continue;
+            const sep = value.lastIndexOf(':');
+            if (sep <= 0) continue;
+            const finish = value.slice(sep + 1);
+            if (finish !== 'n' && finish !== 'f') continue;
+            selection.push({ cardId: value.slice(0, sep), isFoil: finish === 'f' });
+        }
+        return selection;
     }
 
     async exportInventory(req: AuthenticatedRequest): Promise<string> {

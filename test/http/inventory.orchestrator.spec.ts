@@ -2,6 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
+import { buildSellPlan } from 'src/core/pricing/sell-value.policy';
 import { InventoryExportService } from 'src/core/inventory/export/inventory-export.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
@@ -18,6 +20,7 @@ import { InventoryOrchestrator } from 'src/http/hbs/inventory/inventory.orchestr
 describe('InventoryOrchestrator', () => {
     let orchestrator: InventoryOrchestrator;
     let inventoryService: jest.Mocked<InventoryService>;
+    let exportService: jest.Mocked<InventoryExportService>;
     let transactionService: jest.Mocked<TransactionService>;
     let setService: jest.Mocked<SetService>;
 
@@ -46,6 +49,7 @@ describe('InventoryOrchestrator', () => {
                         totalOwnedValue: jest.fn(),
                         totalInventoryItemsForSet: jest.fn(),
                         ownedValueForSet: jest.fn(),
+                        sellPlanForUser: jest.fn(),
                     },
                 },
                 {
@@ -54,7 +58,7 @@ describe('InventoryOrchestrator', () => {
                 },
                 {
                     provide: InventoryExportService,
-                    useValue: { exportToCsv: jest.fn() },
+                    useValue: { exportToCsv: jest.fn(), sellPlanToCsv: jest.fn() },
                 },
                 {
                     provide: TransactionService,
@@ -73,6 +77,7 @@ describe('InventoryOrchestrator', () => {
 
         orchestrator = module.get(InventoryOrchestrator);
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
+        exportService = module.get(InventoryExportService) as jest.Mocked<InventoryExportService>;
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
         setService = module.get(SetService) as jest.Mocked<SetService>;
     });
@@ -512,6 +517,121 @@ describe('InventoryOrchestrator', () => {
             await expect(
                 orchestrator.findBinderBySet(mockAuthenticatedRequest, 'INVALID')
             ).rejects.toThrow('Set not found: INVALID');
+        });
+    });
+
+    describe('sellView', () => {
+        const card = new Card({
+            id: 'card-1',
+            imgSrc: 'img.jpg',
+            legalities: [],
+            name: 'Teferi',
+            number: '7',
+            rarity: CardRarity.Rare,
+            setCode: 'dmu',
+            sortNumber: '0007',
+            type: 'Planeswalker',
+        });
+
+        const plan = buildSellPlan(
+            [new Inventory({ cardId: 'card-1', userId: 1, isFoil: false, quantity: 4, card })],
+            [
+                new GranularPrice({
+                    cardId: 'card-1',
+                    provider: 'cardkingdom',
+                    priceType: 'buylist',
+                    finish: 'normal',
+                    condition: 'NM',
+                    price: 2.5,
+                    qty: 3,
+                }),
+            ]
+        );
+
+        it('assembles the market sell value view', async () => {
+            inventoryService.sellPlanForUser.mockResolvedValue(plan);
+            inventoryService.totalInventoryItems.mockResolvedValue(5);
+
+            const result = await orchestrator.sellView(mockAuthenticatedRequest);
+
+            expect(inventoryService.sellPlanForUser).toHaveBeenCalledWith(1);
+            expect(result.totalSellValue).toBe('$7.50'); // $2.50 x min(4, 3)
+            expect(result.itemsWithOffers).toBe(1);
+            expect(result.hasOffers).toBe(true);
+            expect(result.hasInventory).toBe(true);
+            expect(result.vendorGroups).toHaveLength(1);
+            const group = result.vendorGroups[0];
+            expect(group.vendor).toBe('Card Kingdom');
+            expect(group.payout).toBe('$7.50');
+            const item = group.items[0];
+            expect(item.key).toBe('card-1:n');
+            expect(item.quantity).toBe(4);
+            expect(item.sellableQuantity).toBe(3);
+            expect(item.quantityCapped).toBe(true);
+            expect(item.offerPrice).toBe('$2.50');
+            expect(item.vendorUrl).toContain('cardkingdom.com');
+            expect(item.vendorUrl).toContain(encodeURIComponent('Teferi'));
+        });
+
+        it('shows $0.00 with no offers and reports inventory presence', async () => {
+            inventoryService.sellPlanForUser.mockResolvedValue(buildSellPlan([], []));
+            inventoryService.totalInventoryItems.mockResolvedValue(0);
+
+            const result = await orchestrator.sellView(mockAuthenticatedRequest);
+
+            expect(result.totalSellValue).toBe('$0.00');
+            expect(result.hasOffers).toBe(false);
+            expect(result.hasInventory).toBe(false);
+        });
+
+        it('rejects unauthenticated requests', async () => {
+            const badRequest = { isAuthenticated: () => false } as AuthenticatedRequest;
+            await expect(orchestrator.sellView(badRequest)).rejects.toThrow();
+        });
+    });
+
+    describe('exportSellCsv', () => {
+        it('parses posted keys and exports the selected plan', async () => {
+            inventoryService.sellPlanForUser.mockResolvedValue(buildSellPlan([], []));
+            exportService.sellPlanToCsv.mockResolvedValue('csv-content');
+
+            const result = await orchestrator.exportSellCsv(mockAuthenticatedRequest, [
+                'card-1:n',
+                'card-2:f',
+            ]);
+
+            expect(inventoryService.sellPlanForUser).toHaveBeenCalledWith(1, [
+                { cardId: 'card-1', isFoil: false },
+                { cardId: 'card-2', isFoil: true },
+            ]);
+            expect(result).toBe('csv-content');
+        });
+
+        it('accepts a single key posted as a bare string', async () => {
+            inventoryService.sellPlanForUser.mockResolvedValue(buildSellPlan([], []));
+            exportService.sellPlanToCsv.mockResolvedValue('');
+
+            await orchestrator.exportSellCsv(mockAuthenticatedRequest, 'card-1:f');
+
+            expect(inventoryService.sellPlanForUser).toHaveBeenCalledWith(1, [
+                { cardId: 'card-1', isFoil: true },
+            ]);
+        });
+
+        it('treats absent keys as an empty selection and skips malformed values', async () => {
+            inventoryService.sellPlanForUser.mockResolvedValue(buildSellPlan([], []));
+            exportService.sellPlanToCsv.mockResolvedValue('');
+
+            await orchestrator.exportSellCsv(mockAuthenticatedRequest, undefined);
+            expect(inventoryService.sellPlanForUser).toHaveBeenLastCalledWith(1, []);
+
+            await orchestrator.exportSellCsv(mockAuthenticatedRequest, [
+                'no-separator',
+                'card-1:x',
+                ':n',
+                42 as unknown as string,
+            ]);
+            expect(inventoryService.sellPlanForUser).toHaveBeenLastCalledWith(1, []);
         });
     });
 });

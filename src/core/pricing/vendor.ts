@@ -24,3 +24,21 @@ export const VENDORS: Record<string, VendorInfo> = {
 export function vendorDisplayName(provider: string): string {
     return VENDORS[provider]?.displayName ?? provider;
 }
+
+/**
+ * Public buylist-search URL on the vendor's own site for a card, so a user can
+ * act on an offer (6.4). Plain links only — no partner/affiliate attribution.
+ * Null when we have no known URL pattern for the provider.
+ */
+export function vendorBuylistUrl(provider: string, cardName: string): string | null {
+    if (!cardName) return null;
+    switch (provider) {
+        case 'cardkingdom':
+            return (
+                'https://www.cardkingdom.com/purchasing/mtg_singles' +
+                `?filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=${encodeURIComponent(cardName)}`
+            );
+        default:
+            return null;
+    }
+}

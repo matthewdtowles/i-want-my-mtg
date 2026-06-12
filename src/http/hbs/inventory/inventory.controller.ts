@@ -86,6 +86,7 @@ export class InventoryController {
 
     @UseGuards(JwtAuthGuard)
     @Post('sell/export')
+    @HttpCode(HttpStatus.OK)
     async exportSellCsv(
         @Body() body: { keys?: string | string[] },
         @Req() req: AuthenticatedRequest,

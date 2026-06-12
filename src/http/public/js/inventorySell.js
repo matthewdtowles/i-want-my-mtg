@@ -46,9 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = event.target;
         if (target.classList.contains('sell-group-toggle')) {
             const group = target.closest('[data-vendor-group]');
-            group.querySelectorAll('.sell-item-toggle').forEach((box) => {
-                box.checked = target.checked;
-            });
+            if (group) {
+                group.querySelectorAll('.sell-item-toggle').forEach((box) => {
+                    box.checked = target.checked;
+                });
+            }
         }
         if (
             target.classList.contains('sell-group-toggle') ||

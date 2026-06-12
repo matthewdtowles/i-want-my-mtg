@@ -302,6 +302,7 @@ describe('InventoryService', () => {
 
             expect(plan.itemsWithOffers).toBe(0);
             expect(plan.totalPayout).toBe(0);
+            expect(repository.findAllForExport).not.toHaveBeenCalled();
         });
 
         it('returns an empty plan without queries when userId is missing', async () => {

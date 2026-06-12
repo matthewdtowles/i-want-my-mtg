@@ -123,6 +123,7 @@ export class InventoryService {
     async sellPlanForUser(userId: number, selection?: InventoryKey[]): Promise<SellPlan> {
         this.LOGGER.debug(`sellPlanForUser ${userId}, selection: ${selection?.length ?? 'all'}.`);
         if (!userId) return buildSellPlan([], []);
+        if (selection && selection.length === 0) return buildSellPlan([], []);
         let items = await this.repository.findAllForExport(userId);
         if (selection) {
             const selected = new Set(selection.map((k) => `${k.cardId}|${k.isFoil}`));

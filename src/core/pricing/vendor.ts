@@ -13,12 +13,32 @@ export interface VendorInfo {
     readonly displayName: string;
     /** Whether a user can actually sell to them (vs. just a price source). */
     readonly sellable: boolean;
+    /**
+     * Store-credit bonus as a fraction (0.30 = +30%) — the default used by the
+     * cash-vs-credit optimizer (6.5). The real rate fluctuates and varies by
+     * promotion, so the optimizer page lets the user override it; this is just
+     * a sensible starting point. Code-level until a DB `vendor` table lands.
+     */
+    readonly storeCreditBonus: number;
 }
 
 export const VENDORS: Record<string, VendorInfo> = {
-    cardkingdom: { key: 'cardkingdom', displayName: 'Card Kingdom', sellable: true },
-    cardsphere: { key: 'cardsphere', displayName: 'Cardsphere', sellable: true },
+    cardkingdom: {
+        key: 'cardkingdom',
+        displayName: 'Card Kingdom',
+        sellable: true,
+        storeCreditBonus: 0.3,
+    },
+    cardsphere: {
+        key: 'cardsphere',
+        displayName: 'Cardsphere',
+        sellable: true,
+        storeCreditBonus: 0,
+    },
 };
+
+/** Default store-credit bonus for the optimizer (Card Kingdom — the one sell-to vendor today). */
+export const DEFAULT_STORE_CREDIT_BONUS = VENDORS.cardkingdom.storeCreditBonus;
 
 /** Human label for a provider key; falls back to the raw key if unknown. */
 export function vendorDisplayName(provider: string): string {

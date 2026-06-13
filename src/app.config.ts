@@ -36,6 +36,15 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             eq: (a: any, b: any) => a === b,
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
+            money: (n: any) => {
+                const num = Number(n);
+                return n != null && Number.isFinite(num)
+                    ? `$${num.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                      })}`
+                    : '—';
+            },
             encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
             assetVersion: () => version,
             concat: (...args: any[]) => {

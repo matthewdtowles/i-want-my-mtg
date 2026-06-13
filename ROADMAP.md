@@ -150,9 +150,9 @@ against your buy list"). Build that first; the multi-vendor consolidation optimi
 - [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9))
 - [ ] **Gated on 6.9 (≥2 buylist sources):** best net outcome per vendor; favor consolidating into a single vendor/bulk transaction where it wins
 
-### 6.6 Condition Vocabulary Normalization (follow-up, after 6.2/6.3)
+### 6.6 Condition Vocabulary Normalization — **skipped (single grade)** ⏭️
 
-Open question deferred from 6.2 — not blocking, since every row in 6.2/6.3 is `NM`. Revisit only when a source actually delivers multi-grade prices (likely Tier C, or a future CK-retail-by-grade ingest).
+**Closed without building (#512).** Every row in 6.2–6.7 is `NM` and buylist is single-source (Card Kingdom), so there is no multi-grade data to normalize. Revisit only when a source actually delivers multi-grade prices (Tier C, or a future CK-retail-by-grade ingest — CK's `condition_values` already exposes nm/ex/vg/g **retail**). The notes below are kept as the design starting point.
 
 - [ ] Decide the canonical **raw-condition** representation and the per-vendor converters. Candidate (from scoping): a normalized numeric rank so "best condition" / offer-matching are cheap comparisons. Caveat: CK (NM/EX/VG/G, 4 grades) and TCGplayer (NM/LP/MP/HP/DMG, 5 grades) don't map 1:1, so any shared scale is lossy cross-vendor — keep the source grade where fidelity matters
 - [ ] Keep **professional grading a separate dimension** (grading company + numeric grade, allowing half-grades like BGS 9.5) rather than overloading the raw-condition column — a slabbed PSA 9 is a distinct product/market from a raw NM, and a different `tcgplayerProductId`
@@ -166,15 +166,17 @@ Adds Card Kingdom's free direct pricelist (`api.cardkingdom.com/api/v2/pricelist
 - [x] Stream the CK pricelist in scry (`CkPricelistEventProcessor`), `scryfall_id → card.id` map, emit `granular_price` + `granular_price_history` buylist rows (`provider='cardkingdom'`, finish from `is_foil`, condition `NM`); only real offers emit (`price_buy > 0 AND qty_buying > 0`); per-series dedupe keeps the best offer; best-effort (never blocks the averaged price refresh)
 - [x] Buy-quantity re-introduced: nullable `qty` on both granular tables; `qty = EXCLUDED.qty` (last-writer-wins, not COALESCE) so a failed CK fetch reads NULL ("unknown") rather than stale. Surfacing qty deferred to 6.4
 
-### 6.8 Normalize card image: derive from `scryfall_id`, drop `img_src` — **directly after 6.7**
+### 6.8 Normalize card image: derive from `scryfall_id`, drop `img_src` ✅
 
-`img_src` is pure derived data: scry stores exactly `{a}/{b}/{scryfall_id}.jpg` and the web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total, reversible function of `scryfall_id`. Once 6.7 adds the `scryfall_id` column, storing `img_src` too is denormalized (same fact, two columns), and `scryfall_id` is strictly more useful (it also drives CK matching + Scryfall API interop). Do this **immediately after Tier B**, while it's fresh.
+`img_src` was pure derived data: scry stored exactly `{a}/{b}/{scryfall_id}.jpg` and the web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total, reversible function of `scryfall_id`. Once 6.7 added the `scryfall_id` column, storing `img_src` too was denormalized (same fact, two columns). Shipped as a coupled web+scry deploy sequence so the column drop could never precede the no-`img_src` binary:
 
-- [ ] Drop the stored `card.img_src` column; scry persists `scryfall_id` only (stop computing/storing the path).
-- [ ] Derive the image at read time via a shared helper (TS mirror of `Card::build_scryfall_image_path`): `${BASE_IMAGE_URL}/${size}/front/${a}/${b}/${scryfall_id}.jpg`.
-- [ ] **Keep the external contract:** the `imgSrc` field stays in the JSON API DTOs (`card-api`, `inventory-api`), MCP output schemas, and HBS views — computed from `scryfall_id` in the presenter, not read from a column (~6–8 read sites).
-- [ ] Fix `json-ld.util.ts` to emit an **absolute** image URL (it currently sets `schema.image` to the raw `{a}/{b}/{id}.jpg` tail — an already-broken link).
-- [ ] Front-face only is preserved (the scheme always serves `/front/`); back/DFC images remain a separate future feature.
+- [x] **6.8a** (web #525): web derives the image tail from `card.scryfall_id` at read time via `buildScryfallImagePath` (`src/shared/utils/scryfall-image.util.ts`, TS mirror of `Card::build_scryfall_image_path`), wired into `card.mapper` + `transaction.repository`. No visual change.
+- [x] **6.8b step 1** (web #526, migration `037`): make `img_src` nullable (prerequisite for scry to stop writing it).
+- [x] **6.8b step 2** (scry #18, released 5.13.1): scry stops computing/writing `img_src`; persists `scryfall_id` only.
+- [x] **6.8b step 3** (web, migration `038`): drop the `card.img_src` column. Migrations `036`/`037` guarded with column-existence `DO` blocks (untracked migrations replay every deploy). The drop runs before `setup-cron.sh` extracts `scry:latest`, so the column and a still-writing binary never coexist.
+- [x] **Kept the external contract:** the `imgSrc` field stays in the JSON API DTOs (`card-api`, `inventory-api`), MCP output schemas, and HBS views — derived from `scryfall_id` in `card.mapper`, not read from a column.
+- [x] ~~Fix `json-ld.util.ts` to emit an absolute image URL~~ **Stale (no change):** the HBS card view's `imgSrc` is already a full URL via `card.presenter.buildImgSrc`, so `schema.image` is already absolute (#525).
+- [x] Front-face only is preserved (the scheme always serves `/front/`); back/DFC images remain a separate future feature.
 
 ### 6.9 Tier C: Broaden Buylist Vendor Coverage (find more buylist sources)
 
@@ -182,10 +184,12 @@ Promoted from "deferred" by a live-ingest finding (scry#14 Tier A), then **confi
 
 **Researched (2026-06-09, full findings on #515): no free, legitimate, multi-vendor buylist API exists.** TCGplayer shut down its buylist program (July 2024); Cardsphere is peer-to-peer and absent from the MTGJSON feed; the remaining buylist vendors (Star City Games, CoolStuffInc, ABU Games, Troll & Toad) publish no APIs — reachable only via go-mtgban scrapers (free, but ToS-gray, AGPL, a Go sidecar next to the Rust ETL, perpetual breakage maintenance) or the mtgban BAN API at $1,000/mo. **Decision: proceed single-source.** 6.4 ships framed as vendor-neutral **market sell value**; 6.5 is re-scoped to the cash-vs-credit decision; the multi-vendor pieces stay gated here.
 
+**Skipped (single source) — #515 closed.** Proceeding single-source is the final decision; the multi-vendor pieces stay gated below and are revisited only on demand + revenue.
+
 - [x] Evaluate additional buylist sources — done; no viable free/legitimate option (see findings on #515)
 - [x] Re-sequence decision: 6.4/6.5 do **not** wait for broader coverage — built single-source with vendor-neutral framing; the per-vendor comparison + consolidation optimizer are gated on this item
-- [ ] scry cleanup: drop `cardsphere` from `GRANULAR_PROVIDERS` (confirmed absent upstream; yields nothing today)
-- [ ] Revisit go-mtgban / a paid aggregator only when **both** hold: (a) 6.4 has shipped and sell-flow engagement shows demand for vendor comparison; (b) revenue can absorb the scraper ops burden or an aggregator fee
+- [x] scry cleanup: drop the dead `cardsphere` provider (confirmed absent upstream; yields nothing). *Correction:* `cardsphere` was never in `GRANULAR_PROVIDERS` (`tcgplayer, cardkingdom, manapool`) — it lingered in `AVERAGE_PROVIDERS`, which derives the averaged `price`. Removed there (scry PR #19); output-identical since it never carried a retail value upstream.
+- [ ] **Gated:** revisit go-mtgban / a paid aggregator only when **both** hold: (a) 6.4 has shipped and sell-flow engagement shows demand for vendor comparison; (b) revenue can absorb the scraper ops burden or an aggregator fee
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 

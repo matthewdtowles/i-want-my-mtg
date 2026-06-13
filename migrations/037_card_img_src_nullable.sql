@@ -13,6 +13,17 @@ BEGIN;
 -- scry's card upsert omit img_src without violating the constraint. Safe and
 -- inert on its own - scry keeps writing img_src until its next release.
 
-ALTER TABLE public.card ALTER COLUMN img_src DROP NOT NULL;
+-- Guarded so this stays re-runnable after migration 038 drops img_src (the
+-- migration set is replayed every deploy; there is no IF EXISTS form for
+-- ALTER COLUMN). No-op once the column is gone.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'card' AND column_name = 'img_src'
+    ) THEN
+        ALTER TABLE public.card ALTER COLUMN img_src DROP NOT NULL;
+    END IF;
+END $$;
 
 COMMIT;

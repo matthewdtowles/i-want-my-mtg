@@ -21,9 +21,6 @@ export class CardOrmEntity {
     @Column({ name: 'has_non_foil' })
     hasNonFoil: boolean;
 
-    @Column({ name: 'img_src' })
-    imgSrc: string;
-
     @Column({ name: 'in_main' })
     inMain: boolean;
 

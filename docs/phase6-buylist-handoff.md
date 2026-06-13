@@ -12,7 +12,14 @@ The work spans two repos that share one Postgres DB:
 - **scry** (`/Users/matthewtowles/Projects/scry`, Rust ETL)
 
 6.2/6.3 (granular store + card-page display, Tier A) are merged and live.
+6.4 (inventory market sell value + CSV export) is **merged** (web PR #524).
 6.7 (Tier B, CK-direct) is **merged** (web PR #522 + the scry branch) — scope on issue #513.
+6.8 (normalize card image; drop `img_src`) is **merged** — see Done below.
+
+**Single-source is final.** 6.6 (condition vocab, #512) and 6.9 Tier C (broader vendor
+coverage, #515) are **closed/skipped**: buylist is upstream single-vendor (Card Kingdom)
+and every row is `NM`, so there is nothing to normalize across grades or compare across
+vendors. Revisit only if a multi-grade / multi-vendor source ever lands.
 
 **Framing decision (2026-06-11):** user-facing copy for the sell features uses vendor-neutral
 **"market sell value"** terminology — no named-vendor pitch (we are not partnered with Card
@@ -167,30 +174,40 @@ As-built (full scope + decision log on issue #513):
 
 ## Remaining work
 
-### Follow-up — **directly after Tier B** (ROADMAP 6.8): normalize the card image
-Once 6.7 adds `card.scryfall_id`, `img_src` is redundant derived data (scry stores exactly
-`{a}/{b}/{scryfall_id}.jpg`; web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total,
-reversible function of scryfall_id). Drop the stored column and derive the image from scryfall_id:
-- **scry**: persist `scryfall_id` only (stop computing/storing the path); drop `img_src` from the
-  card upsert + `tests/fixtures/schema.sql` + the `Card` domain.
-- **web**: a shared helper (TS mirror of `Card::build_scryfall_image_path`) builds the URL at
-  render. **Keep the `imgSrc` field** in the JSON API DTOs (`card-api`, `inventory-api`), MCP
-  output schemas, and HBS views — computed from `scryfall_id`, not read from a column (~6–8 sites).
-- Fix `json-ld.util.ts` to emit an **absolute** image URL (currently sets `schema.image` to the raw
-  `{a}/{b}/{id}.jpg` tail — an already-broken link). Front-face only is preserved (scheme always
-  serves `/front/`); back/DFC images stay a separate future feature.
+### 6.8 — normalize the card image; drop `img_src` ✅ (DONE)
+Shipped as a coupled web+scry deploy sequence so the column drop never preceded the
+no-`img_src` binary:
+- **6.8a** (web #525): web derives the image tail from `card.scryfall_id` via
+  `buildScryfallImagePath` (`src/shared/utils/scryfall-image.util.ts`, TS mirror of scry's
+  `Card::build_scryfall_image_path`), wired into `card.mapper` + `transaction.repository`. No
+  visual change. The **`imgSrc` field stays** in JSON API DTOs / MCP / HBS — derived, not a column.
+- **6.8b step 1** (web #526, migration `037`): `img_src` made nullable.
+- **6.8b step 2** (scry #18, released 5.13.1): scry persists `scryfall_id` only; stops writing
+  `img_src` (dropped from the card upsert + `Card` domain + `tests/fixtures/schema.sql`).
+- **6.8b step 3** (web, migration `038`): drop the `card.img_src` column. Migrations `036`/`037`
+  guarded with column-existence `DO` blocks because `run_migrations.sh` replays every `*.sql`
+  on every deploy (untracked); `001_complete_schema.sql` dropped the column. The migration runs
+  before `setup-cron.sh` extracts `scry:latest`, so column + still-writing binary never coexist.
+- **json-ld:** the roadmap bullet was stale — the HBS `imgSrc` is already a full URL
+  (`card.presenter.buildImgSrc`), so `schema.image` was already absolute. No change.
+
+### Closed / skipped (single source)
+- **6.6 condition vocab (#512):** every row is `NM`; no multi-grade source. Closed.
+- **6.9 Tier C (#515):** no free/legitimate multi-vendor buylist API exists; proceeding
+  single-source is final. The only cleanup — dropping the dead `cardsphere` provider — shipped in
+  scry PR #19 (it lived in `AVERAGE_PROVIDERS`, *not* `GRANULAR_PROVIDERS` as the roadmap said;
+  output-identical since cardsphere is absent upstream). go-mtgban / paid aggregator stay gated.
 
 ### Later
 - ~~6.3 remainder: buylist on the **set page + binder overlay**~~ **Descoped in 6.3.1** — buylist
   lives only on the card page; the set-list "sell $X" rows and binder "Buylist $X" overlay were
   removed (clutter + mobile overflow). The batched `findCurrentBuylistByCardIds` read is kept for 6.4.
-- 6.4 inventory **market sell value** (vendor-neutral copy; best offer per item, qty-capped
-  payout totals, group-by-vendor kept as structure, plain buylist links, CSV export); 6.5
-  re-scoped to **cash vs. store credit** first (needs DB `vendor` table), multi-vendor
-  consolidation gated on 6.9.
+- ~~6.4 inventory **market sell value**~~ **Shipped (PR #524).** Best offer per item, qty-capped
+  payout totals, group-by-vendor kept as structure, plain buylist links, CSV export.
+- **6.5 (next, not started):** re-scoped to **cash vs. store credit** first (needs DB `vendor`
+  table); multi-vendor consolidation gated on 6.9 (which is closed single-source).
 - Possible: currency column → then Cardmarket (only if non-USD is ever wanted; currently out).
-- ROADMAP 6.6: condition grade vocabulary (when a multi-grade source lands; note CK's
-  `condition_values` already exposes nm/ex/vg/g **retail** — a future source for that).
+- ~~ROADMAP 6.6: condition grade vocabulary~~ **Closed (#512)** — single grade (`NM`) only.
 
 ---
 

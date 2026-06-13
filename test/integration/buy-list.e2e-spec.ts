@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import {
     closeTestApp,
     createTestApp,
+    getTestUserId,
     loginTestUserApi,
     TEST_CARD_ID,
     TEST_SET_CODE,
@@ -12,17 +13,19 @@ import {
 describe('Buy List API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
+    let userId: number;
 
     const clearBuyList = async () => {
         const ds = app.get(DataSource);
         if (ds?.isInitialized) {
-            await ds.query(`DELETE FROM buy_list WHERE user_id = 1`);
+            await ds.query(`DELETE FROM buy_list WHERE user_id = $1`, [userId]);
         }
     };
 
     beforeAll(async () => {
         app = await createTestApp();
         bearerToken = await loginTestUserApi(app);
+        userId = await getTestUserId(app);
     }, 30000);
 
     afterEach(async () => {
@@ -73,6 +76,8 @@ describe('Buy List API (e2e)', () => {
                 quantity: 5,
             });
             expect(res.body.data[0].cardName).toBeDefined();
+            // findByUser joins the latest price, so the list carries prices.
+            expect(res.body.data[0].priceNormal).toBe(5);
         });
 
         it('PATCH sets an absolute quantity; quantity 0 removes the item', async () => {

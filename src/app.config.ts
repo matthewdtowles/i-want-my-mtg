@@ -38,7 +38,7 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
             lt: (a: any, b: any) => a < b,
             money: (n: any) => {
                 const num = Number(n);
-                return Number.isFinite(num)
+                return n != null && Number.isFinite(num)
                     ? `$${num.toLocaleString('en-US', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,

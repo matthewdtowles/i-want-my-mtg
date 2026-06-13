@@ -36,7 +36,7 @@ export class SellOptimizerOrchestrator {
         if (raw === undefined || raw === '') return DEFAULT_STORE_CREDIT_BONUS;
         const n = Number(raw);
         if (!Number.isFinite(n) || n < 0) return DEFAULT_STORE_CREDIT_BONUS;
-        return Math.min(n, 5);
+        return Math.min(n, 2);
     }
 
     private async gather(userId: number): Promise<OptimizerData> {

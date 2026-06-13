@@ -1,6 +1,7 @@
 import { Card } from 'src/core/card/card.entity';
 import { PriceMapper } from 'src/database/price/price.mapper';
 import { SetMapper } from 'src/database/set/set.mapper';
+import { cardImageTail } from 'src/shared/utils/scryfall-image.util';
 import { CardOrmEntity } from './card.orm-entity';
 import { LegalityMapper } from './legality.mapper';
 
@@ -12,7 +13,7 @@ export class CardMapper {
             flavorName: ormCard.flavorName,
             hasFoil: ormCard.hasFoil,
             hasNonFoil: ormCard.hasNonFoil,
-            imgSrc: ormCard.imgSrc,
+            imgSrc: cardImageTail(ormCard.scryfallId, ormCard.imgSrc),
             inMain: ormCard.inMain,
             isAlternative: ormCard.isAlternative,
             isReserved: ormCard.isReserved,

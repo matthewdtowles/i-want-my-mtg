@@ -1,38 +1,31 @@
 import { INestApplication } from '@nestjs/common';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { closeTestApp, createTestApp } from './setup';
 
-const MIGRATION_PATH = join(
-    process.cwd(),
-    'migrations',
-    '036_card_scryfall_id_and_granular_qty.sql'
-);
-
-// Realistic img_src shape ('{a}/{b}/{scryfall_id}.jpg', as scry builds it) vs
-// the non-conforming shape the seed data uses — the backfill must fill the
-// former and leave the latter NULL.
-const MIGRATION_CARD_ID = '00000000-0000-4000-b000-000000000001';
-const MIGRATION_CARD_SCRYFALL_ID = 'ab12cd34-5678-4abc-9def-1234567890ab';
-const MIGRATION_CARD_IMG_SRC = `a/b/${MIGRATION_CARD_SCRYFALL_ID}.jpg`;
+// Covers the card-image schema produced by the 6.7/6.8 migration sequence:
+// 036 added card.scryfall_id (+ granular qty), 037/038 made img_src nullable
+// then dropped it. The img_src -> scryfall_id backfill (036) is intentionally
+// not exercised here: 038 drops img_src on the harness DB, so there is no
+// column to backfill from. The backfill ran once in prod and is now a guarded
+// no-op (see migrations 036/037).
+const CARD_ID = '00000000-0000-4000-b000-000000000001';
+const CARD_SCRYFALL_ID = 'ab12cd34-5678-4abc-9def-1234567890ab';
 const JUNK_CARD_ID = '00000000-0000-4000-b000-000000000002';
-const JUNK_CARD_IMG_SRC = 'https://example.com/not-a-scryfall-path.jpg';
 
-describe('Migration 036: card.scryfall_id + granular qty (e2e)', () => {
+describe('Card image schema: scryfall_id + img_src drop (6.7/6.8) (e2e)', () => {
     let app: INestApplication;
     let ds: DataSource;
 
-    const insertCard = (id: string, imgSrc: string, number: string) =>
+    const insertCard = (id: string, number: string) =>
         ds.query(
-            `INSERT INTO card (id, has_foil, has_non_foil, img_src, is_reserved, name, number, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
-             VALUES ($1, true, true, $2, false, 'Migration Test Card', $3, 'common', 'tst', 'Creature', 'normal', false, $4, true)
+            `INSERT INTO card (id, has_foil, has_non_foil, is_reserved, name, number, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
+             VALUES ($1, true, true, false, 'Schema Test Card', $2, 'common', 'tst', 'Creature', 'normal', false, $3, true)
              ON CONFLICT (id) DO NOTHING`,
-            [id, imgSrc, number, number]
+            [id, number, number]
         );
 
     const deleteTestCards = () =>
-        ds.query('DELETE FROM card WHERE id IN ($1, $2)', [MIGRATION_CARD_ID, JUNK_CARD_ID]);
+        ds.query('DELETE FROM card WHERE id IN ($1, $2)', [CARD_ID, JUNK_CARD_ID]);
 
     beforeAll(async () => {
         app = await createTestApp();
@@ -51,7 +44,7 @@ describe('Migration 036: card.scryfall_id + granular qty (e2e)', () => {
         await closeTestApp(app);
     });
 
-    describe('schema (init parity + migration already applied by the harness)', () => {
+    describe('schema', () => {
         it('card.scryfall_id exists as a nullable varchar column', async () => {
             const rows = await ds.query(
                 `SELECT data_type, is_nullable FROM information_schema.columns
@@ -72,6 +65,14 @@ describe('Migration 036: card.scryfall_id + granular qty (e2e)', () => {
             expect(rows[0].indexdef).toContain('scryfall_id');
         });
 
+        it('card.img_src has been dropped (6.8b)', async () => {
+            const rows = await ds.query(
+                `SELECT 1 FROM information_schema.columns
+                 WHERE table_schema = 'public' AND table_name = 'card' AND column_name = 'img_src'`
+            );
+            expect(rows).toHaveLength(0);
+        });
+
         it.each(['granular_price', 'granular_price_history'])(
             '%s.qty exists as a nullable integer column',
             async (table) => {
@@ -87,57 +88,11 @@ describe('Migration 036: card.scryfall_id + granular qty (e2e)', () => {
         );
     });
 
-    describe('backfill (re-running the migration file against fresh rows)', () => {
-        const migrationSql = readFileSync(MIGRATION_PATH, 'utf8');
-
-        beforeEach(async () => {
-            await deleteTestCards();
-            await insertCard(MIGRATION_CARD_ID, MIGRATION_CARD_IMG_SRC, '901');
-            await insertCard(JUNK_CARD_ID, JUNK_CARD_IMG_SRC, '902');
-        });
-
-        it('fills scryfall_id from a conforming img_src and leaves non-conforming NULL', async () => {
-            await ds.query(migrationSql);
-
-            const rows = await ds.query(
-                'SELECT id, scryfall_id FROM card WHERE id IN ($1, $2) ORDER BY id',
-                [MIGRATION_CARD_ID, JUNK_CARD_ID]
-            );
-            expect(rows).toHaveLength(2);
-            expect(rows[0].scryfall_id).toBe(MIGRATION_CARD_SCRYFALL_ID);
-            expect(rows[1].scryfall_id).toBeNull();
-        });
-
-        it('is idempotent: running twice does not error or change values', async () => {
-            await ds.query(migrationSql);
-            await ds.query(migrationSql);
-
-            const rows = await ds.query('SELECT scryfall_id FROM card WHERE id = $1', [
-                MIGRATION_CARD_ID,
-            ]);
-            expect(rows[0].scryfall_id).toBe(MIGRATION_CARD_SCRYFALL_ID);
-        });
-
-        it('does not overwrite an already-set scryfall_id', async () => {
-            await ds.query(
-                `UPDATE card SET scryfall_id = 'preset-value-not-derived' WHERE id = $1`,
-                [MIGRATION_CARD_ID]
-            );
-
-            await ds.query(migrationSql);
-
-            const rows = await ds.query('SELECT scryfall_id FROM card WHERE id = $1', [
-                MIGRATION_CARD_ID,
-            ]);
-            expect(rows[0].scryfall_id).toBe('preset-value-not-derived');
-        });
-    });
-
     describe('unique index semantics', () => {
         beforeEach(async () => {
             await deleteTestCards();
-            await insertCard(MIGRATION_CARD_ID, MIGRATION_CARD_IMG_SRC, '901');
-            await insertCard(JUNK_CARD_ID, JUNK_CARD_IMG_SRC, '902');
+            await insertCard(CARD_ID, '901');
+            await insertCard(JUNK_CARD_ID, '902');
         });
 
         it('allows multiple NULL scryfall_ids (seed/junk cards coexist)', async () => {
@@ -147,13 +102,13 @@ describe('Migration 036: card.scryfall_id + granular qty (e2e)', () => {
 
         it('rejects a duplicate scryfall_id', async () => {
             await ds.query('UPDATE card SET scryfall_id = $1 WHERE id = $2', [
-                MIGRATION_CARD_SCRYFALL_ID,
-                MIGRATION_CARD_ID,
+                CARD_SCRYFALL_ID,
+                CARD_ID,
             ]);
 
             await expect(
                 ds.query('UPDATE card SET scryfall_id = $1 WHERE id = $2', [
-                    MIGRATION_CARD_SCRYFALL_ID,
+                    CARD_SCRYFALL_ID,
                     JUNK_CARD_ID,
                 ])
             ).rejects.toThrow(/duplicate key|unique/i);

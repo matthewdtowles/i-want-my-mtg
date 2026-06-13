@@ -75,9 +75,9 @@ describe('Freemium gates (e2e)', () => {
 
         // Seed a 5th card so we can build up to the 5-alert free-tier cap
         await ds.query(
-            `INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana_cost,
+            `INSERT INTO card (id, artist, has_foil, has_non_foil, is_reserved, mana_cost,
                 name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
-             VALUES ($1, 'Test Artist', true, true, 'https://example.com/card5.jpg', false, '{G}',
+             VALUES ($1, 'Test Artist', true, true, false, '{G}',
                 'Test Hydra', '5', 'Trample', 'rare', $2, 'Creature - Hydra', 'normal', false, '005', true)
              ON CONFLICT (id) DO NOTHING`,
             [EXTRA_CARD_ID, TEST_SET_CODE]
@@ -253,9 +253,9 @@ describe('Freemium gates (e2e)', () => {
             // Need a 6th distinct card id; reuse the EXTRA_CARD_ID is already alerted, so insert another.
             const sixthCardId = '00000000-0000-4000-a000-000000000006';
             await ds.query(
-                `INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana_cost,
+                `INSERT INTO card (id, artist, has_foil, has_non_foil, is_reserved, mana_cost,
                     name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
-                 VALUES ($1, 'Test Artist', true, true, 'https://example.com/card6.jpg', false, '{U}',
+                 VALUES ($1, 'Test Artist', true, true, false, '{U}',
                     'Test Drake', '6', 'Flying', 'common', $2, 'Creature - Drake', 'normal', false, '006', true)
                  ON CONFLICT (id) DO NOTHING`,
                 [sixthCardId, TEST_SET_CODE]

@@ -7,12 +7,14 @@ VALUES ('tst', 4, 4, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', t
 ON CONFLICT (code) DO NOTHING;
 
 -- Test cards in the set
-INSERT INTO card (id, artist, has_foil, has_non_foil, img_src, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
+-- scryfall_id (not img_src) drives the card image now (6.8b): the web derives
+-- the path tail '{a}/{b}/{scryfall_id}.jpg' from it at read time.
+INSERT INTO card (id, artist, has_foil, has_non_foil, scryfall_id, is_reserved, mana_cost, name, number, oracle_text, rarity, set_code, type, layout, is_alternative, sort_number, in_main)
 VALUES
-    ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, 'https://example.com/card1.jpg', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'tst', 'Creature - Angel', 'normal', false, '001', true),
-    ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, 'https://example.com/card2.jpg', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'tst', 'Creature - Sphinx', 'normal', false, '002', true),
-    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, 'https://example.com/card3.jpg', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'tst', 'Creature - Zombie', 'normal', false, '003', true),
-    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, 'https://example.com/card4.jpg', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', false, '004', true)
+    ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, '11111111-1111-4111-a111-111111111111', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'tst', 'Creature - Angel', 'normal', false, '001', true),
+    ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, '22222222-2222-4222-a222-222222222222', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'tst', 'Creature - Sphinx', 'normal', false, '002', true),
+    ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, '33333333-3333-4333-a333-333333333333', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'tst', 'Creature - Zombie', 'normal', false, '003', true),
+    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, '44444444-4444-4444-a444-444444444444', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', false, '004', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards

@@ -8,7 +8,7 @@ import {
     TransactionRepositoryPort,
 } from 'src/core/transaction/ports/transaction.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
-import { cardImageTail } from 'src/shared/utils/scryfall-image.util';
+import { buildScryfallImagePath } from 'src/shared/utils/scryfall-image.util';
 import { Repository } from 'typeorm';
 import { QueryBuilderHelper } from '../query/query-builder.helper';
 import { TransactionMapper } from './transaction.mapper';
@@ -150,7 +150,7 @@ export class TransactionRepository implements TransactionRepositoryPort {
                 (core as any).cardName = orm.card.name;
                 (core as any).cardSetCode = orm.card.setCode;
                 (core as any).cardNumber = orm.card.number;
-                (core as any).cardImgSrc = cardImageTail(orm.card.scryfallId, orm.card.imgSrc);
+                (core as any).cardImgSrc = buildScryfallImagePath(orm.card.scryfallId);
             }
             return core;
         });

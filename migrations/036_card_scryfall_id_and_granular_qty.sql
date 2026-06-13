@@ -22,10 +22,21 @@ BEGIN;
 
 ALTER TABLE public.card ADD COLUMN IF NOT EXISTS scryfall_id character varying;
 
-UPDATE public.card
-SET scryfall_id = left(split_part(img_src, '/', 3), 36)
-WHERE scryfall_id IS NULL
-  AND img_src ~ '^[0-9a-f]/[0-9a-f]/[0-9a-f-]{36}\.jpg$';
+-- Guarded so this stays re-runnable after migration 038 drops img_src (the
+-- migration set is replayed every deploy). While img_src exists this is the
+-- original backfill; once dropped it is a clean no-op.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'card' AND column_name = 'img_src'
+    ) THEN
+        UPDATE public.card
+        SET scryfall_id = left(split_part(img_src, '/', 3), 36)
+        WHERE scryfall_id IS NULL
+          AND img_src ~ '^[0-9a-f]/[0-9a-f]/[0-9a-f-]{36}\.jpg$';
+    END IF;
+END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_card_scryfall_id ON public.card (scryfall_id);
 

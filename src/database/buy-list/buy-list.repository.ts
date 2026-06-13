@@ -18,8 +18,8 @@ export class BuyListRepository implements BuyListRepositoryPort {
 
     async findByUser(userId: number): Promise<BuyListItem[]> {
         this.LOGGER.debug(`findByUser ${userId}.`);
-        // Join the card, its latest price row (so the page shows prices), and
-        // its set (keyrune code), mirroring the inventory read.
+        // Join the card, its latest price row (for display + the 6.5 optimizer's
+        // retail total), and its set (keyrune code), mirroring the inventory read.
         const items = await this.repository
             .createQueryBuilder('bl')
             .leftJoinAndSelect('bl.card', 'card')

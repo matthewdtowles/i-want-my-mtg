@@ -6,6 +6,7 @@ import { ApiKeyApiController } from './api-tier/api-key-api.controller';
 import { AuthApiController } from './auth/auth-api.controller';
 import { BillingApiController } from './billing/billing-api.controller';
 import { StripeWebhookController } from './billing/stripe-webhook.controller';
+import { BuyListApiController } from './buy-list/buy-list-api.controller';
 import { CardApiController } from './card/card-api.controller';
 import { InventoryApiController } from './inventory/inventory-api.controller';
 import { PortfolioApiController } from './portfolio/portfolio-api.controller';
@@ -29,6 +30,7 @@ import { RapidApiProxyGuard } from './shared/rapidapi-proxy.guard';
         AuthApiController,
         BillingApiController,
         StripeWebhookController,
+        BuyListApiController,
         CardApiController,
         InventoryApiController,
         PortfolioApiController,
@@ -51,11 +53,6 @@ import { RapidApiProxyGuard } from './shared/rapidapi-proxy.guard';
     // instances — sharing in-memory burst state and the per-key daily quota.
     // The two route guards pull in these deps transitively, so they must be
     // exported too for resolution in the importing module.
-    exports: [
-        OptionalAuthOrApiKeyGuard,
-        ApiRateLimitGuard,
-        ApiKeyAuthGuard,
-        RapidApiProxyGuard,
-    ],
+    exports: [OptionalAuthOrApiKeyGuard, ApiRateLimitGuard, ApiKeyAuthGuard, RapidApiProxyGuard],
 })
 export class ApiModule {}

@@ -4,6 +4,7 @@ import { ApiTierModule } from './api-tier/api-tier.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
 import { BlogModule } from './blog/blog.module';
+import { BuyListModule } from './buy-list/buy-list.module';
 import { CardModule } from './card/card.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
@@ -23,6 +24,7 @@ import { UserModule } from './user/user.module';
         AuthModule,
         BillingModule,
         BlogModule,
+        BuyListModule,
         CardModule,
         EmailModule,
         ImportModule,
@@ -41,6 +43,7 @@ import { UserModule } from './user/user.module';
         AuthModule,
         BillingModule,
         BlogModule,
+        BuyListModule,
         CardModule,
         EmailModule,
         ImportModule,

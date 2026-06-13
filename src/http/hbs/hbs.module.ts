@@ -9,6 +9,8 @@ import { AuthOrchestrator } from './auth/auth.orchestrator';
 import { BillingController } from './billing/billing.controller';
 import { BillingOrchestrator } from './billing/billing.orchestrator';
 import { BlogController } from './blog/blog.controller';
+import { BuyListPageController } from './buy-list/buy-list-page.controller';
+import { BuyListPageOrchestrator } from './buy-list/buy-list-page.orchestrator';
 import { PricingController } from './billing/pricing.controller';
 import { PricingOrchestrator } from './billing/pricing.orchestrator';
 import { SubscriptionViewInterceptor } from './shared/subscription-view.interceptor';
@@ -46,6 +48,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         BillingController,
         PricingController,
         BlogController,
+        BuyListPageController,
         CardController,
         HomeController,
         InventoryController,
@@ -66,6 +69,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         BillingOrchestrator,
         PricingOrchestrator,
         { provide: APP_INTERCEPTOR, useClass: SubscriptionViewInterceptor },
+        BuyListPageOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,
@@ -81,6 +85,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         AuthOrchestrator,
         BillingOrchestrator,
         PricingOrchestrator,
+        BuyListPageOrchestrator,
         CardOrchestrator,
         InventoryOrchestrator,
         NotificationPageOrchestrator,

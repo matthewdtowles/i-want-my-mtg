@@ -1,0 +1,42 @@
+<section class="border border-gray-200 dark:border-midnight-700 rounded-xl sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h1 class="page-title">Buy List</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-md mx-auto">
+            Track cards you want to buy. Used by the cash-vs-store-credit planner to show
+            whether a store-credit offer is worth more than cash for your list.
+        </p>
+    </section>
+
+    <div class="content-wrapper">
+        {{!-- Bulk paste import --}}
+        <details class="mb-4 border border-gray-200 dark:border-midnight-700 rounded-lg">
+            <summary class="cursor-pointer px-4 py-3 font-medium">
+                <i class="fas fa-paste mr-2" aria-hidden="true"></i>Add cards in bulk
+            </summary>
+            <div class="px-4 pb-4">
+                <label for="buy-list-import-text" class="block text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    Paste CSV rows with a header &mdash; <code>name,set_code,number,quantity</code>
+                    (the same format as <a href="/guides/getting-started" class="text-teal-600 dark:text-teal-400 hover:underline">inventory import</a>).
+                    Moxfield, Archidekt, Deckbox, and TCGPlayer exports are auto-detected.
+                </label>
+                <textarea id="buy-list-import-text" rows="6"
+                    class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 p-2 text-sm font-mono"
+                    placeholder="name,set_code,number,quantity&#10;Sol Ring,cmd,220,2&#10;Counterspell,mh2,267,1"></textarea>
+                <div class="flex items-center gap-3 mt-2">
+                    <button id="buy-list-import-btn" type="button" class="btn btn-primary">Add to buy list</button>
+                    <span id="buy-list-import-result" class="text-sm" role="status" aria-live="polite"></span>
+                </div>
+            </div>
+        </details>
+
+        {{!-- Client-rendered list (buyList.js fetches /api/v1/buy-list) --}}
+        <div id="buy-list-ajax" data-has-items="{{hasItems}}">
+            <div class="text-center py-16">
+                <i class="fas fa-spinner fa-spin text-4xl text-teal-500" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/buyList.js?v={{assetVersion}}" defer></script>

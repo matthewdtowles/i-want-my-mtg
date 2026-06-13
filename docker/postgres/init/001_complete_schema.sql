@@ -856,6 +856,27 @@ CREATE INDEX idx_price_notification_unread ON public.price_notification (user_id
 
 
 --
+-- Name: buy_list; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.buy_list (
+    user_id integer NOT NULL,
+    card_id character varying NOT NULL,
+    foil boolean NOT NULL DEFAULT false,
+    quantity integer NOT NULL DEFAULT 1 CHECK (quantity > 0),
+    created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    CONSTRAINT buy_list_pkey PRIMARY KEY (user_id, card_id, foil),
+    CONSTRAINT fk_buy_list_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_buy_list_card FOREIGN KEY (card_id)
+        REFERENCES public.card(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_buy_list_user_id ON public.buy_list (user_id);
+CREATE INDEX idx_buy_list_card_id ON public.buy_list (card_id);
+
+
+--
 -- Name: sealed_product; Type: TABLE; Schema: public
 --
 

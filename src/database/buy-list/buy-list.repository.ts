@@ -18,11 +18,20 @@ export class BuyListRepository implements BuyListRepositoryPort {
 
     async findByUser(userId: number): Promise<BuyListItem[]> {
         this.LOGGER.debug(`findByUser ${userId}.`);
-        const items = await this.repository.find({
-            where: { userId },
-            relations: { card: true },
-            order: { createdAt: 'DESC' },
-        });
+        // Join the card, its latest price row (for display + the 6.5 optimizer's
+        // retail total), and its set (keyrune code), mirroring the inventory read.
+        const items = await this.repository
+            .createQueryBuilder('bl')
+            .leftJoinAndSelect('bl.card', 'card')
+            .leftJoinAndSelect(
+                'card.prices',
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            )
+            .leftJoinAndSelect('card.set', 'set')
+            .where('bl.userId = :userId', { userId })
+            .orderBy('bl.createdAt', 'DESC')
+            .getMany();
         return items.map((i) => BuyListMapper.toCore(i));
     }
 

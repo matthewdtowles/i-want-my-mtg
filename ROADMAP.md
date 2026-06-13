@@ -144,10 +144,12 @@ decision even with one vendor (store-credit bonus % means "take $X cash, or $Y i
 against your buy list"). Build that first; the multi-vendor consolidation optimizer is gated on
 6.9 landing a second source.
 
-- [ ] Sell-list and buy-list entities per user
-- [ ] Cash-vs-credit optimizer: net outcome of cash payout vs. store-credit bonus % applied against the user's buy list and retail buy prices
-- [ ] Present the recommendation clearly; CSV export of the plan
-- [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9))
+Shipped in two PRs: **PR1** the buy-list, **PR2** the optimizer.
+
+- [x] **Buy-list entity per user** (PR1): `buy_list` table (migration `039`, grain mirrors inventory: user+card+finish+qty) + core/db/API (`/api/v1/buy-list`) + `/buy-list` page + "Add to buy list" control + bulk CSV-paste import (reuses the native CSV parser + `CardImportResolver`). **Sell-list reuses 6.4** (no separate entity) — the optimizer's cash side is the existing `buildSellPlan` Card Kingdom group.
+- [x] **Cash-vs-credit optimizer** (PR2): pure `cash-vs-credit.policy.ts` — cash payout C (CK group from 6.4) vs. store credit `C(1+b)` applied against the buy-list retail R; flags out-of-pocket each way, the credit advantage, and locked leftover credit.
+- [x] **Present the recommendation + CSV export** (PR2): `/optimizer` page with an editable bonus-% input (default from the `cardkingdom` vendor constant, recomputed client-side), reachable from `/inventory/sell` and `/buy-list`; `GET /optimizer/export.csv`.
+- [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)) — follow-up in the MCP repo.
 - [ ] **Gated on 6.9 (≥2 buylist sources):** best net outcome per vendor; favor consolidating into a single vendor/bulk transaction where it wins
 
 ### 6.6 Condition Vocabulary Normalization — **skipped (single grade)** ⏭️

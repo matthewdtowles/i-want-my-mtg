@@ -1,0 +1,108 @@
+<section id="optimizer-root"
+    class="border border-gray-200 dark:border-midnight-700 rounded-xl sm:m-0 md:m-4"
+    data-cash-value="{{result.cashValue}}" data-buy-list-retail="{{result.buyListRetail}}"
+    data-default-bonus="{{defaultBonusPct}}">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4 px-4">
+        <h1 class="page-title">Cash vs. Store Credit</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-xl mx-auto">
+            Compare taking cash for your sellable cards against store credit (worth a bonus %)
+            spent on your <a href="/buy-list" class="text-teal-600 dark:text-teal-400 hover:underline">buy list</a>.
+            Sell value comes from your <a href="/inventory/sell" class="text-teal-600 dark:text-teal-400 hover:underline">market sell value</a>.
+        </p>
+    </section>
+
+    <div class="content-wrapper">
+        {{!-- Bonus control --}}
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+            <label for="bonus-input" class="text-sm font-medium">Store-credit bonus</label>
+            <div class="inline-flex items-center">
+                <input id="bonus-input" type="number" min="0" max="200" step="1"
+                    class="w-20 rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 py-1.5 px-2 text-sm text-right"
+                    aria-label="Store-credit bonus percent">
+                <span class="ml-1 text-gray-500">%</span>
+            </div>
+            <span class="text-xs text-gray-400">{{vendorName}}'s rate varies — set it to your current offer.</span>
+        </div>
+
+        {{!-- Summary tiles --}}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div class="price-tile">
+                <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Cash payout</div>
+                <div class="text-xl font-semibold">{{money result.cashValue}}</div>
+                <div class="text-xs text-gray-400">{{sellItemCount}} card{{#unless (eq sellItemCount 1)}}s{{/unless}} to {{vendorName}}</div>
+            </div>
+            <div class="price-tile">
+                <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Store credit</div>
+                <div class="text-xl font-semibold text-emerald-600 dark:text-emerald-400"
+                    id="store-credit">{{money result.storeCredit}}</div>
+                <div class="text-xs text-gray-400" id="store-credit-sub">includes the bonus</div>
+            </div>
+            <div class="price-tile">
+                <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Buy list cost</div>
+                <div class="text-xl font-semibold">{{money result.buyListRetail}}</div>
+                <div class="text-xs text-gray-400"><a href="/buy-list" class="text-teal-600 dark:text-teal-400 hover:underline">{{buyLines.length}} line{{#unless (eq buyLines.length 1)}}s{{/unless}}</a></div>
+            </div>
+        </div>
+
+        {{!-- Recommendation (server-rendered fallback; optimizer.js refreshes it live) --}}
+        <div id="recommendation" class="p-4 rounded-lg mb-4 border border-teal-200 dark:border-teal-700/50 bg-teal-50 dark:bg-midnight-900"
+            data-recommend-credit="{{result.recommendCredit}}">
+            {{#if result.recommendCredit}}
+                <strong>Take store credit.</strong> It saves {{money result.creditAdvantage}} toward your buy list versus taking cash.
+            {{else}}
+                {{#if (gt result.buyListRetail 0)}}
+                    <strong>Take cash.</strong> You're selling more than you're buying — keep {{money result.cashLeftover}} liquid rather than locking it in credit.
+                {{else}}
+                    Add cards to your <a href="/buy-list" class="text-teal-600 dark:text-teal-400 hover:underline">buy list</a> to see whether store credit beats cash.
+                {{/if}}
+            {{/if}}
+        </div>
+
+        {{!-- Detail --}}
+        <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-sm">
+            <div><dt class="text-gray-500 dark:text-gray-400">Out of pocket (cash)</dt><dd id="cash-oop" class="font-medium">{{money result.cashOutOfPocket}}</dd></div>
+            <div><dt class="text-gray-500 dark:text-gray-400">Out of pocket (credit)</dt><dd id="credit-oop" class="font-medium">{{money result.creditOutOfPocket}}</dd></div>
+            <div><dt class="text-gray-500 dark:text-gray-400">Credit advantage</dt><dd id="credit-advantage" class="font-medium text-emerald-600 dark:text-emerald-400">{{money result.creditAdvantage}}</dd></div>
+            <div><dt class="text-gray-500 dark:text-gray-400">Locked leftover credit</dt><dd id="locked-credit" class="font-medium">{{money result.lockedCredit}}</dd></div>
+        </dl>
+
+        {{#if itemsWithoutPrice}}
+        <p class="text-xs text-amber-600 dark:text-amber-400 mb-3">
+            <i class="fas fa-info-circle mr-1" aria-hidden="true"></i>
+            {{itemsWithoutPrice}} buy-list card{{#unless (eq itemsWithoutPrice 1)}}s have{{else}} has{{/unless}} no current price and {{#unless (eq itemsWithoutPrice 1)}}are{{else}}is{{/unless}} excluded from the buy-list cost.
+        </p>
+        {{/if}}
+
+        {{#if buyLines.length}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm mb-4">
+                <thead><tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-midnight-700">
+                    <th class="py-2">Card</th><th class="py-2">Finish</th><th class="py-2">Qty</th>
+                    <th class="py-2 text-right">Unit</th><th class="py-2 text-right">Line</th>
+                </tr></thead>
+                <tbody>
+                {{#each buyLines}}
+                    <tr class="border-b border-gray-100 dark:border-midnight-800">
+                        <td class="py-2">{{this.name}} <span class="text-gray-400">{{this.setCode}}</span></td>
+                        <td class="py-2">{{capitalize this.finish}}</td>
+                        <td class="py-2">{{this.quantity}}</td>
+                        <td class="py-2 text-right">{{money this.unitPrice}}</td>
+                        <td class="py-2 text-right">{{money this.lineTotal}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
+            Your buy list is empty. <a href="/buy-list" class="text-teal-600 dark:text-teal-400 hover:underline">Add cards</a> to compare cash vs. credit.
+        </p>
+        {{/if}}
+
+        <a id="export-link" href="/optimizer/export.csv?bonus={{defaultBonusPct}}" class="btn btn-secondary btn--sm">
+            <i class="fas fa-download mr-1" aria-hidden="true"></i> Export plan (CSV)
+        </a>
+    </div>
+</section>
+
+<script src="/public/js/optimizer.js?v={{assetVersion}}" defer></script>

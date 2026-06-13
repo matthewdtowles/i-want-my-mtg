@@ -97,7 +97,7 @@ CREATE TABLE public.card (
     flavor_name character varying,
     has_foil boolean NOT NULL,
     has_non_foil boolean NOT NULL,
-    img_src character varying NOT NULL,
+    img_src character varying,
     is_reserved boolean DEFAULT false NOT NULL,
     mana_cost character varying,
     name character varying NOT NULL,

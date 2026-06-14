@@ -1,17 +1,20 @@
 /**
- * Cash-vs-store-credit optimizer (Phase 6.5). The cash value (C) and buy-list
- * retail (R) are fixed per page load; only the bonus % changes, so recompute
- * the comparison client-side as the user edits it. Mirrors
- * src/core/pricing/cash-vs-credit.policy.ts — keep the two in sync.
+ * Cash-vs-store-credit optimizer (Phase 6.5). The buy-list table is fixed per
+ * page load; only the bonus % changes. As the user edits it, fetch the
+ * recomputed comparison from GET /api/v1/optimizer?bonus= (same backend the
+ * page rendered) instead of mirroring cash-vs-credit.policy.ts client-side.
+ *
+ * The server already renders the result for the default bonus, so we only fetch
+ * on user change. Requests are debounced and the latest one wins.
  */
 document.addEventListener('DOMContentLoaded', function () {
     var root = document.getElementById('optimizer-root');
     var input = document.getElementById('bonus-input');
     if (!root || !input) return;
 
-    var C = parseFloat(root.getAttribute('data-cash-value')) || 0;
-    var R = parseFloat(root.getAttribute('data-buy-list-retail')) || 0;
     var defaultBonus = parseFloat(root.getAttribute('data-default-bonus')) || 0;
+    var debounceTimer = null;
+    var latestRequest = 0;
 
     function money(n) {
         return (
@@ -24,49 +27,32 @@ document.addEventListener('DOMContentLoaded', function () {
         if (el) el.textContent = text;
     }
 
-    function compute(b) {
-        var storeCredit = C * (1 + b);
-        var cashOutOfPocket = Math.max(0, R - C);
-        var cashLeftover = Math.max(0, C - R);
-        var creditOutOfPocket = Math.max(0, R - storeCredit);
-        var lockedCredit = Math.max(0, storeCredit - R);
-        var creditAdvantage = cashOutOfPocket - creditOutOfPocket;
-        return {
-            storeCredit: storeCredit,
-            cashOutOfPocket: cashOutOfPocket,
-            cashLeftover: cashLeftover,
-            creditOutOfPocket: creditOutOfPocket,
-            lockedCredit: lockedCredit,
-            creditAdvantage: creditAdvantage,
-            recommendCredit: creditAdvantage > 0,
-        };
-    }
-
-    function render() {
+    function bonusFraction() {
         var pct = parseFloat(input.value);
         if (!isFinite(pct) || pct < 0) pct = 0;
-        var b = pct / 100;
-        var r = compute(b);
+        return pct / 100;
+    }
 
-        setText('store-credit', money(r.storeCredit));
-        setText('store-credit-sub', '+' + money(r.storeCredit - C) + ' vs cash');
-        setText('cash-oop', money(r.cashOutOfPocket));
-        setText('credit-oop', money(r.creditOutOfPocket));
-        setText('credit-advantage', money(r.creditAdvantage));
-        setText('locked-credit', money(r.lockedCredit));
+    function apply(data) {
+        setText('store-credit', money(data.storeCredit));
+        setText('store-credit-sub', '+' + money(data.storeCredit - data.cashValue) + ' vs cash');
+        setText('cash-oop', money(data.cashOutOfPocket));
+        setText('credit-oop', money(data.creditOutOfPocket));
+        setText('credit-advantage', money(data.creditAdvantage));
+        setText('locked-credit', money(data.lockedCredit));
 
         var rec = document.getElementById('recommendation');
         if (rec) {
             var html;
-            if (r.recommendCredit) {
+            if (data.recommendCredit) {
                 html =
                     '<strong>Take store credit.</strong> It saves ' +
-                    money(r.creditAdvantage) +
+                    money(data.creditAdvantage) +
                     ' toward your buy list versus taking cash.';
-            } else if (R > 0) {
+            } else if (data.buyListRetail > 0) {
                 html =
                     '<strong>Take cash.</strong> You&rsquo;re selling more than you&rsquo;re buying — keep ' +
-                    money(r.cashLeftover) +
+                    money(data.cashLeftover) +
                     ' liquid rather than locking it in credit.';
             } else {
                 html =
@@ -74,12 +60,36 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             rec.innerHTML = html;
         }
+    }
 
+    function refresh() {
+        var b = bonusFraction();
+
+        // Export link stays current immediately, independent of the fetch.
         var exportLink = document.getElementById('export-link');
         if (exportLink) exportLink.setAttribute('href', '/optimizer/export.csv?bonus=' + b);
+
+        var requestId = ++latestRequest;
+        fetch('/api/v1/optimizer?bonus=' + b, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        })
+            .then(function (res) {
+                return res.ok ? res.json() : null;
+            })
+            .then(function (body) {
+                // Ignore stale responses and failures; keep the last good values.
+                if (requestId !== latestRequest || !body || !body.data) return;
+                apply(body.data);
+            })
+            .catch(function () {
+                /* network error — leave the current values in place */
+            });
     }
 
     input.value = String(Math.round(defaultBonus * 100));
-    render();
-    input.addEventListener('input', render);
+    input.addEventListener('input', function () {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(refresh, 250);
+    });
 });

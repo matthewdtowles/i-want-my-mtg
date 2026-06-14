@@ -151,12 +151,14 @@ describe('CardService', () => {
     });
 
     describe('findBySetCodeAndNumber', () => {
-        it('should return card when found', async () => {
+        it('should return card when found, normalizing the set code to lowercase', async () => {
             repository.findBySetCodeAndNumber.mockResolvedValue(testCard);
 
             const result = await service.findBySetCodeAndNumber('TST', '123');
 
-            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('TST', '123', [
+            // Codes are stored lowercase + the query is case-sensitive, so the
+            // service lowercases before the lookup (handles uppercase API input).
+            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('tst', '123', [
                 'set',
                 'legalities',
                 'prices',
@@ -169,7 +171,7 @@ describe('CardService', () => {
 
             const result = await service.findBySetCodeAndNumber('TST', '999');
 
-            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('TST', '999', [
+            expect(repository.findBySetCodeAndNumber).toHaveBeenCalledWith('tst', '999', [
                 'set',
                 'legalities',
                 'prices',
@@ -181,7 +183,7 @@ describe('CardService', () => {
             repository.findBySetCodeAndNumber.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findBySetCodeAndNumber('TST', '123')).rejects.toThrow(
-                'Error finding card with set code TST and number 123'
+                'Error finding card with set code tst and number 123'
             );
         });
     });

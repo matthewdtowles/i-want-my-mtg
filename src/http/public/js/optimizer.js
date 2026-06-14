@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!root || !input) return;
 
     var defaultBonus = parseFloat(root.getAttribute('data-default-bonus')) || 0;
+    var MAX_BONUS_PCT = 200; // matches input max and the server's [0, 2] clamp
     var debounceTimer = null;
     var latestRequest = 0;
 
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function bonusFraction() {
         var pct = parseFloat(input.value);
         if (!isFinite(pct) || pct < 0) pct = 0;
+        // Match the input's max and the server clamp (200% = 2.0) so the fetch
+        // and export never use an out-of-range bonus the server would reject.
+        if (pct > MAX_BONUS_PCT) pct = MAX_BONUS_PCT;
         return pct / 100;
     }
 

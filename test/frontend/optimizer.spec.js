@@ -115,6 +115,22 @@ describe('optimizer.js', function () {
         expect(document.getElementById('recommendation').innerHTML).toContain('Take store credit');
     });
 
+    it('clamps an over-cap bonus to 200% (2.0) for fetch and export', function () {
+        setupDom(0.3);
+        global.fetch.mockReturnValue(jsonResponse({}));
+        loadScript();
+
+        var input = document.getElementById('bonus-input');
+        input.value = '300';
+        input.dispatchEvent(new Event('input'));
+        jest.advanceTimersByTime(250);
+
+        expect(global.fetch.mock.calls[0][0]).toBe('/api/v1/optimizer?bonus=2');
+        expect(document.getElementById('export-link').getAttribute('href')).toBe(
+            '/optimizer/export.csv?bonus=2'
+        );
+    });
+
     it('updates the export link immediately, independent of the fetch', function () {
         setupDom(0.3);
         global.fetch.mockReturnValue(jsonResponse({}));

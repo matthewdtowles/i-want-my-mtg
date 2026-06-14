@@ -14,6 +14,7 @@ import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { CardApiResponseDto, PriceHistoryPointDto } from './dto/card-response.dto';
+import { CardBuylistApiResponseDto } from './dto/card-buylist-response.dto';
 import { CardApiPresenter } from './card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { OptionalAuthOrApiKeyGuard } from '../shared/optional-auth-or-api-key.guard';
@@ -114,6 +115,19 @@ export class CardApiController {
         return ApiResponseDto.ok(CardApiPresenter.toCardApiResponse(cards[0]));
     }
 
+    @Get(':cardId/buylist')
+    @ApiOperation({
+        operationId: 'getCardBuylist',
+        summary: 'Get current buylist (sell-to-vendor) offers for a card by ID',
+    })
+    @ApiResponse({ status: 200, description: 'Buylist offers grouped by finish (NM, best first)' })
+    async getBuylistById(
+        @Param('cardId') cardId: string
+    ): Promise<ApiResponseDto<CardBuylistApiResponseDto>> {
+        const offers = await this.cardService.findCurrentBuylist(cardId);
+        return ApiResponseDto.ok(CardApiPresenter.toBuylist(cardId, offers));
+    }
+
     @Get(':cardId/price-history')
     @ApiOperation({
         operationId: 'getCardPriceHistory',
@@ -148,6 +162,25 @@ export class CardApiController {
             throw new NotFoundException('Card not found');
         }
         return ApiResponseDto.ok(CardApiPresenter.toCardApiResponse(cardsWithPrices[0]));
+    }
+
+    @Get(':setCode/:setNumber/buylist')
+    @ApiOperation({
+        operationId: 'getCardBuylistBySetAndNumber',
+        summary: 'Get current buylist offers for a card by set code and number',
+    })
+    @ApiResponse({ status: 200, description: 'Buylist offers grouped by finish (NM, best first)' })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async getBuylistBySetCodeAndNumber(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string
+    ): Promise<ApiResponseDto<CardBuylistApiResponseDto>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        const offers = await this.cardService.findCurrentBuylist(card.id);
+        return ApiResponseDto.ok(CardApiPresenter.toBuylist(card.id, offers));
     }
 
     @Get(':setCode/:setNumber/price-history')

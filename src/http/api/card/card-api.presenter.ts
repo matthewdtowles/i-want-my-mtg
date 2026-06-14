@@ -1,8 +1,26 @@
 import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
+import { groupBuylistByFinish } from 'src/core/pricing/buylist.policy';
+import { vendorDisplayName } from 'src/core/pricing/vendor';
+import { CardBuylistApiResponseDto } from './dto/card-buylist-response.dto';
 import { CardApiResponseDto } from './dto/card-response.dto';
 
 export class CardApiPresenter {
+    /** Structured buylist offers for a card — same grouping the card page uses, raw numbers. */
+    static toBuylist(cardId: string, offers: GranularPrice[]): CardBuylistApiResponseDto {
+        const finishes = groupBuylistByFinish(offers).map((group) => {
+            const mapped = group.offers.map((o) => ({
+                provider: o.provider,
+                vendor: vendorDisplayName(o.provider),
+                price: o.price,
+                isBest: o.isBest,
+            }));
+            return { finish: group.finish, best: mapped[0], offers: mapped };
+        });
+        return { cardId, finishes, hasAny: finishes.length > 0 };
+    }
+
     static toCardApiResponse(card: Card): CardApiResponseDto {
         const latestPrice = card.prices?.[0];
         return {

@@ -1,15 +1,8 @@
 import { CashVsCreditResult } from 'src/core/pricing/cash-vs-credit.policy';
+import { OptimizerBuyLine } from 'src/core/optimizer/optimizer.types';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
 
-export interface OptimizerBuyLine {
-    name: string;
-    setCode: string;
-    number: string;
-    finish: 'normal' | 'foil';
-    quantity: number;
-    unitPrice: number | null;
-    lineTotal: number | null;
-}
+export { OptimizerBuyLine };
 
 export class OptimizerViewDto extends BaseViewDto {
     readonly vendorName: string;

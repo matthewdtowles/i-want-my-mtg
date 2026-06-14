@@ -9,6 +9,7 @@ import { StripeWebhookController } from './billing/stripe-webhook.controller';
 import { BuyListApiController } from './buy-list/buy-list-api.controller';
 import { CardApiController } from './card/card-api.controller';
 import { InventoryApiController } from './inventory/inventory-api.controller';
+import { SellOptimizerApiController } from './optimizer/sell-optimizer-api.controller';
 import { PortfolioApiController } from './portfolio/portfolio-api.controller';
 import { SetApiController } from './set/set-api.controller';
 import { TransactionApiController } from './transaction/transaction-api.controller';
@@ -33,6 +34,7 @@ import { RapidApiProxyGuard } from './shared/rapidapi-proxy.guard';
         BuyListApiController,
         CardApiController,
         InventoryApiController,
+        SellOptimizerApiController,
         PortfolioApiController,
         PriceAlertApiController,
         PriceNotificationApiController,

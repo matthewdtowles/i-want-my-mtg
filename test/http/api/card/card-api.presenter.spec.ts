@@ -1,9 +1,22 @@
 import { TCGPLAYER_PRODUCT_URL_TEMPLATE } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
 import { Set } from 'src/core/set/set.entity';
 import { CardApiPresenter } from 'src/http/api/card/card-api.presenter';
+
+function buylistOffer(overrides: Partial<GranularPrice> = {}): GranularPrice {
+    return new GranularPrice({
+        cardId: 'card-1',
+        provider: 'cardkingdom',
+        priceType: 'buylist',
+        finish: 'normal',
+        condition: 'NM',
+        price: 3.5,
+        ...overrides,
+    });
+}
 
 function createCard(overrides: Partial<Card> = {}): Card {
     return new Card({
@@ -179,6 +192,38 @@ describe('CardApiPresenter', () => {
 
             expect(result.prices).toHaveProperty('normalChangeWeekly');
             expect(result.prices).toHaveProperty('foilChangeWeekly');
+        });
+    });
+
+    describe('toBuylist', () => {
+        it('groups offers by finish with the best marked and the vendor display name', () => {
+            const result = CardApiPresenter.toBuylist('card-1', [
+                buylistOffer({ provider: 'cardsphere', price: 3.25 }),
+                buylistOffer({ provider: 'cardkingdom', price: 3.5 }),
+                buylistOffer({ provider: 'cardkingdom', finish: 'foil', price: 7 }),
+            ]);
+
+            expect(result.cardId).toBe('card-1');
+            expect(result.hasAny).toBe(true);
+            expect(result.finishes.map((f) => f.finish)).toEqual(['normal', 'foil']);
+            expect(result.finishes[0].best).toEqual({
+                provider: 'cardkingdom',
+                vendor: 'Card Kingdom',
+                price: 3.5,
+                isBest: true,
+            });
+            expect(result.finishes[0].offers).toHaveLength(2);
+            expect(result.finishes[1].best.price).toBe(7);
+        });
+
+        it('returns hasAny=false when there are no usable offers', () => {
+            const result = CardApiPresenter.toBuylist('card-1', [
+                buylistOffer({ condition: 'LP' }),
+                buylistOffer({ price: 0 }),
+            ]);
+
+            expect(result.hasAny).toBe(false);
+            expect(result.finishes).toEqual([]);
         });
     });
 });

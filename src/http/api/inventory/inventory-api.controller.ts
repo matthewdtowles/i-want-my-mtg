@@ -43,6 +43,7 @@ import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { InventoryItemApiDto } from './dto/inventory-response.dto';
 import { InventoryImportResponseDto } from './dto/inventory-import-response.dto';
 import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
+import { InventorySellApiResponseDto } from './dto/inventory-sell-response.dto';
 import { InventoryApiPresenter } from './inventory-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
@@ -87,6 +88,21 @@ export class InventoryApiController {
             items.map((item) => InventoryApiPresenter.toInventoryItem(item)),
             new PaginationMeta(options.page, options.limit, total)
         );
+    }
+
+    @Get('sell')
+    @ApiOperation({
+        summary: "Market sell value of the user's inventory (best buylist offer per item)",
+        description:
+            'Matches every owned card against current buylist offers, picks the best NM offer ' +
+            'per item (qty-capped), groups by vendor, and totals it. Mirrors the /inventory/sell page.',
+    })
+    @ApiResponse({ status: 200, description: 'Market sell value plan' })
+    async sellPlan(
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<InventorySellApiResponseDto>> {
+        const plan = await this.inventoryService.sellPlanForUser(req.user.id);
+        return ApiResponseDto.ok(InventoryApiPresenter.toSellPlan(plan));
     }
 
     @Get('quantities')

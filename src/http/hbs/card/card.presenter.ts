@@ -5,6 +5,7 @@ import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
 import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { Price } from 'src/core/card/price.entity';
+import { groupBuylistByFinish } from 'src/core/pricing/buylist.policy';
 import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { formatUtcDate } from 'src/http/base/date.util';
 import { BASE_IMAGE_URL, buildCardUrl, toDollar } from 'src/http/base/http.util';
@@ -93,33 +94,20 @@ export class CardPresenter {
      * offers -> hasAny=false so the section is not rendered.
      */
     static toBuylistView(offers: GranularPrice[]): BuylistView {
-        const usable = offers.filter(
-            (o) => o.condition === 'NM' && o.price != null && o.price > 0
-        );
-
-        const finishes: BuylistFinishView[] = Object.keys(this.FINISH_LABELS)
-            .map((finishKey): BuylistFinishView | null => {
-                const finishOffers = usable
-                    .filter((o) => o.finish === finishKey)
-                    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-                if (finishOffers.length === 0) {
-                    return null;
-                }
-                const bestPrice = finishOffers[0].price ?? 0;
-                const views: BuylistOfferView[] = finishOffers.map((o) => ({
-                    vendor: vendorDisplayName(o.provider),
-                    price: toDollar(o.price),
-                    priceRaw: o.price ?? 0,
-                    isBest: (o.price ?? 0) === bestPrice,
-                }));
-                return {
-                    finish: this.FINISH_LABELS[finishKey],
-                    best: views[0],
-                    offers: views,
-                    hasMultiple: views.length > 1,
-                };
-            })
-            .filter((f): f is BuylistFinishView => f !== null);
+        const finishes: BuylistFinishView[] = groupBuylistByFinish(offers).map((group) => {
+            const views: BuylistOfferView[] = group.offers.map((o) => ({
+                vendor: vendorDisplayName(o.provider),
+                price: toDollar(o.price),
+                priceRaw: o.price,
+                isBest: o.isBest,
+            }));
+            return {
+                finish: this.FINISH_LABELS[group.finish],
+                best: views[0],
+                offers: views,
+                hasMultiple: views.length > 1,
+            };
+        });
 
         return { finishes, hasAny: finishes.length > 0 };
     }

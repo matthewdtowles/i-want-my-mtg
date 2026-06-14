@@ -201,4 +201,53 @@ describe('InventoryApiPresenter', () => {
             expect(result[0].normalQuantity).toBe(0);
         });
     });
+
+    describe('toSellPlan', () => {
+        it('maps a sell plan to vendor groups and totals with raw numbers', () => {
+            const card = createCard();
+            const inventory = createInventory({ card, quantity: 4 });
+            const offer = { provider: 'cardkingdom', price: 3.5 } as any;
+            const plan = {
+                totalPayout: 14,
+                itemsWithOffers: 1,
+                itemsWithoutOffers: 2,
+                groups: [
+                    {
+                        provider: 'cardkingdom',
+                        payout: 14,
+                        items: [
+                            {
+                                inventory,
+                                offer,
+                                sellableQuantity: 4,
+                                quantityCapped: false,
+                                payout: 14,
+                            },
+                        ],
+                    },
+                ],
+            } as any;
+
+            const result = InventoryApiPresenter.toSellPlan(plan);
+
+            expect(result.totalPayout).toBe(14);
+            expect(result.itemsWithOffers).toBe(1);
+            expect(result.itemsWithoutOffers).toBe(2);
+            expect(result.groups).toHaveLength(1);
+            expect(result.groups[0].provider).toBe('cardkingdom');
+            expect(result.groups[0].vendor).toBe('Card Kingdom');
+            expect(result.groups[0].items[0]).toEqual({
+                cardId: 'card-1',
+                cardName: 'Lightning Bolt',
+                setCode: 'lea',
+                number: '161',
+                finish: 'normal',
+                ownedQuantity: 4,
+                sellableQuantity: 4,
+                quantityCapped: false,
+                offer: 3.5,
+                payout: 14,
+            });
+        });
+    });
 });

@@ -204,8 +204,11 @@ no-`img_src` binary:
   removed (clutter + mobile overflow). The batched `findCurrentBuylistByCardIds` read is kept for 6.4.
 - ~~6.4 inventory **market sell value**~~ **Shipped (PR #524).** Best offer per item, qty-capped
   payout totals, group-by-vendor kept as structure, plain buylist links, CSV export.
-- **6.5 (next, not started):** re-scoped to **cash vs. store credit** first (needs DB `vendor`
-  table); multi-vendor consolidation gated on 6.9 (which is closed single-source).
+- ~~6.5 cash-vs-credit optimizer~~ **Shipped (PR #528 buy-list, #529 optimizer).** Per-user `buy_list` (migration
+  `039`) + `/buy-list` page; pure `cash-vs-credit.policy.ts`; `/optimizer` page with editable
+  bonus-% and `GET /optimizer/export.csv`. No DB `vendor` table was needed — the bonus default
+  stays the `cardkingdom` code constant. Multi-vendor consolidation stays gated on 6.9
+  (closed single-source). MCP mirror is the only open follow-up (iwantmymtg-mcp#9).
 - Possible: currency column → then Cardmarket (only if non-USD is ever wanted; currently out).
 - ~~ROADMAP 6.6: condition grade vocabulary~~ **Closed (#512)** — single grade (`NM`) only.
 

@@ -9,6 +9,7 @@ import { CardModule } from './card/card.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { OptimizerModule } from './optimizer/optimizer.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { PriceAlertModule } from './price-alert/price-alert.module';
 import { SearchModule } from './search/search.module';
@@ -29,6 +30,7 @@ import { UserModule } from './user/user.module';
         EmailModule,
         ImportModule,
         InventoryModule,
+        OptimizerModule,
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,
@@ -48,6 +50,7 @@ import { UserModule } from './user/user.module';
         EmailModule,
         ImportModule,
         InventoryModule,
+        OptimizerModule,
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,

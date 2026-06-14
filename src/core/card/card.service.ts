@@ -61,6 +61,9 @@ export class CardService {
     }
 
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
+        // Set codes are stored lowercase and the repo query is case-sensitive,
+        // so normalize here (one place for every caller — REST/MCP/HBS).
+        code = code?.trim().toLowerCase();
         this.LOGGER.debug(`Find card no. ${number} in set ${code}.`);
         try {
             const card = await this.repository.findBySetCodeAndNumber(code, number, [

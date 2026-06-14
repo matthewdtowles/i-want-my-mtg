@@ -1,10 +1,42 @@
 import { Inventory } from 'src/core/inventory/inventory.entity';
+import { SellPlan } from 'src/core/pricing/sell-value.policy';
+import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { BASE_IMAGE_URL, buildCardUrl } from 'src/http/base/http.util';
 import { InventoryItemApiDto } from './dto/inventory-response.dto';
 import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
+import { InventorySellApiResponseDto } from './dto/inventory-sell-response.dto';
 
 export class InventoryApiPresenter {
+    /** Market sell value plan (6.4) as structured JSON — same SellPlan the sell page renders. */
+    static toSellPlan(plan: SellPlan): InventorySellApiResponseDto {
+        return {
+            totalPayout: plan.totalPayout,
+            itemsWithOffers: plan.itemsWithOffers,
+            itemsWithoutOffers: plan.itemsWithoutOffers,
+            groups: plan.groups.map((group) => ({
+                provider: group.provider,
+                vendor: vendorDisplayName(group.provider),
+                payout: group.payout,
+                items: group.items.map((item) => {
+                    const card = item.inventory.card;
+                    return {
+                        cardId: item.inventory.cardId,
+                        cardName: card?.name,
+                        setCode: card?.setCode,
+                        number: card?.number,
+                        finish: item.inventory.isFoil ? 'foil' : 'normal',
+                        ownedQuantity: item.inventory.quantity,
+                        sellableQuantity: item.sellableQuantity,
+                        quantityCapped: item.quantityCapped,
+                        offer: item.offer.price as number,
+                        payout: item.payout,
+                    };
+                }),
+            })),
+        };
+    }
+
     static toInventoryItem(item: Inventory): InventoryItemApiDto {
         if (!item.card) {
             return {

@@ -68,7 +68,15 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 ---
 
-## Phase 6: Buylist Pricing & Vendor Selling Tools
+## Phase 6: Buylist Pricing & Vendor Selling Tools ✅
+
+**Complete — epic #498 closed 2026-06-13.** All sub-issues (6.1–6.9) shipped or closed. Buylist
+proved **upstream single-source (Card Kingdom only)** — confirmed against the raw MTGJSON feed — so
+the multi-vendor pieces (the per-vendor consolidation optimizer in 6.5, the Tier C coverage in 6.9)
+are **gated on a second free buylist source** that the 6.9 research found does not currently exist;
+they reopen only on demand + revenue. One non-gated follow-up remains: expose buylist pricing,
+sell value, and the optimizer as JSON API (#530 — today they're HBS pages + CSV only), which in
+turn unblocks mirroring them via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)).
 
 Surface buylist (sell-to-vendor) prices alongside retail, highlight the best buylist offer per card, and help users decide *who to sell to* — especially in bulk. The value lands on a user's inventory: what is my collection worth to *sell*, and which vendor pays most? Prioritized ahead of platform expansion and go-to-market because it's net-new differentiating value (not a re-surfacing of existing features) and it strengthens the core product before we invest in new surfaces and marketing.
 
@@ -136,7 +144,7 @@ client-side. CSV: `name,set_code,number,finish,owned_qty,vendor,offer,sellable_q
 - [x] Sell rows link out to the vendor's buylist page for the card (plain links, no partner attribution — deferred from 6.7)
 - [x] CSV export of the sell list (per-item offer, qty, payout) honoring the selection
 
-### 6.5 Sell/Buy List Optimizer (re-scoped: cash vs. credit first)
+### 6.5 Sell/Buy List Optimizer (re-scoped: cash vs. credit first) ✅
 
 Re-scoped after the 6.9 research: with buylist effectively single-source upstream, the
 *vendor-comparison* optimizer has no decision to make — but **cash vs. store credit** is a real

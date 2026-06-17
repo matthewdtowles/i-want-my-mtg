@@ -12,6 +12,13 @@ export interface BreakdownSliceView {
     percentFormatted: string;
 }
 
+export interface ColorChipView {
+    code: string;
+    label: string;
+    active: boolean;
+    href: string;
+}
+
 export class PortfolioBreakdownViewDto extends BaseViewDto {
     readonly dimension: BreakdownDimension;
     readonly locked: boolean;
@@ -19,6 +26,9 @@ export class PortfolioBreakdownViewDto extends BaseViewDto {
     readonly totalValue: number;
     readonly totalValueFormatted: string;
     readonly totalItems: number;
+    readonly colorChips: ColorChipView[];
+    readonly selectedColors: string[];
+    readonly filterLabel: string;
 
     constructor(init: Partial<PortfolioBreakdownViewDto>) {
         super(init);
@@ -28,5 +38,8 @@ export class PortfolioBreakdownViewDto extends BaseViewDto {
         this.totalValue = init.totalValue ?? 0;
         this.totalValueFormatted = init.totalValueFormatted ?? '$0.00';
         this.totalItems = init.totalItems ?? 0;
+        this.colorChips = init.colorChips ?? [];
+        this.selectedColors = init.selectedColors ?? [];
+        this.filterLabel = init.filterLabel ?? '';
     }
 }

@@ -184,18 +184,30 @@ export class PortfolioApiController {
     @ApiQuery({
         name: 'by',
         required: false,
-        description: 'Dimension to group by (set, rarity, type, cost-basis)',
+        description: 'Dimension to group by (set, rarity, type, color, cost-basis)',
+    })
+    @ApiQuery({
+        name: 'colors',
+        required: false,
+        description:
+            "For by=color: comma-separated codes (W,U,B,R,G,C) to keep only cards whose color identity contains all of them; 'C' is colorless. Ignored for other dimensions.",
     })
     @ApiResponse({ status: 200, description: 'Breakdown slices and totals' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async getBreakdown(
         @Req() req: AuthenticatedRequest,
-        @Query('by') by?: string
+        @Query('by') by?: string,
+        @Query('colors') colors?: string
     ): Promise<ApiResponseDto<PortfolioBreakdown>> {
         const dimension: BreakdownDimension = PortfolioBreakdownService.isDimension(by)
             ? by
             : 'set';
-        const breakdown = await this.breakdownService.getBreakdown(req.user.id, dimension);
+        const selectedColors = PortfolioBreakdownService.parseColors(colors);
+        const breakdown = await this.breakdownService.getBreakdown(
+            req.user.id,
+            dimension,
+            selectedColors
+        );
         return ApiResponseDto.ok(breakdown);
     }
 }

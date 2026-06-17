@@ -108,7 +108,8 @@ CREATE TABLE public.card (
     type character varying NOT NULL,
     tcgplayer_product_id character varying,
     tcgplayer_etched_product_id character varying,
-    scryfall_id character varying
+    scryfall_id character varying,
+    colors text[]
 );
 
 

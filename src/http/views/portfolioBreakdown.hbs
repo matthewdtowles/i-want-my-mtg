@@ -2,7 +2,7 @@
     <div class='flex items-center justify-between mb-2 flex-wrap gap-3'>
         <div>
             <h1 class='page-title'>Portfolio Analytics</h1>
-            <p class='page-subtitle'>Where your collection's value lives - by set, rarity, type, or cost basis.</p>
+            <p class='page-subtitle'>Where your collection's value lives - by set, rarity, type, color, or cost basis.</p>
         </div>
         <a href='/portfolio' class='btn btn-ghost text-sm'>&larr; Back to Portfolio</a>
     </div>
@@ -51,6 +51,7 @@
                     <a href='/portfolio/breakdown?by=set' class='breakdown-tab {{#if (eq dimension "set")}}active{{/if}}' data-dimension='set'>By Set</a>
                     <a href='/portfolio/breakdown?by=rarity' class='breakdown-tab {{#if (eq dimension "rarity")}}active{{/if}}' data-dimension='rarity'>By Rarity</a>
                     <a href='/portfolio/breakdown?by=type' class='breakdown-tab {{#if (eq dimension "type")}}active{{/if}}' data-dimension='type'>By Type</a>
+                    <a href='/portfolio/breakdown?by=color' class='breakdown-tab {{#if (eq dimension "color")}}active{{/if}}' data-dimension='color'>By Color</a>
                     <a href='/portfolio/breakdown?by=cost-basis' class='breakdown-tab {{#if (eq dimension "cost-basis")}}active{{/if}}' data-dimension='cost-basis'>By Cost Basis</a>
                 </div>
                 <div class='text-sm text-gray-600 dark:text-gray-400'>
@@ -59,6 +60,28 @@
                     {{totalItems}} item{{#unless (eq totalItems 1)}}s{{/unless}}
                 </div>
             </div>
+
+            {{#if (eq dimension "color")}}
+                <div class='mb-4'>
+                    <div class='flex flex-wrap items-center gap-2' role='group' aria-label='Filter by color'>
+                        <span class='text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mr-1'>Filter</span>
+                        {{#each colorChips}}
+                            <a href='{{href}}' class='breakdown-color-chip color-{{code}} {{#if active}}active{{/if}}' aria-label='{{#if active}}Remove {{label}} filter{{else}}Add {{label}} filter{{/if}}'>
+                                <span class='breakdown-color-dot' aria-hidden='true'></span>{{label}}
+                            </a>
+                        {{/each}}
+                    </div>
+                    {{#if filterLabel}}
+                        <p class='text-xs text-gray-600 dark:text-gray-400 mt-2'>
+                            Showing cards containing <span class='font-semibold text-gray-800 dark:text-gray-200'>{{filterLabel}}</span>.
+                            <a href='/portfolio/breakdown?by=color' class='underline hover:no-underline'>Clear</a>
+                        </p>
+                    {{/if}}
+                    <p class='text-xs text-gray-500 dark:text-gray-400 mt-2'>
+                        A card counts toward every color in its identity, so these rows overlap and don&rsquo;t add up to 100%.
+                    </p>
+                </div>
+            {{/if}}
 
             {{#if slices.length}}
                 <div class='breakdown-list'>
@@ -123,7 +146,7 @@
 <script>
     (function () {
         var STORAGE_KEY = 'iwmtg.portfolioBreakdownDimension';
-        var validDims = ['set', 'rarity', 'type', 'cost-basis'];
+        var validDims = ['set', 'rarity', 'type', 'color', 'cost-basis'];
         var params = new URLSearchParams(window.location.search);
         var current = params.get('by');
         if (!current) {

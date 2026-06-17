@@ -299,13 +299,18 @@ The marketing push — community, launch events, analytics — split out from pl
 - [ ] If migrating: execute migration module by module
 - [ ] If keeping: document decision and rationale
 
-### 10.2 Portfolio Breakdown: by=color Dimension
+### 10.2 Portfolio Breakdown: by=color Dimension ✅
 
-Deferred from 3.4. Blocked on Scry repo: needs `card.colors` populated from MTGJSON `colorIdentity` first. Once that lands, add a `color` case to `PortfolioBreakdownRepository.dimensionConfig()` and a tab on `portfolioBreakdown.hbs`.
+Deferred from 3.4. **Built — pending scry release + web deploy to light up.**
 
-- [ ] Scry: ingest `card.colors` from MTGJSON `colorIdentity` into the `card` table
-- [ ] Add `color` case to `BreakdownDimension` and `dimensionConfig()`
-- [ ] Add "By Color" tab to `portfolioBreakdown.hbs`
+**Color model (chosen during scoping):** color is a *membership* dimension, not a partition - a card belongs to **every** color in its identity, so a W/U card lands in both the White and Blue rows and the rows intentionally overlap (they sum past the portfolio total; the tab carries a caption saying so). Cards with no color identity (or not yet ingested, NULL) group under **Colorless**. The same color chips drive a **superset filter**: selecting W+U keeps only cards whose identity contains both (a W/U/R card still qualifies); 'C' filters to colorless and is ignored when real colors are selected.
+
+- [x] Scry: ingest `card.colors` from MTGJSON `colorIdentity` into the `card` table (`text[]`; domain field + mapper + upsert change-detection)
+- [x] `card.colors text[]` column (migration `040`, nullable, mirrored in init SQL)
+- [x] `color` case in `BreakdownDimension` + a dedicated `aggregateColor()` (per-color `unnest` rows + `colors @> ARRAY[...]` superset filter), threaded through service/orchestrator/controller; exposed on the JSON API (`?colors=`) + MCP (`colors[]`)
+- [x] "By Color" tab + color filter chips (W/U/B/R/G/Colorless) + overlap caption in `portfolioBreakdown.hbs`
+
+**Deploy coupling (web + scry, same pattern as 6.7/6.8):** the web side is inert until `card.colors` is populated. Sequence: (1) release scry (additive, safe - the old binary keeps running and never references the column); (2) deploy web - migration `040` adds the column *before* `setup-cron.sh` extracts the new scry binary, so the column exists before the binary writes it. Until the next full ingest runs, existing rows read NULL and show as Colorless.
 
 ### 10.4 Feature: Deck Building
 

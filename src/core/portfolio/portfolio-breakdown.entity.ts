@@ -1,11 +1,26 @@
-export type BreakdownDimension = 'set' | 'rarity' | 'type' | 'cost-basis';
+export type BreakdownDimension = 'set' | 'rarity' | 'type' | 'cost-basis' | 'color';
 
 export const BREAKDOWN_DIMENSIONS: BreakdownDimension[] = [
     'set',
     'rarity',
     'type',
     'cost-basis',
+    'color',
 ];
+
+// Color-identity codes (MTGJSON letters) plus 'C' for colorless (empty identity).
+// A card belongs to every color in its identity, so these are membership groups,
+// not a partition - multicolor cards count in each of their colors.
+export const COLOR_CODES = ['W', 'U', 'B', 'R', 'G', 'C'] as const;
+export type ColorCode = (typeof COLOR_CODES)[number];
+export const COLOR_LABELS: Record<string, string> = {
+    W: 'White',
+    U: 'Blue',
+    B: 'Black',
+    R: 'Red',
+    G: 'Green',
+    C: 'Colorless',
+};
 
 export class PortfolioBreakdownSlice {
     readonly key: string;

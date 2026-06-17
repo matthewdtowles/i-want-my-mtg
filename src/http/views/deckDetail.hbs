@@ -1,0 +1,113 @@
+<div class="content-wrapper py-6" data-deck-id="{{deckId}}">
+    <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">{{name}}</h1>
+            <p class="page-subtitle">
+                <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
+                <span class="mx-1">&middot;</span>
+                <span id="deck-main-count">{{mainCount}}</span> maindeck
+                {{#if sideCount}}<span class="mx-1">&middot;</span><span id="deck-side-count">{{sideCount}}</span> sideboard{{/if}}
+                <span class="mx-1">&middot;</span>
+                <span id="deck-est-value" class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
+            </p>
+        </div>
+        <a href="/decks" class="btn btn-ghost text-sm">&larr; All decks</a>
+    </div>
+
+    {{#if format}}
+        <p id="deck-illegal-notice" class="text-sm text-red-600 dark:text-red-400 mb-3 {{#unless illegalCount}}hidden{{/unless}}">
+            <i class="fas fa-triangle-exclamation mr-1" aria-hidden="true"></i>
+            <span id="deck-illegal-count">{{illegalCount}}</span> card type(s) not legal in {{formatLabel}}.
+        </p>
+    {{/if}}
+
+    {{!-- Edit deck (rename / format / delete) --}}
+    <details class="section-container mb-5">
+        <summary class="cursor-pointer font-medium"><i class="fas fa-gear mr-2" aria-hidden="true"></i>Deck settings</summary>
+        <form id="deck-edit-form" class="flex flex-wrap items-end gap-3 mt-3">
+            <div class="flex-1 min-w-[12rem]">
+                <label for="deck-name-input" class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                <input id="deck-name-input" name="name" type="text" required maxlength="120" value="{{name}}"
+                    class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm" />
+            </div>
+            <div>
+                <label for="deck-format-input" class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Format</label>
+                <select id="deck-format-input" name="format"
+                    class="rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm">
+                    {{#each formatOptions}}
+                        <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" id="deck-delete-btn" class="btn btn-ghost text-red-600 dark:text-red-400">
+                <i class="fas fa-trash mr-1" aria-hidden="true"></i> Delete deck
+            </button>
+            <span id="deck-edit-result" class="text-sm" role="status" aria-live="polite"></span>
+        </form>
+    </details>
+
+    {{#if hasCards}}
+        <div id="deck-cards">
+            {{#each mainGroups}}
+                <div class="deck-group mb-5">
+                    <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        {{type}} <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{count}}</span>)</span>
+                    </h3>
+                    <div>
+                        {{#each cards}}
+                            <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
+                                data-card-id="{{cardId}}" data-sideboard="false" data-unit-value="{{unitValue}}">
+                                <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
+                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
+                                    <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
+                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
+                                </span>
+                                <a href="{{url}}" class="flex-1 text-sm text-gray-800 dark:text-gray-100 hover:text-teal-600 dark:hover:text-teal-400 truncate">{{name}}</a>
+                                {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                                <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                                <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            {{/each}}
+
+            {{#if sideboard.length}}
+                <div class="deck-group mb-5">
+                    <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        Sideboard <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{sideCount}}</span>)</span>
+                    </h3>
+                    <div>
+                        {{#each sideboard}}
+                            <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
+                                data-card-id="{{cardId}}" data-sideboard="true" data-unit-value="{{unitValue}}">
+                                <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
+                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
+                                    <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
+                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
+                                </span>
+                                <a href="{{url}}" class="flex-1 text-sm text-gray-800 dark:text-gray-100 hover:text-teal-600 dark:hover:text-teal-400 truncate">{{name}}</a>
+                                {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                                <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                                <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+    {{else}}
+        <div class="section-container text-center py-12">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mb-3">
+                <i class="fas fa-layer-group text-lg" aria-hidden="true"></i>
+            </div>
+            <h2 class="font-display font-bold text-lg text-gray-900 dark:text-white mb-1">This deck is empty</h2>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Add cards from any card page with the &ldquo;Add to deck&rdquo; button.</p>
+            <a href="/sets" class="btn btn-primary text-sm px-4 py-2 mt-4">Browse sets</a>
+        </div>
+    {{/if}}
+</div>
+
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/deckDetail.js?v={{assetVersion}}" defer></script>

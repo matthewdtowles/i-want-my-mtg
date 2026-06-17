@@ -1,0 +1,149 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Inject,
+    NotFoundException,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DeckService } from 'src/core/deck/deck.service';
+import { ApiResponseDto } from 'src/http/base/api-response.dto';
+import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { JwtOrApiKeyGuard } from '../shared/jwt-or-api-key.guard';
+import { DeckApiPresenter } from './deck-api.presenter';
+import {
+    DeckCardAddApiDto,
+    DeckCardRemoveApiDto,
+    DeckCardSetQuantityApiDto,
+    DeckCreateApiDto,
+    DeckUpdateApiDto,
+} from './dto/deck-request-api.dto';
+import { DeckDetailApiDto, DeckSummaryApiDto } from './dto/deck-response.dto';
+
+@ApiTags('Decks')
+@ApiBearerAuth()
+@Controller('api/v1/decks')
+@UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
+export class DeckApiController {
+    constructor(@Inject(DeckService) private readonly deckService: DeckService) {}
+
+    @Get()
+    @ApiOperation({ summary: "List the authenticated user's decks" })
+    @ApiResponse({ status: 200, description: 'Deck summaries' })
+    async list(@Req() req: AuthenticatedRequest): Promise<ApiResponseDto<DeckSummaryApiDto[]>> {
+        const decks = await this.deckService.listDecks(req.user.id);
+        return ApiResponseDto.ok(decks.map((d) => DeckApiPresenter.toSummary(d)));
+    }
+
+    @Post()
+    @ApiOperation({ summary: 'Create a deck' })
+    @ApiResponse({ status: 201, description: 'Created deck' })
+    async create(
+        @Body() dto: DeckCreateApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<DeckDetailApiDto>> {
+        const deck = await this.deckService.createDeck(req.user.id, dto.name, dto.format ?? null);
+        return ApiResponseDto.ok(DeckApiPresenter.toDetail(deck));
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get a deck with its cards' })
+    @ApiResponse({ status: 200, description: 'Deck detail' })
+    @ApiResponse({ status: 404, description: 'Deck not found' })
+    async get(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<DeckDetailApiDto>> {
+        const deck = await this.deckService.getDeck(id, req.user.id);
+        if (!deck) {
+            throw new NotFoundException(`Deck ${id} not found.`);
+        }
+        return ApiResponseDto.ok(DeckApiPresenter.toDetail(deck));
+    }
+
+    @Patch(':id')
+    @ApiOperation({ summary: 'Rename / re-format a deck' })
+    @ApiResponse({ status: 200, description: 'Updated deck' })
+    @ApiResponse({ status: 404, description: 'Deck not found' })
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: DeckUpdateApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<DeckSummaryApiDto>> {
+        const deck = await this.deckService.updateDeck(id, req.user.id, dto.name, dto.format ?? null);
+        return ApiResponseDto.ok(DeckApiPresenter.toSummary(deck));
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete a deck' })
+    @ApiResponse({ status: 200, description: 'Deleted' })
+    @ApiResponse({ status: 404, description: 'Deck not found' })
+    async remove(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<{ deleted: boolean }>> {
+        await this.deckService.deleteDeck(id, req.user.id);
+        return ApiResponseDto.ok({ deleted: true });
+    }
+
+    @Post(':id/cards')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Add a card to a deck (increments quantity)' })
+    @ApiResponse({ status: 200, description: 'Added' })
+    async addCard(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: DeckCardAddApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<{ added: boolean }>> {
+        await this.deckService.addCard(
+            id,
+            req.user.id,
+            dto.cardId,
+            dto.isSideboard ?? false,
+            dto.quantity ?? 1
+        );
+        return ApiResponseDto.ok({ added: true });
+    }
+
+    @Patch(':id/cards')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Set the absolute quantity for a card (0 removes it)' })
+    @ApiResponse({ status: 200, description: 'Updated' })
+    async setCardQuantity(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: DeckCardSetQuantityApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<{ updated: boolean }>> {
+        await this.deckService.setCardQuantity(
+            id,
+            req.user.id,
+            dto.cardId,
+            dto.isSideboard,
+            dto.quantity
+        );
+        return ApiResponseDto.ok({ updated: true });
+    }
+
+    @Delete(':id/cards')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remove a card from a deck' })
+    @ApiResponse({ status: 200, description: 'Removed' })
+    async removeCard(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: DeckCardRemoveApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<{ deleted: boolean }>> {
+        await this.deckService.removeCard(id, req.user.id, dto.cardId, dto.isSideboard);
+        return ApiResponseDto.ok({ deleted: true });
+    }
+}

@@ -1008,6 +1008,45 @@ CREATE INDEX idx_api_usage_day ON public.api_usage (day);
 
 
 --
+-- Name: deck; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.deck (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    name character varying NOT NULL,
+    format public.format_enum,
+    created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    CONSTRAINT deck_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_deck_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_deck_user_id ON public.deck (user_id);
+
+
+--
+-- Name: deck_card; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.deck_card (
+    deck_id integer NOT NULL,
+    card_id character varying NOT NULL,
+    quantity integer NOT NULL DEFAULT 1 CHECK (quantity > 0),
+    is_sideboard boolean NOT NULL DEFAULT false,
+    CONSTRAINT deck_card_pkey PRIMARY KEY (deck_id, card_id, is_sideboard),
+    CONSTRAINT fk_deck_card_deck FOREIGN KEY (deck_id)
+        REFERENCES public.deck(id) ON DELETE CASCADE,
+    CONSTRAINT fk_deck_card_card FOREIGN KEY (card_id)
+        REFERENCES public.card(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_deck_card_deck_id ON public.deck_card (deck_id);
+CREATE INDEX idx_deck_card_card_id ON public.deck_card (card_id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 

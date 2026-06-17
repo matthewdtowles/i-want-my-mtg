@@ -270,9 +270,18 @@ export class PortfolioOrchestrator {
         const selected = new Set(selectedColors);
         return COLOR_CODES.map((code) => {
             const active = selected.has(code);
-            const next = COLOR_CODES.filter((c) =>
-                c === code ? !active : selected.has(c)
-            );
+            // 'C' (colorless) is mutually exclusive with real colors: the
+            // backend ignores 'C' whenever any WUBRG is selected, so the chips
+            // never combine them. Toggling 'C' clears the real colors, and
+            // toggling a real color drops 'C'.
+            const next: string[] =
+                code === 'C'
+                    ? active
+                        ? []
+                        : ['C']
+                    : COLOR_CODES.filter((c) =>
+                          c === 'C' ? false : c === code ? !active : selected.has(c)
+                      );
             const params = new URLSearchParams({ by: 'color' });
             if (next.length > 0) {
                 params.set('colors', next.join(','));

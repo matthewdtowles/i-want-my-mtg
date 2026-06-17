@@ -413,6 +413,24 @@ describe('PortfolioOrchestrator', () => {
             expect(colorsOf(result.colorChips.find((c) => c.code === 'W')!.href)).toBeNull();
         });
 
+        it('makes Colorless mutually exclusive with real colors in chip hrefs', async () => {
+            // From a real-color selection, the Colorless chip switches to just C.
+            const fromColors = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['W', 'U']
+            );
+            expect(colorsOf(fromColors.colorChips.find((c) => c.code === 'C')!.href)).toBe('C');
+
+            // From Colorless, clicking a real color drops C and selects just that color.
+            const fromColorless = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['C']
+            );
+            expect(colorsOf(fromColorless.colorChips.find((c) => c.code === 'W')!.href)).toBe('W');
+        });
+
         it('omits color chips and filter label for non-color dimensions', async () => {
             const result = await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'set');
 

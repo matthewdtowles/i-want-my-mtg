@@ -66,7 +66,7 @@
                     <div class='flex flex-wrap items-center gap-2' role='group' aria-label='Filter by color'>
                         <span class='text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mr-1'>Filter</span>
                         {{#each colorChips}}
-                            <a href='{{href}}' class='breakdown-color-chip color-{{code}} {{#if active}}active{{/if}}' aria-pressed='{{#if active}}true{{else}}false{{/if}}'>
+                            <a href='{{href}}' class='breakdown-color-chip color-{{code}} {{#if active}}active{{/if}}' aria-label='{{#if active}}Remove {{label}} filter{{else}}Add {{label}} filter{{/if}}'>
                                 <span class='breakdown-color-dot' aria-hidden='true'></span>{{label}}
                             </a>
                         {{/each}}

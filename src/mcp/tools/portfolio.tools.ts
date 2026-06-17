@@ -106,7 +106,7 @@ export class PortfolioMcpTools {
                     "Get the user's collection value broken down by a dimension. Premium-gated. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
                     by: z
-                        .enum(['set', 'rarity', 'type', 'color', 'format', 'cost-basis'])
+                        .enum(['set', 'rarity', 'type', 'color', 'cost-basis'])
                         .describe(
                             "Dimension to break down by. 'cost-basis' buckets are gain/loss/at-cost. 'color' groups by color identity (a card counts in every color it contains, so rows overlap)."
                         ),

@@ -53,13 +53,15 @@ export class PortfolioController {
     @Render('portfolioBreakdown')
     async getBreakdown(
         @Req() req: AuthenticatedRequest,
-        @Query('by') by?: string
+        @Query('by') by?: string,
+        @Query('colors') colors?: string
     ): Promise<PortfolioBreakdownViewDto> {
         const dimension: BreakdownDimension = PortfolioBreakdownService.isDimension(by)
             ? by
             : 'set';
+        const selectedColors = PortfolioBreakdownService.parseColors(colors);
         this.LOGGER.log(`Get portfolio breakdown by ${dimension} for user ${req.user?.id}.`);
-        return this.orchestrator.getBreakdownView(req, dimension);
+        return this.orchestrator.getBreakdownView(req, dimension, selectedColors);
     }
 
     @UseGuards(JwtAuthGuard, SubscriptionGuard)

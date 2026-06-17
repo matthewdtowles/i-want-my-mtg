@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CardService } from 'src/core/card/card.service';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
+import { PortfolioBreakdown } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
@@ -16,6 +17,8 @@ describe('PortfolioOrchestrator', () => {
     let portfolioService: jest.Mocked<PortfolioService>;
     let summaryService: jest.Mocked<PortfolioSummaryService>;
     let transactionService: jest.Mocked<TransactionService>;
+    let breakdownService: jest.Mocked<PortfolioBreakdownService>;
+    let subscriptionService: jest.Mocked<SubscriptionService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -110,6 +113,12 @@ describe('PortfolioOrchestrator', () => {
             PortfolioSummaryService
         ) as jest.Mocked<PortfolioSummaryService>;
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
+        breakdownService = module.get(
+            PortfolioBreakdownService
+        ) as jest.Mocked<PortfolioBreakdownService>;
+        subscriptionService = module.get(
+            SubscriptionService
+        ) as jest.Mocked<SubscriptionService>;
     });
 
     beforeEach(() => {
@@ -350,6 +359,83 @@ describe('PortfolioOrchestrator', () => {
             await expect(
                 orchestrator.getRealizedGains(mockUnauthenticatedRequest)
             ).rejects.toThrow();
+        });
+    });
+
+    describe('getBreakdownView (color)', () => {
+        const colorsOf = (href: string): string | null =>
+            new URL(href, 'https://x').searchParams.get('colors');
+
+        beforeEach(() => {
+            subscriptionService.isUserSubscribed.mockResolvedValue(true);
+            summaryService.getSummary.mockResolvedValue(testSummary);
+            breakdownService.getBreakdown.mockResolvedValue(new PortfolioBreakdown('color', []));
+        });
+
+        it('passes the selected colors through to the breakdown service', async () => {
+            await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'color', ['W', 'U']);
+
+            expect(breakdownService.getBreakdown).toHaveBeenCalledWith(1, 'color', ['W', 'U']);
+        });
+
+        it('builds a chip per color and marks the selected ones active', async () => {
+            const result = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['W', 'U']
+            );
+
+            expect(result.colorChips.map((c) => c.code)).toEqual(['W', 'U', 'B', 'R', 'G', 'C']);
+            const active = result.colorChips.filter((c) => c.active).map((c) => c.code);
+            expect(active).toEqual(['W', 'U']);
+            expect(result.filterLabel).toBe('White, Blue');
+        });
+
+        it('chip href toggles its own color off and adds inactive ones in WUBRG order', async () => {
+            const result = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['W', 'U']
+            );
+            const chip = (code: string) => result.colorChips.find((c) => c.code === code)!;
+
+            // active W -> removing it leaves U
+            expect(colorsOf(chip('W').href)).toBe('U');
+            // inactive B -> adds B, canonical order W,U,B
+            expect(colorsOf(chip('B').href)).toBe('W,U,B');
+        });
+
+        it('clearing the last selected color drops the colors param entirely', async () => {
+            const result = await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'color', [
+                'W',
+            ]);
+
+            expect(colorsOf(result.colorChips.find((c) => c.code === 'W')!.href)).toBeNull();
+        });
+
+        it('makes Colorless mutually exclusive with real colors in chip hrefs', async () => {
+            // From a real-color selection, the Colorless chip switches to just C.
+            const fromColors = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['W', 'U']
+            );
+            expect(colorsOf(fromColors.colorChips.find((c) => c.code === 'C')!.href)).toBe('C');
+
+            // From Colorless, clicking a real color drops C and selects just that color.
+            const fromColorless = await orchestrator.getBreakdownView(
+                mockAuthenticatedRequest,
+                'color',
+                ['C']
+            );
+            expect(colorsOf(fromColorless.colorChips.find((c) => c.code === 'W')!.href)).toBe('W');
+        });
+
+        it('omits color chips and filter label for non-color dimensions', async () => {
+            const result = await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'set');
+
+            expect(result.colorChips).toEqual([]);
+            expect(result.filterLabel).toBe('');
         });
     });
 });

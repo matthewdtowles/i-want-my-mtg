@@ -5,6 +5,8 @@ import { CardService } from 'src/core/card/card.service';
 import { PortfolioBreakdownService } from 'src/core/portfolio/portfolio-breakdown.service';
 import {
     BreakdownDimension,
+    COLOR_CODES,
+    COLOR_LABELS,
     PortfolioBreakdown,
 } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
@@ -17,7 +19,11 @@ import {
     PortfolioValueHistoryPointDto,
     PortfolioValueHistoryResponseDto,
 } from './dto/portfolio-value-history-response.dto';
-import { PortfolioBreakdownViewDto, BreakdownSliceView } from './dto/portfolio-breakdown.view.dto';
+import {
+    PortfolioBreakdownViewDto,
+    BreakdownSliceView,
+    ColorChipView,
+} from './dto/portfolio-breakdown.view.dto';
 import { PortfolioViewDto } from './dto/portfolio.view.dto';
 import { formatGain, gainSign } from 'src/http/base/http.util';
 import {
@@ -181,12 +187,20 @@ export class PortfolioOrchestrator {
 
     async getBreakdownView(
         req: AuthenticatedRequest,
-        dimension: BreakdownDimension
+        dimension: BreakdownDimension,
+        selectedColors: string[] = []
     ): Promise<PortfolioBreakdownViewDto> {
         this.LOGGER.debug(`Get ${dimension} breakdown view for user ${req.user?.id}.`);
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
+
+            const colorChips =
+                dimension === 'color' ? this.buildColorChips(selectedColors) : [];
+            const filterLabel =
+                dimension === 'color' && selectedColors.length > 0
+                    ? selectedColors.map((c) => COLOR_LABELS[c] ?? c).join(', ')
+                    : '';
 
             const baseInit = {
                 authenticated: true,
@@ -198,6 +212,9 @@ export class PortfolioOrchestrator {
                 ],
                 title: 'Portfolio Analytics - I Want My MTG',
                 dimension,
+                colorChips,
+                selectedColors,
+                filterLabel,
             };
 
             if (!subscribed) {
@@ -211,7 +228,7 @@ export class PortfolioOrchestrator {
             }
 
             const [breakdown, summary] = await Promise.all([
-                this.breakdownService.getBreakdown(req.user.id, dimension),
+                this.breakdownService.getBreakdown(req.user.id, dimension, selectedColors),
                 this.summaryService.getSummary(req.user.id),
             ]);
 
@@ -242,6 +259,40 @@ export class PortfolioOrchestrator {
             this.LOGGER.debug(`Error getting breakdown view: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'getBreakdownView');
         }
+    }
+
+    /**
+     * Build the color filter chips for the By Color tab. Each chip links to the
+     * breakdown with its color toggled in/out of the selection, so the filter
+     * works without JS. Codes stay in canonical WUBRG(C) order.
+     */
+    private buildColorChips(selectedColors: string[]): ColorChipView[] {
+        const selected = new Set(selectedColors);
+        return COLOR_CODES.map((code) => {
+            const active = selected.has(code);
+            // 'C' (colorless) is mutually exclusive with real colors: the
+            // backend ignores 'C' whenever any WUBRG is selected, so the chips
+            // never combine them. Toggling 'C' clears the real colors, and
+            // toggling a real color drops 'C'.
+            const next: string[] =
+                code === 'C'
+                    ? active
+                        ? []
+                        : ['C']
+                    : COLOR_CODES.filter((c) =>
+                          c === 'C' ? false : c === code ? !active : selected.has(c)
+                      );
+            const params = new URLSearchParams({ by: 'color' });
+            if (next.length > 0) {
+                params.set('colors', next.join(','));
+            }
+            return {
+                code,
+                label: COLOR_LABELS[code],
+                active,
+                href: `/portfolio/breakdown?${params.toString()}`,
+            };
+        });
     }
 
     private static readonly CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {

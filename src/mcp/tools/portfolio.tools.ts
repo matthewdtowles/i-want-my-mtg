@@ -106,9 +106,15 @@ export class PortfolioMcpTools {
                     "Get the user's collection value broken down by a dimension. Premium-gated. Requires IWMM_API_KEY.",
                 inputSchema: z.object({
                     by: z
-                        .enum(['set', 'rarity', 'type', 'format', 'cost-basis'])
+                        .enum(['set', 'rarity', 'type', 'color', 'cost-basis'])
                         .describe(
-                            "Dimension to break down by. 'cost-basis' buckets are gain/loss/at-cost."
+                            "Dimension to break down by. 'cost-basis' buckets are gain/loss/at-cost. 'color' groups by color identity (a card counts in every color it contains, so rows overlap)."
+                        ),
+                    colors: z
+                        .array(z.enum(['W', 'U', 'B', 'R', 'G', 'C']))
+                        .optional()
+                        .describe(
+                            "For by=color: keep only cards whose color identity contains all of these (superset match); 'C' is colorless. Ignored for other dimensions."
                         ),
                 }),
                 requiresAuth: true,
@@ -192,9 +198,17 @@ export class PortfolioMcpTools {
         return ApiResponseDto.ok({ totalRealizedGain });
     }
 
-    private async breakdown(args: { by: string }, ctx: McpToolContext): Promise<unknown> {
+    private async breakdown(
+        args: { by: string; colors?: string[] },
+        ctx: McpToolContext
+    ): Promise<unknown> {
         const dimension = PortfolioBreakdownService.isDimension(args.by) ? args.by : 'set';
-        const breakdown = await this.breakdownService.getBreakdown(ctx.user.id, dimension);
+        const selectedColors = PortfolioBreakdownService.parseColors((args.colors ?? []).join(','));
+        const breakdown = await this.breakdownService.getBreakdown(
+            ctx.user.id,
+            dimension,
+            selectedColors
+        );
         return ApiResponseDto.ok(breakdown);
     }
 

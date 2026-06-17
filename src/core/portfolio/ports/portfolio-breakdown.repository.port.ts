@@ -3,5 +3,9 @@ import { BreakdownDimension, PortfolioBreakdownSlice } from '../portfolio-breakd
 export const PortfolioBreakdownRepositoryPort = 'PortfolioBreakdownRepositoryPort';
 
 export interface PortfolioBreakdownRepositoryPort {
-    aggregate(userId: number, dimension: BreakdownDimension): Promise<PortfolioBreakdownSlice[]>;
+    aggregate(
+        userId: number,
+        dimension: BreakdownDimension,
+        selectedColors?: string[]
+    ): Promise<PortfolioBreakdownSlice[]>;
 }

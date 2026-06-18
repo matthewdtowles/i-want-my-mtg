@@ -312,20 +312,22 @@ Deferred from 3.4. **Built — pending scry release + web deploy to light up.**
 
 **Deploy coupling (web + scry, same pattern as 6.7/6.8):** the web side is inert until `card.colors` is populated. Sequence: (1) release scry (additive, safe - the old binary keeps running and never references the column); (2) deploy web - migration `040` adds the column *before* `setup-cron.sh` extracts the new scry binary, so the column exists before the binary writes it. Until the next full ingest runs, existing rows read NULL and show as Colorless.
 
-### 10.4 Feature: Deck Building
+### 10.4 Feature: Deck Building (MVP shipped)
 
-Deferred from former §3.5. Not on the near-term roadmap; revisit after monetization, platform expansion, and ecosystem phases land.
+Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper analytics gated for later), modeled on Archidekt/ManaBox, mirroring the `buy_list` layering. The heavier pieces are deferred to a follow-up.
 
-- [ ] Design deck data model (deck table with user FK, deck_card join table with quantity, sideboard flag)
-- [ ] Create database migration for deck tables
-- [ ] Implement domain entities, repository ports, ORM entities, mappers, and repositories
-- [ ] Implement DeckService with CRUD operations (create, update, delete, add/remove cards)
-- [ ] Create REST API endpoints for decks (CRUD, add/remove cards, list user decks)
-- [ ] Build deck list view page (user's saved decks with name, format, card count, estimated value)
-- [ ] Build deck detail view page (card list grouped by type, mana curve visualization, price breakdown)
-- [ ] Add "Add to Deck" action from card detail and search results
-- [ ] Deck import/export (paste decklist text format, CSV)
-- [ ] Format legality validation (check deck against format rules - Standard, Modern, Commander, etc.)
+- [x] Deck data model (`deck` + `deck_card`, migration `041`): `deck` (user FK, name, nullable `format`, timestamps); `deck_card` keyed `(deck_id, card_id, is_sideboard)` so a card can sit in main + side
+- [x] Domain entities, repository port, ORM entities, mappers, repository (`DeckRepository`)
+- [x] `DeckService` CRUD + add/remove/set-quantity, with per-deck ownership checks (`NotFoundException` on miss / not-owned)
+- [x] REST API `/api/v1/decks` (list/create/get/rename/delete + add/remove/set-quantity card; free tier via `JwtOrApiKeyGuard`)
+- [x] Deck list page (`/decks`): name, format, card count, estimated value; create + delete inline
+- [x] Deck detail page (`/decks/:id`): cards grouped by primary type, per-card legality flag, estimated value; qty steppers + remove via AJAX, totals recomputed client-side
+- [x] Per-card legality check reusing the existing `legality` table (`DeckLegalityPolicy`); estimated value via `PriceCalculationPolicy` (`DeckSummaryPolicy`)
+- [x] "Add to Deck" on the **card detail** page (pick a deck or create one inline)
+- [ ] **Deferred:** "Add to Deck" from **search results** (needs a per-row picker; card-detail covers the primary add path)
+- [ ] **Deferred:** Deck import/export (paste decklist text + CSV)
+- [ ] **Deferred:** Mana-curve visualization + fuller price breakdown on the detail page
+- [ ] **Deferred:** Full construction-rule validation (singleton, 4-of limits, deck-size minimums) - today's check is per-card legal/banned only
 
 ---
 

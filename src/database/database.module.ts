@@ -5,6 +5,7 @@ import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { BuyListRepositoryPort } from 'src/core/buy-list/ports/buy-list.repository.port';
+import { DeckRepositoryPort } from 'src/core/deck/ports/deck.repository.port';
 import { PasswordResetRepositoryPort } from 'src/core/password-reset/ports/password-reset.repository.port';
 import { SetPriceHistoryRepositoryPort } from 'src/core/set/ports/set-price-history.repository.port';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
@@ -26,6 +27,9 @@ import { InventoryOrmEntity } from './inventory/inventory.orm-entity';
 import { InventoryRepository } from './inventory/inventory.repository';
 import { BuyListOrmEntity } from './buy-list/buy-list.orm-entity';
 import { BuyListRepository } from './buy-list/buy-list.repository';
+import { DeckOrmEntity } from './deck/deck.orm-entity';
+import { DeckCardOrmEntity } from './deck/deck-card.orm-entity';
+import { DeckRepository } from './deck/deck.repository';
 import { PasswordResetOrmEntity } from './password-reset/password-reset.orm-entity';
 import { PasswordResetRepository } from './password-reset/password-reset.repository';
 import { GranularPriceOrmEntity } from './granular-price/granular-price.orm-entity';
@@ -79,6 +83,8 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             CardOrmEntity,
             InventoryOrmEntity,
             BuyListOrmEntity,
+            DeckOrmEntity,
+            DeckCardOrmEntity,
             LegalityOrmEntity,
             PasswordResetOrmEntity,
             GranularPriceOrmEntity,
@@ -111,6 +117,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         { provide: PriceHistoryRepositoryPort, useClass: PriceHistoryRepository },
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         { provide: BuyListRepositoryPort, useClass: BuyListRepository },
+        { provide: DeckRepositoryPort, useClass: DeckRepository },
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
         { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
@@ -138,6 +145,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         PriceHistoryRepositoryPort,
         InventoryRepositoryPort,
         BuyListRepositoryPort,
+        DeckRepositoryPort,
         PasswordResetRepositoryPort,
         SetPriceHistoryRepositoryPort,
         SetRepositoryPort,

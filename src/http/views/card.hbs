@@ -193,6 +193,16 @@
                     </button>
                     <span id="buy-list-add-result" class="text-sm text-teal-600 dark:text-teal-400" role="status" aria-live="polite"></span>
                 </div>
+
+                <div class="mt-2 flex items-center gap-2 flex-wrap" id="deck-add" data-card-id="{{card.cardId}}">
+                    <select id="deck-add-select" class="rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 text-sm py-1.5" aria-label="Choose a deck">
+                        <option value="">Loading decks&hellip;</option>
+                    </select>
+                    <button type="button" id="deck-add-btn" class="btn btn-secondary btn--sm" disabled>
+                        <i class="fas fa-layer-group mr-1" aria-hidden="true"></i> Add to deck
+                    </button>
+                    <span id="deck-add-result" class="text-sm text-teal-600 dark:text-teal-400" role="status" aria-live="polite"></span>
+                </div>
                 {{/if}}
 
                 <div class="mt-4" id="price-history-chart" data-card-id="{{card.cardId}}" data-chart-src="/public/js/priceHistoryChart.js?v={{assetVersion}}">
@@ -262,6 +272,7 @@
 
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/buyListAdd.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/deckAdd.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/updateInventory.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/chartLoader.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/transactionForm.js?v={{assetVersion}}" defer></script>

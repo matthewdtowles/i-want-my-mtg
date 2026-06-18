@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Deck } from './deck.entity';
@@ -29,7 +29,7 @@ export class DeckService {
     async createDeck(userId: number, name: string, format?: Format | null): Promise<Deck> {
         const cleanName = (name ?? '').trim();
         if (!cleanName) {
-            throw new Error('Deck name is required.');
+            throw new BadRequestException('Deck name is required.');
         }
         this.LOGGER.debug(`create deck "${cleanName}" for user ${userId}.`);
         return this.repository.create(new Deck({ userId, name: cleanName, format: format ?? null }));
@@ -44,7 +44,7 @@ export class DeckService {
         await this.assertOwner(deckId, userId);
         const cleanName = (name ?? '').trim();
         if (!cleanName) {
-            throw new Error('Deck name is required.');
+            throw new BadRequestException('Deck name is required.');
         }
         this.LOGGER.debug(`update deck ${deckId} for user ${userId}.`);
         return this.repository.update(

@@ -84,20 +84,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return payload;
     }
 
+    function isRowBusy(row) {
+        return row.getAttribute('data-busy') === '1';
+    }
+
+    // Lock the whole row (both steppers + remove) during an in-flight mutation,
+    // so overlapping clicks can't fire out-of-order PATCH/DELETE requests.
+    function setRowBusy(row, busy) {
+        row.setAttribute('data-busy', busy ? '1' : '0');
+        row.querySelectorAll('.deck-step, .deck-remove').forEach(function (b) {
+            b.disabled = busy;
+        });
+    }
+
     document.querySelectorAll('#deck-cards .deck-step').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var row = btn.closest('[data-card-id]');
             if (!row) return;
             var next = rowQty(row) + (parseInt(btn.getAttribute('data-delta'), 10) || 0);
             if (next < 0) next = 0;
-            btn.disabled = true;
+            if (isRowBusy(row)) return;
+            setRowBusy(row, true);
             AjaxUtils.fetchWithGate(base + '/cards', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cardPayload(row, { quantity: next })),
             })
                 .then(function (res) {
-                    btn.disabled = false;
+                    setRowBusy(row, false);
                     if (res.gated || !res.ok) return;
                     if (next <= 0) {
                         removeRow(row);
@@ -108,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 })
                 .catch(function () {
-                    btn.disabled = false;
+                    setRowBusy(row, false);
                 });
         });
     });
@@ -117,19 +131,20 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             var row = btn.closest('[data-card-id]');
             if (!row) return;
-            btn.disabled = true;
+            if (isRowBusy(row)) return;
+            setRowBusy(row, true);
             AjaxUtils.fetchWithGate(base + '/cards', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cardPayload(row)),
             })
                 .then(function (res) {
-                    btn.disabled = false;
+                    setRowBusy(row, false);
                     if (res.gated || !res.ok) return;
                     removeRow(row);
                 })
                 .catch(function () {
-                    btn.disabled = false;
+                    setRowBusy(row, false);
                 });
         });
     });

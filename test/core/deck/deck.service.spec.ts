@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Format } from 'src/core/card/format.enum';
 import { Deck } from 'src/core/deck/deck.entity';
@@ -50,8 +50,8 @@ describe('DeckService', () => {
             expect(deck.name).toBe('Aggro');
             expect(deck.format).toBe(Format.Modern);
         });
-        it('throws on an empty name', async () => {
-            await expect(service.createDeck(7, '   ')).rejects.toThrow('required');
+        it('throws BadRequest (400) on an empty name', async () => {
+            await expect(service.createDeck(7, '   ')).rejects.toBeInstanceOf(BadRequestException);
             expect(repo.create).not.toHaveBeenCalled();
         });
     });

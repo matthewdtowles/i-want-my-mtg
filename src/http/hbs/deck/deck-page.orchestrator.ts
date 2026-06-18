@@ -121,7 +121,9 @@ export class DeckPageOrchestrator {
             formatLabel: deck.format ? this.capitalize(deck.format) : 'No format',
             cardCount: DeckSummaryPolicy.cardCount(cards),
             estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
-            updatedAt: deck.updatedAt ? deck.updatedAt.toLocaleDateString('en-US') : '',
+            updatedAt: deck.updatedAt
+                ? deck.updatedAt.toLocaleDateString('en-US', { timeZone: 'UTC' })
+                : '',
             url: `/decks/${deck.id}`,
         };
     }
@@ -158,7 +160,9 @@ export class DeckPageOrchestrator {
             url: card ? buildCardUrl(card.setCode, card.number) : '#',
             manaCost: card?.manaCost,
             quantity: dc.quantity,
-            unitValue: Math.round(unitValue * 100) / 100,
+            // Full precision; deckDetail.js rounds at display so client-recomputed
+            // totals match the server's multiply-then-round lineValue/estimatedValue.
+            unitValue,
             lineValue: this.formatCurrency(dc.quantity * unitValue),
             isSideboard: dc.isSideboard,
             illegal: this.isIllegal(format, dc),

@@ -347,11 +347,45 @@ Import shared public decklists (paste-text first, URL/site export later) and com
 
 ### 10.8 Scry: ingestion performance regression (scry#22)
 
-Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s → ~18min**. Within-run throughput collapses (120 → 67 cards/s) — the signature of upsert/index cost on the growing granular tables added by the per-vendor store (4 sequential DB writes per batch now vs. 1). Deep root-cause + fixes (COPY/staging upserts, take `granular_price_history` off the hot path, parallelize independent table writes, autovacuum/retention check). Tracked in scry; follow-ups spun out per finding.
+Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s → ~18min**. Root cause: the granular per-vendor price store (scry#14) — 4 DB writes/batch (vs 1), dominated by `granular_price_history` (281s) + `granular_price` (264s).
+
+**Investigation outcome (2026-06-18): don't optimize — cut.** Instrumentation (scry#23) + a prod-scale benchmark established that (a) plain INSERT is ~24× an `ON CONFLICT` upsert on the wide-key granular tables, but (b) the same trick is worthless on the narrow-key averaged tables (~10%). Then a usage audit + prod validation showed the granular store is mostly **dead weight**:
+
+- `granular_price_history` is **write-only** — nothing reads it (web app, API, scry).
+- ~82% of `granular_price` rows are **retail** (tcgplayer/CK/manapool) — **never read**; the web app only reads `granular_price` `WHERE price_type='buylist'`, vendor `cardkingdom`.
+- The MTGJSON CK buylist it does write is **88% stale** (prod: only ~12% of the 17.8k MTGJSON-only rows were refreshed today; the rest froze days/weeks ago) and is fully covered by **CK-direct** (Tier B, live, with `qty`).
+
+Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. scry#25 (COPY/staging), scry#26 (granular-history retention), and scry#31 (plain-INSERT of `granular_price_history`) are all **superseded/closed** by that cut.
 
 ### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
 
 MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, missing `color` + the `colors` filter), and there are **no deck tools** (generated API types predate `/api/v1/decks`). Regenerate API types, fix the breakdown dimensions, add the deck tool group.
+
+### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
+
+**Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
+
+**Evidence captured (prod, 2026-06-18):** `granular_price` = 139,953 manapool-retail + 139,128 CK-retail + 137,921 tcg-retail (all qty NULL, unread) + 92,596 CK-buylist (74,741 from CK-direct w/ qty; 17,855 MTGJSON-only, ~88% stale by date). `granular_price_history` = 5.3M rows / 1.2 GB, zero readers.
+
+**Close as superseded:** scry#31 (PR), scry#25, scry#26.
+
+**Scry change (PR 1) — stops all the now-dead writes:**
+- [ ] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.
+- [ ] Remove **all** `granular_price_history` writes (daily `save_prices`, `save_ck_batch`, `save_price_history_only` backfill).
+- [ ] CK-direct (`save_ck_batch`): keep `granular_price` (current buylist) write; drop its history write.
+- [ ] Drop `granular_price_history` retention (`apply_granular_*_retention`) + now-unused repo methods.
+- [ ] Verify via `./scripts/test-integ.sh` (real PG) + `cargo test --lib`.
+
+**Web change (PR 2) — drops the table + purges stale/retail rows:**
+- [ ] Migration: `DROP TABLE granular_price_history;` (+ remove from init SQL) and `DELETE FROM granular_price WHERE qty IS NULL;` (one-time purge of unread retail + stale MTGJSON buylist; CK-direct rows carry `qty`).
+- [ ] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
+
+**Deploy order (manual — Matthew):**
+1. [ ] **Publish scry first** (merge PR 1 → CI pushes `scry:latest`). Safe: the old binary keeps writing the soon-to-be-dropped table, which is harmless until web deploys.
+2. [ ] **Deploy web second** (PR 2). Web deploy runs the migration (drops table + purge) *then* extracts the new scry binary, so by the next 2 a.m. cron nothing writes the dropped table. **Do not** hand-refresh the scry binary before the web migration, and **do not** deploy web before scry is published (it'd extract the still-old binary that writes the dropped table → next cron errors).
+3. [ ] After the next nightly run, re-check `ingest_all_today write totals` — confirm the granular lines are gone and total ingest is back to single digits.
+
+**Follow-up (optional, separate):** improve CK-direct `scryfall_id` matching to recover the ~2,093 today-fresh + 3,540 unmatched CK offers, if buylist coverage warrants it. If a buylist *trend chart* is ever wanted, add CK-buylist-only history written by CK-direct (~93k rows/day, not ~480k of retail).
 
 ---
 

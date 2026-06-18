@@ -324,10 +324,34 @@ Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper an
 - [x] Deck detail page (`/decks/:id`): cards grouped by primary type, per-card legality flag, estimated value; qty steppers + remove via AJAX, totals recomputed client-side
 - [x] Per-card legality check reusing the existing `legality` table (`DeckLegalityPolicy`); estimated value via `PriceCalculationPolicy` (`DeckSummaryPolicy`)
 - [x] "Add to Deck" on the **card detail** page (pick a deck or create one inline)
-- [ ] **Deferred:** "Add to Deck" from **search results** (needs a per-row picker; card-detail covers the primary add path)
-- [ ] **Deferred:** Deck import/export (paste decklist text + CSV)
+- [ ] **Deferred → §10.6:** "Add to Deck" from search — superseded by in-page deck search (#536)
+- [ ] **Deferred → §10.7:** Deck import/export — now part of public-decklist import + inventory comparison (#537)
 - [ ] **Deferred:** Mana-curve visualization + fuller price breakdown on the detail page
 - [ ] **Deferred:** Full construction-rule validation (singleton, 4-of limits, deck-size minimums) - today's check is per-card legal/banned only
+
+### 10.5 Portfolio Analytics: category drill-down + interaction-model audit (#535)
+
+`/portfolio/breakdown` is fully server-rendered and its rows are terminal aggregates — there's no path from a slice to the cards inside it. Add inline drill-down (click a color/rarity/type/set/cost-basis row → lazy-load the cards in that slice, with the standard hover-image card component), and write down the rationale for AJAX-vs-server-render here vs. the rest of the app (deck detail, search, inventory already do partial AJAX). Also evaluate exposing the same breakdown/filter affordance on Inventory.
+
+- [ ] `GET /api/v1/portfolio/breakdown/cards?by=&key=[&colors=]` (premium-gated)
+- [ ] Inline expand/collapse + lazy card load, reusing the hover-preview card row
+- [ ] Written decision: AJAX vs full-nav for dimension/filter switching; inventory-filtering opportunity
+
+### 10.6 Deck building: in-page card search (#536)
+
+Make adding cards happen **on the deck page** (modeled on Archidekt/ManaBox), so users never leave the deck. Results **grouped by card name** (one row per name, not per printing), card art on hover (first tap on mobile), inline add to main/sideboard via the existing `/api/v1/decks/:id/cards`. Needs a name-grouped mode on the search endpoint.
+
+### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
+
+Import shared public decklists (paste-text first, URL/site export later) and compare them against inventory: "what can I build" (rank decks by completeness) and per-deck owned-vs-needed gap lists. Reuses `src/core/import/` parsers + the 10.4 deck model; missing cards seed the want-list. Import likely stays free (funnel); the analysis layer may be the premium pull.
+
+### 10.8 Scry: ingestion performance regression (scry#22)
+
+Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s → ~18min**. Within-run throughput collapses (120 → 67 cards/s) — the signature of upsert/index cost on the growing granular tables added by the per-vendor store (4 sequential DB writes per batch now vs. 1). Deep root-cause + fixes (COPY/staging upserts, take `granular_price_history` off the hot path, parallelize independent table writes, autovacuum/retention check). Tracked in scry; follow-ups spun out per finding.
+
+### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
+
+MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, missing `color` + the `colors` filter), and there are **no deck tools** (generated API types predate `/api/v1/decks`). Regenerate API types, fix the breakdown dimensions, add the deck tool group.
 
 ---
 

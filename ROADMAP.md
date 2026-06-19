@@ -97,7 +97,7 @@ Constraints found during scoping: scry currently ingests only the MTGJSON `retai
 
 Mirrors the existing `price` / `price_history` split — a lean current table the card page reads, plus a retention-bounded history table.
 
-- [x] `granular_price` (current per-vendor offer) **+** `granular_price_history` (dated series), migration `034` + init SQL. Columns `(card_id, provider, price_type, finish, condition, date, price)`, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the key stays NULL-free). **Current** is keyed *without* `date` (one row per series), so the card page reads it with a trivial `WHERE card_id = …`; **history** keys on `date` and is retention-bounded. **No `qty` column** — buy quantity is inconsistent across vendors and deferred to Tier B (Card Kingdom direct), modelled when it lands.
+- [x] `granular_price` (current per-vendor offer) **+** `granular_price_history` (dated series), migration `034` + init SQL. Columns `(card_id, provider, price_type, finish, condition, date, price)`, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the key stays NULL-free). **Current** is keyed *without* `date` (one row per series), so the card page reads it with a trivial `WHERE card_id = …`; **history** keys on `date` and is retention-bounded. **No `qty` column** — buy quantity is inconsistent across vendors and deferred to Tier B (Card Kingdom direct), modelled when it lands. *(Later: `qty` landed in migration `036`; `granular_price_history` was dropped as write-only in §10.10 — `granular_price` is now the only granular table.)*
 - [x] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider granular rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
 - [x] Current writes carry a freshness guard (`ON CONFLICT … WHERE EXCLUDED.date >= granular_price.date`): a stale ingest can't move a series backwards, and a vendor that skips a day keeps its last-known offer. `price` already has this property via `clean_up_prices` (keeps the max date).
 - [x] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only, current table; consumed by 6.3)
@@ -324,10 +324,70 @@ Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper an
 - [x] Deck detail page (`/decks/:id`): cards grouped by primary type, per-card legality flag, estimated value; qty steppers + remove via AJAX, totals recomputed client-side
 - [x] Per-card legality check reusing the existing `legality` table (`DeckLegalityPolicy`); estimated value via `PriceCalculationPolicy` (`DeckSummaryPolicy`)
 - [x] "Add to Deck" on the **card detail** page (pick a deck or create one inline)
-- [ ] **Deferred:** "Add to Deck" from **search results** (needs a per-row picker; card-detail covers the primary add path)
-- [ ] **Deferred:** Deck import/export (paste decklist text + CSV)
+- [ ] **Deferred → §10.6:** "Add to Deck" from search — superseded by in-page deck search (#536)
+- [ ] **Deferred → §10.7:** Deck import/export — now part of public-decklist import + inventory comparison (#537)
 - [ ] **Deferred:** Mana-curve visualization + fuller price breakdown on the detail page
 - [ ] **Deferred:** Full construction-rule validation (singleton, 4-of limits, deck-size minimums) - today's check is per-card legal/banned only
+
+### 10.5 Portfolio Analytics: category drill-down + interaction-model audit (#535)
+
+`/portfolio/breakdown` is fully server-rendered and its rows are terminal aggregates — there's no path from a slice to the cards inside it. Add inline drill-down (click a color/rarity/type/set/cost-basis row → lazy-load the cards in that slice, with the standard hover-image card component), and write down the rationale for AJAX-vs-server-render here vs. the rest of the app (deck detail, search, inventory already do partial AJAX). Also evaluate exposing the same breakdown/filter affordance on Inventory.
+
+- [ ] `GET /api/v1/portfolio/breakdown/cards?by=&key=[&colors=]` (premium-gated)
+- [ ] Inline expand/collapse + lazy card load, reusing the hover-preview card row
+- [ ] Written decision: AJAX vs full-nav for dimension/filter switching; inventory-filtering opportunity
+
+### 10.6 Deck building: in-page card search (#536)
+
+Make adding cards happen **on the deck page** (modeled on Archidekt/ManaBox), so users never leave the deck. Results **grouped by card name** (one row per name, not per printing), card art on hover (first tap on mobile), inline add to main/sideboard via the existing `/api/v1/decks/:id/cards`. Needs a name-grouped mode on the search endpoint.
+
+### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
+
+Import shared public decklists (paste-text first, URL/site export later) and compare them against inventory: "what can I build" (rank decks by completeness) and per-deck owned-vs-needed gap lists. Reuses `src/core/import/` parsers + the 10.4 deck model; missing cards seed the want-list. Import likely stays free (funnel); the analysis layer may be the premium pull.
+
+### 10.8 Scry: ingestion performance regression (scry#22)
+
+Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s → ~18min**. Root cause: the granular per-vendor price store (scry#14) — 4 DB writes/batch (vs 1), dominated by `granular_price_history` (281s) + `granular_price` (264s).
+
+**Investigation outcome (2026-06-18): don't optimize — cut.** Instrumentation (scry#23) + a prod-scale benchmark established that (a) plain INSERT is ~24× an `ON CONFLICT` upsert on the wide-key granular tables, but (b) the same trick is worthless on the narrow-key averaged tables (~10%). Then a usage audit + prod validation showed the granular store is mostly **dead weight**:
+
+- `granular_price_history` is **write-only** — nothing reads it (web app, API, scry).
+- ~82% of `granular_price` rows are **retail** (tcgplayer/CK/manapool) — **never read**; the web app only reads `granular_price` `WHERE price_type='buylist'`, vendor `cardkingdom`.
+- The MTGJSON CK buylist it does write is **88% stale** (prod: only ~12% of the 17.8k MTGJSON-only rows were refreshed today; the rest froze days/weeks ago) and is fully covered by **CK-direct** (Tier B, live, with `qty`).
+
+Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. The tiered-optimization issues scry#24/#25/#26/#27/#31 are all **superseded/closed** by that cut; scry#28 (sealed re-streams `AllPrintings`, ~3.5 min) remains as the one separate, still-valid ingest item, and the umbrella scry#22 stays open until the deploy verifies.
+
+### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
+
+MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, missing `color` + the `colors` filter), and there are **no deck tools** (generated API types predate `/api/v1/decks`). Regenerate API types, fix the breakdown dimensions, add the deck tool group.
+
+### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
+
+**Status (2026-06-18):** **scry#32 merged** — the cut is publishing to `scry:latest` (deploy step 1 done, correct order). **iwantmymtg#538** open + verified (migration 042 drops the table + purges, validated on fresh PG18). Remaining = merge + deploy web #538, then capture the new `write totals` to confirm. Umbrella scry#22 stays open until that verification.
+
+**Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
+
+**Evidence captured (prod, 2026-06-18):** `granular_price` = 139,953 manapool-retail + 139,128 CK-retail + 137,921 tcg-retail (all qty NULL, unread) + 92,596 CK-buylist (74,741 from CK-direct w/ qty; 17,855 MTGJSON-only, ~88% stale by date). `granular_price_history` = 5.3M rows / 1.2 GB, zero readers.
+
+**Closed as superseded:** scry#24, #25, #26, #27, #31 (PR). Umbrella scry#22 stays open until the deploy verifies; scry#28 (sealed) is the lone remaining separate ingest item.
+
+**Scry change (PR 1) — stops all the now-dead writes:**
+- [ ] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.
+- [ ] Remove **all** `granular_price_history` writes (daily `save_prices`, `save_ck_batch`, `save_price_history_only` backfill).
+- [ ] CK-direct (`save_ck_batch`): keep `granular_price` (current buylist) write; drop its history write.
+- [ ] Drop `granular_price_history` retention (`apply_granular_*_retention`) + now-unused repo methods.
+- [ ] Verify via `./scripts/test-integ.sh` (real PG) + `cargo test --lib`.
+
+**Web change (PR 2) — drops the table + purges stale/retail rows:**
+- [ ] Migration: `DROP TABLE granular_price_history;` (+ remove from init SQL) and `DELETE FROM granular_price WHERE qty IS NULL;` (one-time purge of unread retail + stale MTGJSON buylist; CK-direct rows carry `qty`).
+- [ ] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
+
+**Deploy order (manual — Matthew):**
+1. [x] **Publish scry first** — done: scry#32 merged → CI pushes `scry:latest`. (Safe: the old binary on the server keeps writing the soon-to-be-dropped table, harmless until web deploys.)
+2. [ ] **Deploy web second** (PR 2). Web deploy runs the migration (drops table + purge) *then* extracts the new scry binary, so by the next 2 a.m. cron nothing writes the dropped table. **Do not** hand-refresh the scry binary before the web migration, and **do not** deploy web before scry is published (it'd extract the still-old binary that writes the dropped table → next cron errors).
+3. [ ] After the next nightly run, re-check `ingest_all_today write totals` — confirm the granular lines are gone and total ingest is back to single digits.
+
+**Follow-up (optional, separate):** improve CK-direct `scryfall_id` matching to recover the ~2,093 today-fresh + 3,540 unmatched CK offers, if buylist coverage warrants it. If a buylist *trend chart* is ever wanted, add CK-buylist-only history written by CK-direct (~93k rows/day, not ~480k of retail).
 
 ---
 

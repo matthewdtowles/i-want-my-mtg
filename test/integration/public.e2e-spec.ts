@@ -77,9 +77,6 @@ describe('Public endpoints (e2e)', () => {
             expect(res.text).toContain('$3.50');
             expect(res.text).toContain('$7.00');
             expect(res.text).toContain('buylist-best');
-            // Stale CK row (2.00) lives only in granular_price_history, not the
-            // current table the card page reads; retail row not shown as buylist
-            expect(res.text).not.toContain('$2.00');
             // Sell section is a disclosure, collapsed by default, with
             // show/hide labels swapped via CSS on the open state
             expect(res.text).toMatch(/<details class="buylist-section[^"]*">/);

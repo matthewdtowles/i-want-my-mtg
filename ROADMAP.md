@@ -355,7 +355,7 @@ Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s 
 - ~82% of `granular_price` rows are **retail** (tcgplayer/CK/manapool) — **never read**; the web app only reads `granular_price` `WHERE price_type='buylist'`, vendor `cardkingdom`.
 - The MTGJSON CK buylist it does write is **88% stale** (prod: only ~12% of the 17.8k MTGJSON-only rows were refreshed today; the rest froze days/weeks ago) and is fully covered by **CK-direct** (Tier B, live, with `qty`).
 
-Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. scry#25 (COPY/staging), scry#26 (granular-history retention), and scry#31 (plain-INSERT of `granular_price_history`) are all **superseded/closed** by that cut.
+Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. The tiered-optimization issues scry#24/#25/#26/#27/#31 are all **superseded/closed** by that cut; scry#28 (sealed re-streams `AllPrintings`, ~3.5 min) remains as the one separate, still-valid ingest item, and the umbrella scry#22 stays open until the deploy verifies.
 
 ### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
 
@@ -369,7 +369,7 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 **Evidence captured (prod, 2026-06-18):** `granular_price` = 139,953 manapool-retail + 139,128 CK-retail + 137,921 tcg-retail (all qty NULL, unread) + 92,596 CK-buylist (74,741 from CK-direct w/ qty; 17,855 MTGJSON-only, ~88% stale by date). `granular_price_history` = 5.3M rows / 1.2 GB, zero readers.
 
-**Close as superseded:** scry#31 (PR), scry#25, scry#26.
+**Closed as superseded:** scry#24, #25, #26, #27, #31 (PR). Umbrella scry#22 stays open until the deploy verifies; scry#28 (sealed) is the lone remaining separate ingest item.
 
 **Scry change (PR 1) — stops all the now-dead writes:**
 - [ ] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.

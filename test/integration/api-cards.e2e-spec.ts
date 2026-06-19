@@ -142,6 +142,75 @@ describe('Cards API (e2e)', () => {
             });
         });
 
+        describe('groupBy=name (in-page deck search)', () => {
+            it('returns one row per distinct card name with prices', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=name')
+                    .expect(200);
+
+                expect(res.body.success).toBe(true);
+                expect(res.body.data.length).toBeGreaterThan(0);
+
+                const names = res.body.data.map((c: { name: string }) => c.name);
+                expect(new Set(names).size).toBe(names.length); // no duplicate names
+                expect(res.body.meta.total).toBe(names.length);
+                // A representative printing carries the latest price for valuation.
+                expect(res.body.data[0]).toHaveProperty('prices');
+            });
+
+            it('narrows to a single name when the query matches one card', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test%20Angel&groupBy=name')
+                    .expect(200);
+
+                expect(res.body.data).toHaveLength(1);
+                expect(res.body.data[0].name).toBe('Test Angel');
+            });
+
+            it('flags legality for the requested format without omitting the flag otherwise', async () => {
+                const withFormat = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=name&format=standard')
+                    .expect(200);
+                expect(withFormat.body.data.every((c: { legal: boolean }) => c.legal === true)).toBe(
+                    true
+                );
+
+                const noFormat = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=name')
+                    .expect(200);
+                expect(
+                    noFormat.body.data.every((c: { legal?: boolean }) => c.legal === undefined)
+                ).toBe(true);
+            });
+
+            it('returns 400 for an invalid groupBy rather than silently falling back', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=foo')
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+                expect(res.body.param).toBe('groupBy');
+                expect(res.body.allowedValues).toEqual(['name']);
+            });
+
+            it('annotates (does not filter out) cards illegal in the format', async () => {
+                // Non-grouped search filters format=modern to legal-only (none seeded).
+                const filtered = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&format=modern')
+                    .expect(200);
+                expect(filtered.body.data).toEqual([]);
+
+                // Grouped (deck) search keeps the cards and flags them not legal.
+                const annotated = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=name&format=modern')
+                    .expect(200);
+                expect(annotated.body.data.length).toBeGreaterThan(0);
+                expect(
+                    annotated.body.data.every((c: { legal: boolean }) => c.legal === false)
+                ).toBe(true);
+            });
+        });
+
         describe('strict filter validation', () => {
             it('returns 400 with param + allowedValues for an unknown rarity', async () => {
                 const res = await request(app.getHttpServer())

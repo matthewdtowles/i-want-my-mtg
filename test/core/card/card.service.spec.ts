@@ -69,6 +69,8 @@ describe('CardService', () => {
         delete: jest.fn(),
         searchByName: jest.fn(),
         totalSearchByName: jest.fn(),
+        searchByNameGrouped: jest.fn(),
+        totalSearchByNameGrouped: jest.fn(),
     };
 
     const mockPriceHistoryRepository = {
@@ -293,6 +295,45 @@ describe('CardService', () => {
 
             await expect(service.totalSearchByName('Test')).rejects.toThrow(
                 'Error counting card search results for "Test"'
+            );
+        });
+    });
+
+    describe('searchByNameGrouped', () => {
+        it('should delegate to the repository grouped search', async () => {
+            const cards = [testCard];
+            repository.searchByNameGrouped.mockResolvedValue(cards);
+
+            const result = await service.searchByNameGrouped('Test', mockQueryOptions);
+
+            expect(repository.searchByNameGrouped).toHaveBeenCalledWith('Test', mockQueryOptions);
+            expect(result).toEqual(cards);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.searchByNameGrouped.mockRejectedValue(new Error('Database error'));
+
+            await expect(
+                service.searchByNameGrouped('Test', mockQueryOptions)
+            ).rejects.toThrow('Error grouped-searching cards by name "Test"');
+        });
+    });
+
+    describe('totalSearchByNameGrouped', () => {
+        it('should return the count of distinct names', async () => {
+            repository.totalSearchByNameGrouped.mockResolvedValue(3);
+
+            const result = await service.totalSearchByNameGrouped('Test');
+
+            expect(repository.totalSearchByNameGrouped).toHaveBeenCalledWith('Test', undefined);
+            expect(result).toBe(3);
+        });
+
+        it('should throw error when repository fails', async () => {
+            repository.totalSearchByNameGrouped.mockRejectedValue(new Error('Database error'));
+
+            await expect(service.totalSearchByNameGrouped('Test')).rejects.toThrow(
+                'Error counting grouped card search results for "Test"'
             );
         });
     });

@@ -8,6 +8,7 @@ const ALL_FLAGS = {
     legality: true,
     setCode: true,
     transactionType: true,
+    groupBy: true,
 };
 
 describe('validateApiQuery', () => {
@@ -110,6 +111,17 @@ describe('validateApiQuery', () => {
             expect(err.param).toBe('setCode');
             expect(err.allowedValues).toBeUndefined();
             expect(err.message).toContain('letters and digits');
+        });
+
+        it('rejects an unknown groupBy with the allowed value list', () => {
+            const err = capture({ groupBy: 'foo' }, { groupBy: true });
+            expect(err.param).toBe('groupBy');
+            expect(err.allowedValues).toEqual(['name']);
+        });
+
+        it('rejects a case-mismatched groupBy (must equal "name" exactly)', () => {
+            const err = capture({ groupBy: 'Name' }, { groupBy: true });
+            expect(err.param).toBe('groupBy');
         });
     });
 

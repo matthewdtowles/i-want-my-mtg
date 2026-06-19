@@ -341,9 +341,17 @@ Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper an
 
 **Inventory-filtering opportunity (B):** the Inventory page is the clearest "aggregate-with-no-drill-down" gap left — it lists items but can't be sliced by color/rarity/type the way analytics now can. Worth a follow-up to add color/rarity/type filter chips to Inventory backed by the same membership semantics (it already has AJAX list infra via `inventoryListAjax.js`, so this is additive). Spun out as a note here rather than blocking #535; no other page has the same gap (set/search lists are already filterable, deck detail is already item-level).
 
-### 10.6 Deck building: in-page card search (#536)
+### 10.6 Deck building: in-page card search (#536) ✅
 
-Make adding cards happen **on the deck page** (modeled on Archidekt/ManaBox), so users never leave the deck. Results **grouped by card name** (one row per name, not per printing), card art on hover (first tap on mobile), inline add to main/sideboard via the existing `/api/v1/decks/:id/cards`. Needs a name-grouped mode on the search endpoint.
+Adding cards now happens **on the deck page** (modeled on Archidekt/ManaBox), so users never leave the deck. A debounced search box queries a new name-grouped search mode, results show one row per name with the standard hover art, and adds go straight to main/sideboard - the deck DOM + totals update in place, no full reload.
+
+- [x] `GET /api/v1/cards?q=…&groupBy=name` returns **one representative printing per distinct name** (`searchByNameGrouped` / `totalSearchByNameGrouped`, Postgres `DISTINCT ON (name)`). Representative = **newest printing** (`ORDER BY name, set.release_date DESC`) - a sensible default that's also the most likely in-print/available copy. Joins the latest price so callers can value the card.
+- [x] Grouped mode **annotates** legality instead of filtering: with a `format` param each result carries a `legal` flag (legality is name-level, so the representative's flag applies to the whole name), but illegal cards are still returned and shown flagged - a deck builder wants to see everything and decide. (`applyCatalogFilters` gained `skipLegality`; the per-printing search is unchanged.)
+- [x] Search box on `/decks/:id` (debounced, reuses `AjaxUtils.fetchWithGate`); results render the standard `.card-name-link[data-card-img]` so `cardPreview.js` gives hover/long-press art for free, in both the results list and the in-deck rows.
+- [x] Inline add to main/sideboard via the existing `POST /api/v1/decks/:id/cards`; `deckDetail.js` inserts the new row into the right type group (creating + ordering the group, mirroring the server's `TYPE_ORDER`), or increments an existing row, then recomputes value/counts/legality client-side. Steppers/remove moved to event delegation so search-added rows behave like server-rendered ones.
+- [x] Keyboard-friendly (Escape clears, focusable results) and mobile-friendly (long-press art via the shared preview); the user never leaves the deck.
+
+**Open question resolved:** which printing to bind for a multi-printing name → the **newest** printing (single representative). A later per-row printing picker stays deferred. Mana-curve / fuller analytics also stay deferred (10.4 follow-up).
 
 ### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
 

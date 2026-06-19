@@ -37,6 +37,10 @@ import { TRANSACTION_TYPES, parseTransactionType } from 'src/core/transaction/tr
 export const RARITY_VALUES: readonly string[] = [...PUBLIC_RARITIES];
 export const FORMAT_VALUES: readonly string[] = Object.values(Format);
 export const LEGALITY_VALUES: readonly string[] = Object.values(LegalityStatus);
+// The only supported `groupBy` mode. Validated exact (case-sensitive) so it
+// stays in lockstep with the controller's `query.groupBy === 'name'` check - a
+// typo'd value 400s instead of silently returning the per-printing default.
+export const GROUP_BY_VALUES: readonly string[] = ['name'];
 
 const SET_CODE_PATTERN = /^[a-zA-Z0-9]+$/;
 
@@ -69,6 +73,8 @@ export interface StrictQueryFlags {
     legality?: boolean;
     setCode?: boolean;
     transactionType?: boolean;
+    /** Validate `groupBy` against {@link GROUP_BY_VALUES} (exact, single value). */
+    groupBy?: boolean;
 }
 
 /**
@@ -153,6 +159,12 @@ export function validateApiQuery(query: Record<string, unknown>, flags: StrictQu
         const value = readParam(query, 'type');
         if (value !== undefined && parseTransactionType(value) === undefined) {
             throw enumError('type', value, TRANSACTION_TYPES);
+        }
+    }
+    if (flags.groupBy) {
+        const value = readParam(query, 'groupBy');
+        if (value !== undefined && !GROUP_BY_VALUES.includes(value)) {
+            throw enumError('groupBy', value, GROUP_BY_VALUES);
         }
     }
 }

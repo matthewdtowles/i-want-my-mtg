@@ -35,6 +35,7 @@ export interface DeckCardView {
     setCode: string;
     number: string;
     url: string;
+    imgSrc: string;
     manaCost?: string;
     quantity: number;
     unitValue: number;
@@ -45,6 +46,9 @@ export interface DeckCardView {
 
 export interface DeckCardGroupView {
     type: string;
+    // Singular primary-type key (e.g. "Creature", "Land", "Other"); the deck-page
+    // search JS matches/creates groups by this, independent of the plural label.
+    groupKey: string;
     count: number;
     cards: DeckCardView[];
 }

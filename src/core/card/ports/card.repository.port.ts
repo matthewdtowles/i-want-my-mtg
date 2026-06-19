@@ -112,6 +112,28 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     totalSearchByName(filter: string, options?: SafeQueryOptions): Promise<number>;
 
     /**
+     * Searches cards by name, returning one representative printing per distinct
+     * name (deduplicated). The representative is the newest printing (latest set
+     * release). The latest price is joined so callers can value the card, and -
+     * when `options.format` is set - the card's legality for that format is
+     * loaded so callers can flag deck legality. Used by the deck-page in-page
+     * card search (one row per name, not per printing).
+     * @param filter Search term to match against card names.
+     * @param options Query options (pagination, catalog filters, optional format).
+     * @returns Promise resolving to one Card per matching name.
+     */
+    searchByNameGrouped(filter: string, options: SafeQueryOptions): Promise<Card[]>;
+
+    /**
+     * Counts the number of distinct card names matching a name search (the row
+     * count of {@link searchByNameGrouped}, ignoring pagination).
+     * @param filter Search term to match against card names.
+     * @param options Query options for catalog filters.
+     * @returns Promise resolving to the count of distinct names.
+     */
+    totalSearchByNameGrouped(filter: string, options?: SafeQueryOptions): Promise<number>;
+
+    /**
      * Finds all Card entities with a given name in a specific set (case-insensitive exact match).
      * Returns array - caller errors if length > 1 (ambiguous, e.g. basic lands).
      * @param name Exact card name (case-insensitive).

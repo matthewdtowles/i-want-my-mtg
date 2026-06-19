@@ -111,6 +111,26 @@ export class CardService {
         }
     }
 
+    async searchByNameGrouped(filter: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Grouped search cards by name: ${filter}.`);
+        try {
+            return await this.repository.searchByNameGrouped(filter, options);
+        } catch (error) {
+            throw new Error(`Error grouped-searching cards by name "${filter}": ${error.message}`);
+        }
+    }
+
+    async totalSearchByNameGrouped(filter: string, options?: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Count grouped search results for: ${filter}.`);
+        try {
+            return await this.repository.totalSearchByNameGrouped(filter, options);
+        } catch (error) {
+            throw new Error(
+                `Error counting grouped card search results for "${filter}": ${error.message}`
+            );
+        }
+    }
+
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(
             `Find total number of cards in set ${code}, options: ${JSON.stringify(options)}.`

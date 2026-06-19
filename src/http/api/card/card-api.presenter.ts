@@ -1,6 +1,8 @@
 import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
+import { Format } from 'src/core/card/format.enum';
 import { GranularPrice } from 'src/core/card/granular-price.entity';
+import { DeckLegalityPolicy } from 'src/core/deck/deck-legality.policy';
 import { groupBuylistByFinish } from 'src/core/pricing/buylist.policy';
 import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { CardBuylistApiResponseDto } from './dto/card-buylist-response.dto';
@@ -58,5 +60,19 @@ export class CardApiPresenter {
                 card.tcgplayerEtchedProductId
             ),
         };
+    }
+
+    /**
+     * Representative-printing response for the grouped (one-per-name) search.
+     * Adds the deck-legality flag for the requested format so the in-page deck
+     * search can render the "Not legal" badge on cards it inserts. Without a
+     * format the flag is omitted (legality is meaningless with no target format).
+     */
+    static toGroupedCardApiResponse(card: Card, format?: Format): CardApiResponseDto {
+        const base = this.toCardApiResponse(card);
+        if (!format) {
+            return base;
+        }
+        return { ...base, legal: DeckLegalityPolicy.isCardLegal(format, card.legalities) };
     }
 }

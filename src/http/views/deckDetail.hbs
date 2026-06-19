@@ -1,4 +1,4 @@
-<div class="content-wrapper py-6" data-deck-id="{{deckId}}">
+<div class="content-wrapper py-6" data-deck-id="{{deckId}}" data-deck-format="{{format}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
             <h1 class="page-title">{{name}}</h1>
@@ -6,7 +6,7 @@
                 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
                 <span class="mx-1">&middot;</span>
                 <span id="deck-main-count">{{mainCount}}</span> maindeck
-                {{#if sideCount}}<span class="mx-1">&middot;</span><span id="deck-side-count">{{sideCount}}</span> sideboard{{/if}}
+                <span id="deck-side-wrap" {{#unless sideCount}}class="hidden"{{/unless}}><span class="mx-1">&middot;</span><span id="deck-side-count">{{sideCount}}</span> sideboard</span>
                 <span class="mx-1">&middot;</span>
                 <span id="deck-est-value" class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
             </p>
@@ -47,66 +47,83 @@
         </form>
     </details>
 
-    {{#if hasCards}}
-        <div id="deck-cards">
-            {{#each mainGroups}}
-                <div class="deck-group mb-5">
-                    <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                        {{type}} <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{count}}</span>)</span>
-                    </h3>
-                    <div>
-                        {{#each cards}}
-                            <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
-                                data-card-id="{{cardId}}" data-sideboard="false" data-unit-value="{{unitValue}}">
-                                <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
-                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
-                                    <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
-                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
-                                </span>
-                                <a href="{{url}}" class="flex-1 text-sm text-gray-800 dark:text-gray-100 hover:text-teal-600 dark:hover:text-teal-400 truncate">{{name}}</a>
-                                {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
-                                <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
-                                <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
-                            </div>
-                        {{/each}}
-                    </div>
-                </div>
-            {{/each}}
-
-            {{#if sideboard.length}}
-                <div class="deck-group mb-5">
-                    <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                        Sideboard <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{sideCount}}</span>)</span>
-                    </h3>
-                    <div>
-                        {{#each sideboard}}
-                            <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
-                                data-card-id="{{cardId}}" data-sideboard="true" data-unit-value="{{unitValue}}">
-                                <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
-                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
-                                    <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
-                                    <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
-                                </span>
-                                <a href="{{url}}" class="flex-1 text-sm text-gray-800 dark:text-gray-100 hover:text-teal-600 dark:hover:text-teal-400 truncate">{{name}}</a>
-                                {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
-                                <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
-                                <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
-                            </div>
-                        {{/each}}
-                    </div>
-                </div>
-            {{/if}}
+    {{!-- In-page card search (10.6 / #536): find + add cards without leaving the deck --}}
+    <div class="section-container mb-5">
+        <label for="deck-card-search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            <i class="fas fa-magnifying-glass mr-1" aria-hidden="true"></i> Add cards
+        </label>
+        <div class="relative">
+            <input id="deck-card-search" type="text" autocomplete="off" spellcheck="false"
+                placeholder="Search by card name&hellip;"
+                class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm" />
         </div>
-    {{else}}
-        <div class="section-container text-center py-12">
+        <p class="text-xs text-gray-400 mt-1">One result per card name &middot; hover (or long-press) a name for art.</p>
+        {{!-- Plain container: each result row holds a link + buttons, so the
+              listbox/option pattern doesn't apply. The role="status" region
+              below announces add results to assistive tech. --}}
+        <div id="deck-search-results" class="mt-2 hidden"></div>
+        <p id="deck-search-status" class="text-sm text-gray-500 mt-2 hidden" role="status" aria-live="polite"></p>
+    </div>
+
+    {{!-- #deck-cards is always present so the in-page search can insert rows
+          (and create type groups) without a full reload, even from empty. --}}
+    <div id="deck-cards">
+        {{#each mainGroups}}
+            <div class="deck-group mb-5" data-group-type="{{groupKey}}">
+                <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    {{type}} <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{count}}</span>)</span>
+                </h3>
+                <div class="deck-group-rows">
+                    {{#each cards}}
+                        <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
+                            data-card-id="{{cardId}}" data-sideboard="false" data-unit-value="{{unitValue}}">
+                            <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
+                                <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
+                                <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
+                                <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
+                            </span>
+                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                            {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                            <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                            <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        {{/each}}
+
+        {{#if sideboard.length}}
+            <div class="deck-group mb-5" data-group-type="Sideboard">
+                <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Sideboard <span class="text-gray-400 font-normal">(<span class="deck-group-count">{{sideCount}}</span>)</span>
+                </h3>
+                <div class="deck-group-rows">
+                    {{#each sideboard}}
+                        <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800"
+                            data-card-id="{{cardId}}" data-sideboard="true" data-unit-value="{{unitValue}}">
+                            <span class="inline-flex items-center rounded-md border border-gray-200 dark:border-midnight-700">
+                                <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="-1" aria-label="Decrease quantity">&minus;</button>
+                                <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
+                                <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
+                            </span>
+                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                            {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                            <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                            <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        {{/if}}
+
+        <div id="deck-empty-state" class="section-container text-center py-12 {{#if hasCards}}hidden{{/if}}">
             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mb-3">
                 <i class="fas fa-layer-group text-lg" aria-hidden="true"></i>
             </div>
             <h2 class="font-display font-bold text-lg text-gray-900 dark:text-white mb-1">This deck is empty</h2>
-            <p class="text-gray-600 dark:text-gray-400 text-sm">Add cards from any card page with the &ldquo;Add to deck&rdquo; button.</p>
-            <a href="/sets" class="btn btn-primary text-sm px-4 py-2 mt-4">Browse sets</a>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Use the search above to find a card and add it straight to your deck.</p>
         </div>
-    {{/if}}
+    </div>
 </div>
 
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>

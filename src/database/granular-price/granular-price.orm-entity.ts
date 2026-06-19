@@ -3,9 +3,9 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 /**
  * Current granular price store (Phase 6.2): the current per-vendor offer, one
  * row per card / provider / retail|buylist / finish / condition (no date in the
- * key). scry upserts it and derives the existing averaged `price` from the same
- * ingest pass. 6.3 reads this directly for per-vendor buylist display. The dated
- * history lives in `granular_price_history` (scry-owned; not mapped here).
+ * key). Written by scry's CK-direct pass (live Card Kingdom buylist, with qty);
+ * 6.3 reads this directly for per-vendor buylist display. The dated
+ * `granular_price_history` table was dropped (ROADMAP 10.10) — it was write-only.
  *
  * Composite natural-key PK (no surrogate id): rows are never referenced by FK,
  * and the natural key is exactly the upsert target scry needs. `card_id` is a

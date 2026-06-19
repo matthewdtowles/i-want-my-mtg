@@ -363,7 +363,7 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 ### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
 
-**Status (2026-06-18):** both PRs open + verified — **scry#32** (stops the writes, −204 lines, integ tests pass) and **iwantmymtg#538** (migration 042 drops the table + purges, validated on PG18). Remaining = the manual ordered deploy below (scry first, then web).
+**Status (2026-06-18):** **scry#32 merged** — the cut is publishing to `scry:latest` (deploy step 1 done, correct order). **iwantmymtg#538** open + verified (migration 042 drops the table + purges, validated on fresh PG18). Remaining = merge + deploy web #538, then capture the new `write totals` to confirm. Umbrella scry#22 stays open until that verification.
 
 **Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
 
@@ -383,7 +383,7 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 - [ ] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
 
 **Deploy order (manual — Matthew):**
-1. [ ] **Publish scry first** (merge PR 1 → CI pushes `scry:latest`). Safe: the old binary keeps writing the soon-to-be-dropped table, which is harmless until web deploys.
+1. [x] **Publish scry first** — done: scry#32 merged → CI pushes `scry:latest`. (Safe: the old binary on the server keeps writing the soon-to-be-dropped table, harmless until web deploys.)
 2. [ ] **Deploy web second** (PR 2). Web deploy runs the migration (drops table + purge) *then* extracts the new scry binary, so by the next 2 a.m. cron nothing writes the dropped table. **Do not** hand-refresh the scry binary before the web migration, and **do not** deploy web before scry is published (it'd extract the still-old binary that writes the dropped table → next cron errors).
 3. [ ] After the next nightly run, re-check `ingest_all_today write totals` — confirm the granular lines are gone and total ingest is back to single digits.
 

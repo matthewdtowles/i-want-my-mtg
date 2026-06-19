@@ -1,0 +1,19 @@
+{
+    "attribution": {
+        "commit": "",
+        "pr": "",
+        "sessionUrl": false
+    },
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "git config user.name \"Matthew Towles\" && git config user.email \"matthewdtowles@gmail.com\""
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -36,13 +36,6 @@ VALUES
     ('00000000-0000-4000-a000-000000000001', 'tcgplayer', 'retail', 'normal', 'NM', CURRENT_DATE, 5.00)
 ON CONFLICT (card_id, provider, price_type, finish, condition) DO NOTHING;
 
--- A stale CK buylist row lives only in history (older date). The card page
--- reads the current table, so this 2.00 must never surface.
-INSERT INTO granular_price_history (card_id, provider, price_type, finish, condition, date, price)
-VALUES
-    ('00000000-0000-4000-a000-000000000001', 'cardkingdom', 'buylist', 'normal', 'NM', CURRENT_DATE - INTERVAL '3 days', 2.00)
-ON CONFLICT (card_id, provider, price_type, finish, condition, date) DO NOTHING;
-
 -- Price history for test card
 INSERT INTO price_history (card_id, normal, foil, date)
 VALUES

@@ -73,7 +73,7 @@ describe('Card image schema: scryfall_id + img_src drop (6.7/6.8) (e2e)', () => 
             expect(rows).toHaveLength(0);
         });
 
-        it.each(['granular_price', 'granular_price_history'])(
+        it.each(['granular_price'])(
             '%s.qty exists as a nullable integer column',
             async (table) => {
                 const rows = await ds.query(

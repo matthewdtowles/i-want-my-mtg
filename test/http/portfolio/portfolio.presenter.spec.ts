@@ -1,3 +1,4 @@
+import { PortfolioBreakdownCard } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
 import { PortfolioPresenter } from 'src/http/hbs/portfolio/portfolio.presenter';
@@ -193,6 +194,50 @@ describe('PortfolioPresenter', () => {
             const date = new Date('2026-03-07T14:30:00Z');
             const result = PortfolioPresenter.formatTimestamp(date);
             expect(result).toBe('2026-03-07 14:30');
+        });
+    });
+
+    describe('toBreakdownCard', () => {
+        it('derives image URL, card URL, uppercased set code and formatted value', () => {
+            const card = new PortfolioBreakdownCard({
+                cardId: 'abc',
+                name: 'Black Lotus',
+                setCode: 'lea',
+                number: '232',
+                scryfallId: 'b1e2c3d4-0000-0000-0000-000000000000',
+                rarity: 'rare',
+                quantity: 3,
+                value: 1234.5,
+            });
+
+            const result = PortfolioPresenter.toBreakdownCard(card);
+
+            expect(result.cardId).toBe('abc');
+            expect(result.name).toBe('Black Lotus');
+            expect(result.setCode).toBe('LEA');
+            expect(result.cardUrl).toBe('/card/lea/232');
+            expect(result.imgSrc).toBe(
+                'https://cards.scryfall.io/normal/front/b/1/b1e2c3d4-0000-0000-0000-000000000000.jpg'
+            );
+            expect(result.quantity).toBe(3);
+            expect(result.valueFormatted).toBe('$1,234.50');
+        });
+
+        it('falls back to empty image URL when scryfall id is missing', () => {
+            const card = new PortfolioBreakdownCard({
+                cardId: 'x',
+                name: 'No Image',
+                setCode: 'tst',
+                number: '1',
+                scryfallId: '',
+                value: 0,
+            });
+
+            const result = PortfolioPresenter.toBreakdownCard(card);
+
+            expect(result.imgSrc).toBe('');
+            expect(result.cardUrl).toBe('/card/tst/1');
+            expect(result.valueFormatted).toBe('-');
         });
     });
 });

@@ -1,7 +1,9 @@
+import { PortfolioBreakdownCard } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioCardPerformance } from 'src/core/portfolio/portfolio-card-performance.entity';
 import { PortfolioValueHistory } from 'src/core/portfolio/portfolio-value-history.entity';
 import { SetRoiAggregation } from 'src/core/portfolio/ports/portfolio-card-performance.repository.port';
 import { PortfolioSummary } from 'src/core/portfolio/portfolio-summary.entity';
+import { buildScryfallImagePath } from 'src/shared/utils/scryfall-image.util';
 import { formatUtcDate, formatUtcTimestamp } from 'src/http/base/date.util';
 import {
     BASE_IMAGE_URL,
@@ -65,6 +67,23 @@ export interface PortfolioHistoryPoint {
     totalCards: number;
 }
 
+/**
+ * A drill-down card row, ready for both the JSON API and the server-rendered
+ * fallback. Foil/non-foil quantity and value are already combined upstream.
+ */
+export interface BreakdownCardViewData {
+    cardId: string;
+    name: string;
+    setCode: string;
+    number: string;
+    cardUrl: string;
+    imgSrc: string;
+    rarity: string;
+    quantity: number;
+    value: number;
+    valueFormatted: string;
+}
+
 export class PortfolioPresenter {
     static toHistoryPoint(h: PortfolioValueHistory): PortfolioHistoryPoint {
         return {
@@ -72,6 +91,22 @@ export class PortfolioPresenter {
             totalValue: h.totalValue,
             totalCost: h.totalCost,
             totalCards: h.totalCards,
+        };
+    }
+
+    static toBreakdownCard(card: PortfolioBreakdownCard): BreakdownCardViewData {
+        const tail = buildScryfallImagePath(card.scryfallId);
+        return {
+            cardId: card.cardId,
+            name: card.name,
+            setCode: card.setCode.toUpperCase(),
+            number: card.number,
+            cardUrl: card.setCode && card.number ? buildCardUrl(card.setCode, card.number) : '',
+            imgSrc: tail ? `${BASE_IMAGE_URL}/normal/front/${tail}` : '',
+            rarity: card.rarity,
+            quantity: card.quantity,
+            value: card.value,
+            valueFormatted: toDollar(card.value),
         };
     }
 

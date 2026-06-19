@@ -22,6 +22,34 @@ export const COLOR_LABELS: Record<string, string> = {
     C: 'Colorless',
 };
 
+/**
+ * A single card inside one breakdown slice (the drill-down rows). Foil and
+ * non-foil inventory of the same card are collapsed into one entry: `quantity`
+ * is the total owned and `value` is the combined current value across both.
+ * `scryfallId` is the raw id - presenters derive the image URL from it.
+ */
+export class PortfolioBreakdownCard {
+    readonly cardId: string;
+    readonly name: string;
+    readonly setCode: string;
+    readonly number: string;
+    readonly scryfallId: string;
+    readonly rarity: string;
+    readonly quantity: number;
+    readonly value: number;
+
+    constructor(init: Partial<PortfolioBreakdownCard>) {
+        this.cardId = init.cardId ?? '';
+        this.name = init.name ?? '';
+        this.setCode = init.setCode ?? '';
+        this.number = init.number ?? '';
+        this.scryfallId = init.scryfallId ?? '';
+        this.rarity = init.rarity ?? '';
+        this.quantity = init.quantity ?? 0;
+        this.value = init.value ?? 0;
+    }
+}
+
 export class PortfolioBreakdownSlice {
     readonly key: string;
     readonly label: string;

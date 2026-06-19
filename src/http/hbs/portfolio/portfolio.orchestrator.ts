@@ -7,7 +7,6 @@ import {
     BreakdownDimension,
     COLOR_CODES,
     COLOR_LABELS,
-    PortfolioBreakdown,
 } from 'src/core/portfolio/portfolio-breakdown.entity';
 import { PortfolioSummaryService } from 'src/core/portfolio/portfolio-summary.service';
 import { PortfolioService } from 'src/core/portfolio/portfolio.service';
@@ -21,6 +20,7 @@ import {
 } from './dto/portfolio-value-history-response.dto';
 import {
     PortfolioBreakdownViewDto,
+    BreakdownCardView,
     BreakdownSliceView,
     ColorChipView,
 } from './dto/portfolio-breakdown.view.dto';
@@ -188,7 +188,8 @@ export class PortfolioOrchestrator {
     async getBreakdownView(
         req: AuthenticatedRequest,
         dimension: BreakdownDimension,
-        selectedColors: string[] = []
+        selectedColors: string[] = [],
+        expandKey = ''
     ): Promise<PortfolioBreakdownViewDto> {
         this.LOGGER.debug(`Get ${dimension} breakdown view for user ${req.user?.id}.`);
         try {
@@ -235,17 +236,58 @@ export class PortfolioOrchestrator {
             const totalValue = summary?.totalValue ?? 0;
             const totalItems = summary?.totalQuantity ?? 0;
 
-            const slices: BreakdownSliceView[] = breakdown.slices.map((s) => ({
-                key: s.key,
-                label: s.label,
-                cardCount: s.cardCount,
-                itemCount: s.itemCount,
-                value: s.value,
-                valueFormatted: this.formatCurrency(s.value),
-                percent: totalValue > 0 ? (s.value / totalValue) * 100 : 0,
-                percentFormatted:
-                    totalValue > 0 ? `${((s.value / totalValue) * 100).toFixed(1)}%` : '0%',
-            }));
+            // No-JS fallback: when `expand` names a real slice, server-render
+            // that slice's cards inline so drill-down works without JS. JS
+            // intercepts the same links and fetches the API instead.
+            const expandTarget = breakdown.slices.some((s) => s.key === expandKey)
+                ? expandKey
+                : '';
+            const expandedCards: BreakdownCardView[] = expandTarget
+                ? (
+                      await this.breakdownService.listSliceCards(
+                          req.user.id,
+                          dimension,
+                          expandTarget,
+                          selectedColors
+                      )
+                  ).map((card) => {
+                      const c = PortfolioPresenter.toBreakdownCard(card);
+                      return {
+                          cardId: c.cardId,
+                          name: c.name,
+                          setCode: c.setCode,
+                          number: c.number,
+                          cardUrl: c.cardUrl,
+                          imgSrc: c.imgSrc,
+                          quantity: c.quantity,
+                          valueFormatted: c.valueFormatted,
+                      };
+                  })
+                : [];
+
+            const slices: BreakdownSliceView[] = breakdown.slices.map((s) => {
+                const expanded = s.key === expandTarget;
+                return {
+                    key: s.key,
+                    domKey: encodeURIComponent(s.key),
+                    label: s.label,
+                    cardCount: s.cardCount,
+                    itemCount: s.itemCount,
+                    value: s.value,
+                    valueFormatted: this.formatCurrency(s.value),
+                    percent: totalValue > 0 ? (s.value / totalValue) * 100 : 0,
+                    percentFormatted:
+                        totalValue > 0 ? `${((s.value / totalValue) * 100).toFixed(1)}%` : '0%',
+                    expandHref: this.buildExpandHref(
+                        dimension,
+                        s.key,
+                        selectedColors,
+                        expanded
+                    ),
+                    expanded,
+                    cards: expanded ? expandedCards : [],
+                };
+            });
 
             return new PortfolioBreakdownViewDto({
                 ...baseInit,
@@ -293,6 +335,28 @@ export class PortfolioOrchestrator {
                 href: `/portfolio/breakdown?${params.toString()}`,
             };
         });
+    }
+
+    /**
+     * Build the drill-down link for one slice. With JS off, following it
+     * re-renders the page with this slice expanded (or collapsed if it already
+     * is); JS intercepts the click and toggles inline instead. The `#slice-…`
+     * anchor keeps the row in view after a full-nav expand.
+     */
+    private buildExpandHref(
+        dimension: BreakdownDimension,
+        key: string,
+        selectedColors: string[],
+        expanded: boolean
+    ): string {
+        const params = new URLSearchParams({ by: dimension });
+        if (dimension === 'color' && selectedColors.length > 0) {
+            params.set('colors', selectedColors.join(','));
+        }
+        if (!expanded) {
+            params.set('expand', key);
+        }
+        return `/portfolio/breakdown?${params.toString()}#slice-${encodeURIComponent(key)}`;
     }
 
     private static readonly CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {

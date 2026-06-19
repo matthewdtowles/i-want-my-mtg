@@ -30,6 +30,7 @@ import { parseDaysParam } from 'src/http/base/query.util';
 import { PortfolioPresenter } from 'src/http/hbs/portfolio/portfolio.presenter';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import {
+    BreakdownCardApiDto,
     CardPerformanceApiDto,
     CashFlowPeriodApiDto,
     PortfolioHistoryPointDto,
@@ -209,5 +210,47 @@ export class PortfolioApiController {
             selectedColors
         );
         return ApiResponseDto.ok(breakdown);
+    }
+
+    @Get('breakdown/cards')
+    @UseGuards(SubscriptionGuard)
+    @RequiresSubscription()
+    @ApiOperation({ summary: 'Get the cards inside one breakdown slice (Premium)' })
+    @ApiQuery({
+        name: 'by',
+        required: false,
+        description: 'Dimension the slice belongs to (set, rarity, type, color, cost-basis)',
+    })
+    @ApiQuery({
+        name: 'key',
+        required: false,
+        description:
+            'Slice key from the breakdown (set code, rarity, type, cost-basis bucket, or color code). A missing/empty key returns an empty list.',
+    })
+    @ApiQuery({
+        name: 'colors',
+        required: false,
+        description:
+            'For by=color: the active superset filter (W,U,B,R,G,C) so drill-down matches the aggregate row. Ignored for other dimensions.',
+    })
+    @ApiResponse({ status: 200, description: 'Cards in the slice' })
+    @ApiResponse({ status: 403, description: 'Premium subscription required' })
+    async getBreakdownCards(
+        @Req() req: AuthenticatedRequest,
+        @Query('key') key?: string,
+        @Query('by') by?: string,
+        @Query('colors') colors?: string
+    ): Promise<ApiResponseDto<BreakdownCardApiDto[]>> {
+        const dimension: BreakdownDimension = PortfolioBreakdownService.isDimension(by)
+            ? by
+            : 'set';
+        const selectedColors = PortfolioBreakdownService.parseColors(colors);
+        const cards = await this.breakdownService.listSliceCards(
+            req.user.id,
+            dimension,
+            key ?? '',
+            selectedColors
+        );
+        return ApiResponseDto.ok(cards.map(PortfolioPresenter.toBreakdownCard));
     }
 }

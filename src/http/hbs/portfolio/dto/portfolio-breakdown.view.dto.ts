@@ -1,8 +1,21 @@
 import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { BreakdownDimension } from 'src/core/portfolio/portfolio-breakdown.entity';
 
+export interface BreakdownCardView {
+    cardId: string;
+    name: string;
+    setCode: string;
+    number: string;
+    cardUrl: string;
+    imgSrc: string;
+    quantity: number;
+    valueFormatted: string;
+}
+
 export interface BreakdownSliceView {
     key: string;
+    /** URL/DOM-safe form of `key` for element ids + the `#slice-…` anchor. */
+    domKey: string;
     label: string;
     cardCount: number;
     itemCount: number;
@@ -10,6 +23,12 @@ export interface BreakdownSliceView {
     valueFormatted: string;
     percent: number;
     percentFormatted: string;
+    /** No-JS fallback: link that expands (or collapses) this slice via full nav. */
+    expandHref: string;
+    /** True when this slice is server-rendered expanded (the `expand` query param). */
+    expanded: boolean;
+    /** Cards in this slice, populated only when `expanded` is true. */
+    cards: BreakdownCardView[];
 }
 
 export interface ColorChipView {

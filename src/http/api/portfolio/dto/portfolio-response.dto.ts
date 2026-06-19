@@ -60,6 +60,38 @@ export class CardPerformanceApiDto {
     readonly roi: number;
 }
 
+export class BreakdownCardApiDto {
+    @ApiProperty()
+    readonly cardId: string;
+
+    @ApiProperty()
+    readonly name: string;
+
+    @ApiProperty()
+    readonly setCode: string;
+
+    @ApiProperty()
+    readonly number: string;
+
+    @ApiProperty({ description: 'Path to the card detail page' })
+    readonly cardUrl: string;
+
+    @ApiProperty({ description: 'Full Scryfall image URL for hover preview (may be empty)' })
+    readonly imgSrc: string;
+
+    @ApiProperty()
+    readonly rarity: string;
+
+    @ApiProperty({ description: 'Total quantity owned (foil + non-foil combined)' })
+    readonly quantity: number;
+
+    @ApiProperty({ description: 'Combined current value across foil + non-foil' })
+    readonly value: number;
+
+    @ApiProperty({ description: 'Pre-formatted value, e.g. "$12.34"' })
+    readonly valueFormatted: string;
+}
+
 export class CashFlowPeriodApiDto {
     @ApiProperty()
     readonly period: string;

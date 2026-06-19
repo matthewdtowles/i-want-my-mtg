@@ -223,9 +223,9 @@ export class PortfolioApiController {
     })
     @ApiQuery({
         name: 'key',
-        required: true,
+        required: false,
         description:
-            'Slice key from the breakdown (set code, rarity, type, cost-basis bucket, or color code)',
+            'Slice key from the breakdown (set code, rarity, type, cost-basis bucket, or color code). A missing/empty key returns an empty list.',
     })
     @ApiQuery({
         name: 'colors',

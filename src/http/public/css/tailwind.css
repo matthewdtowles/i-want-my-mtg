@@ -7778,6 +7778,153 @@ img,
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
+/* Drill-down: expandable slice rows (#535) */
+
+.breakdown-row-toggle {
+  display: block;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.breakdown-chevron {
+  margin-right: 0.375rem;
+  display: inline-block;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-chevron:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-chevron {
+  transition: transform 0.15s ease;
+}
+
+.breakdown-row-toggle[aria-expanded='true'] .breakdown-chevron {
+  transform: rotate(90deg);
+}
+
+:where(.breakdown-cards, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
+.breakdown-cards {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border-top-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
+  padding-top: 0.75rem;
+}
+
+.breakdown-cards:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
+}
+
+:where(.breakdown-card-row, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
+.breakdown-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(249 250 251 / var(--tw-border-opacity, 1));
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.breakdown-card-row:last-child {
+  border-bottom-width: 0px;
+}
+
+.breakdown-card-row:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(26 21 51 / var(--tw-border-opacity, 1));
+}
+
+.breakdown-card-name {
+  min-width: 0px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.breakdown-card-detail, .inline-flex, .grid) > * {
+  min-width: 0;
+}
+
+.breakdown-card-detail {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.breakdown-card-set {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-card-set:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-card-qty {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-card-qty:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-card-value {
+  min-width: 4rem;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-card-value:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(209 213 219 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-cards-loading,
+.breakdown-cards-empty {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.breakdown-cards-loading:is(.dark *),
+.breakdown-cards-empty:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
 /* Color filter chips (By Color breakdown) */
 
 :where(.flex,.breakdown-color-chip, .grid) > * {

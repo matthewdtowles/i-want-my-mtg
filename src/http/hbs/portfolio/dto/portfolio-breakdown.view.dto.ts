@@ -14,6 +14,8 @@ export interface BreakdownCardView {
 
 export interface BreakdownSliceView {
     key: string;
+    /** URL/DOM-safe form of `key` for element ids + the `#slice-…` anchor. */
+    domKey: string;
     label: string;
     cardCount: number;
     itemCount: number;

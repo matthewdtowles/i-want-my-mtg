@@ -269,6 +269,7 @@ export class PortfolioOrchestrator {
                 const expanded = s.key === expandTarget;
                 return {
                     key: s.key,
+                    domKey: encodeURIComponent(s.key),
                     label: s.label,
                     cardCount: s.cardCount,
                     itemCount: s.itemCount,

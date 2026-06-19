@@ -68,16 +68,18 @@ document.addEventListener('DOMContentLoaded', function () {
         return html;
     }
 
-    function loadCards(row, panel) {
+    function loadCards(row, toggle, panel) {
         var key = row.getAttribute('data-key');
         panel.innerHTML =
             '<div class="breakdown-cards-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading cards&hellip;</div>';
         AjaxUtils.fetchWithGate(cardsUrl(key), { credentials: 'same-origin' })
             .then(function (res) {
                 if (res.gated) {
-                    // Premium toast already shown; fall back to a full-nav link.
+                    // Premium toast already shown; collapse back so the UI
+                    // doesn't get stuck open-but-empty.
                     panel.innerHTML = '';
                     row.setAttribute('data-loaded', 'false');
+                    setExpanded(row, toggle, panel, false);
                     return;
                 }
                 if (!res.ok || !res.body || !res.body.success) {
@@ -114,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setExpanded(row, toggle, panel, true);
         if (row.getAttribute('data-loaded') !== 'true') {
-            loadCards(row, panel);
+            loadCards(row, toggle, panel);
         }
     });
 });

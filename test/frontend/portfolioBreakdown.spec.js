@@ -119,6 +119,19 @@ describe('portfolioBreakdown drill-down', function () {
         });
     });
 
+    it('collapses back when the response is premium-gated', function () {
+        fetchGateImpl.mockResolvedValue({ ok: false, gated: true, status: 403, body: null });
+        loadScript();
+
+        clickToggle('tst');
+        return Promise.resolve().then(function () {
+            var toggle = document.querySelector('#slice-tst .breakdown-row-toggle');
+            expect(toggle.getAttribute('aria-expanded')).toBe('false');
+            expect(document.getElementById('slice-cards-tst').hasAttribute('hidden')).toBe(true);
+            expect(document.querySelector('#slice-tst').getAttribute('data-loaded')).toBe('false');
+        });
+    });
+
     it('includes the colors filter for the color dimension', function () {
         document.body.innerHTML =
             '<div class="breakdown-list" data-dimension="color" data-colors="U,W">' + rowHtml('U', false) + '</div>';

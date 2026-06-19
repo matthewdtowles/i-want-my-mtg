@@ -92,6 +92,7 @@ export class CardApiController {
             format: true,
             legality: true,
             setCode: true,
+            groupBy: true,
         });
         const options = new SearchQueryOptions(query);
         if (!options.q) {

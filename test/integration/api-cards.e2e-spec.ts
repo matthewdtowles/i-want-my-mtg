@@ -183,6 +183,16 @@ describe('Cards API (e2e)', () => {
                 ).toBe(true);
             });
 
+            it('returns 400 for an invalid groupBy rather than silently falling back', async () => {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards?q=Test&groupBy=foo')
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+                expect(res.body.param).toBe('groupBy');
+                expect(res.body.allowedValues).toEqual(['name']);
+            });
+
             it('annotates (does not filter out) cards illegal in the format', async () => {
                 // Non-grouped search filters format=modern to legal-only (none seeded).
                 const filtered = await request(app.getHttpServer())

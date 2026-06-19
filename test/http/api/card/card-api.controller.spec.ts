@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { Price } from 'src/core/card/price.entity';
@@ -131,6 +131,18 @@ describe('CardApiController', () => {
             });
 
             expect(result.data[0].legal).toBe(true);
+        });
+
+        it('rejects an invalid groupBy instead of silently falling back', async () => {
+            await expect(controller.search({ q: 'bolt', groupBy: 'foo' })).rejects.toBeInstanceOf(
+                BadRequestException
+            );
+            // A case typo must not silently return per-printing results either.
+            await expect(controller.search({ q: 'bolt', groupBy: 'Name' })).rejects.toBeInstanceOf(
+                BadRequestException
+            );
+            expect(cardService.searchByName).not.toHaveBeenCalled();
+            expect(cardService.searchByNameGrouped).not.toHaveBeenCalled();
         });
 
         it('flags a card with no legality entry as not legal in the format', async () => {

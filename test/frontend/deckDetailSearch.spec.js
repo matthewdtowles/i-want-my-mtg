@@ -65,16 +65,17 @@ function loadScript() {
     document.dispatchEvent(new Event('DOMContentLoaded'));
 }
 
+// Mirrors the real grouped card API response shape: setCode + number, but NO
+// `url` field (the client builds the detail path from setCode/number).
 function card(overrides) {
     return Object.assign(
         {
             id: 'c1',
             name: 'Grizzly Bears',
             type: 'Creature',
-            setCode: 'lea',
+            setCode: 'LEA',
             number: '1',
             imgSrc: 'bears.jpg',
-            url: '/card/lea/1',
             prices: { normal: 0.25, foil: null },
             legal: true,
         },
@@ -113,6 +114,8 @@ describe('deck-page in-page search', function () {
         var link = results[0].querySelector('.card-name-link');
         expect(link.textContent).toBe('Grizzly Bears');
         expect(link.getAttribute('data-card-img')).toBe('bears.jpg');
+        // URL is built client-side from setCode (lowercased) + number, not sent.
+        expect(link.getAttribute('href')).toBe('/card/lea/1');
         expect(results[0].querySelectorAll('.deck-result-add').length).toBe(2);
         expect(document.getElementById('deck-search-results').classList.contains('hidden')).toBe(
             false
@@ -172,6 +175,7 @@ describe('deck-page in-page search', function () {
         expect(rows.length).toBe(1);
         expect(rows[0].getAttribute('data-sideboard')).toBe('false');
         expect(rows[0].querySelector('.deck-qty-val').textContent).toBe('1');
+        expect(rows[0].querySelector('.card-name-link').getAttribute('href')).toBe('/card/lea/1');
 
         expect(document.getElementById('deck-main-count').textContent).toBe('1');
         expect(document.getElementById('deck-est-value').textContent).toBe('$0.25');

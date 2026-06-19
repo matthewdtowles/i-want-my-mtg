@@ -74,6 +74,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return 0;
     }
 
+    // The card API response carries setCode + number but no URL, so build the
+    // detail path client-side, mirroring buildCardUrl (/card/<setCode>/<number>).
+    function cardUrl(card) {
+        return (
+            '/card/' +
+            encodeURIComponent(String(card.setCode || '').toLowerCase()) +
+            '/' +
+            encodeURIComponent(String(card.number == null ? '' : card.number))
+        );
+    }
+
     function rowQty(row) {
         return parseInt(row.querySelector('.deck-qty-val').textContent, 10) || 0;
     }
@@ -275,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var row = buildRow({
             cardId: card.id,
             name: card.name,
-            url: card.url,
+            url: cardUrl(card),
             imgSrc: card.imgSrc,
             unitValue: unitValueOf(card),
             quantity: 1,
@@ -387,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
         item.setAttribute('role', 'option');
 
         var link = document.createElement('a');
-        link.href = card.url;
+        link.href = cardUrl(card);
         link.className = 'card-name-link flex-1 text-sm truncate';
         if (card.imgSrc) link.setAttribute('data-card-img', card.imgSrc);
         link.textContent = card.name;

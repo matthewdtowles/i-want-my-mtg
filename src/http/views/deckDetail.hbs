@@ -55,11 +55,13 @@
         <div class="relative">
             <input id="deck-card-search" type="text" autocomplete="off" spellcheck="false"
                 placeholder="Search by card name&hellip;"
-                role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="deck-search-results"
                 class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm" />
         </div>
         <p class="text-xs text-gray-400 mt-1">One result per card name &middot; hover (or long-press) a name for art.</p>
-        <div id="deck-search-results" role="listbox" aria-label="Card search results" class="mt-2 hidden"></div>
+        {{!-- Plain container: each result row holds a link + buttons, so the
+              listbox/option pattern doesn't apply. The role="status" region
+              below announces add results to assistive tech. --}}
+        <div id="deck-search-results" class="mt-2 hidden"></div>
         <p id="deck-search-status" class="text-sm text-gray-500 mt-2 hidden" role="status" aria-live="polite"></p>
     </div>
 

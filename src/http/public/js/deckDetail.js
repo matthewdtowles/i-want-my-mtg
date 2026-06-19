@@ -388,14 +388,12 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsBox.innerHTML = '';
             resultsBox.classList.add('hidden');
         }
-        if (searchInput) searchInput.setAttribute('aria-expanded', 'false');
     }
 
     function buildResultItem(card) {
         var item = document.createElement('div');
         item.className =
             'deck-result flex items-center gap-2 py-1.5 border-b border-gray-100 dark:border-midnight-800';
-        item.setAttribute('role', 'option');
 
         var link = document.createElement('a');
         link.href = cardUrl(card);
@@ -470,7 +468,6 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsBox.appendChild(buildResultItem(card));
         });
         resultsBox.classList.remove('hidden');
-        if (searchInput) searchInput.setAttribute('aria-expanded', 'true');
         setStatus('');
     }
 

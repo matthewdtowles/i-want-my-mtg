@@ -274,9 +274,13 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.applyCatalogFilters(qb, options, { skipLegality: true });
 
         // DISTINCT ON requires the leading ORDER BY to be the distinct expression;
-        // the release-date tiebreaker then selects the representative printing.
+        // the remaining terms select the representative printing: newest set,
+        // then lowest collector number, then id as a final deterministic
+        // tiebreaker so same-name/same-release printings don't flip arbitrarily.
         qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
         qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.sortNumber`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy(`${this.TABLE}.id`, this.ASC);
 
         // Raw limit/offset (not skip/take) so pagination applies to the
         // DISTINCT ON result rather than triggering TypeORM's id-subquery path.

@@ -204,4 +204,71 @@ describe('Portfolio API (e2e)', () => {
             expect(typeof res.body.data.totalRealizedGain).toBe('number');
         });
     });
+
+    describe('GET /api/v1/portfolio/breakdown', () => {
+        it('returns set breakdown slices', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/portfolio/breakdown?by=set')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.dimension).toBe('set');
+            const tst = res.body.data.slices.find((s: { key: string }) => s.key === 'tst');
+            expect(tst).toBeDefined();
+            expect(tst.cardCount).toBe(2);
+        });
+    });
+
+    describe('GET /api/v1/portfolio/breakdown/cards', () => {
+        it('requires authentication', async () => {
+            await request(app.getHttpServer())
+                .get('/api/v1/portfolio/breakdown/cards?by=set&key=tst')
+                .expect(401);
+        });
+
+        it('returns the cards inside a set slice with derived fields', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/portfolio/breakdown/cards?by=set&key=tst')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            const ids = res.body.data.map((c: { cardId: string }) => c.cardId);
+            expect(ids).toContain(TEST_CARD_ID);
+            expect(ids).toContain(TEST_CARD_ID_2);
+
+            const angel = res.body.data.find((c: { cardId: string }) => c.cardId === TEST_CARD_ID);
+            expect(angel.name).toBe('Test Angel');
+            expect(angel.setCode).toBe('TST');
+            expect(angel.cardUrl).toBe('/card/tst/1');
+            expect(angel.imgSrc).toContain('cards.scryfall.io');
+            expect(angel.quantity).toBe(2);
+            // 2 normal copies @ $5.00
+            expect(angel.value).toBeCloseTo(10.0, 2);
+            expect(angel.valueFormatted).toBe('$10.00');
+        });
+
+        it('filters by rarity slice', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/portfolio/breakdown/cards?by=rarity&key=rare')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            const ids = res.body.data.map((c: { cardId: string }) => c.cardId);
+            expect(ids).toEqual([TEST_CARD_ID]);
+        });
+
+        it('returns an empty list when key is missing', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/portfolio/breakdown/cards?by=set')
+                .set('Authorization', bearerToken)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toEqual([]);
+        });
+    });
 });

@@ -329,13 +329,17 @@ Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper an
 - [ ] **Deferred:** Mana-curve visualization + fuller price breakdown on the detail page
 - [ ] **Deferred:** Full construction-rule validation (singleton, 4-of limits, deck-size minimums) - today's check is per-card legal/banned only
 
-### 10.5 Portfolio Analytics: category drill-down + interaction-model audit (#535)
+### 10.5 Portfolio Analytics: category drill-down + interaction-model audit (#535) ✅
 
-`/portfolio/breakdown` is fully server-rendered and its rows are terminal aggregates — there's no path from a slice to the cards inside it. Add inline drill-down (click a color/rarity/type/set/cost-basis row → lazy-load the cards in that slice, with the standard hover-image card component), and write down the rationale for AJAX-vs-server-render here vs. the rest of the app (deck detail, search, inventory already do partial AJAX). Also evaluate exposing the same breakdown/filter affordance on Inventory.
+`/portfolio/breakdown` rows were terminal aggregates with no path to the cards inside them. Added inline drill-down: clicking a set/rarity/type/color/cost-basis row lazy-loads that slice's cards (standard hover-image card link, foil+non-foil quantity/value combined into one row per card).
 
-- [ ] `GET /api/v1/portfolio/breakdown/cards?by=&key=[&colors=]` (premium-gated)
-- [ ] Inline expand/collapse + lazy card load, reusing the hover-preview card row
-- [ ] Written decision: AJAX vs full-nav for dimension/filter switching; inventory-filtering opportunity
+- [x] `GET /api/v1/portfolio/breakdown/cards?by=&key=[&colors=]` (premium-gated, mirrors the breakdown auth) → `PortfolioBreakdownService.listSliceCards` / `PortfolioBreakdownRepository.listCards`. By-color drill-down re-applies the same `colors` superset filter as the aggregate, so membership/overlap semantics match the row the user clicked.
+- [x] Inline expand/collapse + lazy card load (`portfolioBreakdown.js`), reusing `renderCardLink` / `cardLink.hbs` so hover/long-press preview works for free.
+- [x] No-JS fallback: each row is a real link to `?expand=<key>`; the server renders that one slice expanded inline (`getBreakdownView(..., expandKey)`), and JS intercepts the same link to toggle without navigating — progressive enhancement, consistent with search/set-list.
+
+**Decision (B): keep dimension + color-filter switching full-nav; only drill-down is async.** The page is premium-gated server-side (`SubscriptionGuard`), dimension swaps are a single cheap aggregate query, and the URL is the shareable state. Converting the tab/chip switch to AJAX would duplicate the server's slice-rendering in JS for no real latency win and would complicate the back/forward + premium-gate story. Drill-down is the one interaction that benefits from staying on the page (you're comparing slices), so that is the only part made async — and it still degrades to full-nav with JS off. This is the opposite trade-off from deck-detail/search (which mutate or re-query on every keystroke and have no SEO/gate concerns), and that difference is the rationale for the split.
+
+**Inventory-filtering opportunity (B):** the Inventory page is the clearest "aggregate-with-no-drill-down" gap left — it lists items but can't be sliced by color/rarity/type the way analytics now can. Worth a follow-up to add color/rarity/type filter chips to Inventory backed by the same membership semantics (it already has AJAX list infra via `inventoryListAjax.js`, so this is additive). Spun out as a note here rather than blocking #535; no other page has the same gap (set/search lists are already filterable, deck detail is already item-level).
 
 ### 10.6 Deck building: in-page card search (#536)
 

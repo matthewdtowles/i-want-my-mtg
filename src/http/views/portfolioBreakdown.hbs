@@ -84,20 +84,45 @@
             {{/if}}
 
             {{#if slices.length}}
-                <div class='breakdown-list'>
+                <div class='breakdown-list' data-dimension='{{dimension}}' data-colors='{{#each selectedColors}}{{this}}{{#unless @last}},{{/unless}}{{/each}}'>
                     {{#each slices}}
-                        <div class='breakdown-row'>
-                            <div class='breakdown-row-header'>
-                                <span class='breakdown-label'>{{label}}</span>
-                                <span class='breakdown-stats'>
-                                    <span class='breakdown-percent'>{{percentFormatted}}</span>
-                                    <span class='breakdown-value'>{{valueFormatted}}</span>
-                                </span>
+                        <div class='breakdown-row' id='slice-{{key}}' data-key='{{key}}' data-loaded='{{#if expanded}}true{{else}}false{{/if}}'>
+                            <a href='{{expandHref}}' class='breakdown-row-toggle' role='button'
+                               aria-expanded='{{#if expanded}}true{{else}}false{{/if}}'
+                               aria-controls='slice-cards-{{key}}'>
+                                <div class='breakdown-row-header'>
+                                    <span class='breakdown-label'>
+                                        <i class='fas fa-chevron-right breakdown-chevron' aria-hidden='true'></i>
+                                        {{label}}
+                                    </span>
+                                    <span class='breakdown-stats'>
+                                        <span class='breakdown-percent'>{{percentFormatted}}</span>
+                                        <span class='breakdown-value'>{{valueFormatted}}</span>
+                                    </span>
+                                </div>
+                                <div class='breakdown-bar'>
+                                    <div class='breakdown-bar-fill' style='width: {{percentFormatted}};'></div>
+                                </div>
+                                <div class='breakdown-meta'>{{cardCount}} unique &middot; {{itemCount}} item{{#unless (eq itemCount 1)}}s{{/unless}}</div>
+                            </a>
+                            <div class='breakdown-cards' id='slice-cards-{{key}}'{{#unless expanded}} hidden{{/unless}}>
+                                {{#if expanded}}
+                                    {{#if cards.length}}
+                                        {{#each cards}}
+                                            <div class='breakdown-card-row'>
+                                                <span class='breakdown-card-name'>{{> cardLink url=cardUrl name=name imgSrc=imgSrc}}</span>
+                                                <span class='breakdown-card-detail'>
+                                                    <span class='breakdown-card-set'>{{toUpperCase setCode}} #{{number}}</span>
+                                                    <span class='breakdown-card-qty'>{{quantity}}&times;</span>
+                                                    <span class='breakdown-card-value'>{{valueFormatted}}</span>
+                                                </span>
+                                            </div>
+                                        {{/each}}
+                                    {{else}}
+                                        <p class='breakdown-cards-empty'>No cards found in this slice.</p>
+                                    {{/if}}
+                                {{/if}}
                             </div>
-                            <div class='breakdown-bar'>
-                                <div class='breakdown-bar-fill' style='width: {{percentFormatted}};'></div>
-                            </div>
-                            <div class='breakdown-meta'>{{cardCount}} unique &middot; {{itemCount}} item{{#unless (eq itemCount 1)}}s{{/unless}}</div>
                         </div>
                     {{/each}}
                 </div>
@@ -167,3 +192,4 @@
         });
     })();
 </script>
+<script src="/public/js/portfolioBreakdown.js?v={{assetVersion}}" defer></script>

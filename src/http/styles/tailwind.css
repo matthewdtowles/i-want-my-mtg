@@ -1854,6 +1854,45 @@
     @apply text-xs text-gray-500 dark:text-gray-500 mt-2;
 }
 
+/* Drill-down: expandable slice rows (#535) */
+.breakdown-row-toggle {
+    @apply block cursor-pointer;
+    text-decoration: none;
+}
+.breakdown-chevron {
+    @apply inline-block mr-1.5 text-xs text-gray-400 dark:text-gray-500;
+    transition: transform 0.15s ease;
+}
+.breakdown-row-toggle[aria-expanded='true'] .breakdown-chevron {
+    transform: rotate(90deg);
+}
+.breakdown-cards {
+    @apply mt-3 pt-3 border-t border-gray-100 dark:border-midnight-700 flex flex-col;
+}
+.breakdown-card-row {
+    @apply flex items-center justify-between gap-3 py-1.5 text-sm
+           border-b border-gray-50 dark:border-midnight-800 last:border-b-0;
+}
+.breakdown-card-name {
+    @apply min-w-0 truncate;
+}
+.breakdown-card-detail {
+    @apply flex items-baseline gap-3 shrink-0 text-xs;
+}
+.breakdown-card-set {
+    @apply font-mono text-gray-500 dark:text-gray-400;
+}
+.breakdown-card-qty {
+    @apply font-mono text-gray-500 dark:text-gray-400;
+}
+.breakdown-card-value {
+    @apply font-mono text-gray-700 dark:text-gray-300 text-right min-w-[4rem];
+}
+.breakdown-cards-loading,
+.breakdown-cards-empty {
+    @apply text-sm text-gray-500 dark:text-gray-400 py-2;
+}
+
 /* Color filter chips (By Color breakdown) */
 .breakdown-color-chip {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium

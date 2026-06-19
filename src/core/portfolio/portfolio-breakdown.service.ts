@@ -6,6 +6,7 @@ import {
     COLOR_CODES,
     ColorCode,
     PortfolioBreakdown,
+    PortfolioBreakdownCard,
 } from './portfolio-breakdown.entity';
 import { PortfolioBreakdownRepositoryPort } from './ports/portfolio-breakdown.repository.port';
 
@@ -50,5 +51,22 @@ export class PortfolioBreakdownService {
         this.LOGGER.debug(`Get ${dimension} breakdown for user ${userId}.`);
         const slices = await this.repository.aggregate(userId, dimension, selectedColors);
         return new PortfolioBreakdown(dimension, slices);
+    }
+
+    /**
+     * The cards inside a single breakdown slice (drill-down). An empty/missing
+     * key yields no cards rather than the whole portfolio.
+     */
+    async listSliceCards(
+        userId: number,
+        dimension: BreakdownDimension,
+        key: string,
+        selectedColors: string[] = []
+    ): Promise<PortfolioBreakdownCard[]> {
+        if (!key) {
+            return [];
+        }
+        this.LOGGER.debug(`List ${dimension} slice cards (key=${key}) for user ${userId}.`);
+        return this.repository.listCards(userId, dimension, key, selectedColors);
     }
 }

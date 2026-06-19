@@ -363,6 +363,8 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 ### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
 
+**Status (2026-06-18):** both PRs open + verified — **scry#32** (stops the writes, −204 lines, integ tests pass) and **iwantmymtg#538** (migration 042 drops the table + purges, validated on PG18). Remaining = the manual ordered deploy below (scry first, then web).
+
 **Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
 
 **Evidence captured (prod, 2026-06-18):** `granular_price` = 139,953 manapool-retail + 139,128 CK-retail + 137,921 tcg-retail (all qty NULL, unread) + 92,596 CK-buylist (74,741 from CK-direct w/ qty; 17,855 MTGJSON-only, ~88% stale by date). `granular_price_history` = 5.3M rows / 1.2 GB, zero readers.

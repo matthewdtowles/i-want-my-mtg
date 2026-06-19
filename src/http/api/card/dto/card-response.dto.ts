@@ -68,6 +68,12 @@ export class CardApiResponseDto {
 
     @ApiPropertyOptional({ description: 'Affiliate-wrapped TCGPlayer purchase URL for etched finish' })
     readonly purchaseUrlTcgplayerEtched?: string;
+
+    @ApiPropertyOptional({
+        description:
+            'Whether this card is legal in the requested format. Present only in groupBy=name mode when a `format` query param is supplied.',
+    })
+    readonly legal?: boolean;
 }
 
 export class PriceHistoryPointDto {

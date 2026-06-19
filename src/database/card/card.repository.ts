@@ -242,6 +242,63 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return count;
     }
 
+    async searchByNameGrouped(filter: string, options: SafeQueryOptions): Promise<Card[]> {
+        this.LOGGER.debug(`Grouped search by name: ${filter}.`);
+        const qb = this.repository
+            .createQueryBuilder(this.TABLE)
+            // One row per name: DISTINCT ON keeps the first row of each name in
+            // the ORDER BY, so the name-then-newest order below makes the newest
+            // printing the representative.
+            .distinctOn([`${this.TABLE}.name`])
+            .leftJoinAndSelect(`${this.TABLE}.set`, 'set')
+            .leftJoinAndSelect(
+                `${this.TABLE}.prices`,
+                'prices',
+                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+            );
+
+        // When a format is supplied, load just that format's legality row (≤1
+        // per card, so DISTINCT ON still yields one row per name) so the caller
+        // can flag deck legality. Legality is name-level, so the representative's
+        // legality applies to every printing of the name.
+        if (options.format) {
+            qb.leftJoinAndSelect(
+                `${this.TABLE}.legalities`,
+                'legalities',
+                'legalities.format = :groupedFormat',
+                { groupedFormat: options.format }
+            );
+        }
+
+        this.applySearchFilter(qb, filter);
+        this.applyCatalogFilters(qb, options, { skipLegality: true });
+
+        // DISTINCT ON requires the leading ORDER BY to be the distinct expression;
+        // the release-date tiebreaker then selects the representative printing.
+        qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
+
+        // Raw limit/offset (not skip/take) so pagination applies to the
+        // DISTINCT ON result rather than triggering TypeORM's id-subquery path.
+        qb.limit(options.limit).offset((options.page - 1) * options.limit);
+        const results = (await qb.getMany()).map(CardMapper.toCore);
+        this.LOGGER.debug(`Grouped search found ${results.length} names for "${filter}".`);
+        return results;
+    }
+
+    async totalSearchByNameGrouped(filter: string, options?: SafeQueryOptions): Promise<number> {
+        this.LOGGER.debug(`Counting grouped search results for: ${filter}.`);
+        const qb = this.repository.createQueryBuilder(this.TABLE);
+        this.applySearchFilter(qb, filter);
+        if (options) this.applyCatalogFilters(qb, options, { skipLegality: true });
+        const raw = await qb
+            .select(`COUNT(DISTINCT ${this.TABLE}.name)`, 'cnt')
+            .getRawOne<{ cnt: string }>();
+        const count = parseInt(raw?.cnt ?? '0', 10);
+        this.LOGGER.debug(`Total grouped search results for "${filter}": ${count}.`);
+        return count;
+    }
+
     /**
      * Public catalog filters used by the RapidAPI search and per-set listings:
      * `setCode`, `rarity`, `type` substring, and `format`+`legality` (joined to
@@ -251,7 +308,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     private applyCatalogFilters(
         qb: SelectQueryBuilder<CardOrmEntity>,
         options: SafeQueryOptions,
-        opts: { skipSetCode?: boolean } = {}
+        opts: { skipSetCode?: boolean; skipLegality?: boolean } = {}
     ): void {
         if (!opts.skipSetCode && options.setCode) {
             qb.andWhere(`${this.TABLE}.setCode = :filterSetCode`, {
@@ -266,7 +323,10 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
                 typeFilter: `%${options.type}%`,
             });
         }
-        if (options.format && options.legality) {
+        // `skipLegality` lets the grouped (deck-building) search use `format` to
+        // annotate legality without filtering out illegal cards - a deck builder
+        // wants to see every matching card and have the illegal ones flagged.
+        if (!opts.skipLegality && options.format && options.legality) {
             qb.innerJoin(
                 'legality',
                 'lg',

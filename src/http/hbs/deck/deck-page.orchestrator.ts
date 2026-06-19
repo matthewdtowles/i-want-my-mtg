@@ -143,6 +143,7 @@ export class DeckPageOrchestrator {
                 const cardViews = buckets.get(t)!;
                 return {
                     type: TYPE_PLURAL[t] ?? t,
+                    groupKey: t,
                     count: cardViews.reduce((sum, c) => sum + c.quantity, 0),
                     cards: cardViews,
                 };
@@ -158,6 +159,7 @@ export class DeckPageOrchestrator {
             setCode: card?.setCode ?? '',
             number: card?.number ?? '',
             url: card ? buildCardUrl(card.setCode, card.number) : '#',
+            imgSrc: card?.imgSrc ?? '',
             manaCost: card?.manaCost,
             quantity: dc.quantity,
             // Full precision; deckDetail.js rounds at display so client-recomputed

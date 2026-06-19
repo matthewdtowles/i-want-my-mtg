@@ -66,6 +66,13 @@ export class CardApiController {
         description: 'Legality status; only meaningful with format. Defaults to "legal".',
         enum: [...LEGALITY_VALUES],
     })
+    @ApiQuery({
+        name: 'groupBy',
+        required: false,
+        description:
+            'Set to "name" to return one representative printing per distinct card name (newest printing), instead of one row per printing. With "name", a `format` param flags each result\'s legality in that format.',
+        enum: ['name'],
+    })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
     @ApiResponse({ status: 200, description: 'Search results (ordered by card name)' })
@@ -89,6 +96,19 @@ export class CardApiController {
         const options = new SearchQueryOptions(query);
         if (!options.q) {
             return ApiResponseDto.ok([], new PaginationMeta(1, options.limit, 0));
+        }
+
+        // groupBy=name returns one representative printing per distinct name
+        // (deck-building search); anything else keeps the per-printing default.
+        if (query.groupBy === 'name') {
+            const [grouped, groupedTotal] = await Promise.all([
+                this.cardService.searchByNameGrouped(options.q, options),
+                this.cardService.totalSearchByNameGrouped(options.q, options),
+            ]);
+            return ApiResponseDto.ok(
+                grouped.map((c) => CardApiPresenter.toGroupedCardApiResponse(c, options.format)),
+                new PaginationMeta(options.page, options.limit, groupedTotal)
+            );
         }
 
         const [cards, total] = await Promise.all([

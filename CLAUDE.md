@@ -90,6 +90,42 @@ docker rmi ghcr.io/matthewdtowles/scry:latest
 
 Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `profiles: ['etl']` and is not what cron uses — it's only there for ad-hoc `docker compose run --rm etl ...` invocations, and `remote-deploy.sh` does not pull it (`docker compose pull web` only).
 
+### Checking Scry ingest on the production server
+
+The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
+
+`scry.sh` sources `/home/ubuntu/.env` (which sets `DATABASE_URL`) then runs `/opt/scripts/scry <args>` (default `ingest`). **Always go through the wrapper**, never the bare `/opt/scripts/scry`, or `DATABASE_URL` is unset and it fails.
+
+```bash
+ssh ubuntu@<LIGHTSAIL_IP>          # the Lightsail static IP, same key the deploy uses
+
+# 1. Did last night's ingest run and finish? Each run opens with a
+#    "<UTC ts> Starting scry.sh with args: ingest" line.
+tail -n 100 /var/log/i-want-my-mtg/ingestion.log
+grep "Starting scry.sh" /var/log/i-want-my-mtg/ingestion.log | tail -5    # recent run times
+
+# 2. End-of-pass summary of what was written per table:
+#    "... write totals (ms/calls): price=.../... price_history=.../... granular_price=.../..."
+grep "write totals" /var/log/i-want-my-mtg/ingestion.log | tail -5
+
+# 3. Data-integrity health check (through the wrapper so DATABASE_URL is set):
+/opt/scripts/scry.sh health --detailed
+/opt/scripts/scry.sh health --price-history
+
+# 4. Confirm cron is installed and the daemon is up:
+cat /etc/cron.d/i-want-my-mtg
+systemctl status cron
+grep CRON /var/log/syslog | grep scry        # or: journalctl -u cron --since yesterday | grep scry
+
+# 5. Confirm the binary is the build from the last web deploy:
+ls -la /opt/scripts/scry                     # mtime should match the last deploy
+
+# 6. Trigger a manual ingest if needed (same path cron uses, logs to stdout):
+/opt/scripts/scry.sh ingest
+```
+
+Since §10.10 (the granular price-store cut), the `write totals` line no longer carries a `granular_price_history` field and `granular_price` calls collapse to just the CK-direct buylist writes - that is the signal the cut took effect on a nightly run.
+
 ### Deployment order (web + Scry)
 
 Scry writes tables that **this repo's migrations create**, and **this repo's deploy installs the Scry binary** (`setup-cron.sh` extracts it from `scry:latest`, *after* `run_migrations.sh` runs - see above). So when a change spans both repos (e.g. Scry starts writing a new table):

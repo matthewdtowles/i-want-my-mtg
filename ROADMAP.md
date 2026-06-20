@@ -355,6 +355,8 @@ Adding cards now happens **on the deck page** (modeled on Archidekt/ManaBox), so
 
 ### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
 
+**Status (2026-06-19): active** — current work item now that #535/#536 have shipped; branch `537-import-decklists-buildability`. Scoping next.
+
 Import shared public decklists (paste-text first, URL/site export later) and compare them against inventory: "what can I build" (rank decks by completeness) and per-deck owned-vs-needed gap lists. Reuses `src/core/import/` parsers + the 10.4 deck model; missing cards seed the want-list. Import likely stays free (funnel); the analysis layer may be the premium pull.
 
 ### 10.8 Scry: ingestion performance regression (scry#22)
@@ -367,7 +369,9 @@ Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s 
 - ~82% of `granular_price` rows are **retail** (tcgplayer/CK/manapool) — **never read**; the web app only reads `granular_price` `WHERE price_type='buylist'`, vendor `cardkingdom`.
 - The MTGJSON CK buylist it does write is **88% stale** (prod: only ~12% of the 17.8k MTGJSON-only rows were refreshed today; the rest froze days/weeks ago) and is fully covered by **CK-direct** (Tier B, live, with `qty`).
 
-Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. The tiered-optimization issues scry#24/#25/#26/#27/#31 are all **superseded/closed** by that cut; scry#28 (sealed re-streams `AllPrintings`, ~3.5 min) remains as the one separate, still-valid ingest item, and the umbrella scry#22 stays open until the deploy verifies.
+Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. The tiered-optimization issues scry#24/#25/#26/#27/#31 are all **superseded/closed** by that cut. The one remaining ingest item was the ~3.5 min sealed `AllPrintings` re-stream (scry#28, originally scoped as a conditional-GET) - now solved by a **single pass** instead (below); scry#28 closed. Umbrella scry#22's price regression is resolved (granular cut verified 2026-06-20); it stays open only until the single-pass merges + deploys.
+
+**Single-pass card + sealed ingest (2026-06-20) - solves the sealed re-stream, closes out scry#22.** Card ingest and sealed ingest both stream the same `AllPrintings.json` and just extract different sub-trees (`cards[]` vs `sealedProduct[]`), so it was being downloaded + tokenized twice. Built a single-pass "tee" on scry branch `perf/single-pass-card-sealed-ingest`: one `CardSealedEventProcessor` forwards each JSON event to both extractors (each tracks its own depth/skip state), driven by one stream. **Wired into the pipeline** - the default `ingest` (and any run requesting both cards + sealed) now uses it; `-c` / `--sealed` alone still run standalone. Also a standalone `ingest-cards-sealed` command. Local benchmark (release, dev DB): two-pass cards (230s) + sealed (210s) = **440s** vs single pass **206s** (~3.9 min saved). Full `scry ingest` end-to-end now **~4.4 min** (was ~27 min at the regression peak): sets + single-pass cards/sealed (206s, e.g. `Sealed products: 3675 -> 3773, 98 saved`) + prices (`granular_price=0/0`, CK-direct 74.8k rows) + prune + updates, exit 0. 116 lib tests pass (incl. a tee test). **Remaining:** merge the scry PR + deploy.
 
 ### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
 
@@ -375,7 +379,7 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 ### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
 
-**Status (2026-06-18):** **scry#32 merged** — the cut is publishing to `scry:latest` (deploy step 1 done, correct order). **iwantmymtg#538** open + verified (migration 042 drops the table + purges, validated on fresh PG18). Remaining = merge + deploy web #538, then capture the new `write totals` to confirm. Umbrella scry#22 stays open until that verification.
+**Status (2026-06-20): VERIFIED - cut confirmed live; scry#22 closeable.** scry#32 + iwantmymtg#538 merged and deployed (the #540 deploy on 2026-06-19 extracted the post-cut binary); migration 042 dropped `granular_price_history` and purged the `qty IS NULL` rows. The 2026-06-20 post-cut run confirms all of it: the MTGJSON price pass writes **zero** granular (`ingest_all_today write totals (ms/calls): price=36814/205 price_history=32973/205 granular_price=0/0`), the `write totals` line no longer carries a `granular_price_history` field, and CK-direct is the **sole** granular writer (`ingest_cardkingdom_direct ... granular_price=65327/299`, 74,744 buylist rows saved). Price ingest is back to **~1 min** (was ~18 min). `granular_price_history` is absent from the table list; `granular_price` remains and holds CK buylist only.
 
 **Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
 
@@ -383,21 +387,21 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 **Closed as superseded:** scry#24, #25, #26, #27, #31 (PR). Umbrella scry#22 stays open until the deploy verifies; scry#28 (sealed) is the lone remaining separate ingest item.
 
-**Scry change (PR 1) — stops all the now-dead writes:**
-- [ ] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.
-- [ ] Remove **all** `granular_price_history` writes (daily `save_prices`, `save_ck_batch`, `save_price_history_only` backfill).
-- [ ] CK-direct (`save_ck_batch`): keep `granular_price` (current buylist) write; drop its history write.
-- [ ] Drop `granular_price_history` retention (`apply_granular_*_retention`) + now-unused repo methods.
-- [ ] Verify via `./scripts/test-integ.sh` (real PG) + `cargo test --lib`.
+**Scry change (PR 1, scry#32 — merged) — stops all the now-dead writes:**
+- [x] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.
+- [x] Remove **all** `granular_price_history` writes (daily `save_prices`, `save_ck_batch`, `save_price_history_only` backfill).
+- [x] CK-direct (`save_ck_batch`): keep `granular_price` (current buylist) write; drop its history write.
+- [x] Drop `granular_price_history` retention (`apply_granular_*_retention`) + now-unused repo methods.
+- [x] Verify via `./scripts/test-integ.sh` (real PG) + `cargo test --lib`.
 
-**Web change (PR 2) — drops the table + purges stale/retail rows:**
-- [ ] Migration: `DROP TABLE granular_price_history;` (+ remove from init SQL) and `DELETE FROM granular_price WHERE qty IS NULL;` (one-time purge of unread retail + stale MTGJSON buylist; CK-direct rows carry `qty`).
-- [ ] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
+**Web change (PR 2, iwantmymtg#538 — merged) — drops the table + purges stale/retail rows:**
+- [x] Migration: `DROP TABLE granular_price_history;` (+ remove from init SQL) and `DELETE FROM granular_price WHERE qty IS NULL;` (one-time purge of unread retail + stale MTGJSON buylist; CK-direct rows carry `qty`).
+- [x] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
 
 **Deploy order (manual — Matthew):**
 1. [x] **Publish scry first** — done: scry#32 merged → CI pushes `scry:latest`. (Safe: the old binary on the server keeps writing the soon-to-be-dropped table, harmless until web deploys.)
-2. [ ] **Deploy web second** (PR 2). Web deploy runs the migration (drops table + purge) *then* extracts the new scry binary, so by the next 2 a.m. cron nothing writes the dropped table. **Do not** hand-refresh the scry binary before the web migration, and **do not** deploy web before scry is published (it'd extract the still-old binary that writes the dropped table → next cron errors).
-3. [ ] After the next nightly run, re-check `ingest_all_today write totals` — confirm the granular lines are gone and total ingest is back to single digits.
+2. [x] **Deploy web second** (PR 2). Done: #538 merged 2026-06-18, and the #540 deploy (2026-06-19) ran the migration (dropped table + purge) *then* extracted the new scry binary, so the server now holds the post-cut binary.
+3. [x] **Verified 2026-06-20.** Post-cut run: `ingest_all_today` granular writes = 0 (`granular_price=0/0`), no `granular_price_history` field in the totals line, CK-direct the sole granular writer (`granular_price=65327/299`, 74,744 buylist rows). Price ingest ~1 min vs the prior ~18 min. `granular_price_history` confirmed absent from the live schema.
 
 **Follow-up (optional, separate):** improve CK-direct `scryfall_id` matching to recover the ~2,093 today-fresh + 3,540 unmatched CK offers, if buylist coverage warrants it. If a buylist *trend chart* is ever wanted, add CK-buylist-only history written by CK-direct (~93k rows/day, not ~480k of retail).
 

@@ -405,6 +405,15 @@ MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, mis
 
 **Follow-up (optional, separate):** improve CK-direct `scryfall_id` matching to recover the ~2,093 today-fresh + 3,540 unmatched CK offers, if buylist coverage warrants it. If a buylist *trend chart* is ever wanted, add CK-buylist-only history written by CK-direct (~93k rows/day, not ~480k of retail).
 
+### 10.11 Scry: card batch ingestion is serial despite Semaphore + spawn (scry#33 review)
+
+PR #33 review (Copilot) correctly identified that `CardService::save_card_batch` acquires a semaphore permit and then immediately `.await`s the spawned task's join handle before returning. `JsonStreamParser::parse_stream` likewise awaits `on_batch` before advancing the stream. Result: `CONCURRENCY = 6` and the `Semaphore` add overhead with no benefit — batches are processed one at a time. Two options when this is revisited:
+
+- **Simplify (recommended baseline):** remove the `tokio::spawn` + `Semaphore` entirely and run batch work inline. Equivalent behavior, honest code, no overhead.
+- **Real concurrency:** restructure `parse_stream` to collect task handles (JoinSet) as the stream advances and join them after the stream ends, giving up to `CONCURRENCY` concurrent DB writes.
+
+Not blocking the single-pass PR (#33) — the serial pattern predates it and throughput is acceptable post-10.10.
+
 ---
 
 ## Appendix: Freemium model (reference)

@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!symbol) return '<span class="mana-sep">' + AjaxUtils.escapeHtml(match) + '</span>';
             var lower = symbol.toLowerCase().replace('/', '');
             var isHalf = lower.startsWith('h');
+            // Strip the leading 'h' so half symbols match the server tokenization
+            // (manaCost.hbs renders {HW} as ms-w ms-half, not ms-hw).
+            if (isHalf) lower = lower.substring(1);
             return '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>';
         });
     }

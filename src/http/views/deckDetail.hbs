@@ -3,7 +3,7 @@
         <div>
             <h1 class="page-title">
                 {{name}}
-                {{#if deckColors}}
+                {{#if deckColors.length}}
                     <span class="deck-colors ml-2 align-middle" title="Colors in this deck">
                         {{#each deckColors}}<i class="ms ms-cost ms-shadow ms-{{this}}"></i>{{/each}}
                     </span>

@@ -6,9 +6,9 @@
  * (deck value, board counts, group counts, illegal count) recompute client-side
  * from data-unit-value on each row. The search box (#536) queries the grouped
  * card endpoint (one row per name) and adds straight to main/sideboard, inserting
- * the new row (creating the type group if needed) without a full reload. Card art
- * on hover comes for free from cardPreview.js, which binds globally to any
- * .card-name-link[data-card-img]. Deck-level edits reload so the server
+ * the new row (creating the type group if needed) without a full reload. Card
+ * rules text on hover comes for free from cardPreview.js, which binds globally
+ * to any .card-name-link[data-card-text]. Deck-level edits reload so the server
  * re-renders legality + grouping.
  */
 document.addEventListener('DOMContentLoaded', function () {
@@ -62,6 +62,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function fmt(n) {
         return '$' + (Math.round(n * 100) / 100).toFixed(2);
+    }
+
+    // Render a "{2}{W}{U}" mana-cost string as mana-font icons, mirroring the
+    // server's manaCost.hbs partial so search-added rows match the rendered rows.
+    function renderManaCost(manaCost) {
+        if (!manaCost) return '';
+        return manaCost.replace(/\/\/|\{([^}]+)\}/g, function (match, symbol) {
+            if (!symbol) return '<span class="mana-sep">' + AjaxUtils.escapeHtml(match) + '</span>';
+            var lower = symbol.toLowerCase().replace('/', '');
+            var isHalf = lower.startsWith('h');
+            return '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>';
+        });
     }
 
     function unitValueOf(card) {
@@ -171,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Row / group construction (search-added cards) ───────────────
 
     function buildRow(opts) {
-        // opts: { cardId, name, url, imgSrc, unitValue, quantity, isSideboard, illegal }
+        // opts: { cardId, name, url, oracleText, manaCost, unitValue, quantity, isSideboard, illegal }
         var row = document.createElement('div');
         row.className =
             'flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800';
@@ -193,9 +205,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var link = document.createElement('a');
         link.href = opts.url;
         link.className = 'card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate';
-        if (opts.imgSrc) link.setAttribute('data-card-img', opts.imgSrc);
+        if (opts.oracleText) link.setAttribute('data-card-text', opts.oracleText);
         link.textContent = opts.name;
         row.appendChild(link);
+
+        var mana = document.createElement('span');
+        mana.className = 'deck-mana whitespace-nowrap text-sm';
+        mana.innerHTML = renderManaCost(opts.manaCost);
+        row.appendChild(mana);
 
         if (opts.illegal) {
             var badge = document.createElement('span');
@@ -287,7 +304,8 @@ document.addEventListener('DOMContentLoaded', function () {
             cardId: card.id,
             name: card.name,
             url: cardUrl(card),
-            imgSrc: card.imgSrc,
+            oracleText: card.oracleText,
+            manaCost: card.manaCost,
             unitValue: unitValueOf(card),
             quantity: 1,
             isSideboard: isSideboard,
@@ -398,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var link = document.createElement('a');
         link.href = cardUrl(card);
         link.className = 'card-name-link flex-1 text-sm truncate';
-        if (card.imgSrc) link.setAttribute('data-card-img', card.imgSrc);
+        if (card.oracleText) link.setAttribute('data-card-text', card.oracleText);
         link.textContent = card.name;
         item.appendChild(link);
 

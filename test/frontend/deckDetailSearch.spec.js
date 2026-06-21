@@ -76,6 +76,8 @@ function card(overrides) {
             setCode: 'LEA',
             number: '1',
             imgSrc: 'bears.jpg',
+            manaCost: '{1}{G}',
+            oracleText: 'Grizzly Bears has no abilities.',
             prices: { normal: 0.25, foil: null },
             legal: true,
         },
@@ -113,7 +115,8 @@ describe('deck-page in-page search', function () {
         expect(results.length).toBe(1);
         var link = results[0].querySelector('.card-name-link');
         expect(link.textContent).toBe('Grizzly Bears');
-        expect(link.getAttribute('data-card-img')).toBe('bears.jpg');
+        expect(link.getAttribute('data-card-img')).toBeNull();
+        expect(link.getAttribute('data-card-text')).toBe('Grizzly Bears has no abilities.');
         // URL is built client-side from setCode (lowercased) + number, not sent.
         expect(link.getAttribute('href')).toBe('/card/lea/1');
         expect(results[0].querySelectorAll('.deck-result-add').length).toBe(2);
@@ -176,6 +179,10 @@ describe('deck-page in-page search', function () {
         expect(rows[0].getAttribute('data-sideboard')).toBe('false');
         expect(rows[0].querySelector('.deck-qty-val').textContent).toBe('1');
         expect(rows[0].querySelector('.card-name-link').getAttribute('href')).toBe('/card/lea/1');
+        expect(rows[0].querySelector('.card-name-link').getAttribute('data-card-text')).toBe(
+            'Grizzly Bears has no abilities.'
+        );
+        expect(rows[0].querySelectorAll('.deck-mana .ms').length).toBe(2);
 
         expect(document.getElementById('deck-main-count').textContent).toBe('1');
         expect(document.getElementById('deck-est-value').textContent).toBe('$0.25');

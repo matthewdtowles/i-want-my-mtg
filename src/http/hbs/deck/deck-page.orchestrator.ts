@@ -13,6 +13,7 @@ import { buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from './deck-grouping';
+import { deckColors, parseManaTokens } from './deck-mana';
 import {
     DeckCardGroupView,
     DeckCardView,
@@ -156,6 +157,7 @@ export class DeckPageOrchestrator {
                 formatOptions: this.buildFormatOptions(deck.format ?? null),
                 mainGroups: this.groupByType(main, deck.format ?? null, gapByRow),
                 sideboard: side.map((c) => this.toCardView(c, deck.format ?? null, gapByRow)),
+                deckColors: deckColors(cards),
                 mainCount: DeckSummaryPolicy.cardCount(main),
                 sideCount: DeckSummaryPolicy.cardCount(side),
                 estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
@@ -231,8 +233,8 @@ export class DeckPageOrchestrator {
             setCode: card?.setCode ?? '',
             number: card?.number ?? '',
             url: card ? buildCardUrl(card.setCode, card.number) : '#',
-            imgSrc: card?.imgSrc ?? '',
-            manaCost: card?.manaCost,
+            manaCost: parseManaTokens(card?.manaCost),
+            oracleText: card?.oracleText,
             quantity: dc.quantity,
             // Full precision; deckDetail.js rounds at display so client-recomputed
             // totals match the server's multiply-then-round lineValue/estimatedValue.

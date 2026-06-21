@@ -1,7 +1,14 @@
 <div class="content-wrapper py-6" data-deck-id="{{deckId}}" data-deck-format="{{format}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
-            <h1 class="page-title">{{name}}</h1>
+            <h1 class="page-title">
+                {{name}}
+                {{#if deckColors.length}}
+                    <span class="deck-colors ml-2 align-middle" title="Colors in this deck">
+                        {{#each deckColors}}<i class="ms ms-cost ms-shadow ms-{{this}}"></i>{{/each}}
+                    </span>
+                {{/if}}
+            </h1>
             <p class="page-subtitle">
                 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
                 <span class="mx-1">&middot;</span>
@@ -83,7 +90,7 @@
                 placeholder="Search by card name&hellip;"
                 class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm" />
         </div>
-        <p class="text-xs text-gray-400 mt-1">One result per card name &middot; hover (or long-press) a name for art.</p>
+        <p class="text-xs text-gray-400 mt-1">One result per card name &middot; hover (or long-press) a name for its card text.</p>
         {{!-- Plain container: each result row holds a link + buttons, so the
               listbox/option pattern doesn't apply. The role="status" region
               below announces add results to assistive tech. --}}
@@ -108,7 +115,8 @@
                                 <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
                                 <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
                             </span>
-                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if oracleText}} data-card-text="{{oracleText}}"{{/if}}>{{name}}</a>
+                            <span class="deck-mana whitespace-nowrap text-sm">{{>manaCost card=this}}</span>
                             {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
                             {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400" title="Basic land">Basic</span>{{else}}<span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300" title="You own enough"><i class="fas fa-check" aria-hidden="true"></i></span>{{/if}}
                             <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
@@ -133,7 +141,8 @@
                                 <span class="deck-qty-val w-7 text-center text-sm font-mono">{{quantity}}</span>
                                 <button type="button" class="deck-step px-2 py-0.5 text-gray-500 hover:text-teal-600 dark:hover:text-teal-400" data-delta="1" aria-label="Increase quantity">+</button>
                             </span>
-                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                            <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if oracleText}} data-card-text="{{oracleText}}"{{/if}}>{{name}}</a>
+                            <span class="deck-mana whitespace-nowrap text-sm">{{>manaCost card=this}}</span>
                             {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
                             {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400" title="Basic land">Basic</span>{{else}}<span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300" title="You own enough"><i class="fas fa-check" aria-hidden="true"></i></span>{{/if}}
                             <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>

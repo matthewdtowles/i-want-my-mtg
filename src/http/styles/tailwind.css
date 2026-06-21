@@ -428,6 +428,15 @@
     @apply w-64 h-auto rounded-lg shadow-lg;
 }
 
+.card-preview-text {
+    @apply w-64 max-w-[16rem] rounded-lg shadow-lg p-3 text-sm leading-snug whitespace-pre-line;
+    @apply bg-white text-gray-800 border border-gray-200;
+}
+
+.dark .card-preview-text {
+    @apply bg-midnight-800 text-gray-100 border-midnight-600;
+}
+
 .card-image-wrapper {
     @apply overflow-hidden rounded-lg max-w-xs mx-auto;
     cursor: zoom-in;

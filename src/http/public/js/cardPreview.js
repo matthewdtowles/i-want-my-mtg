@@ -1,8 +1,10 @@
 /**
  * Card image preview - hover on desktop, long-press on mobile.
  *
- * Desktop: mouseover/mouseout on .card-name-link[data-card-img] shows a
- *          floating preview image near the link.
+ * Desktop: mouseover/mouseout on a .card-name-link shows a floating preview
+ *          near the link: the card art for links carrying data-card-img, or
+ *          the card's rules text for links carrying data-card-text (used by
+ *          the deck pages, where a deck entry is a card name, not a printing).
  *
  * Mobile:  Touch-and-hold (500 ms) shows the preview while the finger is
  *          down.  Lifting the finger dismisses the preview and suppresses
@@ -12,6 +14,7 @@
 (function () {
     var preview = null;
     var previewImg = null;
+    var previewText = null;
     var activeLink = null;
     var isTouchDevice = false;
     var initialized = false;
@@ -34,15 +37,29 @@
         previewImg.width = 256;
         previewImg.height = 357;
         preview.appendChild(previewImg);
+        previewText = document.createElement('div');
+        previewText.className = 'card-preview-text';
+        preview.appendChild(previewText);
         document.body.appendChild(preview);
     }
 
     function showPreview(link) {
+        if (!preview) return;
         var imgUrl = link.getAttribute('data-card-img');
-        if (!imgUrl || !preview) return;
+        var text = link.getAttribute('data-card-text');
+        if (imgUrl) {
+            previewImg.src = imgUrl;
+            previewImg.alt = link.textContent || '';
+            previewImg.style.display = '';
+            previewText.style.display = 'none';
+        } else if (text) {
+            previewText.textContent = text;
+            previewText.style.display = '';
+            previewImg.style.display = 'none';
+        } else {
+            return;
+        }
         activeLink = link;
-        previewImg.src = imgUrl;
-        previewImg.alt = link.textContent || '';
         preview.style.display = 'block';
         positionPreview(link);
     }
@@ -51,22 +68,23 @@
         if (!preview) return;
         preview.style.display = 'none';
         previewImg.src = '';
+        previewText.textContent = '';
         activeLink = null;
     }
 
     function positionPreview(link) {
         var rect = link.getBoundingClientRect();
-        var imgWidth = 256;
-        var imgHeight = 357;
+        var width = preview.offsetWidth || 256;
+        var height = preview.offsetHeight || 357;
         var top;
-        if (rect.top >= imgHeight + 8) {
-            top = rect.top - imgHeight - 8;
+        if (rect.top >= height + 8) {
+            top = rect.top - height - 8;
         } else {
             top = rect.bottom + 8;
         }
         var left = rect.left;
-        if (left + imgWidth > window.innerWidth) {
-            left = window.innerWidth - imgWidth - 8;
+        if (left + width > window.innerWidth) {
+            left = window.innerWidth - width - 8;
         }
         if (left < 8) left = 8;
         preview.style.top = top + 'px';
@@ -76,7 +94,7 @@
     function closestCardLink(event) {
         var el = event.target;
         if (el && el.nodeType !== 1) el = el.parentElement;
-        return el ? el.closest('.card-name-link[data-card-img]') : null;
+        return el ? el.closest('.card-name-link[data-card-img], .card-name-link[data-card-text]') : null;
     }
 
     // ── Desktop: hover ──────────────────────────────────────────────

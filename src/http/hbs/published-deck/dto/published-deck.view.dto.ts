@@ -1,4 +1,5 @@
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { ManaToken } from 'src/http/hbs/card/dto/card.response.dto';
 
 export interface PublishedFormatOptionView {
     value: string;
@@ -45,8 +46,8 @@ export class PublishedDeckListViewDto extends BaseViewDto {
 export interface PublishedDeckCardView {
     name: string;
     url: string;
-    imgSrc: string;
-    manaCost?: string;
+    manaCost: ManaToken[];
+    oracleText?: string;
     quantity: number;
     lineValue: string;
     owned: number;

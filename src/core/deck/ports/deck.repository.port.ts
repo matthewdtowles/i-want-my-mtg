@@ -31,6 +31,15 @@ export interface DeckRepositoryPort {
      */
     addCard(deckId: number, cardId: string, isSideboard: boolean, delta: number): Promise<number>;
 
+    /**
+     * Add many card entries in one statement, summing quantity on conflict
+     * (same semantics as addCard). Used by decklist import.
+     */
+    addCards(
+        deckId: number,
+        entries: { cardId: string; isSideboard: boolean; quantity: number }[]
+    ): Promise<void>;
+
     /** Set the absolute quantity for a card entry. */
     setCardQuantity(
         deckId: number,

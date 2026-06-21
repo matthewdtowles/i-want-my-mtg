@@ -30,6 +30,8 @@ import { PortfolioController } from './portfolio/portfolio.controller';
 import { PortfolioOrchestrator } from './portfolio/portfolio.orchestrator';
 import { PriceAlertPageController } from './price-alert/price-alert-page.controller';
 import { PriceAlertPageOrchestrator } from './price-alert/price-alert-page.orchestrator';
+import { PublishedDeckController } from './published-deck/published-deck.controller';
+import { PublishedDeckOrchestrator } from './published-deck/published-deck.orchestrator';
 import { SealedProductController } from './sealed-product/sealed-product.controller';
 import { SealedProductOrchestrator } from './sealed-product/sealed-product.orchestrator';
 import { SearchController } from './search/search.controller';
@@ -61,6 +63,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         NotificationPageController,
         PortfolioController,
         PriceAlertPageController,
+        PublishedDeckController,
         SealedProductController,
         SearchController,
         SetController,
@@ -83,6 +86,7 @@ import { UserOrchestrator } from './user/user.orchestrator';
         NotificationPageOrchestrator,
         PortfolioOrchestrator,
         PriceAlertPageOrchestrator,
+        PublishedDeckOrchestrator,
         SealedProductOrchestrator,
         SearchOrchestrator,
         SetOrchestrator,

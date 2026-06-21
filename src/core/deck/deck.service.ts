@@ -74,6 +74,20 @@ export class DeckService {
         await this.repository.addCard(deckId, cardId, isSideboard, quantity);
     }
 
+    /** Bulk-add card entries (summing quantity on conflict). Used by import / clone. */
+    async addCards(
+        deckId: number,
+        userId: number,
+        entries: { cardId: string; isSideboard: boolean; quantity: number }[]
+    ): Promise<void> {
+        await this.assertOwner(deckId, userId);
+        const valid = entries.filter((e) => e.quantity > 0);
+        if (valid.length === 0) {
+            return;
+        }
+        await this.repository.addCards(deckId, valid);
+    }
+
     /** Set the absolute quantity for a card entry; quantity <= 0 removes it. */
     async setCardQuantity(
         deckId: number,

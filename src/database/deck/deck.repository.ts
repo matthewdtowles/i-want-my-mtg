@@ -92,6 +92,32 @@ export class DeckRepository implements DeckRepositoryPort {
         return Number(rows[0]?.quantity ?? delta);
     }
 
+    async addCards(
+        deckId: number,
+        entries: { cardId: string; isSideboard: boolean; quantity: number }[]
+    ): Promise<void> {
+        if (entries.length === 0) {
+            return;
+        }
+        // One multi-row upsert; $1 is the deck id, each entry contributes a triplet.
+        const params: unknown[] = [deckId];
+        const values = entries
+            .map((e) => {
+                const base = params.length;
+                params.push(e.cardId, e.isSideboard, e.quantity);
+                return `($1, $${base + 1}, $${base + 2}, $${base + 3})`;
+            })
+            .join(', ');
+        await this.repository.query(
+            `INSERT INTO deck_card (deck_id, card_id, is_sideboard, quantity)
+             VALUES ${values}
+             ON CONFLICT (deck_id, card_id, is_sideboard)
+             DO UPDATE SET quantity = deck_card.quantity + EXCLUDED.quantity`,
+            params
+        );
+        await this.touch(deckId);
+    }
+
     async setCardQuantity(
         deckId: number,
         cardId: string,

@@ -21,6 +21,32 @@
         </p>
     {{/if}}
 
+    {{#if hasCards}}
+    {{!-- Buildability vs. your collection (name-level; basics count as owned) --}}
+    <div class="section-container mb-5">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200">
+                <i class="fas fa-boxes-stacked mr-1 text-purple-500" aria-hidden="true"></i> Your collection
+            </h3>
+            {{#if hasMissing}}
+                <button type="button" id="deck-buylist-missing" class="btn btn-secondary text-sm">
+                    <i class="fas fa-cart-plus mr-1" aria-hidden="true"></i> Add {{missingCount}} missing to buy list
+                </button>
+            {{else}}
+                <span class="text-sm text-teal-600 dark:text-teal-400 font-semibold"><i class="fas fa-check mr-1" aria-hidden="true"></i> You can build this deck</span>
+            {{/if}}
+        </div>
+        <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+            <span>You own <span class="font-semibold text-gray-900 dark:text-gray-100">{{ownedCount}}</span> of {{neededCount}} non-basic cards</span>
+            <span class="font-semibold">{{completeness}}%</span>
+        </div>
+        <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-midnight-700 overflow-hidden">
+            <div class="h-full rounded-full {{#if hasMissing}}bg-purple-500{{else}}bg-teal-500{{/if}}" style="width: {{completeness}}%"></div>
+        </div>
+        <span id="deck-buylist-result" class="text-sm mt-2 inline-block" role="status" aria-live="polite"></span>
+    </div>
+    {{/if}}
+
     {{!-- Edit deck (rename / format / delete) --}}
     <details class="section-container mb-5">
         <summary class="cursor-pointer font-medium"><i class="fas fa-gear mr-2" aria-hidden="true"></i>Deck settings</summary>
@@ -84,6 +110,7 @@
                             </span>
                             <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
                             {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                            {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400" title="Basic land">Basic</span>{{else}}<span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300" title="You own enough"><i class="fas fa-check" aria-hidden="true"></i></span>{{/if}}
                             <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
                             <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
                         </div>
@@ -108,6 +135,7 @@
                             </span>
                             <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
                             {{#if illegal}}<span class="deck-illegal-badge text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" title="Not legal in this format">Not legal</span>{{/if}}
+                            {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400" title="Basic land">Basic</span>{{else}}<span class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300" title="You own enough"><i class="fas fa-check" aria-hidden="true"></i></span>{{/if}}
                             <span class="deck-line-value text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
                             <button type="button" class="deck-remove px-2 text-gray-400 hover:text-red-500" aria-label="Remove card">&times;</button>
                         </div>
@@ -128,3 +156,35 @@
 
 <script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
 <script src="/public/js/deckDetail.js?v={{assetVersion}}" defer></script>
+<script>
+(function () {
+    var btn = document.getElementById('deck-buylist-missing');
+    if (!btn) return;
+    var deckId = document.querySelector('[data-deck-id]').getAttribute('data-deck-id');
+    var result = document.getElementById('deck-buylist-result');
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        result.textContent = 'Adding…';
+        result.className = 'text-sm mt-2 inline-block text-gray-500';
+        fetch('/api/v1/decks/' + deckId + '/missing-to-buy-list', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+        })
+            .then(function (r) {
+                if (!r.ok) throw new Error('Request failed');
+                return r.json();
+            })
+            .then(function (body) {
+                var added = (body && body.data && body.data.added) || 0;
+                result.textContent = added + ' card' + (added === 1 ? '' : 's') + ' added to your buy list.';
+                result.className = 'text-sm mt-2 inline-block text-teal-600 dark:text-teal-400';
+            })
+            .catch(function () {
+                btn.disabled = false;
+                result.textContent = 'Could not add to buy list. Please try again.';
+                result.className = 'text-sm mt-2 inline-block text-red-600 dark:text-red-400';
+            });
+    });
+})();
+</script>

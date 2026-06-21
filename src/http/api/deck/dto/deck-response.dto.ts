@@ -73,6 +73,24 @@ export class DeckSummaryApiDto {
     readonly updatedAt: string;
 }
 
+/** Result of a decklist text import. */
+export class DeckImportApiResultDto {
+    @ApiProperty({ description: 'Id of the created deck.' })
+    readonly deckId: number;
+
+    @ApiProperty()
+    readonly name: string;
+
+    @ApiProperty({ description: 'Total card quantity added across resolved lines.' })
+    readonly saved: number;
+
+    @ApiProperty({
+        type: [Object],
+        description: 'Lines that could not be parsed or resolved ({ row, name?, error }).',
+    })
+    readonly errors: { row: number; name?: string; error: string }[];
+}
+
 /** Full deck with its cards. */
 export class DeckDetailApiDto extends DeckSummaryApiDto {
     @ApiProperty({ description: 'Count of cards not legal in the deck format (0 when no format).' })

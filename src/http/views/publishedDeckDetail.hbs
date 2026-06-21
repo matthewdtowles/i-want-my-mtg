@@ -1,0 +1,127 @@
+<div class="content-wrapper py-6" data-published-deck-id="{{deckId}}">
+    <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">{{deckTitle}}</h1>
+            <p class="page-subtitle">
+                <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
+                {{#if tournamentName}}<span class="mx-1">&middot;</span>{{tournamentName}}{{/if}}
+                {{#if date}}<span class="mx-1">&middot;</span>{{date}}{{/if}}
+                {{#if result}}<span class="mx-1">&middot;</span>{{result}}{{/if}}
+                <span class="mx-1">&middot;</span>
+                <span class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
+            </p>
+            {{#if player}}<p class="text-sm text-gray-500 mt-1">Piloted by {{player}}</p>{{/if}}
+        </div>
+        <a href="/published-decks" class="btn btn-ghost text-sm">&larr; All decks</a>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-5">
+        <form method="post" action="/published-decks/{{deckId}}/clone">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-copy mr-1" aria-hidden="true"></i> Copy to my decks
+            </button>
+        </form>
+        {{#if sourceUri}}
+            <a href="{{sourceUri}}" target="_blank" rel="nofollow noopener" class="btn btn-secondary">
+                <i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i> Source
+            </a>
+        {{/if}}
+    </div>
+
+    {{#if showGap}}
+    <div class="section-container mb-5">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200">
+                <i class="fas fa-boxes-stacked mr-1 text-purple-500" aria-hidden="true"></i> Your collection
+            </h3>
+            {{#if hasMissing}}
+                <button type="button" id="pd-buylist-missing" class="btn btn-secondary text-sm">
+                    <i class="fas fa-cart-plus mr-1" aria-hidden="true"></i> Add {{missingCount}} missing to buy list
+                </button>
+            {{else}}
+                <span class="text-sm text-teal-600 dark:text-teal-400 font-semibold"><i class="fas fa-check mr-1" aria-hidden="true"></i> You can build this deck</span>
+            {{/if}}
+        </div>
+        <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+            <span>You own <span class="font-semibold text-gray-900 dark:text-gray-100">{{ownedCount}}</span> of {{neededCount}} non-basic cards</span>
+            <span class="font-semibold">{{completeness}}%</span>
+        </div>
+        <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-midnight-700 overflow-hidden">
+            <div class="h-full rounded-full {{#if hasMissing}}bg-purple-500{{else}}bg-teal-500{{/if}}" style="width: {{completeness}}%"></div>
+        </div>
+        <span id="pd-buylist-result" class="text-sm mt-2 inline-block" role="status" aria-live="polite"></span>
+    </div>
+    {{else}}
+    <div class="section-container mb-5 text-sm text-gray-600 dark:text-gray-400">
+        <a href="/auth/login" class="text-teal-600 dark:text-teal-400 font-semibold">Sign in</a> to see which of these cards you already own.
+    </div>
+    {{/if}}
+
+    {{#each mainGroups}}
+        <div class="mb-5">
+            <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                {{type}} <span class="text-gray-400 font-normal">({{count}})</span>
+            </h3>
+            <div>
+                {{#each cards}}
+                    <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800">
+                        <span class="w-7 text-center text-sm font-mono text-gray-500">{{quantity}}</span>
+                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                        {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400">Basic</span>{{/if}}
+                        <span class="text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    {{/each}}
+
+    {{#if sideboard.length}}
+        <div class="mb-5">
+            <h3 class="font-display font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Sideboard <span class="text-gray-400 font-normal">({{sideCount}})</span>
+            </h3>
+            <div>
+                {{#each sideboard}}
+                    <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800">
+                        <span class="w-7 text-center text-sm font-mono text-gray-500">{{quantity}}</span>
+                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                        {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400">Basic</span>{{/if}}
+                        <span class="text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    {{/if}}
+</div>
+
+<script src="/public/js/ajaxUtils.js?v={{assetVersion}}" defer></script>
+<script src="/public/js/cardPreview.js?v={{assetVersion}}" defer></script>
+<script>
+(function () {
+    var btn = document.getElementById('pd-buylist-missing');
+    if (!btn) return;
+    var deckId = document.querySelector('[data-published-deck-id]').getAttribute('data-published-deck-id');
+    var result = document.getElementById('pd-buylist-result');
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        result.textContent = 'Adding…';
+        result.className = 'text-sm mt-2 inline-block text-gray-500';
+        fetch('/published-decks/' + deckId + '/missing-to-buy-list', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+        })
+            .then(function (r) { if (!r.ok) throw new Error('failed'); return r.json(); })
+            .then(function (body) {
+                var added = (body && body.added) || 0;
+                result.textContent = added + ' card' + (added === 1 ? '' : 's') + ' added to your buy list.';
+                result.className = 'text-sm mt-2 inline-block text-teal-600 dark:text-teal-400';
+            })
+            .catch(function () {
+                btn.disabled = false;
+                result.textContent = 'Could not add to buy list. Please try again.';
+                result.className = 'text-sm mt-2 inline-block text-red-600 dark:text-red-400';
+            });
+    });
+})();
+</script>

@@ -14,6 +14,9 @@ export interface DeckListItemView {
     estimatedValue: string;
     updatedAt: string;
     url: string;
+    completeness: number;
+    missingCount: number;
+    buildable: boolean;
 }
 
 export class DeckListViewDto extends BaseViewDto {
@@ -26,6 +29,40 @@ export class DeckListViewDto extends BaseViewDto {
         this.decks = init.decks ?? [];
         this.hasDecks = init.hasDecks ?? false;
         this.formatOptions = init.formatOptions ?? [];
+    }
+}
+
+export class DeckImportViewDto extends BaseViewDto {
+    readonly formatOptions: FormatOptionView[];
+
+    constructor(init: Partial<DeckImportViewDto>) {
+        super(init);
+        this.formatOptions = init.formatOptions ?? [];
+    }
+}
+
+export interface DeckImportErrorView {
+    row: number;
+    name?: string;
+    error: string;
+}
+
+export class DeckImportResultViewDto extends BaseViewDto {
+    readonly deckId: number;
+    readonly deckName: string;
+    readonly deckUrl: string;
+    readonly saved: number;
+    readonly errorCount: number;
+    readonly errors: DeckImportErrorView[];
+
+    constructor(init: Partial<DeckImportResultViewDto>) {
+        super(init);
+        this.deckId = init.deckId ?? 0;
+        this.deckName = init.deckName ?? '';
+        this.deckUrl = init.deckUrl ?? '/decks';
+        this.saved = init.saved ?? 0;
+        this.errorCount = init.errorCount ?? 0;
+        this.errors = init.errors ?? [];
     }
 }
 
@@ -42,6 +79,9 @@ export interface DeckCardView {
     lineValue: string;
     isSideboard: boolean;
     illegal: boolean;
+    owned: number;
+    missing: number;
+    isBasic: boolean;
 }
 
 export interface DeckCardGroupView {
@@ -66,6 +106,11 @@ export class DeckDetailViewDto extends BaseViewDto {
     readonly estimatedValue: string;
     readonly illegalCount: number;
     readonly hasCards: boolean;
+    readonly completeness: number;
+    readonly neededCount: number;
+    readonly ownedCount: number;
+    readonly missingCount: number;
+    readonly hasMissing: boolean;
 
     constructor(init: Partial<DeckDetailViewDto>) {
         super(init);
@@ -81,5 +126,10 @@ export class DeckDetailViewDto extends BaseViewDto {
         this.estimatedValue = init.estimatedValue ?? '$0.00';
         this.illegalCount = init.illegalCount ?? 0;
         this.hasCards = init.hasCards ?? false;
+        this.completeness = init.completeness ?? 0;
+        this.neededCount = init.neededCount ?? 0;
+        this.ownedCount = init.ownedCount ?? 0;
+        this.missingCount = init.missingCount ?? 0;
+        this.hasMissing = init.hasMissing ?? false;
     }
 }

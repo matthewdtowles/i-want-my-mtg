@@ -15,6 +15,8 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
+import { DeckImportService } from 'src/core/deck/deck-import.service';
 import { DeckService } from 'src/core/deck/deck.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -26,16 +28,26 @@ import {
     DeckCardRemoveApiDto,
     DeckCardSetQuantityApiDto,
     DeckCreateApiDto,
+    DeckImportApiDto,
     DeckUpdateApiDto,
 } from './dto/deck-request-api.dto';
-import { DeckDetailApiDto, DeckSummaryApiDto } from './dto/deck-response.dto';
+import {
+    DeckDetailApiDto,
+    DeckImportApiResultDto,
+    DeckSummaryApiDto,
+} from './dto/deck-response.dto';
 
 @ApiTags('Decks')
 @ApiBearerAuth()
 @Controller('api/v1/decks')
 @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
 export class DeckApiController {
-    constructor(@Inject(DeckService) private readonly deckService: DeckService) {}
+    constructor(
+        @Inject(DeckService) private readonly deckService: DeckService,
+        @Inject(DeckImportService) private readonly deckImportService: DeckImportService,
+        @Inject(DeckBuildabilityService)
+        private readonly buildabilityService: DeckBuildabilityService
+    ) {}
 
     @Get()
     @ApiOperation({ summary: "List the authenticated user's decks" })
@@ -56,6 +68,23 @@ export class DeckApiController {
         return ApiResponseDto.ok(DeckApiPresenter.toDetail(deck));
     }
 
+    @Post('import')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Create a deck from pasted decklist text' })
+    @ApiResponse({ status: 200, description: 'Import result with the new deck id + unresolved lines' })
+    async import(
+        @Body() dto: DeckImportApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<DeckImportApiResultDto>> {
+        const result = await this.deckImportService.importDecklist(
+            req.user.id,
+            dto.name,
+            dto.format ?? null,
+            dto.text
+        );
+        return ApiResponseDto.ok(result);
+    }
+
     @Get(':id')
     @ApiOperation({ summary: 'Get a deck with its cards' })
     @ApiResponse({ status: 200, description: 'Deck detail' })
@@ -69,6 +98,26 @@ export class DeckApiController {
             throw new NotFoundException(`Deck ${id} not found.`);
         }
         return ApiResponseDto.ok(DeckApiPresenter.toDetail(deck));
+    }
+
+    @Post(':id/missing-to-buy-list')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Add the deck's missing cards (vs. inventory) to the buy-list" })
+    @ApiResponse({ status: 200, description: 'Count of distinct cards added' })
+    @ApiResponse({ status: 404, description: 'Deck not found' })
+    async missingToBuyList(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<{ added: number }>> {
+        const deck = await this.deckService.getDeck(id, req.user.id);
+        if (!deck) {
+            throw new NotFoundException(`Deck ${id} not found.`);
+        }
+        const added = await this.buildabilityService.addMissingToBuyList(
+            deck.cards ?? [],
+            req.user.id
+        );
+        return ApiResponseDto.ok({ added });
     }
 
     @Patch(':id')

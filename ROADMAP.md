@@ -355,9 +355,15 @@ Adding cards now happens **on the deck page** (modeled on Archidekt/ManaBox), so
 
 ### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
 
-**Status (2026-06-19): active** — current work item now that #535/#536 have shipped; branch `537-import-decklists-buildability`. Scoping next.
+**Status (2026-06-20): built** — branch `537-import-decklists-buildability`. All free (no premium gate); matching is name-level (any printing satisfies a need), basics always count as owned.
 
-Import shared public decklists (paste-text first, URL/site export later) and compare them against inventory: "what can I build" (rank decks by completeness) and per-deck owned-vs-needed gap lists. Reuses `src/core/import/` parsers + the 10.4 deck model; missing cards seed the want-list. Import likely stays free (funnel); the analysis layer may be the premium pull.
+Four parts shipped together:
+- **A — paste-text import:** `decklist-text.parser.ts` (the `4 Lightning Bolt` / `1 Sol Ring (CMR) 263` formats, Sideboard header) + `resolveByName` on `CardImportResolver` (set-less lines resolve to the cheapest printing) + `DeckImportService`; HBS `/decks/import` form→result and API `POST /api/v1/decks/import`.
+- **B — buildability/gap:** pure `DeckGapPolicy` + `DeckBuildabilityService` (inventory aggregated by card name). `/decks` rows show completeness % + missing count (ranked); `/decks/:id` gets a gap banner, per-card owned/missing badges, and "Add missing to buy list" (`POST /api/v1/decks/:id/missing-to-buy-list`).
+- **C — tournament catalog (Scry + web):** new `published_deck` + `published_deck_card` tables (migration `043`). Scry `published_deck` module ingests the **fbettega/MTG_decklistcache** feed behind a `DecklistSource` port (first adapter `FbettegaSource`; TopDeck.gg left as a future adapter), resolves card names to representative printings, and prunes past a 90-day window. New CLI `ingest-decks --days N`; weekly Monday cron → `decks.log`.
+- **D — browse + compare:** `/published-decks` (filter by format, paginated, public) and `/published-decks/:id` (deck view + gap vs. the signed-in user's inventory, "Copy to my decks", "Add missing to buy list").
+
+**Source note:** fbettega cache is the maintained successor to Badaro's archived MTGODecklistCache; verified updating ~daily. Deploy order: publish Scry first, then deploy web (migration `043` creates the tables before the new binary runs). Deferred: URL/per-site paste import, archetype enrichment, fuzzy name matching.
 
 ### 10.8 Scry: ingestion performance regression (scry#22)
 

@@ -1,0 +1,52 @@
+<section class="border border-gray-200 dark:border-midnight-700 rounded-xl sm:m-0 md:m-4">
+    <section class="text-center bg-teal-50 dark:bg-midnight-900 mb-4 rounded-t-lg py-4">
+        <h3 class="page-title">Import complete</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{deckName}}</p>
+    </section>
+    <div class="content-wrapper py-6 px-4">
+        <div class="max-w-md mx-auto">
+            <div class="space-y-3 text-center mb-6">
+                <p class="text-gray-700 dark:text-gray-300 text-lg">
+                    <span class="font-semibold text-teal-600 dark:text-teal-400">{{saved}}</span>
+                    card{{#if (gt saved 1)}}s{{/if}} added
+                </p>
+                {{#if errorCount}}
+                <p class="text-red-600 dark:text-red-400">
+                    {{errorCount}} line{{#if (gt errorCount 1)}}s{{/if}} could not be imported
+                </p>
+                {{/if}}
+            </div>
+
+            {{#if errorCount}}
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Unresolved lines:</h4>
+                <div class="overflow-auto max-h-64 border border-red-200 dark:border-red-800 rounded">
+                    <table class="table-container w-full text-sm">
+                        <thead>
+                            <tr class="table-header-row">
+                                <th class="table-header text-left">Line</th>
+                                <th class="table-header text-left">Name</th>
+                                <th class="table-header text-left">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each errors}}
+                            <tr class="table-row">
+                                <td class="table-cell">{{this.row}}</td>
+                                <td class="table-cell">{{this.name}}</td>
+                                <td class="table-cell text-red-600 dark:text-red-400">{{this.error}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{/if}}
+
+            <div class="flex gap-3 justify-center">
+                <a href="{{deckUrl}}" class="btn btn-primary">View deck</a>
+                <a href="/decks/import" class="btn btn-secondary">Import another</a>
+            </div>
+        </div>
+    </div>
+</section>

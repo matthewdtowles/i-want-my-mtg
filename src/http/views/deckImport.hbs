@@ -1,0 +1,40 @@
+<div class="content-wrapper py-6">
+    <div class="mb-4">
+        <h1 class="page-title">Import a decklist</h1>
+        <p class="page-subtitle">Paste a decklist (one card per line, e.g. <code>4 Lightning Bolt</code>). Set codes like <code>(2X2)</code> are optional. A <code>Sideboard</code> line routes the rest to the sideboard.</p>
+    </div>
+
+    <div class="section-container">
+        <form method="post" action="/decks/import" class="space-y-4">
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="flex-1 min-w-[12rem]">
+                    <label for="deck-name" class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Deck name</label>
+                    <input id="deck-name" name="name" type="text" required maxlength="120"
+                        class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm"
+                        placeholder="e.g. Mono-Red Aggro" />
+                </div>
+                <div>
+                    <label for="deck-format" class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Format</label>
+                    <select id="deck-format" name="format"
+                        class="rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm">
+                        {{#each formatOptions}}
+                            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label for="deck-text" class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Decklist</label>
+                <textarea id="deck-text" name="text" required rows="16"
+                    class="w-full rounded-md border border-gray-300 dark:border-midnight-600 bg-white dark:bg-midnight-800 px-3 py-2 text-sm font-mono"
+                    placeholder="4 Lightning Bolt&#10;4 Monastery Swiftspear&#10;20 Mountain&#10;&#10;Sideboard&#10;2 Pyroblast"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-file-import mr-1" aria-hidden="true"></i> Import deck
+                </button>
+                <a href="/decks" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

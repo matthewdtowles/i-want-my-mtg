@@ -31,6 +31,7 @@ describe('CardImportResolver', () => {
         findById: jest.fn(),
         findBySetCodeAndNumber: jest.fn(),
         findByNameAndSetCode: jest.fn(),
+        findWithName: jest.fn(),
         findBySet: jest.fn(),
         save: jest.fn(),
         delete: jest.fn(),
@@ -57,6 +58,51 @@ describe('CardImportResolver', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('resolveByName', () => {
+        const priced = (id: string, normal: number | null) =>
+            makeCard({ id, prices: [{ cardId: id, normal, foil: null, date: new Date() } as any] });
+
+        it('picks the cheapest printing that has a price', async () => {
+            mockCardRepo.findWithName.mockResolvedValue([
+                priced('expensive', 10),
+                priced('cheap', 2),
+                priced('mid', 5),
+            ]);
+
+            const result = await resolver.resolveByName('Lightning Bolt');
+
+            expect(result.error).toBeNull();
+            expect(result.card?.id).toBe('cheap');
+        });
+
+        it('falls back to the last printing when none are priced', async () => {
+            mockCardRepo.findWithName.mockResolvedValue([
+                makeCard({ id: 'a' }),
+                makeCard({ id: 'b' }),
+            ]);
+
+            const result = await resolver.resolveByName('Lightning Bolt');
+
+            expect(result.card?.id).toBe('b');
+        });
+
+        it('errors when the name matches nothing', async () => {
+            mockCardRepo.findWithName.mockResolvedValue([]);
+
+            const result = await resolver.resolveByName('Notacard');
+
+            expect(result.card).toBeNull();
+            expect(result.error).toContain('Card not found');
+        });
+
+        it('errors on an empty name without hitting the repo', async () => {
+            const result = await resolver.resolveByName('   ');
+
+            expect(result.card).toBeNull();
+            expect(mockCardRepo.findWithName).not.toHaveBeenCalled();
+        });
     });
 
     describe('resolveCard', () => {

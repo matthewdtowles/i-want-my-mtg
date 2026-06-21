@@ -92,7 +92,7 @@ Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `
 
 ### Checking Scry ingest on the production server
 
-The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
+The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), published-deck ingest (Mon 03:30 UTC, `ingest-decks --days 8` -> `decks.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
 
 `scry.sh` sources `/home/ubuntu/.env` (which sets `DATABASE_URL`) then runs `/opt/scripts/scry <args>` (default `ingest`). **Always go through the wrapper**, never the bare `/opt/scripts/scry`, or `DATABASE_URL` is unset and it fails.
 
@@ -205,7 +205,7 @@ Test suites: `test/integration/*.e2e-spec.ts`. Seed data: `test/integration/seed
 
 **Local dev**: PostgreSQL 18 via Docker (docker-compose.yml). Migrations run via `docker compose run --rm migrate`.
 
-Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`, `granular_price`, `granular_price_history`.
+Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`, `granular_price`, `granular_price_history`, `deck`, `deck_card`, `published_deck`, `published_deck_card`. The `published_deck*` tables are a read-only tournament-deck catalog written by Scry's `ingest-decks` command (fbettega feed); the web app only reads them.
 
 ### Price History
 

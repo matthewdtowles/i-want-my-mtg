@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
+import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
+import { DeckCardGap, DeckGapSummary } from 'src/core/deck/deck-gap.policy';
+import { DeckImportService } from 'src/core/deck/deck-import.service';
 import { DeckLegalityPolicy } from 'src/core/deck/deck-legality.policy';
 import { DeckSummaryPolicy } from 'src/core/deck/deck-summary.policy';
 import { Deck } from 'src/core/deck/deck.entity';
@@ -9,36 +12,16 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
+import { primaryType, TYPE_ORDER, TYPE_PLURAL } from './deck-grouping';
 import {
     DeckCardGroupView,
     DeckCardView,
     DeckDetailViewDto,
+    DeckImportResultViewDto,
+    DeckImportViewDto,
     DeckListViewDto,
     FormatOptionView,
 } from './dto/deck.view.dto';
-
-// Maindeck grouping: pick a card's primary type, in deckbuilder display order.
-const TYPE_ORDER = [
-    'Creature',
-    'Planeswalker',
-    'Instant',
-    'Sorcery',
-    'Artifact',
-    'Enchantment',
-    'Battle',
-    'Land',
-];
-const TYPE_PLURAL: Record<string, string> = {
-    Creature: 'Creatures',
-    Planeswalker: 'Planeswalkers',
-    Instant: 'Instants',
-    Sorcery: 'Sorceries',
-    Artifact: 'Artifacts',
-    Enchantment: 'Enchantments',
-    Battle: 'Battles',
-    Land: 'Lands',
-    Other: 'Other',
-};
 
 @Injectable()
 export class DeckPageOrchestrator {
@@ -49,12 +32,78 @@ export class DeckPageOrchestrator {
         currency: 'USD',
     });
 
-    constructor(@Inject(DeckService) private readonly deckService: DeckService) {}
+    constructor(
+        @Inject(DeckService) private readonly deckService: DeckService,
+        @Inject(DeckImportService) private readonly deckImportService: DeckImportService,
+        @Inject(DeckBuildabilityService)
+        private readonly buildabilityService: DeckBuildabilityService
+    ) {}
+
+    buildImportView(req: AuthenticatedRequest): DeckImportViewDto {
+        HttpErrorHandler.validateAuthenticatedRequest(req);
+        return new DeckImportViewDto({
+            authenticated: true,
+            title: 'Import deck - I Want My MTG',
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Decks', url: '/decks' },
+                { label: 'Import', url: '/decks/import' },
+            ],
+            formatOptions: this.buildFormatOptions(null),
+        });
+    }
+
+    async importDecklist(
+        req: AuthenticatedRequest,
+        name: string,
+        format: string | undefined,
+        text: string
+    ): Promise<DeckImportResultViewDto> {
+        try {
+            HttpErrorHandler.validateAuthenticatedRequest(req);
+            const fmt = Object.values(Format).includes(format as Format)
+                ? (format as Format)
+                : null;
+            const result = await this.deckImportService.importDecklist(
+                req.user.id,
+                name,
+                fmt,
+                text
+            );
+            return new DeckImportResultViewDto({
+                authenticated: true,
+                title: 'Import complete - I Want My MTG',
+                breadcrumbs: [
+                    { label: 'Home', url: '/' },
+                    { label: 'Decks', url: '/decks' },
+                    { label: result.name, url: `/decks/${result.deckId}` },
+                ],
+                deckId: result.deckId,
+                deckName: result.name,
+                deckUrl: `/decks/${result.deckId}`,
+                saved: result.saved,
+                errorCount: result.errors.length,
+                errors: result.errors.map((e) => ({
+                    row: e.row,
+                    name: typeof e.name === 'string' ? e.name : undefined,
+                    error: e.error,
+                })),
+            });
+        } catch (error) {
+            this.LOGGER.debug(`Error importing decklist: ${error?.message}`);
+            return HttpErrorHandler.toHttpException(error, 'importDecklist');
+        }
+    }
 
     async buildListView(req: AuthenticatedRequest): Promise<DeckListViewDto> {
         try {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const decks = await this.deckService.listDecks(req.user.id);
+            const summaries = await this.buildabilityService.summariesForDecks(decks, req.user.id);
+            // Rank most-buildable first, then fall back to recency (load order).
+            const items = decks
+                .map((d) => this.toListItem(d, summaries.get(d.id!)))
+                .sort((a, b) => b.completeness - a.completeness);
             return new DeckListViewDto({
                 authenticated: true,
                 title: 'Decks - I Want My MTG',
@@ -63,7 +112,7 @@ export class DeckPageOrchestrator {
                     { label: 'Decks', url: '/decks' },
                 ],
                 hasDecks: decks.length > 0,
-                decks: decks.map((d) => this.toListItem(d)),
+                decks: items,
                 formatOptions: this.buildFormatOptions(null),
             });
         } catch (error) {
@@ -86,6 +135,12 @@ export class DeckPageOrchestrator {
                 ? cards.filter((c) => this.isIllegal(deck.format, c)).length
                 : 0;
 
+            const gap = await this.buildabilityService.gapForDeck(cards, req.user.id);
+            const gapByRow = new Map<string, DeckCardGap>();
+            for (const g of gap.perCard) {
+                gapByRow.set(`${g.cardId}|${g.isSideboard}`, g);
+            }
+
             return new DeckDetailViewDto({
                 authenticated: true,
                 title: `${deck.name} - Decks - I Want My MTG`,
@@ -99,13 +154,18 @@ export class DeckPageOrchestrator {
                 format: deck.format ?? null,
                 formatLabel: deck.format ? this.capitalize(deck.format) : 'No format',
                 formatOptions: this.buildFormatOptions(deck.format ?? null),
-                mainGroups: this.groupByType(main, deck.format ?? null),
-                sideboard: side.map((c) => this.toCardView(c, deck.format ?? null)),
+                mainGroups: this.groupByType(main, deck.format ?? null, gapByRow),
+                sideboard: side.map((c) => this.toCardView(c, deck.format ?? null, gapByRow)),
                 mainCount: DeckSummaryPolicy.cardCount(main),
                 sideCount: DeckSummaryPolicy.cardCount(side),
                 estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
                 illegalCount,
                 hasCards: cards.length > 0,
+                completeness: gap.completeness,
+                neededCount: gap.neededCount,
+                ownedCount: gap.ownedCount,
+                missingCount: gap.missingCount,
+                hasMissing: gap.missingCount > 0,
             });
         } catch (error) {
             this.LOGGER.debug(`Error building deck detail view: ${error?.message}`);
@@ -113,7 +173,7 @@ export class DeckPageOrchestrator {
         }
     }
 
-    private toListItem(deck: Deck) {
+    private toListItem(deck: Deck, gap?: DeckGapSummary) {
         const cards = deck.cards ?? [];
         return {
             id: deck.id!,
@@ -125,15 +185,22 @@ export class DeckPageOrchestrator {
                 ? deck.updatedAt.toLocaleDateString('en-US', { timeZone: 'UTC' })
                 : '',
             url: `/decks/${deck.id}`,
+            completeness: gap?.completeness ?? 0,
+            missingCount: gap?.missingCount ?? 0,
+            buildable: (gap?.missingCount ?? 0) === 0 && cards.length > 0,
         };
     }
 
-    private groupByType(cards: DeckCard[], format: Format | null): DeckCardGroupView[] {
+    private groupByType(
+        cards: DeckCard[],
+        format: Format | null,
+        gapByRow: Map<string, DeckCardGap>
+    ): DeckCardGroupView[] {
         const buckets = new Map<string, DeckCardView[]>();
         for (const dc of cards) {
-            const key = this.primaryType(dc.card?.type ?? '');
+            const key = primaryType(dc.card?.type ?? '');
             const list = buckets.get(key) ?? [];
-            list.push(this.toCardView(dc, format));
+            list.push(this.toCardView(dc, format, gapByRow));
             buckets.set(key, list);
         }
         const order = [...TYPE_ORDER, 'Other'];
@@ -150,9 +217,14 @@ export class DeckPageOrchestrator {
             });
     }
 
-    private toCardView(dc: DeckCard, format: Format | null): DeckCardView {
+    private toCardView(
+        dc: DeckCard,
+        format: Format | null,
+        gapByRow: Map<string, DeckCardGap>
+    ): DeckCardView {
         const card = dc.card;
         const unitValue = DeckSummaryPolicy.cardValue(card);
+        const gap = gapByRow.get(`${dc.cardId}|${dc.isSideboard}`);
         return {
             cardId: dc.cardId,
             name: card?.name ?? dc.cardId,
@@ -168,18 +240,14 @@ export class DeckPageOrchestrator {
             lineValue: this.formatCurrency(dc.quantity * unitValue),
             isSideboard: dc.isSideboard,
             illegal: this.isIllegal(format, dc),
+            owned: gap?.owned ?? dc.quantity,
+            missing: gap?.missing ?? 0,
+            isBasic: gap?.isBasic ?? false,
         };
     }
 
     private isIllegal(format: Format | null, dc: DeckCard): boolean {
         return !!format && !DeckLegalityPolicy.isCardLegal(format, dc.card?.legalities);
-    }
-
-    private primaryType(typeLine: string): string {
-        // MTGJSON type lines use an em dash (U+2014) before subtypes, e.g.
-        // "Legendary Creature [em dash] God"; take the part before it.
-        const head = (typeLine ?? '').split(String.fromCharCode(0x2014))[0];
-        return TYPE_ORDER.find((t) => head.includes(t)) ?? 'Other';
     }
 
     private buildFormatOptions(selected: string | null): FormatOptionView[] {

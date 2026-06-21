@@ -16,6 +16,7 @@ export interface PublishedDeckListItemView {
     cardCount: number;
     estimatedValue: string;
     url: string;
+    colors: string[];
 }
 
 export class PublishedDeckListViewDto extends BaseViewDto {
@@ -62,6 +63,7 @@ export interface PublishedDeckGroupView {
 export class PublishedDeckDetailViewDto extends BaseViewDto {
     readonly deckId: number;
     readonly deckTitle: string;
+    readonly deckColors: string[];
     readonly tournamentName: string;
     readonly date: string;
     readonly formatLabel: string;
@@ -86,6 +88,7 @@ export class PublishedDeckDetailViewDto extends BaseViewDto {
         super(init);
         this.deckId = init.deckId ?? 0;
         this.deckTitle = init.deckTitle ?? '';
+        this.deckColors = init.deckColors ?? [];
         this.tournamentName = init.tournamentName ?? '';
         this.date = init.date ?? '';
         this.formatLabel = init.formatLabel ?? '';

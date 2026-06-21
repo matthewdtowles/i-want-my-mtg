@@ -187,6 +187,7 @@ export class DeckPageOrchestrator {
                 ? deck.updatedAt.toLocaleDateString('en-US', { timeZone: 'UTC' })
                 : '',
             url: `/decks/${deck.id}`,
+            colors: deckColors(cards),
             completeness: gap?.completeness ?? 0,
             missingCount: gap?.missingCount ?? 0,
             buildable: (gap?.missingCount ?? 0) === 0 && cards.length > 0,

@@ -1,7 +1,8 @@
+<link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div class="content-wrapper py-6" data-published-deck-id="{{deckId}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
-            <h1 class="page-title">{{deckTitle}}</h1>
+            <h1 class="page-title">{{deckTitle}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
             <p class="page-subtitle">
                 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
                 {{#if tournamentName}}<span class="mx-1">&middot;</span>{{tournamentName}}{{/if}}

@@ -1,0 +1,12 @@
+{{~!--
+  Renders a deck's color identity as whole mana-font pips (WUBRG).
+
+  Parameters:
+    colors - array of color letters ('w','u','b','r','g'), in WUBRG order.
+    class  - optional extra classes for the wrapping span.
+
+  Renders nothing when colors is empty, so callers can drop it inline.
+--~}}
+{{~#if colors.length~}}
+<span class="deck-colors {{class}}" title="Colors in this deck">{{#each colors}}<i class="ms ms-cost ms-shadow ms-{{this}}"></i>{{/each}}</span>
+{{~/if~}}

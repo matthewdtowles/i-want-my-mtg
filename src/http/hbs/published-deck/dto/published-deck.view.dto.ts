@@ -1,4 +1,5 @@
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { ManaToken } from 'src/http/hbs/card/dto/card.response.dto';
 
 export interface PublishedFormatOptionView {
     value: string;
@@ -16,6 +17,7 @@ export interface PublishedDeckListItemView {
     cardCount: number;
     estimatedValue: string;
     url: string;
+    colors: string[];
 }
 
 export class PublishedDeckListViewDto extends BaseViewDto {
@@ -44,8 +46,8 @@ export class PublishedDeckListViewDto extends BaseViewDto {
 export interface PublishedDeckCardView {
     name: string;
     url: string;
-    imgSrc: string;
-    manaCost?: string;
+    manaCost: ManaToken[];
+    oracleText?: string;
     quantity: number;
     lineValue: string;
     owned: number;
@@ -62,6 +64,7 @@ export interface PublishedDeckGroupView {
 export class PublishedDeckDetailViewDto extends BaseViewDto {
     readonly deckId: number;
     readonly deckTitle: string;
+    readonly deckColors: string[];
     readonly tournamentName: string;
     readonly date: string;
     readonly formatLabel: string;
@@ -86,6 +89,7 @@ export class PublishedDeckDetailViewDto extends BaseViewDto {
         super(init);
         this.deckId = init.deckId ?? 0;
         this.deckTitle = init.deckTitle ?? '';
+        this.deckColors = init.deckColors ?? [];
         this.tournamentName = init.tournamentName ?? '';
         this.date = init.date ?? '';
         this.formatLabel = init.formatLabel ?? '';

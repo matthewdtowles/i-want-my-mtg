@@ -1,7 +1,8 @@
+<link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div class="content-wrapper py-6" data-published-deck-id="{{deckId}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
-            <h1 class="page-title">{{deckTitle}}</h1>
+            <h1 class="page-title">{{deckTitle}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
             <p class="page-subtitle">
                 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
                 {{#if tournamentName}}<span class="mx-1">&middot;</span>{{tournamentName}}{{/if}}
@@ -66,7 +67,8 @@
                 {{#each cards}}
                     <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800">
                         <span class="w-7 text-center text-sm font-mono text-gray-500">{{quantity}}</span>
-                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if oracleText}} data-card-text="{{oracleText}}"{{/if}}>{{name}}</a>
+                        <span class="deck-mana whitespace-nowrap text-sm">{{>manaCost card=this}}</span>
                         {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400">Basic</span>{{/if}}
                         <span class="text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
                     </div>
@@ -84,7 +86,8 @@
                 {{#each sideboard}}
                     <div class="flex items-center gap-3 py-1.5 border-b border-gray-100 dark:border-midnight-800">
                         <span class="w-7 text-center text-sm font-mono text-gray-500">{{quantity}}</span>
-                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if imgSrc}} data-card-img="{{imgSrc}}"{{/if}}>{{name}}</a>
+                        <a href="{{url}}" class="card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate"{{#if oracleText}} data-card-text="{{oracleText}}"{{/if}}>{{name}}</a>
+                        <span class="deck-mana whitespace-nowrap text-sm">{{>manaCost card=this}}</span>
                         {{#if missing}}<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" title="You own {{owned}} of {{quantity}}">Need {{missing}}</span>{{else if isBasic}}<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400">Basic</span>{{/if}}
                         <span class="text-sm font-mono text-gray-600 dark:text-gray-400 w-16 text-right">{{lineValue}}</span>
                     </div>

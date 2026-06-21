@@ -11,6 +11,7 @@ import { buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from '../deck/deck-grouping';
+import { deckColors, parseManaTokens } from '../deck/deck-mana';
 import {
     PublishedDeckCardView,
     PublishedDeckDetailViewDto,
@@ -109,6 +110,7 @@ export class PublishedDeckOrchestrator {
                 ],
                 deckId: deck.id!,
                 deckTitle: title,
+                deckColors: deckColors(cards),
                 tournamentName: deck.tournamentName ?? '',
                 date: this.formatDate(deck.tournamentDate),
                 formatLabel: deck.format ? this.capitalize(deck.format) : 'Unknown format',
@@ -173,6 +175,7 @@ export class PublishedDeckOrchestrator {
             cardCount: DeckSummaryPolicy.cardCount(cards),
             estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
             url: `/published-decks/${deck.id}`,
+            colors: deckColors(cards),
         };
     }
 
@@ -207,8 +210,8 @@ export class PublishedDeckOrchestrator {
         return {
             name: card?.name ?? dc.cardId,
             url: card ? buildCardUrl(card.setCode, card.number) : '#',
-            imgSrc: card?.imgSrc ?? '',
-            manaCost: card?.manaCost,
+            manaCost: parseManaTokens(card?.manaCost),
+            oracleText: card?.oracleText,
             quantity: dc.quantity,
             lineValue: this.formatCurrency(dc.quantity * unitValue),
             owned: gap?.owned ?? 0,

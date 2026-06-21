@@ -1,3 +1,4 @@
+<link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div class="content-wrapper py-6">
     <div class="flex items-start justify-between mb-4 flex-wrap gap-3">
         <div>
@@ -28,6 +29,7 @@
                         <span class="font-display font-semibold text-lg text-gray-900 dark:text-white">{{title}}</span>
                         <span class="text-xs uppercase tracking-wider text-purple-600 dark:text-purple-400 font-semibold whitespace-nowrap">{{formatLabel}}</span>
                     </div>
+                    {{>deckColors colors=colors class="mt-2 inline-flex"}}
                     {{#if tournamentName}}<div class="mt-1 text-sm text-gray-600 dark:text-gray-400 truncate">{{tournamentName}}</div>{{/if}}
                     <div class="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                         <span>{{#if result}}{{result}}{{else}}{{cardCount}} cards{{/if}}</span>

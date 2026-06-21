@@ -2,14 +2,7 @@
 <div class="content-wrapper py-6" data-deck-id="{{deckId}}" data-deck-format="{{format}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
-            <h1 class="page-title">
-                {{name}}
-                {{#if deckColors.length}}
-                    <span class="deck-colors ml-2 align-middle" title="Colors in this deck">
-                        {{#each deckColors}}<i class="ms ms-cost ms-shadow ms-{{this}}"></i>{{/each}}
-                    </span>
-                {{/if}}
-            </h1>
+            <h1 class="page-title">{{name}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
             <p class="page-subtitle">
                 <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
                 <span class="mx-1">&middot;</span>

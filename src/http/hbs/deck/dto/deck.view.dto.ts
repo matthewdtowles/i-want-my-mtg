@@ -15,6 +15,7 @@ export interface DeckListItemView {
     estimatedValue: string;
     updatedAt: string;
     url: string;
+    colors: string[];
     completeness: number;
     missingCount: number;
     buildable: boolean;

@@ -77,15 +77,28 @@ describe('CardImportResolver', () => {
             expect(result.card?.id).toBe('cheap');
         });
 
-        it('falls back to the last printing when none are priced', async () => {
+        it('falls back deterministically (smallest id) when none are priced', async () => {
             mockCardRepo.findWithName.mockResolvedValue([
-                makeCard({ id: 'a' }),
                 makeCard({ id: 'b' }),
+                makeCard({ id: 'a' }),
             ]);
 
             const result = await resolver.resolveByName('Lightning Bolt');
 
-            expect(result.card?.id).toBe('b');
+            // No prices -> tie broken by id so the pick is stable regardless of
+            // the DB's (unordered) row order.
+            expect(result.card?.id).toBe('a');
+        });
+
+        it('breaks price ties on card id for a stable representative', async () => {
+            mockCardRepo.findWithName.mockResolvedValue([
+                priced('zeta', 2),
+                priced('alpha', 2),
+            ]);
+
+            const result = await resolver.resolveByName('Lightning Bolt');
+
+            expect(result.card?.id).toBe('alpha');
         });
 
         it('errors when the name matches nothing', async () => {

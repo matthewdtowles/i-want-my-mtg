@@ -114,7 +114,7 @@ export class PublishedDeckOrchestrator {
                 formatLabel: deck.format ? this.capitalize(deck.format) : 'Unknown format',
                 player: deck.player ?? '',
                 result: deck.result ?? '',
-                sourceUri: deck.sourceUri,
+                sourceUri: this.safeExternalUrl(deck.sourceUri),
                 mainGroups: this.groupByType(main, gapByRow),
                 sideboard: side.map((c) => this.toCardView(c, gapByRow)),
                 mainCount: DeckSummaryPolicy.cardCount(main),
@@ -219,6 +219,21 @@ export class PublishedDeckOrchestrator {
 
     private deckTitle(deck: PublishedDeck): string {
         return deck.archetype || deck.player || deck.tournamentName || 'Tournament deck';
+    }
+
+    /**
+     * `sourceUri` comes from an external feed and is rendered into an href, so
+     * only allow http(s) - a `javascript:` URL would survive Handlebars escaping
+     * and execute on click. Anything else becomes '' (the view omits the link).
+     */
+    private safeExternalUrl(uri: string | null | undefined): string {
+        if (!uri) return '';
+        try {
+            const parsed = new URL(uri);
+            return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? uri : '';
+        } catch {
+            return '';
+        }
     }
 
     private buildFormatOptions(

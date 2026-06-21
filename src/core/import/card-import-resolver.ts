@@ -119,19 +119,30 @@ export class CardImportResolver {
         }
     }
 
-    /** Cheapest printing with a price, falling back to any (last = cheapest). */
+    /**
+     * Cheapest printing with a price, deterministic on ties. `findWithName`
+     * orders by price with no secondary key, so equal/NULL prices come back in
+     * arbitrary DB order; tie-breaking on card id keeps the chosen representative
+     * (and the cardId stored in the deck) stable across imports.
+     */
     private pickRepresentative(cards: Card[]): Card {
-        let best: Card | null = null;
-        let bestValue = Infinity;
+        let best = cards[0];
+        let bestValue = this.priceValue(best);
         for (const card of cards) {
-            const price = card.prices?.[0];
-            const value = price ? (price.normal ?? price.foil ?? 0) : 0;
-            if (value > 0 && value < bestValue) {
-                bestValue = value;
+            const value = this.priceValue(card);
+            if (value < bestValue || (value === bestValue && card.id < best.id)) {
                 best = card;
+                bestValue = value;
             }
         }
-        return best ?? cards[cards.length - 1];
+        return best;
+    }
+
+    /** A printing's price for representative selection; unpriced sorts last. */
+    private priceValue(card: Card): number {
+        const price = card.prices?.[0];
+        const value = price ? (price.normal ?? price.foil ?? 0) : 0;
+        return value > 0 ? value : Infinity;
     }
 
     resolveFoil(foilValue: string | undefined, card: Card): boolean | null {

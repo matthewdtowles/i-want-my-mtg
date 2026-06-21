@@ -26,6 +26,22 @@ export class DeckUpdateApiDto {
     readonly format?: Format;
 }
 
+/** Create a deck from pasted decklist text. */
+export class DeckImportApiDto {
+    @ApiProperty()
+    @IsString()
+    readonly name: string;
+
+    @ApiPropertyOptional({ enum: Format, description: 'Target format (omit for no format).' })
+    @IsOptional()
+    @IsEnum(Format)
+    readonly format?: Format;
+
+    @ApiProperty({ description: 'Decklist text, one entry per line (e.g. "4 Lightning Bolt").' })
+    @IsString()
+    readonly text: string;
+}
+
 /** Add a card to a deck (increments quantity for card + board). */
 export class DeckCardAddApiDto {
     @ApiProperty()

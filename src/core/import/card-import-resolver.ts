@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { parseBool } from './import.types';
 
@@ -91,6 +92,57 @@ export class CardImportResolver {
         } catch (e) {
             return { card: null, error: `Lookup error: ${e.message}` };
         }
+    }
+
+    /**
+     * Resolve a card by name alone (set-less decklist line), returning a
+     * representative printing. Decklist gap math is name-level, so the exact
+     * printing is immaterial for ownership; we pick the cheapest printing that
+     * has a price so the deck's estimated value stays budget-realistic.
+     */
+    async resolveByName(name: string): Promise<CardResolveResult> {
+        try {
+            const cleaned = name?.trim();
+            if (!cleaned) {
+                return { card: null, error: 'Empty card name' };
+            }
+            const matches = await this.cardRepository.findWithName(
+                cleaned,
+                new SafeQueryOptions({ limit: '500' })
+            );
+            if (matches.length === 0) {
+                return { card: null, error: `Card not found: "${cleaned}"` };
+            }
+            return { card: this.pickRepresentative(matches), error: null };
+        } catch (e) {
+            return { card: null, error: `Lookup error: ${e.message}` };
+        }
+    }
+
+    /**
+     * Cheapest printing with a price, deterministic on ties. `findWithName`
+     * orders by price with no secondary key, so equal/NULL prices come back in
+     * arbitrary DB order; tie-breaking on card id keeps the chosen representative
+     * (and the cardId stored in the deck) stable across imports.
+     */
+    private pickRepresentative(cards: Card[]): Card {
+        let best = cards[0];
+        let bestValue = this.priceValue(best);
+        for (const card of cards) {
+            const value = this.priceValue(card);
+            if (value < bestValue || (value === bestValue && card.id < best.id)) {
+                best = card;
+                bestValue = value;
+            }
+        }
+        return best;
+    }
+
+    /** A printing's price for representative selection; unpriced sorts last. */
+    private priceValue(card: Card): number {
+        const price = card.prices?.[0];
+        const value = price ? (price.normal ?? price.foil ?? 0) : 0;
+        return value > 0 ? value : Infinity;
     }
 
     resolveFoil(foilValue: string | undefined, card: Card): boolean | null {

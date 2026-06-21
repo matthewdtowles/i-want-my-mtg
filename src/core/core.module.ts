@@ -13,6 +13,7 @@ import { InventoryModule } from './inventory/inventory.module';
 import { OptimizerModule } from './optimizer/optimizer.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { PriceAlertModule } from './price-alert/price-alert.module';
+import { PublishedDeckModule } from './published-deck/published-deck.module';
 import { SearchModule } from './search/search.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { SealedProductModule } from './sealed-product/sealed-product.module';
@@ -36,6 +37,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,
+        PublishedDeckModule,
         SealedProductModule,
         SearchModule,
         SetModule,
@@ -57,6 +59,7 @@ import { UserModule } from './user/user.module';
         PasswordResetModule,
         PriceAlertModule,
         PortfolioModule,
+        PublishedDeckModule,
         SealedProductModule,
         SearchModule,
         SetModule,

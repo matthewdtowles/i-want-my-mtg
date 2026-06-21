@@ -30,6 +30,10 @@ import { BuyListRepository } from './buy-list/buy-list.repository';
 import { DeckOrmEntity } from './deck/deck.orm-entity';
 import { DeckCardOrmEntity } from './deck/deck-card.orm-entity';
 import { DeckRepository } from './deck/deck.repository';
+import { PublishedDeckRepositoryPort } from 'src/core/published-deck/ports/published-deck.repository.port';
+import { PublishedDeckOrmEntity } from './published-deck/published-deck.orm-entity';
+import { PublishedDeckCardOrmEntity } from './published-deck/published-deck-card.orm-entity';
+import { PublishedDeckRepository } from './published-deck/published-deck.repository';
 import { PasswordResetOrmEntity } from './password-reset/password-reset.orm-entity';
 import { PasswordResetRepository } from './password-reset/password-reset.repository';
 import { GranularPriceOrmEntity } from './granular-price/granular-price.orm-entity';
@@ -85,6 +89,8 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             BuyListOrmEntity,
             DeckOrmEntity,
             DeckCardOrmEntity,
+            PublishedDeckOrmEntity,
+            PublishedDeckCardOrmEntity,
             LegalityOrmEntity,
             PasswordResetOrmEntity,
             GranularPriceOrmEntity,
@@ -118,6 +124,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         { provide: InventoryRepositoryPort, useClass: InventoryRepository },
         { provide: BuyListRepositoryPort, useClass: BuyListRepository },
         { provide: DeckRepositoryPort, useClass: DeckRepository },
+        { provide: PublishedDeckRepositoryPort, useClass: PublishedDeckRepository },
         { provide: PasswordResetRepositoryPort, useClass: PasswordResetRepository },
         { provide: SetPriceHistoryRepositoryPort, useClass: SetPriceHistoryRepository },
         { provide: SetRepositoryPort, useClass: SetRepository },
@@ -146,6 +153,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         InventoryRepositoryPort,
         BuyListRepositoryPort,
         DeckRepositoryPort,
+        PublishedDeckRepositoryPort,
         PasswordResetRepositoryPort,
         SetPriceHistoryRepositoryPort,
         SetRepositoryPort,

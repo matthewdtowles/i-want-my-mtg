@@ -1,5 +1,6 @@
 import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { ManaToken } from 'src/http/hbs/card/dto/card.response.dto';
+import { DeckColorPip } from 'src/http/hbs/deck/deck-mana';
 
 export interface FormatOptionView {
     value: string;
@@ -15,7 +16,7 @@ export interface DeckListItemView {
     estimatedValue: string;
     updatedAt: string;
     url: string;
-    colors: string[];
+    colors: DeckColorPip[];
     completeness: number;
     missingCount: number;
     buildable: boolean;
@@ -103,7 +104,7 @@ export class DeckDetailViewDto extends BaseViewDto {
     readonly formatOptions: FormatOptionView[];
     readonly mainGroups: DeckCardGroupView[];
     readonly sideboard: DeckCardView[];
-    readonly deckColors: string[];
+    readonly deckColors: DeckColorPip[];
     readonly mainCount: number;
     readonly sideCount: number;
     readonly estimatedValue: string;

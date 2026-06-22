@@ -1,10 +1,10 @@
 import { BaseViewDto } from 'src/http/base/base.view.dto';
 import { ManaToken } from 'src/http/hbs/card/dto/card.response.dto';
+import { DeckColorPip } from 'src/http/hbs/deck/deck-mana';
 
 export interface PublishedFormatOptionView {
     value: string;
     label: string;
-    selected: boolean;
 }
 
 export interface PublishedDeckListItemView {
@@ -17,29 +17,40 @@ export interface PublishedDeckListItemView {
     cardCount: number;
     estimatedValue: string;
     url: string;
-    colors: string[];
+    colors: DeckColorPip[];
+}
+
+/** One format's horizontally-scrolling row of decks (newest first). */
+export interface PublishedDeckRowView {
+    format: string;
+    label: string;
+    decks: PublishedDeckListItemView[];
+    nextOffset: number;
+    hasMore: boolean;
+}
+
+/** Payload for the AJAX endpoint that lazy-loads older decks in a row. */
+export interface PublishedDeckRowPage {
+    items: PublishedDeckListItemView[];
+    nextOffset: number;
+    hasMore: boolean;
 }
 
 export class PublishedDeckListViewDto extends BaseViewDto {
-    readonly decks: PublishedDeckListItemView[];
+    // One row per primary format that has decks (standard, pioneer, modern,
+    // legacy, commander), each newest-first with AJAX side-scroll for older decks.
+    readonly rows: PublishedDeckRowView[];
     readonly hasDecks: boolean;
-    readonly formats: PublishedFormatOptionView[];
-    readonly page: number;
-    readonly hasPrev: boolean;
-    readonly hasNext: boolean;
-    readonly prevUrl: string;
-    readonly nextUrl: string;
+    // Remaining formats present in the catalog, revealed by "View all formats".
+    readonly otherFormats: PublishedFormatOptionView[];
+    readonly hasOtherFormats: boolean;
 
     constructor(init: Partial<PublishedDeckListViewDto>) {
         super(init);
-        this.decks = init.decks ?? [];
+        this.rows = init.rows ?? [];
         this.hasDecks = init.hasDecks ?? false;
-        this.formats = init.formats ?? [];
-        this.page = init.page ?? 1;
-        this.hasPrev = init.hasPrev ?? false;
-        this.hasNext = init.hasNext ?? false;
-        this.prevUrl = init.prevUrl ?? '';
-        this.nextUrl = init.nextUrl ?? '';
+        this.otherFormats = init.otherFormats ?? [];
+        this.hasOtherFormats = init.hasOtherFormats ?? false;
     }
 }
 
@@ -64,7 +75,7 @@ export interface PublishedDeckGroupView {
 export class PublishedDeckDetailViewDto extends BaseViewDto {
     readonly deckId: number;
     readonly deckTitle: string;
-    readonly deckColors: string[];
+    readonly deckColors: DeckColorPip[];
     readonly tournamentName: string;
     readonly date: string;
     readonly formatLabel: string;

@@ -1,12 +1,13 @@
 {{~!--
-  Renders a deck's color identity as whole mana-font pips (WUBRG).
+  Renders a deck's color identity as mana-font pips, ordered most-abundant first.
 
   Parameters:
-    colors - array of color letters ('w','u','b','r','g'), in WUBRG order.
+    colors - array of pip objects { symbol: 'w'|'u'|'b'|'r'|'g', small: boolean },
+             ordered by how many cards of that color the deck contains.
     class  - optional extra classes for the wrapping span.
 
   Renders nothing when colors is empty, so callers can drop it inline.
 --~}}
 {{~#if colors.length~}}
-<span class="deck-colors {{class}}" title="Colors in this deck">{{#each colors}}<i class="ms ms-cost ms-shadow ms-{{this}}"></i>{{/each}}</span>
+<span class="deck-colors {{class}}" title="Colors in this deck">{{#each colors}}<i class="ms ms-cost ms-shadow ms-{{this.symbol}}{{#if this.small}} deck-pip-sm{{/if}}"></i>{{/each}}</span>
 {{~/if~}}

@@ -11,6 +11,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { DeckPageOrchestrator } from './deck-page.orchestrator';
 import {
@@ -33,7 +34,7 @@ export class DeckPageController {
         return this.orchestrator.buildListView(req);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(OptionalAuthGuard)
     @Get('import')
     @Render('deckImport')
     importForm(@Req() req: AuthenticatedRequest): DeckImportViewDto {

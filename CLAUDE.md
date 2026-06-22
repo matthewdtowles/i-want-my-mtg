@@ -92,7 +92,7 @@ Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `
 
 ### Checking Scry ingest on the production server
 
-The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), published-deck ingest (Mon 03:30 UTC, `ingest-decks --days 8` -> `decks.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
+The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), published-deck ingest (daily 03:30 UTC, `ingest-decks --days 2` -> `decks.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
 
 `scry.sh` sources `/home/ubuntu/.env` (which sets `DATABASE_URL`) then runs `/opt/scripts/scry <args>` (default `ingest`). **Always go through the wrapper**, never the bare `/opt/scripts/scry`, or `DATABASE_URL` is unset and it fails.
 
@@ -220,6 +220,8 @@ TypeORM is configured with `synchronize: false` — all schema changes must go t
 ## Views
 
 Server-side rendered using Handlebars (`src/http/views/`). Layouts in `views/layouts/`, partials in `views/partials/`. Styled with Tailwind CSS (source in `src/http/styles/`, compiled to `src/http/public/css/`). Custom Handlebars helpers registered in `main.ts`: `toUpperCase`, `toLowerCase`, `capitalize`, `eq`, `gt`, `lt`.
+
+When adding a paginated list, use the established pagination component (`src/http/views/partials/pagination.hbs` plus the `initListPage` AJAX flow in `src/http/public/js/ajaxUtils.js`) for visual consistency across the app, unless there's a specific reason not to. The published-decks page is the one intentional exception: it uses horizontal per-format rows with AJAX side-scroll instead of standard pagination.
 
 ## CI/CD
 

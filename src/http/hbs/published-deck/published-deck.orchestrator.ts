@@ -11,16 +11,23 @@ import { buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from '../deck/deck-grouping';
-import { deckColors, parseManaTokens } from '../deck/deck-mana';
+import { deckColorPips, parseManaTokens } from '../deck/deck-mana';
 import {
     PublishedDeckCardView,
     PublishedDeckDetailViewDto,
     PublishedDeckGroupView,
+    PublishedDeckListItemView,
     PublishedDeckListViewDto,
-    PublishedFormatOptionView,
+    PublishedDeckRowPage,
+    PublishedDeckRowView,
 } from './dto/published-deck.view.dto';
 
-const PAGE_SIZE = 24;
+// Formats shown as their own row by default, in this order. Any other format
+// present in the catalog is revealed by the "View all formats" control.
+const PRIMARY_FORMATS = ['standard', 'pioneer', 'modern', 'legacy', 'commander'];
+// Decks loaded per row initially and per AJAX side-scroll batch.
+const ROW_SIZE = 12;
+const MAX_ROW_LIMIT = 48;
 
 @Injectable()
 export class PublishedDeckOrchestrator {
@@ -38,42 +45,67 @@ export class PublishedDeckOrchestrator {
         @Inject(DeckService) private readonly deckService: DeckService
     ) {}
 
-    async buildListView(
-        req: AuthenticatedRequest,
-        format: string | undefined,
-        page: number
-    ): Promise<PublishedDeckListViewDto> {
+    async buildListView(req: AuthenticatedRequest): Promise<PublishedDeckListViewDto> {
         try {
-            const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
-            const offset = (safePage - 1) * PAGE_SIZE;
-            const [{ decks, total }, formats] = await Promise.all([
-                this.publishedDeckService.list(format, PAGE_SIZE, offset),
-                this.publishedDeckService.formats(),
-            ]);
-            const baseUrl = format ? `/published-decks?format=${encodeURIComponent(format)}&` : '/published-decks?';
+            const present = await this.publishedDeckService.formats();
+            const presentSet = new Set(present);
+            const primary = PRIMARY_FORMATS.filter((f) => presentSet.has(f));
+
+            const rows: PublishedDeckRowView[] = await Promise.all(
+                primary.map(async (format) => {
+                    const { decks, total } = await this.publishedDeckService.list(
+                        format,
+                        ROW_SIZE,
+                        0
+                    );
+                    return {
+                        format,
+                        label: this.capitalize(format),
+                        decks: decks.map((d) => this.toListItem(d)),
+                        nextOffset: decks.length,
+                        hasMore: decks.length < total,
+                    };
+                })
+            );
+
+            const others = present.filter((f) => !PRIMARY_FORMATS.includes(f));
             return new PublishedDeckListViewDto({
                 authenticated: !!req.user,
                 indexable: true,
                 title: 'Tournament decks - I Want My MTG',
                 metaDescription:
-                    'Browse published tournament decklists and see which ones you can build from your collection.',
+                    'Browse published tournament decklists by format and see which ones you can build from your collection.',
                 breadcrumbs: [
                     { label: 'Home', url: '/' },
                     { label: 'Tournament decks', url: '/published-decks' },
                 ],
-                decks: decks.map((d) => this.toListItem(d)),
-                hasDecks: decks.length > 0,
-                formats: this.buildFormatOptions(formats, format),
-                page: safePage,
-                hasPrev: safePage > 1,
-                hasNext: offset + decks.length < total,
-                prevUrl: `${baseUrl}page=${safePage - 1}`,
-                nextUrl: `${baseUrl}page=${safePage + 1}`,
+                rows,
+                hasDecks: present.length > 0,
+                otherFormats: others.map((f) => ({ value: f, label: this.capitalize(f) })),
+                hasOtherFormats: others.length > 0,
             });
         } catch (error) {
             this.LOGGER.debug(`Error building published deck list: ${error?.message}`);
             return HttpErrorHandler.toHttpException(error, 'buildListView');
         }
+    }
+
+    /** A batch of decks for one format's row (AJAX side-scroll / "view all"). */
+    async buildRow(
+        format: string | undefined,
+        offset: number,
+        limit: number
+    ): Promise<PublishedDeckRowPage> {
+        if (!format) {
+            return { items: [], nextOffset: 0, hasMore: false };
+        }
+        const safeOffset = Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0;
+        const safeLimit =
+            Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), MAX_ROW_LIMIT) : ROW_SIZE;
+        const { decks, total } = await this.publishedDeckService.list(format, safeLimit, safeOffset);
+        const items: PublishedDeckListItemView[] = decks.map((d) => this.toListItem(d));
+        const nextOffset = safeOffset + decks.length;
+        return { items, nextOffset, hasMore: nextOffset < total };
     }
 
     async buildDetailView(
@@ -110,7 +142,7 @@ export class PublishedDeckOrchestrator {
                 ],
                 deckId: deck.id!,
                 deckTitle: title,
-                deckColors: deckColors(cards),
+                deckColors: deckColorPips(cards),
                 tournamentName: deck.tournamentName ?? '',
                 date: this.formatDate(deck.tournamentDate),
                 formatLabel: deck.format ? this.capitalize(deck.format) : 'Unknown format',
@@ -175,7 +207,7 @@ export class PublishedDeckOrchestrator {
             cardCount: DeckSummaryPolicy.cardCount(cards),
             estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
             url: `/published-decks/${deck.id}`,
-            colors: deckColors(cards),
+            colors: deckColorPips(cards),
         };
     }
 
@@ -237,19 +269,6 @@ export class PublishedDeckOrchestrator {
         } catch {
             return '';
         }
-    }
-
-    private buildFormatOptions(
-        formats: string[],
-        selected: string | undefined
-    ): PublishedFormatOptionView[] {
-        const options: PublishedFormatOptionView[] = [
-            { value: '', label: 'All formats', selected: !selected },
-        ];
-        for (const f of formats) {
-            options.push({ value: f, label: this.capitalize(f), selected: f === selected });
-        }
-        return options;
     }
 
     private formatDate(date?: Date | null): string {

@@ -54,6 +54,36 @@ test.describe('Set detail page', () => {
         await page.goto(href);
         await expect(page.locator('#set-card-list-ajax')).toBeVisible();
     });
+
+    test('mobile price column stays sortable after the first sort', async ({ page }) => {
+        // Regression: the AJAX re-render used to replace the sortable mobile
+        // "Price" header with a static one, so price could only be sorted once
+        // until a hard refresh.
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/sets');
+        const href = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        await page.goto(href);
+
+        const cardCalls: string[] = [];
+        page.on('request', (req) => {
+            const u = req.url();
+            if (u.includes('/api/v1/sets/') && u.includes('/cards')) cardCalls.push(u);
+        });
+
+        const priceSort = page.locator('thead a.sort-btn:visible', { hasText: 'Price' }).first();
+        await expect(priceSort).toBeVisible();
+
+        await priceSort.click();
+        await expect.poll(() => cardCalls.length).toBeGreaterThanOrEqual(1);
+
+        // The re-rendered header must still be a sortable price link.
+        const priceSortAgain = page
+            .locator('thead a.sort-btn:visible', { hasText: 'Price' })
+            .first();
+        await expect(priceSortAgain).toBeVisible();
+        await priceSortAgain.click();
+        await expect.poll(() => cardCalls.length).toBeGreaterThanOrEqual(2);
+    });
 });
 
 test.describe('Card detail page', () => {

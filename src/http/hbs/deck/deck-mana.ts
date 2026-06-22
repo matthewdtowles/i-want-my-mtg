@@ -45,9 +45,10 @@ const MINOR_COLOR_THRESHOLD = 0.08;
 
 /**
  * A deck's color pips ordered by how many cards of that color it contains
- * (most abundant first; WUBRG breaks ties). A color counts a card's `quantity`
- * for each WUBRG symbol in its mana cost, so a multicolor card counts toward
- * each of its colors. Minor colors (< 8% of the colored total) render small,
+ * (most abundant first; WUBRG breaks ties). A color's weight adds a card's
+ * `quantity` once per WUBRG color present in its mana cost - so a multicolor
+ * card counts toward each of its colors, but a repeated symbol like {R}{R}
+ * does not count twice. Minor colors (< 8% of the colored total) render small,
  * except the most abundant color and a single-color deck, which never do.
  */
 export function deckColorPips(cards: DeckCard[]): DeckColorPip[] {

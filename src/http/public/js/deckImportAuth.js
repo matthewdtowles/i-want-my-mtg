@@ -61,7 +61,8 @@
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         } catch (e) {
-            /* storage unavailable - fall through, the POST will just 401 */
+            /* storage unavailable - we still redirect to login below, but the
+               typed decklist can't be preserved across the round-trip */
         }
     }
 

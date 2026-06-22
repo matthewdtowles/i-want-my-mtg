@@ -50,9 +50,13 @@ export class PublishedDeckOrchestrator {
             const present = await this.publishedDeckService.formats();
             const presentSet = new Set(present);
             const primary = PRIMARY_FORMATS.filter((f) => presentSet.has(f));
+            // If none of the primary formats are present (e.g. only Pauper),
+            // show every present format as a row so the page isn't blank behind
+            // a "View all formats" button.
+            const rowFormats = primary.length > 0 ? primary : present;
 
             const rows: PublishedDeckRowView[] = await Promise.all(
-                primary.map(async (format) => {
+                rowFormats.map(async (format) => {
                     const { decks, total } = await this.publishedDeckService.list(
                         format,
                         ROW_SIZE,
@@ -68,7 +72,9 @@ export class PublishedDeckOrchestrator {
                 })
             );
 
-            const others = present.filter((f) => !PRIMARY_FORMATS.includes(f));
+            // Only the formats not already shown as rows go behind "View all".
+            const others =
+                primary.length > 0 ? present.filter((f) => !PRIMARY_FORMATS.includes(f)) : [];
             return new PublishedDeckListViewDto({
                 authenticated: !!req.user,
                 indexable: true,

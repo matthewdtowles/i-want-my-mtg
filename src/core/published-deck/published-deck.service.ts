@@ -12,17 +12,19 @@ export class PublishedDeckService {
         private readonly repository: PublishedDeckRepositoryPort
     ) {}
 
-    /** A page of published decks plus the total for pagination. */
-    async list(
+    /**
+     * A page of published decks for one format's row, plus whether more exist.
+     * Fetches limit+1 and derives `hasMore` from the slice, so no COUNT query is
+     * needed per row (or per lazy-load fetch).
+     */
+    async rowPage(
         format: string | undefined,
         limit: number,
         offset: number
-    ): Promise<{ decks: PublishedDeck[]; total: number }> {
-        const [decks, total] = await Promise.all([
-            this.repository.findPage({ format, limit, offset }),
-            this.repository.count({ format }),
-        ]);
-        return { decks, total };
+    ): Promise<{ decks: PublishedDeck[]; hasMore: boolean }> {
+        const rows = await this.repository.findPage({ format, limit: limit + 1, offset });
+        const hasMore = rows.length > limit;
+        return { decks: hasMore ? rows.slice(0, limit) : rows, hasMore };
     }
 
     async get(id: number): Promise<PublishedDeck | null> {

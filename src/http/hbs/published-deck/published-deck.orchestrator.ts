@@ -57,7 +57,7 @@ export class PublishedDeckOrchestrator {
 
             const rows: PublishedDeckRowView[] = await Promise.all(
                 rowFormats.map(async (format) => {
-                    const { decks, total } = await this.publishedDeckService.list(
+                    const { decks, hasMore } = await this.publishedDeckService.rowPage(
                         format,
                         ROW_SIZE,
                         0
@@ -67,7 +67,7 @@ export class PublishedDeckOrchestrator {
                         label: this.capitalize(format),
                         decks: decks.map((d) => this.toListItem(d)),
                         nextOffset: decks.length,
-                        hasMore: decks.length < total,
+                        hasMore,
                     };
                 })
             );
@@ -108,10 +108,13 @@ export class PublishedDeckOrchestrator {
         const safeOffset = Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0;
         const safeLimit =
             Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), MAX_ROW_LIMIT) : ROW_SIZE;
-        const { decks, total } = await this.publishedDeckService.list(format, safeLimit, safeOffset);
+        const { decks, hasMore } = await this.publishedDeckService.rowPage(
+            format,
+            safeLimit,
+            safeOffset
+        );
         const items: PublishedDeckListItemView[] = decks.map((d) => this.toListItem(d));
-        const nextOffset = safeOffset + decks.length;
-        return { items, nextOffset, hasMore: nextOffset < total };
+        return { items, nextOffset: safeOffset + items.length, hasMore };
     }
 
     async buildDetailView(

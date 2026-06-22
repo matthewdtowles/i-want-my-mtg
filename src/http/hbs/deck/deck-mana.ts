@@ -67,7 +67,8 @@ export function deckColorPips(cards: DeckCard[]): DeckColorPip[] {
 
     const total = Array.from(weights.values()).reduce((sum, w) => sum + w, 0);
     const ordered = COLOR_ORDER.filter((c) => weights.has(c)).sort(
-        (a, b) => weights.get(b)! - weights.get(a)!
+        // Heaviest color first; equal weights fall back to canonical WUBRG order.
+        (a, b) => weights.get(b)! - weights.get(a)! || COLOR_ORDER.indexOf(a) - COLOR_ORDER.indexOf(b)
     );
     const single = ordered.length === 1;
     return ordered.map((color, index) => ({

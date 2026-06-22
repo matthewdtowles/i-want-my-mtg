@@ -37,7 +37,7 @@
         if (!state.hasMore) return;
 
         if (typeof IntersectionObserver === 'undefined') {
-            // No observer support: load the rest in one go on first scroll.
+            // No observer support: load the next batch whenever the track scrolls.
             track.addEventListener(
                 'scroll',
                 function () {

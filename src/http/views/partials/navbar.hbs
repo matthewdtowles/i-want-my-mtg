@@ -52,9 +52,30 @@
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 2h2l1.5 8.5h7L14 5H5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="13.5" r="1"/><circle cx="12.5" cy="13.5" r="1"/></svg>
                             Buy List
                         </a>
+                    </div>
+                </div>
+                {{!-- Decks dropdown: public tournament decks is the landing, My decks nested under --}}
+                <div class="iwm-dropdown" id="decks-dropdown">
+                    <button class="iwm-nav-link iwm-dropdown-trigger"
+                            aria-haspopup="menu" aria-expanded="false"
+                            aria-controls="decks-menu"
+                            id="decks-btn">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l6 3-6 3-6-3 6-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8l6 3 6-3M2 11.5l6 3 6-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Decks
+                        <svg class="iwm-dd-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="iwm-dropdown-menu" id="decks-menu" role="menu" aria-labelledby="decks-btn" hidden>
+                        <a href="/published-decks" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l1.8 3.7 4 .6-2.9 2.8.7 4L8 13l-3.6 1.9.7-4L2.2 8l4-.6L8 1.5z" stroke-linejoin="round"/></svg>
+                            Tournament decks
+                        </a>
                         <a href="/decks" class="iwm-dropdown-item" role="menuitem">
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l6 3-6 3-6-3 6-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8l6 3 6-3M2 11.5l6 3 6-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            Decks
+                            My decks
+                        </a>
+                        <a href="/decks/import" class="iwm-dropdown-item" role="menuitem">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke-linecap="round"/></svg>
+                            Build a deck
                         </a>
                     </div>
                 </div>
@@ -68,6 +89,10 @@
                 </a>
             {{else}}
                 {{!-- Unauthenticated: public links --}}
+                <a href="/published-decks" class="iwm-nav-link">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l6 3-6 3-6-3 6-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8l6 3 6-3M2 11.5l6 3 6-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Decks
+                </a>
                 <a href="/sets" class="iwm-nav-link">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2h6v1"/></svg>
                     Sets
@@ -202,9 +227,19 @@
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 2h2l1.5 8.5h7L14 5H5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="13.5" r="1"/><circle cx="12.5" cy="13.5" r="1"/></svg>
             Buy List
         </a>
-        <a href="/decks" class="iwm-drawer-link">
+
+        <div class="iwm-drawer-section-label">Decks</div>
+        <a href="/published-decks" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l1.8 3.7 4 .6-2.9 2.8.7 4L8 13l-3.6 1.9.7-4L2.2 8l4-.6L8 1.5z" stroke-linejoin="round"/></svg>
+            Tournament decks
+        </a>
+        <a href="/decks" class="iwm-drawer-link iwm-drawer-link--nested">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l6 3-6 3-6-3 6-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8l6 3 6-3M2 11.5l6 3 6-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Decks
+            My decks
+        </a>
+        <a href="/decks/import" class="iwm-drawer-link iwm-drawer-link--nested">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke-linecap="round"/></svg>
+            Build a deck
         </a>
 
         <div class="iwm-drawer-section-label">Explore</div>
@@ -272,6 +307,14 @@
         <a href="/spoilers" class="iwm-drawer-link">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5v.2" stroke-linecap="round"/></svg>
             Spoilers
+        </a>
+        <a href="/published-decks" class="iwm-drawer-link">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 1.5l6 3-6 3-6-3 6-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8l6 3 6-3M2 11.5l6 3 6-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Decks
+        </a>
+        <a href="/decks/import" class="iwm-drawer-link iwm-drawer-link--nested">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke-linecap="round"/></svg>
+            Build a deck
         </a>
         <a href="/pricing" class="iwm-drawer-link">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v1m0 5v1M5.5 8h4" stroke-linecap="round"/></svg>
@@ -471,9 +514,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    /* ── Collection dropdown (WAI-ARIA menu button) ── */
-    var ddBtn  = document.getElementById('collection-btn');
-    var ddMenu = document.getElementById('collection-menu');
+    /* ── Nav dropdowns (WAI-ARIA menu buttons): Collection, Decks ── */
+    document.querySelectorAll('.iwm-dropdown').forEach(function (dropdown) {
+    var ddBtn  = dropdown.querySelector('.iwm-dropdown-trigger');
+    var ddMenu = dropdown.querySelector('.iwm-dropdown-menu');
 
     if (ddBtn && ddMenu) {
         var ddItems = Array.prototype.slice.call(ddMenu.querySelectorAll('[role="menuitem"]'));
@@ -540,12 +584,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Close on outside click
+        // Close on outside click. Capture phase so it still runs when another
+        // dropdown's trigger calls stopPropagation() - otherwise clicking a
+        // second trigger could leave both menus open.
         document.addEventListener('click', function (e) {
-            if (!document.getElementById('collection-dropdown').contains(e.target)) {
+            if (!dropdown.contains(e.target)) {
                 closeDD(false);
             }
-        });
+        }, true);
     }
+    });
 });
 </script>

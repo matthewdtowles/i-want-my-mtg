@@ -28,6 +28,8 @@
         var sentinel = section.querySelector('.deck-row-sentinel');
         if (!track || !sentinel) return;
 
+        setupScrollButtons(section, track);
+
         var state = {
             format: section.getAttribute('data-format'),
             nextOffset: parseInt(section.getAttribute('data-next-offset'), 10) || 0,
@@ -56,6 +58,39 @@
             { root: track, rootMargin: '0px 300px 0px 0px' }
         );
         observer.observe(sentinel);
+    }
+
+    /** Wire a row's left/right buttons and toggle their visibility by scroll position. */
+    function setupScrollButtons(section, track) {
+        var left = section.querySelector('.deck-row-nav-left');
+        var right = section.querySelector('.deck-row-nav-right');
+        if (!left || !right) return;
+
+        function scrollByPage(dir) {
+            track.scrollBy({ left: dir * Math.round(track.clientWidth * 0.8), behavior: 'smooth' });
+        }
+        left.addEventListener('click', function () {
+            scrollByPage(-1);
+        });
+        right.addEventListener('click', function () {
+            scrollByPage(1);
+        });
+
+        function updateNav() {
+            // Slack absorbs the track's px-1 padding and sub-pixel rounding so a
+            // button isn't left stuck visible at either end.
+            var SLACK = 8;
+            var atStart = track.scrollLeft <= SLACK;
+            var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - SLACK;
+            var overflowing = track.scrollWidth > track.clientWidth + SLACK;
+            left.hidden = atStart || !overflowing;
+            right.hidden = atEnd || !overflowing;
+        }
+        track.addEventListener('scroll', updateNav, { passive: true });
+        window.addEventListener('resize', updateNav);
+        // Expose so loadMore can refresh button state after appending cards.
+        track._updateNav = updateNav;
+        updateNav();
     }
 
     function loadMore(track, sentinel, state, observer) {
@@ -88,6 +123,7 @@
                 });
                 state.nextOffset = data.nextOffset;
                 state.hasMore = !!data.hasMore;
+                if (track._updateNav) track._updateNav();
                 if (!state.hasMore && observer) observer.disconnect();
             })
             .catch(function () {
@@ -146,11 +182,15 @@
         section.setAttribute('data-next-offset', String(data.nextOffset));
         section.setAttribute('data-has-more', data.hasMore ? 'true' : 'false');
 
+        var label = capitalize(format);
         var heading = document.createElement('h2');
         heading.className =
             'font-display font-semibold text-lg text-gray-900 dark:text-white mb-3';
-        heading.textContent = capitalize(format);
+        heading.textContent = label;
         section.appendChild(heading);
+
+        var scroller = document.createElement('div');
+        scroller.className = 'deck-row-scroller';
 
         var track = document.createElement('div');
         track.className = 'deck-row-track flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x';
@@ -163,8 +203,27 @@
             track.appendChild(buildCard(item));
         });
         track.appendChild(sentinel);
-        section.appendChild(track);
+
+        scroller.appendChild(navButton('left', label));
+        scroller.appendChild(track);
+        scroller.appendChild(navButton('right', label));
+        section.appendChild(scroller);
         return section;
+    }
+
+    /** A row scroll button mirroring the markup in publishedDeckRow.hbs. */
+    function navButton(dir, label) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'deck-row-nav deck-row-nav-' + dir;
+        btn.setAttribute('aria-label', 'Scroll ' + label + ' decks ' + dir);
+        btn.hidden = true;
+        var d = dir === 'left' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6';
+        btn.innerHTML =
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+            'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="' + d + '"/></svg>';
+        return btn;
     }
 
     /** Build one deck card, mirroring publishedDeckCard.hbs. */

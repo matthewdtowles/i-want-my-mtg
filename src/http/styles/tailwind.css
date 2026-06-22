@@ -1966,3 +1966,50 @@
     font-size: 0.62em;
     vertical-align: 0.12em;
 }
+
+/* Published-deck format rows: side buttons to scroll the horizontal track.
+   JS toggles [hidden] based on scroll position / overflow. */
+.deck-row-scroller {
+    position: relative;
+}
+.deck-row-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a1533;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.deck-row-nav:hover {
+    background: #ffffff;
+}
+.deck-row-nav:active {
+    transform: translateY(-50%) scale(0.94);
+}
+.dark .deck-row-nav {
+    background: rgba(26, 21, 51, 0.92);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.dark .deck-row-nav:hover {
+    background: #241e45;
+}
+.deck-row-nav[hidden] {
+    display: none;
+}
+.deck-row-nav-left {
+    left: -0.5rem;
+}
+.deck-row-nav-right {
+    right: -0.5rem;
+}

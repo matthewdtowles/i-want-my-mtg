@@ -1959,3 +1959,10 @@
         transition: none;
     }
 }
+
+/* Minor-color deck pips render smaller than the dominant colors. Scoped to
+   .deck-colors so it outranks mana.css's .ms-cost size regardless of load order. */
+.deck-colors .deck-pip-sm {
+    font-size: 0.62em;
+    vertical-align: 0.12em;
+}

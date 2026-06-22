@@ -252,7 +252,16 @@ document.addEventListener('DOMContentLoaded', function () {
             headers.push({ key: 'prices.foil', label: 'Foil', subtitle: '7d', classes: 'xs-hide' });
         }
         if (hasAnyNormalPrice || hasAnyFoilPrice) {
-            headers.push({ key: '', label: 'Price', classes: 'xs-show' });
+            // Mobile-only combined price column. Must stay sortable (by normal
+            // price, matching the server-rendered header) - otherwise the first
+            // sort works off the SSR header but the AJAX re-render replaces it
+            // with a static th, so price can't be re-sorted until a hard refresh.
+            headers.push({
+                key: 'prices.normal',
+                label: 'Price',
+                subtitle: '7d',
+                classes: 'xs-show',
+            });
         }
 
         var html = '<div class="table-wrapper"><table class="table-container">';

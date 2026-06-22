@@ -1,0 +1,16 @@
+{{~!--
+  One format's horizontally-scrolling row of published decks (newest first).
+
+  Context: a PublishedDeckRowView { format, label, decks, nextOffset, hasMore }.
+  publishedDecks.js reads the data-* attributes to lazy-load older decks when the
+  track is scrolled near its end, and mirrors this markup for AJAX-loaded rows.
+--~}}
+<section class="deck-row" data-format="{{format}}" data-next-offset="{{nextOffset}}" data-has-more="{{hasMore}}">
+    <h2 class="font-display font-semibold text-lg text-gray-900 dark:text-white mb-3">{{label}}</h2>
+    <div class="deck-row-track flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x">
+        {{#each decks}}
+            <div class="deck-row-item snap-start shrink-0 w-64">{{>publishedDeckCard}}</div>
+        {{/each}}
+        <div class="deck-row-sentinel shrink-0 w-px" aria-hidden="true"></div>
+    </div>
+</section>

@@ -15,9 +15,6 @@ export interface PublishedDeckRepositoryPort {
     /** A page of published decks (with cards + latest price), newest tournament first. */
     findPage(filter: PublishedDeckListFilter): Promise<PublishedDeck[]>;
 
-    /** Total decks matching the filter (for pagination). */
-    count(filter: { format?: string }): Promise<number>;
-
     /** One published deck with its cards (+ set + legalities + latest price), or null. */
     findById(id: number): Promise<PublishedDeck | null>;
 

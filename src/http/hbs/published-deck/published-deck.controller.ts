@@ -21,6 +21,7 @@ import { PublishedDeckOrchestrator } from './published-deck.orchestrator';
 import {
     PublishedDeckDetailViewDto,
     PublishedDeckListViewDto,
+    PublishedDeckRowPage,
 } from './dto/published-deck.view.dto';
 
 @Controller('published-decks')
@@ -33,12 +34,25 @@ export class PublishedDeckController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     @Render('publishedDecks')
-    async list(
-        @Req() req: AuthenticatedRequest,
+    async list(@Req() req: AuthenticatedRequest): Promise<PublishedDeckListViewDto> {
+        return this.orchestrator.buildListView(req);
+    }
+
+    // AJAX: a batch of decks for one format's row (side-scroll + "view all").
+    // Declared before :id so "rows" isn't parsed as a deck id.
+    @UseGuards(OptionalAuthGuard)
+    @Get('rows')
+    async rows(
         @Query('format') format?: string,
-        @Query('page') page?: string
-    ): Promise<PublishedDeckListViewDto> {
-        return this.orchestrator.buildListView(req, format || undefined, parseInt(page ?? '1', 10));
+        @Query('offset') offset?: string,
+        @Query('limit') limit?: string
+    ): Promise<{ success: boolean; data: PublishedDeckRowPage }> {
+        const page = await this.orchestrator.buildRow(
+            format || undefined,
+            parseInt(offset ?? '0', 10),
+            parseInt(limit ?? '12', 10)
+        );
+        return { success: true, data: page };
     }
 
     @UseGuards(OptionalAuthGuard)

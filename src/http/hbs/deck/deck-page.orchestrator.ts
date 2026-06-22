@@ -13,7 +13,7 @@ import { buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from './deck-grouping';
-import { deckColors, parseManaTokens } from './deck-mana';
+import { deckColorPips, parseManaTokens } from './deck-mana';
 import {
     DeckCardGroupView,
     DeckCardView,
@@ -41,14 +41,18 @@ export class DeckPageOrchestrator {
     ) {}
 
     buildImportView(req: AuthenticatedRequest): DeckImportViewDto {
-        HttpErrorHandler.validateAuthenticatedRequest(req);
+        // Public: anyone can load the build form. Saving (POST) still requires
+        // auth; an anonymous user is bounced to login and their work preserved.
+        const authenticated = !!req.user;
         return new DeckImportViewDto({
-            authenticated: true,
-            title: 'Import deck - I Want My MTG',
+            authenticated,
+            title: 'Build a deck - I Want My MTG',
             breadcrumbs: [
                 { label: 'Home', url: '/' },
-                { label: 'Decks', url: '/decks' },
-                { label: 'Import', url: '/decks/import' },
+                authenticated
+                    ? { label: 'Decks', url: '/decks' }
+                    : { label: 'Tournament decks', url: '/published-decks' },
+                { label: 'Build', url: '/decks/import' },
             ],
             formatOptions: this.buildFormatOptions(null),
         });
@@ -157,7 +161,7 @@ export class DeckPageOrchestrator {
                 formatOptions: this.buildFormatOptions(deck.format ?? null),
                 mainGroups: this.groupByType(main, deck.format ?? null, gapByRow),
                 sideboard: side.map((c) => this.toCardView(c, deck.format ?? null, gapByRow)),
-                deckColors: deckColors(cards),
+                deckColors: deckColorPips(cards),
                 mainCount: DeckSummaryPolicy.cardCount(main),
                 sideCount: DeckSummaryPolicy.cardCount(side),
                 estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),
@@ -187,7 +191,7 @@ export class DeckPageOrchestrator {
                 ? deck.updatedAt.toLocaleDateString('en-US', { timeZone: 'UTC' })
                 : '',
             url: `/decks/${deck.id}`,
-            colors: deckColors(cards),
+            colors: deckColorPips(cards),
             completeness: gap?.completeness ?? 0,
             missingCount: gap?.missingCount ?? 0,
             buildable: (gap?.missingCount ?? 0) === 0 && cards.length > 0,

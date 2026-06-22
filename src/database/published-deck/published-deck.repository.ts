@@ -50,14 +50,6 @@ export class PublishedDeckRepository implements PublishedDeckRepositoryPort {
         return decks.map((d) => PublishedDeckMapper.toCore(d));
     }
 
-    async count(filter: { format?: string }): Promise<number> {
-        const qb = this.repository.createQueryBuilder('deck');
-        if (filter.format) {
-            qb.where('deck.format = :format', { format: filter.format });
-        }
-        return qb.getCount();
-    }
-
     async findById(id: number): Promise<PublishedDeck | null> {
         const deck = await this.repository
             .createQueryBuilder('deck')

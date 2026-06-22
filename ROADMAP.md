@@ -2,7 +2,7 @@
 
 Shipped work is condensed to one line per section under **Done**; small leftover
 items from those shipped sections live under **Catch-up**. Active and future work
-(Phase 6 onward) is kept in full detail. Verbose history of completed work lives in
+(Phase 7 onward) is kept in full detail. Verbose history of completed work lives in
 git.
 
 ---
@@ -51,11 +51,35 @@ git.
 - **4.4 Strict query-param validation (JSON API)** — `validateApiQuery()` 400s invalid filter values (`rarity`/`format`/`legality`/`sort`/`setCode`, transaction `type`) on the API controllers while `SafeQueryOptions` stays lenient for HBS/internal callers; per-context honorable sort sets in `sort-options.enum.ts` shared by repositories + validator and mirrored in the MCP tools. *(PR #507)*
 - **4.5 Unify HBS sortable headers with the honorable sort sets** — per-context typed header factories (`setCardSortHeader`/`setSortHeader`/`inventorySortHeader`/`transactionSortHeader`) bind each orchestrator's sortable columns to the matching `*_SORTS` set, so a header offering a non-honorable sort fails to compile (offered ⊆ honorable enforced at build time, not just currently-true).
 
-### Other shipped
+### Phase 5: External tools & content
 
 - **5.1 External import tools** — Moxfield/Archidekt/Deckbox/TCGPlayer CSV auto-detection on the Free tier, plus JSON-API import/export endpoints.
 - **5.2 Content & SEO** — file-based blog, 4 cornerstone articles + building-in-public post, sitemap entries. *(remaining cross-posts under Phase 8)*
-- **10.3 Scry interactive mode** — interactive CLI menu (`cargo run -- interactive`) with target selection, prompts, dry-run (separate repo).
+
+### Phase 6: Buylist Pricing & Vendor Selling Tools ✅
+
+Surface buylist (sell-to-vendor) prices so users see what their collection is worth to *sell* and who pays most. Epic #498 closed 2026-06-13. Buylist proved **upstream single-source (Card Kingdom only)** — no free, legitimate multi-vendor buylist API exists (TCGplayer shut its program July 2024; Cardsphere is peer-to-peer and absent from the MTGJSON feed) — so the per-vendor comparison optimizer and Tier C coverage are **gated on a second source appearing** and reopen only on demand + revenue.
+
+- **6.1 Spike** — evaluated buylist sources + designed the additive granular price store; chose Tier A (full MTGJSON per-vendor tree) + Tier B (Card Kingdom direct), deferred Tier C. *(`docs/6.1-buylist-price-data-spike.html`)*
+- **6.2 Granular price store** — `granular_price` per-vendor table (migration 034); averaged `price` derived in scry's domain layer in one pass. *(later cut to CK-buylist-only — see 10.10)*
+- **6.3 Buylist on card views** — card price section split into Buy (retail tiles) / Sell (best buylist per finish, vendors behind a compare disclosure); trimmed to card-page-only in 6.3.1.
+- **6.4 Inventory market sell value + CSV** — `/inventory/sell`, pure `buildSellPlan`, best-NM offer per item capped by buy qty, vendor-neutral framing, selection-aware CSV export.
+- **6.5 Cash-vs-credit optimizer** — per-user `buy_list` (migration 039) + `/buy-list` page + `/optimizer` (cash vs. store-credit bonus %). Multi-vendor consolidation gated on 6.9.
+- **6.6 Condition normalization** — ⏭️ skipped (#512): all data is single-grade NM; revisit only when a multi-grade source lands.
+- **6.7 Tier B: Card Kingdom direct ingest** — live `price_buy` + `qty_buying` via `card.scryfall_id` matching (migration 036), last-writer-wins over the indicative MTGJSON CK row.
+- **6.8 Image normalization** — derive the image path from `card.scryfall_id` at read time, drop the denormalized `img_src` column (migrations 037/038, coupled web+scry deploy).
+- **6.9 Tier C: broaden vendor coverage** — ⏭️ skipped (#515): no viable free/legitimate multi-vendor source; proceed single-source, multi-vendor pieces stay gated.
+- **Follow-up** — JSON API for buylist/sell/optimizer shipped (#530); mirror via MCP still open ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)).
+
+### Phase 10: Architecture (shipped)
+
+- **10.2 Portfolio breakdown by color** ✅ — `card.colors text[]` (migration 040), "By Color" membership/overlap tab + superset color filter, exposed on the API (`?colors=`) + MCP.
+- **10.3 Scry interactive mode** ✅ — interactive CLI menu (`cargo run -- interactive`) with target selection, prompts, dry-run (scry repo).
+- **10.4 Deck building (MVP)** ✅ — `deck`/`deck_card` (migration 041), CRUD + `/decks` list + `/decks/:id` detail with per-card legality + estimated value, "Add to Deck" on card pages. *(deferred: mana-curve viz, full construction-rule validation)*
+- **10.5 Portfolio analytics drill-down** ✅ — inline lazy-loaded card slices on `/portfolio/breakdown` (#535), no-JS fallback to `?expand=`.
+- **10.6 Deck building in-page card search** ✅ — name-grouped search (`groupBy=name`, newest printing) on the deck page, inline add to main/sideboard (#536).
+- **10.7 Import public decklists + buildability** ✅ — paste-text import, inventory gap/completeness, tournament catalog (`published_deck*`, migration 043, fbettega feed via Scry), browse + compare at `/published-decks` (#537). *(deferred: URL/per-site paste import, archetype enrichment, fuzzy matching)*
+- **10.10 Cut granular price store → CK-direct-only buylist** ✅ — dropped `granular_price_history` + purged unread retail/stale rows (migration 042); price ingest ~18 min → ~1 min (scry#32 + #538, verified 2026-06-20).
 
 ---
 
@@ -68,151 +92,43 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 ---
 
-## Phase 6: Buylist Pricing & Vendor Selling Tools ✅
-
-**Complete — epic #498 closed 2026-06-13.** All sub-issues (6.1–6.9) shipped or closed. Buylist
-proved **upstream single-source (Card Kingdom only)** — confirmed against the raw MTGJSON feed — so
-the multi-vendor pieces (the per-vendor consolidation optimizer in 6.5, the Tier C coverage in 6.9)
-are **gated on a second free buylist source** that the 6.9 research found does not currently exist;
-they reopen only on demand + revenue. One non-gated follow-up remains: expose buylist pricing,
-sell value, and the optimizer as JSON API (#530 — today they're HBS pages + CSV only), which in
-turn unblocks mirroring them via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)).
-
-Surface buylist (sell-to-vendor) prices alongside retail, highlight the best buylist offer per card, and help users decide *who to sell to* — especially in bulk. The value lands on a user's inventory: what is my collection worth to *sell*, and which vendor pays most? Prioritized ahead of platform expansion and go-to-market because it's net-new differentiating value (not a re-surfacing of existing features) and it strengthens the core product before we invest in new surfaces and marketing.
-
-Tracked as epic #498 (sub-issues #499–#503, #512–#515). Cross-repo: [scry#14](https://github.com/matthewdtowles/scry/issues/14) (ingest), [iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9) (expose via MCP).
-
-Constraints found during scoping: scry currently ingests only the MTGJSON `retail` path and **averages across providers** into one normal/foil value; the web `price` table stores that single averaged value. "Best buylist by vendor" is incompatible with averaging — it needs per-provider (and likely per-condition/finish) data. MTGJSON publishes buylist for a limited set of providers (CardKingdom, Cardsphere); broad vendor coverage likely needs an additional data provider. Direction: stand up a **separate, additive granular price store** (all retail + buylist, per provider) and **derive** today's aggregates from it — non-breaking for current features. The #6.1 spike decides sourcing + architecture before the build.
-
-### 6.1 Spike: Buylist Data Sources & Price-Data Architecture ✅
-
-- [x] Evaluate buylist data sources: MTGJSON buylist coverage (CardKingdom, Cardsphere), Cardsphere's role as an aggregator, and at least one additional provider (vendor APIs vs. scraping — feasibility, cost, ToS/legality, maintenance)
-- [x] Design the separate/additive granular price store (provider, retail|buylist, finish/condition) and how to derive the current averaged value from it
-- [x] Define the "vendor" model for grouping/optimization (store-credit bonus %, conditions, min/max)
-- [x] Deliverable: recommendation doc + refined scope for 6.2–6.5 and scry#14
-
-**Outcome** (`docs/6.1-buylist-price-data-spike.html`): adopt **Tier A + Tier B** — both free, low-maintenance. Tier A expands scry to capture the full MTGJSON tree (per-provider retail + CardKingdom/Cardsphere buylist) instead of averaging; Tier B adds Card Kingdom's free direct pricelist for actionable buylist (live buy qty + condition). Broad multi-vendor coverage (Tier C: go-mtgban scrapers or a paid aggregator) is deferred until 6.3/6.4 show demand. Derive the existing averaged `price` from the granular store so nothing downstream breaks. Vendor metadata stays a code-level constant until the 6.5 optimizer needs the DB table.
-
-### 6.2 Granular Price-Data Store (Capture All, Derive Aggregates) ✅
-
-Mirrors the existing `price` / `price_history` split — a lean current table the card page reads, plus a retention-bounded history table.
-
-- [x] `granular_price` (current per-vendor offer) **+** `granular_price_history` (dated series), migration `034` + init SQL. Columns `(card_id, provider, price_type, finish, condition, date, price)`, `condition NOT NULL DEFAULT 'NM'` (a bare price is NM by convention, so MTGJSON rows get `'NM'` and the key stays NULL-free). **Current** is keyed *without* `date` (one row per series), so the card page reads it with a trivial `WHERE card_id = …`; **history** keys on `date` and is retention-bounded. **No `qty` column** — buy quantity is inconsistent across vendors and deferred to Tier B (Card Kingdom direct), modelled when it lands. *(Later: `qty` landed in migration `036`; `granular_price_history` was dropped as write-only in §10.10 — `granular_price` is now the only granular table.)*
-- [x] Derivation stays in scry's domain layer (Rust), **not** a DB function: scry writes per-provider granular rows and the derived averaged `normal`/`foil` into the existing `price` table in one ingest pass, from the same in-memory values — `PriceCalculationPolicy` and all consumers unchanged. (Per-card averaging is in-memory at ingest; unlike `update_set_prices()`, which aggregates across cards)
-- [x] Current writes carry a freshness guard (`ON CONFLICT … WHERE EXCLUDED.date >= granular_price.date`): a stale ingest can't move a series backwards, and a vendor that skips a day keeps its last-known offer. `price` already has this property via `clean_up_prices` (keeps the max date).
-- [x] `GranularPriceRepositoryPort` + repo/mapper/ORM entity (read-only, current table; consumed by 6.3)
-- [x] Population owned by scry (scry#14): daily ingest writes **both** tables; historical backfill writes **history only** (current is filled by the next daily ingest). Retention runs on `granular_price_history` per `(card, provider, type, finish, condition)` series, daily → weekly → monthly. Granular capture is USD-only - providers `tcgplayer`, `cardkingdom`, `cardsphere`, `manapool` (Cardmarket/EUR excluded; no currency column); the derived `price` still averages only the original 3 providers, so it stays byte-identical.
-
-### 6.3 Show Buylist Prices on Card Views ✅
-
-Card price section overhauled into a **Buy** (retail tiles + TCGPlayer) / **Sell** (best buylist per finish, vendors behind a "compare" disclosure) split. (A compact best-offer on the set page / binder was added then **removed in 6.3.1** — buylist now lives only on the card page.) Buylist is single-vendor (Card Kingdom) today (see 6.9), so the per-vendor compare gracefully collapses to one line.
-
-- [x] Read the current `granular_price` table directly via `GranularPriceRepositoryPort` (best buylist offer + per-vendor list, one row per series) — not the averaged `price` table or the dated `granular_price_history`
-- [x] Card presenter buylist fields; add buylist tile(s) to `card.hbs` price section, highlight best vendor, respect normal/foil; reuse existing `price-tile` theming
-- [x] ~~Same treatment in set page / binder overlay; compact best-offer ("sell $X" on rows, "Buylist $X" on the binder overlay)~~ **Scope-corrected in 6.3.1:** buylist now lives only on the card page; the set-list / binder surfaces were removed (clutter + overflow risk). The batched `findCurrentBuylistByCardIds` read and `bestBuylistOffer` policy are kept for 6.4 inventory best-buylist.
-- [x] Vendor metadata (display name + sell-to flag for Card Kingdom, Cardsphere) as a code-level constant; DB `vendor` table deferred to 6.5
-
-### 6.3.1 Buylist surface trim + UI parity + responsive hardening ✅
-
-- [x] Limit buylist to the card page (remove from set list + binder overlay; keep batched read for 6.4)
-- [x] Buy/Sell visual parity: render Sell offers as price-tiles (emerald accent) matching retail
-- [x] Responsive contract: base-layer min-width:0 / max-width / overflow-wrap guards
-- [x] `.cluster` + `.badge-pill` utilities; fix legality-tag and set-toolbar overflow
-- [x] Fix navbar mobile overflow: container-query that hides Sign In/Sign Up <599px now ordered after the base `display` rules so it wins (was a source-order bug the guard caught)
-- [x] Playwright overflow guard at 320/375px across key pages (regression gate)
-
-### 6.4 Inventory: Market Sell Value & CSV Export ✅
-
-Where the value of the epic lands: what is the user's collection worth to *sell*, right now,
-with real offers behind the number. Framed as **market sell value** in all user-facing copy —
-vendor-neutral, no named-vendor pitch. Buylist offers come from a single upstream source today
-(see 6.9), so the per-vendor grouping degenerates gracefully to one group; the grouping
-structure stays so additional sources (Tier C) slot in additively, not as a refactor.
-
-**As built:** `/inventory/sell` page (linked from the inventory header). `buildSellPlan`
-(`src/core/pricing/sell-value.policy.ts`, pure) matches inventory items to offers on card +
-finish (isFoil → foil, else normal; etched is a distinct product), picks the best NM offer via
-`bestBuylistOffer`, and groups by vendor. `GranularPrice.qty` plumbed through the read path
-(entity/mapper) for the cap. Selection = row checkboxes that *are* the export form's inputs
-(`POST /inventory/sell/export`, works without JS); `inventorySell.js` recomputes totals
-client-side. CSV: `name,set_code,number,finish,owned_qty,vendor,offer,sellable_qty,payout`.
-
-- [x] Select a subset (or all) of inventory — checkboxes on the sell view (per-vendor select-all; default all selected)
-- [x] Compute the best buylist offer per item and total it as the selection's market sell value
-- [x] Cap payouts by buy quantity where known (offer × min(owned, vendor buy qty) — the 6.7 `qty`; capped rows flagged) so totals are honest
-- [x] Group results by vendor (single group today; feeds 6.5 and Tier C)
-- [x] Sell rows link out to the vendor's buylist page for the card (plain links, no partner attribution — deferred from 6.7)
-- [x] CSV export of the sell list (per-item offer, qty, payout) honoring the selection
-
-### 6.5 Sell/Buy List Optimizer (re-scoped: cash vs. credit first) ✅
-
-Re-scoped after the 6.9 research: with buylist effectively single-source upstream, the
-*vendor-comparison* optimizer has no decision to make — but **cash vs. store credit** is a real
-decision even with one vendor (store-credit bonus % means "take $X cash, or $Y in credit applied
-against your buy list"). Build that first; the multi-vendor consolidation optimizer is gated on
-6.9 landing a second source.
-
-Shipped in two PRs: **PR1** the buy-list, **PR2** the optimizer.
-
-- [x] **Buy-list entity per user** (PR1): `buy_list` table (migration `039`, grain mirrors inventory: user+card+finish+qty) + core/db/API (`/api/v1/buy-list`) + `/buy-list` page + "Add to buy list" control + bulk CSV-paste import (reuses the native CSV parser + `CardImportResolver`). **Sell-list reuses 6.4** (no separate entity) — the optimizer's cash side is the existing `buildSellPlan` Card Kingdom group.
-- [x] **Cash-vs-credit optimizer** (PR2): pure `cash-vs-credit.policy.ts` — cash payout C (CK group from 6.4) vs. store credit `C(1+b)` applied against the buy-list retail R; flags out-of-pocket each way, the credit advantage, and locked leftover credit.
-- [x] **Present the recommendation + CSV export** (PR2): `/optimizer` page with an editable bonus-% input (default from the `cardkingdom` vendor constant, recomputed client-side), reachable from `/inventory/sell` and `/buy-list`; `GET /optimizer/export.csv`.
-- [ ] Mirror via MCP ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)) — follow-up in the MCP repo.
-- [ ] **Gated on 6.9 (≥2 buylist sources):** best net outcome per vendor; favor consolidating into a single vendor/bulk transaction where it wins
-
-### 6.6 Condition Vocabulary Normalization — **skipped (single grade)** ⏭️
-
-**Closed without building (#512).** Every row in 6.2–6.7 is `NM` and buylist is single-source (Card Kingdom), so there is no multi-grade data to normalize. Revisit only when a source actually delivers multi-grade prices (Tier C, or a future CK-retail-by-grade ingest — CK's `condition_values` already exposes nm/ex/vg/g **retail**). The notes below are kept as the design starting point.
-
-- [ ] Decide the canonical **raw-condition** representation and the per-vendor converters. Candidate (from scoping): a normalized numeric rank so "best condition" / offer-matching are cheap comparisons. Caveat: CK (NM/EX/VG/G, 4 grades) and TCGplayer (NM/LP/MP/HP/DMG, 5 grades) don't map 1:1, so any shared scale is lossy cross-vendor — keep the source grade where fidelity matters
-- [ ] Keep **professional grading a separate dimension** (grading company + numeric grade, allowing half-grades like BGS 9.5) rather than overloading the raw-condition column — a slabbed PSA 9 is a distinct product/market from a raw NM, and a different `tcgplayerProductId`
-- [ ] Backfill is trivial: existing rows are all `NM` → map to whatever the canonical NM value becomes
-
-### 6.7 Tier B: Card Kingdom Direct Ingest (live buylist + `scryfall_id` matching) ✅
-
-Adds Card Kingdom's free direct pricelist (`api.cardkingdom.com/api/v2/pricelist`, ~147k products, streamed) for actionable buylist: live `price_buy` + `qty_buying`, overwriting the indicative MTGJSON CK row on the shared granular key (MTGJSON ingests first, CK-direct last → last-writer-wins). As-built log in [`docs/phase6-buylist-handoff.md`](docs/phase6-buylist-handoff.md) + issue #513. Merged via PR #522.
-
-- [x] `card.scryfall_id` — **unique indexed column, NOT the PK** (`card.id` stays the MTGJSON uuid). Migration `036`, SQL backfill from `card.img_src` (verified 1:1 across all 91,316 cards); scry stores it going forward
-- [x] Stream the CK pricelist in scry (`CkPricelistEventProcessor`), `scryfall_id → card.id` map, emit `granular_price` + `granular_price_history` buylist rows (`provider='cardkingdom'`, finish from `is_foil`, condition `NM`); only real offers emit (`price_buy > 0 AND qty_buying > 0`); per-series dedupe keeps the best offer; best-effort (never blocks the averaged price refresh)
-- [x] Buy-quantity re-introduced: nullable `qty` on both granular tables; `qty = EXCLUDED.qty` (last-writer-wins, not COALESCE) so a failed CK fetch reads NULL ("unknown") rather than stale. Surfacing qty deferred to 6.4
-
-### 6.8 Normalize card image: derive from `scryfall_id`, drop `img_src` ✅
-
-`img_src` was pure derived data: scry stored exactly `{a}/{b}/{scryfall_id}.jpg` and the web renders `${BASE_IMAGE_URL}/${size}/front/${img_src}` — a total, reversible function of `scryfall_id`. Once 6.7 added the `scryfall_id` column, storing `img_src` too was denormalized (same fact, two columns). Shipped as a coupled web+scry deploy sequence so the column drop could never precede the no-`img_src` binary:
-
-- [x] **6.8a** (web #525): web derives the image tail from `card.scryfall_id` at read time via `buildScryfallImagePath` (`src/shared/utils/scryfall-image.util.ts`, TS mirror of `Card::build_scryfall_image_path`), wired into `card.mapper` + `transaction.repository`. No visual change.
-- [x] **6.8b step 1** (web #526, migration `037`): make `img_src` nullable (prerequisite for scry to stop writing it).
-- [x] **6.8b step 2** (scry #18, released 5.13.1): scry stops computing/writing `img_src`; persists `scryfall_id` only.
-- [x] **6.8b step 3** (web, migration `038`): drop the `card.img_src` column. Migrations `036`/`037` guarded with column-existence `DO` blocks (untracked migrations replay every deploy). The drop runs before `setup-cron.sh` extracts `scry:latest`, so the column and a still-writing binary never coexist.
-- [x] **Kept the external contract:** the `imgSrc` field stays in the JSON API DTOs (`card-api`, `inventory-api`), MCP output schemas, and HBS views — derived from `scryfall_id` in `card.mapper`, not read from a column.
-- [x] ~~Fix `json-ld.util.ts` to emit an absolute image URL~~ **Stale (no change):** the HBS card view's `imgSrc` is already a full URL via `card.presenter.buildImgSrc`, so `schema.image` is already absolute (#525).
-- [x] Front-face only is preserved (the scheme always serves `/front/`); back/DFC images remain a separate future feature.
-
-### 6.9 Tier C: Broaden Buylist Vendor Coverage (find more buylist sources)
-
-Promoted from "deferred" by a live-ingest finding (scry#14 Tier A), then **confirmed against the raw MTGJSON feed** (`AllPricesToday.json`, 2026-06-05 data, inspected 2026-06-07): of the four USD providers scry captures, **only `cardkingdom` carries buylist data** (61,428 cards). `cardsphere` — the second buylist source the 6.1 spike assumed — **does not appear in the feed at all** (0 occurrences); `tcgplayer` / `manapool` (and the excluded EUR `cardmarket`) emit an **empty `buylist` key with no values**. So this is **not an ingest bug** — scry captured everything present; buylist is **upstream single-vendor (Card Kingdom only)** today, which undercuts the premise of "best buylist *by vendor*": with one vendor there is nothing to compare, and the 6.5 optimizer has no decision to make. Tier B (6.7) sharpens Card Kingdom's numbers but adds **no new vendor**, so it does not fix this on its own.
-
-**Researched (2026-06-09, full findings on #515): no free, legitimate, multi-vendor buylist API exists.** TCGplayer shut down its buylist program (July 2024); Cardsphere is peer-to-peer and absent from the MTGJSON feed; the remaining buylist vendors (Star City Games, CoolStuffInc, ABU Games, Troll & Toad) publish no APIs — reachable only via go-mtgban scrapers (free, but ToS-gray, AGPL, a Go sidecar next to the Rust ETL, perpetual breakage maintenance) or the mtgban BAN API at $1,000/mo. **Decision: proceed single-source.** 6.4 ships framed as vendor-neutral **market sell value**; 6.5 is re-scoped to the cash-vs-credit decision; the multi-vendor pieces stay gated here.
-
-**Skipped (single source) — #515 closed.** Proceeding single-source is the final decision; the multi-vendor pieces stay gated below and are revisited only on demand + revenue.
-
-- [x] Evaluate additional buylist sources — done; no viable free/legitimate option (see findings on #515)
-- [x] Re-sequence decision: 6.4/6.5 do **not** wait for broader coverage — built single-source with vendor-neutral framing; the per-vendor comparison + consolidation optimizer are gated on this item
-- [x] scry cleanup: drop the dead `cardsphere` provider (confirmed absent upstream; yields nothing). *Correction:* `cardsphere` was never in `GRANULAR_PROVIDERS` (`tcgplayer, cardkingdom, manapool`) — it lingered in `AVERAGE_PROVIDERS`, which derives the averaged `price`. Removed there (scry PR #19); output-identical since it never carried a retail value upstream.
-- [ ] **Gated:** revisit go-mtgban / a paid aggregator only when **both** hold: (a) 6.4 has shipped and sell-flow engagement shows demand for vendor comparison; (b) revenue can absorb the scraper ops burden or an aggregator fee
+## Phase 7: Platform Expansion
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 
 ### 7.1 Mobile App (Cross-Platform)
 
-- [ ] Choose framework (React Native recommended given JS background; Flutter if Dart is appealing)
-- [ ] Scaffold mobile app project in new repo
-- [ ] Integrate with API layer
-- [ ] Implement core views: collection browsing, card search, transaction logging
-- [ ] Add camera-based card scanning (Google ML Kit or similar — potential premium-only feature)
-- [ ] Market cross-platform sync as core differentiator ("scan on phone, manage on web")
-- [ ] TestFlight / internal testing distribution
-- [ ] App Store and Play Store submission
+**Decisions (2026-06-22):** React Native + Expo (managed) in TypeScript; consume `/api/v1` through a client **generated from the existing OpenAPI spec**; v1 ships the core read/track loop (browse + inventory + transactions), camera scanning is the fast-follow (7.3); launch iOS + Android together via EAS.
+
+**Framework — React Native + Expo, not Flutter or bare RN.** One language across web/API/MCP/mobile, so the generated OpenAPI client and the sort/filter/legality enums are shared, not re-implemented. This is an API-driven CRUD + camera app (Expo's sweet spot), not a graphics showcase where Flutter's perf edge would pay off. EAS Build + OTA updates keep the toolchain manageable for a solo maintainer (no Mac/Xcode babysitting, JS fixes shippable without a store-review cycle). Escape hatch if a needed native module isn't in Expo: a dev-client + config plugins.
+
+**Repo: [`i-want-my-mtg-mobile`](https://github.com/matthewdtowles/i-want-my-mtg-mobile)** (created 2026-06-22, barebones README only) — Expo app. Reuses the running `/api/v1` backend **unchanged: no server work required for v1.** Auth is confirmed (below); CORS is a non-issue for native builds.
+
+**Auth confirmed (2026-06-22) — no backend change needed.** `POST /api/v1/auth/login` already returns the JWT in the response body (`{ accessToken }`, `auth-api.controller.ts`), and the JWT strategy reads `Authorization: Bearer` first, cookie only as fallback (`jwt.strategy.ts`). So mobile captures the token at login, stores it in `expo-secure-store`, and sends it as a bearer header — the exact path the API/MCP clients already use.
+
+Stack:
+- expo-router (file-based navigation), TanStack Query over the generated API client
+- Auth: existing JWT as a bearer token, stored in `expo-secure-store` (confirmed working — see above)
+- API client generated from the published OpenAPI spec, regenerated in CI when the spec changes (same source the MCP server consumes)
+- Build/release: EAS Build (iOS + Android), EAS Update for OTA JS pushes
+
+**v1 scope (first ship):**
+- [ ] Scaffold the Expo app in `i-want-my-mtg-mobile` (TypeScript, expo-router, TanStack Query)
+- [ ] Generate the typed API client from the OpenAPI spec; wire CI regeneration
+- [ ] Auth flow: sign in / sign up, capture `accessToken`, store in `expo-secure-store`, send as bearer header
+- [ ] Browse: sets + cards, card detail (reuse Scryfall images), card search
+- [ ] Inventory: view, add/edit quantities, finish toggle
+- [ ] Transactions: log buy/sell, view recent history
+- [ ] Portfolio overview (current value)
+- [ ] TestFlight (iOS) + Play internal-testing (Android) distribution
+
+**Fast-follow (after v1 validates):**
+- [ ] Camera-based card scanning (7.3) — the "scan on phone, manage on web" differentiator; premium-gated per the Appendix
+- [ ] Price alerts management, deck building, portfolio analytics parity
+- [ ] App Store + Play Store public submission
+- [ ] Market cross-platform sync as the core differentiator
+
+**Cross-repo tracking:** the mobile work lives in the `i-want-my-mtg-mobile` repo, but we want **one view of progress**. Create the v1 issues in `i-want-my-mtg-mobile` and add each to the **"I Want My MTG" GitHub project** (`PVT_kwHOAP2Yos4A4tP0`) so mobile, web, scry, and MCP issues all roll up together — same pattern already used for the cross-repo scry / MCP items. (Issues to be created when we kick off the build; not created yet.)
 
 ### 7.2 Desktop App (Optional)
 
@@ -287,83 +203,9 @@ The marketing push — community, launch events, analytics — split out from pl
 
 ---
 
-## Phase 10: Architecture
+## Phase 10: Architecture (remaining)
 
-### 10.1 Evaluate Removing NestJS Dependency
-
-- [ ] Audit current NestJS features used (DI, guards, pipes, interceptors, etc.)
-- [ ] Evaluate lightweight alternatives (Fastify standalone, Express + tsyringe, etc.)
-- [ ] Compare dependency tree size (before/after)
-- [ ] Decide: migrate or keep NestJS
-- [ ] If migrating: plan incremental migration strategy
-- [ ] If migrating: execute migration module by module
-- [ ] If keeping: document decision and rationale
-
-### 10.2 Portfolio Breakdown: by=color Dimension ✅
-
-Deferred from 3.4. **Built — pending scry release + web deploy to light up.**
-
-**Color model (chosen during scoping):** color is a *membership* dimension, not a partition - a card belongs to **every** color in its identity, so a W/U card lands in both the White and Blue rows and the rows intentionally overlap (they sum past the portfolio total; the tab carries a caption saying so). Cards with no color identity (or not yet ingested, NULL) group under **Colorless**. The same color chips drive a **superset filter**: selecting W+U keeps only cards whose identity contains both (a W/U/R card still qualifies); 'C' filters to colorless and is ignored when real colors are selected.
-
-- [x] Scry: ingest `card.colors` from MTGJSON `colorIdentity` into the `card` table (`text[]`; domain field + mapper + upsert change-detection)
-- [x] `card.colors text[]` column (migration `040`, nullable, mirrored in init SQL)
-- [x] `color` case in `BreakdownDimension` + a dedicated `aggregateColor()` (per-color `unnest` rows + `colors @> ARRAY[...]` superset filter), threaded through service/orchestrator/controller; exposed on the JSON API (`?colors=`) + MCP (`colors[]`)
-- [x] "By Color" tab + color filter chips (W/U/B/R/G/Colorless) + overlap caption in `portfolioBreakdown.hbs`
-
-**Deploy coupling (web + scry, same pattern as 6.7/6.8):** the web side is inert until `card.colors` is populated. Sequence: (1) release scry (additive, safe - the old binary keeps running and never references the column); (2) deploy web - migration `040` adds the column *before* `setup-cron.sh` extracts the new scry binary, so the column exists before the binary writes it. Until the next full ingest runs, existing rows read NULL and show as Colorless.
-
-### 10.4 Feature: Deck Building (MVP shipped)
-
-Deferred from former §3.5. **MVP built 2026-06-17** - free to create (deeper analytics gated for later), modeled on Archidekt/ManaBox, mirroring the `buy_list` layering. The heavier pieces are deferred to a follow-up.
-
-- [x] Deck data model (`deck` + `deck_card`, migration `041`): `deck` (user FK, name, nullable `format`, timestamps); `deck_card` keyed `(deck_id, card_id, is_sideboard)` so a card can sit in main + side
-- [x] Domain entities, repository port, ORM entities, mappers, repository (`DeckRepository`)
-- [x] `DeckService` CRUD + add/remove/set-quantity, with per-deck ownership checks (`NotFoundException` on miss / not-owned)
-- [x] REST API `/api/v1/decks` (list/create/get/rename/delete + add/remove/set-quantity card; free tier via `JwtOrApiKeyGuard`)
-- [x] Deck list page (`/decks`): name, format, card count, estimated value; create + delete inline
-- [x] Deck detail page (`/decks/:id`): cards grouped by primary type, per-card legality flag, estimated value; qty steppers + remove via AJAX, totals recomputed client-side
-- [x] Per-card legality check reusing the existing `legality` table (`DeckLegalityPolicy`); estimated value via `PriceCalculationPolicy` (`DeckSummaryPolicy`)
-- [x] "Add to Deck" on the **card detail** page (pick a deck or create one inline)
-- [ ] **Deferred → §10.6:** "Add to Deck" from search — superseded by in-page deck search (#536)
-- [ ] **Deferred → §10.7:** Deck import/export — now part of public-decklist import + inventory comparison (#537)
-- [ ] **Deferred:** Mana-curve visualization + fuller price breakdown on the detail page
-- [ ] **Deferred:** Full construction-rule validation (singleton, 4-of limits, deck-size minimums) - today's check is per-card legal/banned only
-
-### 10.5 Portfolio Analytics: category drill-down + interaction-model audit (#535) ✅
-
-`/portfolio/breakdown` rows were terminal aggregates with no path to the cards inside them. Added inline drill-down: clicking a set/rarity/type/color/cost-basis row lazy-loads that slice's cards (standard hover-image card link, foil+non-foil quantity/value combined into one row per card).
-
-- [x] `GET /api/v1/portfolio/breakdown/cards?by=&key=[&colors=]` (premium-gated, mirrors the breakdown auth) → `PortfolioBreakdownService.listSliceCards` / `PortfolioBreakdownRepository.listCards`. By-color drill-down re-applies the same `colors` superset filter as the aggregate, so membership/overlap semantics match the row the user clicked.
-- [x] Inline expand/collapse + lazy card load (`portfolioBreakdown.js`), reusing `renderCardLink` / `cardLink.hbs` so hover/long-press preview works for free.
-- [x] No-JS fallback: each row is a real link to `?expand=<key>`; the server renders that one slice expanded inline (`getBreakdownView(..., expandKey)`), and JS intercepts the same link to toggle without navigating — progressive enhancement, consistent with search/set-list.
-
-**Decision (B): keep dimension + color-filter switching full-nav; only drill-down is async.** The page is premium-gated server-side (`SubscriptionGuard`), dimension swaps are a single cheap aggregate query, and the URL is the shareable state. Converting the tab/chip switch to AJAX would duplicate the server's slice-rendering in JS for no real latency win and would complicate the back/forward + premium-gate story. Drill-down is the one interaction that benefits from staying on the page (you're comparing slices), so that is the only part made async — and it still degrades to full-nav with JS off. This is the opposite trade-off from deck-detail/search (which mutate or re-query on every keystroke and have no SEO/gate concerns), and that difference is the rationale for the split.
-
-**Inventory-filtering opportunity (B):** the Inventory page is the clearest "aggregate-with-no-drill-down" gap left — it lists items but can't be sliced by color/rarity/type the way analytics now can. Worth a follow-up to add color/rarity/type filter chips to Inventory backed by the same membership semantics (it already has AJAX list infra via `inventoryListAjax.js`, so this is additive). Spun out as a note here rather than blocking #535; no other page has the same gap (set/search lists are already filterable, deck detail is already item-level).
-
-### 10.6 Deck building: in-page card search (#536) ✅
-
-Adding cards now happens **on the deck page** (modeled on Archidekt/ManaBox), so users never leave the deck. A debounced search box queries a new name-grouped search mode, results show one row per name with the standard hover art, and adds go straight to main/sideboard - the deck DOM + totals update in place, no full reload.
-
-- [x] `GET /api/v1/cards?q=…&groupBy=name` returns **one representative printing per distinct name** (`searchByNameGrouped` / `totalSearchByNameGrouped`, Postgres `DISTINCT ON (name)`). Representative = **newest printing** (`ORDER BY name, set.release_date DESC`) - a sensible default that's also the most likely in-print/available copy. Joins the latest price so callers can value the card.
-- [x] Grouped mode **annotates** legality instead of filtering: with a `format` param each result carries a `legal` flag (legality is name-level, so the representative's flag applies to the whole name), but illegal cards are still returned and shown flagged - a deck builder wants to see everything and decide. (`applyCatalogFilters` gained `skipLegality`; the per-printing search is unchanged.)
-- [x] Search box on `/decks/:id` (debounced, reuses `AjaxUtils.fetchWithGate`); results render the standard `.card-name-link[data-card-img]` so `cardPreview.js` gives hover/long-press art for free, in both the results list and the in-deck rows.
-- [x] Inline add to main/sideboard via the existing `POST /api/v1/decks/:id/cards`; `deckDetail.js` inserts the new row into the right type group (creating + ordering the group, mirroring the server's `TYPE_ORDER`), or increments an existing row, then recomputes value/counts/legality client-side. Steppers/remove moved to event delegation so search-added rows behave like server-rendered ones.
-- [x] Keyboard-friendly (Escape clears, focusable results) and mobile-friendly (long-press art via the shared preview); the user never leaves the deck.
-
-**Open question resolved:** which printing to bind for a multi-printing name → the **newest** printing (single representative). A later per-row printing picker stays deferred. Mana-curve / fuller analytics also stay deferred (10.4 follow-up).
-
-### 10.7 Import public decklists + inventory buildability/gap comparison (#537)
-
-**Status (2026-06-20): built** — branch `537-import-decklists-buildability`. All free (no premium gate); matching is name-level (any printing satisfies a need), basics always count as owned.
-
-Four parts shipped together:
-- **A — paste-text import:** `decklist-text.parser.ts` (the `4 Lightning Bolt` / `1 Sol Ring (CMR) 263` formats, Sideboard header) + `resolveByName` on `CardImportResolver` (set-less lines resolve to the cheapest printing) + `DeckImportService`; HBS `/decks/import` form→result and API `POST /api/v1/decks/import`.
-- **B — buildability/gap:** pure `DeckGapPolicy` + `DeckBuildabilityService` (inventory aggregated by card name). `/decks` rows show completeness % + missing count (ranked); `/decks/:id` gets a gap banner, per-card owned/missing badges, and "Add missing to buy list" (`POST /api/v1/decks/:id/missing-to-buy-list`).
-- **C — tournament catalog (Scry + web):** new `published_deck` + `published_deck_card` tables (migration `043`). Scry `published_deck` module ingests the **fbettega/MTG_decklistcache** feed behind a `DecklistSource` port (first adapter `FbettegaSource`; TopDeck.gg left as a future adapter), resolves card names to representative printings, and prunes past a 90-day window. New CLI `ingest-decks --days N`; weekly Monday cron → `decks.log`.
-- **D — browse + compare:** `/published-decks` (filter by format, paginated, public) and `/published-decks/:id` (deck view + gap vs. the signed-in user's inventory, "Copy to my decks", "Add missing to buy list").
-
-**Source note:** fbettega cache is the maintained successor to Badaro's archived MTGODecklistCache; verified updating ~daily. Deploy order: publish Scry first, then deploy web (migration `043` creates the tables before the new binary runs). Deferred: URL/per-site paste import, archetype enrichment, fuzzy name matching.
+Completed Phase 10 sub-sections (10.2–10.7, 10.10) are condensed under **Done**; 10.1 (evaluate removing NestJS) was dropped — staying on NestJS. The items below are the open architecture work.
 
 ### 10.8 Scry: ingestion performance regression (scry#22)
 
@@ -382,34 +224,6 @@ Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.1
 ### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
 
 MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, missing `color` + the `colors` filter), and there are **no deck tools** (generated API types predate `/api/v1/decks`). Regenerate API types, fix the breakdown dimensions, add the deck tool group.
-
-### 10.10 Cut the granular price store → CK-direct-only buylist (resolves 10.8)
-
-**Status (2026-06-20): VERIFIED - cut confirmed live; scry#22 closeable.** scry#32 + iwantmymtg#538 merged and deployed (the #540 deploy on 2026-06-19 extracted the post-cut binary); migration 042 dropped `granular_price_history` and purged the `qty IS NULL` rows. The 2026-06-20 post-cut run confirms all of it: the MTGJSON price pass writes **zero** granular (`ingest_all_today write totals (ms/calls): price=36814/205 price_history=32973/205 granular_price=0/0`), the `write totals` line no longer carries a `granular_price_history` field, and CK-direct is the **sole** granular writer (`ingest_cardkingdom_direct ... granular_price=65327/299`, 74,744 buylist rows saved). Price ingest is back to **~1 min** (was ~18 min). `granular_price_history` is absent from the table list; `granular_price` remains and holds CK buylist only.
-
-**Why:** see §10.8. The granular per-vendor store is mostly write-only / unread / stale; CK-direct already supplies the only consumed slice (live CK buylist). Cutting it reclaims **~9–12 min/run**, removes a 1.2 GB table + its retention, slims `save_prices`, **and** improves buylist data quality (drops stale prices currently shown to users). Spans both repos — mind the deploy order.
-
-**Evidence captured (prod, 2026-06-18):** `granular_price` = 139,953 manapool-retail + 139,128 CK-retail + 137,921 tcg-retail (all qty NULL, unread) + 92,596 CK-buylist (74,741 from CK-direct w/ qty; 17,855 MTGJSON-only, ~88% stale by date). `granular_price_history` = 5.3M rows / 1.2 GB, zero readers.
-
-**Closed as superseded:** scry#24, #25, #26, #27, #31 (PR). Umbrella scry#22 stays open until the deploy verifies; scry#28 (sealed) is the lone remaining separate ingest item.
-
-**Scry change (PR 1, scry#32 — merged) — stops all the now-dead writes:**
-- [x] `PriceEventProcessor` / `save_prices`: stop writing granular entirely (averaged `price`/`price_history` only). MTGJSON granular is unused once CK-direct owns buylist.
-- [x] Remove **all** `granular_price_history` writes (daily `save_prices`, `save_ck_batch`, `save_price_history_only` backfill).
-- [x] CK-direct (`save_ck_batch`): keep `granular_price` (current buylist) write; drop its history write.
-- [x] Drop `granular_price_history` retention (`apply_granular_*_retention`) + now-unused repo methods.
-- [x] Verify via `./scripts/test-integ.sh` (real PG) + `cargo test --lib`.
-
-**Web change (PR 2, iwantmymtg#538 — merged) — drops the table + purges stale/retail rows:**
-- [x] Migration: `DROP TABLE granular_price_history;` (+ remove from init SQL) and `DELETE FROM granular_price WHERE qty IS NULL;` (one-time purge of unread retail + stale MTGJSON buylist; CK-direct rows carry `qty`).
-- [x] Confirm buylist feature still reads only `granular_price` `WHERE price_type='buylist'` (unchanged) — it keeps working from CK-direct rows.
-
-**Deploy order (manual — Matthew):**
-1. [x] **Publish scry first** — done: scry#32 merged → CI pushes `scry:latest`. (Safe: the old binary on the server keeps writing the soon-to-be-dropped table, harmless until web deploys.)
-2. [x] **Deploy web second** (PR 2). Done: #538 merged 2026-06-18, and the #540 deploy (2026-06-19) ran the migration (dropped table + purge) *then* extracted the new scry binary, so the server now holds the post-cut binary.
-3. [x] **Verified 2026-06-20.** Post-cut run: `ingest_all_today` granular writes = 0 (`granular_price=0/0`), no `granular_price_history` field in the totals line, CK-direct the sole granular writer (`granular_price=65327/299`, 74,744 buylist rows). Price ingest ~1 min vs the prior ~18 min. `granular_price_history` confirmed absent from the live schema.
-
-**Follow-up (optional, separate):** improve CK-direct `scryfall_id` matching to recover the ~2,093 today-fresh + 3,540 unmatched CK offers, if buylist coverage warrants it. If a buylist *trend chart* is ever wanted, add CK-buylist-only history written by CK-direct (~93k rows/day, not ~480k of retail).
 
 ### 10.11 Scry: card batch ingestion is serial despite Semaphore + spawn (scry#33 review)
 

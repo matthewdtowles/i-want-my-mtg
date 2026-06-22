@@ -584,12 +584,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Close on outside click
+        // Close on outside click. Capture phase so it still runs when another
+        // dropdown's trigger calls stopPropagation() - otherwise clicking a
+        // second trigger could leave both menus open.
         document.addEventListener('click', function (e) {
             if (!dropdown.contains(e.target)) {
                 closeDD(false);
             }
-        });
+        }, true);
     }
     });
 });

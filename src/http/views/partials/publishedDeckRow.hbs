@@ -7,10 +7,18 @@
 --~}}
 <section class="deck-row" data-format="{{format}}" data-next-offset="{{nextOffset}}" data-has-more="{{hasMore}}">
     <h2 class="font-display font-semibold text-lg text-gray-900 dark:text-white mb-3">{{label}}</h2>
-    <div class="deck-row-track flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x">
-        {{#each decks}}
-            <div class="deck-row-item snap-start shrink-0 w-64">{{>publishedDeckCard}}</div>
-        {{/each}}
-        <div class="deck-row-sentinel shrink-0 w-px" aria-hidden="true"></div>
+    <div class="deck-row-scroller">
+        <button type="button" class="deck-row-nav deck-row-nav-left" aria-label="Scroll {{label}} decks left" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="deck-row-track flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x">
+            {{#each decks}}
+                <div class="deck-row-item snap-start shrink-0 w-64">{{>publishedDeckCard}}</div>
+            {{/each}}
+            <div class="deck-row-sentinel shrink-0 w-px" aria-hidden="true"></div>
+        </div>
+        <button type="button" class="deck-row-nav deck-row-nav-right" aria-label="Scroll {{label}} decks right" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
     </div>
 </section>

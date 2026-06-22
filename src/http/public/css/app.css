@@ -1032,6 +1032,9 @@ html:not(.dark) .iwm-overlay {
 }
 .iwm-drawer-link:hover svg { opacity: 0.85; }
 
+/* Sub-items nested under a section's primary link (e.g. My decks under Decks). */
+.iwm-drawer-link--nested { padding-left: 2rem; font-size: 0.92em; opacity: 0.9; }
+
 .iwm-drawer-link--danger { color: #f87171; }
 html:not(.dark) .iwm-drawer-link--danger { color: #dc2626; }
 .iwm-drawer-link--danger:hover {

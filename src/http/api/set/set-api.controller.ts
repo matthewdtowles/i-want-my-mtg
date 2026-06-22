@@ -9,6 +9,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryService } from 'src/core/inventory/inventory.service';
@@ -64,7 +65,7 @@ export class SetApiController {
         required: false,
         description: 'Grouping mode: "block" for block-level pagination',
     })
-    @ApiResponse({ status: 200, description: 'List of sets' })
+    @ApiOkEnvelope(SetApiResponseDto, { isArray: true, description: 'List of sets' })
     @ApiResponse({
         status: 400,
         description: 'Invalid sort value',
@@ -147,7 +148,7 @@ export class SetApiController {
 
     @Get(':code')
     @ApiOperation({ operationId: 'getSet', summary: 'Get set detail by code' })
-    @ApiResponse({ status: 200, description: 'Set detail' })
+    @ApiOkEnvelope(SetApiResponseDto, { description: 'Set detail' })
     @ApiResponse({ status: 404, description: 'Set not found' })
     async findByCode(@Param('code') code: string): Promise<ApiResponseDto<SetApiResponseDto>> {
         const set = await this.setService.findByCode(code);
@@ -187,7 +188,7 @@ export class SetApiController {
         description: 'Legality status; only meaningful with format. Defaults to "legal".',
         enum: [...LEGALITY_VALUES],
     })
-    @ApiResponse({ status: 200, description: 'Cards in set' })
+    @ApiOkEnvelope(CardApiResponseDto, { isArray: true, description: 'Cards in set' })
     @ApiResponse({
         status: 400,
         description: 'Invalid filter value (unknown rarity/format/legality/sort)',
@@ -222,7 +223,10 @@ export class SetApiController {
     @Get(':code/price-history')
     @ApiOperation({ operationId: 'getSetPriceHistory', summary: 'Get set price history' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
-    @ApiResponse({ status: 200, description: 'Set price history data' })
+    @ApiOkEnvelope(SetPriceHistoryPointDto, {
+        isArray: true,
+        description: 'Set price history data',
+    })
     async getPriceHistory(
         @Param('code') code: string,
         @Query('days') days?: string

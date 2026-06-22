@@ -37,6 +37,7 @@ import {
     PortfolioSummaryApiDto,
 } from './dto/portfolio-response.dto';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 
 @ApiTags('Portfolio')
 @ApiBearerAuth()
@@ -55,7 +56,7 @@ export class PortfolioApiController {
 
     @Get()
     @ApiOperation({ summary: 'Get portfolio summary' })
-    @ApiResponse({ status: 200, description: 'Portfolio summary' })
+    @ApiOkEnvelope(PortfolioSummaryApiDto, { description: 'Portfolio summary' })
     async getSummary(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<PortfolioSummaryApiDto | null>> {
@@ -79,7 +80,7 @@ export class PortfolioApiController {
     @ApiOperation({ summary: 'Get portfolio value history (Premium)' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
-    @ApiResponse({ status: 200, description: 'Value history data' })
+    @ApiOkEnvelope(PortfolioHistoryPointDto, { isArray: true, description: 'Value history data' })
     async getHistory(
         @Req() req: AuthenticatedRequest,
         @Query('days') days?: string
@@ -96,7 +97,7 @@ export class PortfolioApiController {
     @ApiOperation({ summary: 'Get card performance data' })
     @ApiQuery({ name: 'type', required: false, description: 'best or worst' })
     @ApiQuery({ name: 'limit', required: false, description: 'Number of results' })
-    @ApiResponse({ status: 200, description: 'Card performance data' })
+    @ApiOkEnvelope(CardPerformanceApiDto, { isArray: true, description: 'Card performance data' })
     async getPerformance(
         @Req() req: AuthenticatedRequest,
         @Query('type') type?: string,
@@ -156,7 +157,7 @@ export class PortfolioApiController {
     @UseGuards(SubscriptionGuard)
     @RequiresSubscription()
     @ApiOperation({ summary: 'Get cash flow periods (Premium)' })
-    @ApiResponse({ status: 200, description: 'Cash flow data' })
+    @ApiOkEnvelope(CashFlowPeriodApiDto, { isArray: true, description: 'Cash flow data' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async getCashFlow(
         @Req() req: AuthenticatedRequest
@@ -233,7 +234,7 @@ export class PortfolioApiController {
         description:
             'For by=color: the active superset filter (W,U,B,R,G,C) so drill-down matches the aggregate row. Ignored for other dimensions.',
     })
-    @ApiResponse({ status: 200, description: 'Cards in the slice' })
+    @ApiOkEnvelope(BreakdownCardApiDto, { isArray: true, description: 'Cards in the slice' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async getBreakdownCards(
         @Req() req: AuthenticatedRequest,

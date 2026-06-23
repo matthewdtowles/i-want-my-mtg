@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsUUID } from 'class-validator';
 
 /**
@@ -5,12 +6,15 @@ import { IsBoolean, IsInt, IsUUID } from 'class-validator';
  * Excludes userId - the API sets it from the JWT token.
  */
 export class InventoryRequestApiDto {
+    @ApiProperty()
     @IsUUID()
     readonly cardId: string;
 
+    @ApiProperty({ description: 'Absolute quantity to set; 0 removes the row' })
     @IsInt()
     readonly quantity: number;
 
+    @ApiProperty()
     @IsBoolean()
     readonly isFoil: boolean;
 }

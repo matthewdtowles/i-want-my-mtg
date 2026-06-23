@@ -39,6 +39,7 @@ import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { csvUploadInterceptor } from 'src/http/base/csv-upload.interceptor';
 import { InventoryRequestApiDto } from './dto/inventory-request-api.dto';
+import { InventoryDeleteApiDto } from './dto/inventory-delete-api.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { InventoryItemApiDto } from './dto/inventory-response.dto';
 import { InventoryImportResponseDto } from './dto/inventory-import-response.dto';
@@ -140,6 +141,7 @@ export class InventoryApiController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Add inventory items' })
+    @ApiBody({ type: InventoryRequestApiDto, isArray: true })
     @ApiOkEnvelope(InventoryItemApiDto, {
         isArray: true,
         status: 201,
@@ -165,6 +167,7 @@ export class InventoryApiController {
     @Patch()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update inventory items' })
+    @ApiBody({ type: InventoryRequestApiDto, isArray: true })
     @ApiOkEnvelope(InventoryItemApiDto, { isArray: true, description: 'Items updated' })
     async update(
         @Body() dtos: InventoryRequestApiDto[],
@@ -253,9 +256,10 @@ export class InventoryApiController {
     @Delete()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Delete inventory item' })
+    @ApiBody({ type: InventoryDeleteApiDto })
     @ApiResponse({ status: 200, description: 'Item deleted' })
     async delete(
-        @Body() body: { cardId: string; isFoil: boolean },
+        @Body() body: InventoryDeleteApiDto,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<{ deleted: boolean }>> {
         const success = await this.inventoryService.delete(req.user.id, body.cardId, body.isFoil);

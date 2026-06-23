@@ -102,7 +102,7 @@ Extend the product's surface area so newcomers can use it where they expect to �
 
 **Framework — React Native + Expo, not Flutter or bare RN.** One language across web/API/MCP/mobile, so the generated OpenAPI client and the sort/filter/legality enums are shared, not re-implemented. This is an API-driven CRUD + camera app (Expo's sweet spot), not a graphics showcase where Flutter's perf edge would pay off. EAS Build + OTA updates keep the toolchain manageable for a solo maintainer (no Mac/Xcode babysitting, JS fixes shippable without a store-review cycle). Escape hatch if a needed native module isn't in Expo: a dev-client + config plugins.
 
-**Repo: [`i-want-my-mtg-mobile`](https://github.com/matthewdtowles/i-want-my-mtg-mobile)** (created 2026-06-22, barebones README only) — Expo app. Reuses the running `/api/v1` backend **unchanged: no server work required for v1.** Auth is confirmed (below); CORS is a non-issue for native builds.
+**Repo: [`i-want-my-mtg-mobile`](https://github.com/matthewdtowles/i-want-my-mtg-mobile)** (scaffolded 2026-06-22; browse + inventory + transactions + portfolio shipped — see its `HANDOFF.md`) — Expo app. Reuses the running `/api/v1` backend with **no behavioral server changes.** The one server-side caveat: write endpoints' request DTOs needed `@ApiProperty` annotations so the generated client could type their bodies (otherwise inventory/transaction POST/PATCH bodies generated as empty — fixed in #549/#550); these are spec/annotation-only. Auth is confirmed (below); CORS is a non-issue for native builds.
 
 **Auth confirmed (2026-06-22) — no backend change needed.** `POST /api/v1/auth/login` already returns the JWT in the response body (`{ accessToken }`, `auth-api.controller.ts`), and the JWT strategy reads `Authorization: Bearer` first, cookie only as fallback (`jwt.strategy.ts`). So mobile captures the token at login, stores it in `expo-secure-store`, and sends it as a bearer header — the exact path the API/MCP clients already use.
 
@@ -113,14 +113,14 @@ Stack:
 - Build/release: EAS Build (iOS + Android), EAS Update for OTA JS pushes
 
 **v1 scope (first ship):**
-- [ ] Scaffold the Expo app in `i-want-my-mtg-mobile` (TypeScript, expo-router, TanStack Query)
-- [ ] Generate the typed API client from the OpenAPI spec; wire CI regeneration
-- [ ] Auth flow: sign in / sign up, capture `accessToken`, store in `expo-secure-store`, send as bearer header
-- [ ] Browse: sets + cards, card detail (reuse Scryfall images), card search
-- [ ] Inventory: view, add/edit quantities, finish toggle
-- [ ] Transactions: log buy/sell, view recent history
-- [ ] Portfolio overview (current value)
-- [ ] TestFlight (iOS) + Play internal-testing (Android) distribution
+- [x] Scaffold the Expo app in `i-want-my-mtg-mobile` (TypeScript, expo-router, TanStack Query)
+- [x] Generate the typed API client from the OpenAPI spec; wire CI regeneration
+- [x] Auth flow: sign in / sign up, capture `accessToken`, store in `expo-secure-store`, send as bearer header
+- [x] Browse: sets + cards, card detail (reuse Scryfall images), card search
+- [x] Inventory: view, add/edit quantities, finish toggle
+- [x] Transactions: log buy/sell, view recent history
+- [x] Portfolio overview (current value)
+- [ ] TestFlight (iOS) + Play internal-testing (Android) distribution — **next**
 
 **Fast-follow (after v1 validates):**
 - [ ] Camera-based card scanning (7.3) — the "scan on phone, manage on web" differentiator; premium-gated per the Appendix
@@ -141,7 +141,7 @@ There is no general-audience sideloading on iOS, so reaching real users means go
 - [ ] **If social login is ever added:** offering Google/any social sign-in forces **Sign in with Apple** alongside it — plain email/password (current) avoids this
 - [ ] **Release pipeline:** EAS Build produces the signed `.ipa`/`.aab`; EAS Submit uploads to App Store Connect + Play Console (no local Xcode/Transporter). First submission and native changes go through full review (Apple ~1–3 days, Play hours–days); EAS Update ships JS-only fixes without re-review.
 
-**Cross-repo tracking:** the mobile work lives in the `i-want-my-mtg-mobile` repo, but we want **one view of progress**. Create the v1 issues in `i-want-my-mtg-mobile` and add each to the **"I Want My MTG" GitHub project** (`PVT_kwHOAP2Yos4A4tP0`) so mobile, web, scry, and MCP issues all roll up together — same pattern already used for the cross-repo scry / MCP items. (Issues to be created when we kick off the build; not created yet.) When creating them, make **store enrollment its own early issue** — Apple's $99 enrollment and Google's 14-day closed-test gate should be in flight while the app is still being built, not discovered at submission time.
+**Cross-repo tracking:** the mobile work lives in the `i-want-my-mtg-mobile` repo, but we want **one view of progress**. Create the v1 issues in `i-want-my-mtg-mobile` and add each to the **"I Want My MTG" GitHub project** (`PVT_kwHOAP2Yos4A4tP0`) so mobile, web, scry, and MCP issues all roll up together — same pattern already used for the cross-repo scry / MCP items. (v1 issues #1–#8 are created in `i-want-my-mtg-mobile` and tracked on the project board; #1–#7 are done, #8 distribution is next.) When creating them, make **store enrollment its own early issue** — Apple's $99 enrollment and Google's 14-day closed-test gate should be in flight while the app is still being built, not discovered at submission time.
 
 ### 7.2 Desktop App (Optional)
 

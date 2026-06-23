@@ -33,6 +33,7 @@ import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
 import { validateApiQuery } from '../shared/query-validation';
 import { CostBasisApiDto, TransactionApiItemDto } from './dto/transaction-response.dto';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { TransactionApiPresenter } from './transaction-api.presenter';
 
 @ApiTags('Transactions')
@@ -54,7 +55,7 @@ export class TransactionApiController {
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false })
     @ApiQuery({ name: 'type', required: false, enum: ['BUY', 'SELL'] })
-    @ApiResponse({ status: 200, description: 'Transaction list' })
+    @ApiOkEnvelope(TransactionApiItemDto, { isArray: true, description: 'Transaction list' })
     @ApiResponse({
         status: 400,
         description: 'Invalid sort value or transaction type',
@@ -83,7 +84,7 @@ export class TransactionApiController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create transaction' })
-    @ApiResponse({ status: 201, description: 'Transaction created' })
+    @ApiOkEnvelope(TransactionApiItemDto, { status: 201, description: 'Transaction created' })
     async create(
         @Body() dto: TransactionRequestDto,
         @Req() req: AuthenticatedRequest
@@ -98,7 +99,7 @@ export class TransactionApiController {
     @Put(':id')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update transaction' })
-    @ApiResponse({ status: 200, description: 'Transaction updated' })
+    @ApiOkEnvelope(TransactionApiItemDto, { description: 'Transaction updated' })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: TransactionUpdateRequestDto,
@@ -131,7 +132,7 @@ export class TransactionApiController {
     @Get('cost-basis/:cardId')
     @ApiOperation({ summary: 'Get cost basis for a card by ID' })
     @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
-    @ApiResponse({ status: 200, description: 'Cost basis data' })
+    @ApiOkEnvelope(CostBasisApiDto, { description: 'Cost basis data' })
     async getCostBasisById(
         @Param('cardId') cardId: string,
         @Query('isFoil') isFoilStr: string,
@@ -143,7 +144,7 @@ export class TransactionApiController {
     @Get('cost-basis/:setCode/:setNumber')
     @ApiOperation({ summary: 'Get cost basis for a card by set code and number' })
     @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
-    @ApiResponse({ status: 200, description: 'Cost basis data' })
+    @ApiOkEnvelope(CostBasisApiDto, { description: 'Cost basis data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getCostBasisBySetCodeAndNumber(
         @Param('setCode') setCode: string,

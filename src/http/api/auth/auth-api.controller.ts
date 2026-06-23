@@ -16,6 +16,7 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { LoginRequestDto, LoginResponseDto } from './dto/auth-response.dto';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -27,7 +28,7 @@ export class AuthApiController {
     @UseGuards(LocalAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Login and obtain JWT token' })
-    @ApiResponse({ status: 200, description: 'Login successful' })
+    @ApiOkEnvelope(LoginResponseDto, { description: 'Login successful' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(
         @Body() _dto: LoginRequestDto,

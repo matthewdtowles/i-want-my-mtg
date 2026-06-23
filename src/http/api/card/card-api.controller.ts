@@ -8,6 +8,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { CardService } from 'src/core/card/card.service';
 import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
@@ -75,7 +76,10 @@ export class CardApiController {
     })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
-    @ApiResponse({ status: 200, description: 'Search results (ordered by card name)' })
+    @ApiOkEnvelope(CardApiResponseDto, {
+        isArray: true,
+        description: 'Search results (ordered by card name)',
+    })
     @ApiResponse({
         status: 400,
         description:
@@ -125,7 +129,7 @@ export class CardApiController {
 
     @Get(':cardId/prices')
     @ApiOperation({ operationId: 'getCardPrices', summary: 'Get current prices for a card by ID' })
-    @ApiResponse({ status: 200, description: 'Card prices' })
+    @ApiOkEnvelope(CardApiResponseDto, { description: 'Card prices' })
     async getPricesById(
         @Param('cardId') cardId: string
     ): Promise<ApiResponseDto<CardApiResponseDto>> {
@@ -141,7 +145,9 @@ export class CardApiController {
         operationId: 'getCardBuylist',
         summary: 'Get current buylist (sell-to-vendor) offers for a card by ID',
     })
-    @ApiResponse({ status: 200, description: 'Buylist offers grouped by finish (NM, best first)' })
+    @ApiOkEnvelope(CardBuylistApiResponseDto, {
+        description: 'Buylist offers grouped by finish (NM, best first)',
+    })
     async getBuylistById(
         @Param('cardId') cardId: string
     ): Promise<ApiResponseDto<CardBuylistApiResponseDto>> {
@@ -155,7 +161,7 @@ export class CardApiController {
         summary: 'Get price history for a card by ID',
     })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
-    @ApiResponse({ status: 200, description: 'Price history data' })
+    @ApiOkEnvelope(PriceHistoryPointDto, { isArray: true, description: 'Price history data' })
     async getPriceHistoryById(
         @Param('cardId') cardId: string,
         @Query('days') days?: string
@@ -168,7 +174,7 @@ export class CardApiController {
         operationId: 'getCardPricesBySetAndNumber',
         summary: 'Get current prices for a card by set code and number',
     })
-    @ApiResponse({ status: 200, description: 'Card prices' })
+    @ApiOkEnvelope(CardApiResponseDto, { description: 'Card prices' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getPricesBySetCodeAndNumber(
         @Param('setCode') setCode: string,
@@ -190,7 +196,9 @@ export class CardApiController {
         operationId: 'getCardBuylistBySetAndNumber',
         summary: 'Get current buylist offers for a card by set code and number',
     })
-    @ApiResponse({ status: 200, description: 'Buylist offers grouped by finish (NM, best first)' })
+    @ApiOkEnvelope(CardBuylistApiResponseDto, {
+        description: 'Buylist offers grouped by finish (NM, best first)',
+    })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getBuylistBySetCodeAndNumber(
         @Param('setCode') setCode: string,
@@ -210,7 +218,7 @@ export class CardApiController {
         summary: 'Get price history for a card by set code and number',
     })
     @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
-    @ApiResponse({ status: 200, description: 'Price history data' })
+    @ApiOkEnvelope(PriceHistoryPointDto, { isArray: true, description: 'Price history data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getPriceHistoryBySetCodeAndNumber(
         @Param('setCode') setCode: string,
@@ -229,7 +237,7 @@ export class CardApiController {
         operationId: 'getCardBySetAndNumber',
         summary: 'Get card by set code and collector number',
     })
-    @ApiResponse({ status: 200, description: 'Card detail' })
+    @ApiOkEnvelope(CardApiResponseDto, { description: 'Card detail' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async findBySetCodeAndNumber(
         @Param('setCode') setCode: string,

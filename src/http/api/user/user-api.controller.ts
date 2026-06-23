@@ -42,6 +42,7 @@ import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { UserApiResponseDto } from './dto/user-response.dto';
 import { UserExportDto } from './dto/user-export.dto';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 
 @ApiTags('User')
 @ApiBearerAuth()
@@ -63,7 +64,7 @@ export class UserApiController {
 
     @Get()
     @ApiOperation({ summary: 'Get current user profile' })
-    @ApiResponse({ status: 200, description: 'User profile' })
+    @ApiOkEnvelope(UserApiResponseDto, { description: 'User profile' })
     async getProfile(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<UserApiResponseDto>> {
@@ -166,7 +167,7 @@ export class UserApiController {
     @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update user profile (session only, not API keys)' })
-    @ApiResponse({ status: 200, description: 'Profile updated' })
+    @ApiOkEnvelope(UserApiResponseDto, { description: 'Profile updated' })
     async updateProfile(
         @Body() dto: UpdateUserRequestDto,
         @Req() req: AuthenticatedRequest
@@ -209,7 +210,7 @@ export class UserApiController {
     @Get('preferences/set-types')
     @UseGuards(JwtAuthGuard)
     @ApiOperation({ summary: 'Get the current set-type filter preference' })
-    @ApiResponse({ status: 200, description: 'Current preference', type: SetTypePreferenceResponseDto })
+    @ApiOkEnvelope(SetTypePreferenceResponseDto, { description: 'Current preference' })
     async getSetTypePreference(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<SetTypePreferenceResponseDto>> {
@@ -223,7 +224,7 @@ export class UserApiController {
     @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update the set-type filter preference' })
-    @ApiResponse({ status: 200, description: 'Preference updated', type: SetTypePreferenceResponseDto })
+    @ApiOkEnvelope(SetTypePreferenceResponseDto, { description: 'Preference updated' })
     async updateSetTypePreference(
         @Body() dto: UpdateSetTypePreferenceRequestDto,
         @Req() req: AuthenticatedRequest

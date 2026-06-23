@@ -46,6 +46,7 @@ import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
 import { InventorySellApiResponseDto } from './dto/inventory-sell-response.dto';
 import { InventoryApiPresenter } from './inventory-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
 import { validateApiQuery } from '../shared/query-validation';
 
@@ -67,7 +68,7 @@ export class InventoryApiController {
     @ApiQuery({ name: 'sort', required: false })
     @ApiQuery({ name: 'ascend', required: false })
     @ApiQuery({ name: 'filter', required: false })
-    @ApiResponse({ status: 200, description: 'Inventory list' })
+    @ApiOkEnvelope(InventoryItemApiDto, { isArray: true, description: 'Inventory list' })
     @ApiResponse({
         status: 400,
         description: 'Invalid sort value',
@@ -97,7 +98,7 @@ export class InventoryApiController {
             'Matches every owned card against current buylist offers, picks the best NM offer ' +
             'per item (qty-capped), groups by vendor, and totals it. Mirrors the /inventory/sell page.',
     })
-    @ApiResponse({ status: 200, description: 'Market sell value plan' })
+    @ApiOkEnvelope(InventorySellApiResponseDto, { description: 'Market sell value plan' })
     async sellPlan(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventorySellApiResponseDto>> {
@@ -108,7 +109,10 @@ export class InventoryApiController {
     @Get('quantities')
     @ApiOperation({ summary: 'Get inventory quantities for a batch of card IDs' })
     @ApiQuery({ name: 'cardIds', required: true, description: 'Comma-separated card IDs' })
-    @ApiResponse({ status: 200, description: 'Inventory quantities by card ID' })
+    @ApiOkEnvelope(InventoryQuantityApiDto, {
+        isArray: true,
+        description: 'Inventory quantities by card ID',
+    })
     async getQuantities(
         @Query('cardIds') cardIds: string,
         @Req() req: AuthenticatedRequest
@@ -136,7 +140,11 @@ export class InventoryApiController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Add inventory items' })
-    @ApiResponse({ status: 201, description: 'Items added' })
+    @ApiOkEnvelope(InventoryItemApiDto, {
+        isArray: true,
+        status: 201,
+        description: 'Items added',
+    })
     async create(
         @Body() dtos: InventoryRequestApiDto[],
         @Req() req: AuthenticatedRequest
@@ -157,7 +165,7 @@ export class InventoryApiController {
     @Patch()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update inventory items' })
-    @ApiResponse({ status: 200, description: 'Items updated' })
+    @ApiOkEnvelope(InventoryItemApiDto, { isArray: true, description: 'Items updated' })
     async update(
         @Body() dtos: InventoryRequestApiDto[],
         @Req() req: AuthenticatedRequest
@@ -196,7 +204,7 @@ export class InventoryApiController {
             required: ['file'],
         },
     })
-    @ApiResponse({ status: 200, description: 'Import result', type: InventoryImportResponseDto })
+    @ApiOkEnvelope(InventoryImportResponseDto, { description: 'Import result' })
     @ApiResponse({ status: 400, description: 'Missing or invalid CSV file' })
     async importCards(
         @UploadedFile() file: Express.Multer.File,

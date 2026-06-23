@@ -56,7 +56,10 @@ export class PortfolioApiController {
 
     @Get()
     @ApiOperation({ summary: 'Get portfolio summary' })
-    @ApiOkEnvelope(PortfolioSummaryApiDto, { description: 'Portfolio summary' })
+    @ApiOkEnvelope(PortfolioSummaryApiDto, {
+        description: 'Portfolio summary',
+        nullableData: true,
+    })
     async getSummary(
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<PortfolioSummaryApiDto | null>> {

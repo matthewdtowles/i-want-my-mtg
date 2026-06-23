@@ -14,7 +14,7 @@ export class TransactionUpdateRequestDto {
     @Min(0)
     readonly pricePerUnit?: number;
 
-    @ApiPropertyOptional({ format: 'date-time', description: 'ISO 8601 date string' })
+    @ApiPropertyOptional({ format: 'date', description: 'Date-only string (YYYY-MM-DD)' })
     @IsOptional()
     @IsDateString()
     readonly date?: string;

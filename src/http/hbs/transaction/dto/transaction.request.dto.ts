@@ -9,15 +9,16 @@ import {
     IsString,
     Min,
 } from 'class-validator';
+import { TRANSACTION_TYPES, TransactionType } from 'src/core/transaction/transaction.entity';
 
 export class TransactionRequestDto {
     @ApiProperty()
     @IsString()
     readonly cardId: string;
 
-    @ApiProperty({ enum: ['BUY', 'SELL'] })
-    @IsIn(['BUY', 'SELL'])
-    readonly type: 'BUY' | 'SELL';
+    @ApiProperty({ enum: TRANSACTION_TYPES })
+    @IsIn(TRANSACTION_TYPES)
+    readonly type: TransactionType;
 
     @ApiProperty({ minimum: 1 })
     @IsInt()
@@ -33,7 +34,7 @@ export class TransactionRequestDto {
     @IsBoolean()
     readonly isFoil: boolean;
 
-    @ApiProperty({ format: 'date-time', description: 'ISO 8601 date string' })
+    @ApiProperty({ format: 'date', description: 'Date-only string (YYYY-MM-DD)' })
     @IsDateString()
     readonly date: string;
 

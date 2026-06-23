@@ -125,10 +125,23 @@ Stack:
 **Fast-follow (after v1 validates):**
 - [ ] Camera-based card scanning (7.3) — the "scan on phone, manage on web" differentiator; premium-gated per the Appendix
 - [ ] Price alerts management, deck building, portfolio analytics parity
-- [ ] App Store + Play Store public submission
+- [ ] App Store + Play Store public submission (see Store readiness below)
 - [ ] Market cross-platform sync as the core differentiator
 
-**Cross-repo tracking:** the mobile work lives in the `i-want-my-mtg-mobile` repo, but we want **one view of progress**. Create the v1 issues in `i-want-my-mtg-mobile` and add each to the **"I Want My MTG" GitHub project** (`PVT_kwHOAP2Yos4A4tP0`) so mobile, web, scry, and MCP issues all roll up together — same pattern already used for the cross-repo scry / MCP items. (Issues to be created when we kick off the build; not created yet.)
+**Store readiness (gates public submission — start the account/test items early, in parallel with the build):**
+
+There is no general-audience sideloading on iOS, so reaching real users means going through Apple (TestFlight or App Store) and Google Play. The lead time here is calendar-bound, not code-bound — account enrollment, Google's new-individual closed-test gate, and first review can run 2–3 weeks of *waiting* — so the account/test items must start before the app is "done."
+
+- [ ] **Apple Developer Program** — $99/year, required even for TestFlight; enrollment can take days and may need ID verification (D-U-N-S if enrolling as an org rather than individual)
+- [ ] **Google Play Developer** — $25 one-time; new individual accounts must run a **closed test with ~12 testers for 14 continuous days** before production is unlocked — start this clock early
+- [ ] **Payments / store-cut decision (biggest policy risk):** premium is Stripe today, but Apple/Google require digital subscriptions sold *in-app* to use their IAP (15–30%). v1 has no billing UI, so launch posture is **read/track only — no upgrade button or web-purchase steering inside the app** (Apple polices external-purchase links). Decide and document this explicitly; native IAP + entitlement reconciliation is the alternative and is much larger.
+- [ ] **Privacy disclosures:** Apple App Privacy questionnaire + Google Data Safety form (declare account email + JWT); reuse the existing `/privacy` URL (§3.2)
+- [ ] **Account deletion** reachable in-app or clearly linked (both stores require it for apps with accounts) — confirm the §3.2 FK-cascade scrub is user-triggerable
+- [ ] **Listing assets:** name, description, keywords, app icon, multi-size screenshots, Play feature graphic; content/age-rating questionnaires
+- [ ] **If social login is ever added:** offering Google/any social sign-in forces **Sign in with Apple** alongside it — plain email/password (current) avoids this
+- [ ] **Release pipeline:** EAS Build produces the signed `.ipa`/`.aab`; EAS Submit uploads to App Store Connect + Play Console (no local Xcode/Transporter). First submission and native changes go through full review (Apple ~1–3 days, Play hours–days); EAS Update ships JS-only fixes without re-review.
+
+**Cross-repo tracking:** the mobile work lives in the `i-want-my-mtg-mobile` repo, but we want **one view of progress**. Create the v1 issues in `i-want-my-mtg-mobile` and add each to the **"I Want My MTG" GitHub project** (`PVT_kwHOAP2Yos4A4tP0`) so mobile, web, scry, and MCP issues all roll up together — same pattern already used for the cross-repo scry / MCP items. (Issues to be created when we kick off the build; not created yet.) When creating them, make **store enrollment its own early issue** — Apple's $99 enrollment and Google's 14-day closed-test gate should be in flight while the app is still being built, not discovered at submission time.
 
 ### 7.2 Desktop App (Optional)
 

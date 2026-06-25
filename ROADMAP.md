@@ -126,10 +126,10 @@ Stack:
 **Fast-follow (after v1 validates):**
 - [ ] Camera-based card scanning (7.3) — the "scan on phone, manage on web" differentiator; premium-gated per the Appendix
 - [ ] Price alerts management, deck building, portfolio analytics parity
-- [ ] App Store + Play Store public submission (see Store readiness below)
+- [ ] App Store + Play Store public submission (see Store readiness below). iOS submission checklist tracked in [mobile #20](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/20)
 - [ ] Market cross-platform sync as the core differentiator
 
-**Store readiness (gates public submission — start the account/test items early, in parallel with the build):**
+**Store readiness (gates public submission — start the account/test items early, in parallel with the build):** the iOS App Store submission is broken into an ordered checklist in [mobile #20](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/20); the bullets below are the cross-platform context.
 
 There is no general-audience sideloading on iOS, so reaching real users means going through Apple (TestFlight or App Store) and Google Play. The lead time here is calendar-bound, not code-bound — account enrollment, Google's new-individual closed-test gate, and first review can run 2–3 weeks of *waiting* — so the account/test items must start before the app is "done."
 

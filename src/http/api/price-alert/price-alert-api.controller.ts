@@ -36,6 +36,7 @@ import { CreatePriceAlertDto, UpdatePriceAlertDto } from './dto/price-alert-requ
 import { PriceAlertApiDto } from './dto/price-alert-response.dto';
 import { PriceAlertApiPresenter } from './price-alert-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 
 @ApiTags('Price Alerts')
 @Controller('api/v1/price-alerts')
@@ -53,7 +54,7 @@ export class PriceAlertApiController {
     @ApiOperation({ summary: 'List price alerts' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
-    @ApiResponse({ status: 200, description: 'Price alert list' })
+    @ApiOkEnvelope(PriceAlertApiDto, { isArray: true, description: 'Price alert list' })
     async findAll(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -78,7 +79,7 @@ export class PriceAlertApiController {
     @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a price alert' })
-    @ApiResponse({ status: 201, description: 'Alert created' })
+    @ApiOkEnvelope(PriceAlertApiDto, { status: 201, description: 'Alert created' })
     async create(
         @Body() dto: CreatePriceAlertDto,
         @Req() req: AuthenticatedRequest
@@ -112,7 +113,7 @@ export class PriceAlertApiController {
     @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a price alert' })
-    @ApiResponse({ status: 200, description: 'Alert updated' })
+    @ApiOkEnvelope(PriceAlertApiDto, { description: 'Alert updated' })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdatePriceAlertDto,

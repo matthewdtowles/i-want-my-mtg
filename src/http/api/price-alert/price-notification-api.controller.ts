@@ -21,6 +21,7 @@ import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { PriceNotificationApiDto } from './dto/price-notification-response.dto';
 import { PriceAlertApiPresenter } from './price-alert-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -36,7 +37,7 @@ export class PriceNotificationApiController {
     @ApiOperation({ summary: 'List notifications' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
-    @ApiResponse({ status: 200, description: 'Notification list' })
+    @ApiOkEnvelope(PriceNotificationApiDto, { isArray: true, description: 'Notification list' })
     async findAll(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',

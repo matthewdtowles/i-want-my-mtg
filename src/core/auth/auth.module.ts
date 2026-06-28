@@ -7,11 +7,13 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
+import { RefreshTokenModule } from './refresh-token.module';
 
 @Module({
     imports: [
         ConfigModule,
         UserModule,
+        RefreshTokenModule,
         PassportModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],

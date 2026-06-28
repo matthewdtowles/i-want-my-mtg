@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { RefreshTokenService } from 'src/core/auth/refresh-token.service';
 import { User } from 'src/core/user/user.entity';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { UserService } from 'src/core/user/user.service';
@@ -7,6 +8,7 @@ import { UserRole } from 'src/shared/constants/user.role.enum';
 describe('UserService', () => {
     let service: UserService;
     let repository: UserRepositoryPort;
+    const mockRefreshTokenService = { revokeAllForUser: jest.fn().mockResolvedValue(undefined) };
 
     const createUser: User = new User({
         name: 'test-username1',
@@ -45,6 +47,10 @@ describe('UserService', () => {
                 {
                     provide: UserRepositoryPort,
                     useValue: mockUserRepository,
+                },
+                {
+                    provide: RefreshTokenService,
+                    useValue: mockRefreshTokenService,
                 },
             ],
         }).compile();
@@ -90,10 +96,11 @@ describe('UserService', () => {
         expect(repoSpy).toHaveBeenCalledWith(updateUser);
     });
 
-    it('updatePassword should update password for given user', async () => {
+    it('updatePassword should update password and revoke refresh tokens for given user', async () => {
         const repoSpy = jest.spyOn(repository, 'update');
         await expect(service.updatePassword(mockUser, 'newPassword')).resolves.toBe(true);
         expect(repoSpy).toHaveBeenCalled();
+        expect(mockRefreshTokenService.revokeAllForUser).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('remove should delete given user, check if user exists and return false', async () => {

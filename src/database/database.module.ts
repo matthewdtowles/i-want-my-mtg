@@ -80,6 +80,9 @@ import { ApiSubscriptionOrmEntity } from './api-tier/api-subscription.orm-entity
 import { ApiSubscriptionRepository } from './api-tier/api-subscription.repository';
 import { ApiUsageOrmEntity } from './api-tier/api-usage.orm-entity';
 import { ApiUsageRepository } from './api-tier/api-usage.repository';
+import { RefreshTokenRepositoryPort } from 'src/core/auth/ports/refresh-token.repository.port';
+import { RefreshTokenOrmEntity } from './auth/refresh-token.orm-entity';
+import { RefreshTokenRepository } from './auth/refresh-token.repository';
 
 @Module({
     imports: [
@@ -115,6 +118,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             ApiKeyOrmEntity,
             ApiSubscriptionOrmEntity,
             ApiUsageOrmEntity,
+            RefreshTokenOrmEntity,
         ]),
     ],
     providers: [
@@ -145,6 +149,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         { provide: ApiKeyRepositoryPort, useClass: ApiKeyRepository },
         { provide: ApiSubscriptionRepositoryPort, useClass: ApiSubscriptionRepository },
         { provide: ApiUsageRepositoryPort, useClass: ApiUsageRepository },
+        { provide: RefreshTokenRepositoryPort, useClass: RefreshTokenRepository },
     ],
     exports: [
         CardRepositoryPort,
@@ -171,6 +176,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         ApiKeyRepositoryPort,
         ApiSubscriptionRepositoryPort,
         ApiUsageRepositoryPort,
+        RefreshTokenRepositoryPort,
     ],
 })
 export class DatabaseModule {

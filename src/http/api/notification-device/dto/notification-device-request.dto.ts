@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional, IsString, Matches } from 'class-validator';
 
-const DEVICE_PLATFORMS = ['ios', 'android', 'web'] as const;
+export const DEVICE_PLATFORMS = ['ios', 'android', 'web'] as const;
 // Rejects empty and whitespace-only tokens (`@IsNotEmpty` accepts "   ", which
 // would then trim to "" in the service and persist a blank token row).
 const NON_BLANK = /\S/;

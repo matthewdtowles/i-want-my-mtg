@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/core/auth/auth.service';
 import { AuthToken } from 'src/core/auth/auth.types';
+import { RefreshTokenService } from 'src/core/auth/refresh-token.service';
 import { User } from 'src/core/user/user.entity';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { UserService } from 'src/core/user/user.service';
@@ -20,8 +21,14 @@ describe('AuthService', () => {
     let authService: AuthService;
     let userService: UserService;
     let jwtService: JwtService;
+    let refreshTokenService: jest.Mocked<Pick<RefreshTokenService, 'issue' | 'rotate' | 'revoke'>>;
 
     beforeAll(async () => {
+        refreshTokenService = {
+            issue: jest.fn().mockResolvedValue('refresh-raw'),
+            rotate: jest.fn(),
+            revoke: jest.fn().mockResolvedValue(undefined),
+        };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthService,
@@ -29,6 +36,7 @@ describe('AuthService', () => {
                     provide: UserService,
                     useValue: {
                         findByEmail: jest.fn().mockResolvedValue(mockUser),
+                        findById: jest.fn().mockResolvedValue(mockUser),
                         findSavedPassword: jest.fn().mockResolvedValue(mockUser.email),
                     },
                 },
@@ -43,6 +51,10 @@ describe('AuthService', () => {
                     useValue: {
                         signAsync: jest.fn().mockResolvedValue('jwtToken'),
                     },
+                },
+                {
+                    provide: RefreshTokenService,
+                    useValue: refreshTokenService,
                 },
             ],
         }).compile();
@@ -84,6 +96,51 @@ describe('AuthService', () => {
                 role: mockUser.role,
             });
             expect(result).toEqual(expectedToken);
+        });
+    });
+
+    describe('loginWithRefresh', () => {
+        it('returns an access token plus a freshly issued refresh token', async () => {
+            const result = await authService.loginWithRefresh(mockUser, 'iPhone');
+            expect(refreshTokenService.issue).toHaveBeenCalledWith(mockUser.id, 'iPhone');
+            expect(result).toEqual({ accessToken: 'jwtToken', refreshToken: 'refresh-raw' });
+        });
+    });
+
+    describe('refresh', () => {
+        it('rotates a valid refresh token into a new token pair', async () => {
+            refreshTokenService.rotate.mockResolvedValueOnce({
+                userId: mockUser.id,
+                rawToken: 'rotated-raw',
+            });
+            const result = await authService.refresh('old-raw');
+            expect(refreshTokenService.rotate).toHaveBeenCalledWith('old-raw');
+            expect(userService.findById).toHaveBeenCalledWith(mockUser.id);
+            expect(result).toEqual({ accessToken: 'jwtToken', refreshToken: 'rotated-raw' });
+        });
+
+        it('returns null when the refresh token is invalid', async () => {
+            refreshTokenService.rotate.mockResolvedValueOnce(null);
+            const result = await authService.refresh('bad-raw');
+            expect(result).toBeNull();
+        });
+
+        it('revokes the new token and returns null when the owner is gone', async () => {
+            refreshTokenService.rotate.mockResolvedValueOnce({
+                userId: 999,
+                rawToken: 'orphan-raw',
+            });
+            (userService.findById as jest.Mock).mockResolvedValueOnce(null);
+            const result = await authService.refresh('old-raw');
+            expect(refreshTokenService.revoke).toHaveBeenCalledWith('orphan-raw');
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('logout', () => {
+        it('revokes the supplied refresh token', async () => {
+            await authService.logout('some-raw');
+            expect(refreshTokenService.revoke).toHaveBeenCalledWith('some-raw');
         });
     });
 });

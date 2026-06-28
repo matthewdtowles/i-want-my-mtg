@@ -91,6 +91,12 @@ export class DeckImportApiResultDto {
     readonly errors: { row: number; name?: string; error: string }[];
 }
 
+/** Result of adding a deck's missing cards to the buy-list. */
+export class DeckMissingToBuyListResultDto {
+    @ApiProperty({ description: 'Count of distinct cards added to the buy-list.' })
+    readonly added: number;
+}
+
 /** Full deck with its cards. */
 export class DeckDetailApiDto extends DeckSummaryApiDto {
     @ApiProperty({ description: 'Count of cards not legal in the deck format (0 when no format).' })

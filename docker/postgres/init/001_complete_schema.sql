@@ -998,6 +998,26 @@ CREATE INDEX idx_notification_device_user_id ON public.notification_device (user
 
 
 --
+-- Name: refresh_token; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.refresh_token (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    token_hash varchar NOT NULL UNIQUE,
+    device_label varchar,
+    expires_at timestamptz NOT NULL,
+    revoked_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT refresh_token_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_refresh_token_user_active ON public.refresh_token (user_id) WHERE revoked_at IS NULL;
+
+
+--
 -- Name: deck; Type: TABLE; Schema: public
 --
 

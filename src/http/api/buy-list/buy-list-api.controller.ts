@@ -17,6 +17,7 @@ import { BuyListService } from 'src/core/buy-list/buy-list.service';
 import { parseCardImport } from 'src/core/import/parsers/card-import-dispatch';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { JwtOrApiKeyGuard } from '../shared/jwt-or-api-key.guard';
 import { BuyListApiPresenter } from './buy-list-api.presenter';
@@ -37,7 +38,7 @@ export class BuyListApiController {
 
     @Get()
     @ApiOperation({ summary: "List the authenticated user's buy-list" })
-    @ApiResponse({ status: 200, description: 'Buy-list items' })
+    @ApiOkEnvelope(BuyListItemApiDto, { isArray: true, description: 'Buy-list items' })
     async list(@Req() req: AuthenticatedRequest): Promise<ApiResponseDto<BuyListItemApiDto[]>> {
         const items = await this.buyListService.list(req.user.id);
         return ApiResponseDto.ok(items.map((i) => BuyListApiPresenter.toItem(i)));
@@ -93,7 +94,7 @@ export class BuyListApiController {
             'native format as inventory import; external exports (Moxfield, Archidekt, Deckbox, ' +
             'TCGPlayer) are auto-detected. Returns counts and per-row errors.',
     })
-    @ApiResponse({ status: 200, description: 'Import result', type: BuyListImportResponseDto })
+    @ApiOkEnvelope(BuyListImportResponseDto, { description: 'Import result' })
     @ApiResponse({ status: 400, description: 'Invalid CSV text' })
     async import(
         @Body() dto: BuyListImportApiDto,

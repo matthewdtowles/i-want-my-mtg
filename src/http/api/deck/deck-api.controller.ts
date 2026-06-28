@@ -20,6 +20,7 @@ import { DeckImportService } from 'src/core/deck/deck-import.service';
 import { DeckService } from 'src/core/deck/deck.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { JwtOrApiKeyGuard } from '../shared/jwt-or-api-key.guard';
 import { DeckApiPresenter } from './deck-api.presenter';
@@ -34,6 +35,7 @@ import {
 import {
     DeckDetailApiDto,
     DeckImportApiResultDto,
+    DeckMissingToBuyListResultDto,
     DeckSummaryApiDto,
 } from './dto/deck-response.dto';
 
@@ -51,7 +53,7 @@ export class DeckApiController {
 
     @Get()
     @ApiOperation({ summary: "List the authenticated user's decks" })
-    @ApiResponse({ status: 200, description: 'Deck summaries' })
+    @ApiOkEnvelope(DeckSummaryApiDto, { isArray: true, description: 'Deck summaries' })
     async list(@Req() req: AuthenticatedRequest): Promise<ApiResponseDto<DeckSummaryApiDto[]>> {
         const decks = await this.deckService.listDecks(req.user.id);
         return ApiResponseDto.ok(decks.map((d) => DeckApiPresenter.toSummary(d)));
@@ -59,7 +61,7 @@ export class DeckApiController {
 
     @Post()
     @ApiOperation({ summary: 'Create a deck' })
-    @ApiResponse({ status: 201, description: 'Created deck' })
+    @ApiOkEnvelope(DeckDetailApiDto, { status: 201, description: 'Created deck' })
     async create(
         @Body() dto: DeckCreateApiDto,
         @Req() req: AuthenticatedRequest
@@ -71,7 +73,9 @@ export class DeckApiController {
     @Post('import')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Create a deck from pasted decklist text' })
-    @ApiResponse({ status: 200, description: 'Import result with the new deck id + unresolved lines' })
+    @ApiOkEnvelope(DeckImportApiResultDto, {
+        description: 'Import result with the new deck id + unresolved lines',
+    })
     async import(
         @Body() dto: DeckImportApiDto,
         @Req() req: AuthenticatedRequest
@@ -87,7 +91,7 @@ export class DeckApiController {
 
     @Get(':id')
     @ApiOperation({ summary: 'Get a deck with its cards' })
-    @ApiResponse({ status: 200, description: 'Deck detail' })
+    @ApiOkEnvelope(DeckDetailApiDto, { description: 'Deck detail' })
     @ApiResponse({ status: 404, description: 'Deck not found' })
     async get(
         @Param('id', ParseIntPipe) id: number,
@@ -103,12 +107,12 @@ export class DeckApiController {
     @Post(':id/missing-to-buy-list')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Add the deck's missing cards (vs. inventory) to the buy-list" })
-    @ApiResponse({ status: 200, description: 'Count of distinct cards added' })
+    @ApiOkEnvelope(DeckMissingToBuyListResultDto, { description: 'Count of distinct cards added' })
     @ApiResponse({ status: 404, description: 'Deck not found' })
     async missingToBuyList(
         @Param('id', ParseIntPipe) id: number,
         @Req() req: AuthenticatedRequest
-    ): Promise<ApiResponseDto<{ added: number }>> {
+    ): Promise<ApiResponseDto<DeckMissingToBuyListResultDto>> {
         const deck = await this.deckService.getDeck(id, req.user.id);
         if (!deck) {
             throw new NotFoundException(`Deck ${id} not found.`);
@@ -122,7 +126,7 @@ export class DeckApiController {
 
     @Patch(':id')
     @ApiOperation({ summary: 'Rename / re-format a deck' })
-    @ApiResponse({ status: 200, description: 'Updated deck' })
+    @ApiOkEnvelope(DeckSummaryApiDto, { description: 'Updated deck' })
     @ApiResponse({ status: 404, description: 'Deck not found' })
     async update(
         @Param('id', ParseIntPipe) id: number,

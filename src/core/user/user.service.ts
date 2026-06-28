@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { RefreshTokenService } from 'src/core/auth/refresh-token.service';
 import { getLogger } from 'src/logger/global-app-logger';
 import { User } from './user.entity';
 import { UserRepositoryPort } from './ports/user.repository.port';
@@ -8,7 +9,10 @@ import { UserRepositoryPort } from './ports/user.repository.port';
 export class UserService {
     private readonly LOGGER = getLogger(UserService.name);
 
-    constructor(@Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort) {}
+    constructor(
+        @Inject(UserRepositoryPort) private readonly repository: UserRepositoryPort,
+        @Inject(RefreshTokenService) private readonly refreshTokenService: RefreshTokenService
+    ) {}
 
     async create(userIn: User): Promise<User | null> {
         this.LOGGER.debug(`Create user ${userIn?.email}.`);
@@ -71,7 +75,12 @@ export class UserService {
             ...userIn,
             password: await this.encrypt(newPassword),
         });
-        return !!(await this.repository.update(user));
+        const updated = !!(await this.repository.update(user));
+        if (updated && userIn.id) {
+            // Sign out every long-lived mobile/API session on a password change.
+            await this.refreshTokenService.revokeAllForUser(userIn.id);
+        }
+        return updated;
     }
 
     async remove(id: number): Promise<void> {

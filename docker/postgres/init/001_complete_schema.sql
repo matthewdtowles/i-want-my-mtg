@@ -978,6 +978,27 @@ CREATE INDEX idx_api_usage_day ON public.api_usage (day);
 
 
 --
+-- Name: refresh_token; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.refresh_token (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    token_hash varchar NOT NULL UNIQUE,
+    device_label varchar,
+    expires_at timestamptz NOT NULL,
+    last_used_at timestamptz,
+    revoked_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT refresh_token_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_refresh_token_user_active ON public.refresh_token (user_id) WHERE revoked_at IS NULL;
+
+
+--
 -- Name: deck; Type: TABLE; Schema: public
 --
 

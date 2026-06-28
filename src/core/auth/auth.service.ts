@@ -4,7 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { getLogger } from 'src/logger/global-app-logger';
-import { AuthToken, JwtPayload } from './auth.types';
+import { AuthToken, AuthTokenPair, JwtPayload } from './auth.types';
+import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +13,8 @@ export class AuthService {
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        @Inject(JwtService) private readonly jwtService: JwtService
+        @Inject(JwtService) private readonly jwtService: JwtService,
+        @Inject(RefreshTokenService) private readonly refreshTokenService: RefreshTokenService
     ) {}
 
     async validateUser(email: string, password: string): Promise<User | null> {
@@ -46,5 +48,40 @@ export class AuthService {
         };
         this.LOGGER.debug(`Login successful for user ${user.id}.`);
         return authToken;
+    }
+
+    /**
+     * Log in and also mint a refresh token. Used by the API/mobile login flow
+     * (the cookie-based web flow keeps using {@link login}).
+     */
+    async loginWithRefresh(user: User, deviceLabel?: string | null): Promise<AuthTokenPair> {
+        const { access_token } = await this.login(user);
+        const refreshToken = await this.refreshTokenService.issue(user.id, deviceLabel);
+        return { accessToken: access_token, refreshToken };
+    }
+
+    /**
+     * Exchange a refresh token for a new access token, rotating the refresh
+     * token. Returns null when the refresh token is unknown, revoked, expired,
+     * or its owning user no longer exists.
+     */
+    async refresh(rawRefreshToken: string): Promise<AuthTokenPair | null> {
+        const rotated = await this.refreshTokenService.rotate(rawRefreshToken);
+        if (!rotated) {
+            return null;
+        }
+        const user = await this.userService.findById(rotated.userId);
+        if (!user) {
+            // Owner vanished between rotation and lookup; revoke the fresh token.
+            await this.refreshTokenService.revoke(rotated.rawToken);
+            return null;
+        }
+        const { access_token } = await this.login(user);
+        return { accessToken: access_token, refreshToken: rotated.rawToken };
+    }
+
+    /** Revoke a refresh token on sign-out. */
+    async logout(rawRefreshToken: string): Promise<void> {
+        await this.refreshTokenService.revoke(rawRefreshToken);
     }
 }

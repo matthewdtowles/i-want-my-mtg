@@ -106,6 +106,10 @@ Extend the product's surface area so newcomers can use it where they expect to �
 
 **Auth confirmed (2026-06-22) — no backend change needed.** `POST /api/v1/auth/login` already returns the JWT in the response body (`{ accessToken }`, `auth-api.controller.ts`), and the JWT strategy reads `Authorization: Bearer` first, cookie only as fallback (`jwt.strategy.ts`). So mobile captures the token at login, stores it in `expo-secure-store`, and sends it as a bearer header — the exact path the API/MCP clients already use.
 
+**Backend enablers (landed since v1 shipped):** two opt-in server features were added to support the mobile experience without changing the core auth path above.
+- [x] **Persistent login (refresh token)** — long-lived session so mobile users stay signed in (`refresh_token` table, #558, merged 2026-06-27).
+- [ ] **Push notifications** — device-token registration (`notification_device` table, `POST`/`DELETE /api/v1/notifications/devices`, #556) is the storage half; **fan-out delivery via the Expo Push API on alert/notification firing is the follow-up (#560)**. Client wires `expo-notifications` per mobile #32.
+
 Stack:
 - expo-router (file-based navigation), TanStack Query over the generated API client
 - Auth: existing JWT as a bearer token, stored in `expo-secure-store` (confirmed working — see above)

@@ -80,6 +80,9 @@ import { ApiSubscriptionOrmEntity } from './api-tier/api-subscription.orm-entity
 import { ApiSubscriptionRepository } from './api-tier/api-subscription.repository';
 import { ApiUsageOrmEntity } from './api-tier/api-usage.orm-entity';
 import { ApiUsageRepository } from './api-tier/api-usage.repository';
+import { NotificationDeviceRepositoryPort } from 'src/core/notification-device/ports/notification-device.repository.port';
+import { NotificationDeviceOrmEntity } from './notification-device/notification-device.orm-entity';
+import { NotificationDeviceRepository } from './notification-device/notification-device.repository';
 import { RefreshTokenRepositoryPort } from 'src/core/auth/ports/refresh-token.repository.port';
 import { RefreshTokenOrmEntity } from './auth/refresh-token.orm-entity';
 import { RefreshTokenRepository } from './auth/refresh-token.repository';
@@ -118,6 +121,7 @@ import { RefreshTokenRepository } from './auth/refresh-token.repository';
             ApiKeyOrmEntity,
             ApiSubscriptionOrmEntity,
             ApiUsageOrmEntity,
+            NotificationDeviceOrmEntity,
             RefreshTokenOrmEntity,
         ]),
     ],
@@ -149,6 +153,7 @@ import { RefreshTokenRepository } from './auth/refresh-token.repository';
         { provide: ApiKeyRepositoryPort, useClass: ApiKeyRepository },
         { provide: ApiSubscriptionRepositoryPort, useClass: ApiSubscriptionRepository },
         { provide: ApiUsageRepositoryPort, useClass: ApiUsageRepository },
+        { provide: NotificationDeviceRepositoryPort, useClass: NotificationDeviceRepository },
         { provide: RefreshTokenRepositoryPort, useClass: RefreshTokenRepository },
     ],
     exports: [
@@ -176,6 +181,7 @@ import { RefreshTokenRepository } from './auth/refresh-token.repository';
         ApiKeyRepositoryPort,
         ApiSubscriptionRepositoryPort,
         ApiUsageRepositoryPort,
+        NotificationDeviceRepositoryPort,
         RefreshTokenRepositoryPort,
     ],
 })

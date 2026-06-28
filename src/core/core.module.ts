@@ -10,6 +10,7 @@ import { DeckModule } from './deck/deck.module';
 import { EmailModule } from './email/email.module';
 import { ImportModule } from './import/import.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { NotificationDeviceModule } from './notification-device/notification-device.module';
 import { OptimizerModule } from './optimizer/optimizer.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { PriceAlertModule } from './price-alert/price-alert.module';
@@ -33,6 +34,7 @@ import { UserModule } from './user/user.module';
         EmailModule,
         ImportModule,
         InventoryModule,
+        NotificationDeviceModule,
         OptimizerModule,
         PasswordResetModule,
         PriceAlertModule,
@@ -55,6 +57,7 @@ import { UserModule } from './user/user.module';
         EmailModule,
         ImportModule,
         InventoryModule,
+        NotificationDeviceModule,
         OptimizerModule,
         PasswordResetModule,
         PriceAlertModule,

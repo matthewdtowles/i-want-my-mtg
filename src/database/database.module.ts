@@ -80,6 +80,9 @@ import { ApiSubscriptionOrmEntity } from './api-tier/api-subscription.orm-entity
 import { ApiSubscriptionRepository } from './api-tier/api-subscription.repository';
 import { ApiUsageOrmEntity } from './api-tier/api-usage.orm-entity';
 import { ApiUsageRepository } from './api-tier/api-usage.repository';
+import { NotificationDeviceRepositoryPort } from 'src/core/notification-device/ports/notification-device.repository.port';
+import { NotificationDeviceOrmEntity } from './notification-device/notification-device.orm-entity';
+import { NotificationDeviceRepository } from './notification-device/notification-device.repository';
 
 @Module({
     imports: [
@@ -115,6 +118,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
             ApiKeyOrmEntity,
             ApiSubscriptionOrmEntity,
             ApiUsageOrmEntity,
+            NotificationDeviceOrmEntity,
         ]),
     ],
     providers: [
@@ -145,6 +149,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         { provide: ApiKeyRepositoryPort, useClass: ApiKeyRepository },
         { provide: ApiSubscriptionRepositoryPort, useClass: ApiSubscriptionRepository },
         { provide: ApiUsageRepositoryPort, useClass: ApiUsageRepository },
+        { provide: NotificationDeviceRepositoryPort, useClass: NotificationDeviceRepository },
     ],
     exports: [
         CardRepositoryPort,
@@ -171,6 +176,7 @@ import { ApiUsageRepository } from './api-tier/api-usage.repository';
         ApiKeyRepositoryPort,
         ApiSubscriptionRepositoryPort,
         ApiUsageRepositoryPort,
+        NotificationDeviceRepositoryPort,
     ],
 })
 export class DatabaseModule {

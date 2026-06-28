@@ -978,6 +978,26 @@ CREATE INDEX idx_api_usage_day ON public.api_usage (day);
 
 
 --
+-- Name: notification_device; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.notification_device (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    user_id integer NOT NULL,
+    token varchar NOT NULL UNIQUE,
+    platform varchar NOT NULL,
+    device_id varchar,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT notification_device_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_notification_device_user FOREIGN KEY (user_id)
+        REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_notification_device_user_id ON public.notification_device (user_id);
+
+
+--
 -- Name: deck; Type: TABLE; Schema: public
 --
 

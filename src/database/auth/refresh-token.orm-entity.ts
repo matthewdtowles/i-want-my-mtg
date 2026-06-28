@@ -18,9 +18,6 @@ export class RefreshTokenOrmEntity {
     @Column({ name: 'expires_at', type: 'timestamptz' })
     expiresAt: Date;
 
-    @Column({ name: 'last_used_at', type: 'timestamptz', nullable: true })
-    lastUsedAt: Date | null;
-
     @Column({ name: 'revoked_at', type: 'timestamptz', nullable: true })
     revokedAt: Date | null;
 

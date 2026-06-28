@@ -6,7 +6,6 @@ export class RefreshToken {
     readonly tokenHash: string;
     readonly deviceLabel: string | null;
     readonly expiresAt: Date;
-    readonly lastUsedAt: Date | null;
     readonly revokedAt: Date | null;
     readonly createdAt: Date;
 
@@ -17,7 +16,6 @@ export class RefreshToken {
         this.tokenHash = init.tokenHash;
         this.deviceLabel = init.deviceLabel ?? null;
         this.expiresAt = init.expiresAt;
-        this.lastUsedAt = init.lastUsedAt ?? null;
         this.revokedAt = init.revokedAt ?? null;
         this.createdAt = init.createdAt ?? new Date();
     }

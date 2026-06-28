@@ -11,9 +11,8 @@ describe('RefreshTokenService', () => {
         repository = {
             create: jest.fn().mockImplementation(async (t: RefreshToken) => t),
             findByHash: jest.fn(),
-            revoke: jest.fn().mockResolvedValue(undefined),
+            revoke: jest.fn().mockResolvedValue(true),
             revokeAllForUser: jest.fn().mockResolvedValue(undefined),
-            touchLastUsed: jest.fn().mockResolvedValue(undefined),
         };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -58,6 +57,24 @@ describe('RefreshTokenService', () => {
             expect(result?.userId).toBe(7);
             expect(repository.create).toHaveBeenCalledTimes(1); // the new token
             expect(repository.revoke).toHaveBeenCalledWith(42, expect.any(Date));
+        });
+
+        it('returns null without minting a token when it loses the rotation race', async () => {
+            repository.findByHash.mockResolvedValue(
+                new RefreshToken({
+                    id: 42,
+                    userId: 7,
+                    tokenHash: 'irrelevant',
+                    expiresAt: new Date(Date.now() + 60_000),
+                })
+            );
+            // Concurrent rotation already revoked the row: the conditional revoke affects nothing.
+            repository.revoke.mockResolvedValueOnce(false);
+
+            const result = await service.rotate('presented-raw');
+
+            expect(result).toBeNull();
+            expect(repository.create).not.toHaveBeenCalled();
         });
 
         it('returns null for an unknown token', async () => {

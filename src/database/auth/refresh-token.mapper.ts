@@ -9,7 +9,6 @@ export class RefreshTokenMapper {
             tokenHash: orm.tokenHash,
             deviceLabel: orm.deviceLabel,
             expiresAt: orm.expiresAt,
-            lastUsedAt: orm.lastUsedAt,
             revokedAt: orm.revokedAt,
             createdAt: orm.createdAt,
         });
@@ -22,7 +21,6 @@ export class RefreshTokenMapper {
         orm.tokenHash = core.tokenHash;
         orm.deviceLabel = core.deviceLabel;
         orm.expiresAt = core.expiresAt;
-        orm.lastUsedAt = core.lastUsedAt;
         orm.revokedAt = core.revokedAt;
         orm.createdAt = core.createdAt;
         return orm;

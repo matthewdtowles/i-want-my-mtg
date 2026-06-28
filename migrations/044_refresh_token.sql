@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS public.refresh_token (
     token_hash varchar NOT NULL UNIQUE,
     device_label varchar,
     expires_at timestamptz NOT NULL,
-    last_used_at timestamptz,
     revoked_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     CONSTRAINT refresh_token_pkey PRIMARY KEY (id),

@@ -52,8 +52,15 @@ export class RefreshTokenService {
         if (!found || !found.isActive()) {
             return null;
         }
+        // Single-use rotation: atomically revoke the presented token first and
+        // only mint a replacement if this call won the revoke. Two concurrent
+        // requests with the same token race on the conditional UPDATE; the loser
+        // gets `false` and bails, so one presented token yields one new token.
+        const won = await this.repository.revoke(found.id, new Date());
+        if (!won) {
+            return null;
+        }
         const newRawToken = await this.issue(found.userId, found.deviceLabel);
-        await this.repository.revoke(found.id, new Date());
         this.LOGGER.debug(`Rotated refresh token ${found.id} for user ${found.userId}.`);
         return { userId: found.userId, rawToken: newRawToken };
     }

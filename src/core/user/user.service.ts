@@ -75,12 +75,13 @@ export class UserService {
             ...userIn,
             password: await this.encrypt(newPassword),
         });
-        const updated = !!(await this.repository.update(user));
-        if (updated && userIn.id) {
-            // Sign out every long-lived mobile/API session on a password change.
+        // Sign out every long-lived mobile/API session *before* writing the new
+        // password: if revocation fails we abort, so we never leave a changed
+        // password with old refresh tokens still live.
+        if (userIn.id) {
             await this.refreshTokenService.revokeAllForUser(userIn.id);
         }
-        return updated;
+        return !!(await this.repository.update(user));
     }
 
     async remove(id: number): Promise<void> {

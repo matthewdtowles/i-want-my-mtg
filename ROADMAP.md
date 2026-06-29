@@ -102,13 +102,13 @@ Extend the product's surface area so newcomers can use it where they expect to �
 
 **Framework — React Native + Expo, not Flutter or bare RN.** One language across web/API/MCP/mobile, so the generated OpenAPI client and the sort/filter/legality enums are shared, not re-implemented. This is an API-driven CRUD + camera app (Expo's sweet spot), not a graphics showcase where Flutter's perf edge would pay off. EAS Build + OTA updates keep the toolchain manageable for a solo maintainer (no Mac/Xcode babysitting, JS fixes shippable without a store-review cycle). Escape hatch if a needed native module isn't in Expo: a dev-client + config plugins.
 
-**Repo: [`i-want-my-mtg-mobile`](https://github.com/matthewdtowles/i-want-my-mtg-mobile)** (scaffolded 2026-06-22; browse + inventory + transactions + portfolio shipped, iOS live on TestFlight — see its `HANDOFF.md`) — Expo app. Reuses the running `/api/v1` backend with **no behavioral server changes.** The one server-side caveat: write endpoints' request DTOs needed `@ApiProperty` annotations so the generated client could type their bodies — without them the inventory POST/PATCH bodies generated as `string[]` (and DELETE had no body) per #549, and the transaction bodies generated as empty objects per #550; both are spec/annotation-only fixes. Auth is confirmed (below); CORS is a non-issue for native builds.
+**Repo: [`i-want-my-mtg-mobile`](https://github.com/matthewdtowles/i-want-my-mtg-mobile)** (scaffolded 2026-06-22; browse + inventory + transactions + portfolio shipped, iOS live on TestFlight — see its `HANDOFF.md`) — Expo app. Reuses the running `/api/v1` backend with **no behavioral server changes.** The one server-side caveat: write endpoints' request DTOs needed `@ApiProperty` annotations so the generated client could type their bodies — without them the inventory POST/PATCH bodies generated as `string[]` (and DELETE had no body) per #549, and the transaction bodies generated as empty objects per #550; both are spec/annotation-only fixes. The same `@ApiProperty` / `ApiOkEnvelope` gap was then closed for the later features — buy-list (#557), notification + price-alert **responses** (#562), and price-alert **request** DTOs (#563) — unblocking mobile #31 / #32 / #23. Auth is confirmed (below); CORS is a non-issue for native builds.
 
 **Auth confirmed (2026-06-22) — no backend change needed.** `POST /api/v1/auth/login` already returns the JWT in the response body (`{ accessToken }`, `auth-api.controller.ts`), and the JWT strategy reads `Authorization: Bearer` first, cookie only as fallback (`jwt.strategy.ts`). So mobile captures the token at login, stores it in `expo-secure-store`, and sends it as a bearer header — the exact path the API/MCP clients already use.
 
 **Backend enablers (landed since v1 shipped):** two opt-in server features were added to support the mobile experience without changing the core auth path above.
 - [x] **Persistent login (refresh token)** — long-lived session so mobile users stay signed in (`refresh_token` table, #558, merged 2026-06-27).
-- [ ] **Push notifications** — device-token registration (`notification_device` table, `POST`/`DELETE /api/v1/notifications/devices`, #556) is the storage half; **fan-out delivery via the Expo Push API on alert/notification firing is the follow-up (#560)**. Client wires `expo-notifications` per mobile #32.
+- [ ] **Push notifications** — device-token registration (`notification_device` table, `POST`/`DELETE /api/v1/notifications/devices`, #556) is the storage half; **fan-out delivery via the Expo Push API on alert/notification firing is the follow-up (#560)**. Client wires `expo-notifications` per mobile #32. The **in-app** half is live: mobile #32 shipped the notifications inbox + unread badge (mobile #49) against the typed `GET /notifications` + mark-read endpoints; only the push fan-out (#560) gates true push delivery.
 
 Stack:
 - expo-router (file-based navigation), TanStack Query over the generated API client
@@ -129,7 +129,7 @@ Stack:
 
 **Fast-follow (after v1 validates):**
 - [ ] Camera-based card scanning (7.3) — the "scan on phone, manage on web" differentiator; premium-gated per the Appendix
-- [ ] Price alerts management, deck building, portfolio analytics parity
+- [ ] Price alerts management (mobile #32 — **in progress**, percent-threshold alerts off the now-typed `/price-alerts` DTOs), deck building (mobile #23), portfolio analytics parity
 - [ ] App Store + Play Store public submission (see Store readiness below). iOS submission checklist tracked in [mobile #20](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/20)
 - [ ] Market cross-platform sync as the core differentiator
 

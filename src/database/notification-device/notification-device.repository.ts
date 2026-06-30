@@ -39,6 +39,11 @@ export class NotificationDeviceRepository implements NotificationDeviceRepositor
         }
     }
 
+    async findByUserId(userId: number): Promise<NotificationDevice[]> {
+        const rows = await this.repository.find({ where: { userId } });
+        return rows.map(NotificationDeviceMapper.toCore);
+    }
+
     async deleteByToken(token: string, userId: number): Promise<boolean> {
         const result = await this.repository.delete({ token, userId });
         return (result.affected ?? 0) > 0;

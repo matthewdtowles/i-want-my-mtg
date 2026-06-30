@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
 import { BillingModule } from 'src/core/billing/billing.module';
 import { EmailModule } from 'src/core/email/email.module';
+import { NotificationDeviceModule } from 'src/core/notification-device/notification-device.module';
 import { UserModule } from 'src/core/user/user.module';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PriceAlertService } from './price-alert.service';
 import { PriceNotificationService } from './price-notification.service';
 
 @Module({
-    imports: [DatabaseModule, BillingModule, EmailModule, UserModule],
+    imports: [DatabaseModule, BillingModule, EmailModule, NotificationDeviceModule, UserModule],
     providers: [PriceAlertService, PriceNotificationService],
     exports: [PriceAlertService, PriceNotificationService],
 })

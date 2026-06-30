@@ -12,6 +12,7 @@ describe('NotificationDeviceService', () => {
             upsertByToken: jest
                 .fn()
                 .mockImplementation(async (d: NotificationDevice) => new NotificationDevice({ ...d, id: 1 })),
+            findByUserId: jest.fn().mockResolvedValue([]),
             deleteByToken: jest.fn().mockResolvedValue(true),
         };
         const module: TestingModule = await Test.createTestingModule({

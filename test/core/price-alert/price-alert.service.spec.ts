@@ -1,3 +1,14 @@
+// PushService (imported transitively via PriceAlertService) pulls in
+// expo-server-sdk, which ships ESM; stub it so the module loads under ts-jest.
+// PushService itself is replaced with a useValue mock below, so this never runs.
+jest.mock('expo-server-sdk', () => ({
+    Expo: class {
+        static isExpoPushToken = () => true;
+        chunkPushNotifications = (messages: unknown[]) => [messages];
+        sendPushNotificationsAsync = async () => [];
+    },
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceAlert } from 'src/core/price-alert/price-alert.entity';
 import {
@@ -8,6 +19,7 @@ import { PriceNotificationRepositoryPort } from 'src/core/price-alert/ports/pric
 import { FREE_ALERT_LIMIT, PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { EmailService } from 'src/core/email/email.service';
+import { PushService } from 'src/core/notification-device/push.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { User } from 'src/core/user/user.entity';
 import { UserRole } from 'src/shared/constants/user.role.enum';
@@ -47,6 +59,10 @@ describe('PriceAlertService', () => {
         sendPriceAlertEmail: jest.fn(),
     };
 
+    const mockPushService = {
+        sendToUser: jest.fn(),
+    };
+
     const mockUserRepo = {
         findById: jest.fn(),
         findByEmail: jest.fn(),
@@ -66,6 +82,7 @@ describe('PriceAlertService', () => {
                 { provide: PriceAlertRepositoryPort, useValue: mockAlertRepo },
                 { provide: PriceNotificationRepositoryPort, useValue: mockNotificationRepo },
                 { provide: EmailService, useValue: mockEmailService },
+                { provide: PushService, useValue: mockPushService },
                 { provide: UserRepositoryPort, useValue: mockUserRepo },
                 { provide: SubscriptionService, useValue: mockSubscriptionService },
             ],
@@ -273,6 +290,12 @@ describe('PriceAlertService', () => {
                 ])
             );
             expect(alertRepo.updateLastNotifiedAt).toHaveBeenCalledWith([1], expect.any(Date));
+            expect(mockPushService.sendToUser).toHaveBeenCalledWith(
+                1,
+                expect.objectContaining({
+                    data: expect.objectContaining({ setCode: 'TST', cardNumber: '1' }),
+                })
+            );
             expect(result.notificationsSent).toBe(1);
         });
 

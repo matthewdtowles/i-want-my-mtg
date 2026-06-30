@@ -6,6 +6,7 @@ import {
 } from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { EmailService } from 'src/core/email/email.service';
+import { PushPayload, PushService } from 'src/core/notification-device/push.service';
 import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { UserRepositoryPort } from 'src/core/user/ports/user.repository.port';
 import { PriceAlert } from './price-alert.entity';
@@ -46,6 +47,7 @@ export class PriceAlertService {
         @Inject(PriceNotificationRepositoryPort)
         private readonly notificationRepo: PriceNotificationRepositoryPort,
         @Inject(EmailService) private readonly emailService: EmailService,
+        @Inject(PushService) private readonly pushService: PushService,
         @Inject(UserRepositoryPort) private readonly userRepo: UserRepositoryPort,
         @Inject(SubscriptionService) private readonly subscriptionService: SubscriptionService
     ) {}
@@ -196,6 +198,16 @@ export class PriceAlertService {
             if (user?.email) {
                 await this.emailService.sendPriceAlertEmail(user.email, user.name, userAlerts);
             }
+
+            // Push to the user's registered devices. Best-effort: a push failure
+            // must not abort the run (notifications + email already persisted).
+            try {
+                await this.pushService.sendToUser(userId, this.buildPushPayload(userAlerts));
+            } catch (error) {
+                this.LOGGER.warn(
+                    `Push fan-out failed for user ${userId}: ${error instanceof Error ? error.message : String(error)}`
+                );
+            }
         }
 
         this.LOGGER.log(`Processed ${triggered.length} notifications for ${byUser.size} users.`);
@@ -248,6 +260,24 @@ export class PriceAlertService {
         }
 
         return triggered;
+    }
+
+    private buildPushPayload(alerts: TriggeredAlert[]): PushPayload {
+        if (alerts.length === 1) {
+            const a = alerts[0];
+            const direction = a.direction === 'increase' ? 'up' : 'down';
+            return {
+                title: `${a.cardName} ${direction} ${Math.abs(a.changePct)}%`,
+                body: `Now $${a.newPrice.toFixed(2)} (was $${a.oldPrice.toFixed(2)})`,
+                // Lets the mobile client deep-link straight to the card.
+                data: { setCode: a.setCode, cardNumber: a.cardNumber, cardId: a.cardId },
+            };
+        }
+        return {
+            title: 'Price alerts',
+            body: `${alerts.length} cards you're watching moved.`,
+            data: {},
+        };
     }
 
     private groupByUser(triggered: TriggeredAlert[]): Map<number, TriggeredAlert[]> {

@@ -269,8 +269,9 @@ export class PriceAlertService {
             return {
                 title: `${a.cardName} ${direction} ${Math.abs(a.changePct)}%`,
                 body: `Now $${a.newPrice.toFixed(2)} (was $${a.oldPrice.toFixed(2)})`,
-                // Lets the mobile client deep-link straight to the card.
-                data: { setCode: a.setCode, cardNumber: a.cardNumber, cardId: a.cardId },
+                // Lets the mobile client deep-link straight to the card. setCode is
+                // lowercased to match the canonical card-URL convention (buildCardUrl).
+                data: { setCode: a.setCode.toLowerCase(), cardNumber: a.cardNumber, cardId: a.cardId },
             };
         }
         return {

@@ -92,4 +92,11 @@ describe('PushService', () => {
 
         await expect(service.sendToUser(1, { title: 't', body: 'b' })).resolves.toBeUndefined();
     });
+
+    it('swallows a device-lookup failure (best-effort)', async () => {
+        repo.findByUserId.mockRejectedValue(new Error('db down'));
+
+        await expect(service.sendToUser(1, { title: 't', body: 'b' })).resolves.toBeUndefined();
+        expect(__mock.send).not.toHaveBeenCalled();
+    });
 });

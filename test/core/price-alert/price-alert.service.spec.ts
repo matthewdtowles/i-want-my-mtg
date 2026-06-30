@@ -293,7 +293,7 @@ describe('PriceAlertService', () => {
             expect(mockPushService.sendToUser).toHaveBeenCalledWith(
                 1,
                 expect.objectContaining({
-                    data: expect.objectContaining({ setCode: 'TST', cardNumber: '1' }),
+                    data: expect.objectContaining({ setCode: 'tst', cardNumber: '1' }),
                 })
             );
             expect(result.notificationsSent).toBe(1);

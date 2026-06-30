@@ -26,29 +26,37 @@ export class PushService {
      * Expo reports as no longer registered are pruned.
      */
     async sendToUser(userId: number, payload: PushPayload): Promise<void> {
-        const registered = await this.devices.findByUserId(userId);
-        const tokens = registered.map((d) => d.token).filter((t) => Expo.isExpoPushToken(t));
-        if (tokens.length === 0) {
-            return;
-        }
-
-        const messages: ExpoPushMessage[] = tokens.map((to) => ({
-            to,
-            sound: 'default',
-            title: payload.title,
-            body: payload.body,
-            data: payload.data ?? {},
-        }));
-
-        for (const chunk of this.expo.chunkPushNotifications(messages)) {
-            try {
-                const tickets = await this.expo.sendPushNotificationsAsync(chunk);
-                await this.pruneInvalidTokens(chunk, tickets, userId);
-            } catch (err) {
-                this.LOGGER.warn(
-                    `Push send failed for user ${userId}: ${err instanceof Error ? err.message : String(err)}`
-                );
+        try {
+            const registered = await this.devices.findByUserId(userId);
+            const tokens = registered.map((d) => d.token).filter((t) => Expo.isExpoPushToken(t));
+            if (tokens.length === 0) {
+                return;
             }
+
+            const messages: ExpoPushMessage[] = tokens.map((to) => ({
+                to,
+                sound: 'default',
+                title: payload.title,
+                body: payload.body,
+                data: payload.data ?? {},
+            }));
+
+            for (const chunk of this.expo.chunkPushNotifications(messages)) {
+                try {
+                    const tickets = await this.expo.sendPushNotificationsAsync(chunk);
+                    await this.pruneInvalidTokens(chunk, tickets, userId);
+                } catch (err) {
+                    this.LOGGER.warn(
+                        `Push send failed for user ${userId}: ${err instanceof Error ? err.message : String(err)}`
+                    );
+                }
+            }
+        } catch (err) {
+            // Best-effort: a device lookup / chunking failure must never block the
+            // caller (notifications + email are already persisted).
+            this.LOGGER.warn(
+                `Push fan-out failed for user ${userId}: ${err instanceof Error ? err.message : String(err)}`
+            );
         }
     }
 

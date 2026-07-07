@@ -4,12 +4,14 @@ One plan covering the findings from the four codebase analyses run on 2026-07-07
 
 ## Source documents
 
-| Repo | Analysis doc (on its `claude/codebase-analysis-*` branch) |
+The full per-repo analyses (every finding with file/line references and recommendations) live in this repo, next to this plan:
+
+| Repo | Analysis doc |
 |---|---|
-| [i-want-my-mtg](https://github.com/matthewdtowles/i-want-my-mtg) (web) | [docs/codebase-analysis-2026-07.md](https://github.com/matthewdtowles/i-want-my-mtg/blob/claude/codebase-analysis-review-35frlw/docs/codebase-analysis-2026-07.md) |
-| [scry](https://github.com/matthewdtowles/scry) (ETL) | [CODEBASE_ANALYSIS.md](https://github.com/matthewdtowles/scry/blob/claude/codebase-analysis-review-bt1cur/CODEBASE_ANALYSIS.md) |
-| [iwantmymtg-mcp](https://github.com/matthewdtowles/iwantmymtg-mcp) (MCP server) | [docs/CODEBASE_ANALYSIS.md](https://github.com/matthewdtowles/iwantmymtg-mcp/blob/claude/codebase-analysis-review-8wy2wz/docs/CODEBASE_ANALYSIS.md) |
-| [i-want-my-mtg-mobile](https://github.com/matthewdtowles/i-want-my-mtg-mobile) (mobile) | [docs/codebase-analysis.md](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/claude/codebase-analysis-review-cn51ft/docs/codebase-analysis.md) |
+| [i-want-my-mtg](https://github.com/matthewdtowles/i-want-my-mtg) (web) | [codebase-analyses-2026-07/web.md](codebase-analyses-2026-07/web.md) |
+| [scry](https://github.com/matthewdtowles/scry) (ETL) | [codebase-analyses-2026-07/scry.md](codebase-analyses-2026-07/scry.md) |
+| [iwantmymtg-mcp](https://github.com/matthewdtowles/iwantmymtg-mcp) (MCP server) | [codebase-analyses-2026-07/mcp.md](codebase-analyses-2026-07/mcp.md) |
+| [i-want-my-mtg-mobile](https://github.com/matthewdtowles/i-want-my-mtg-mobile) (mobile) | [codebase-analyses-2026-07/mobile.md](codebase-analyses-2026-07/mobile.md) |
 
 Finding IDs below (B1, §1.2, I11, 1.6, ...) refer to those docs.
 

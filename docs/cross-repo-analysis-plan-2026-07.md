@@ -92,49 +92,49 @@ Independent tracks can proceed in parallel; the arrows are the only hard orderin
 
 | # | Title | Findings | Priority |
 |---|---|---|---|
-| W1 | Error handling overhaul: domain errors end to end | B1, A1, A2, A9, part of B9 | 1 |
-| W2 | Inventory/ledger integrity: transactional writes, fix silent failures | B2, B3, B4, P2 | 1 |
-| W3 | Query/input hardening: filter charset, limit caps, pool config | B7, B8, B5, B14 (days clamp) | 2 |
-| W4 | Security hardening: error leaks, enumeration, token hashing, Stripe sync | B9, B10, C5, B13 | 2 |
-| W5 | Performance: set page, batched imports, Promise.all | B12, P1, P3, A6 | 2 |
-| W6 | TypeScript strictness + type-aware lint | C1, C2, C7 | 3 |
-| W7 | Architecture cleanup: dead code, read models, presenters, logging | A3-A8, A10, B6, B11, B14 rest, C3, C4, C8 | 3 |
-| W8 | OpenAPI spec fixes + delta-quantity endpoint (cross-repo X3, X4) | mobile 3.6, MCP I8, mobile 1.6 | 2 |
-| W9 | Migration: ON DELETE CASCADE for card/set dependents (cross-repo X1) | scry §1.2-1.3 | 1 |
+| [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | Error handling overhaul: domain errors end to end | B1, A1, A2, A9, part of B9 | 1 |
+| [W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570) | Inventory/ledger integrity: transactional writes, fix silent failures | B2, B3, B4, P2 | 1 |
+| [W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571) | Query/input hardening: filter charset, limit caps, pool config | B7, B8, B5, B14 (days clamp) | 2 |
+| [W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572) | Security hardening: error leaks, enumeration, token hashing, Stripe sync | B9, B10, C5, B13 | 2 |
+| [W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573) | Performance: set page, batched imports, Promise.all | B12, P1, P3, A6 | 2 |
+| [W6](https://github.com/matthewdtowles/i-want-my-mtg/issues/574) | TypeScript strictness + type-aware lint | C1, C2, C7 | 3 |
+| [W7](https://github.com/matthewdtowles/i-want-my-mtg/issues/575) | Architecture cleanup: dead code, read models, presenters, logging | A3-A8, A10, B6, B11, B14 rest, C3, C4, C8 | 3 |
+| [W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576) | OpenAPI spec fixes + delta-quantity endpoint (cross-repo X3, X4) | mobile 3.6, MCP I8, mobile 1.6 | 2 |
+| [W9](https://github.com/matthewdtowles/i-want-my-mtg/issues/577) | Migration: ON DELETE CASCADE for card/set dependents (cross-repo X1) | scry §1.2-1.3 | 1 |
 
 ### scry
 
 | # | Title | Findings | Priority |
 |---|---|---|---|
-| S1 | Fix post-ingest-prune: persist card foreignness | §1.1 | 1 |
-| S2 | Delete/reset FK coverage; remove fake CASCADE (cross-repo X1, after W9) | §1.2-1.3 | 1 |
-| S3 | Ingest robustness: stream failures, non-TTY prompts, batch-boundary and mapping bugs | §1.4-1.10 | 1 |
-| S4 | Implement granular_price_history retention (cross-repo X2) | §8 | 1 |
-| S5 | Remove no-op concurrency and dead granular parsing; fix misleading counts | §2.1-2.4, 2.6 | 2 |
-| S6 | Structure: thin main.rs, extract IngestPipeline, add ports for testability | §3.1-3.5 | 2 |
-| S7 | DRY, perf, and transactionality cleanup | §4, §5, §6, §7, §10 | 3 |
-| S8 | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync (X5), docs refresh | §2.5, §8 (docs), §9 | 2 |
+| [S1](https://github.com/matthewdtowles/scry/issues/35) | Fix post-ingest-prune: persist card foreignness | §1.1 | 1 |
+| [S2](https://github.com/matthewdtowles/scry/issues/36) | Delete/reset FK coverage; remove fake CASCADE (cross-repo X1, after W9) | §1.2-1.3 | 1 |
+| [S3](https://github.com/matthewdtowles/scry/issues/37) | Ingest robustness: stream failures, non-TTY prompts, batch-boundary and mapping bugs | §1.4-1.10 | 1 |
+| [S4](https://github.com/matthewdtowles/scry/issues/38) | Implement granular_price_history retention (cross-repo X2) | §8 | 1 |
+| [S5](https://github.com/matthewdtowles/scry/issues/39) | Remove no-op concurrency and dead granular parsing; fix misleading counts | §2.1-2.4, 2.6 | 2 |
+| [S6](https://github.com/matthewdtowles/scry/issues/40) | Structure: thin main.rs, extract IngestPipeline, add ports for testability | §3.1-3.5 | 2 |
+| [S7](https://github.com/matthewdtowles/scry/issues/41) | DRY, perf, and transactionality cleanup | §4, §5, §6, §7, §10 | 3 |
+| [S8](https://github.com/matthewdtowles/scry/issues/42) | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync (X5), docs refresh | §2.5, §8 (docs), §9 | 2 |
 
 ### iwantmymtg-mcp
 
 | # | Title | Findings | Priority |
 |---|---|---|---|
-| M1 | Correctness bundle: undefined results, CSV passthrough, JSON Schema target, empty patch, parse-in-tests | B1, B2, B3, B4, T1 | 1 |
-| M2 | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | A1, A2, I11, A4, T2 | 2 |
-| M3 | Consistency sweep: shared schemas/enums, client memoization, error polish, as-never sweep (part of X3) | I1-I10, A3, A5, A6, I8 | 3 |
-| M4 | Tooling: linter in CI, NodeNext, Node 20 matrix, force-with-lease, server handler tests | C1-C4, T3 | 2 |
+| [M1](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/19) | Correctness bundle: undefined results, CSV passthrough, JSON Schema target, empty patch, parse-in-tests | B1, B2, B3, B4, T1 | 1 |
+| [M2](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/20) | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | A1, A2, I11, A4, T2 | 2 |
+| [M3](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/21) | Consistency sweep: shared schemas/enums, client memoization, error polish, as-never sweep (part of X3) | I1-I10, A3, A5, A6, I8 | 3 |
+| [M4](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/22) | Tooling: linter in CI, NodeNext, Node 20 matrix, force-with-lease, server handler tests | C1-C4, T3 | 2 |
 
 ### i-want-my-mtg-mobile
 
 | # | Title | Findings | Priority |
 |---|---|---|---|
-| MB1 | Clear query cache on sign-out (cross-account data leak) | 1.1 | 1 |
-| MB2 | Decouple CI spec-drift check from PR gating (unblocks web X3/X4) | 1.7 | 1 |
-| MB3 | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation, small nits | 1.2, 1.3, 1.6, 1.8 | 2 |
-| MB4 | Notification badge via unread-count; inbox paginates on scroll | 1.4 | 2 |
-| MB5 | Centralize query keys; re-key deck-owned under inventory | 1.5, 3.1 | 2 |
-| MB6 | Test + lint infrastructure (jest-expo, ESLint), cover pure modules | 4.1, 4.2 | 2 |
-| MB7 | Shared UI + hooks layer: steppers, rows, chips, useOptimisticMutation, edit-by-id screens | 2.1-2.8, 3.2-3.5 | 3 |
+| [MB1](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63) | Clear query cache on sign-out (cross-account data leak) | 1.1 | 1 |
+| [MB2](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64) | Decouple CI spec-drift check from PR gating (unblocks web X3/X4) | 1.7 | 1 |
+| [MB3](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/65) | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation, small nits | 1.2, 1.3, 1.6, 1.8 | 2 |
+| [MB4](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/66) | Notification badge via unread-count; inbox paginates on scroll | 1.4 | 2 |
+| [MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67) | Centralize query keys; re-key deck-owned under inventory | 1.5, 3.1 | 2 |
+| [MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68) | Test + lint infrastructure (jest-expo, ESLint), cover pure modules | 4.1, 4.2 | 2 |
+| [MB7](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/69) | Shared UI + hooks layer: steppers, rows, chips, useOptimisticMutation, edit-by-id screens | 2.1-2.8, 3.2-3.5 | 3 |
 
 ## Shared themes (context, not separate issues)
 

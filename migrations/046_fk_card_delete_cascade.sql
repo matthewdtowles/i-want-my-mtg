@@ -1,17 +1,26 @@
 -- W9 (#577, cross-repo X1): ON DELETE CASCADE for the card FKs on
--- price_history and inventory, so scry's card-prune paths (scry S2) can delete
--- from `card` alone and rely on the database to remove dependents.
+-- price_history, inventory, price and legality, so scry's card-prune paths
+-- (scry S2, scry#36) can delete from `card` alone and rely on the database to
+-- remove dependents.
 --
--- Why these two tables: they predate the numbered migration set, so production
--- carries whatever delete rule they were originally created with (NO ACTION),
+-- Why these four tables: they predate the numbered migration set, so
+-- production carries whatever delete rule they were originally created with,
 -- while docker/postgres/init/001_complete_schema.sql — the fresh-install
--- schema — already declares ON DELETE CASCADE for both. This migration
+-- schema — already declares ON DELETE CASCADE for all four. This migration
 -- normalizes production to the documented state; on a fresh database it finds
--- the rule already CASCADE and does nothing. Every other card dependent
--- (price, legality, granular_price, transaction, price_alert,
--- price_notification, buy_list, deck_card, published_deck_card,
--- portfolio_card_performance) already cascades via its creating migration or
--- the init schema.
+-- the rule already CASCADE and does nothing. #577 names price_history and
+-- inventory (the dependents scry's delete paths miss today); price and
+-- legality are included because scry S2 will stop deleting them explicitly and
+-- rely on the cascade, and their production delete rule has the same
+-- pre-migration-era provenance — if it drifted too, S2 would trade one FK
+-- violation for another. Every later card dependent (granular_price,
+-- transaction, price_alert, price_notification, buy_list, deck_card,
+-- published_deck_card, portfolio_card_performance) already cascades via its
+-- creating migration.
+--
+-- card.set_code -> set(code) deliberately keeps NO ACTION: scry's set-delete
+-- path removes the set's cards before the set row, and a cascade there would
+-- chain a set delete into user data through the card cascades.
 --
 -- granular_price_history, named in #577, was dropped in 042 (§10.10) and is
 -- deliberately not handled here.
@@ -45,7 +54,7 @@ BEGIN
         JOIN pg_class rel ON rel.oid = con.conrelid
         JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
         WHERE nsp.nspname = 'public'
-          AND rel.relname IN ('price_history', 'inventory')
+          AND rel.relname IN ('price_history', 'inventory', 'price', 'legality')
           AND con.contype = 'f'
           AND con.confrelid = 'public.card'::regclass
           AND con.confdeltype <> 'c'
@@ -70,7 +79,7 @@ BEGIN
         JOIN pg_class rel ON rel.oid = con.conrelid
         JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
         WHERE nsp.nspname = 'public'
-          AND rel.relname IN ('price_history', 'inventory')
+          AND rel.relname IN ('price_history', 'inventory', 'price', 'legality')
           AND con.contype = 'f'
           AND con.confrelid = 'public.card'::regclass
           AND NOT con.convalidated

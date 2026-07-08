@@ -2,12 +2,12 @@ import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { closeTestApp, createTestApp } from './setup';
 
-// Covers migration 046 (W9 / #577): the card FKs on price_history and
-// inventory must be ON DELETE CASCADE so scry's card-prune paths (scry S2)
-// can delete from `card` alone. The schema checks match constraints by
-// referencing/referenced table — not by name — mirroring how the migration
-// finds them, so they hold whether the rule came from the init schema (fresh
-// DB) or from the migration normalizing an older database.
+// Covers migration 046 (W9 / #577): the card FKs on price_history, inventory,
+// price and legality must be ON DELETE CASCADE so scry's card-prune paths
+// (scry S2 / scry#36) can delete from `card` alone. The schema checks match
+// constraints by referencing/referenced table — not by name — mirroring how
+// the migration finds them, so they hold whether the rule came from the init
+// schema (fresh DB) or from the migration normalizing an older database.
 const CARD_ID = '00000000-0000-4000-b000-000000000046';
 
 describe('Card FK delete cascade: price_history + inventory (046) (e2e)', () => {
@@ -37,7 +37,7 @@ describe('Card FK delete cascade: price_history + inventory (046) (e2e)', () => 
     });
 
     describe('schema', () => {
-        it.each(['price_history', 'inventory'])(
+        it.each(['price_history', 'inventory', 'price', 'legality'])(
             '%s -> card FK is ON DELETE CASCADE and validated',
             async (table) => {
                 const rows = await ds.query(

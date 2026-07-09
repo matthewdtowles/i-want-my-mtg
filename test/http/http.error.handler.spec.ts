@@ -23,7 +23,16 @@ describe('HttpErrorHandler.toHttpException', () => {
     // redirect.
     it('rethrows an existing HttpException unchanged', () => {
         const unauthorized = new UnauthorizedException('User not found in request');
-        expect(call(unauthorized)).toThrow(unauthorized);
+        try {
+            HttpErrorHandler.toHttpException(unauthorized, 'test');
+            fail('expected toHttpException to throw');
+        } catch (e) {
+            // Assert the exact instance/class, not just the message: a message
+            // match would still pass if the 401 were remapped to a 404
+            // NotFoundException('User not found in request') - the B1 regression.
+            expect(e).toBe(unauthorized);
+            expect(e).toBeInstanceOf(UnauthorizedException);
+        }
     });
 
     it('maps DomainNotFoundError to 404', () => {

@@ -1,6 +1,5 @@
 import {
     ArgumentsHost,
-    BadRequestException,
     Catch,
     ExceptionFilter,
     ForbiddenException,
@@ -10,12 +9,8 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import {
-    DomainNotAuthorizedError,
-    DomainNotFoundError,
-    DomainValidationError,
-} from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
+import { domainErrorToHttpException } from './http.error.handler';
 import { InvalidQueryParamException } from './api/shared/query-validation';
 import { ApiResponseDto } from './base/api-response.dto';
 import { LoginFormViewDto } from './hbs/auth/dto/login-form.view.dto';
@@ -35,8 +30,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         // Normalize domain errors (and pass HttpExceptions through) so API
         // controllers that throw Domain*Error get the right status without a
         // per-controller catch. A null result is a genuinely unexpected error:
-        // it becomes a 500 whose message is never exposed to the client (B9).
-        const httpException = this.toHttpException(exception);
+        // it drives a 500 on the API and page branches (its message is never
+        // exposed to the client - B9); the form-route branch re-renders the form
+        // with a 200 regardless (see handleFormError).
+        const httpException = domainErrorToHttpException(exception);
         const status: number = httpException
             ? httpException.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -66,27 +63,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
                     httpException instanceof UnauthorizedException ? request.url : undefined,
             });
         }
-    }
-
-    /**
-     * Maps an arbitrary thrown value to the HttpException it should be presented
-     * as: an existing HttpException passes through, a Domain*Error maps to the
-     * matching status, and anything else returns null (an unexpected 500).
-     */
-    private toHttpException(exception: unknown): HttpException | null {
-        if (exception instanceof HttpException) {
-            return exception;
-        }
-        if (exception instanceof DomainNotFoundError) {
-            return new NotFoundException(exception.message);
-        }
-        if (exception instanceof DomainNotAuthorizedError) {
-            return new ForbiddenException(exception.message);
-        }
-        if (exception instanceof DomainValidationError) {
-            return new BadRequestException(exception.message);
-        }
-        return null;
     }
 
     private isApiRequest(request: Request): boolean {

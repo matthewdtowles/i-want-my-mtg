@@ -14,6 +14,30 @@ import {
 import { getLogger } from 'src/logger/global-app-logger';
 import { AuthenticatedRequest } from './base/authenticated.request';
 
+/**
+ * Maps a thrown value to the HttpException it should be presented as: an existing
+ * HttpException passes through, a Domain*Error maps to the matching status
+ * (preserving its user-facing message), and anything else returns null (a
+ * genuinely unexpected error the caller should treat as a 500). Single source of
+ * truth for the domain-error → HTTP mapping, shared by the orchestrator handler
+ * below and the global HttpExceptionFilter.
+ */
+export function domainErrorToHttpException(error: unknown): HttpException | null {
+    if (error instanceof HttpException) {
+        return error;
+    }
+    if (error instanceof DomainNotFoundError) {
+        return new NotFoundException(error.message);
+    }
+    if (error instanceof DomainNotAuthorizedError) {
+        return new ForbiddenException(error.message);
+    }
+    if (error instanceof DomainValidationError) {
+        return new BadRequestException(error.message);
+    }
+    return null;
+}
+
 export class HttpErrorHandler {
     private static readonly LOGGER = getLogger(HttpErrorHandler.name);
 
@@ -25,23 +49,13 @@ export class HttpErrorHandler {
      */
     static toHttpException(error: Error, context: string): never {
         this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
-        // An HttpException thrown inside the try block (e.g. an auth guard's
-        // UnauthorizedException) is already the intended response — pass it
-        // through. This must come first: without it the keyword fallback below
-        // re-mapped a 401 "User not found in request" to a 404 (W1/B1).
-        if (error instanceof HttpException) {
-            throw error;
-        }
-        // Domain errors are the single convention for core failures. Map them to
-        // the matching HTTP status, preserving the (user-facing) domain message.
-        if (error instanceof DomainNotFoundError) {
-            throw new NotFoundException(error.message);
-        }
-        if (error instanceof DomainNotAuthorizedError) {
-            throw new ForbiddenException(error.message);
-        }
-        if (error instanceof DomainValidationError) {
-            throw new BadRequestException(error.message);
+        // An existing HttpException (e.g. an auth guard's UnauthorizedException)
+        // or a Domain*Error maps directly. HttpException passthrough must come
+        // first: without it the keyword fallback below re-mapped a 401 "User not
+        // found in request" to a 404 (W1/B1).
+        const mapped = domainErrorToHttpException(error);
+        if (mapped) {
+            throw mapped;
         }
         // Transitional fallback for core services not yet migrated to Domain
         // errors (W1). Once every service throws Domain*Error, delete this block

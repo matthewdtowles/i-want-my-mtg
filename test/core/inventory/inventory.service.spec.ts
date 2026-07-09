@@ -107,6 +107,22 @@ describe('InventoryService', () => {
             expect(repository.save).toHaveBeenCalledWith([]);
             expect(result).toEqual([]);
         });
+
+        // W2/B3: the zero-quantity delete used to be fire-and-forget. A rejected
+        // delete then became an unhandled rejection (process crash on Node >=15)
+        // and silent data corruption. save() must await it and surface the error.
+        it('propagates a delete failure instead of resolving silently (B3)', async () => {
+            const itemToDelete = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 0,
+            });
+            repository.delete.mockRejectedValue(new Error('delete failed'));
+            repository.save.mockResolvedValue([]);
+
+            await expect(service.save([itemToDelete])).rejects.toThrow('delete failed');
+        });
     });
 
     describe('findForUser', () => {

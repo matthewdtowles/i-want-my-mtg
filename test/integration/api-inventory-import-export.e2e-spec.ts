@@ -117,6 +117,53 @@ describe('Inventory Import/Export API (e2e)', () => {
             expect(res.body.data.saved).toBe(1);
         });
 
+        // W2/B2: a row with no quantity routes to ensureAtLeastOne (insert 1 if
+        // absent). The reported `saved` count must reflect the rows actually
+        // inserted - the old rowCount read always reported 0.
+        it('reports saved count for quantity-less rows (ensureAtLeastOne)', async () => {
+            const csv = buildCsv(NATIVE_HEADER, `,Test Angel,${TEST_SET_CODE},1,,false`);
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/inventory/import/cards')
+                .set('Authorization', bearerToken)
+                .attach('file', csv, 'inventory.csv')
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.saved).toBe(1);
+            expect(res.body.data.errorCount).toBe(0);
+
+            const rows = await ds.query(
+                `SELECT quantity FROM inventory WHERE user_id = $1 AND card_id = $2 AND foil = false`,
+                [userId, TEST_CARD_ID]
+            );
+            expect(rows).toHaveLength(1);
+            expect(Number(rows[0].quantity)).toBe(1);
+        });
+
+        // W2/B2: a second ensure for an already-present row inserts nothing
+        // (ON CONFLICT DO NOTHING) and must be reported as skipped, not saved.
+        it('reports skipped when the row already exists (ensureAtLeastOne)', async () => {
+            await ds.query(
+                `INSERT INTO inventory (user_id, card_id, foil, quantity) VALUES ($1, $2, false, 5)`,
+                [userId, TEST_CARD_ID]
+            );
+            const csv = buildCsv(NATIVE_HEADER, `,Test Angel,${TEST_SET_CODE},1,,false`);
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/inventory/import/cards')
+                .set('Authorization', bearerToken)
+                .attach('file', csv, 'inventory.csv')
+                .expect(200);
+
+            expect(res.body.data.saved).toBe(0);
+            expect(res.body.data.skipped).toBe(1);
+
+            const rows = await ds.query(
+                `SELECT quantity FROM inventory WHERE user_id = $1 AND card_id = $2 AND foil = false`,
+                [userId, TEST_CARD_ID]
+            );
+            expect(Number(rows[0].quantity)).toBe(5);
+        });
+
         it('returns 400 when no file is attached', async () => {
             const res = await request(app.getHttpServer())
                 .post('/api/v1/inventory/import/cards')

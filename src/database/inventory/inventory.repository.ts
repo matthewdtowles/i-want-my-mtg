@@ -245,13 +245,17 @@ export class InventoryRepository
             .join(', ');
         const params = items.flatMap((item) => [item.cardId, item.userId, item.isFoil]);
 
+        // RETURNING makes query() resolve to one row per *actually inserted*
+        // row; ON CONFLICT DO NOTHING omits conflicting rows. The raw result is
+        // a rows array with no rowCount, so count its length (W2/B2).
         const result = await this.repository.query(
             `INSERT INTO inventory (card_id, user_id, foil, quantity)
              VALUES ${values}
-             ON CONFLICT (card_id, user_id, foil) DO NOTHING`,
+             ON CONFLICT (card_id, user_id, foil) DO NOTHING
+             RETURNING card_id`,
             params
         );
-        const saved = result?.rowCount ?? 0;
+        const saved = Array.isArray(result) ? result.length : 0;
         const skipped = items.length - saved;
         this.LOGGER.debug(`ensureAtLeastOne: saved ${saved}, skipped ${skipped}.`);
         return { saved, skipped };

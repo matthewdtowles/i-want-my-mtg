@@ -29,8 +29,10 @@ export class InventoryService {
             if (item.quantity > 0) {
                 toSave.push(item);
             } else {
-                // await omitted intentionally
-                this.repository.delete(item.userId, item.cardId, item.isFoil);
+                // Await the delete: a fire-and-forget rejection here is an
+                // unhandled promise rejection (process crash on Node >=15) and
+                // silently corrupts inventory when it fails (W2/B3).
+                await this.repository.delete(item.userId, item.cardId, item.isFoil);
             }
         }
         return await this.repository.save(toSave);

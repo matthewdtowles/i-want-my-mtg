@@ -264,6 +264,8 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 
 **Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, merged in PR #578) and S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness). 26 issues remain.
 
+**In flight (2026-07-09):** MB1 (mobile PR #70), MB2 (mobile PR #71), and W1 **part 1** (web PR #579) have open PRs — see the Wave 1 table. W1 is being split: PR #579 lands the boundary + convention (B1/B9/A1/A9); the A2 catch-wrap-rethrow cleanup + keyword-fallback removal is a follow-up, so #569 stays open until then.
+
 ### Cross-repo hard orderings (everything else is repo-local and parallelizable)
 
 - **X1** — web **W9** migration (✅ done) → scry **S2** delete/reset cleanup is now **unblocked**.
@@ -278,9 +280,9 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 
 | Issue | Repo | Title | Notes |
 |---|---|---|---|
-| [MB1](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63) | mobile | Clear query cache on sign-out (cross-account data leak) | Security — ship immediately |
-| [MB2](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64) | mobile | Decouple CI spec-drift check from PR gating | Tiny; unblocks W8 (X3/X4) |
-| [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | web | Error handling overhaul: domain errors end to end | Foundational; X6 verifies after |
+| [MB1](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63) | mobile | Clear query cache on sign-out (cross-account data leak) | Security — **PR #70 open** |
+| [MB2](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64) | mobile | Decouple CI spec-drift check from PR gating | Unblocks W8 (X3/X4) — **PR #71 open** |
+| [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | web | Error handling overhaul: domain errors end to end | Foundational; X6 verifies after — **part 1 in PR #579**, A2 remainder to follow |
 | [W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570) | web | Inventory/ledger integrity: transactional writes, fix silent failures | |
 | [S2](https://github.com/matthewdtowles/scry/issues/36) | scry | Delete/reset FK coverage; remove fake CASCADE | Unblocked by W9 (X1) |
 | [S3](https://github.com/matthewdtowles/scry/issues/37) | scry | Ingest robustness: stream failures, non-TTY prompts, batch/mapping bugs | |

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { closeTestApp, createTestApp } from './setup';
+import { closeTestApp, createTestApp, getTestUserId } from './setup';
 
 // Covers migration 046 (W9 / #577): the card FKs on price_history, inventory,
 // price and legality must be ON DELETE CASCADE so scry's card-prune paths
@@ -21,13 +21,7 @@ describe('Card FK delete cascade: price_history + inventory (046) (e2e)', () => 
         app = await createTestApp();
         ds = app.get(DataSource);
         await deleteTestCard();
-        const users = await ds.query('SELECT id FROM users WHERE email = $1', ['integ@test.com']);
-        if (users.length === 0) {
-            throw new Error(
-                'Seed user integ@test.com not found — check test/integration/seed.sql ran'
-            );
-        }
-        userId = users[0].id;
+        userId = await getTestUserId(app);
     }, 30000);
 
     afterAll(async () => {

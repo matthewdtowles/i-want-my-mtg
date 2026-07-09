@@ -42,10 +42,12 @@ export class HttpErrorHandler {
     private static readonly LOGGER = getLogger(HttpErrorHandler.name);
 
     /**
-     * Handles errors by logging them and throwing standardized HTTP exceptions.
+     * Logs the error and throws the standardized HTTP exception for it: an
+     * existing HttpException or a mapped Domain*Error, else a keyword fallback
+     * (transitional), else a generic 500.
      * @param error the error that occurred
      * @param context the context in which the error occurred, used for logging
-     * @returns never, throws an appropriate HTTP exception based on the error message
+     * @returns never — always throws
      */
     static toHttpException(error: Error, context: string): never {
         this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
@@ -57,9 +59,12 @@ export class HttpErrorHandler {
         if (mapped) {
             throw mapped;
         }
-        // Transitional fallback for core services not yet migrated to Domain
-        // errors (W1). Once every service throws Domain*Error, delete this block
-        // so unmapped errors are honestly a 500.
+        // Transitional fallback for callers still throwing plain Error with
+        // keyword-significant messages: the HBS orchestrators/presenters (e.g.
+        // "Set with code X not found") plus a few defensive core guards
+        // (auth.service.login's "User not found"). W1 part 2 migrated the core
+        // domain conditions; this block is deleted in part 3 once those remaining
+        // throws move to Domain*Error, so unmapped errors become an honest 500.
         if (error.message.includes('not found')) {
             throw new NotFoundException(error.message);
         }

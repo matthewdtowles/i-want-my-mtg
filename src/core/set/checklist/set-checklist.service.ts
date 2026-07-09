@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { stringify } from 'csv-stringify';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -24,7 +25,7 @@ export class SetChecklistService {
         this.LOGGER.debug(`generateChecklist for set ${setCode}, user ${userId}.`);
 
         const set = await this.setRepository.findByCode(setCode);
-        if (!set) throw new Error(`Set not found: ${setCode}`);
+        if (!set) throw new DomainNotFoundError(`Set not found: ${setCode}`);
 
         const allOptions = new SafeQueryOptions({ limit: '10000' });
         const cards = await this.cardRepository.findBySet(setCode, allOptions.withBaseOnly(false));

@@ -60,31 +60,19 @@ export class SetService {
 
     async searchSets(filter: string, options: SafeQueryOptions): Promise<Set[]> {
         this.LOGGER.debug(`Search sets: ${filter}.`);
-        try {
-            return await this.repository.searchSets(filter, options);
-        } catch (error) {
-            throw new Error(`Error searching sets for "${filter}": ${error.message}`);
-        }
+        return this.repository.searchSets(filter, options);
     }
 
     async totalSearchSets(filter: string): Promise<number> {
         this.LOGGER.debug(`Count set search results for: ${filter}.`);
-        try {
-            return await this.repository.totalSearchSets(filter);
-        } catch (error) {
-            throw new Error(`Error counting set search results for "${filter}": ${error.message}`);
-        }
+        return this.repository.totalSearchSets(filter);
     }
 
     async totalCardsInSet(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Find total number of cards in set ${setCode}.`);
-        try {
-            const total = await this.repository.totalInSet(setCode, options);
-            this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
-            return total;
-        } catch (error) {
-            throw new Error(`Error counting cards in set ${setCode}: ${error.message}`);
-        }
+        const total = await this.repository.totalInSet(setCode, options);
+        this.LOGGER.debug(`Total cards in set ${setCode}: ${total}.`);
+        return total;
     }
 
     async totalValueForSet(
@@ -95,29 +83,17 @@ export class SetService {
         this.LOGGER.debug(
             `Get total value of cards in set ${setCode} ${includeFoil ? 'with foils' : ''}, baseOnly: ${options.baseOnly}.`
         );
-        try {
-            const total = await this.repository.totalValueForSet(setCode, includeFoil, options);
-            this.LOGGER.debug(
-                `Total value for set ${setCode} ${includeFoil ? 'with foils' : ''}: ${total}.`
-            );
-            return total;
-        } catch (error) {
-            throw new Error(
-                `Error getting total value of ${includeFoil ? '' : 'non-foil '}cards for set ${setCode}: ${error.message}.`
-            );
-        }
+        const total = await this.repository.totalValueForSet(setCode, includeFoil, options);
+        this.LOGGER.debug(
+            `Total value for set ${setCode} ${includeFoil ? 'with foils' : ''}: ${total}.`
+        );
+        return total;
     }
 
     async findSetPriceHistory(setCode: string, days?: number): Promise<SetPriceHistory[]> {
         this.LOGGER.debug(`Find set price history for set ${setCode}, days=${days}.`);
-        try {
-            const prices = await this.priceHistoryRepository.findBySetCode(setCode, days);
-            this.LOGGER.debug(
-                `Found ${prices?.length} set price history records for set ${setCode}.`
-            );
-            return prices;
-        } catch (error) {
-            throw new Error(`Error finding set price history for set ${setCode}: ${error.message}`);
-        }
+        const prices = await this.priceHistoryRepository.findBySetCode(setCode, days);
+        this.LOGGER.debug(`Found ${prices?.length} set price history records for set ${setCode}.`);
+        return prices;
     }
 }

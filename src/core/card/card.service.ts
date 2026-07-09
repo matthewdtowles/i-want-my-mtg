@@ -22,42 +22,26 @@ export class CardService {
 
     async findByIds(ids: string[]): Promise<Card[]> {
         this.LOGGER.debug(`Find ${ids.length} cards by ids.`);
-        try {
-            return await this.repository.findByIds(ids);
-        } catch (error) {
-            throw new Error(`Error finding cards by ids: ${error.message}`);
-        }
+        return this.repository.findByIds(ids);
     }
 
     async findByIdsWithPrices(ids: string[]): Promise<Card[]> {
         this.LOGGER.debug(`Find ${ids.length} cards by ids with latest prices.`);
-        try {
-            return await this.repository.findByIds(ids, { includeLatestPrice: true });
-        } catch (error) {
-            throw new Error(`Error finding cards by ids with prices: ${error.message}`);
-        }
+        return this.repository.findByIds(ids, { includeLatestPrice: true });
     }
 
     async findWithName(name: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards with name ${name}.`);
-        try {
-            const cards = await this.repository.findWithName(name, options);
-            this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`);
-            return cards;
-        } catch (error) {
-            throw new Error(`Error finding cards with name ${name}: ${error.message}`);
-        }
+        const cards = await this.repository.findWithName(name, options);
+        this.LOGGER.debug(`Found ${cards?.length} with name ${name}.`);
+        return cards;
     }
 
     async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Find cards in set ${code}.`);
-        try {
-            const cards = await this.repository.findBySet(code, query);
-            this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
-            return cards;
-        } catch (error) {
-            throw new Error(`Error finding cards in set ${code}: ${error.message}`);
-        }
+        const cards = await this.repository.findBySet(code, query);
+        this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
+        return cards;
     }
 
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
@@ -65,103 +49,61 @@ export class CardService {
         // so normalize here (one place for every caller — REST/MCP/HBS).
         code = code?.trim().toLowerCase();
         this.LOGGER.debug(`Find card no. ${number} in set ${code}.`);
-        try {
-            const card = await this.repository.findBySetCodeAndNumber(code, number, [
-                'set',
-                'legalities',
-                'prices',
-            ]);
-            this.LOGGER.debug(
-                `Card no. ${number} in set ${code}: ${card ? card.id : 'Not found'}.`
-            );
-            return card;
-        } catch (error) {
-            throw new Error(
-                `Error finding card with set code ${code} and number ${number}: ${error.message}`
-            );
-        }
+        const card = await this.repository.findBySetCodeAndNumber(code, number, [
+            'set',
+            'legalities',
+            'prices',
+        ]);
+        this.LOGGER.debug(`Card no. ${number} in set ${code}: ${card ? card.id : 'Not found'}.`);
+        return card;
     }
 
     async totalWithName(name: string): Promise<number> {
         this.LOGGER.debug(`Find total number of cards with name ${name}.`);
-        try {
-            const total = await this.repository.totalWithName(name);
-            this.LOGGER.debug(`Total cards with name ${name}: ${total}.`);
-            return total;
-        } catch (error) {
-            throw new Error(`Error counting cards with name ${name}: ${error.message}`);
-        }
+        const total = await this.repository.totalWithName(name);
+        this.LOGGER.debug(`Total cards with name ${name}: ${total}.`);
+        return total;
     }
 
     async searchByName(filter: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Search cards by name: ${filter}.`);
-        try {
-            return await this.repository.searchByName(filter, options);
-        } catch (error) {
-            throw new Error(`Error searching cards by name "${filter}": ${error.message}`);
-        }
+        return this.repository.searchByName(filter, options);
     }
 
     async totalSearchByName(filter: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Count search results for: ${filter}.`);
-        try {
-            return await this.repository.totalSearchByName(filter, options);
-        } catch (error) {
-            throw new Error(`Error counting card search results for "${filter}": ${error.message}`);
-        }
+        return this.repository.totalSearchByName(filter, options);
     }
 
     async searchByNameGrouped(filter: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Grouped search cards by name: ${filter}.`);
-        try {
-            return await this.repository.searchByNameGrouped(filter, options);
-        } catch (error) {
-            throw new Error(`Error grouped-searching cards by name "${filter}": ${error.message}`);
-        }
+        return this.repository.searchByNameGrouped(filter, options);
     }
 
     async totalSearchByNameGrouped(filter: string, options?: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Count grouped search results for: ${filter}.`);
-        try {
-            return await this.repository.totalSearchByNameGrouped(filter, options);
-        } catch (error) {
-            throw new Error(
-                `Error counting grouped card search results for "${filter}": ${error.message}`
-            );
-        }
+        return this.repository.totalSearchByNameGrouped(filter, options);
     }
 
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(
             `Find total number of cards in set ${code}, options: ${JSON.stringify(options)}.`
         );
-        try {
-            const total = await this.repository.totalInSet(code, options);
-            this.LOGGER.debug(`Total cards in set ${code}: ${total}.`);
-            return total;
-        } catch (error) {
-            throw new Error(`Error counting cards in set ${code}: ${error.message}`);
-        }
+        const total = await this.repository.totalInSet(code, options);
+        this.LOGGER.debug(`Total cards in set ${code}: ${total}.`);
+        return total;
     }
 
     async findPriceHistory(cardId: string, days?: number): Promise<Price[]> {
         this.LOGGER.debug(`Find price history for card ${cardId}, days=${days}.`);
-        try {
-            const prices = await this.priceHistoryRepository.findByCardId(cardId, days);
-            this.LOGGER.debug(`Found ${prices?.length} price history records for card ${cardId}.`);
-            return prices;
-        } catch (error) {
-            throw new Error(`Error finding price history for card ${cardId}: ${error.message}`);
-        }
+        const prices = await this.priceHistoryRepository.findByCardId(cardId, days);
+        this.LOGGER.debug(`Found ${prices?.length} price history records for card ${cardId}.`);
+        return prices;
     }
 
     async findCurrentBuylist(cardId: string): Promise<GranularPrice[]> {
         this.LOGGER.debug(`Find current buylist for card ${cardId}.`);
-        try {
-            return await this.granularPriceRepository.findCurrentBuylistByCardId(cardId);
-        } catch (error) {
-            throw new Error(`Error finding buylist for card ${cardId}: ${error.message}`);
-        }
+        return this.granularPriceRepository.findCurrentBuylistByCardId(cardId);
     }
 
     /**
@@ -176,20 +118,15 @@ export class CardService {
         if (cardIds.length === 0) {
             return grouped;
         }
-        try {
-            const offers =
-                await this.granularPriceRepository.findCurrentBuylistByCardIds(cardIds);
-            for (const offer of offers) {
-                const list = grouped.get(offer.cardId);
-                if (list) {
-                    list.push(offer);
-                } else {
-                    grouped.set(offer.cardId, [offer]);
-                }
+        const offers = await this.granularPriceRepository.findCurrentBuylistByCardIds(cardIds);
+        for (const offer of offers) {
+            const list = grouped.get(offer.cardId);
+            if (list) {
+                list.push(offer);
+            } else {
+                grouped.set(offer.cardId, [offer]);
             }
-            return grouped;
-        } catch (error) {
-            throw new Error(`Error finding buylist for cards: ${error.message}`);
         }
+        return grouped;
     }
 }

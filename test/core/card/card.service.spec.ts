@@ -118,7 +118,7 @@ describe('CardService', () => {
             repository.findWithName.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findWithName('Test Card', mockQueryOptions)).rejects.toThrow(
-                'Error finding cards with name Test Card'
+                'Database error'
             );
         });
     });
@@ -147,7 +147,7 @@ describe('CardService', () => {
             repository.findBySet.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findBySet('TST', mockQueryOptions)).rejects.toThrow(
-                'Error finding cards in set TST'
+                'Database error'
             );
         });
     });
@@ -185,7 +185,7 @@ describe('CardService', () => {
             repository.findBySetCodeAndNumber.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findBySetCodeAndNumber('TST', '123')).rejects.toThrow(
-                'Error finding card with set code tst and number 123'
+                'Database error'
             );
         });
     });
@@ -212,7 +212,7 @@ describe('CardService', () => {
             repository.totalWithName.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalWithName('Test Card')).rejects.toThrow(
-                'Error counting cards with name Test Card'
+                'Database error'
             );
         });
     });
@@ -239,7 +239,7 @@ describe('CardService', () => {
             repository.totalInSet.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalInSet('TST', mockQueryOptions)).rejects.toThrow(
-                'Error counting cards in set TST'
+                'Database error'
             );
         });
     });
@@ -267,7 +267,7 @@ describe('CardService', () => {
             repository.searchByName.mockRejectedValue(new Error('Database error'));
 
             await expect(service.searchByName('Test', mockQueryOptions)).rejects.toThrow(
-                'Error searching cards by name "Test"'
+                'Database error'
             );
         });
     });
@@ -294,7 +294,7 @@ describe('CardService', () => {
             repository.totalSearchByName.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalSearchByName('Test')).rejects.toThrow(
-                'Error counting card search results for "Test"'
+                'Database error'
             );
         });
     });
@@ -315,7 +315,7 @@ describe('CardService', () => {
 
             await expect(
                 service.searchByNameGrouped('Test', mockQueryOptions)
-            ).rejects.toThrow('Error grouped-searching cards by name "Test"');
+            ).rejects.toThrow('Database error');
         });
     });
 
@@ -333,7 +333,7 @@ describe('CardService', () => {
             repository.totalSearchByNameGrouped.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalSearchByNameGrouped('Test')).rejects.toThrow(
-                'Error counting grouped card search results for "Test"'
+                'Database error'
             );
         });
     });
@@ -392,7 +392,7 @@ describe('CardService', () => {
             mockPriceHistoryRepository.findByCardId.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findPriceHistory('test-card-id')).rejects.toThrow(
-                'Error finding price history for card test-card-id'
+                'Database error'
             );
         });
     });
@@ -434,7 +434,7 @@ describe('CardService', () => {
             );
 
             await expect(service.findCurrentBuylist('test-card-id')).rejects.toThrow(
-                'Error finding buylist for card test-card-id'
+                'Database error'
             );
         });
     });

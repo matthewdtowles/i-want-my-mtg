@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { RefreshTokenService } from 'src/core/auth/refresh-token.service';
+import { DomainValidationError } from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { User } from './user.entity';
 import { UserRepositoryPort } from './ports/user.repository.port';
@@ -47,7 +48,7 @@ export class UserService {
     async update(user: User): Promise<User | null> {
         this.LOGGER.debug(`Update user ID ${user?.id}.`);
         if (user.password) {
-            throw new Error('Password must be updated separately.');
+            throw new DomainValidationError('Password must be updated separately.');
         }
         return (await this.repository.update(user)) ?? null;
     }

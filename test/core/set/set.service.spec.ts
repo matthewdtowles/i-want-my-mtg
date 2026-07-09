@@ -240,7 +240,7 @@ describe('SetService', () => {
             repository.totalInSet.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalCardsInSet(mockSetCode, mockQueryOptions)).rejects.toThrow(
-                `Error counting cards in set ${mockSetCode}`
+                'Database error'
             );
         });
     });
@@ -285,7 +285,7 @@ describe('SetService', () => {
 
             await expect(
                 service.totalValueForSet(mockSetCode, false, mockQueryOptions)
-            ).rejects.toThrow(`Error getting total value of non-foil cards for set ${mockSetCode}`);
+            ).rejects.toThrow('Database error');
         });
 
         it('should throw error when repository fails (with foil)', async () => {
@@ -293,7 +293,7 @@ describe('SetService', () => {
 
             await expect(
                 service.totalValueForSet(mockSetCode, true, mockQueryOptions)
-            ).rejects.toThrow(`Error getting total value of cards for set ${mockSetCode}`);
+            ).rejects.toThrow('Database error');
         });
     });
 
@@ -338,7 +338,7 @@ describe('SetService', () => {
             repository.searchSets.mockRejectedValue(new Error('Database error'));
 
             await expect(service.searchSets('Test', mockQueryOptions)).rejects.toThrow(
-                'Error searching sets for "Test"'
+                'Database error'
             );
         });
     });
@@ -365,7 +365,7 @@ describe('SetService', () => {
             repository.totalSearchSets.mockRejectedValue(new Error('Database error'));
 
             await expect(service.totalSearchSets('Test')).rejects.toThrow(
-                'Error counting set search results for "Test"'
+                'Database error'
             );
         });
     });
@@ -422,7 +422,7 @@ describe('SetService', () => {
             priceHistoryRepository.findBySetCode.mockRejectedValue(new Error('Database error'));
 
             await expect(service.findSetPriceHistory('SET')).rejects.toThrow(
-                'Error finding set price history for set SET'
+                'Database error'
             );
         });
     });

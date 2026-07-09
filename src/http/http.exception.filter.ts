@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { getLogger } from 'src/logger/global-app-logger';
+import { domainErrorToHttpException } from './http.error.handler';
 import { InvalidQueryParamException } from './api/shared/query-validation';
 import { ApiResponseDto } from './base/api-response.dto';
 import { LoginFormViewDto } from './hbs/auth/dto/login-form.view.dto';
@@ -26,12 +27,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
-        const isHttpException = exception instanceof HttpException;
-        const status: number = isHttpException
-            ? exception.getStatus()
+        // Normalize domain errors (and pass HttpExceptions through) so API
+        // controllers that throw Domain*Error get the right status without a
+        // per-controller catch. A null result is a genuinely unexpected error:
+        // it drives a 500 on the API and page branches (its message is never
+        // exposed to the client - B9); the form-route branch re-renders the form
+        // with a 200 regardless (see handleFormError).
+        const httpException = domainErrorToHttpException(exception);
+        const status: number = httpException
+            ? httpException.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
+        const clientMessage: string = httpException
+            ? httpException.message
+            : 'Internal Server Error';
         if (this.isApiRequest(request)) {
-            const body = ApiResponseDto.error(exception.message || 'Internal Server Error');
+            const body = ApiResponseDto.error(clientMessage);
             if (exception instanceof InvalidQueryParamException) {
                 response.status(status).json({
                     ...body,
@@ -42,14 +52,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 response.status(status).json(body);
             }
         } else if (this.isFormRoute(request.url)) {
-            this.handleFormError(response, request, exception);
+            this.handleFormError(response, request, httpException, clientMessage);
         } else {
-            const template = this.getErrorTemplate(exception);
+            const template = this.getErrorTemplate(httpException);
             response.status(status).render(template, {
-                toast: new Toast(exception.message || 'Internal Server Error', ActionStatus.ERROR),
+                toast: new Toast(clientMessage, ActionStatus.ERROR),
                 statusCode: status,
                 authenticated: false,
-                returnUrl: exception instanceof UnauthorizedException ? request.url : undefined,
+                returnUrl:
+                    httpException instanceof UnauthorizedException ? request.url : undefined,
             });
         }
     }
@@ -71,9 +82,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
         );
     }
 
-    private handleFormError(response: Response, request: Request, exception: any): void {
-        let errorMessage = exception.message || 'An error occurred';
-        if (exception instanceof UnauthorizedException) {
+    private handleFormError(
+        response: Response,
+        request: Request,
+        httpException: HttpException | null,
+        clientMessage: string
+    ): void {
+        let errorMessage = clientMessage;
+        if (httpException instanceof UnauthorizedException) {
             errorMessage = 'Invalid email or password';
         }
         if (request.url.includes('/user/create')) {
@@ -113,7 +129,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         });
     }
 
-    private getErrorTemplate(exception: HttpException): string {
+    private getErrorTemplate(exception: HttpException | null): string {
         if (exception instanceof NotFoundException) {
             return 'errors/404';
         }

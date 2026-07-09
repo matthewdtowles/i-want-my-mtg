@@ -59,7 +59,7 @@ export class SealedProductOrchestrator {
             });
         } catch (error) {
             if (error instanceof HttpException) throw error;
-            return HttpErrorHandler.toHttpException(error, 'findSealedProduct');
+            HttpErrorHandler.toHttpException(error, 'findSealedProduct');
         }
     }
 }

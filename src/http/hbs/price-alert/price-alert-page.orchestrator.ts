@@ -31,7 +31,7 @@ export class PriceAlertPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building price alert list: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildListView');
+            HttpErrorHandler.toHttpException(error, 'buildListView');
         }
     }
 }

@@ -136,7 +136,7 @@ export class PortfolioOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error getting portfolio view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getPortfolioView');
+            HttpErrorHandler.toHttpException(error, 'getPortfolioView');
         }
     }
 
@@ -154,7 +154,7 @@ export class PortfolioOrchestrator {
             return { history: points };
         } catch (error) {
             this.LOGGER.debug(`Error getting portfolio history: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getHistory');
+            HttpErrorHandler.toHttpException(error, 'getHistory');
         }
     }
 
@@ -181,7 +181,7 @@ export class PortfolioOrchestrator {
             return { cashFlow };
         } catch (error) {
             this.LOGGER.debug(`Error getting cash flow: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getCashFlow');
+            HttpErrorHandler.toHttpException(error, 'getCashFlow');
         }
     }
 
@@ -299,7 +299,7 @@ export class PortfolioOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error getting breakdown view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getBreakdownView');
+            HttpErrorHandler.toHttpException(error, 'getBreakdownView');
         }
     }
 
@@ -385,7 +385,7 @@ export class PortfolioOrchestrator {
             };
         } catch (error) {
             this.LOGGER.debug(`Error getting realized gains: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getRealizedGains');
+            HttpErrorHandler.toHttpException(error, 'getRealizedGains');
         }
     }
 }

@@ -29,7 +29,7 @@ export class BuyListPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building buy-list view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildListView');
+            HttpErrorHandler.toHttpException(error, 'buildListView');
         }
     }
 }

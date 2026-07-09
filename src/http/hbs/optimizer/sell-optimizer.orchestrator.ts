@@ -38,7 +38,7 @@ export class SellOptimizerOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building optimizer view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildView');
+            HttpErrorHandler.toHttpException(error, 'buildView');
         }
     }
 

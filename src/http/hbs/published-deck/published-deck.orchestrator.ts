@@ -92,7 +92,7 @@ export class PublishedDeckOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building published deck list: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildListView');
+            HttpErrorHandler.toHttpException(error, 'buildListView');
         }
     }
 
@@ -173,7 +173,7 @@ export class PublishedDeckOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building published deck detail: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildDetailView');
+            HttpErrorHandler.toHttpException(error, 'buildDetailView');
         }
     }
 

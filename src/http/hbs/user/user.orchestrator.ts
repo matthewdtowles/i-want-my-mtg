@@ -220,7 +220,7 @@ export class UserOrchestrator {
             return authToken;
         } catch (error) {
             this.LOGGER.debug(`Error creating user with email: ${createUserDto.email}.`);
-            return HttpErrorHandler.toHttpException(error, 'create');
+            HttpErrorHandler.toHttpException(error, 'create');
         }
     }
 
@@ -248,7 +248,7 @@ export class UserOrchestrator {
             };
         } catch (error) {
             this.LOGGER.debug(`Error finding user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, 'findUser');
+            HttpErrorHandler.toHttpException(error, 'findUser');
         }
     }
 
@@ -305,7 +305,7 @@ export class UserOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error updating user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, 'findUser');
+            HttpErrorHandler.toHttpException(error, 'findUser');
         }
     }
 
@@ -334,7 +334,7 @@ export class UserOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error updating password for user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, 'updatePassword');
+            HttpErrorHandler.toHttpException(error, 'updatePassword');
         }
     }
 
@@ -357,7 +357,7 @@ export class UserOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error deleting user ${userId}.`);
-            return HttpErrorHandler.toHttpException(error, 'deleteUser');
+            HttpErrorHandler.toHttpException(error, 'deleteUser');
         }
     }
 }

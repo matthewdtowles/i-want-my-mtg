@@ -72,7 +72,7 @@ export class SearchOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error searching for "${term}": ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'search');
+            HttpErrorHandler.toHttpException(error, 'search');
         }
     }
 

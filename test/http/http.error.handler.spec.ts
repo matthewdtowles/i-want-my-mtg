@@ -64,4 +64,19 @@ describe('HttpErrorHandler.toHttpException', () => {
             expect((e as HttpException).message).toBe('An unexpected error occurred');
         }
     });
+
+    // W1 part 3: the transitional keyword fallback is gone. A plain Error whose
+    // message happens to contain "not found" (or any other former keyword) is now
+    // an honest 500, not a 404 — callers must throw a Domain*Error to signal a
+    // non-500 status. Guards against the fallback silently coming back.
+    it('does not map a plain Error with a keyword-significant message', () => {
+        try {
+            HttpErrorHandler.toHttpException(new Error('Set with code BAD not found'), 'test');
+            fail('expected throw');
+        } catch (e) {
+            expect(e).toBeInstanceOf(InternalServerErrorException);
+            expect(e).not.toBeInstanceOf(NotFoundException);
+            expect((e as HttpException).message).toBe('An unexpected error occurred');
+        }
+    });
 });

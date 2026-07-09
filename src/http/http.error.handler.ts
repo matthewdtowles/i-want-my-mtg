@@ -43,8 +43,7 @@ export class HttpErrorHandler {
 
     /**
      * Logs the error and throws the standardized HTTP exception for it: an
-     * existing HttpException or a mapped Domain*Error, else a keyword fallback
-     * (transitional), else a generic 500.
+     * existing HttpException or a mapped Domain*Error, else a generic 500.
      * @param error the error that occurred
      * @param context the context in which the error occurred, used for logging
      * @returns never — always throws
@@ -52,30 +51,13 @@ export class HttpErrorHandler {
     static toHttpException(error: Error, context: string): never {
         this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
         // An existing HttpException (e.g. an auth guard's UnauthorizedException)
-        // or a Domain*Error maps directly. HttpException passthrough must come
-        // first: without it the keyword fallback below re-mapped a 401 "User not
-        // found in request" to a 404 (W1/B1).
+        // or a Domain*Error maps directly (HttpException passthrough first, so a
+        // 401 "User not found in request" is not re-mapped to a 404 — W1/B1).
+        // Anything else is a genuinely unexpected error: a generic 500 that never
+        // leaks the underlying message.
         const mapped = domainErrorToHttpException(error);
         if (mapped) {
             throw mapped;
-        }
-        // Transitional fallback for callers still throwing plain Error with
-        // keyword-significant messages: the HBS orchestrators/presenters (e.g.
-        // "Set with code X not found") plus a few defensive core guards
-        // (auth.service.login's "User not found"). W1 part 2 migrated the core
-        // domain conditions; this block is deleted in part 3 once those remaining
-        // throws move to Domain*Error, so unmapped errors become an honest 500.
-        if (error.message.includes('not found')) {
-            throw new NotFoundException(error.message);
-        }
-        if (error.message.includes('unauthorized') || error.message.includes('not logged in')) {
-            throw new UnauthorizedException(error.message);
-        }
-        if (error.message.includes('forbidden') || error.message.includes('not allowed')) {
-            throw new ForbiddenException(error.message);
-        }
-        if (error.message.includes('invalid') || error.message.includes('required')) {
-            throw new BadRequestException(error.message);
         }
         throw new InternalServerErrorException('An unexpected error occurred');
     }

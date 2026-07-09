@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Card } from 'src/core/card/card.entity';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { CardService } from 'src/core/card/card.service';
 import { Inventory } from 'src/core/inventory/inventory.entity';
@@ -50,7 +51,9 @@ export class CardOrchestrator {
                 setNumber
             );
             if (!coreCard) {
-                throw new Error(`Card with set code ${setCode} and number ${setNumber} not found`);
+                throw new DomainNotFoundError(
+                    `Card with set code ${setCode} and number ${setNumber} not found`
+                );
             }
             const inventory: Inventory[] =
                 userId > 0 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];

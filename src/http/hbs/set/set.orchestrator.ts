@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
@@ -189,7 +190,7 @@ export class SetOrchestrator {
         try {
             const set = await this.setService.findByCode(setCode);
             if (!set) {
-                throw new Error(`Set with code ${setCode} not found`);
+                throw new DomainNotFoundError(`Set with code ${setCode} not found`);
             }
 
             const forceShowAll = !set.isMain;

@@ -59,11 +59,12 @@ export class HttpErrorHandler {
         if (mapped) {
             throw mapped;
         }
-        // Transitional fallback for the HBS orchestrators/presenters not yet
-        // migrated to Domain errors (they still throw plain Error with
-        // keyword-significant messages, e.g. "Set with code X not found"). The
-        // core services are migrated (W1 part 2); this block is deleted once the
-        // http layer follows, so unmapped errors become an honest 500.
+        // Transitional fallback for callers still throwing plain Error with
+        // keyword-significant messages: the HBS orchestrators/presenters (e.g.
+        // "Set with code X not found") plus a few defensive core guards
+        // (auth.service.login's "User not found"). W1 part 2 migrated the core
+        // domain conditions; this block is deleted in part 3 once those remaining
+        // throws move to Domain*Error, so unmapped errors become an honest 500.
         if (error.message.includes('not found')) {
             throw new NotFoundException(error.message);
         }

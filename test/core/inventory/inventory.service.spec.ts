@@ -108,6 +108,62 @@ describe('InventoryService', () => {
             expect(result).toEqual([]);
         });
 
+        // W2/B3 follow-up: duplicate (userId, cardId, isFoil) entries collapse to
+        // the last one (last-write-wins). A trailing removal must win over an
+        // earlier positive quantity instead of being re-saved after the delete.
+        it('collapses duplicate keys, trailing removal wins', async () => {
+            const positive = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 3,
+            });
+            const removal = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 0,
+            });
+            repository.delete.mockResolvedValue();
+            repository.save.mockResolvedValue([]);
+
+            await service.save([positive, removal]);
+
+            expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);
+            expect(repository.delete).toHaveBeenCalledTimes(1);
+            expect(repository.save).toHaveBeenCalledWith([]);
+        });
+
+        it('collapses duplicate keys, trailing positive wins (no delete)', async () => {
+            const removal = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 0,
+            });
+            const positive = new Inventory({
+                cardId: 'card-1',
+                userId: 1,
+                isFoil: false,
+                quantity: 5,
+            });
+            repository.save.mockResolvedValue([positive]);
+
+            await service.save([removal, positive]);
+
+            expect(repository.delete).not.toHaveBeenCalled();
+            expect(repository.save).toHaveBeenCalledWith([positive]);
+        });
+
+        it('keeps normal and foil of the same card as distinct keys', async () => {
+            repository.save.mockResolvedValue([testInventoryItem, testInventoryFoil]);
+
+            await service.save([testInventoryItem, testInventoryFoil]);
+
+            expect(repository.delete).not.toHaveBeenCalled();
+            expect(repository.save).toHaveBeenCalledWith([testInventoryItem, testInventoryFoil]);
+        });
+
         // W2/B3: the zero-quantity delete used to be fire-and-forget. A rejected
         // delete then became an unhandled rejection (process crash on Node >=15)
         // and silent data corruption. save() must await it and surface the error.

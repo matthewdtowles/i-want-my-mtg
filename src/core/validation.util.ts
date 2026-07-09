@@ -1,7 +1,11 @@
+import { DomainValidationError } from './errors/domain.errors';
+
 export function validateInit<T>(init: Partial<T>, requiredFields: (keyof T)[]): void {
     for (const field of requiredFields) {
         if (undefined === init[field] || null === init[field]) {
-            throw new Error(`Invalid initialization: ${String(field)} is required.`);
+            throw new DomainValidationError(
+                `Invalid initialization: ${String(field)} is required.`
+            );
         }
     }
 }

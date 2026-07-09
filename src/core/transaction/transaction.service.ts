@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
@@ -42,13 +43,13 @@ export class TransactionService {
         );
 
         if (transaction.quantity <= 0) {
-            throw new Error('Transaction quantity must be positive.');
+            throw new DomainValidationError('Transaction quantity must be positive.');
         }
         if (transaction.pricePerUnit < 0) {
-            throw new Error('Price per unit cannot be negative.');
+            throw new DomainValidationError('Price per unit cannot be negative.');
         }
         if (transaction.type !== 'BUY' && transaction.type !== 'SELL') {
-            throw new Error('Transaction type must be BUY or SELL.');
+            throw new DomainValidationError('Transaction type must be BUY or SELL.');
         }
 
         if (transaction.type === 'SELL') {
@@ -58,7 +59,7 @@ export class TransactionService {
                 transaction.isFoil
             );
             if (transaction.quantity > remainingQty) {
-                throw new Error(
+                throw new DomainValidationError(
                     `Cannot sell ${transaction.quantity} units. Only ${remainingQty} remaining.`
                 );
             }
@@ -127,16 +128,16 @@ export class TransactionService {
         this.LOGGER.debug(`Updating transaction ${id} for user ${userId}.`);
         const existing = await this.repository.findById(id);
         if (!existing || existing.userId !== userId) {
-            throw new Error('Transaction not found.');
+            throw new DomainNotFoundError('Transaction not found.');
         }
 
         this.assertWithinEditWindow(existing.createdAt, 'edited');
 
         if (fields.quantity !== undefined && fields.quantity <= 0) {
-            throw new Error('Transaction quantity must be positive.');
+            throw new DomainValidationError('Transaction quantity must be positive.');
         }
         if (fields.pricePerUnit !== undefined && fields.pricePerUnit < 0) {
-            throw new Error('Price per unit cannot be negative.');
+            throw new DomainValidationError('Price per unit cannot be negative.');
         }
 
         const newQuantity = fields.quantity ?? existing.quantity;
@@ -151,7 +152,7 @@ export class TransactionService {
                 // Add back the old sell quantity, then check if the new sell quantity fits
                 const available = remainingQty + existing.quantity;
                 if (newQuantity > available) {
-                    throw new Error(
+                    throw new DomainValidationError(
                         `Cannot sell ${newQuantity} units. Only ${available} remaining.`
                     );
                 }
@@ -159,7 +160,7 @@ export class TransactionService {
                 // Reducing a BUY lot: ensure total bought doesn't drop below total sold
                 const reduction = existing.quantity - newQuantity;
                 if (reduction > remainingQty) {
-                    throw new Error(
+                    throw new DomainValidationError(
                         `Cannot reduce buy to ${newQuantity} units. ${remainingQty} unsold units remaining in this card's ledger.`
                     );
                 }
@@ -190,7 +191,7 @@ export class TransactionService {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
         const existing = await this.repository.findById(id);
         if (!existing || existing.userId !== userId) {
-            throw new Error('Transaction not found.');
+            throw new DomainNotFoundError('Transaction not found.');
         }
 
         this.assertWithinEditWindow(existing.createdAt, 'deleted');
@@ -202,7 +203,7 @@ export class TransactionService {
                 existing.isFoil
             );
             if (existing.quantity > remainingQty) {
-                throw new Error(
+                throw new DomainValidationError(
                     `Cannot delete buy of ${existing.quantity} units. Only ${remainingQty} unsold units remaining in this card's ledger.`
                 );
             }
@@ -332,7 +333,7 @@ export class TransactionService {
     ): void {
         const timestamp = createdAt ? new Date(createdAt).getTime() : NaN;
         if (isNaN(timestamp) || Date.now() - timestamp >= EDIT_WINDOW_MS) {
-            throw new Error(`Transactions can only be ${action} within 24 hours of creation.`);
+            throw new DomainValidationError(`Transactions can only be ${action} within 24 hours of creation.`);
         }
     }
 

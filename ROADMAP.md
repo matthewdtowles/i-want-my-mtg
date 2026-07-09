@@ -254,6 +254,71 @@ Not blocking the single-pass PR (#33) — the serial pattern predates it and thr
 
 ---
 
+## Phase 11: Cross-Repo Hardening (July 2026 analysis)
+
+The four codebase analyses run **2026-07-07** produced 29 work-package issues spanning all four repos (web, scry, MCP, mobile). This section is the **execution tracker** — it mirrors those issues so the roadmap stays the single reference as we knock them out. It is quality/hardening work (correctness, integrity, security, tooling, structure), not new product surface.
+
+**Source material** (full detail lives outside this file, keep it there):
+- Per-repo findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/) — `web.md`, `scry.md`, `mcp.md`, `mobile.md`.
+- Cross-repo dependencies + sequencing rationale + the work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
+
+**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, merged in PR #578) and S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness). 26 issues remain.
+
+### Cross-repo hard orderings (everything else is repo-local and parallelizable)
+
+- **X1** — web **W9** migration (✅ done) → scry **S2** delete/reset cleanup is now **unblocked**.
+- **X3 / X4** — mobile **MB2** (decouple CI spec-drift check from PR gating) must land **before** web **W8** (OpenAPI spec fixes + delta-quantity endpoint), or the web deploy breaks every open mobile PR. W8 then triggers the client follow-ups: MCP **M3** `as never` sweep + mobile schema regen.
+- **X2** — `granular_price_history` retention is owned by scry **S4** (unbounded daily growth until it lands).
+- **X5** — scry's integration-test schema fixture is synced from web migrations in scry **S8**.
+- **X6** — after web **W1** error overhaul, verify MCP `extractApiMessage` + mobile `errMessage` against the new error bodies (verification only, no code expected).
+
+### Execution order
+
+**Wave 1 — Correctness, integrity, security (do these first; gates the Phase 8 go-to-market push).**
+
+| Issue | Repo | Title | Notes |
+|---|---|---|---|
+| [MB1](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63) | mobile | Clear query cache on sign-out (cross-account data leak) | Security — ship immediately |
+| [MB2](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64) | mobile | Decouple CI spec-drift check from PR gating | Tiny; unblocks W8 (X3/X4) |
+| [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | web | Error handling overhaul: domain errors end to end | Foundational; X6 verifies after |
+| [W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570) | web | Inventory/ledger integrity: transactional writes, fix silent failures | |
+| [S2](https://github.com/matthewdtowles/scry/issues/36) | scry | Delete/reset FK coverage; remove fake CASCADE | Unblocked by W9 (X1) |
+| [S3](https://github.com/matthewdtowles/scry/issues/37) | scry | Ingest robustness: stream failures, non-TTY prompts, batch/mapping bugs | |
+| [S4](https://github.com/matthewdtowles/scry/issues/38) | scry | Implement `granular_price_history` retention | Unbounded growth (X2) |
+| [M1](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/19) | mcp | Correctness bundle: undefined results, CSV passthrough, JSON Schema, empty patch | |
+
+**Wave 2 — Hardening + the OpenAPI spec chain (P2).**
+
+| Issue | Repo | Title | Notes |
+|---|---|---|---|
+| [W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576) | web | OpenAPI spec fixes + delta-quantity endpoint | After MB2 (X3/X4); triggers M3 + mobile regen |
+| [W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571) | web | Query/input hardening: filter charset, limit caps, pool config | |
+| [W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572) | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | |
+| [W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573) | web | Performance: set page, batched imports, Promise.all, latest-price helper | |
+| [S5](https://github.com/matthewdtowles/scry/issues/39) | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | |
+| [S6](https://github.com/matthewdtowles/scry/issues/40) | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | |
+| [S8](https://github.com/matthewdtowles/scry/issues/42) | scry | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync | X5 |
+| [M2](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/20) | mcp | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | |
+| [M4](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/22) | mcp | Tooling: linter in CI, NodeNext, Node 20 matrix, server handler tests | |
+| [MB3](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/65) | mobile | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation | X4 short-term (debounce) |
+| [MB4](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/66) | mobile | Notification badge via unread-count; inbox paginates on scroll | |
+| [MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67) | mobile | Centralize query keys; re-key deck-owned under inventory | |
+| [MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68) | mobile | Test + lint infrastructure (jest-expo, ESLint); cover pure modules | |
+
+**Wave 3 — Structure & cleanup (P3).**
+
+| Issue | Repo | Title | Notes |
+|---|---|---|---|
+| [W6](https://github.com/matthewdtowles/i-want-my-mtg/issues/574) | web | TypeScript strictness + type-aware lint | |
+| [W7](https://github.com/matthewdtowles/i-want-my-mtg/issues/575) | web | Architecture cleanup: dead code, read models, presenters, logging | |
+| [S7](https://github.com/matthewdtowles/scry/issues/41) | scry | DRY, perf, and transactionality cleanup | |
+| [M3](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/21) | mcp | Consistency sweep: shared schemas/enums, client memoization, `as never` sweep | Client follow-up to W8 (X3) |
+| [MB7](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/69) | mobile | Shared UI + hooks layer: steppers, rows, chips, `useOptimisticMutation`, edit-by-id | |
+
+**Sequencing note:** Wave 1 is correctness/integrity/security and should land **before the Phase 8 go-to-market push** — MB1 alone (cross-account data leak) is a hard blocker on marketing the mobile app. Waves 2–3 can interleave with Phase 8/9 as capacity allows.
+
+---
+
 ## Appendix: Freemium model (reference)
 
 Free vs premium feature split, kept for reference (from 3.4).

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
 import { DeckGapPolicy, DeckCardGap } from 'src/core/deck/deck-gap.policy';
 import { DeckService } from 'src/core/deck/deck.service';
@@ -124,7 +125,7 @@ export class PublishedDeckOrchestrator {
         try {
             const deck = await this.publishedDeckService.get(id);
             if (!deck) {
-                throw new Error(`Published deck ${id} not found.`);
+                throw new DomainNotFoundError(`Published deck ${id} not found.`);
             }
             const cards = deck.cards ?? [];
             const main = cards.filter((c) => !c.isSideboard);
@@ -182,7 +183,7 @@ export class PublishedDeckOrchestrator {
         HttpErrorHandler.validateAuthenticatedRequest(req);
         const source = await this.publishedDeckService.get(id);
         if (!source) {
-            throw new Error(`Published deck ${id} not found.`);
+            throw new DomainNotFoundError(`Published deck ${id} not found.`);
         }
         const deck = await this.deckService.createDeck(req.user.id, this.deckTitle(source));
         const entries = (source.cards ?? []).map((c) => ({
@@ -199,7 +200,7 @@ export class PublishedDeckOrchestrator {
         HttpErrorHandler.validateAuthenticatedRequest(req);
         const deck = await this.publishedDeckService.get(id);
         if (!deck) {
-            throw new Error(`Published deck ${id} not found.`);
+            throw new DomainNotFoundError(`Published deck ${id} not found.`);
         }
         return this.buildabilityService.addMissingToBuyList(deck.cards ?? [], req.user.id);
     }

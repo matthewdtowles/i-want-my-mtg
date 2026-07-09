@@ -262,9 +262,9 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 - Per-repo findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/) — `web.md`, `scry.md`, `mcp.md`, `mobile.md`.
 - Cross-repo dependencies + sequencing rationale + the work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
 
-**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, PR #578), S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness), and — 2026-07-09 — MB1 ([#63](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63), mobile PR #70) + MB2 ([#64](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64), mobile PR #71). 24 issues remain.
+**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, PR #578), S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness), W1 ([#569](https://github.com/matthewdtowles/i-want-my-mtg/issues/569), error-handling overhaul, PRs #579 + #580 + part 3), and — 2026-07-09 — MB1 ([#63](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63), mobile PR #70) + MB2 ([#64](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64), mobile PR #71). 23 issues remain.
 
-**In flight (2026-07-09):** W1 is being delivered in three parts — **part 1** (PR #579): the boundary + convention (B1/B9/A1/A9); **part 2** (stacked PR): remove A2 catch-wrap-rethrow + migrate the core services (card/set/transaction/user/validation/set-checklist) to `Domain*Error`; **part 3** (remaining): migrate the HBS orchestrators/presenters off plain keyword-significant Errors, then delete the transitional keyword fallback in `toHttpException`. #569 stays open until part 3 lands.
+**W1 landed (2026-07-09), delivered in three parts:** **part 1** (PR #579) — the boundary + convention (B1/B9/A1/A9); **part 2** (PR #580) — removed A2 catch-wrap-rethrow + migrated the core services (card/set/transaction/user/validation/set-checklist) to `Domain*Error`; **part 3** — migrated the HBS orchestrators' user-facing "not found" throws (card/set/deck/published-deck) to `DomainNotFoundError` and deleted the transitional keyword fallback in `toHttpException`, so unmapped plain Errors are now honest 500s (internal presenter invariants included). Next: **X6** verification (MCP `extractApiMessage` + mobile `errMessage` against the new error bodies).
 
 ### Cross-repo hard orderings (everything else is repo-local and parallelizable)
 
@@ -282,7 +282,7 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 |---|---|---|---|
 | ~~MB1~~ | mobile | Clear query cache on sign-out (cross-account data leak) | ✅ **done** (PR #70) |
 | ~~MB2~~ | mobile | Decouple CI spec-drift check from PR gating | ✅ **done** (PR #71); unblocked W8 (X3/X4) |
-| [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | web | Error handling overhaul: domain errors end to end | Foundational; X6 verifies after — **parts 1 (#579) + 2 in PRs**, part 3 (http-layer + fallback removal) to follow |
+| ~~[W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569)~~ | web | Error handling overhaul: domain errors end to end | **Done** (PRs #579 + #580 + part 3); X6 verifies the new error bodies next |
 | [W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570) | web | Inventory/ledger integrity: transactional writes, fix silent failures | |
 | [S2](https://github.com/matthewdtowles/scry/issues/36) | scry | Delete/reset FK coverage; remove fake CASCADE | Unblocked by W9 (X1) |
 | [S3](https://github.com/matthewdtowles/scry/issues/37) | scry | Ingest robustness: stream failures, non-TTY prompts, batch/mapping bugs | |

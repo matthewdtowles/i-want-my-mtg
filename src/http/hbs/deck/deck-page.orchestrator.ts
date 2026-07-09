@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
+import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
 import { DeckCardGap, DeckGapSummary } from 'src/core/deck/deck-gap.policy';
@@ -131,7 +132,7 @@ export class DeckPageOrchestrator {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const deck = await this.deckService.getDeck(deckId, req.user.id);
             if (!deck) {
-                throw new Error(`Deck ${deckId} not found.`);
+                throw new DomainNotFoundError(`Deck ${deckId} not found.`);
             }
             const cards = deck.cards ?? [];
             const main = cards.filter((c) => !c.isSideboard);

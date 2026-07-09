@@ -262,9 +262,9 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 - Per-repo findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/) — `web.md`, `scry.md`, `mcp.md`, `mobile.md`.
 - Cross-repo dependencies + sequencing rationale + the work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
 
-**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, merged in PR #578) and S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness). 26 issues remain.
+**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, PR #578), S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness), and — 2026-07-09 — MB1 ([#63](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63), mobile PR #70) + MB2 ([#64](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64), mobile PR #71). 24 issues remain.
 
-**In flight (2026-07-09):** MB1 (mobile PR #70), MB2 (mobile PR #71), and W1 **part 1** (web PR #579) have open PRs — see the Wave 1 table. W1 is being split: PR #579 lands the boundary + convention (B1/B9/A1/A9); the A2 catch-wrap-rethrow cleanup + keyword-fallback removal is a follow-up, so #569 stays open until then.
+**In flight (2026-07-09):** W1 **part 1** (web PR #579). W1 is being split: PR #579 lands the boundary + convention (B1/B9/A1/A9); the A2 catch-wrap-rethrow cleanup + keyword-fallback removal is a follow-up, so #569 stays open until then.
 
 ### Cross-repo hard orderings (everything else is repo-local and parallelizable)
 
@@ -280,8 +280,8 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 
 | Issue | Repo | Title | Notes |
 |---|---|---|---|
-| [MB1](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63) | mobile | Clear query cache on sign-out (cross-account data leak) | Security — **PR #70 open** |
-| [MB2](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64) | mobile | Decouple CI spec-drift check from PR gating | Unblocks W8 (X3/X4) — **PR #71 open** |
+| ~~MB1~~ | mobile | Clear query cache on sign-out (cross-account data leak) | ✅ **done** (PR #70) |
+| ~~MB2~~ | mobile | Decouple CI spec-drift check from PR gating | ✅ **done** (PR #71); unblocked W8 (X3/X4) |
 | [W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569) | web | Error handling overhaul: domain errors end to end | Foundational; X6 verifies after — **part 1 in PR #579**, A2 remainder to follow |
 | [W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570) | web | Inventory/ledger integrity: transactional writes, fix silent failures | |
 | [S2](https://github.com/matthewdtowles/scry/issues/36) | scry | Delete/reset FK coverage; remove fake CASCADE | Unblocked by W9 (X1) |

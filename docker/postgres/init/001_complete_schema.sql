@@ -109,7 +109,8 @@ CREATE TABLE public.card (
     tcgplayer_product_id character varying,
     tcgplayer_etched_product_id character varying,
     scryfall_id character varying,
-    colors text[]
+    colors text[],
+    language character varying(32) DEFAULT 'English'::character varying NOT NULL
 );
 
 

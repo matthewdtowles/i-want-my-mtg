@@ -24,13 +24,22 @@ export class InventoryService {
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`create ${inventoryItems.length} inventory items.`);
-        const toSave: Inventory[] = [];
+        // Collapse duplicate (userId, cardId, isFoil) entries to the last one
+        // (last-write-wins). Otherwise a trailing removal for a key would be
+        // undone by an earlier positive entry re-saved after the delete (W2/B3).
+        const byKey = new Map<string, Inventory>();
         for (const item of inventoryItems) {
+            byKey.set(`${item.userId}:${item.cardId}:${item.isFoil}`, item);
+        }
+        const toSave: Inventory[] = [];
+        for (const item of byKey.values()) {
             if (item.quantity > 0) {
                 toSave.push(item);
             } else {
-                // await omitted intentionally
-                this.repository.delete(item.userId, item.cardId, item.isFoil);
+                // Await the delete: a fire-and-forget rejection here is an
+                // unhandled promise rejection (process crash on Node >=15) and
+                // silently corrupts inventory when it fails (W2/B3).
+                await this.repository.delete(item.userId, item.cardId, item.isFoil);
             }
         }
         return await this.repository.save(toSave);

@@ -22,6 +22,11 @@ describe('Card FK delete cascade: price_history + inventory (046) (e2e)', () => 
         ds = app.get(DataSource);
         await deleteTestCard();
         const users = await ds.query('SELECT id FROM users WHERE email = $1', ['integ@test.com']);
+        if (users.length === 0) {
+            throw new Error(
+                'Seed user integ@test.com not found — check test/integration/seed.sql ran'
+            );
+        }
         userId = users[0].id;
     }, 30000);
 

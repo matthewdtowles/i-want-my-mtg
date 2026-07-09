@@ -40,7 +40,7 @@ describe('card.language for scry foreign-card tracking (047) (e2e)', () => {
         );
         expect(rows).toHaveLength(1);
         expect(rows[0].data_type).toBe('character varying');
-        expect(rows[0].character_maximum_length).toBe(32);
+        expect(Number(rows[0].character_maximum_length)).toBe(32);
         expect(rows[0].is_nullable).toBe('NO');
         expect(rows[0].column_default).toContain('English');
     });

@@ -126,7 +126,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(
                 `Error finding inventory for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'findByUserWithPagination');
+            HttpErrorHandler.toHttpException(error, 'findByUserWithPagination');
         }
     }
 
@@ -142,7 +142,7 @@ export class InventoryOrchestrator {
             return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error finding last page for user ${userId}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getLastPage');
+            HttpErrorHandler.toHttpException(error, 'getLastPage');
         }
     }
 
@@ -208,7 +208,7 @@ export class InventoryOrchestrator {
         } catch (error) {
             this.LOGGER.debug(`Error saving inventory for user ${req.user?.id}: ${error?.message}`);
             if (error instanceof HttpException) throw error;
-            return HttpErrorHandler.toHttpException(error, 'save');
+            HttpErrorHandler.toHttpException(error, 'save');
         }
     }
 
@@ -236,7 +236,7 @@ export class InventoryOrchestrator {
             return new ImportResultDto({ ...result, errorCsv, detectedFormat });
         } catch (error) {
             this.LOGGER.debug(`Error importing cards for user ${req.user?.id}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'importCards');
+            HttpErrorHandler.toHttpException(error, 'importCards');
         }
     }
 
@@ -260,7 +260,7 @@ export class InventoryOrchestrator {
             return new ImportResultDto({ ...result, errorCsv });
         } catch (error) {
             this.LOGGER.debug(`Error importing set for user ${req.user?.id}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'importSet');
+            HttpErrorHandler.toHttpException(error, 'importSet');
         }
     }
 
@@ -295,7 +295,7 @@ export class InventoryOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error in sellView for user ${req.user?.id}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'sellView');
+            HttpErrorHandler.toHttpException(error, 'sellView');
         }
     }
 
@@ -315,7 +315,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(
                 `Error exporting sell CSV for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'exportSellCsv');
+            HttpErrorHandler.toHttpException(error, 'exportSellCsv');
         }
     }
 
@@ -343,7 +343,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(
                 `Error exporting inventory for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'exportInventory');
+            HttpErrorHandler.toHttpException(error, 'exportInventory');
         }
     }
 
@@ -379,7 +379,7 @@ export class InventoryOrchestrator {
                 `Error deleting inventory item for user ${req.user?.id}, cardId: ${cardId}, isFoil: ${isFoil}: ${error?.message}`
             );
             if (error instanceof HttpException) throw error;
-            return HttpErrorHandler.toHttpException(error, 'delete');
+            HttpErrorHandler.toHttpException(error, 'delete');
         }
     }
 

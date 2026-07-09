@@ -1,5 +1,6 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
+import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Deck } from './deck.entity';
 import { DeckRepositoryPort } from './ports/deck.repository.port';
@@ -29,7 +30,7 @@ export class DeckService {
     async createDeck(userId: number, name: string, format?: Format | null): Promise<Deck> {
         const cleanName = (name ?? '').trim();
         if (!cleanName) {
-            throw new BadRequestException('Deck name is required.');
+            throw new DomainValidationError('Deck name is required.');
         }
         this.LOGGER.debug(`create deck "${cleanName}" for user ${userId}.`);
         return this.repository.create(new Deck({ userId, name: cleanName, format: format ?? null }));
@@ -44,7 +45,7 @@ export class DeckService {
         await this.assertOwner(deckId, userId);
         const cleanName = (name ?? '').trim();
         if (!cleanName) {
-            throw new BadRequestException('Deck name is required.');
+            throw new DomainValidationError('Deck name is required.');
         }
         this.LOGGER.debug(`update deck ${deckId} for user ${userId}.`);
         return this.repository.update(
@@ -114,11 +115,11 @@ export class DeckService {
         await this.repository.removeCard(deckId, cardId, isSideboard);
     }
 
-    /** Throws NotFoundException if the deck is missing or not owned by the user. */
+    /** Throws DomainNotFoundError if the deck is missing or not owned by the user. */
     private async assertOwner(deckId: number, userId: number): Promise<void> {
         const ownerId = await this.repository.getOwnerId(deckId);
         if (ownerId !== userId) {
-            throw new NotFoundException(`Deck ${deckId} not found.`);
+            throw new DomainNotFoundError(`Deck ${deckId} not found.`);
         }
     }
 }

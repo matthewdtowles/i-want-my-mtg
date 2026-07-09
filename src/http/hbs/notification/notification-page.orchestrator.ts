@@ -32,7 +32,7 @@ export class NotificationPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building notification list: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildListView');
+            HttpErrorHandler.toHttpException(error, 'buildListView');
         }
     }
 }

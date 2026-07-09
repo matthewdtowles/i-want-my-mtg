@@ -187,7 +187,7 @@ export class CardOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'findSetCard');
+            HttpErrorHandler.toHttpException(error, 'findSetCard');
         }
     }
 
@@ -199,7 +199,7 @@ export class CardOrchestrator {
             return { cardId, prices: points };
         } catch (error) {
             this.LOGGER.debug(`Error getting price history for ${cardId}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getPriceHistory');
+            HttpErrorHandler.toHttpException(error, 'getPriceHistory');
         }
     }
 
@@ -212,7 +212,7 @@ export class CardOrchestrator {
             return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error finding last page for ${name}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getPrintingsLastPage');
+            HttpErrorHandler.toHttpException(error, 'getPrintingsLastPage');
         }
     }
 }

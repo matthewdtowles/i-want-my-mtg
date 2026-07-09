@@ -71,7 +71,7 @@ export class SetOrchestrator {
             return await this.findBlockSetList(req, breadcrumbs, options, userId);
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'findSetList');
+            HttpErrorHandler.toHttpException(error, 'findSetList');
         }
     }
 
@@ -176,7 +176,7 @@ export class SetOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding spoiler sets: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'findSpoilersList');
+            HttpErrorHandler.toHttpException(error, 'findSpoilersList');
         }
     }
 
@@ -259,7 +259,7 @@ export class SetOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);
-            return HttpErrorHandler.toHttpException(error, 'findBySetCodeWithPagination');
+            HttpErrorHandler.toHttpException(error, 'findBySetCodeWithPagination');
         }
     }
 
@@ -274,7 +274,7 @@ export class SetOrchestrator {
             return lastPage;
         } catch (error) {
             this.LOGGER.debug(`Error getting last page number: ${error.message}.`);
-            return HttpErrorHandler.toHttpException(error, 'getLastPage');
+            HttpErrorHandler.toHttpException(error, 'getLastPage');
         }
     }
 
@@ -294,7 +294,7 @@ export class SetOrchestrator {
             this.LOGGER.debug(
                 `Error getting last page number for cards in set ${setCode}: ${error.message}.`
             );
-            return HttpErrorHandler.toHttpException(error, 'getLastCardPage');
+            HttpErrorHandler.toHttpException(error, 'getLastCardPage');
         }
     }
 
@@ -318,7 +318,7 @@ export class SetOrchestrator {
             this.LOGGER.debug(
                 `Error adding set ${setCode} to inventory for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'addSetToInventory');
+            HttpErrorHandler.toHttpException(error, 'addSetToInventory');
         }
     }
 
@@ -328,7 +328,7 @@ export class SetOrchestrator {
             return await this.checklistService.generateChecklist(setCode, userId);
         } catch (error) {
             this.LOGGER.debug(`Error generating checklist for set ${setCode}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getChecklist');
+            HttpErrorHandler.toHttpException(error, 'getChecklist');
         }
     }
 
@@ -348,7 +348,7 @@ export class SetOrchestrator {
             this.LOGGER.debug(
                 `Error getting set ${setCode} ${includeFoil} value: ${error?.message}.`
             );
-            return HttpErrorHandler.toHttpException(error, 'getSetValue');
+            HttpErrorHandler.toHttpException(error, 'getSetValue');
         }
     }
 
@@ -369,7 +369,7 @@ export class SetOrchestrator {
             return { setCode, prices: points };
         } catch (error) {
             this.LOGGER.debug(`Error getting set price history for ${setCode}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'getSetPriceHistory');
+            HttpErrorHandler.toHttpException(error, 'getSetPriceHistory');
         }
     }
 

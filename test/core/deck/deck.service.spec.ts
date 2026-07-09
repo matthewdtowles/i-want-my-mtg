@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Format } from 'src/core/card/format.enum';
 import { Deck } from 'src/core/deck/deck.entity';
@@ -51,7 +51,7 @@ describe('DeckService', () => {
             expect(deck.format).toBe(Format.Modern);
         });
         it('throws BadRequest (400) on an empty name', async () => {
-            await expect(service.createDeck(7, '   ')).rejects.toBeInstanceOf(BadRequestException);
+            await expect(service.createDeck(7, '   ')).rejects.toBeInstanceOf(DomainValidationError);
             expect(repo.create).not.toHaveBeenCalled();
         });
     });
@@ -65,7 +65,7 @@ describe('DeckService', () => {
         it('throws NotFound when the deck is not the user’s', async () => {
             repo.getOwnerId.mockResolvedValue(99);
             await expect(service.addCard(1, 7, 'card-1', false, 1)).rejects.toBeInstanceOf(
-                NotFoundException
+                DomainNotFoundError
             );
             expect(repo.addCard).not.toHaveBeenCalled();
         });
@@ -93,7 +93,7 @@ describe('DeckService', () => {
     describe('deleteDeck', () => {
         it('throws NotFound when not the owner', async () => {
             repo.getOwnerId.mockResolvedValue(99);
-            await expect(service.deleteDeck(1, 7)).rejects.toBeInstanceOf(NotFoundException);
+            await expect(service.deleteDeck(1, 7)).rejects.toBeInstanceOf(DomainNotFoundError);
             expect(repo.delete).not.toHaveBeenCalled();
         });
         it('deletes when the owner', async () => {

@@ -99,7 +99,7 @@ export class TransactionOrchestrator {
             this.LOGGER.debug(
                 `Error finding transactions for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'findByUser');
+            HttpErrorHandler.toHttpException(error, 'findByUser');
         }
     }
 
@@ -184,7 +184,7 @@ export class TransactionOrchestrator {
             this.LOGGER.debug(
                 `Error importing transactions for user ${req.user?.id}: ${error?.message}`
             );
-            return HttpErrorHandler.toHttpException(error, 'importTransactions');
+            HttpErrorHandler.toHttpException(error, 'importTransactions');
         }
     }
 
@@ -240,7 +240,7 @@ export class TransactionOrchestrator {
             return await this.exportService.exportToCsv(transactions);
         } catch (error) {
             this.LOGGER.debug(`Error exporting CSV for user ${req.user?.id}: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'exportCsv');
+            HttpErrorHandler.toHttpException(error, 'exportCsv');
         }
     }
 

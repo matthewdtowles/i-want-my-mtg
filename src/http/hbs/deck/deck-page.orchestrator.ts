@@ -96,7 +96,7 @@ export class DeckPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error importing decklist: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'importDecklist');
+            HttpErrorHandler.toHttpException(error, 'importDecklist');
         }
     }
 
@@ -122,7 +122,7 @@ export class DeckPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building deck list view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildListView');
+            HttpErrorHandler.toHttpException(error, 'buildListView');
         }
     }
 
@@ -175,7 +175,7 @@ export class DeckPageOrchestrator {
             });
         } catch (error) {
             this.LOGGER.debug(`Error building deck detail view: ${error?.message}`);
-            return HttpErrorHandler.toHttpException(error, 'buildDetailView');
+            HttpErrorHandler.toHttpException(error, 'buildDetailView');
         }
     }
 

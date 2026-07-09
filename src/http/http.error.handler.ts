@@ -48,8 +48,11 @@ export class HttpErrorHandler {
      * @param context the context in which the error occurred, used for logging
      * @returns never — always throws
      */
-    static toHttpException(error: Error, context: string): never {
-        this.LOGGER.error(`Error in ${context}: ${error.message}`, error.stack);
+    static toHttpException(error: unknown, context: string): never {
+        // Catch vars are `any` here (strictNullChecks off), so a non-Error value
+        // can reach us at runtime — normalize before touching .message/.stack.
+        const err = error instanceof Error ? error : new Error(String(error));
+        this.LOGGER.error(`Error in ${context}: ${err.message}`, err.stack);
         // An existing HttpException (e.g. an auth guard's UnauthorizedException)
         // or a Domain*Error maps directly (HttpException passthrough first, so a
         // 401 "User not found in request" is not re-mapped to a 404 — W1/B1).

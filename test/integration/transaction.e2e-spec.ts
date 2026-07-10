@@ -8,6 +8,7 @@ import {
     TEST_CARD_ID,
     TEST_CARD_ID_2,
     TEST_CARD_ID_3,
+    TEST_CARD_ID_4,
 } from './setup';
 
 describe('Transaction CRUD and FIFO (e2e)', () => {
@@ -215,6 +216,62 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
                 .set('Cookie', authCookie)
                 .expect(200);
             expect(invRes.text).toContain('Test Zombie');
+        });
+    });
+
+    describe('Transactional integrity (W2/B4)', () => {
+        const postSell = (quantity: number) =>
+            request(app.getHttpServer())
+                .post('/transactions')
+                .set('Cookie', authCookie)
+                .send({
+                    cardId: TEST_CARD_ID_4,
+                    type: 'SELL',
+                    quantity,
+                    pricePerUnit: 5.0,
+                    isFoil: false,
+                    date: new Date().toISOString().split('T')[0],
+                });
+
+        it('two concurrent SELLs that each fit cannot both succeed (oversell race closed)', async () => {
+            // Establish a holding of exactly 5 (ledger + inventory in sync).
+            await request(app.getHttpServer())
+                .post('/transactions')
+                .set('Cookie', authCookie)
+                .send({
+                    cardId: TEST_CARD_ID_4,
+                    type: 'BUY',
+                    quantity: 5,
+                    pricePerUnit: 1.0,
+                    isFoil: false,
+                    date: new Date().toISOString().split('T')[0],
+                })
+                .expect(201);
+
+            // Fire both sells at once; each would individually pass validation.
+            const [a, b] = await Promise.all([postSell(5), postSell(5)]);
+
+            const succeeded = [a, b].filter((r) => r.body.success === true);
+            const rejected = [a, b].filter((r) => r.body.success === false);
+            expect(succeeded).toHaveLength(1);
+            expect(rejected).toHaveLength(1);
+
+            // Ledger and inventory agree and never went negative: one BUY 5 +
+            // one SELL 5 = 0 remaining, inventory row removed at zero.
+            const ds = app.get(DataSource);
+            const sells = await ds.query(
+                `SELECT COALESCE(SUM(quantity), 0)::int AS total FROM "transaction"
+                 WHERE user_id = 1 AND card_id = $1 AND type = 'SELL'`,
+                [TEST_CARD_ID_4]
+            );
+            expect(sells[0].total).toBe(5);
+
+            const inv = await ds.query(
+                `SELECT COALESCE(SUM(quantity), 0)::int AS total FROM inventory
+                 WHERE user_id = 1 AND card_id = $1`,
+                [TEST_CARD_ID_4]
+            );
+            expect(inv[0].total).toBe(0);
         });
     });
 });

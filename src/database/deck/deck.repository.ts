@@ -4,6 +4,7 @@ import { Deck } from 'src/core/deck/deck.entity';
 import { DeckRepositoryPort } from 'src/core/deck/ports/deck.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
+import { activeEntityManager } from 'src/database/transaction-runner';
 import { DeckMapper } from './deck.mapper';
 import { DeckOrmEntity } from './deck.orm-entity';
 
@@ -17,6 +18,15 @@ export class DeckRepository implements DeckRepositoryPort {
         @InjectRepository(DeckOrmEntity)
         private readonly repository: Repository<DeckOrmEntity>
     ) {}
+
+    /**
+     * The repository bound to the active transaction (W2/B4) when one is open,
+     * otherwise the default. Used by the create + add-cards path so a deck
+     * import commits the deck and its cards atomically (no orphan empty deck).
+     */
+    private repo(): Repository<DeckOrmEntity> {
+        return activeEntityManager()?.getRepository(DeckOrmEntity) ?? this.repository;
+    }
 
     async findByUser(userId: number): Promise<Deck[]> {
         this.LOGGER.debug(`findByUser ${userId}.`);
@@ -49,7 +59,7 @@ export class DeckRepository implements DeckRepositoryPort {
     }
 
     async getOwnerId(deckId: number): Promise<number | null> {
-        const row = await this.repository.findOne({
+        const row = await this.repo().findOne({
             where: { id: deckId },
             select: { id: true, userId: true },
         });
@@ -57,7 +67,7 @@ export class DeckRepository implements DeckRepositoryPort {
     }
 
     async create(deck: Deck): Promise<Deck> {
-        const saved = await this.repository.save(DeckMapper.toOrmEntity(deck));
+        const saved = await this.repo().save(DeckMapper.toOrmEntity(deck));
         return DeckMapper.toCore(saved);
     }
 
@@ -108,7 +118,7 @@ export class DeckRepository implements DeckRepositoryPort {
                 return `($1, $${base + 1}, $${base + 2}, $${base + 3})`;
             })
             .join(', ');
-        await this.repository.query(
+        await this.repo().query(
             `INSERT INTO deck_card (deck_id, card_id, is_sideboard, quantity)
              VALUES ${values}
              ON CONFLICT (deck_id, card_id, is_sideboard)
@@ -148,6 +158,6 @@ export class DeckRepository implements DeckRepositoryPort {
 
     /** Bump updated_at so card edits float the deck to the top of the list. */
     private async touch(deckId: number): Promise<void> {
-        await this.repository.query(`UPDATE deck SET updated_at = NOW() WHERE id = $1`, [deckId]);
+        await this.repo().query(`UPDATE deck SET updated_at = NOW() WHERE id = $1`, [deckId]);
     }
 }

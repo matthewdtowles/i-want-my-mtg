@@ -20,6 +20,8 @@ import { PriceNotificationRepositoryPort } from 'src/core/price-alert/ports/pric
 import { SealedProductRepositoryPort } from 'src/core/sealed-product/ports/sealed-product.repository.port';
 import { PendingUserRepositoryPort } from 'src/core/user/ports/pending-user.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
+import { TypeOrmTransactionRunner } from './transaction-runner';
 import { CardOrmEntity } from './card/card.orm-entity';
 import { CardRepository } from './card/card.repository';
 import { LegalityOrmEntity } from './card/legality.orm-entity';
@@ -155,6 +157,7 @@ import { RefreshTokenRepository } from './auth/refresh-token.repository';
         { provide: ApiUsageRepositoryPort, useClass: ApiUsageRepository },
         { provide: NotificationDeviceRepositoryPort, useClass: NotificationDeviceRepository },
         { provide: RefreshTokenRepositoryPort, useClass: RefreshTokenRepository },
+        { provide: TransactionRunnerPort, useClass: TypeOrmTransactionRunner },
     ],
     exports: [
         CardRepositoryPort,
@@ -183,6 +186,7 @@ import { RefreshTokenRepository } from './auth/refresh-token.repository';
         ApiUsageRepositoryPort,
         NotificationDeviceRepositoryPort,
         RefreshTokenRepositoryPort,
+        TransactionRunnerPort,
     ],
 })
 export class DatabaseModule {

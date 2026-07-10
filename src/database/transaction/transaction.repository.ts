@@ -11,6 +11,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { buildScryfallImagePath } from 'src/shared/utils/scryfall-image.util';
 import { Repository } from 'typeorm';
 import { QueryBuilderHelper } from '../query/query-builder.helper';
+import { activeEntityManager } from '../transaction-runner';
 import { TransactionMapper } from './transaction.mapper';
 import { TransactionOrmEntity } from './transaction.orm-entity';
 
@@ -32,19 +33,28 @@ export class TransactionRepository implements TransactionRepositoryPort {
         this.LOGGER.debug(`Instantiated.`);
     }
 
+    /**
+     * The repository bound to the active transaction (W2/B4) when one is open,
+     * otherwise the default. Mutations and the reads that gate them go through
+     * this so they participate in the surrounding unit of work.
+     */
+    private repo(): Repository<TransactionOrmEntity> {
+        return activeEntityManager()?.getRepository(TransactionOrmEntity) ?? this.repository;
+    }
+
     async save(transaction: Transaction): Promise<Transaction> {
         this.LOGGER.debug(
             `Saving transaction for user ${transaction.userId}, card ${transaction.cardId}.`
         );
         const orm = TransactionMapper.toOrmEntity(transaction);
-        const saved = await this.repository.save(orm);
+        const saved = await this.repo().save(orm);
         this.LOGGER.debug(`Saved transaction id ${saved.id}.`);
         return TransactionMapper.toCore(saved);
     }
 
     async findById(id: number): Promise<Transaction | null> {
         this.LOGGER.debug(`Finding transaction by id ${id}.`);
-        const orm = await this.repository.findOne({ where: { id } });
+        const orm = await this.repo().findOne({ where: { id } });
         return orm ? TransactionMapper.toCore(orm) : null;
     }
 
@@ -69,7 +79,7 @@ export class TransactionRepository implements TransactionRepositoryPort {
 
     async findBuyLots(userId: number, cardId: string, isFoil: boolean): Promise<Transaction[]> {
         this.LOGGER.debug(`Finding BUY lots for user ${userId}, card ${cardId}, foil ${isFoil}.`);
-        const results = await this.repository.find({
+        const results = await this.repo().find({
             where: { userId, cardId, isFoil, type: 'BUY' },
             order: { date: 'ASC', id: 'ASC' },
         });
@@ -80,11 +90,33 @@ export class TransactionRepository implements TransactionRepositoryPort {
         this.LOGGER.debug(
             `Finding SELL transactions for user ${userId}, card ${cardId}, foil ${isFoil}.`
         );
-        const results = await this.repository.find({
+        const results = await this.repo().find({
             where: { userId, cardId, isFoil, type: 'SELL' },
             order: { date: 'ASC', id: 'ASC' },
         });
         return results.map(TransactionMapper.toCore);
+    }
+
+    async sumQuantities(
+        userId: number,
+        cardId: string,
+        isFoil: boolean
+    ): Promise<{ totalBought: number; totalSold: number }> {
+        this.LOGGER.debug(`Summing quantities for user ${userId}, card ${cardId}, foil ${isFoil}.`);
+        const rows = await this.repo().query(
+            `
+            SELECT
+                COALESCE(SUM(quantity) FILTER (WHERE type = 'BUY'), 0)::int AS "totalBought",
+                COALESCE(SUM(quantity) FILTER (WHERE type = 'SELL'), 0)::int AS "totalSold"
+            FROM "transaction"
+            WHERE user_id = $1 AND card_id = $2 AND is_foil = $3
+            `,
+            [userId, cardId, isFoil]
+        );
+        return {
+            totalBought: Number(rows[0]?.totalBought ?? 0),
+            totalSold: Number(rows[0]?.totalSold ?? 0),
+        };
     }
 
     async findByUser(userId: number, sinceDate?: Date): Promise<Transaction[]> {
@@ -102,7 +134,8 @@ export class TransactionRepository implements TransactionRepositoryPort {
 
     async update(id: number, userId: number, fields: Partial<Transaction>): Promise<Transaction> {
         this.LOGGER.debug(`Updating transaction ${id} for user ${userId}.`);
-        const existing = await this.repository.findOne({ where: { id, userId } });
+        const repo = this.repo();
+        const existing = await repo.findOne({ where: { id, userId } });
         if (!existing) {
             throw new Error('Transaction not found.');
         }
@@ -114,14 +147,14 @@ export class TransactionRepository implements TransactionRepositoryPort {
         if (fields.fees !== undefined) existing.fees = fields.fees;
         if (fields.notes !== undefined) existing.notes = fields.notes;
 
-        const saved = await this.repository.save(existing);
+        const saved = await repo.save(existing);
         this.LOGGER.debug(`Updated transaction ${id}.`);
         return TransactionMapper.toCore(saved);
     }
 
     async delete(id: number, userId: number): Promise<void> {
         this.LOGGER.debug(`Deleting transaction ${id} for user ${userId}.`);
-        await this.repository.delete({ id, userId });
+        await this.repo().delete({ id, userId });
         this.LOGGER.debug(`Deleted transaction ${id}.`);
     }
 

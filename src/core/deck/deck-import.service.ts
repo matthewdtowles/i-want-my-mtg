@@ -4,6 +4,7 @@ import { CardImportResolver } from 'src/core/import/card-import-resolver';
 import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
 import { ImportError } from 'src/core/import/import.types';
 import { parseDecklistText } from 'src/core/import/parsers/decklist-text.parser';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { DeckService } from './deck.service';
 
@@ -22,7 +23,8 @@ export class DeckImportService {
 
     constructor(
         @Inject(DeckService) private readonly deckService: DeckService,
-        @Inject(CardImportResolver) private readonly cardResolver: CardImportResolver
+        @Inject(CardImportResolver) private readonly cardResolver: CardImportResolver,
+        @Inject(TransactionRunnerPort) private readonly txRunner: TransactionRunnerPort
     ) {}
 
     /**
@@ -47,7 +49,10 @@ export class DeckImportService {
 
         // Aggregate by (cardId, board) so one INSERT never touches a conflict
         // row twice (Postgres rejects that) and duplicate lines sum cleanly.
-        const entries = new Map<string, { cardId: string; isSideboard: boolean; quantity: number }>();
+        const entries = new Map<
+            string,
+            { cardId: string; isSideboard: boolean; quantity: number }
+        >();
         for (const row of cappedRows) {
             const { card, error } = await this.resolveRow(row);
             if (error || !card) {
@@ -67,9 +72,14 @@ export class DeckImportService {
             }
         }
 
-        const deck = await this.deckService.createDeck(userId, name, format);
+        // Create the deck and its cards atomically so a failure mid-import
+        // can't leave an orphan empty deck (W2/B4).
         const entryList = [...entries.values()];
-        await this.deckService.addCards(deck.id!, userId, entryList);
+        const deck = await this.txRunner.run(async () => {
+            const created = await this.deckService.createDeck(userId, name, format);
+            await this.deckService.addCards(created.id!, userId, entryList);
+            return created;
+        });
 
         const saved = entryList.reduce((sum, e) => sum + e.quantity, 0);
         this.LOGGER.debug(

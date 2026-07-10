@@ -25,6 +25,14 @@ export interface InventoryRepositoryPort extends BaseRepositoryPort {
     findOne(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null>;
 
     /**
+     * Same lookup as {@link findOne} but takes a `SELECT ... FOR UPDATE` row
+     * lock, serializing concurrent mutations to one holding. Must be called
+     * inside a transaction; used by the ledger money path to close the oversell
+     * race (W2/B4).
+     */
+    findOneForUpdate(userId: number, cardId: string, isFoil: boolean): Promise<Inventory | null>;
+
+    /**
      * This is used to find both foil and non-foil cards
      *
      * @param userId

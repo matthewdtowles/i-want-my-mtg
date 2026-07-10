@@ -1,15 +1,17 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { createTestApp, closeTestApp, loginTestUser } from './setup';
+import { createTestApp, closeTestApp, loginTestUser, getTestUserId } from './setup';
 
 describe('Deck import transactionality (e2e, W2/B4)', () => {
     let app: INestApplication;
     let authCookie: string;
+    let userId: number;
 
     beforeAll(async () => {
         app = await createTestApp();
         authCookie = await loginTestUser(app);
+        userId = await getTestUserId(app);
     }, 30000);
 
     afterAll(async () => {
@@ -17,9 +19,10 @@ describe('Deck import transactionality (e2e, W2/B4)', () => {
             const ds = app.get(DataSource);
             if (ds?.isInitialized) {
                 await ds.query(
-                    `DELETE FROM deck_card WHERE deck_id IN (SELECT id FROM deck WHERE user_id = 1)`
+                    `DELETE FROM deck_card WHERE deck_id IN (SELECT id FROM deck WHERE user_id = $1)`,
+                    [userId]
                 );
-                await ds.query(`DELETE FROM deck WHERE user_id = 1`);
+                await ds.query(`DELETE FROM deck WHERE user_id = $1`, [userId]);
             }
         } catch {
             // best-effort; test DB is ephemeral
@@ -43,7 +46,8 @@ describe('Deck import transactionality (e2e, W2/B4)', () => {
         // uncommitted) deck via the same transaction — if that read didn't join
         // the transaction, addCards would have failed and no cards would exist.
         const decks = await ds.query(
-            `SELECT id FROM deck WHERE user_id = 1 AND name = 'Imported Deck'`
+            `SELECT id FROM deck WHERE user_id = $1 AND name = 'Imported Deck'`,
+            [userId]
         );
         expect(decks).toHaveLength(1);
 

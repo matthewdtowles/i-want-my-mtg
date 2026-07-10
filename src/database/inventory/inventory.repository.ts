@@ -83,7 +83,7 @@ export class InventoryRepository
             .setLock('pessimistic_write')
             .where(`${this.TABLE}.userId = :userId`, { userId })
             .andWhere(`${this.TABLE}.cardId = :cardId`, { cardId })
-            .andWhere(`${this.TABLE}.foil = :isFoil`, { isFoil })
+            .andWhere(`${this.TABLE}.isFoil = :isFoil`, { isFoil })
             .getOne();
         return item ? InventoryMapper.toCore(item) : null;
     }

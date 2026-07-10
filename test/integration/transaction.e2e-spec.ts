@@ -5,6 +5,7 @@ import {
     createTestApp,
     closeTestApp,
     loginTestUser,
+    getTestUserId,
     TEST_CARD_ID,
     TEST_CARD_ID_2,
     TEST_CARD_ID_3,
@@ -259,17 +260,18 @@ describe('Transaction CRUD and FIFO (e2e)', () => {
             // Ledger and inventory agree and never went negative: one BUY 5 +
             // one SELL 5 = 0 remaining, inventory row removed at zero.
             const ds = app.get(DataSource);
+            const userId = await getTestUserId(app);
             const sells = await ds.query(
                 `SELECT COALESCE(SUM(quantity), 0)::int AS total FROM "transaction"
-                 WHERE user_id = 1 AND card_id = $1 AND type = 'SELL'`,
-                [TEST_CARD_ID_4]
+                 WHERE user_id = $2 AND card_id = $1 AND type = 'SELL'`,
+                [TEST_CARD_ID_4, userId]
             );
             expect(sells[0].total).toBe(5);
 
             const inv = await ds.query(
                 `SELECT COALESCE(SUM(quantity), 0)::int AS total FROM inventory
-                 WHERE user_id = 1 AND card_id = $1`,
-                [TEST_CARD_ID_4]
+                 WHERE user_id = $2 AND card_id = $1`,
+                [TEST_CARD_ID_4, userId]
             );
             expect(inv[0].total).toBe(0);
         });

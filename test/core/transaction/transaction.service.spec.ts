@@ -541,7 +541,7 @@ describe('TransactionService', () => {
         });
 
         it('should clamp to 0 when sold exceeds bought', async () => {
-            repository.sumQuantities.mockResolvedValue({ totalBought: 0, totalSold: 0 });
+            repository.sumQuantities.mockResolvedValue({ totalBought: 2, totalSold: 5 });
 
             const remaining = await service.getRemainingQuantity(1, 'card-1', false);
 

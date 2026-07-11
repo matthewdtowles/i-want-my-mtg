@@ -9,7 +9,7 @@ import { SortOptions } from './sort-options.enum';
 export function sanitizeInt(value: unknown, defaultValue: number, max?: number): number {
     let n: number;
     if (typeof value === 'number') {
-        n = value < 1 ? defaultValue : value;
+        n = !Number.isFinite(value) || value < 1 ? defaultValue : Math.floor(value);
     } else if (typeof value !== 'string') {
         n = defaultValue;
     } else {

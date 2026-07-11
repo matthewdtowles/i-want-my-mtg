@@ -22,6 +22,15 @@ describe('sanitizeInt', () => {
     it('does not clamp when no max is given', () => {
         expect(sanitizeInt('1000000', 25)).toBe(1000000);
     });
+
+    it('coerces a numeric input to an integer and rejects non-finite numbers', () => {
+        expect(sanitizeInt(2.7, 25)).toBe(2);
+        expect(sanitizeInt(NaN, 25)).toBe(25);
+        expect(sanitizeInt(NaN, 25, 100)).toBe(25);
+        expect(sanitizeInt(Infinity, 25)).toBe(25);
+        expect(sanitizeInt(0.5, 25)).toBe(25);
+        expect(sanitizeInt(50, 25)).toBe(50);
+    });
 });
 
 describe('resolveSort', () => {

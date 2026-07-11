@@ -82,7 +82,12 @@ export class PortfolioApiController {
     @RequiresSubscription()
     @ApiOperation({ summary: 'Get portfolio value history (Premium)' })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
-    @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
+    @ApiQuery({
+        name: 'days',
+        required: false,
+        type: Number,
+        description: 'Number of days of history',
+    })
     @ApiOkEnvelope(PortfolioHistoryPointDto, { isArray: true, description: 'Value history data' })
     async getHistory(
         @Req() req: AuthenticatedRequest,
@@ -98,8 +103,8 @@ export class PortfolioApiController {
 
     @Get('performance')
     @ApiOperation({ summary: 'Get card performance data' })
-    @ApiQuery({ name: 'type', required: false, description: 'best or worst' })
-    @ApiQuery({ name: 'limit', required: false, description: 'Number of results' })
+    @ApiQuery({ name: 'type', required: false, type: String, description: 'best or worst' })
+    @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of results' })
     @ApiOkEnvelope(CardPerformanceApiDto, { isArray: true, description: 'Card performance data' })
     async getPerformance(
         @Req() req: AuthenticatedRequest,
@@ -189,11 +194,13 @@ export class PortfolioApiController {
     @ApiQuery({
         name: 'by',
         required: false,
+        type: String,
         description: 'Dimension to group by (set, rarity, type, color, cost-basis)',
     })
     @ApiQuery({
         name: 'colors',
         required: false,
+        type: String,
         description:
             "For by=color: comma-separated codes (W,U,B,R,G,C) to keep only cards whose color identity contains all of them; 'C' is colorless. Ignored for other dimensions.",
     })
@@ -223,17 +230,20 @@ export class PortfolioApiController {
     @ApiQuery({
         name: 'by',
         required: false,
+        type: String,
         description: 'Dimension the slice belongs to (set, rarity, type, color, cost-basis)',
     })
     @ApiQuery({
         name: 'key',
         required: false,
+        type: String,
         description:
             'Slice key from the breakdown (set code, rarity, type, cost-basis bucket, or color code). A missing/empty key returns an empty list.',
     })
     @ApiQuery({
         name: 'colors',
         required: false,
+        type: String,
         description:
             'For by=color: the active superset filter (W,U,B,R,G,C) so drill-down matches the aggregate row. Ignored for other dimensions.',
     })

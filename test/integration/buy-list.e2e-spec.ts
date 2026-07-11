@@ -48,6 +48,55 @@ describe('Buy List API (e2e)', () => {
         });
     });
 
+    describe('Delta-quantity adjust endpoint', () => {
+        const adjust = (delta: number, isFoil = false) =>
+            request(app.getHttpServer())
+                .patch('/api/v1/buy-list/adjust')
+                .set('Authorization', bearerToken)
+                .send({ cardId: TEST_CARD_ID, isFoil, delta });
+
+        it('creates the item on a positive delta and accumulates', async () => {
+            const first = await adjust(2).expect(200);
+            expect(first.body.data).toMatchObject({
+                cardId: TEST_CARD_ID,
+                isFoil: false,
+                quantity: 2,
+            });
+
+            const second = await adjust(1).expect(200);
+            expect(second.body.data.quantity).toBe(3);
+        });
+
+        it('removes the item when the result reaches 0 and clamps below 0', async () => {
+            await adjust(2).expect(200);
+
+            const removed = await adjust(-5).expect(200);
+            expect(removed.body.data.quantity).toBe(0);
+
+            const list = await request(app.getHttpServer())
+                .get('/api/v1/buy-list')
+                .set('Authorization', bearerToken)
+                .expect(200);
+            expect(list.body.data).toHaveLength(0);
+
+            // Decrementing a missing item stays at 0 and does not create a row.
+            const again = await adjust(-1).expect(200);
+            expect(again.body.data.quantity).toBe(0);
+        });
+
+        it('serializes concurrent decrements (no lost updates)', async () => {
+            await adjust(10).expect(200);
+
+            await Promise.all([adjust(-1), adjust(-1), adjust(-1), adjust(-1)]);
+
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/buy-list')
+                .set('Authorization', bearerToken)
+                .expect(200);
+            expect(res.body.data[0].quantity).toBe(6);
+        });
+    });
+
     describe('CRUD', () => {
         it('POST adds a card (increments on repeat) and GET lists it', async () => {
             await request(app.getHttpServer())

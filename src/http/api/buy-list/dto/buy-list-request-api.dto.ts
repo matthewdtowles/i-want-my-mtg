@@ -1,6 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
+/** Adjust the quantity for (card, finish) by a delta; a result <= 0 removes it. */
+export class BuyListAdjustApiDto {
+    @ApiProperty()
+    @IsUUID()
+    readonly cardId: string;
+
+    @ApiProperty({ default: false })
+    @IsBoolean()
+    readonly isFoil: boolean;
+
+    @ApiProperty({ description: 'Amount to add to the quantity; negative to subtract.' })
+    @IsInt()
+    readonly delta: number;
+}
+
 /** Add to the buy-list: increments the quantity for (card, finish). */
 export class BuyListAddApiDto {
     @ApiProperty()

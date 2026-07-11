@@ -53,16 +53,22 @@ export class SetApiController {
 
     @Get()
     @ApiOperation({ operationId: 'listSets', summary: 'List sets' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
-    @ApiQuery({ name: 'sort', required: false })
-    @ApiQuery({ name: 'ascend', required: false })
-    @ApiQuery({ name: 'filter', required: false, description: 'Filter sets by name' })
-    @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base/main sets' })
-    @ApiQuery({ name: 'q', required: false, description: 'Search query' })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'sort', required: false, type: String })
+    @ApiQuery({ name: 'ascend', required: false, type: Boolean })
+    @ApiQuery({ name: 'filter', required: false, type: String, description: 'Filter sets by name' })
+    @ApiQuery({
+        name: 'baseOnly',
+        required: false,
+        type: Boolean,
+        description: 'Show only base/main sets',
+    })
+    @ApiQuery({ name: 'q', required: false, type: String, description: 'Search query' })
     @ApiQuery({
         name: 'group',
         required: false,
+        type: String,
         description: 'Grouping mode: "block" for block-level pagination',
     })
     @ApiOkEnvelope(SetApiResponseDto, { isArray: true, description: 'List of sets' })
@@ -163,19 +169,34 @@ export class SetApiController {
         operationId: 'getSetCards',
         summary: 'Get cards in a set with optional filters',
     })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
-    @ApiQuery({ name: 'sort', required: false })
-    @ApiQuery({ name: 'ascend', required: false })
-    @ApiQuery({ name: 'filter', required: false, description: 'Filter cards by name' })
-    @ApiQuery({ name: 'baseOnly', required: false, description: 'Show only base set cards' })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'sort', required: false, type: String })
+    @ApiQuery({ name: 'ascend', required: false, type: Boolean })
+    @ApiQuery({
+        name: 'filter',
+        required: false,
+        type: String,
+        description: 'Filter cards by name',
+    })
+    @ApiQuery({
+        name: 'baseOnly',
+        required: false,
+        type: Boolean,
+        description: 'Show only base set cards',
+    })
     @ApiQuery({
         name: 'rarity',
         required: false,
         description: 'Filter by rarity',
         enum: [...RARITY_VALUES],
     })
-    @ApiQuery({ name: 'type', required: false, description: 'Substring match on card type line' })
+    @ApiQuery({
+        name: 'type',
+        required: false,
+        type: String,
+        description: 'Substring match on card type line',
+    })
     @ApiQuery({
         name: 'format',
         required: false,
@@ -222,7 +243,12 @@ export class SetApiController {
 
     @Get(':code/price-history')
     @ApiOperation({ operationId: 'getSetPriceHistory', summary: 'Get set price history' })
-    @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
+    @ApiQuery({
+        name: 'days',
+        required: false,
+        type: Number,
+        description: 'Number of days of history',
+    })
     @ApiOkEnvelope(SetPriceHistoryPointDto, {
         isArray: true,
         description: 'Set price history data',

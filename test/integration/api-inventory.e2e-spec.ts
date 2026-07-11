@@ -117,6 +117,75 @@ describe('Inventory API (e2e)', () => {
         });
     });
 
+    describe('Delta-quantity adjust endpoint', () => {
+        const clear = async () => {
+            const ds = app.get(DataSource);
+            await ds.query(`DELETE FROM inventory WHERE user_id = 1 AND card_id = $1`, [
+                TEST_CARD_ID_2,
+            ]);
+        };
+
+        beforeEach(clear);
+        afterEach(clear);
+
+        const adjust = (delta: number) =>
+            request(app.getHttpServer())
+                .patch('/api/v1/inventory/adjust')
+                .set('Authorization', bearerToken)
+                .send({ cardId: TEST_CARD_ID_2, isFoil: false, delta });
+
+        it('creates the holding on a positive delta and accumulates', async () => {
+            const first = await adjust(2).expect(200);
+            expect(first.body.data).toMatchObject({
+                cardId: TEST_CARD_ID_2,
+                isFoil: false,
+                quantity: 2,
+            });
+
+            const second = await adjust(3).expect(200);
+            expect(second.body.data.quantity).toBe(5);
+        });
+
+        it('removes the holding when the result reaches 0 and clamps below 0', async () => {
+            await adjust(2).expect(200);
+
+            const removed = await adjust(-2).expect(200);
+            expect(removed.body.data.quantity).toBe(0);
+
+            const ds = app.get(DataSource);
+            const rows = await ds.query(
+                `SELECT quantity FROM inventory WHERE user_id = 1 AND card_id = $1`,
+                [TEST_CARD_ID_2]
+            );
+            expect(rows).toHaveLength(0);
+
+            // Decrementing a missing holding stays at 0 and does not create a row.
+            const again = await adjust(-1).expect(200);
+            expect(again.body.data.quantity).toBe(0);
+        });
+
+        it('serializes concurrent adjustments (no lost updates)', async () => {
+            await adjust(10).expect(200);
+
+            await Promise.all([adjust(-1), adjust(-1), adjust(-1), adjust(-1)]);
+
+            const ds = app.get(DataSource);
+            const rows = await ds.query(
+                `SELECT quantity FROM inventory WHERE user_id = 1 AND card_id = $1`,
+                [TEST_CARD_ID_2]
+            );
+            expect(rows[0].quantity).toBe(6);
+        });
+
+        it('rejects a non-integer delta', async () => {
+            await request(app.getHttpServer())
+                .patch('/api/v1/inventory/adjust')
+                .set('Authorization', bearerToken)
+                .send({ cardId: TEST_CARD_ID_2, isFoil: false, delta: 1.5 })
+                .expect(400);
+        });
+    });
+
     describe('Batch quantities endpoint', () => {
         it('GET /api/v1/inventory/quantities without auth returns 401', async () => {
             const res = await request(app.getHttpServer())

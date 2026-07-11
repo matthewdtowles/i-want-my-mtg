@@ -38,10 +38,16 @@ export class CardApiController {
         operationId: 'searchCards',
         summary: 'Search cards by name with optional filters',
     })
-    @ApiQuery({ name: 'q', required: false, description: 'Search query (matches card name)' })
+    @ApiQuery({
+        name: 'q',
+        required: false,
+        type: String,
+        description: 'Search query (matches card name)',
+    })
     @ApiQuery({
         name: 'setCode',
         required: false,
+        type: String,
         description: 'Restrict to a single set (e.g. LEA, MH3)',
     })
     @ApiQuery({
@@ -53,6 +59,7 @@ export class CardApiController {
     @ApiQuery({
         name: 'type',
         required: false,
+        type: String,
         description: 'Substring match on card type line (e.g. "creature", "instant")',
     })
     @ApiQuery({
@@ -74,8 +81,8 @@ export class CardApiController {
             'Set to "name" to return one representative printing per distinct card name (newest printing), instead of one row per printing. With "name", a `format` param flags each result\'s legality in that format.',
         enum: ['name'],
     })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiOkEnvelope(CardApiResponseDto, {
         isArray: true,
         description: 'Search results (ordered by card name)',
@@ -160,7 +167,12 @@ export class CardApiController {
         operationId: 'getCardPriceHistory',
         summary: 'Get price history for a card by ID',
     })
-    @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
+    @ApiQuery({
+        name: 'days',
+        required: false,
+        type: Number,
+        description: 'Number of days of history',
+    })
     @ApiOkEnvelope(PriceHistoryPointDto, { isArray: true, description: 'Price history data' })
     async getPriceHistoryById(
         @Param('cardId') cardId: string,
@@ -217,7 +229,12 @@ export class CardApiController {
         operationId: 'getCardPriceHistoryBySetAndNumber',
         summary: 'Get price history for a card by set code and number',
     })
-    @ApiQuery({ name: 'days', required: false, description: 'Number of days of history' })
+    @ApiQuery({
+        name: 'days',
+        required: false,
+        type: Number,
+        description: 'Number of days of history',
+    })
     @ApiOkEnvelope(PriceHistoryPointDto, { isArray: true, description: 'Price history data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getPriceHistoryBySetCodeAndNumber(

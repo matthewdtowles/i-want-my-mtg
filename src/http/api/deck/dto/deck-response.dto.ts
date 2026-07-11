@@ -41,7 +41,8 @@ export class DeckCardApiDto {
     readonly priceFoil?: number | null;
 
     @ApiPropertyOptional({
-        description: 'Whether the card is legal in the deck format. Null when the deck has no format.',
+        description:
+            'Whether the card is legal in the deck format. Null when the deck has no format.',
     })
     readonly legalInFormat?: boolean | null;
 
@@ -73,6 +74,18 @@ export class DeckSummaryApiDto {
     readonly updatedAt: string;
 }
 
+/** One decklist line that could not be parsed or resolved. */
+export class DeckImportErrorApiDto {
+    @ApiProperty({ description: 'Line number in the pasted decklist (1-based).' })
+    readonly row: number;
+
+    @ApiPropertyOptional({ description: 'Card name from the line, when one was parsed.' })
+    readonly name?: string;
+
+    @ApiProperty({ description: 'Why the line was rejected.' })
+    readonly error: string;
+}
+
 /** Result of a decklist text import. */
 export class DeckImportApiResultDto {
     @ApiProperty({ description: 'Id of the created deck.' })
@@ -85,10 +98,10 @@ export class DeckImportApiResultDto {
     readonly saved: number;
 
     @ApiProperty({
-        type: [Object],
-        description: 'Lines that could not be parsed or resolved ({ row, name?, error }).',
+        type: [DeckImportErrorApiDto],
+        description: 'Lines that could not be parsed or resolved.',
     })
-    readonly errors: { row: number; name?: string; error: string }[];
+    readonly errors: DeckImportErrorApiDto[];
 }
 
 /** Result of adding a deck's missing cards to the buy-list. */

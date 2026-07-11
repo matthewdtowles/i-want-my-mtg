@@ -52,8 +52,8 @@ export class PriceAlertApiController {
     @UseGuards(JwtOrApiKeyGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List price alerts' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiOkEnvelope(PriceAlertApiDto, { isArray: true, description: 'Price alert list' })
     async findAll(
         @Query('page') page: string = '1',
@@ -129,7 +129,9 @@ export class PriceAlertApiController {
             if (error instanceof DomainValidationError) {
                 throw new BadRequestException(error.message);
             }
-            this.LOGGER.error(`Unexpected error updating price alert ${id}: ${error?.message ?? error}`);
+            this.LOGGER.error(
+                `Unexpected error updating price alert ${id}: ${error?.message ?? error}`
+            );
             throw new InternalServerErrorException('Failed to update price alert');
         }
     }
@@ -151,7 +153,9 @@ export class PriceAlertApiController {
             if (error instanceof DomainNotFoundError || error instanceof DomainNotAuthorizedError) {
                 throw new NotFoundException('Price alert not found');
             }
-            this.LOGGER.error(`Unexpected error deleting price alert ${id}: ${error?.message ?? error}`);
+            this.LOGGER.error(
+                `Unexpected error deleting price alert ${id}: ${error?.message ?? error}`
+            );
             throw new InternalServerErrorException('Failed to delete price alert');
         }
     }

@@ -38,7 +38,7 @@ import { INVENTORY_SORTS } from 'src/core/query/sort-options.enum';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { csvUploadInterceptor } from 'src/http/base/csv-upload.interceptor';
-import { InventoryRequestApiDto } from './dto/inventory-request-api.dto';
+import { InventoryAdjustApiDto, InventoryRequestApiDto } from './dto/inventory-request-api.dto';
 import { InventoryDeleteApiDto } from './dto/inventory-delete-api.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { InventoryItemApiDto } from './dto/inventory-response.dto';
@@ -46,6 +46,7 @@ import { InventoryImportResponseDto } from './dto/inventory-import-response.dto'
 import { InventoryQuantityApiDto } from './dto/inventory-quantity.dto';
 import { InventorySellApiResponseDto } from './dto/inventory-sell-response.dto';
 import { InventoryApiPresenter } from './inventory-api.presenter';
+import { AdjustedQuantityApiDto } from '../shared/adjusted-quantity.dto';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
@@ -64,11 +65,11 @@ export class InventoryApiController {
 
     @Get()
     @ApiOperation({ summary: 'List inventory items' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
-    @ApiQuery({ name: 'sort', required: false })
-    @ApiQuery({ name: 'ascend', required: false })
-    @ApiQuery({ name: 'filter', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'sort', required: false, type: String })
+    @ApiQuery({ name: 'ascend', required: false, type: Boolean })
+    @ApiQuery({ name: 'filter', required: false, type: String })
     @ApiOkEnvelope(InventoryItemApiDto, { isArray: true, description: 'Inventory list' })
     @ApiResponse({
         status: 400,
@@ -109,7 +110,12 @@ export class InventoryApiController {
 
     @Get('quantities')
     @ApiOperation({ summary: 'Get inventory quantities for a batch of card IDs' })
-    @ApiQuery({ name: 'cardIds', required: true, description: 'Comma-separated card IDs' })
+    @ApiQuery({
+        name: 'cardIds',
+        required: true,
+        type: String,
+        description: 'Comma-separated card IDs',
+    })
     @ApiOkEnvelope(InventoryQuantityApiDto, {
         isArray: true,
         description: 'Inventory quantities by card ID',
@@ -184,6 +190,32 @@ export class InventoryApiController {
         );
         const saved = await this.inventoryService.save(items);
         return ApiResponseDto.ok(saved.map((item) => InventoryApiPresenter.toInventoryItem(item)));
+    }
+
+    @Patch('adjust')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        operationId: 'adjustInventoryQuantity',
+        summary: "Adjust one holding's quantity by a delta",
+        description:
+            'Atomically adds `delta` (negative to subtract) to the quantity for ' +
+            '(card, finish), creating the row for a positive delta and removing it ' +
+            'when the result is 0 or less. Safe under concurrent calls, unlike ' +
+            'read-modify-write against the absolute-quantity PATCH.',
+    })
+    @ApiBody({ type: InventoryAdjustApiDto })
+    @ApiOkEnvelope(AdjustedQuantityApiDto, { description: 'Quantity after the adjustment' })
+    async adjust(
+        @Body() dto: InventoryAdjustApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<AdjustedQuantityApiDto>> {
+        const quantity = await this.inventoryService.adjustQuantity(
+            req.user.id,
+            dto.cardId,
+            dto.isFoil,
+            dto.delta
+        );
+        return ApiResponseDto.ok({ cardId: dto.cardId, isFoil: dto.isFoil, quantity });
     }
 
     @Post('import/cards')

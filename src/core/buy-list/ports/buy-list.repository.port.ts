@@ -13,6 +13,13 @@ export interface BuyListRepositoryPort {
     /** A single item by its natural key, or null. */
     findOne(userId: number, cardId: string, isFoil: boolean): Promise<BuyListItem | null>;
 
+    /**
+     * Same lookup as {@link findOne} but takes a `SELECT ... FOR UPDATE` row
+     * lock, serializing concurrent mutations to one item. Must be called
+     * inside a transaction (see TransactionRunner).
+     */
+    findOneForUpdate(userId: number, cardId: string, isFoil: boolean): Promise<BuyListItem | null>;
+
     /** Set the absolute quantity, creating the row if absent. */
     save(item: BuyListItem): Promise<BuyListItem>;
 

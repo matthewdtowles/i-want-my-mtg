@@ -40,7 +40,7 @@ export class BuyListSetQuantityApiDto {
     @IsUUID()
     readonly cardId: string;
 
-    @ApiProperty({ default: false })
+    @ApiProperty()
     @IsBoolean()
     readonly isFoil: boolean;
 
@@ -55,7 +55,7 @@ export class BuyListRemoveApiDto {
     @IsUUID()
     readonly cardId: string;
 
-    @ApiProperty({ default: false })
+    @ApiProperty()
     @IsBoolean()
     readonly isFoil: boolean;
 }

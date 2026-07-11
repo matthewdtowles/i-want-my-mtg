@@ -66,7 +66,7 @@ export class DeckCardSetQuantityApiDto {
     @IsUUID()
     readonly cardId: string;
 
-    @ApiProperty({ default: false })
+    @ApiProperty()
     @IsBoolean()
     readonly isSideboard: boolean;
 
@@ -82,7 +82,7 @@ export class DeckCardRemoveApiDto {
     @IsUUID()
     readonly cardId: string;
 
-    @ApiProperty({ default: false })
+    @ApiProperty()
     @IsBoolean()
     readonly isSideboard: boolean;
 }

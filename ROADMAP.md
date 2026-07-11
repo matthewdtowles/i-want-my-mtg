@@ -298,7 +298,7 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 | Issue | Repo | Title | Notes |
 |---|---|---|---|
 | [W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576) | web | OpenAPI spec fixes + delta-quantity endpoint | After MB2 (X3/X4); triggers M3 + mobile regen |
-| [W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571) | web | Query/input hardening: filter charset, limit caps, pool config | |
+| ~~[W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571)~~ | web | Query/input hardening: filter charset, limit caps, pool config | ✅ **done** (PR #587) |
 | [W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572) | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | |
 | [W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573) | web | Performance: set page, batched imports, Promise.all, latest-price helper | |
 | [S5](https://github.com/matthewdtowles/scry/issues/39) | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | |

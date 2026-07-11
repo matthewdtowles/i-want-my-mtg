@@ -14,54 +14,45 @@ import { getLogger } from './logger/global-app-logger';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => {
-                const databaseUrl = configService.get<string>('DATABASE_URL');
+                const isProduction = configService.get('NODE_ENV') === 'production';
+                // The two connection styles differ only in how the server is
+                // addressed; everything else (ssl, logging, pool) is shared.
+                const shared = {
+                    type: 'postgres' as const,
+                    autoLoadEntities: true,
+                    synchronize: false,
+                    dropSchema: false,
+                    migrationsRun: false,
+                    logging: (!isProduction ? ['error', 'warn'] : ['error']) as (
+                        | 'error'
+                        | 'warn'
+                    )[],
+                    ...(isProduction && { ssl: { rejectUnauthorized: false } }),
+                    // pg.Pool options (the previous connectionLimit/queueLimit/
+                    // waitForConnections were mysql2 keys that pg silently ignored).
+                    extra: {
+                        max: 10,
+                        idleTimeoutMillis: 30000,
+                        connectionTimeoutMillis: 10000,
+                    },
+                };
 
+                const databaseUrl = configService.get<string>('DATABASE_URL');
                 if (databaseUrl) {
                     // Remove sslmode from URL - pg treats 'require' as 'verify-full'
                     // which rejects AWS managed DB certs. We handle SSL via TypeORM config instead.
                     const url = new URL(databaseUrl);
                     url.searchParams.delete('sslmode');
-                    const isProduction = configService.get('NODE_ENV') === 'production';
-                    return {
-                        type: 'postgres',
-                        url: url.toString(),
-                        autoLoadEntities: true,
-                        synchronize: false,
-                        dropSchema: false,
-                        migrationsRun: false,
-                        logging: !isProduction ? ['error', 'warn'] : ['error'],
-                        ...(isProduction && {
-                            ssl: { rejectUnauthorized: false },
-                        }),
-                        extra: {
-                            connectionLimit: 10,
-                            queueLimit: 0,
-                            waitForConnections: true,
-                        },
-                    };
-                } else {
-                    return {
-                        type: 'postgres',
-                        host: configService.get<string>('DB_HOST'),
-                        port: configService.get<number>('DB_PORT'),
-                        username: configService.get<string>('DB_USERNAME'),
-                        password: configService.get<string>('DB_PASSWORD'),
-                        database: configService.get<string>('DB_NAME'),
-                        autoLoadEntities: true,
-                        synchronize: false,
-                        dropSchema: false,
-                        migrationsRun: false,
-                        logging:
-                            configService.get('NODE_ENV') !== 'production'
-                                ? ['error', 'warn']
-                                : ['error'],
-                        extra: {
-                            connectionLimit: 10,
-                            queueLimit: 0,
-                            waitForConnections: true,
-                        },
-                    };
+                    return { ...shared, url: url.toString() };
                 }
+                return {
+                    ...shared,
+                    host: configService.get<string>('DB_HOST'),
+                    port: configService.get<number>('DB_PORT'),
+                    username: configService.get<string>('DB_USERNAME'),
+                    password: configService.get<string>('DB_PASSWORD'),
+                    database: configService.get<string>('DB_NAME'),
+                };
             },
             dataSourceFactory: async (options) => {
                 try {

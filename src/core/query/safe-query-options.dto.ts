@@ -1,8 +1,12 @@
 import { CardRarity } from 'src/core/card/card.rarity.enum';
 import { Format } from 'src/core/card/format.enum';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
-import { safeAlphaNumeric, safeBoolean, safeSort, sanitizeInt } from './query.util';
+import { safeAlphaNumeric, safeBoolean, safeSearchTerm, safeSort, sanitizeInt } from './query.util';
 import { SortOptions } from './sort-options.enum';
+
+// Upper bound on any list endpoint's page size. Without it a public request
+// (`?limit=1000000`) would build a giant join; a handful saturate Postgres.
+export const MAX_PAGE_LIMIT = 100;
 
 export const PUBLIC_RARITIES: ReadonlySet<CardRarity> = new Set([
     CardRarity.Common,
@@ -91,10 +95,10 @@ export class SafeQueryOptions implements QueryOptionsData {
         init = init || {};
         this.ascend = safeBoolean(init.ascend);
         this.baseOnly = safeBoolean(init.baseOnly);
-        this.filter = safeAlphaNumeric(init.filter);
+        this.filter = safeSearchTerm(init.filter);
         this.format = safeFormat(init.format);
         this.legality = safeLegality(init.legality, this.format);
-        this.limit = sanitizeInt(init.limit, 25);
+        this.limit = sanitizeInt(init.limit, 25, MAX_PAGE_LIMIT);
         this.page = sanitizeInt(init.page, 1);
         this.rarity = safeRarity(init.rarity);
         this.setCode = safeSetCode(init.setCode);

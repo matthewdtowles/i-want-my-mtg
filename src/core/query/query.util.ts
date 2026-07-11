@@ -6,11 +6,17 @@ import { SortOptions } from './sort-options.enum';
 // `string[]` at runtime. Each returns its default rather than calling a string
 // method on a non-string (which would throw and surface as a 500).
 
-export function sanitizeInt(value: unknown, defaultValue: number): number {
-    if (typeof value === 'number') return value < 1 ? defaultValue : value;
-    if (typeof value !== 'string') return defaultValue;
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) || parsed < 1 ? defaultValue : parsed;
+export function sanitizeInt(value: unknown, defaultValue: number, max?: number): number {
+    let n: number;
+    if (typeof value === 'number') {
+        n = value < 1 ? defaultValue : value;
+    } else if (typeof value !== 'string') {
+        n = defaultValue;
+    } else {
+        const parsed = parseInt(value, 10);
+        n = isNaN(parsed) || parsed < 1 ? defaultValue : parsed;
+    }
+    return max !== undefined ? Math.min(n, max) : n;
 }
 
 export function safeAlphaNumeric(value: unknown): string | undefined {

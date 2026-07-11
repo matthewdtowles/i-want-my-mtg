@@ -19,6 +19,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { parseDaysParam } from 'src/http/base/query.util';
 import { SetListViewDto } from './dto/set-list.view.dto';
 import { SetPriceHistoryResponseDto } from './dto/set-price-history-response.dto';
 import { SetViewDto } from './dto/set.view.dto';
@@ -85,11 +86,7 @@ export class SetController {
         @Param('code') code: string,
         @Query('days') days?: string
     ): Promise<SetPriceHistoryResponseDto> {
-        const parsedDays = days ? parseInt(days, 10) : undefined;
-        return this.setOrchestrator.getSetPriceHistory(
-            code,
-            Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : undefined
-        );
+        return this.setOrchestrator.getSetPriceHistory(code, parseDaysParam(days));
     }
 
     @UseGuards(OptionalAuthGuard)

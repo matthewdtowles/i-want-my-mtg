@@ -94,6 +94,37 @@ describe('SafeQueryOptions — public catalog filters', () => {
         });
     });
 
+    describe('filter', () => {
+        it('preserves apostrophes and commas so cards like "Urza\'s" are findable', () => {
+            const opts = new SafeQueryOptions({ filter: "Urza's, Tower" });
+            expect(opts.filter).toBe("Urza's, Tower");
+        });
+
+        it('strips characters outside the search charset', () => {
+            const opts = new SafeQueryOptions({ filter: 'name<script>' });
+            expect(opts.filter).toBe('namescript');
+        });
+
+        it('is undefined when blank after sanitizing', () => {
+            const opts = new SafeQueryOptions({ filter: '<<>>' });
+            expect(opts.filter).toBeUndefined();
+        });
+    });
+
+    describe('limit', () => {
+        it('defaults to 25 when absent', () => {
+            expect(new SafeQueryOptions({}).limit).toBe(25);
+        });
+
+        it('caps oversized page sizes at MAX_PAGE_LIMIT', () => {
+            expect(new SafeQueryOptions({ limit: '1000000' }).limit).toBe(100);
+        });
+
+        it('passes through a value under the cap', () => {
+            expect(new SafeQueryOptions({ limit: '50' }).limit).toBe(50);
+        });
+    });
+
     describe('format / legality', () => {
         it.each(Object.values(Format))('accepts format %s', (format) => {
             const opts = new SafeQueryOptions({ format });

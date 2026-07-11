@@ -44,4 +44,9 @@ describe('parseDaysParam', () => {
     it('should handle large valid numbers', () => {
         expect(parseDaysParam('365')).toBe(365);
     });
+
+    it('should clamp values above the max window', () => {
+        expect(parseDaysParam('366')).toBe(365);
+        expect(parseDaysParam('1000000')).toBe(365);
+    });
 });

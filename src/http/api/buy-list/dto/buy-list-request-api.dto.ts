@@ -7,7 +7,7 @@ export class BuyListAdjustApiDto {
     @IsUUID()
     readonly cardId: string;
 
-    @ApiProperty({ default: false })
+    @ApiProperty()
     @IsBoolean()
     readonly isFoil: boolean;
 

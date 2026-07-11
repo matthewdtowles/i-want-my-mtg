@@ -44,9 +44,12 @@ export class SealedProductApiController {
 
     @Get('sets/:code/sealed-products')
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
-    @ApiOperation({ operationId: 'listSealedProductsForSet', summary: 'List sealed products for a set' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
+    @ApiOperation({
+        operationId: 'listSealedProductsForSet',
+        summary: 'List sealed products for a set',
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiResponse({ status: 200, description: 'Sealed products for the set' })
     async findBySet(
         @Param('code') code: string,
@@ -99,8 +102,8 @@ export class SealedProductApiController {
     @UseGuards(JwtAuthGuard, ApiRateLimitGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List sealed product inventory' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiResponse({ status: 200, description: 'Sealed inventory list' })
     async findInventory(
         @Query() query: Record<string, string>,

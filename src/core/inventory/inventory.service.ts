@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { buildSellPlan, SellPlan } from 'src/core/pricing/sell-value.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Inventory } from './inventory.entity';
 import { InventoryRepositoryPort } from './ports/inventory.repository.port';
@@ -19,7 +20,8 @@ export class InventoryService {
     constructor(
         @Inject(InventoryRepositoryPort) private readonly repository: InventoryRepositoryPort,
         @Inject(GranularPriceRepositoryPort)
-        private readonly granularPriceRepository: GranularPriceRepositoryPort
+        private readonly granularPriceRepository: GranularPriceRepositoryPort,
+        @Inject(TransactionRunnerPort) private readonly txRunner: TransactionRunnerPort
     ) {}
 
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
@@ -43,6 +45,32 @@ export class InventoryService {
             }
         }
         return await this.repository.save(toSave);
+    }
+
+    /**
+     * Add `delta` (positive or negative) to one holding's quantity and return
+     * the resulting quantity. Positive deltas create the row if absent; a
+     * result of 0 or less removes it (returns 0). Runs inside a transaction
+     * with a row lock so concurrent adjustments serialize instead of losing
+     * updates (the read-modify-write race the absolute-quantity API has).
+     */
+    async adjustQuantity(
+        userId: number,
+        cardId: string,
+        isFoil: boolean,
+        delta: number
+    ): Promise<number> {
+        this.LOGGER.debug(`adjustQuantity ${delta} of ${cardId} (foil=${isFoil}) for ${userId}.`);
+        return await this.txRunner.run(async () => {
+            const existing = await this.repository.findOneForUpdate(userId, cardId, isFoil);
+            const next = Math.max(0, (existing?.quantity ?? 0) + delta);
+            if (next === 0) {
+                if (existing) await this.repository.delete(userId, cardId, isFoil);
+                return 0;
+            }
+            await this.repository.save([new Inventory({ userId, cardId, isFoil, quantity: next })]);
+            return next;
+        });
     }
 
     async findAllForUser(userId: number, options: SafeQueryOptions): Promise<Inventory[]> {

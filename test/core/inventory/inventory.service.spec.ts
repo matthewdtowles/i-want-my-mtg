@@ -5,6 +5,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 
 describe('InventoryService', () => {
     let service: InventoryService;
@@ -45,12 +46,19 @@ describe('InventoryService', () => {
         findCurrentBuylistByCardIds: jest.fn(),
     };
 
+    // Pass-through runner: execute the unit of work inline so assertions on
+    // repository calls hold unchanged.
+    const mockTxRunner = {
+        run: jest.fn(<T>(work: () => Promise<T>) => work()),
+    };
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 InventoryService,
                 { provide: InventoryRepositoryPort, useValue: mockRepository },
                 { provide: GranularPriceRepositoryPort, useValue: mockGranularPriceRepository },
+                { provide: TransactionRunnerPort, useValue: mockTxRunner },
             ],
         }).compile();
 
@@ -72,6 +80,60 @@ describe('InventoryService', () => {
             await service.lockForUpdate(1, 'card-1', true);
 
             expect(repository.findOneForUpdate).toHaveBeenCalledWith(1, 'card-1', true);
+        });
+    });
+
+    describe('adjustQuantity', () => {
+        it('adds the delta to an existing holding inside a transaction', async () => {
+            repository.findOneForUpdate.mockResolvedValue(testInventoryItem);
+            repository.save.mockResolvedValue([]);
+
+            const result = await service.adjustQuantity(1, 'card-1', false, 3);
+
+            expect(result).toBe(7);
+            expect(mockTxRunner.run).toHaveBeenCalledTimes(1);
+            expect(repository.findOneForUpdate).toHaveBeenCalledWith(1, 'card-1', false);
+            expect(repository.save).toHaveBeenCalledWith([
+                expect.objectContaining({
+                    cardId: 'card-1',
+                    userId: 1,
+                    isFoil: false,
+                    quantity: 7,
+                }),
+            ]);
+            expect(repository.delete).not.toHaveBeenCalled();
+        });
+
+        it('creates the holding on a positive delta when absent', async () => {
+            repository.findOneForUpdate.mockResolvedValue(null);
+            repository.save.mockResolvedValue([]);
+
+            const result = await service.adjustQuantity(1, 'card-1', true, 2);
+
+            expect(result).toBe(2);
+            expect(repository.save).toHaveBeenCalledWith([
+                expect.objectContaining({ quantity: 2, isFoil: true }),
+            ]);
+        });
+
+        it('deletes the holding when the result reaches 0', async () => {
+            repository.findOneForUpdate.mockResolvedValue(testInventoryItem);
+
+            const result = await service.adjustQuantity(1, 'card-1', false, -4);
+
+            expect(result).toBe(0);
+            expect(repository.delete).toHaveBeenCalledWith(1, 'card-1', false);
+            expect(repository.save).not.toHaveBeenCalled();
+        });
+
+        it('clamps below 0 and does not delete a missing holding', async () => {
+            repository.findOneForUpdate.mockResolvedValue(null);
+
+            const result = await service.adjustQuantity(1, 'card-1', false, -5);
+
+            expect(result).toBe(0);
+            expect(repository.delete).not.toHaveBeenCalled();
+            expect(repository.save).not.toHaveBeenCalled();
         });
     });
 

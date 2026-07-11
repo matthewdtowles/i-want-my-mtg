@@ -35,8 +35,8 @@ export class PriceNotificationApiController {
 
     @Get()
     @ApiOperation({ summary: 'List notifications' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiOkEnvelope(PriceNotificationApiDto, { isArray: true, description: 'Notification list' })
     async findAll(
         @Query('page') page: string = '1',

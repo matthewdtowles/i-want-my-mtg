@@ -21,8 +21,10 @@ import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { JwtOrApiKeyGuard } from '../shared/jwt-or-api-key.guard';
 import { BuyListApiPresenter } from './buy-list-api.presenter';
+import { AdjustedQuantityApiDto } from '../shared/adjusted-quantity.dto';
 import {
     BuyListAddApiDto,
+    BuyListAdjustApiDto,
     BuyListImportApiDto,
     BuyListRemoveApiDto,
     BuyListSetQuantityApiDto,
@@ -71,6 +73,31 @@ export class BuyListApiController {
     ): Promise<ApiResponseDto<{ updated: boolean }>> {
         await this.buyListService.setQuantity(req.user.id, dto.cardId, dto.isFoil, dto.quantity);
         return ApiResponseDto.ok({ updated: true });
+    }
+
+    @Patch('adjust')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        operationId: 'adjustBuyListQuantity',
+        summary: "Adjust a buy-list item's quantity by a delta",
+        description:
+            'Atomically adds `delta` (negative to subtract) to the quantity for ' +
+            '(card, finish), creating the row for a positive delta and removing it ' +
+            'when the result is 0 or less. Safe under concurrent calls, unlike ' +
+            'read-modify-write against the absolute-quantity PATCH.',
+    })
+    @ApiOkEnvelope(AdjustedQuantityApiDto, { description: 'Quantity after the adjustment' })
+    async adjust(
+        @Body() dto: BuyListAdjustApiDto,
+        @Req() req: AuthenticatedRequest
+    ): Promise<ApiResponseDto<AdjustedQuantityApiDto>> {
+        const quantity = await this.buyListService.adjust(
+            req.user.id,
+            dto.cardId,
+            dto.isFoil,
+            dto.delta
+        );
+        return ApiResponseDto.ok({ cardId: dto.cardId, isFoil: dto.isFoil, quantity });
     }
 
     @Delete()

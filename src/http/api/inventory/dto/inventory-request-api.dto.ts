@@ -18,3 +18,18 @@ export class InventoryRequestApiDto {
     @IsBoolean()
     readonly isFoil: boolean;
 }
+
+/** Adjust one holding's quantity by a delta; a result <= 0 removes the row. */
+export class InventoryAdjustApiDto {
+    @ApiProperty()
+    @IsUUID()
+    readonly cardId: string;
+
+    @ApiProperty()
+    @IsBoolean()
+    readonly isFoil: boolean;
+
+    @ApiProperty({ description: 'Amount to add to the quantity; negative to subtract.' })
+    @IsInt()
+    readonly delta: number;
+}

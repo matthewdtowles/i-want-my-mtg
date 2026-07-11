@@ -28,7 +28,9 @@ export class SellOptimizerApiController {
     @ApiQuery({
         name: 'bonus',
         required: false,
-        description: 'Store-credit bonus as a fraction (0.30 = +30%). Clamped to [0, 2]; default 0.30.',
+        type: Number,
+        description:
+            'Store-credit bonus as a fraction (0.30 = +30%). Clamped to [0, 2]; default 0.30.',
     })
     @ApiResponse({ status: 200, description: 'Cash-vs-credit plan' })
     async getOptimizer(

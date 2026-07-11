@@ -3,6 +3,7 @@ import { BuyListService } from 'src/core/buy-list/buy-list.service';
 import { BuyListRepositoryPort } from 'src/core/buy-list/ports/buy-list.repository.port';
 import { Card } from 'src/core/card/card.entity';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 
 function makeCard(overrides: Partial<Card> = {}): Card {
     return new Card({
@@ -29,6 +30,7 @@ describe('BuyListService', () => {
     const mockRepo = {
         findByUser: jest.fn(),
         findOne: jest.fn(),
+        findOneForUpdate: jest.fn(),
         save: jest.fn(),
         increment: jest.fn(),
         delete: jest.fn(),
@@ -36,6 +38,11 @@ describe('BuyListService', () => {
         countByUser: jest.fn(),
     };
     const mockResolver = { resolveCard: jest.fn(), resolveFoil: jest.fn() };
+    // Pass-through runner: execute the unit of work inline so assertions on
+    // repository calls hold unchanged.
+    const mockTxRunner = {
+        run: jest.fn(<T>(work: () => Promise<T>) => work()),
+    };
 
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -44,6 +51,7 @@ describe('BuyListService', () => {
                 BuyListService,
                 { provide: BuyListRepositoryPort, useValue: mockRepo },
                 { provide: CardImportResolver, useValue: mockResolver },
+                { provide: TransactionRunnerPort, useValue: mockTxRunner },
             ],
         }).compile();
         service = module.get(BuyListService);
@@ -61,6 +69,52 @@ describe('BuyListService', () => {
         it('is a no-op for quantity <= 0', async () => {
             await service.add(7, 'card-1', false, 0);
             expect(repo.increment).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('adjust', () => {
+        it('uses the atomic increment for a positive delta', async () => {
+            repo.increment.mockResolvedValue(5);
+
+            const result = await service.adjust(7, 'card-1', false, 2);
+
+            expect(result).toBe(5);
+            expect(repo.increment).toHaveBeenCalledWith(7, 'card-1', false, 2);
+            expect(mockTxRunner.run).not.toHaveBeenCalled();
+        });
+
+        it('decrements an existing item inside a transaction', async () => {
+            repo.findOneForUpdate.mockResolvedValue({ quantity: 4 } as never);
+            repo.save.mockResolvedValue({} as never);
+
+            const result = await service.adjust(7, 'card-1', true, -1);
+
+            expect(result).toBe(3);
+            expect(mockTxRunner.run).toHaveBeenCalledTimes(1);
+            expect(repo.findOneForUpdate).toHaveBeenCalledWith(7, 'card-1', true);
+            expect(repo.save).toHaveBeenCalledWith(
+                expect.objectContaining({ userId: 7, cardId: 'card-1', isFoil: true, quantity: 3 })
+            );
+        });
+
+        it('deletes the item when the result reaches 0', async () => {
+            repo.findOneForUpdate.mockResolvedValue({ quantity: 2 } as never);
+
+            const result = await service.adjust(7, 'card-1', false, -2);
+
+            expect(result).toBe(0);
+            expect(repo.delete).toHaveBeenCalledWith(7, 'card-1', false);
+            expect(repo.save).not.toHaveBeenCalled();
+        });
+
+        it('clamps below 0 and does not delete a missing item', async () => {
+            repo.findOneForUpdate.mockResolvedValue(null);
+
+            const result = await service.adjust(7, 'card-1', false, -3);
+
+            expect(result).toBe(0);
+            expect(repo.delete).not.toHaveBeenCalled();
+            expect(repo.save).not.toHaveBeenCalled();
         });
     });
 

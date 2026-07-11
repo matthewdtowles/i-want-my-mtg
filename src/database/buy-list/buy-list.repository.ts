@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BuyListItem } from 'src/core/buy-list/buy-list-item.entity';
 import { BuyListRepositoryPort } from 'src/core/buy-list/ports/buy-list.repository.port';
+import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
 import { BuyListMapper } from './buy-list.mapper';
@@ -35,13 +36,38 @@ export class BuyListRepository implements BuyListRepositoryPort {
         return items.map((i) => BuyListMapper.toCore(i));
     }
 
+    /**
+     * The repository bound to the active transaction when one is open,
+     * otherwise the default. Mutations and the locking read go through this so
+     * the delta-quantity path commits atomically (see TransactionRunner).
+     */
+    private repo(): Repository<BuyListOrmEntity> {
+        return activeEntityManager()?.getRepository(BuyListOrmEntity) ?? this.repository;
+    }
+
     async findOne(userId: number, cardId: string, isFoil: boolean): Promise<BuyListItem | null> {
         const item = await this.repository.findOne({ where: { userId, cardId, isFoil } });
         return item ? BuyListMapper.toCore(item) : null;
     }
 
+    async findOneForUpdate(
+        userId: number,
+        cardId: string,
+        isFoil: boolean
+    ): Promise<BuyListItem | null> {
+        this.LOGGER.debug(`findOneForUpdate ${cardId} (foil=${isFoil}) for user ${userId}.`);
+        const item = await this.repo()
+            .createQueryBuilder('bl')
+            .setLock('pessimistic_write')
+            .where('bl.userId = :userId', { userId })
+            .andWhere('bl.cardId = :cardId', { cardId })
+            .andWhere('bl.isFoil = :isFoil', { isFoil })
+            .getOne();
+        return item ? BuyListMapper.toCore(item) : null;
+    }
+
     async save(item: BuyListItem): Promise<BuyListItem> {
-        const saved = await this.repository.save(BuyListMapper.toOrmEntity(item));
+        const saved = await this.repo().save(BuyListMapper.toOrmEntity(item));
         return BuyListMapper.toCore(saved);
     }
 
@@ -63,7 +89,7 @@ export class BuyListRepository implements BuyListRepositoryPort {
     }
 
     async delete(userId: number, cardId: string, isFoil: boolean): Promise<void> {
-        await this.repository.delete({ userId, cardId, isFoil });
+        await this.repo().delete({ userId, cardId, isFoil });
     }
 
     async clear(userId: number): Promise<void> {

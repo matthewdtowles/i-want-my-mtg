@@ -28,7 +28,18 @@ sudo chmod 755 /opt/scripts/clean_logs.sh
 
 # Extract scry binary from ETL Docker image
 log_info "Extracting scry binary from ghcr.io/matthewdtowles/scry:latest..."
-docker pull ghcr.io/matthewdtowles/scry:latest
+# Retry the pull: ghcr.io occasionally returns transient "denied" errors
+for attempt in 1 2 3; do
+    if docker pull ghcr.io/matthewdtowles/scry:latest; then
+        break
+    fi
+    if [ "$attempt" -eq 3 ]; then
+        echo "Failed to pull scry image after 3 attempts" >&2
+        exit 1
+    fi
+    log_info "Pull failed (attempt $attempt/3), retrying in 15s..."
+    sleep 15
+done
 container_id=$(docker create ghcr.io/matthewdtowles/scry:latest)
 cleanup_docker() {
     docker rm "$container_id" 2>/dev/null || true

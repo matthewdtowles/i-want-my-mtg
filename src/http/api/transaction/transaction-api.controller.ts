@@ -49,11 +49,11 @@ export class TransactionApiController {
 
     @Get()
     @ApiOperation({ summary: 'List all transactions' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
-    @ApiQuery({ name: 'sort', required: false })
-    @ApiQuery({ name: 'ascend', required: false })
-    @ApiQuery({ name: 'filter', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'sort', required: false, type: String })
+    @ApiQuery({ name: 'ascend', required: false, type: Boolean })
+    @ApiQuery({ name: 'filter', required: false, type: String })
     @ApiQuery({ name: 'type', required: false, enum: ['BUY', 'SELL'] })
     @ApiOkEnvelope(TransactionApiItemDto, { isArray: true, description: 'Transaction list' })
     @ApiResponse({
@@ -131,7 +131,12 @@ export class TransactionApiController {
 
     @Get('cost-basis/:cardId')
     @ApiOperation({ summary: 'Get cost basis for a card by ID' })
-    @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
+    @ApiQuery({
+        name: 'isFoil',
+        required: false,
+        type: Boolean,
+        description: 'Whether to check foil version',
+    })
     @ApiOkEnvelope(CostBasisApiDto, { description: 'Cost basis data' })
     async getCostBasisById(
         @Param('cardId') cardId: string,
@@ -143,7 +148,12 @@ export class TransactionApiController {
 
     @Get('cost-basis/:setCode/:setNumber')
     @ApiOperation({ summary: 'Get cost basis for a card by set code and number' })
-    @ApiQuery({ name: 'isFoil', required: false, description: 'Whether to check foil version' })
+    @ApiQuery({
+        name: 'isFoil',
+        required: false,
+        type: Boolean,
+        description: 'Whether to check foil version',
+    })
     @ApiOkEnvelope(CostBasisApiDto, { description: 'Cost basis data' })
     @ApiResponse({ status: 404, description: 'Card not found' })
     async getCostBasisBySetCodeAndNumber(

@@ -3,6 +3,7 @@ import { CardImportResolver } from 'src/core/import/card-import-resolver';
 import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
 import { ImportError, ImportResult } from 'src/core/import/import.types';
 import { CardImportRow } from 'src/core/inventory/import/inventory-import.types';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { BuyListItem } from './buy-list-item.entity';
 import { BuyListRepositoryPort } from './ports/buy-list.repository.port';
@@ -13,7 +14,8 @@ export class BuyListService {
 
     constructor(
         @Inject(BuyListRepositoryPort) private readonly repository: BuyListRepositoryPort,
-        @Inject(CardImportResolver) private readonly cardResolver: CardImportResolver
+        @Inject(CardImportResolver) private readonly cardResolver: CardImportResolver,
+        @Inject(TransactionRunnerPort) private readonly txRunner: TransactionRunnerPort
     ) {}
 
     /** All of a user's buy-list items (with card data), newest first. */
@@ -46,6 +48,29 @@ export class BuyListService {
             return;
         }
         await this.repository.save(new BuyListItem({ userId, cardId, isFoil, quantity }));
+    }
+
+    /**
+     * Add `delta` (positive or negative) to the quantity and return the
+     * resulting quantity. Positive deltas create the row if absent; a result
+     * of 0 or less removes it (returns 0). Decrements lock the row so
+     * concurrent adjustments serialize instead of losing updates.
+     */
+    async adjust(userId: number, cardId: string, isFoil: boolean, delta: number): Promise<number> {
+        this.LOGGER.debug(`adjust ${delta} of ${cardId} (foil=${isFoil}) for user ${userId}.`);
+        if (delta > 0) {
+            return await this.repository.increment(userId, cardId, isFoil, delta);
+        }
+        return await this.txRunner.run(async () => {
+            const item = await this.repository.findOneForUpdate(userId, cardId, isFoil);
+            const next = Math.max(0, (item?.quantity ?? 0) + delta);
+            if (next === 0) {
+                if (item) await this.repository.delete(userId, cardId, isFoil);
+                return 0;
+            }
+            await this.repository.save(new BuyListItem({ userId, cardId, isFoil, quantity: next }));
+            return next;
+        });
     }
 
     async remove(userId: number, cardId: string, isFoil: boolean): Promise<void> {

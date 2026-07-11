@@ -6,6 +6,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { InventoryRepositoryPort } from '../ports/inventory.repository.port';
 import { CardImportRow, SetImportRow } from './inventory-import.types';
@@ -22,7 +23,9 @@ export class InventoryImportService {
         @Inject(SetRepositoryPort)
         private readonly setRepository: SetRepositoryPort,
         @Inject(CardImportResolver)
-        private readonly cardResolver: CardImportResolver
+        private readonly cardResolver: CardImportResolver,
+        @Inject(TransactionRunnerPort)
+        private readonly txRunner: TransactionRunnerPort
     ) {}
 
     async importCards(rows: CardImportRow[], userId: number): Promise<ImportResult> {
@@ -106,43 +109,41 @@ export class InventoryImportService {
             }
         }
 
-        // Execute deletions - track successes and failures separately
-        let deleted = 0;
-        for (const item of toDelete) {
-            try {
+        // Apply the deletes, exact saves, and ensure-at-least-one as one unit
+        // of work (W2/B4): if any phase fails the whole import rolls back rather
+        // than leaving rows deleted-but-not-saved. Row *resolution* errors
+        // gathered above are pre-write and returned regardless; only the DB
+        // writes are transactional. (A single transaction can't tolerate a
+        // mid-batch delete failure — the first error poisons it — so a failed
+        // delete now aborts the import instead of being skipped.)
+        const { deleted, exactSaved, ensureResult } = await this.txRunner.run(async () => {
+            for (const item of toDelete) {
                 await this.inventoryRepository.delete(item.userId, item.cardId, item.isFoil);
-                deleted++;
-            } catch (e) {
-                this.LOGGER.error(`Failed to delete inventory: ${e.message}`);
-                errors.push({
-                    row: 0,
-                    error: `Failed to delete card ${item.cardId}: ${e.message}`,
-                });
             }
-        }
 
-        // Execute exact saves
-        let exactSaved = 0;
-        if (toSave.length > 0) {
-            const { Inventory } = await import('../inventory.entity');
-            const inventoryItems = toSave.map(
-                (item) =>
-                    new Inventory({
-                        cardId: item.cardId,
-                        userId: item.userId,
-                        isFoil: item.isFoil,
-                        quantity: item.quantity,
-                    })
-            );
-            const saved = await this.inventoryRepository.save(inventoryItems);
-            exactSaved = saved.length;
-        }
+            let exactSaved = 0;
+            if (toSave.length > 0) {
+                const { Inventory } = await import('../inventory.entity');
+                const inventoryItems = toSave.map(
+                    (item) =>
+                        new Inventory({
+                            cardId: item.cardId,
+                            userId: item.userId,
+                            isFoil: item.isFoil,
+                            quantity: item.quantity,
+                        })
+                );
+                const saved = await this.inventoryRepository.save(inventoryItems);
+                exactSaved = saved.length;
+            }
 
-        // Execute ensure-at-least-one
-        let ensureResult = { saved: 0, skipped: 0 };
-        if (toEnsure.length > 0) {
-            ensureResult = await this.inventoryRepository.ensureAtLeastOne(toEnsure);
-        }
+            let ensureResult = { saved: 0, skipped: 0 };
+            if (toEnsure.length > 0) {
+                ensureResult = await this.inventoryRepository.ensureAtLeastOne(toEnsure);
+            }
+
+            return { deleted: toDelete.length, exactSaved, ensureResult };
+        });
 
         const totalSaved = exactSaved + ensureResult.saved;
         this.LOGGER.debug(

@@ -3,6 +3,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction } from 'src/core/transaction/transaction.entity';
 import { TransactionRepositoryPort } from 'src/core/transaction/ports/transaction.repository.port';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 
 describe('TransactionService', () => {
@@ -55,6 +56,7 @@ describe('TransactionService', () => {
         findByUserAndCard: jest.fn(),
         findBuyLots: jest.fn(),
         findSells: jest.fn(),
+        sumQuantities: jest.fn(),
         findByUser: jest.fn(),
         findByUserPaginated: jest.fn(),
         countByUser: jest.fn(),
@@ -66,6 +68,13 @@ describe('TransactionService', () => {
     const mockInventoryService = {
         save: jest.fn().mockResolvedValue([]),
         findForUser: jest.fn().mockResolvedValue([]),
+        lockForUpdate: jest.fn().mockResolvedValue(undefined),
+    };
+
+    // Pass-through runner: execute the unit of work inline so the existing
+    // assertions on repository/inventory calls hold unchanged (W2/B4).
+    const mockTxRunner = {
+        run: jest.fn(<T>(work: () => Promise<T>) => work()),
     };
 
     beforeAll(async () => {
@@ -74,6 +83,7 @@ describe('TransactionService', () => {
                 TransactionService,
                 { provide: TransactionRepositoryPort, useValue: mockRepository },
                 { provide: InventoryService, useValue: mockInventoryService },
+                { provide: TransactionRunnerPort, useValue: mockTxRunner },
             ],
         }).compile();
 
@@ -86,6 +96,76 @@ describe('TransactionService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // getRemainingQuantity now reads one aggregate (W2/P2). Default it to
+        // derive from whatever findBuyLots/findSells a test set up, so the
+        // create/update/delete cases that drive "remaining" via those mocks
+        // keep working unchanged.
+        repository.sumQuantities.mockImplementation(async (userId, cardId, isFoil) => {
+            const buys = (await repository.findBuyLots(userId, cardId, isFoil)) ?? [];
+            const sells = (await repository.findSells(userId, cardId, isFoil)) ?? [];
+            return {
+                totalBought: buys.reduce((s, t) => s + t.quantity, 0),
+                totalSold: sells.reduce((s, t) => s + t.quantity, 0),
+            };
+        });
+    });
+
+    describe('transactional integrity (W2/B4)', () => {
+        const buyTx = () =>
+            new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'BUY',
+                quantity: 2,
+                pricePerUnit: 5.0,
+                isFoil: false,
+                date: today,
+            });
+
+        it('runs create inside the transaction runner', async () => {
+            repository.save.mockResolvedValue({ ...buyTx(), id: 1 });
+            await service.create(buyTx());
+            expect(mockTxRunner.run).toHaveBeenCalledTimes(1);
+        });
+
+        it('locks the holding before the oversell check on create', async () => {
+            const tx = new Transaction({
+                userId: 1,
+                cardId: 'card-1',
+                type: 'SELL',
+                quantity: 10,
+                pricePerUnit: 10.0,
+                isFoil: false,
+                date: today,
+            });
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]); // remaining = 6
+            repository.findSells.mockResolvedValue([]);
+
+            await expect(service.create(tx)).rejects.toThrow('Cannot sell 10 units');
+            // The lock is taken; the rejection means no ledger row was written.
+            expect(inventoryService.lockForUpdate).toHaveBeenCalledWith(1, 'card-1', false);
+            expect(repository.save).not.toHaveBeenCalled();
+        });
+
+        it('runs update and delete inside the transaction runner and locks the holding', async () => {
+            repository.findById.mockResolvedValue({ ...buyLot1 });
+            repository.update.mockResolvedValue({ ...buyLot1 });
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([]);
+
+            await service.update(1, 1, { pricePerUnit: 6 });
+            expect(mockTxRunner.run).toHaveBeenCalled();
+            expect(inventoryService.lockForUpdate).toHaveBeenCalledWith(1, 'card-1', false);
+
+            jest.clearAllMocks();
+            repository.findById.mockResolvedValue({ ...buyLot1 });
+            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
+            repository.findSells.mockResolvedValue([]);
+
+            await service.delete(1, 1);
+            expect(mockTxRunner.run).toHaveBeenCalled();
+            expect(inventoryService.lockForUpdate).toHaveBeenCalledWith(1, 'card-1', false);
+        });
     });
 
     describe('create', () => {
@@ -440,27 +520,28 @@ describe('TransactionService', () => {
     });
 
     describe('getRemainingQuantity', () => {
-        it('should return total bought minus total sold', async () => {
-            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
-            repository.findSells.mockResolvedValue([sellTx]);
+        it('should return total bought minus total sold from the aggregate', async () => {
+            repository.sumQuantities.mockResolvedValue({ totalBought: 6, totalSold: 3 });
 
             const remaining = await service.getRemainingQuantity(1, 'card-1', false);
 
-            expect(remaining).toBe(3); // (2 + 4) - 3 = 3
+            expect(remaining).toBe(3);
+            expect(repository.sumQuantities).toHaveBeenCalledWith(1, 'card-1', false);
+            // Must not fall back to loading the full lot history (W2/P2).
+            expect(repository.findBuyLots).not.toHaveBeenCalled();
+            expect(repository.findSells).not.toHaveBeenCalled();
         });
 
         it('should return full quantity when nothing sold', async () => {
-            repository.findBuyLots.mockResolvedValue([buyLot1, buyLot2]);
-            repository.findSells.mockResolvedValue([]);
+            repository.sumQuantities.mockResolvedValue({ totalBought: 6, totalSold: 0 });
 
             const remaining = await service.getRemainingQuantity(1, 'card-1', false);
 
             expect(remaining).toBe(6);
         });
 
-        it('should return 0 when nothing bought', async () => {
-            repository.findBuyLots.mockResolvedValue([]);
-            repository.findSells.mockResolvedValue([]);
+        it('should clamp to 0 when sold exceeds bought', async () => {
+            repository.sumQuantities.mockResolvedValue({ totalBought: 2, totalSold: 5 });
 
             const remaining = await service.getRemainingQuantity(1, 'card-1', false);
 

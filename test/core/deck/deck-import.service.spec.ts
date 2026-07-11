@@ -31,7 +31,9 @@ describe('DeckImportService', () => {
             resolveByName: jest.fn(),
             resolveCard: jest.fn(),
         };
-        service = new DeckImportService(deckService as any, resolver as any);
+        // Pass-through runner: execute the unit of work inline (W2/B4).
+        const txRunner = { run: <T>(work: () => Promise<T>) => work() };
+        service = new DeckImportService(deckService as any, resolver as any, txRunner as any);
     });
 
     it('resolves set-less lines by name and creates the deck with the cards', async () => {
@@ -79,7 +81,10 @@ describe('DeckImportService', () => {
     });
 
     it('aggregates duplicate card+board lines into one entry', async () => {
-        resolver.resolveByName.mockResolvedValue({ card: makeCard('bolt', 'Lightning Bolt'), error: null });
+        resolver.resolveByName.mockResolvedValue({
+            card: makeCard('bolt', 'Lightning Bolt'),
+            error: null,
+        });
 
         await service.importDecklist(1, 'D', null, '2 Lightning Bolt\n2 Lightning Bolt');
 

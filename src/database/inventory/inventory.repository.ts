@@ -7,6 +7,7 @@ import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { INVENTORY_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
+import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
 import { In, Repository } from 'typeorm';
 import { InventoryMapper } from './inventory.mapper';
@@ -35,12 +36,21 @@ export class InventoryRepository
         this.LOGGER.debug(`Instantiated.`);
     }
 
+    /**
+     * The repository bound to the active transaction (W2/B4) when one is open,
+     * otherwise the default. Mutations and the locking read below go through
+     * this so ledger + inventory writes commit atomically.
+     */
+    private repo(): Repository<InventoryOrmEntity> {
+        return activeEntityManager()?.getRepository(InventoryOrmEntity) ?? this.repository;
+    }
+
     async save(inventoryItems: Inventory[]): Promise<Inventory[]> {
         this.LOGGER.debug(`Saving ${inventoryItems?.length ?? 0} inventory items.`);
         const ormItems: InventoryOrmEntity[] = inventoryItems.map((item: Inventory) =>
             InventoryMapper.toOrmEntity(item)
         );
-        const saved = await this.repository.save(ormItems);
+        const saved = await this.repo().save(ormItems);
         this.LOGGER.debug(`Saved ${saved?.length ?? 0} inventory items.`);
         return saved.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
@@ -49,16 +59,38 @@ export class InventoryRepository
         this.LOGGER.debug(
             `Finding inventory item for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`
         );
-        const item: InventoryOrmEntity = await this.repository.findOne({
+        const item: InventoryOrmEntity = await this.repo().findOne({
             where: { userId, cardId, isFoil },
         });
         this.LOGGER.debug(`Inventory item ${item ? 'found' : 'not found'}.`);
         return item ? InventoryMapper.toCore(item) : null;
     }
 
+    async findOneForUpdate(
+        userId: number,
+        cardId: string,
+        isFoil: boolean
+    ): Promise<Inventory | null> {
+        this.LOGGER.debug(
+            `Locking inventory row for userId: ${userId}, cardId: ${cardId}, isFoil: ${isFoil}.`
+        );
+        // Serialization point for the ledger money path (W2/B4): concurrent
+        // mutations to the same holding block here, so the remaining-quantity
+        // check the caller runs next sees committed prior writes (closes the
+        // oversell race). Requires an open transaction (see TransactionRunner).
+        const item = await this.repo()
+            .createQueryBuilder(this.TABLE)
+            .setLock('pessimistic_write')
+            .where(`${this.TABLE}.userId = :userId`, { userId })
+            .andWhere(`${this.TABLE}.cardId = :cardId`, { cardId })
+            .andWhere(`${this.TABLE}.isFoil = :isFoil`, { isFoil })
+            .getOne();
+        return item ? InventoryMapper.toCore(item) : null;
+    }
+
     async findByCard(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`Finding inventory items for userId: ${userId}, cardId: ${cardId}.`);
-        const items = await this.repository.find({ where: { userId, cardId } });
+        const items = await this.repo().find({ where: { userId, cardId } });
         this.LOGGER.debug(`Found ${items.length} inventory items.`);
         return items.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
@@ -279,7 +311,7 @@ export class InventoryRepository
             `Deleting inventory item for userId: ${userId}, cardId: ${cardId}, foil: ${foil}.`
         );
         try {
-            await this.repository
+            await this.repo()
                 .createQueryBuilder()
                 .delete()
                 .from(InventoryOrmEntity)

@@ -56,6 +56,16 @@ export class InventoryService {
         return inventoryList;
     }
 
+    /**
+     * Take a row lock on one holding (user + card + finish) so concurrent
+     * ledger mutations serialize. Must run inside a TransactionRunner unit of
+     * work; the transaction service calls this before its remaining-quantity
+     * check to close the oversell race (W2/B4).
+     */
+    async lockForUpdate(userId: number, cardId: string, isFoil: boolean): Promise<void> {
+        await this.repository.findOneForUpdate(userId, cardId, isFoil);
+    }
+
     async findForUser(userId: number, cardId: string): Promise<Inventory[]> {
         this.LOGGER.debug(`findForUser ${userId}, card: ${cardId}.`);
         const inventoryList =

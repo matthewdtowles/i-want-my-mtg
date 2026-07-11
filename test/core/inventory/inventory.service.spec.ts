@@ -30,6 +30,7 @@ describe('InventoryService', () => {
     const mockRepository = {
         save: jest.fn(),
         findOne: jest.fn(),
+        findOneForUpdate: jest.fn(),
         findByCard: jest.fn(),
         findByCards: jest.fn(),
         findByUser: jest.fn(),
@@ -62,6 +63,16 @@ describe('InventoryService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('lockForUpdate', () => {
+        it('takes a row lock on the holding via the repository', async () => {
+            repository.findOneForUpdate.mockResolvedValue(null);
+
+            await service.lockForUpdate(1, 'card-1', true);
+
+            expect(repository.findOneForUpdate).toHaveBeenCalledWith(1, 'card-1', true);
+        });
     });
 
     describe('save', () => {

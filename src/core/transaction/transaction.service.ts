@@ -4,6 +4,7 @@ import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction, TransactionType } from './transaction.entity';
 import { CashFlowPeriod, TransactionRepositoryPort } from './ports/transaction.repository.port';
@@ -31,7 +32,9 @@ export class TransactionService {
         @Inject(TransactionRepositoryPort)
         private readonly repository: TransactionRepositoryPort,
         @Inject(InventoryService)
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        @Inject(TransactionRunnerPort)
+        private readonly txRunner: TransactionRunnerPort
     ) {}
 
     async create(
@@ -52,33 +55,44 @@ export class TransactionService {
             throw new DomainValidationError('Transaction type must be BUY or SELL.');
         }
 
-        if (transaction.type === 'SELL') {
-            const remainingQty = await this.getRemainingQuantity(
+        return this.txRunner.run(async () => {
+            // Lock the holding first so a concurrent sell can't pass the check
+            // below against a stale remaining quantity (W2/B4 oversell race).
+            await this.inventoryService.lockForUpdate(
                 transaction.userId,
                 transaction.cardId,
                 transaction.isFoil
             );
-            if (transaction.quantity > remainingQty) {
-                throw new DomainValidationError(
-                    `Cannot sell ${transaction.quantity} units. Only ${remainingQty} remaining.`
+
+            if (transaction.type === 'SELL') {
+                const remainingQty = await this.getRemainingQuantity(
+                    transaction.userId,
+                    transaction.cardId,
+                    transaction.isFoil
+                );
+                if (transaction.quantity > remainingQty) {
+                    throw new DomainValidationError(
+                        `Cannot sell ${transaction.quantity} units. Only ${remainingQty} remaining.`
+                    );
+                }
+            }
+
+            const saved = await this.repository.save(transaction);
+            this.LOGGER.debug(`Created transaction id ${saved.id}.`);
+
+            if (!options?.skipInventorySync) {
+                const delta =
+                    transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
+                await this.adjustInventory(
+                    transaction.userId,
+                    transaction.cardId,
+                    transaction.isFoil,
+                    delta
                 );
             }
-        }
 
-        const saved = await this.repository.save(transaction);
-        this.LOGGER.debug(`Created transaction id ${saved.id}.`);
-
-        if (!options?.skipInventorySync) {
-            const delta = transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
-            await this.adjustInventory(
-                transaction.userId,
-                transaction.cardId,
-                transaction.isFoil,
-                delta
-            );
-        }
-
-        return saved;
+            return saved;
+        });
     }
 
     async findById(id: number): Promise<Transaction | null> {
@@ -140,51 +154,68 @@ export class TransactionService {
             throw new DomainValidationError('Price per unit cannot be negative.');
         }
 
-        const newQuantity = fields.quantity ?? existing.quantity;
-        if (fields.quantity !== undefined) {
-            const remainingQty = await this.getRemainingQuantity(
+        return this.txRunner.run(async () => {
+            await this.inventoryService.lockForUpdate(
                 existing.userId,
                 existing.cardId,
                 existing.isFoil
             );
 
-            if (existing.type === 'SELL') {
-                // Add back the old sell quantity, then check if the new sell quantity fits
-                const available = remainingQty + existing.quantity;
-                if (newQuantity > available) {
-                    throw new DomainValidationError(
-                        `Cannot sell ${newQuantity} units. Only ${available} remaining.`
-                    );
-                }
-            } else if (existing.type === 'BUY' && newQuantity < existing.quantity) {
-                // Reducing a BUY lot: ensure total bought doesn't drop below total sold
-                const reduction = existing.quantity - newQuantity;
-                if (reduction > remainingQty) {
-                    throw new DomainValidationError(
-                        `Cannot reduce buy to ${newQuantity} units. ${remainingQty} unsold units remaining in this card's ledger.`
-                    );
+            // Re-read after the lock: a concurrent edit may have committed while
+            // we waited, so validation and the inventory delta must use the
+            // current quantity, not the pre-lock snapshot. (Lock keys are safe
+            // to take from the snapshot: userId/cardId/isFoil are immutable.)
+            const current = await this.repository.findById(id);
+            if (!current || current.userId !== userId) {
+                throw new DomainNotFoundError('Transaction not found.');
+            }
+
+            const newQuantity = fields.quantity ?? current.quantity;
+            if (fields.quantity !== undefined) {
+                const remainingQty = await this.getRemainingQuantity(
+                    current.userId,
+                    current.cardId,
+                    current.isFoil
+                );
+
+                if (current.type === 'SELL') {
+                    // Add back the old sell quantity, then check if the new sell quantity fits
+                    const available = remainingQty + current.quantity;
+                    if (newQuantity > available) {
+                        throw new DomainValidationError(
+                            `Cannot sell ${newQuantity} units. Only ${available} remaining.`
+                        );
+                    }
+                } else if (current.type === 'BUY' && newQuantity < current.quantity) {
+                    // Reducing a BUY lot: ensure total bought doesn't drop below total sold
+                    const reduction = current.quantity - newQuantity;
+                    if (reduction > remainingQty) {
+                        throw new DomainValidationError(
+                            `Cannot reduce buy to ${newQuantity} units. ${remainingQty} unsold units remaining in this card's ledger.`
+                        );
+                    }
                 }
             }
-        }
 
-        const oldQuantity = existing.quantity;
-        const updated = await this.repository.update(id, userId, fields);
+            const oldQuantity = current.quantity;
+            const updated = await this.repository.update(id, userId, fields);
 
-        // Sync inventory if quantity changed
-        if (fields.quantity !== undefined && fields.quantity !== oldQuantity) {
-            const quantityDelta = fields.quantity - oldQuantity;
-            // BUY: more bought = more inventory; SELL: more sold = less inventory
-            const inventoryDelta = existing.type === 'BUY' ? quantityDelta : -quantityDelta;
-            await this.adjustInventory(
-                existing.userId,
-                existing.cardId,
-                existing.isFoil,
-                inventoryDelta
-            );
-        }
+            // Sync inventory if quantity changed
+            if (fields.quantity !== undefined && fields.quantity !== oldQuantity) {
+                const quantityDelta = fields.quantity - oldQuantity;
+                // BUY: more bought = more inventory; SELL: more sold = less inventory
+                const inventoryDelta = current.type === 'BUY' ? quantityDelta : -quantityDelta;
+                await this.adjustInventory(
+                    current.userId,
+                    current.cardId,
+                    current.isFoil,
+                    inventoryDelta
+                );
+            }
 
-        this.LOGGER.debug(`Updated transaction ${id}.`);
-        return { updated, oldQuantity };
+            this.LOGGER.debug(`Updated transaction ${id}.`);
+            return { updated, oldQuantity };
+        });
     }
 
     async delete(id: number, userId: number): Promise<void> {
@@ -196,37 +227,55 @@ export class TransactionService {
 
         this.assertWithinEditWindow(existing.createdAt, 'deleted');
 
-        if (existing.type === 'BUY') {
-            const remainingQty = await this.getRemainingQuantity(
+        await this.txRunner.run(async () => {
+            await this.inventoryService.lockForUpdate(
                 existing.userId,
                 existing.cardId,
                 existing.isFoil
             );
-            if (existing.quantity > remainingQty) {
-                throw new DomainValidationError(
-                    `Cannot delete buy of ${existing.quantity} units. Only ${remainingQty} unsold units remaining in this card's ledger.`
-                );
+
+            // Re-read after the lock: a concurrent quantity edit may have
+            // committed while we waited, and both the BUY-delete validation and
+            // the inventory reversal must use the current quantity.
+            const current = await this.repository.findById(id);
+            if (!current || current.userId !== userId) {
+                throw new DomainNotFoundError('Transaction not found.');
             }
-        }
 
-        await this.repository.delete(id, userId);
+            if (current.type === 'BUY') {
+                const remainingQty = await this.getRemainingQuantity(
+                    current.userId,
+                    current.cardId,
+                    current.isFoil
+                );
+                if (current.quantity > remainingQty) {
+                    throw new DomainValidationError(
+                        `Cannot delete buy of ${current.quantity} units. Only ${remainingQty} unsold units remaining in this card's ledger.`
+                    );
+                }
+            }
 
-        // Reverse the inventory effect: BUY delete decrements, SELL delete increments
-        const delta = existing.type === 'BUY' ? -existing.quantity : existing.quantity;
-        await this.adjustInventory(existing.userId, existing.cardId, existing.isFoil, delta);
+            await this.repository.delete(id, userId);
 
-        this.LOGGER.debug(`Deleted transaction ${id}.`);
+            // Reverse the inventory effect: BUY delete decrements, SELL delete increments
+            const delta = current.type === 'BUY' ? -current.quantity : current.quantity;
+            await this.adjustInventory(current.userId, current.cardId, current.isFoil, delta);
+
+            this.LOGGER.debug(`Deleted transaction ${id}.`);
+        });
     }
 
     /**
-     * Calculate remaining quantity for a card by subtracting SELL totals from BUY totals.
+     * Calculate remaining quantity for a card by subtracting SELL totals from
+     * BUY totals. Uses one aggregate query rather than loading the full lot
+     * history (W2/P2); runs inside the caller's transaction when there is one.
      */
     async getRemainingQuantity(userId: number, cardId: string, isFoil: boolean): Promise<number> {
-        const buyLots = await this.repository.findBuyLots(userId, cardId, isFoil);
-        const sells = await this.repository.findSells(userId, cardId, isFoil);
-
-        const totalBought = buyLots.reduce((sum, t) => sum + t.quantity, 0);
-        const totalSold = sells.reduce((sum, t) => sum + t.quantity, 0);
+        const { totalBought, totalSold } = await this.repository.sumQuantities(
+            userId,
+            cardId,
+            isFoil
+        );
         return Math.max(0, totalBought - totalSold);
     }
 
@@ -333,7 +382,9 @@ export class TransactionService {
     ): void {
         const timestamp = createdAt ? new Date(createdAt).getTime() : NaN;
         if (isNaN(timestamp) || Date.now() - timestamp >= EDIT_WINDOW_MS) {
-            throw new DomainValidationError(`Transactions can only be ${action} within 24 hours of creation.`);
+            throw new DomainValidationError(
+                `Transactions can only be ${action} within 24 hours of creation.`
+            );
         }
     }
 

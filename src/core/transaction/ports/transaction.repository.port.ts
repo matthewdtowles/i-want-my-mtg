@@ -37,6 +37,17 @@ export interface TransactionRepositoryPort {
     findSells(userId: number, cardId: string, isFoil: boolean): Promise<Transaction[]>;
 
     /**
+     * Sum BUY and SELL quantities for a user/card/foil combo in a single
+     * aggregate query. Used by the remaining-quantity check on the hot money
+     * path instead of loading the full lot history (W2/P2).
+     */
+    sumQuantities(
+        userId: number,
+        cardId: string,
+        isFoil: boolean
+    ): Promise<{ totalBought: number; totalSold: number }>;
+
+    /**
      * Find all transactions for a user, ordered by date DESC.
      * Optional `sinceDate` caps results to transactions on or after that date
      * (used by the free-tier 30-day history gate).

@@ -280,7 +280,7 @@ export class InventoryRepository
         // RETURNING makes query() resolve to one row per *actually inserted*
         // row; ON CONFLICT DO NOTHING omits conflicting rows. The raw result is
         // a rows array with no rowCount, so count its length (W2/B2).
-        const result = await this.repository.query(
+        const result = await this.repo().query(
             `INSERT INTO inventory (card_id, user_id, foil, quantity)
              VALUES ${values}
              ON CONFLICT (card_id, user_id, foil) DO NOTHING

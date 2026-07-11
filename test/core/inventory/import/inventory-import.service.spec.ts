@@ -5,6 +5,7 @@ import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repository.port';
+import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
 
@@ -83,6 +84,12 @@ describe('InventoryImportService', () => {
                 { provide: InventoryRepositoryPort, useValue: mockInventoryRepo },
                 { provide: CardRepositoryPort, useValue: mockCardRepo },
                 { provide: SetRepositoryPort, useValue: mockSetRepo },
+                // Pass-through runner: execute the write phases inline (W2/B4).
+                // Signature mirrors the port so the mock catches call-site drift.
+                {
+                    provide: TransactionRunnerPort,
+                    useValue: { run: <T>(work: () => Promise<T>): Promise<T> => work() },
+                },
             ],
         }).compile();
 
@@ -147,16 +154,17 @@ describe('InventoryImportService', () => {
             expect(result.errors).toHaveLength(0);
         });
 
-        it('reports failed deletion as an error', async () => {
+        it('aborts the whole import when a write fails (transactional)', async () => {
+            // W2/B4: the delete/save/ensure phases run inside one unit of work,
+            // so a failed write rolls the transaction back and propagates rather
+            // than being swallowed as a per-row error.
             const card = makeCard();
             mockCardRepo.findById.mockResolvedValue(card);
             mockInventoryRepo.delete.mockRejectedValue(new Error('DB constraint'));
 
-            const result = await service.importCards([{ id: card.id, quantity: '0' }], 1);
-
-            expect(result.deleted).toBe(0);
-            expect(result.errors).toHaveLength(1);
-            expect(result.errors[0].error).toMatch(/DB constraint/);
+            await expect(service.importCards([{ id: card.id, quantity: '0' }], 1)).rejects.toThrow(
+                /DB constraint/
+            );
         });
 
         it('errors on card not found by id', async () => {

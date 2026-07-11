@@ -85,7 +85,11 @@ describe('InventoryImportService', () => {
                 { provide: CardRepositoryPort, useValue: mockCardRepo },
                 { provide: SetRepositoryPort, useValue: mockSetRepo },
                 // Pass-through runner: execute the write phases inline (W2/B4).
-                { provide: TransactionRunnerPort, useValue: { run: (work: () => unknown) => work() } },
+                // Signature mirrors the port so the mock catches call-site drift.
+                {
+                    provide: TransactionRunnerPort,
+                    useValue: { run: <T>(work: () => Promise<T>): Promise<T> => work() },
+                },
             ],
         }).compile();
 

@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import {
     generateVerificationToken,
     getTokenExpiration,
+    hashToken,
 } from 'src/core/auth/verification-token.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PendingUser } from './pending-user.entity';
@@ -28,23 +29,26 @@ export class PendingUserService {
         await this.repository.deleteByEmail(email);
 
         const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
-        const verificationToken = generateVerificationToken();
+        const rawToken = generateVerificationToken();
         const expiresAt = getTokenExpiration(this.TOKEN_EXPIRY_HOURS);
 
+        // Persist only the hash (C5); the raw token is emailed to the user.
         const pendingUser = new PendingUser({
             email,
             name,
             passwordHash,
-            verificationToken,
+            verificationToken: hashToken(rawToken),
             expiresAt,
         });
 
-        return await this.repository.create(pendingUser);
+        const saved = await this.repository.create(pendingUser);
+        // Hand the raw token back to the caller for the verification email.
+        return new PendingUser({ ...saved, verificationToken: rawToken });
     }
 
     async findByToken(token: string): Promise<PendingUser | null> {
         this.LOGGER.debug(`Finding pending user by token.`);
-        return await this.repository.findByToken(token);
+        return await this.repository.findByToken(hashToken(token));
     }
 
     async findByEmail(email: string): Promise<PendingUser | null> {
@@ -54,7 +58,7 @@ export class PendingUserService {
 
     async deleteByToken(token: string): Promise<void> {
         this.LOGGER.debug(`Deleting pending user by token.`);
-        await this.repository.deleteByToken(token);
+        await this.repository.deleteByToken(hashToken(token));
     }
 
     async deleteByEmail(email: string): Promise<void> {

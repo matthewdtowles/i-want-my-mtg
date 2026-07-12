@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
     generateVerificationToken,
     getTokenExpiration,
+    hashToken,
 } from 'src/core/auth/verification-token.util';
 import { getLogger } from 'src/logger/global-app-logger';
 import { PasswordReset } from './password-reset.entity';
@@ -24,26 +25,29 @@ export class PasswordResetService {
 
         await this.repository.deleteByEmail(email);
 
-        const resetToken = generateVerificationToken();
+        const rawToken = generateVerificationToken();
         const expiresAt = getTokenExpiration(this.TOKEN_EXPIRY_HOURS);
 
+        // Persist only the hash (C5); the raw token is emailed to the user.
         const passwordReset = new PasswordReset({
             email,
-            resetToken,
+            resetToken: hashToken(rawToken),
             expiresAt,
         });
 
-        return await this.repository.create(passwordReset);
+        const saved = await this.repository.create(passwordReset);
+        // Hand the raw token back to the caller for the reset email.
+        return new PasswordReset({ ...saved, resetToken: rawToken });
     }
 
     async findByToken(token: string): Promise<PasswordReset | null> {
         this.LOGGER.debug(`Finding password reset by token.`);
-        return await this.repository.findByToken(token);
+        return await this.repository.findByToken(hashToken(token));
     }
 
     async deleteByToken(token: string): Promise<void> {
         this.LOGGER.debug(`Deleting password reset by token.`);
-        await this.repository.deleteByToken(token);
+        await this.repository.deleteByToken(hashToken(token));
     }
 
     async deleteExpired(): Promise<number> {

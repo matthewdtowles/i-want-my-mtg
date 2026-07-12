@@ -7,6 +7,7 @@ import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.polic
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -74,7 +75,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             qb.leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             );
         }
         const ormCards = await qb.getMany();
@@ -90,7 +91,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`${this.TABLE}.setCode = :code`, { code });
 
@@ -112,7 +113,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`${this.TABLE}.name = :name`, { name });
 
@@ -254,7 +255,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             );
 
         // When a format is supplied, load just that format's legality row (≤1
@@ -359,7 +360,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`LOWER(${this.TABLE}.name) = LOWER(:name)`, { name })
             .andWhere(`${this.TABLE}.setCode = :setCode`, { setCode })
@@ -381,7 +382,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
                 qb.leftJoinAndSelect(
                     `${this.TABLE}.prices`,
                     'prices',
-                    'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                    latestPriceCondition('prices', 'card')
                 );
             } else {
                 qb.leftJoinAndSelect(`${this.TABLE}.${rel}`, rel);

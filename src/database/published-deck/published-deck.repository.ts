@@ -7,10 +7,11 @@ import {
 } from 'src/core/published-deck/ports/published-deck.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { PublishedDeckMapper } from './published-deck.mapper';
 import { PublishedDeckOrmEntity } from './published-deck.orm-entity';
 
-const LATEST_PRICE = 'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)';
+const LATEST_PRICE = latestPriceCondition('prices', 'card');
 
 @Injectable()
 export class PublishedDeckRepository implements PublishedDeckRepositoryPort {

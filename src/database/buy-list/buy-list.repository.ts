@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BuyListItem } from 'src/core/buy-list/buy-list-item.entity';
 import { BuyListRepositoryPort } from 'src/core/buy-list/ports/buy-list.repository.port';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
@@ -27,7 +28,7 @@ export class BuyListRepository implements BuyListRepositoryPort {
             .leftJoinAndSelect(
                 'card.prices',
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .leftJoinAndSelect('card.set', 'set')
             .where('bl.userId = :userId', { userId })

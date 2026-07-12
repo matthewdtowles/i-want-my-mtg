@@ -4,11 +4,12 @@ import { Deck } from 'src/core/deck/deck.entity';
 import { DeckRepositoryPort } from 'src/core/deck/ports/deck.repository.port';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository } from 'typeorm';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { activeEntityManager } from 'src/database/transaction-runner';
 import { DeckMapper } from './deck.mapper';
 import { DeckOrmEntity } from './deck.orm-entity';
 
-const LATEST_PRICE = 'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)';
+const LATEST_PRICE = latestPriceCondition('prices', 'card');
 
 @Injectable()
 export class DeckRepository implements DeckRepositoryPort {

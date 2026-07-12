@@ -283,6 +283,12 @@ describe('SetOrchestrator', () => {
 
             expect(result.authenticated).toBe(false);
             expect(result.toast).toBeUndefined();
+            // Anonymous visitors own nothing, so the set page must not issue any
+            // inventory queries with userId 0 (B12).
+            expect(inventoryService.findByCards).not.toHaveBeenCalled();
+            expect(inventoryService.totalInventoryItemsForSet).not.toHaveBeenCalled();
+            expect(inventoryService.ownedValueForSet).not.toHaveBeenCalled();
+            expect(result.set.ownedTotal).toBe(0);
         });
 
         it('returns error DTO on card service failure', async () => {

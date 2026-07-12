@@ -4,6 +4,7 @@ import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { CardService } from 'src/core/card/card.service';
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { SetImportRow } from 'src/core/inventory/import/inventory-import.types';
+import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
@@ -682,16 +683,31 @@ export class SetOrchestrator {
         sealedProducts: SealedProductRowDto[] = []
     ): Promise<SetResponseDto> {
         const setPayloadSize = set.cards?.length || 0;
-        const inventory =
-            userId && setPayloadSize > 0
-                ? await this.inventoryService.findByCards(
-                      userId,
-                      set.cards.map((c) => c.id)
-                  )
-                : [];
-        const ownedTotal = await this.inventoryService.totalInventoryItemsForSet(userId, set.code);
+        const isAuthed = !!userId;
+
+        // Anonymous visitors own nothing — skip every inventory read on this
+        // high-traffic page instead of querying with userId 0 (B12). Signed-in
+        // users run the three reads together rather than in series (P3).
+        let inventory: Inventory[] = [];
+        let ownedTotal = 0;
+        let ownedValueRaw = 0;
+        if (isAuthed) {
+            [inventory, ownedTotal, ownedValueRaw] = await Promise.all([
+                setPayloadSize > 0
+                    ? this.inventoryService.findByCards(
+                          userId,
+                          set.cards.map((c) => c.id)
+                      )
+                    : Promise.resolve([] as Inventory[]),
+                this.inventoryService.totalInventoryItemsForSet(userId, set.code),
+                this.inventoryService.ownedValueForSet(userId, set.code),
+            ]);
+        }
 
         const effectiveSize = set.effectiveSize;
+        // Build the card→quantity map once; it was previously rebuilt for every
+        // card inside the .map below — O(cards × inventory) on large sets (B12).
+        const quantityByCardId = InventoryPresenter.toQuantityMap(inventory);
 
         return new SetResponseDto({
             baseSize: set.baseSize,
@@ -700,7 +716,7 @@ export class SetOrchestrator {
             completionRate: completionRate(ownedTotal, effectiveSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
-            ownedValue: toDollar(await this.inventoryService.ownedValueForSet(userId, set.code)),
+            ownedValue: toDollar(ownedValueRaw),
             ownedTotal,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
@@ -711,7 +727,7 @@ export class SetOrchestrator {
                 ? set.cards.map((card) =>
                       CardPresenter.toCardResponse(
                           card,
-                          InventoryPresenter.toQuantityMap(inventory)?.get(card.id),
+                          quantityByCardId?.get(card.id),
                           CardImgType.NORMAL
                       )
                   )

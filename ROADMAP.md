@@ -270,7 +270,7 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 - **mobile** — MB1 (PR #70, sign-out cache clear), MB2 (PR #71, CI spec-drift decoupling).
 - **cross-repo** — X6 verified both clients parse the post-W1 `{ success, error }` envelope (regression tests: MCP PR #24, mobile PR #73).
 
-**16 issues remain (all Wave 2/3).** Per-item detail lives in the linked issues/PRs and git history. **Wave 2 is now in progress — see the Wave 2 table below; W4 (security hardening) is the current item.**
+**Wave 2 in progress.** 15 issues remain. First Wave 2 item **W4 (security hardening)** is done (PR #589): B9 (generic ≥500 responses, no message leak), B10 (uniform signup response + dummy-compare timing defense), C5 (sha256-at-rest for verification/reset tokens), B13 (Stripe status validated against the enum + re-fetch-on-webhook to defend against out-of-order delivery). Per-item detail lives in the linked issues/PRs and git history.
 
 ### Cross-repo hard orderings (everything else is repo-local and parallelizable)
 
@@ -301,7 +301,7 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 |---|---|---|---|
 | ~~[W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576)~~ | web | OpenAPI spec fixes + delta-quantity endpoint | ✅ **done** (PR #586); landed after MB2 (X3/X4); now triggers M3 + mobile regen |
 | ~~[W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571)~~ | web | Query/input hardening: filter charset, limit caps, pool config | ✅ **done** (PR #587) |
-| [W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572) | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | 🔄 **in progress** (B9 generic 500s, B10 enumeration/timing, C5 token hashing, B13 Stripe sync) |
+| ~~[W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572)~~ | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | ✅ **done** (PR #589); B9 no-leak ≥500s, B10 signup enumeration/timing, C5 sha256 token storage, B13 Stripe status validation + re-fetch |
 | [W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573) | web | Performance: set page, batched imports, Promise.all, latest-price helper | |
 | [S5](https://github.com/matthewdtowles/scry/issues/39) | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | |
 | [S6](https://github.com/matthewdtowles/scry/issues/40) | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | |

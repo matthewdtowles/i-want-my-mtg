@@ -37,9 +37,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const status: number = httpException
             ? httpException.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
-        const clientMessage: string = httpException
-            ? httpException.message
-            : 'Internal Server Error';
+        // Never expose a server-error message to the client (B9): a >=500
+        // HttpException can still carry raw internal detail (e.g. a wrapped
+        // TypeORM/Postgres message), so collapse anything >=500 to a generic
+        // message. The detail is already logged above with the stack.
+        const clientMessage: string =
+            httpException && status < HttpStatus.INTERNAL_SERVER_ERROR
+                ? httpException.message
+                : 'Internal Server Error';
         if (this.isApiRequest(request)) {
             const body = ApiResponseDto.error(clientMessage);
             if (exception instanceof InvalidQueryParamException) {

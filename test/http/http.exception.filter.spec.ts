@@ -1,4 +1,8 @@
-import { ArgumentsHost, UnauthorizedException } from '@nestjs/common';
+import {
+    ArgumentsHost,
+    InternalServerErrorException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 import { HttpExceptionFilter } from 'src/http/http.exception.filter';
 
@@ -55,6 +59,16 @@ describe('HttpExceptionFilter', () => {
         it('returns a generic 500 body for an unexpected error (no leak)', () => {
             const { host, result } = hostFor('/api/v1/cards');
             filter.catch(new Error('connect ECONNREFUSED 10.0.0.5:5432'), host);
+            expect(result.status).toBe(500);
+            expect(result.json.error).toBe('Internal Server Error');
+        });
+
+        it('does not leak the message of a >=500 HttpException (B9)', () => {
+            const { host, result } = hostFor('/api/v1/portfolio/refresh');
+            filter.catch(
+                new InternalServerErrorException('relation "portfolio_value" does not exist'),
+                host
+            );
             expect(result.status).toBe(500);
             expect(result.json.error).toBe('Internal Server Error');
         });

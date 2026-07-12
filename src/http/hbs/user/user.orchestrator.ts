@@ -55,6 +55,11 @@ const SET_TYPE_LABELS: Record<KnownSetType, string> = {
 export class UserOrchestrator {
     private readonly LOGGER = getLogger(UserOrchestrator.name);
 
+    /** Uniform signup acknowledgement — same for new, registered, and pending
+     * emails so the response can't be used to enumerate accounts (B10). */
+    private static readonly SIGNUP_ACK_MESSAGE =
+        'Please check your email to verify your account';
+
     private readonly breadCrumbs = [
         { label: 'Home', url: '/' },
         { label: 'User', url: '/user' },
@@ -74,10 +79,13 @@ export class UserOrchestrator {
     ): Promise<{ success: boolean; message: string }> {
         this.LOGGER.debug(`Initiating signup for email: ${createUserDto.email}.`);
         try {
-            // Check if user already exists
+            // Account enumeration defense (B10): every outcome that isn't a
+            // genuine server error returns the same acknowledgement, so a caller
+            // can't tell a registered/pending email from a fresh one.
             const existingUser = await this.userService.findByEmail(createUserDto.email);
             if (existingUser) {
-                throw new Error('A user with this email already exists');
+                this.LOGGER.debug(`Signup attempted for already-registered email.`);
+                return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
             }
 
             // Check if there's already a pending registration
@@ -86,11 +94,7 @@ export class UserOrchestrator {
                 this.LOGGER.debug(
                     `Pending registration already exists for ${createUserDto.email}.`
                 );
-                return {
-                    success: true,
-                    message:
-                        'A verification email has already been sent. Please check your inbox or wait for the link to expire before requesting a new one.',
-                };
+                return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
             }
 
             // Create pending user (handles hashing and token generation)
@@ -112,10 +116,7 @@ export class UserOrchestrator {
                 throw new Error('Failed to send verification email');
             }
 
-            return {
-                success: true,
-                message: 'Please check your email to verify your account',
-            };
+            return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
         } catch (error) {
             this.LOGGER.debug(`Error initiating signup for email: ${createUserDto.email}.`);
             throw error;

@@ -156,7 +156,7 @@ export class PortfolioApiController {
             if (error instanceof HttpException) {
                 throw error;
             }
-            throw new InternalServerErrorException(error?.message || 'Failed to refresh portfolio');
+            throw new InternalServerErrorException('Failed to refresh portfolio');
         }
         return ApiResponseDto.ok({ refreshed: true });
     }

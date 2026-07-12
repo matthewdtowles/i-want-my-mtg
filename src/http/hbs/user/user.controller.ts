@@ -80,20 +80,15 @@ export class UserController {
                 message: result.message,
             });
         } catch (error) {
+            // Only genuine failures reach here now — the orchestrator returns a
+            // uniform acknowledgement for already-registered/pending emails so
+            // the response can't be used to enumerate accounts (B10).
             this.LOGGER.error(`Error initiating signup ${createUserDto?.email}: ${error}.`);
-            if (error?.message?.includes('already exists')) {
-                res.render('createUser', {
-                    error: 'A user with this email already exists. Please try logging in instead.',
-                    email: createUserDto.email,
-                    name: createUserDto.name,
-                });
-            } else {
-                res.render('createUser', {
-                    error: 'An error occurred while creating your account. Please try again.',
-                    email: createUserDto.email,
-                    name: createUserDto.name,
-                });
-            }
+            res.render('createUser', {
+                error: 'An error occurred while creating your account. Please try again.',
+                email: createUserDto.email,
+                name: createUserDto.name,
+            });
         }
     }
 

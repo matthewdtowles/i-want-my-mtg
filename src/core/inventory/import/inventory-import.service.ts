@@ -45,17 +45,23 @@ export class InventoryImportService {
             });
         }
 
-        for (let i = 0; i < cappedRows.length; i++) {
-            const row = cappedRows[i];
-            const rowNum = i + 2;
-
-            const { card, error: cardError } = await this.cardResolver.resolveCard({
+        // Resolve every row up front in a handful of bulk queries instead of one
+        // or two per row (P1: a full 2000-row import was 2000+ serial queries).
+        const resolved = await this.cardResolver.resolveCards(
+            cappedRows.map((row) => ({
                 id: row.id,
                 name: row.name,
                 set_code: row.set_code,
                 set_name: row.set_name,
                 number: row.number,
-            });
+            }))
+        );
+
+        for (let i = 0; i < cappedRows.length; i++) {
+            const row = cappedRows[i];
+            const rowNum = i + 2;
+
+            const { card, error: cardError } = resolved[i];
 
             if (cardError || !card) {
                 errors.push({

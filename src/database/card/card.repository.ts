@@ -370,6 +370,63 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return cards;
     }
 
+    async findBySetCodeAndNumbers(
+        pairs: { setCode: string; number: string }[]
+    ): Promise<Card[]> {
+        if (pairs.length === 0) return [];
+        // Group by set so each set is one `number IN (...)` query, run in
+        // parallel — a handful of queries instead of one per pair.
+        const numbersBySet = new Map<string, Set<string>>();
+        for (const { setCode, number } of pairs) {
+            if (!numbersBySet.has(setCode)) numbersBySet.set(setCode, new Set());
+            numbersBySet.get(setCode).add(number);
+        }
+        const groups = await Promise.all(
+            [...numbersBySet].map(([setCode, numbers]) =>
+                this.repository
+                    .createQueryBuilder(this.TABLE)
+                    .leftJoinAndSelect(
+                        `${this.TABLE}.prices`,
+                        'prices',
+                        latestPriceCondition('prices', 'card')
+                    )
+                    .where(`${this.TABLE}.setCode = :setCode`, { setCode })
+                    .andWhere(`${this.TABLE}.number IN (:...numbers)`, {
+                        numbers: [...numbers],
+                    })
+                    .getMany()
+            )
+        );
+        return groups.flat().map(CardMapper.toCore);
+    }
+
+    async findByNameSetPairs(pairs: { name: string; setCode: string }[]): Promise<Card[]> {
+        if (pairs.length === 0) return [];
+        // Group by set so each set is one case-insensitive `name IN (...)` query.
+        const namesBySet = new Map<string, Set<string>>();
+        for (const { name, setCode } of pairs) {
+            if (!namesBySet.has(setCode)) namesBySet.set(setCode, new Set());
+            namesBySet.get(setCode).add(name.toLowerCase());
+        }
+        const groups = await Promise.all(
+            [...namesBySet].map(([setCode, names]) =>
+                this.repository
+                    .createQueryBuilder(this.TABLE)
+                    .leftJoinAndSelect(
+                        `${this.TABLE}.prices`,
+                        'prices',
+                        latestPriceCondition('prices', 'card')
+                    )
+                    .where(`${this.TABLE}.setCode = :setCode`, { setCode })
+                    .andWhere(`LOWER(${this.TABLE}.name) IN (:...names)`, {
+                        names: [...names],
+                    })
+                    .getMany()
+            )
+        );
+        return groups.flat().map(CardMapper.toCore);
+    }
+
     async deleteLegality(cardId: string, format: Format): Promise<void> {
         this.LOGGER.debug(`Deleting legality for card ${cardId} format ${format}.`);
         await this.legalityRepository.delete({ cardId, format });

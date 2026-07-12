@@ -31,6 +31,9 @@ describe('StripeWebhookController', () => {
         // (which don't care about routing) keep working. Tests that exercise unknown
         // price ids override this.
         gateway.planForPriceId.mockReturnValue('monthly' as any);
+        // created/updated events re-fetch the authoritative subscription (B13);
+        // default to echoing the requested id back as a consumer-priced sub.
+        gateway.retrieveSubscription.mockImplementation(async (id: string) => subWithPrice(id));
         service = {
             getOrCreateCustomer: jest.fn(),
             startCheckout: jest.fn(),
@@ -84,8 +87,33 @@ describe('StripeWebhookController', () => {
             data: { object: stripeSub },
         } as unknown as Stripe.Event);
         const result = await controller.handle(rawReq, 'sig');
+        expect(gateway.retrieveSubscription).toHaveBeenCalledWith('sub_1');
         expect(service.syncFromStripeSubscription).toHaveBeenCalledWith(stripeSub);
         expect(result).toEqual({ received: true });
+    });
+
+    it('re-fetches the authoritative subscription and syncs that, not the stale payload (B13)', async () => {
+        const stalePayload = {
+            id: 'sub_ooo',
+            status: 'canceled',
+            items: { data: [{ price: { id: 'price_consumer' } }] },
+        } as unknown as Stripe.Subscription;
+        const authoritative = {
+            id: 'sub_ooo',
+            status: 'active',
+            items: { data: [{ price: { id: 'price_consumer' } }] },
+        } as unknown as Stripe.Subscription;
+        gateway.retrieveSubscription.mockResolvedValueOnce(authoritative);
+        gateway.constructEvent.mockReturnValue({
+            type: 'customer.subscription.updated',
+            data: { object: stalePayload },
+        } as unknown as Stripe.Event);
+
+        await controller.handle(rawReq, 'sig');
+
+        expect(gateway.retrieveSubscription).toHaveBeenCalledWith('sub_ooo');
+        expect(service.syncFromStripeSubscription).toHaveBeenCalledWith(authoritative);
+        expect(service.syncFromStripeSubscription).not.toHaveBeenCalledWith(stalePayload);
     });
 
     it('retrieves full subscription on checkout.session.completed', async () => {
@@ -142,6 +170,9 @@ describe('StripeWebhookController', () => {
     it('throws on unknown price id so Stripe retries (no silent default-route to consumer)', async () => {
         gateway.planForPriceId.mockReturnValue(null);
         gateway.apiTierForPriceId.mockReturnValue(null);
+        gateway.retrieveSubscription.mockResolvedValueOnce(
+            subWithPrice('sub_unknown', 'price_unknown')
+        );
         gateway.constructEvent.mockReturnValue({
             type: 'customer.subscription.updated',
             data: { object: subWithPrice('sub_unknown', 'price_unknown') },

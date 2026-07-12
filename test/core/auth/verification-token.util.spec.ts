@@ -1,9 +1,24 @@
 import {
     generateVerificationToken,
     getTokenExpiration,
+    hashToken,
 } from 'src/core/auth/verification-token.util';
 
 describe('verification-token.util', () => {
+    describe('hashToken', () => {
+        it('returns the sha256 hex of the token (64 chars), not the token itself', () => {
+            const hash = hashToken('my-secret-token');
+
+            expect(hash).toMatch(/^[0-9a-f]{64}$/);
+            expect(hash).not.toBe('my-secret-token');
+        });
+
+        it('is deterministic and distinguishes different tokens', () => {
+            expect(hashToken('a')).toBe(hashToken('a'));
+            expect(hashToken('a')).not.toBe(hashToken('b'));
+        });
+    });
+
     describe('generateVerificationToken', () => {
         it('should return a 64-character hex string', () => {
             const token = generateVerificationToken();

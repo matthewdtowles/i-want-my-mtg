@@ -62,8 +62,11 @@ describe('InventoryImportService', () => {
 
     const mockCardRepo = {
         findById: jest.fn(),
+        findByIds: jest.fn(),
         findBySetCodeAndNumber: jest.fn(),
+        findBySetCodeAndNumbers: jest.fn(),
         findByNameAndSetCode: jest.fn(),
+        findByNameSetPairs: jest.fn(),
         findBySet: jest.fn(),
         save: jest.fn(),
         delete: jest.fn(),
@@ -101,6 +104,36 @@ describe('InventoryImportService', () => {
         mockInventoryRepo.ensureAtLeastOne.mockResolvedValue({ saved: 1, skipped: 0 });
         mockInventoryRepo.save.mockResolvedValue([]);
         mockInventoryRepo.delete.mockResolvedValue(undefined);
+        // The resolver now batches; drive the bulk lookups from the per-row mocks
+        // each test already sets up, so existing expectations keep holding.
+        mockCardRepo.findByIds.mockImplementation(async (ids: string[]) => {
+            const out = [];
+            for (const id of ids) {
+                const c = await mockCardRepo.findById(id, []);
+                if (c) out.push(c);
+            }
+            return out;
+        });
+        mockCardRepo.findBySetCodeAndNumbers.mockImplementation(
+            async (pairs: { setCode: string; number: string }[]) => {
+                const out = [];
+                for (const { setCode, number } of pairs) {
+                    const c = await mockCardRepo.findBySetCodeAndNumber(setCode, number, []);
+                    if (c) out.push(c);
+                }
+                return out;
+            }
+        );
+        mockCardRepo.findByNameSetPairs.mockImplementation(
+            async (pairs: { name: string; setCode: string }[]) => {
+                const out = [];
+                for (const { name, setCode } of pairs) {
+                    const matches = await mockCardRepo.findByNameAndSetCode(name, setCode);
+                    if (matches) out.push(...matches);
+                }
+                return out;
+            }
+        );
     });
 
     describe('importCards', () => {

@@ -7,6 +7,7 @@ import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.polic
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { BaseRepository } from 'src/database/base.repository';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -74,7 +75,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             qb.leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             );
         }
         const ormCards = await qb.getMany();
@@ -90,7 +91,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`${this.TABLE}.setCode = :code`, { code });
 
@@ -112,7 +113,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`${this.TABLE}.name = :name`, { name });
 
@@ -254,7 +255,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             );
 
         // When a format is supplied, load just that format's legality row (≤1
@@ -359,7 +360,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             .leftJoinAndSelect(
                 `${this.TABLE}.prices`,
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .where(`LOWER(${this.TABLE}.name) = LOWER(:name)`, { name })
             .andWhere(`${this.TABLE}.setCode = :setCode`, { setCode })
@@ -367,6 +368,63 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         const cards = ormCards.map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${cards.length} cards for name "${name}" in set ${setCode}.`);
         return cards;
+    }
+
+    async findBySetCodeAndNumbers(
+        pairs: { setCode: string; number: string }[]
+    ): Promise<Card[]> {
+        if (pairs.length === 0) return [];
+        // Group by set so each set is one `number IN (...)` query, run in
+        // parallel — a handful of queries instead of one per pair.
+        const numbersBySet = new Map<string, Set<string>>();
+        for (const { setCode, number } of pairs) {
+            if (!numbersBySet.has(setCode)) numbersBySet.set(setCode, new Set());
+            numbersBySet.get(setCode).add(number);
+        }
+        const groups = await Promise.all(
+            [...numbersBySet].map(([setCode, numbers]) =>
+                this.repository
+                    .createQueryBuilder(this.TABLE)
+                    .leftJoinAndSelect(
+                        `${this.TABLE}.prices`,
+                        'prices',
+                        latestPriceCondition('prices', 'card')
+                    )
+                    .where(`${this.TABLE}.setCode = :setCode`, { setCode })
+                    .andWhere(`${this.TABLE}.number IN (:...numbers)`, {
+                        numbers: [...numbers],
+                    })
+                    .getMany()
+            )
+        );
+        return groups.flat().map(CardMapper.toCore);
+    }
+
+    async findByNameSetPairs(pairs: { name: string; setCode: string }[]): Promise<Card[]> {
+        if (pairs.length === 0) return [];
+        // Group by set so each set is one case-insensitive `name IN (...)` query.
+        const namesBySet = new Map<string, Set<string>>();
+        for (const { name, setCode } of pairs) {
+            if (!namesBySet.has(setCode)) namesBySet.set(setCode, new Set());
+            namesBySet.get(setCode).add(name.toLowerCase());
+        }
+        const groups = await Promise.all(
+            [...namesBySet].map(([setCode, names]) =>
+                this.repository
+                    .createQueryBuilder(this.TABLE)
+                    .leftJoinAndSelect(
+                        `${this.TABLE}.prices`,
+                        'prices',
+                        latestPriceCondition('prices', 'card')
+                    )
+                    .where(`${this.TABLE}.setCode = :setCode`, { setCode })
+                    .andWhere(`LOWER(${this.TABLE}.name) IN (:...names)`, {
+                        names: [...names],
+                    })
+                    .getMany()
+            )
+        );
+        return groups.flat().map(CardMapper.toCore);
     }
 
     async deleteLegality(cardId: string, format: Format): Promise<void> {
@@ -381,7 +439,7 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
                 qb.leftJoinAndSelect(
                     `${this.TABLE}.prices`,
                     'prices',
-                    'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                    latestPriceCondition('prices', 'card')
                 );
             } else {
                 qb.leftJoinAndSelect(`${this.TABLE}.${rel}`, rel);

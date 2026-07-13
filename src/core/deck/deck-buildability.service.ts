@@ -51,9 +51,13 @@ export class DeckBuildabilityService {
     /** Seed the user's buy-list with the cards missing from a deck. Returns count added. */
     async addMissingToBuyList(cards: DeckCard[], userId: number): Promise<number> {
         const gap = await this.gapForDeck(cards, userId);
-        for (const { cardId, quantity } of gap.missingByCard) {
-            await this.buyListService.add(userId, cardId, false, quantity);
-        }
+        // Each add is an independent atomic upsert on a distinct card, so run them
+        // together instead of one serial round trip per missing card (P1).
+        await Promise.all(
+            gap.missingByCard.map(({ cardId, quantity }) =>
+                this.buyListService.add(userId, cardId, false, quantity)
+            )
+        );
         this.LOGGER.debug(`seeded buy-list with ${gap.missingByCard.length} cards for user ${userId}.`);
         return gap.missingByCard.length;
     }

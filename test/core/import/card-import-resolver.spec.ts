@@ -29,8 +29,11 @@ describe('CardImportResolver', () => {
 
     const mockCardRepo = {
         findById: jest.fn(),
+        findByIds: jest.fn(),
         findBySetCodeAndNumber: jest.fn(),
+        findBySetCodeAndNumbers: jest.fn(),
         findByNameAndSetCode: jest.fn(),
+        findByNameSetPairs: jest.fn(),
         findWithName: jest.fn(),
         findBySet: jest.fn(),
         save: jest.fn(),
@@ -350,6 +353,70 @@ describe('CardImportResolver', () => {
             const card = makeCard({ hasNonFoil: true, hasFoil: true });
             expect(resolver.resolveFoil('yes', card)).toBe(true);
             expect(resolver.resolveFoil('1', card)).toBe(true);
+        });
+    });
+
+    describe('resolveCards (batched)', () => {
+        it('resolves every strategy in order with one bulk query per strategy', async () => {
+            mockCardRepo.findByIds.mockResolvedValue([makeCard({ id: 'card-uuid-1' })]);
+            mockCardRepo.findBySetCodeAndNumbers.mockResolvedValue([
+                makeCard({ id: 'sn1', setCode: 'dmu', number: '1' }),
+                makeCard({ id: 'sn5', setCode: 'dmu', number: '5' }),
+            ]);
+            mockCardRepo.findByNameSetPairs.mockResolvedValue([
+                makeCard({ id: 'teferi', name: 'Teferi', setCode: 'dmu' }),
+                makeCard({ id: 'forest-a', name: 'Forest', setCode: 'dmu' }),
+                makeCard({ id: 'forest-b', name: 'Forest', setCode: 'dmu' }),
+            ]);
+            mockSetRepo.findByExactName.mockImplementation(async (name: string) =>
+                name === 'Dominaria United' ? ({ code: 'dmu' } as Set) : null
+            );
+
+            const results = await resolver.resolveCards([
+                { id: 'card-uuid-1' }, // 0 found by id
+                { id: 'missing' }, // 1 id not found
+                { set_code: 'DMU', number: '1' }, // 2 found (set normalized)
+                { set_code: 'dmu', number: '999' }, // 3 set+number not found
+                { name: 'Teferi', set_code: 'dmu' }, // 4 name+set found
+                { name: 'Forest', set_code: 'dmu' }, // 5 ambiguous
+                { name: 'Nope', set_code: 'dmu' }, // 6 name+set not found
+                { set_name: 'Unknown Set' }, // 7 set name not found
+                { name: 'X' }, // 8 insufficient
+                { set_name: 'Dominaria United', number: '5' }, // 9 set_name -> code, then found
+            ]);
+
+            expect(results[0].card?.id).toBe('card-uuid-1');
+            expect(results[1]).toEqual({ card: null, error: 'Card not found for id: missing' });
+            expect(results[2].card?.id).toBe('sn1');
+            expect(results[3]).toEqual({
+                card: null,
+                error: 'Card not found for set dmu #999',
+            });
+            expect(results[4].card?.id).toBe('teferi');
+            expect(results[5]).toEqual({
+                card: null,
+                error: 'Ambiguous: "Forest" in dmu matches 2 cards; add collector number',
+            });
+            expect(results[6]).toEqual({
+                card: null,
+                error: 'Card not found: "Nope" in dmu',
+            });
+            expect(results[7]).toEqual({ card: null, error: 'Set not found: "Unknown Set"' });
+            expect(results[8].error).toMatch(/Insufficient identifier/);
+            expect(results[9].card?.id).toBe('sn5');
+
+            // One bulk call per strategy — not one query per row.
+            expect(mockCardRepo.findByIds).toHaveBeenCalledTimes(1);
+            expect(mockCardRepo.findBySetCodeAndNumbers).toHaveBeenCalledTimes(1);
+            expect(mockCardRepo.findByNameSetPairs).toHaveBeenCalledTimes(1);
+            expect(mockCardRepo.findById).not.toHaveBeenCalled();
+            expect(mockCardRepo.findBySetCodeAndNumber).not.toHaveBeenCalled();
+        });
+
+        it('returns an empty array for no rows without hitting the repository', async () => {
+            const results = await resolver.resolveCards([]);
+            expect(results).toEqual([]);
+            expect(mockCardRepo.findByIds).not.toHaveBeenCalled();
         });
     });
 });

@@ -20,7 +20,7 @@ function makeCard(id: string, name: string): Card {
 describe('DeckImportService', () => {
     let service: DeckImportService;
     let deckService: { createDeck: jest.Mock; addCards: jest.Mock };
-    let resolver: { resolveByName: jest.Mock; resolveCard: jest.Mock };
+    let resolver: { resolveByName: jest.Mock; resolveCards: jest.Mock };
 
     beforeEach(() => {
         deckService = {
@@ -29,7 +29,9 @@ describe('DeckImportService', () => {
         };
         resolver = {
             resolveByName: jest.fn(),
-            resolveCard: jest.fn(),
+            // Batched printing lookups; default to "nothing resolved" so set-less
+            // lines fall through to resolveByName.
+            resolveCards: jest.fn().mockResolvedValue([]),
         };
         // Pass-through runner: execute the unit of work inline (W2/B4).
         const txRunner = { run: <T>(work: () => Promise<T>) => work() };
@@ -71,12 +73,12 @@ describe('DeckImportService', () => {
     });
 
     it('uses precise resolution for set-coded lines, falling back to name', async () => {
-        resolver.resolveCard.mockResolvedValue({ card: null, error: 'unknown set' });
+        resolver.resolveCards.mockResolvedValue([{ card: null, error: 'unknown set' }]);
         resolver.resolveByName.mockResolvedValue({ card: makeCard('c', 'Sol Ring'), error: null });
 
         await service.importDecklist(1, 'D', null, '1 Sol Ring (ZZZ) 5');
 
-        expect(resolver.resolveCard).toHaveBeenCalledWith({ set_code: 'zzz', number: '5' });
+        expect(resolver.resolveCards).toHaveBeenCalledWith([{ set_code: 'zzz', number: '5' }]);
         expect(resolver.resolveByName).toHaveBeenCalledWith('Sol Ring');
     });
 

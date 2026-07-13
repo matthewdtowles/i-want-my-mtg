@@ -101,6 +101,32 @@ describe('Inventory Import/Export API (e2e)', () => {
             );
         });
 
+        it('resolves rows by name + set_code when no number is given (batched name lookup)', async () => {
+            const csv = buildCsv(
+                NATIVE_HEADER,
+                `,Test Angel,${TEST_SET_CODE},,2,false`,
+                `,Test Sphinx,${TEST_SET_CODE},,1,false`
+            );
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/inventory/import/cards')
+                .set('Authorization', bearerToken)
+                .attach('file', csv, 'by-name.csv')
+                .expect(200);
+
+            expect(res.body.data).toMatchObject({ saved: 2, errorCount: 0 });
+
+            const rows = await ds.query(
+                `SELECT card_id, quantity FROM inventory WHERE user_id = $1 ORDER BY card_id`,
+                [userId]
+            );
+            expect(rows).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ card_id: TEST_CARD_ID, quantity: 2 }),
+                    expect.objectContaining({ card_id: TEST_CARD_ID_2, quantity: 1 }),
+                ])
+            );
+        });
+
         it('auto-detects Moxfield format', async () => {
             const csv = buildCsv(
                 MOXFIELD_HEADER,

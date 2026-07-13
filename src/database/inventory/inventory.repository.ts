@@ -9,6 +9,7 @@ import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
+import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { In, Repository } from 'typeorm';
 import { InventoryMapper } from './inventory.mapper';
 import { InventoryOrmEntity } from './inventory.orm-entity';
@@ -112,7 +113,7 @@ export class InventoryRepository
             .leftJoinAndSelect(
                 'card.prices',
                 'prices',
-                'prices.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = card.id)'
+                latestPriceCondition('prices', 'card')
             )
             .leftJoinAndSelect('card.set', 'set')
             .where(`${this.TABLE}.userId = :userId`, { userId });
@@ -154,7 +155,7 @@ export class InventoryRepository
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             LEFT JOIN price p ON p.card_id = c.id
-                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
+                AND ${latestPriceCondition('p', 'c')}
             WHERE i.user_id = $1
             `,
             [userId]
@@ -174,7 +175,7 @@ export class InventoryRepository
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             LEFT JOIN price p ON p.card_id = c.id
-                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
+                AND ${latestPriceCondition('p', 'c')}
             WHERE i.user_id = $1
             AND c.set_code = $2
             `,
@@ -251,7 +252,7 @@ export class InventoryRepository
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             LEFT JOIN price p ON p.card_id = c.id
-                AND p.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = c.id)
+                AND ${latestPriceCondition('p', 'c')}
             WHERE i.user_id = $1
             AND c.set_code IN (${placeholders})
             GROUP BY c.set_code

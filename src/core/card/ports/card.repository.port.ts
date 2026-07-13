@@ -50,6 +50,24 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
     findBySetCodeAndNumber(code: string, number: string, relations: string[]): Promise<Card | null>;
 
     /**
+     * Batched form of {@link findBySetCodeAndNumber}: resolves many (set code,
+     * number) pairs in a handful of queries instead of one per pair. Loads the
+     * latest price row per card. Order is not guaranteed; callers key results by
+     * (setCode, number).
+     * @param pairs Array of (setCode, number) references.
+     */
+    findBySetCodeAndNumbers(pairs: { setCode: string; number: string }[]): Promise<Card[]>;
+
+    /**
+     * Batched form of {@link findByNameAndSetCode}: resolves many (name, set
+     * code) pairs in a handful of queries. Matching is case-insensitive on name.
+     * Loads the latest price row per card. Callers group results by
+     * (lowercased name, setCode) to detect ambiguous matches.
+     * @param pairs Array of (name, setCode) references.
+     */
+    findByNameSetPairs(pairs: { name: string; setCode: string }[]): Promise<Card[]>;
+
+    /**
      * Gets the total number of cards with a given name.
      * @param name Name of the cards to count.
      * @returns Promise resolving to the total number of cards with the given name.
